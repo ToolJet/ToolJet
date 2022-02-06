@@ -3,11 +3,12 @@ import { Router, Route } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute } from '@/_components';
-import { HomePage, Library } from '@/HomePage';
+import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
 import { InvitationPage } from '@/InvitationPage';
 import { Authorize } from '@/Oauth2';
+import { Authorize as Oauth } from '@/Oauth';
 import { Editor, Viewer } from '@/Editor';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
@@ -114,6 +115,7 @@ class App extends React.Component {
               darkMode={darkMode}
             />
             <Route path="/login" component={LoginPage} />
+            <Route path="/sso/:origin" component={Oauth} />
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/reset-password" component={ResetPassword} />

@@ -6,6 +6,7 @@ export const Pagination = function Pagination({
   pageChanged,
   itemsPerPage = 10,
   queryParams = {},
+  darkMode
 }) {
   const totalPages = useMemo(() => {
     return Math.floor((count - 1) / itemsPerPage) + 1;
@@ -59,9 +60,8 @@ export const Pagination = function Pagination({
 
   return (
     <div className="card-footer d-flex align-items-center px-1">
-      <p className="m-0 text-muted">
-        Showing <span>{startingCount(currentPage)}</span> to <span>{endingCount(currentPage)}</span> of{' '}
-        <span>{count}</span>
+      <p className={`m-0 ${darkMode ? 'text-white-50' : 'text-muted'}`}>
+        Showing <span>{startingAppCount()}</span> to <span>{endingAppCount()}</span> of <span>{count}</span>
       </p>
       <ul className="pagination m-0 ms-auto">
         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>

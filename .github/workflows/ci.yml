@@ -1,10 +1,11 @@
 name: CI
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the develop branch
   push:
     branches: [develop, main]
   pull_request:
+    types: [labeled, opened, synchronize, reopened]
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -28,6 +29,10 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'run-ci') ||
+      github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/develop'
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -56,7 +61,10 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'run-ci') ||
+      github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/develop'
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -80,6 +88,7 @@ jobs:
             ${{ runner.os }}-
 
       - run: npm i -g npm@7.20.0
+      - run: npm run build:plugins
       - run: npm --prefix frontend ci && npm --prefix server ci
       - run: npm --prefix server run lint && npm --prefix frontend run lint
 
@@ -114,6 +123,9 @@ jobs:
             ${{ runner.os }}-
       - run: apt update && apt install -y postgresql
       - run: npm i -g npm@7.20.0
+      - run: npm --prefix plugins ci
+      - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
+      - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
@@ -150,6 +162,9 @@ jobs:
             ${{ runner.os }}-
       - run: apt update && apt install -y postgresql
       - run: npm i -g npm@7.20.0
+      - run: npm --prefix plugins ci
+      - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
+      - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate

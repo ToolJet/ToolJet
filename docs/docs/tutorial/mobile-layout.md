@@ -10,7 +10,12 @@ Mobile layout is activated when the width of the window is less than 600px.
 Widgets can be shown on desktop, mobile, or both.
 :::
 
-<img class="screenshot-full" src="/img/tutorial/mobile-layout/mobile-layout.gif" alt="ToolJet - widgets list" height="420"/>
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widgets list](/img/tutorial/mobile-layout/mobile-layout.gif)
+
+</div>
 
 ## Adding existing widget to mobile layout
 Click on the widget to open inspector. Scroll down to the `layout` section and enable mobile layout. The width of the widget will be adjusted to fit the mobile layout.

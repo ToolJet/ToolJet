@@ -13,12 +13,13 @@ export const TextArea = function TextArea({ height, properties, exposedVariables
         setExposedVariable('value', e.target.value);
       }}
       type="text"
-      className="form-control"
+      className="form-control textarea"
       placeholder={properties.placeholder}
       style={{
         height,
         resize: 'none',
         display: styles.visibility ? '' : 'none',
+        borderRadius: `${styles.borderRadius}px`,
       }}
       value={exposedVariables.value}
     ></textarea>

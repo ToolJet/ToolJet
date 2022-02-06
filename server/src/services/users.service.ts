@@ -37,7 +37,7 @@ export class UsersService {
   }
 
   async findOne(id: string): Promise<User> {
-    return this.usersRepository.findOne(id);
+    return this.usersRepository.findOne({ where: { id } });
   }
 
   async findByEmail(email: string): Promise<User> {
@@ -63,7 +63,7 @@ export class UsersService {
     const password = uuid.v4();
     const invitationToken = uuid.v4();
 
-    const { email, firstName, lastName, ssoId } = userParams;
+    const { email, firstName, lastName, ssoId, sso } = userParams;
     let user: User;
 
     await getManager().transaction(async (manager) => {
@@ -74,6 +74,7 @@ export class UsersService {
         password,
         invitationToken,
         ssoId,
+        sso,
         organizationId: organization.id,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -82,8 +83,10 @@ export class UsersService {
 
       for (const group of groups) {
         const orgGroupPermission = await manager.findOne(GroupPermission, {
-          organizationId: organization.id,
-          group: group,
+          where: {
+            organizationId: organization.id,
+            group: group,
+          },
         });
 
         if (orgGroupPermission) {
@@ -101,42 +104,44 @@ export class UsersService {
     return user;
   }
 
+  async updateSSODetails(user: User, { userSSOId, sso }) {
+    await this.usersRepository.save({
+      ...user,
+      ssoId: userSSOId,
+      sso,
+    });
+  }
+
   async status(user: User) {
-    const orgUser = await this.organizationUsersRepository.findOne({ user });
+    const orgUser = await this.organizationUsersRepository.findOne({ where: { user } });
     return orgUser.status;
   }
 
-  async findOrCreateBySSOIdOrEmail(
-    ssoId: string,
+  async findOrCreateByEmail(
     userParams: any,
     organization: Organization
-  ): Promise<[User, boolean]> {
+  ): Promise<{ user: User; newUserCreated: boolean }> {
     let user: User;
     let newUserCreated = false;
-    try {
-      user = await this.findBySSOId(ssoId);
-      if (!user) user = await this.findByEmail(userParams.email);
-    } catch (e) {
-      console.log(e);
-    }
 
-    if (user === undefined) {
+    user = await this.findByEmail(userParams.email);
+
+    if (!user) {
       const groups = ['all_users'];
-      user = await this.create({ ...userParams, ...{ ssoId } }, organization, groups);
+      user = await this.create({ ...userParams }, organization, groups);
       newUserCreated = true;
     }
 
-    return [user, newUserCreated];
+    return { user, newUserCreated };
   }
 
-  async setupAccountFromInvitationToken(request: any): Promise<void> {
-    const params = request.body;
-    const { organization, password, token } = params; // TODO: organization is the name of the organization, this should be changed
+  async setupAccountFromInvitationToken(params: any) {
+    const { organization, password, token, role } = params; // TODO: organization is the name of the organization, this should be changed
     const firstName = params['first_name'];
     const lastName = params['last_name'];
     const newSignup = params['new_signup'];
 
-    const user = await this.usersRepository.findOne({ invitationToken: token });
+    const user = await this.usersRepository.findOne({ where: { invitationToken: token } });
 
     if (user) {
       // beforeUpdate hook will not trigger if using update method of repository
@@ -145,6 +150,7 @@ export class UsersService {
           firstName,
           lastName,
           password,
+          role,
           invitationToken: null,
         })
       );
@@ -193,7 +199,7 @@ export class UsersService {
 
     const performUpdateInTransaction = async (manager) => {
       await manager.update(User, userId, { ...updateableParams });
-      user = await manager.findOne(User, { id: userId });
+      user = await manager.findOne(User, { where: { id: userId } });
 
       await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups);
 
@@ -350,8 +356,10 @@ export class UsersService {
 
   async isUserOwnerOfApp(user, appId): Promise<boolean> {
     const app = await this.appsRepository.findOne({
-      id: appId,
-      userId: user.id,
+      where: {
+        id: appId,
+        userId: user.id,
+      },
     });
     return !!app;
   }

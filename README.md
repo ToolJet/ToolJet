@@ -19,10 +19,15 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 <p align="center">
   <kbd>
-    <img src="https://user-images.githubusercontent.com/7828962/144586771-c6d6cba5-8f79-4e0c-80b4-aa1a38657229.png"/>
+    <img src="https://user-images.githubusercontent.com/7828962/149466475-1d1f0b3e-8e25-49e8-a5c9-73e068f78de9.png"/>
   </kbd>
 </p>
 
+<p align="center">
+  <kbd>
+    <img src="https://user-images.githubusercontent.com/7828962/151908119-ddabf0fe-b226-4c19-8ed7-b541a186987d.png"/>
+  </kbd>
+</p>
 
 ## Features
 
@@ -99,4 +104,4 @@ Kindly read our [Contributing Guide](CONTRIBUTING.md) to learn and understand ab
 </a>
 
 ## Licence
-ToolJet © 2021, ToolJet Solutions Inc - Released under the GNU Affero General Public License v3.0.
+ToolJet © 2022, ToolJet Solutions Inc - Released under the GNU Affero General Public License v3.0.
