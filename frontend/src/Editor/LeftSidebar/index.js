@@ -1,4 +1,5 @@
 import '@/_styles/left-sidebar.scss';
+
 import React, { useState } from 'react';
 
 import { LeftSidebarItem } from './SidebarItem';
@@ -16,7 +17,9 @@ export const LeftSidebar = ({
   appId,
   switchDarkMode,
   darkMode = false,
+  globals,
   components,
+  queries,
   toggleComments,
   dataSources = [],
   dataSourcesChanged,
@@ -24,13 +27,12 @@ export const LeftSidebar = ({
   appVersionsId,
   globalSettingsChanged,
   globalSettings,
-  currentState,
 }) => {
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   return (
     <div className="left-sidebar">
-      <LeftSidebarInspector darkMode={darkMode} currentState={currentState} />
+      <LeftSidebarInspector darkMode={darkMode} globals={globals} components={components} queries={queries} />
       <LeftSidebarDataSources
         darkMode={darkMode}
         appId={appId}

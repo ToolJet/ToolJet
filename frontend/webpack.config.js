@@ -10,10 +10,7 @@ const API_URL = {
 };
 
 module.exports = {
-  mode: environment,
-  optimization: {
-    usedExports: true,
-  },
+  mode: 'development',
   target: 'web',
   resolve: {
     extensions: ['.js', '.jsx', '.png'],

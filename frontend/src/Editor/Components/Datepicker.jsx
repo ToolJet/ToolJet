@@ -14,7 +14,7 @@ export const Datepicker = function Datepicker({
   id,
 }) {
   const { format, enableTime, enableDate, defaultValue } = properties;
-  const { visibility, disabledState, borderRadius } = styles;
+  const { visibility, disabledState } = styles;
 
   const onDateChange = (event) => {
     if (enableDate) {
@@ -42,11 +42,12 @@ export const Datepicker = function Datepicker({
   }, [isValid]);
 
   const isDateFormat = enableDate === true ? format : enableDate;
+
   return (
     <div
       data-disabled={disabledState}
       className="datepicker-widget"
-      style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
+      style={{ height, display: visibility ? '' : 'none' }}
     >
       <Datetime
         onChange={onDateChange}
@@ -54,7 +55,7 @@ export const Datepicker = function Datepicker({
         closeOnSelect={true}
         dateFormat={isDateFormat}
         placeholderText={defaultValue}
-        inputProps={{ placeholder: defaultValue, style: { height, borderRadius: `${borderRadius}px` } }}
+        inputProps={{ placeholder: defaultValue, style: { height } }}
         onOpen={(event) => {
           onComponentClick(id, component, event);
         }}

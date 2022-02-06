@@ -372,7 +372,7 @@ class Table extends React.Component {
                 />
               </div>
               <div className="field mb-2">
-                <div className="form-check form-switch my-2">
+                <label className="form-check form-switch my-2">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -382,12 +382,12 @@ class Table extends React.Component {
                     checked={column.isTimeChecked}
                   />
                   <span className="form-check-label">show time</span>
-                </div>
+                </label>
               </div>
             </div>
           )}
 
-          <div className="form-check form-switch my-4">
+          <label className="form-check form-switch my-4">
             <input
               className="form-check-input"
               type="checkbox"
@@ -395,7 +395,7 @@ class Table extends React.Component {
               checked={column.isEditable}
             />
             <span className="form-check-label">make editable</span>
-          </div>
+          </label>
         </Popover.Content>
       </Popover>
     );

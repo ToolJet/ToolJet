@@ -8,7 +8,6 @@ export const appService = {
   cloneApp,
   exportApp,
   importApp,
-  changeIcon,
   deleteApp,
   getApp,
   getAppBySlug,
@@ -55,11 +54,6 @@ function exportApp(id) {
 function importApp(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/apps/import`, requestOptions).then(handleResponse);
-}
-
-function changeIcon(icon, appId) {
-  const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify({ icon }) };
-  return fetch(`${config.apiUrl}/apps/${appId}/icons`, requestOptions).then(handleResponse);
 }
 
 function getApp(id) {

@@ -2,7 +2,6 @@
   "name": "Customer dashboard",
   "description": "Display the list of customers on a table and signups on a chart using data from a PostgreSQL database.",
   "widgets": ["Table", "Chart"],
-  "sources": [{"name": "PostgreSQL", "id": "postgresql"}],
-  "id": "customer-dashboard",
-  "category": "sales"
+  "sources": ["PostgreSQL"],
+  "id": "customer-dashboard"
 }
