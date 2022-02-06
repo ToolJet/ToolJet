@@ -643,7 +643,7 @@ button {
 .homepage-body {
   height: 100vh;
 
-  .list-group.list-group-transparent.dark .all-apps-link {
+  .list-group.list-group-transparent.dark .all-apps-link, .list-group-item-action.dark.active {
     background-color: $dark-background !important;
   }
 }
@@ -2836,7 +2836,7 @@ input:focus-visible {
 
   .btn-light,
   .btn-outline-light {
-    background-color: #42546a !important;
+    background-color: #42546a;
     --tblr-btn-color-text: #ffffff;
     img {
       filter: brightness(0) invert(1);
@@ -2999,6 +2999,7 @@ input:focus-visible {
 
   .color-picker-input {
     border: solid 1px #333c48;
+    height: 36px;
   }
 
   .codehinter-query-editor-input {
@@ -3670,6 +3671,12 @@ input[type="text"] {
   }
 }
 
+.tabs-inspector.dark {
+  .nav-link.active {
+    border-bottom: 1px solid $primary!important;
+  }
+}
+
 .close-icon {
   position: absolute;
   top: 0;
@@ -3697,7 +3704,7 @@ input[type="text"] {
 
 .tabs-inspector.nav-tabs {
   border: 0;
-  width: 80%;
+  width: 81%;
 }
 
 .bg-primary-lt {
@@ -3900,6 +3907,31 @@ input[type="text"] {
     button {
       margin-left: 16px;
     }
+  }
+}
+
+.modal-content.home-modal-component.dark {
+  background-color: $bg-dark-light !important;
+  color: $white !important;
+  
+  .modal-header {
+    background-color: $bg-dark-light !important;
+  }
+  .btn-close {
+    filter: brightness(0) invert(1);
+  }
+
+  .form-control {
+    border-color: $border-grey-dark !important;
+  }
+  input {
+    background-color: $bg-dark-light !important;
+  }
+
+  .form-select {
+    background-color: $bg-dark!important;
+    color: $white!important;
+    border-color: $border-grey-dark!important;
   }
 }
 
@@ -4292,3 +4324,16 @@ div#driver-highlighted-element-stage, div#driver-page-overlay {
 .pointer-events-none {
   pointer-events: none;
 }
+
+.popover.popover-dark-themed {
+  background-color: $bg-dark-light;
+  border-color: rgba(101, 109, 119, 0.16); 
+  .popover-body {
+    color: #D9DCDE !important;
+  }
+}
+
+.editor .editor-sidebar .inspector .form-control-plaintext {
+  padding: 2px 4px;
+}
+

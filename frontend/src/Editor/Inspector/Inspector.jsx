@@ -310,7 +310,7 @@ export const Inspector = ({
         onCancel={() => setWidgetDeleteConfirmation(false)}
       />
       <div ref={tabsRef}>
-        <Tabs activeKey={key} onSelect={(k) => setKey(k)} className="tabs-inspector">
+        <Tabs activeKey={key} onSelect={(k) => setKey(k)} className={`tabs-inspector ${darkMode && 'dark'}`}>
           <Tab style={{ marginBottom: 100 }} eventKey="properties" title="Properties">
             <div className="header py-1 row">
               <div>
@@ -358,7 +358,7 @@ export const Inspector = ({
         </Tabs>
       </div>
 
-      <div className="close-icon" style={{ height: tabHeight }}>
+      <div className="close-icon" style={{ height: darkMode ? tabHeight + 1 : tabHeight }}>
         <div className="svg-wrapper">
           <svg
             width="20"
