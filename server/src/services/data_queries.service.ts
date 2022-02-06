@@ -95,7 +95,7 @@ export class DataQueriesService {
     let result;
 
     try {
-      return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
+      result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
     } catch (error) {
       if (error.constructor.name === 'OAuthUnauthorizedClientError') {
         console.log('Access token expired. Attempting refresh token flow.');
