@@ -135,7 +135,8 @@ export class UsersService {
     return { user, newUserCreated };
   }
 
-  async setupAccountFromInvitationToken(params: any) {
+  async setupAccountFromInvitationToken(request: any): Promise<void> {
+    const params = request.body;
     const { organization, password, token, role } = params; // TODO: organization is the name of the organization, this should be changed
     const firstName = params['first_name'];
     const lastName = params['last_name'];
@@ -167,7 +168,7 @@ export class UsersService {
       }
     }
 
-    this.auditLoggerService.perform({
+    await this.auditLoggerService.perform({
       request,
       userId: user.id,
       organizationId: user.organizationId,
