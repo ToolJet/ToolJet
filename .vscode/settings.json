@@ -10,5 +10,18 @@
     ],
     "eslint.format.enable": true,
     "editor.formatOnSave": true,
-
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "/*.operations.json"
+            ],
+            "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json"
+        },
+        {
+            "fileMatch": [
+                "/*.manifest.json"
+            ],
+            "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json"
+        }
+    ]
 }

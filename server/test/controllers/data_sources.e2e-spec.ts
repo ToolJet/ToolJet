@@ -51,7 +51,9 @@ describe('data sources controller', () => {
     const applicationVersion = await createApplicationVersion(app, application);
 
     const developerUserGroup = await getRepository(GroupPermission).findOne({
-      group: 'developer',
+      where: {
+        group: 'developer',
+      },
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
       read: false,
@@ -122,7 +124,9 @@ describe('data sources controller', () => {
       user: adminUserData.user,
     });
     const developerUserGroup = await getRepository(GroupPermission).findOne({
-      group: 'developer',
+      where: {
+        group: 'developer',
+      },
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
       read: false,
@@ -208,8 +212,10 @@ describe('data sources controller', () => {
     });
 
     const allUserGroup = await getRepository(GroupPermission).findOne({
-      group: 'all_users',
-      organizationId: adminUserData.organization.id,
+      where: {
+        group: 'all_users',
+        organizationId: adminUserData.organization.id,
+      },
     });
     await createAppGroupPermission(app, application, allUserGroup.id, {
       read: true,

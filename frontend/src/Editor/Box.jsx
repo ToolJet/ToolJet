@@ -25,9 +25,15 @@ import { Divider } from './Components/Divider';
 import { FilePicker } from './Components/FilePicker';
 import { PasswordInput } from './Components/PasswordInput';
 import { Calendar } from './Components/Calendar';
+import { Listview } from './Components/Listview';
 import { IFrame } from './Components/IFrame';
 import { CodeEditor } from './Components/CodeEditor';
 import { Timer } from './Components/Timer';
+import { Statistics } from './Components/Statistics';
+import { Pagination } from './Components/Pagination';
+import { Tags } from './Components/Tags';
+import { Spinner } from './Components/Spinner';
+import { CircularProgressBar } from './Components/CirularProgressbar';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
@@ -64,7 +70,13 @@ const AllComponents = {
   Calendar,
   IFrame,
   CodeEditor,
+  Listview,
   Timer,
+  Statistics,
+  Pagination,
+  Tags,
+  Spinner,
+  CircularProgressBar,
 };
 
 export const Box = function Box({
@@ -87,6 +99,10 @@ export const Box = function Box({
   removeComponent,
   canvasWidth,
   mode,
+  customResolvables,
+  parentId,
+  allComponents,
+  extraProps,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -102,12 +118,25 @@ export const Box = function Box({
   }
 
   const ComponentToRender = AllComponents[component.component];
-  const resolvedProperties = resolveProperties(component, currentState);
-  const resolvedStyles = resolveStyles(component, currentState);
-
+  const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
+  const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
   resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
 
-  const exposedVariables = currentState?.components[component.name] ?? {};
+  let exposedVariables = {};
+
+  if (component.parent) {
+    const parentComponent = allComponents[component.parent];
+    const isListView = parentComponent?.component?.component === 'Listview';
+
+    if (isListView) {
+      const itemsAtIndex = currentState?.components[parentId]?.data[extraProps.listviewItemIndex];
+      exposedVariables = itemsAtIndex !== undefined ? itemsAtIndex[component.name] || {} : {};
+    } else {
+      exposedVariables = currentState?.components[component.name] ?? {};
+    }
+  } else {
+    exposedVariables = currentState?.components[component.name] ?? {};
+  }
 
   const fireEvent = (eventName, options) => {
     if (mode === 'edit' && eventName === 'onClick') {
@@ -150,10 +179,12 @@ export const Box = function Box({
               properties={resolvedProperties}
               exposedVariables={exposedVariables}
               styles={resolvedStyles}
-              setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
+              setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, extraProps)}
               registerAction={(actionName, func) => onComponentOptionChanged(component, actionName, func)}
               fireEvent={fireEvent}
               validate={validate}
+              parentId={parentId}
+              customResolvables={customResolvables}
             ></ComponentToRender>
           ) : (
             <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
