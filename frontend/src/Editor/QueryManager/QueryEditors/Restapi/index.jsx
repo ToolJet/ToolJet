@@ -132,6 +132,7 @@ class Restapi extends React.Component {
       }),
     };
 
+    const currentValue = { label: options.method.toUpperCase(), value: options.method };
     return (
       <div>
         <div className="row mt-2" style={{ height: 'fit-content' }}>
@@ -144,10 +145,10 @@ class Restapi extends React.Component {
                 { label: 'PATCH', value: 'patch' },
                 { label: 'DELETE', value: 'delete' },
               ]}
-              onChange={(value) => {
-                changeOption(this, 'method', value);
+              onChange={(object) => {
+                changeOption(this, 'method', object.value);
               }}
-              value={options.method === 'get' ? { label: 'GET', value: 'get' } : options.method}
+              value={currentValue}
               defaultValue={{ label: 'GET', value: 'get' }}
               placeholder="Method"
               styles={selectStyles}
