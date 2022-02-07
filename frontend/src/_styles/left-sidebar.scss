@@ -27,8 +27,9 @@
     width: 3%;
     position: fixed;
     bottom: 1vw;
-    height: 50px;
     text-align: center;
+    overflow: hidden;
+    padding-bottom: 10px;
   }
   .popover {
     position: fixed;

@@ -56,23 +56,22 @@ export const LeftSidebar = ({
         onCancel={() => setShowLeaveDialog(false)}
       />
       <div className="left-sidebar-stack-bottom">
-        {/* <LeftSidebarZoom onZoomChanged={onZoomChanged} /> */}
         <div className="left-sidebar-item no-border">
-          <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
-        </div>
-        {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}
-        <div className="left-sidebar-item no-border">
-          <button
+          <a
             type="button"
-            className="btn btn-sm"
             onClick={() => {
               window.$chatwoot.toggle();
             }}
             // disabled={currentLayout === 'mobile'}
           >
-            <img src="/assets/images/icons/editor/chat.svg" width="40" height="40" className="mx-2" />
-          </button>
+            <img src="/assets/images/icons/editor/chat.svg" width="24" height="24" className="svg-icon" />
+          </a>
         </div>
+        {/* <LeftSidebarZoom onZoomChanged={onZoomChanged} /> */}
+        <div className="left-sidebar-item no-border">
+          <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
+        </div>
+        {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}
       </div>
     </div>
   );
