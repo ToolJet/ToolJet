@@ -71,22 +71,22 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         title: { value: 'Table' },
-        visible: { value: true },
+        visible: { value: '{{true}}' },
         loadingState: { value: '{{false}}' },
         data: {
           value:
             "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
         },
-        serverSidePagination: { value: false },
-        clientSidePagination: { value: true },
-        displaySearchBox: { value: true },
-        showDownloadButton: { value: true },
-        showFilterButton: { value: true },
+        serverSidePagination: { value: '{{false}}' },
+        clientSidePagination: { value: '{{true}}' },
+        displaySearchBox: { value: '{{true}}' },
+        showDownloadButton: { value: '{{true}}' },
+        showFilterButton: { value: '{{true}}' },
         columns: {
           value: [
             { name: 'id', id: 'e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737' },
@@ -94,13 +94,13 @@ export const componentTypes = [
             { name: 'email', id: 'afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f' },
           ],
         },
-        showBulkUpdateActions: { value: true },
-        showBulkSelector: { value: false },
-        highlightSelectedRow: { value: false },
+        showBulkUpdateActions: { value: '{{true}}' },
+        showBulkSelector: { value: '{{false}}' },
+        highlightSelectedRow: { value: '{{false}}' },
       },
       events: [],
       styles: {
-        textColor: { value: undefined },
+        textColor: { value: '#000' },
         actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
@@ -134,17 +134,17 @@ export const componentTypes = [
       textColor: { type: 'color', displayName: 'Text color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      borderRadius: { type: 'number', displayName: 'Border radius' },
     },
     exposedVariables: {},
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         text: { value: `Button` },
-        visible: { value: true },
+        visible: { value: '{{true}}' },
         loadingState: { value: `{{false}}` },
       },
       events: [],
@@ -200,15 +200,15 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         title: { value: 'This title can be changed' },
         markerColor: { value: '#CDE1F8' },
-        showAxes: { value: true },
-        showGridLines: { value: true },
-        plotFromJson: { value: false },
+        showAxes: { value: '{{true}}' },
+        showGridLines: { value: '{{true}}' },
+        plotFromJson: { value: '{{false}}' },
         loadingState: { value: `{{false}}` },
         jsonDescription: {
           value: `{
@@ -280,8 +280,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         title: { value: 'This title can be changed' },
@@ -335,8 +335,8 @@ export const componentTypes = [
         customRule: { value: null },
       },
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         value: { value: '' },
@@ -380,8 +380,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         value: { value: '99' },
@@ -430,8 +430,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         placeholder: { value: 'password' },
@@ -483,8 +483,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       validation: {
         customRule: { value: null },
@@ -532,8 +532,8 @@ export const componentTypes = [
     exposedVariables: {},
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         label: { value: 'Checkbox label' },
@@ -578,15 +578,15 @@ export const componentTypes = [
     exposedVariables: {},
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         label: { value: 'Select' },
         value: { value: '{{true}}' },
         values: { value: '{{[true,false]}}' },
         display_values: { value: '{{["yes", "no"]}}' },
-        visible: { value: true },
+        visible: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -627,8 +627,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         label: { value: 'Toggle label' },
@@ -670,8 +670,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         value: {
@@ -716,8 +716,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         format: { value: 'DD/MM/YYYY' },
@@ -757,12 +757,12 @@ export const componentTypes = [
     exposedVariables: {},
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        text: { value: 'Text goes here!' },
-        visible: { value: true },
+        text: { value: 'Text goes here !' },
+        visible: { value: '{{true}}' },
         loadingState: { value: `{{false}}` },
       },
       events: [],
@@ -813,12 +813,12 @@ export const componentTypes = [
     exposedVariables: {},
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         source: { value: 'https://www.svgrepo.com/show/34217/image.svg' },
-        visible: { value: true },
+        visible: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -853,11 +853,11 @@ export const componentTypes = [
     exposedVariables: {},
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        visible: { value: true },
+        visible: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -907,8 +907,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       validation: {
         customRule: { value: null },
@@ -918,7 +918,7 @@ export const componentTypes = [
         value: { value: '{{2}}' },
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
-        visible: { value: true },
+        visible: { value: '{{true}}' },
         loadingState: { value: '{{false}}' },
       },
       events: [],
@@ -961,15 +961,15 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         label: { value: 'Select' },
         value: { value: '{{[2,3]}}' },
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
-        visible: { value: true },
+        visible: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -1006,8 +1006,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         placeholder: { value: 'Placeholder text' },
@@ -1070,8 +1070,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         initialLocation: {
@@ -1118,8 +1118,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: true },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{true}}' },
       },
       properties: {},
       events: [],
@@ -1163,15 +1163,15 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         label: { value: 'Select your rating' },
         maxRating: { value: '5' },
         defaultSelected: { value: '5' },
-        allowHalfStar: { value: false },
-        visible: { value: true },
+        allowHalfStar: { value: '{{false}}' },
+        visible: { value: '{{true}}' },
         tooltips: { value: '{{[]}}' },
       },
       events: [],
@@ -1207,8 +1207,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {},
       events: [],
@@ -1261,8 +1261,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         enableDropzone: { value: '{{true}}' },
@@ -1272,7 +1272,7 @@ export const componentTypes = [
         fileType: { value: '{{"image/*"}}' },
         maxSize: { value: '{{1048576}}' },
         minSize: { value: '{{50}}' },
-        parseContent: { value: false },
+        parseContent: { value: '{{false}}' },
         parseFileType: { value: 'auto-detect' },
       },
       events: [],
@@ -1335,8 +1335,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         dateFormat: {
@@ -1406,12 +1406,12 @@ export const componentTypes = [
     exposedVariables: {},
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         source: { value: 'https://tooljet.io/' },
-        visible: { value: true },
+        visible: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -1449,8 +1449,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         enableLineNumber: { value: '{{true}}' },
@@ -1491,8 +1491,8 @@ export const componentTypes = [
     exposedVariables: {},
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         tabs: {
@@ -1551,8 +1551,8 @@ export const componentTypes = [
     definition: {
       validation: {},
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         value: {
@@ -1600,8 +1600,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         data: {
@@ -1610,7 +1610,7 @@ export const componentTypes = [
         rowHeight: {
           value: '100',
         },
-        visible: { value: true },
+        visible: { value: '{{true}}' },
         showBorder: { value: '{{true}}' },
       },
       events: [],
@@ -1644,8 +1644,8 @@ export const componentTypes = [
     exposedVariables: {},
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         data: {
@@ -1691,8 +1691,8 @@ export const componentTypes = [
     definition: {
       validation: {},
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         numberOfPages: {
@@ -1739,8 +1739,8 @@ export const componentTypes = [
     exposedVariables: {},
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         text: {
@@ -1792,8 +1792,8 @@ export const componentTypes = [
     exposedVariables: {},
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {},
       events: [],
@@ -1834,8 +1834,8 @@ export const componentTypes = [
     },
     definition: {
       others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value: false },
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
       },
       properties: {
         primaryValueLabel: { value: 'This months earnings' },
