@@ -424,7 +424,12 @@ class HomePage extends React.Component {
       });
   };
 
-  showTemplateLibraryModal = () => this.setState({ showTemplateLibraryModal: true });
+  showTemplateLibraryModal = () => {
+    this.setState({ showTemplateLibraryModal: true });
+  };
+  hideTemplateLibraryModal = () => {
+    this.setState({ showTemplateLibraryModal: false });
+  };
 
   render() {
     const {
@@ -541,6 +546,9 @@ class HomePage extends React.Component {
             handleImportApp={this.handleImportApp}
             creatingApp={creatingApp}
             darkMode={this.props.darkMode}
+            showTemplateLibraryModal={this.state.showTemplateLibraryModal}
+            viewTemplateLibraryModal={this.showTemplateLibraryModal}
+            hideTemplateLibraryModal={this.hideTemplateLibraryModal}
           />
         )}
 
