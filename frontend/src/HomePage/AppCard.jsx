@@ -43,6 +43,7 @@ export default function AppCard({
   }, [isHovered]);
 
   const updated = moment(app.created_at).fromNow(true);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
     <div className={`app-card mb-3 p-3 pt-2${focused ? ' highlight' : ''}`} key={app.id} ref={hoverRef}>
@@ -67,6 +68,7 @@ export default function AppCard({
                 cloneApp={() => cloneApp(app)}
                 exportApp={() => exportApp(app)}
                 isMenuOpen={isMenuOpen}
+                darkMode={darkMode}
               />
             )}
           </div>

@@ -1,5 +1,5 @@
 {
-  "name": "@tooljet-plugins/mysql",
+  "name": "@tooljet-plugins/bigquery",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,11 +15,11 @@
     "build": "tsc -b",
     "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
   },
+  "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
+    "@google-cloud/bigquery": "^5.10.0",
     "@tooljet-plugins/common": "file:../common",
-    "knex": "^0.95.14",
-    "mysql": "^2.18.1",
-    "react": "^17.0.2",
-    "rimraf": "^3.0.2"
+    "json5": "^2.2.0",
+    "react": "^17.0.2"
   }
 }
