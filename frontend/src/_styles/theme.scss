@@ -1102,6 +1102,12 @@ button {
       }
     }
   }
+  .layout-buttons {
+   svg {
+    filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg) brightness(99%) contrast(96%);
+   }
+    
+  }
 }
 
 .pagination {
@@ -3052,6 +3058,10 @@ input:focus-visible {
 
   .widget-documentation-link a {
     color: rgb(66, 153, 225);
+  }
+
+  .app-version-name.form-select {
+    border-color: $border-grey-dark;
   }
 }
 
