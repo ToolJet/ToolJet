@@ -3030,6 +3030,10 @@ input:focus-visible {
   .widget-documentation-link a {
     color: rgb(66, 153, 225);
   }
+
+  .app-version-name.form-select {
+    border-color: $border-grey-dark;
+  }
 }
 
 .main-wrapper {
