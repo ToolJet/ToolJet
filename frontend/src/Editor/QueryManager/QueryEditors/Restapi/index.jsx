@@ -154,11 +154,11 @@ class Restapi extends React.Component {
             />
           </div>
 
-          <div className="col field mx-3" style={{ display: 'flex' }}>
+          <div className="col field mx-3 w-100" style={{ display: 'flex', maxWidth: '700px' }}>
             {dataSourceURL && (
               <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
             )}
-            <div className="col-6 rest-methods-field">
+            <div className="col">
               <CodeHinter
                 currentState={this.props.currentState}
                 initialValue={options.url}
