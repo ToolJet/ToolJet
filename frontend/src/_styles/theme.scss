@@ -1088,6 +1088,12 @@ button {
       }
     }
   }
+  .layout-buttons {
+   svg {
+    filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg) brightness(99%) contrast(96%);
+   }
+    
+  }
 }
 
 .pagination {
