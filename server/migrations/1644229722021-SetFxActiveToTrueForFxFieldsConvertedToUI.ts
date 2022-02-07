@@ -20,8 +20,6 @@ export class SetFxActiveToTrueForFxFieldsConvertedToUI1644229722021 implements M
         for (const componentId of Object.keys(components)) {
           const component = components[componentId];
 
-          console.log({ properties: component.component.definition.properties });
-
           const newProperties = Object.fromEntries(
             Object.entries(component.component.definition.properties).map(([propertyName, value]: any) => {
               const newValue = propertiesBeingSetToFxActive.includes(propertyName)
