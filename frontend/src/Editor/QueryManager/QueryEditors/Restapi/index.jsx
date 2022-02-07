@@ -147,7 +147,7 @@ class Restapi extends React.Component {
               onChange={(value) => {
                 changeOption(this, 'method', value);
               }}
-              value={options.method}
+              value={options.method === 'get' ? { label: 'GET', value: 'get' } : options.method}
               defaultValue={{ label: 'GET', value: 'get' }}
               placeholder="Method"
               styles={selectStyles}
