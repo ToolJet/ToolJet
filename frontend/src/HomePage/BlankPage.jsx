@@ -1,4 +1,5 @@
 import React from 'react';
+import TemplateLibraryModal from './TemplateLibraryModal/';
 
 export const BlankPage = function BlankPage({
   createApp,
@@ -7,6 +8,9 @@ export const BlankPage = function BlankPage({
   handleImportApp,
   isImportingApp,
   fileInput,
+  showTemplateLibraryModal,
+  hideTemplateLibraryModal,
+  viewTemplateLibraryModal,
 }) {
   return (
     <div>
@@ -41,19 +45,20 @@ export const BlankPage = function BlankPage({
                     <input type="file" ref={fileInput} style={{ display: 'none' }} />
                   </label>
                 </a>
-                <a
-                  href="https://docs.tooljet.io"
-                  target="_blank"
-                  className="btn btn-primary text-light mx-1"
-                  rel="noreferrer"
-                >
-                  Go through the tutorial
+                <a onClick={viewTemplateLibraryModal} className="btn btn-primary" style={{ marginLeft: '24px' }}>
+                  Choose from template
                 </a>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <TemplateLibraryModal
+        show={showTemplateLibraryModal}
+        onHide={hideTemplateLibraryModal}
+        onCloseButtonClick={hideTemplateLibraryModal}
+        darkMode={darkMode}
+      />
     </div>
   );
 };
