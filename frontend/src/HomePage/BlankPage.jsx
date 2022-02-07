@@ -29,13 +29,14 @@ export const BlankPage = function BlankPage({
                 ToolJet Library.
               </p>
               <div className="empty-action">
-                <a onClick={createApp} className="btn btn-primary">
-                  {creatingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
+                <a onClick={createApp} className={`btn btn-primary ${creatingApp ? 'btn-loading' : ''}`}>
                   Create new application
                 </a>
-                <a className="btn empty-import-button" onChange={handleImportApp}>
-                  <label>
-                    {isImportingApp && <span className="spinner-border spinner-border-sm me-2" role="status"></span>}
+                <a
+                  className={`btn empty-import-button ${isImportingApp ? 'btn-loading' : ''}`}
+                  onChange={handleImportApp}
+                >
+                  <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}>
                     Import an application
                     <input type="file" ref={fileInput} style={{ display: 'none' }} />
                   </label>
