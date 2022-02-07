@@ -147,18 +147,18 @@ class Restapi extends React.Component {
               onChange={(value) => {
                 changeOption(this, 'method', value);
               }}
-              value={options.method === '' ? 'get' : options.method}
+              value={options.method === 'get' ? { label: 'GET', value: 'get' } : options.method}
               defaultValue={{ label: 'GET', value: 'get' }}
               placeholder="Method"
               styles={selectStyles}
             />
           </div>
 
-          <div className="col field mx-3" style={{ display: 'flex' }}>
+          <div className="col field mx-3 w-100" style={{ display: 'flex', maxWidth: '700px' }}>
             {dataSourceURL && (
               <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
             )}
-            <div className="col-6 rest-methods-field">
+            <div className="col">
               <CodeHinter
                 currentState={this.props.currentState}
                 initialValue={options.url}

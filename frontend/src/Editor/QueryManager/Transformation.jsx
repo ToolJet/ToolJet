@@ -61,7 +61,7 @@ return data.filter(row => row.amount > 1000);`;
             mode="javascript"
             theme={darkMode ? 'monokai' : 'base16-light'}
             lineNumbers={true}
-            height={300}
+            height={'300px'}
             className="query-hinter"
             ignoreBraces={true}
             onChange={(value) => codeChanged(value)}

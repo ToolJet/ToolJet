@@ -95,7 +95,7 @@ All the plugins live under the `/plugins` directory. The structure of a plugin l
         "rawData": {}
       },
       "options": {
-        "private_key": { "type": "string", "encrypted": true }
+        "private_key": { "encrypted": true }
       }
     },
     "defaults": {
@@ -116,7 +116,7 @@ All the plugins live under the `/plugins` directory. The structure of a plugin l
 
 6. Import npm package BigQuery to index.ts
   ```javascript
-  const {BigQuery} = require('@google-cloud/bigquery');
+  const { BigQuery } = require('@google-cloud/bigquery');
   ```
 
 6. Edit index.ts to include the logic for creating a connection.    
