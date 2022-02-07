@@ -2,7 +2,7 @@ import React from 'react';
 
 import { MentionsInput, Mention } from 'react-mentions';
 
-const Mentions = ({ users, value, setValue, placeholder }) => {
+const Mentions = ({ users, value, setValue, placeholder, darkMode }) => {
   return (
     <MentionsInput
       style={{
@@ -10,6 +10,7 @@ const Mentions = ({ users, value, setValue, placeholder }) => {
           fontSize: 16,
           lineHeight: 1.2,
           minHeight: 40,
+          color: '#f8f8f2',
         },
         highlighter: {
           padding: 9,
@@ -22,12 +23,17 @@ const Mentions = ({ users, value, setValue, placeholder }) => {
           paddingLeft: 0,
           border: 0,
           outline: 0,
+          color: darkMode ? 'white' : 'black',
         },
         suggestions: {
           list: {
             backgroundColor: 'white',
             boxShadow: '0px 2px 12px rgba(41, 45, 55, 0.156863)',
             borderRadius: '4',
+            marginTop: '-20px',
+            height: '22px',
+            fontSize: '14px',
+            color: '#282D37',
           },
           item: {
             padding: '10px 16px',

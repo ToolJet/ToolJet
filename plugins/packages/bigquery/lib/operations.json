@@ -1,0 +1,91 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "BigQuery datasource",
+  "description": "A schema defining BigQuery datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "list_datasets",
+          "name": "List Datasets"
+        },
+        {
+          "value": "list_tables",
+          "name": "List Tables"
+        },
+        {
+          "value": "query",
+          "name": "Query"
+        }
+      ]
+    },
+    "list_tables": {
+      "datasetId": {
+        "label": "Dataset",
+        "key": "datasetId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter dataset",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter dataset"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ filter: 'labels.color:green' }",
+        "description": "Enter options",
+        "height": "150px"
+      }
+    },
+    "list_datasets": {
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ filter: 'labels.color:green' }",
+        "description": "Enter options",
+        "height": "150px"
+      }
+    },
+    "query": {
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "mode": "text",
+        "placeholder": "SELECT name FROM `bigquery-public-data.usa_names.usa_1910_2013` WHERE state = 'TX' LIMIT 100",
+        "description": "Enter query",
+        "height": "150px"
+      },
+      "queryOptions": {
+        "label": "Query options",
+        "key": "queryOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ location: 'US', dryRun: true }",
+        "description": "Enter query options",
+        "height": "150px"
+      },
+      "queryResultsOptions": {
+        "label": "Query results options",
+        "key": "queryResultsOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ wrapIntegers: true }",
+        "description": "Enter Query results options",
+        "height": "150px"
+      }
+    }
+  }
+}

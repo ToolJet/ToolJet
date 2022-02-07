@@ -158,10 +158,10 @@ class Stripe extends React.Component {
         {options && !loadingSpec && (
           <div className="mb-3 mt-2">
             <div className="row g-2">
-              <div className="col-auto">
+              <div className="col-12">
                 <label className="form-label pt-2">Operation</label>
               </div>
-              <div className="col">
+              <div className="col stripe-operation-options" style={{ width: '90px', marginTop: 0 }}>
                 <SelectSearch
                   options={this.computeOperationSelectionOptions(specJson.paths)}
                   value="sv"
@@ -174,6 +174,7 @@ class Stripe extends React.Component {
 
                 {selectedOperation && (
                   <small
+                    style={{ margintTop: '10px' }}
                     className="my-2"
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedOperation.description) }}
                   />
@@ -184,14 +185,14 @@ class Stripe extends React.Component {
             {selectedOperation && (
               <div className="row mt-2">
                 {pathParams.length > 0 && (
-                  <div>
+                  <div className="mt-2">
                     <h5 className="text-muted">PATH</h5>
                     {pathParams.map((param) => (
                       <div className="row input-group my-1" key={param.name}>
-                        <div className="col-4 field">
+                        <div className="col-4 field field-width-268">
                           <input type="text" value={param.name} className="form-control" placeholder="key" />
                         </div>
-                        <div className="col-6 field">
+                        <div className="col-6 field" style={{ width: '300px' }}>
                           <CodeHinter
                             currentState={this.props.currentState}
                             initialValue={this.state.options.params.path[param.name]}
@@ -199,12 +200,26 @@ class Stripe extends React.Component {
                             placeholder={'value'}
                             theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                             lineNumbers={false}
-                            className="form-control codehinter-query-editor-input"
                             onChange={(value) => this.changeParam('path', param.name, value)}
+                            height={'36px'}
+                            width="268px"
                           />
                         </div>
-                        <span className="btn-sm col-2" role="button">
-                          x
+                        <span className="btn-sm col-2 mt-2" role="button">
+                          <svg
+                            width="12"
+                            height="13"
+                            viewBox="0 0 12 13"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M5.99931 6.97508L11.0242 12.0014L12 11.027L6.9737 6.00069L12 0.975767L11.0256 0L5.99931 5.0263L0.974388 0L0 0.975767L5.02492 6.00069L0 11.0256L0.974388 12.0014L5.99931 6.97508Z"
+                              fill="#8092AC"
+                            />
+                          </svg>
                         </span>
                       </div>
                     ))}
@@ -212,14 +227,14 @@ class Stripe extends React.Component {
                 )}
 
                 {queryParams.length > 0 && (
-                  <div>
+                  <div className="mt-2">
                     <h5 className="text-muted">QUERY</h5>
                     {queryParams.map((param) => (
                       <div className="row input-group my-1" key={param.name}>
-                        <div className="col-4 field">
+                        <div className="col-4 field field-width-268">
                           <input type="text" value={param.name} className="form-control" placeholder="key" disabled />
                         </div>
-                        <div className="col-6 field">
+                        <div className="col-6 field" style={{ width: '300px' }}>
                           <CodeHinter
                             currentState={this.props.currentState}
                             initialValue={this.state.options.params.query[param.name]}
@@ -227,12 +242,26 @@ class Stripe extends React.Component {
                             placeholder={'value'}
                             theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                             lineNumbers={false}
-                            className="form-control codehinter-query-editor-input"
                             onChange={(value) => this.changeParam('query', param.name, value)}
+                            height={'36px'}
+                            width="268px"
                           />
                         </div>
-                        <span className="btn-sm col-2" role="button">
-                          x
+                        <span className="btn-sm col-2 mt-2" role="button">
+                          <svg
+                            width="12"
+                            height="13"
+                            viewBox="0 0 12 13"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M5.99931 6.97508L11.0242 12.0014L12 11.027L6.9737 6.00069L12 0.975767L11.0256 0L5.99931 5.0263L0.974388 0L0 0.975767L5.02492 6.00069L0 11.0256L0.974388 12.0014L5.99931 6.97508Z"
+                              fill="#8092AC"
+                            />
+                          </svg>
                         </span>
                       </div>
                     ))}
@@ -240,14 +269,14 @@ class Stripe extends React.Component {
                 )}
 
                 {requestBody.schema.properties && (
-                  <div>
+                  <div className="mt-2">
                     <h5 className="text-muted">REQUEST BODY</h5>
                     {Object.keys(requestBody.schema.properties).map((param) => (
                       <div className="row input-group my-1" key={param.name}>
-                        <div className="col-4 field">
+                        <div className="col-4 field field-width-268">
                           <input type="text" value={param} className="form-control" placeholder="key" disabled />
                         </div>
-                        <div className="col-6 field">
+                        <div className="col-6 field" style={{ width: '300px' }}>
                           <CodeHinter
                             currentState={this.props.currentState}
                             initialValue={this.state.options.params.request[param.name]}
@@ -255,12 +284,26 @@ class Stripe extends React.Component {
                             placeholder={'value'}
                             theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                             lineNumbers={false}
-                            className="form-control codehinter-query-editor-input"
                             onChange={(value) => this.changeParam('request', param.name, value)}
+                            height={'36px'}
+                            width="268px"
                           />
                         </div>
-                        <span className="btn-sm col-2" role="button">
-                          x
+                        <span className="btn-sm col-2 mt-2" role="button">
+                          <svg
+                            width="12"
+                            height="13"
+                            viewBox="0 0 12 13"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M5.99931 6.97508L11.0242 12.0014L12 11.027L6.9737 6.00069L12 0.975767L11.0256 0L5.99931 5.0263L0.974388 0L0 0.975767L5.02492 6.00069L0 11.0256L0.974388 12.0014L5.99931 6.97508Z"
+                              fill="#8092AC"
+                            />
+                          </svg>
                         </span>
                       </div>
                     ))}

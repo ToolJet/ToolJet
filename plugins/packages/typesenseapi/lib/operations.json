@@ -56,7 +56,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection name"
+        "description": "Enter collection name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection name"
       },
       "query": {
         "label": "Search parameters",
@@ -73,7 +77,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection name"
+        "description": "Enter collection name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection name"
       },
       "document": {
         "label": "Document",
@@ -89,36 +97,48 @@
       "index": {
         "label": "Collection",
         "key": "collection",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection"
       },
       "id": {
         "label": "Id",
         "key": "id",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter id"
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter id"
       }
     },
     "update": {
       "index": {
         "label": "Collection",
         "key": "collection",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection"
       },
       "id": {
         "label": "Id",
         "key": "id",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter id"
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter id"
       },
       "document": {
         "label": "Document",
@@ -134,18 +154,24 @@
       "index": {
         "label": "Collection",
         "key": "collection",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection"
       },
       "id": {
         "label": "Id",
         "key": "id",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter id"
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter id"
       }
     }
   }

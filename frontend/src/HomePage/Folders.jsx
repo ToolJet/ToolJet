@@ -94,7 +94,7 @@ export const Folders = function Folders({
                 key={index}
                 className={`list-group-item list-group-item-action d-flex align-items-center ${
                   activeFolder.id === folder.id ? 'active' : ''
-                }`}
+                } ${darkMode && 'dark'}`}
                 onClick={() => handleFolderChange(folder)}
               >
                 <span className="me-2">

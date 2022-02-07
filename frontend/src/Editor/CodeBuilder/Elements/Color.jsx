@@ -24,8 +24,8 @@ export const Color = ({ value, onChange, forceCodeBox }) => {
 
   return (
     <div className="row">
-      <div className="col-10">
-        <div className="field mb-3">
+      <div className="col">
+        <div className="field mb-2">
           {showPicker && (
             <div>
               <div style={coverStyles} onClick={() => setShowPicker(false)} />
@@ -48,7 +48,7 @@ export const Color = ({ value, onChange, forceCodeBox }) => {
           </div>
         </div>
       </div>
-      <div className="col-2 pt-2">
+      <div className="col-auto pt-2">
         <FxButton active={false} onPress={forceCodeBox} />
       </div>
     </div>

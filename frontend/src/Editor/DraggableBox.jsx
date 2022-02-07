@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
+import cx from 'classnames';
 import { useDrag } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { getEmptyImage } from 'react-dnd-html5-backend';
@@ -57,6 +58,7 @@ function getStyles(isDragging, isSelectedComponent) {
 
 export const DraggableBox = function DraggableBox({
   id,
+  className,
   mode,
   title,
   _left,
@@ -78,7 +80,7 @@ export const DraggableBox = function DraggableBox({
   resizingStatusChanged,
   zoomLevel,
   containerProps,
-  configHandleClicked,
+  setSelectedComponent,
   removeComponent,
   currentLayout,
   layouts,
@@ -90,11 +92,17 @@ export const DraggableBox = function DraggableBox({
   readOnly,
   customResolvables,
   parentId,
+  hoveredComponent,
+  onComponentHover,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
   const [mouseOver, setMouseOver] = useState(false);
+
+  useEffect(() => {
+    setMouseOver(hoveredComponent === id);
+  }, [hoveredComponent]);
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
@@ -129,6 +137,10 @@ export const DraggableBox = function DraggableBox({
   useEffect(() => {
     if (draggingStatusChanged) {
       draggingStatusChanged(isDragging2);
+    }
+
+    if (isDragging2 && !isSelectedComponent) {
+      setSelectedComponent(id, component);
     }
   }, [isDragging2]);
 
@@ -176,9 +188,14 @@ export const DraggableBox = function DraggableBox({
     >
       {inCanvas ? (
         <div
-          className={`draggable-box`}
-          onMouseOver={() => setMouseOver(true)}
-          onMouseLeave={() => setMouseOver(false)}
+          className={cx(`draggable-box widget-${id}`, { [className]: !!className })}
+          onMouseEnter={(e) => {
+            if (e.currentTarget.className.includes(`widget-${id}`)) {
+              onComponentHover(id);
+              e.stopPropagation();
+            }
+          }}
+          onMouseLeave={() => onComponentHover(false)}
           style={getStyles(isDragging, isSelectedComponent)}
         >
           <Rnd
@@ -194,12 +211,16 @@ export const DraggableBox = function DraggableBox({
               y: currentLayoutOptions ? currentLayoutOptions.top : 0,
             }}
             defaultSize={{}}
-            className={`resizer ${mouseOver || isResizing || isSelectedComponent ? 'resizer-active' : ''} `}
+            className={`resizer ${
+              mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
+            } `}
             onResize={() => setResizing(true)}
             onDrag={(e) => {
               e.preventDefault();
               e.stopImmediatePropagation();
-              setDragging(true);
+              if (!isDragging2) {
+                setDragging(true);
+              }
             }}
             resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
@@ -226,7 +247,7 @@ export const DraggableBox = function DraggableBox({
                   position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
                   widgetTop={currentLayoutOptions.top}
                   widgetHeight={currentLayoutOptions.height}
-                  configHandleClicked={(id, component) => configHandleClicked(id, component)}
+                  setSelectedComponent={(id, component) => setSelectedComponent(id, component)}
                 />
               )}
               <Box

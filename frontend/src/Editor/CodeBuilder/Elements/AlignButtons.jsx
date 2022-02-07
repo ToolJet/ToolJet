@@ -8,7 +8,7 @@ export const AlignButtons = ({ value, onChange, forceCodeBox, meta }) => {
 
   return (
     <div className="row">
-      <div className="col-10">
+      <div className="col">
         <div className={`mb-3 field ${meta?.options?.className}`}>
           <div style={{ display: 'flex', gap: 10 }}>
             <label className="radio-img">
@@ -98,7 +98,7 @@ export const AlignButtons = ({ value, onChange, forceCodeBox, meta }) => {
           </div>
         </div>
       </div>
-      <div className="col-2 pt-1">
+      <div className="col-auto pt-1">
         <FxButton active={false} onPress={forceCodeBox} />
       </div>
     </div>
