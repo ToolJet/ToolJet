@@ -10,6 +10,7 @@ const Mentions = ({ users, value, setValue, placeholder, darkMode }) => {
           fontSize: 16,
           lineHeight: 1.2,
           minHeight: 40,
+          color: '#f8f8f2',
         },
         highlighter: {
           padding: 9,
