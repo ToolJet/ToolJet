@@ -80,7 +80,6 @@ class LoginPage extends React.Component {
   render() {
     const { isLoading } = this.state;
     const passwordLoginDisabled = window.public_config?.DISABLE_PASSWORD_LOGIN === 'true';
-
     return (
       <div className="page page-center">
         <div className="container-tight py-2">
@@ -164,7 +163,7 @@ class LoginPage extends React.Component {
             </div>
           </form>
           {!passwordLoginDisabled && (
-            <div className="text-center text-muted mt-3">
+            <div className="text-center text-secondary mt-3">
               Don&apos;t have account yet? &nbsp;
               <Link to={'/signup'} tabIndex="-1">
                 Sign up

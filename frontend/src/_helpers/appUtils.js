@@ -62,6 +62,14 @@ export function fetchOAuthToken(authUrl, dataSourceId) {
   window.open(authUrl);
 }
 
+export function addToLocalStorage(object) {
+  localStorage.setItem(object['key'], object['value']);
+}
+
+export function getDataFromLocalStorage(key) {
+  return localStorage.getItem(key);
+}
+
 export function runTransformation(_ref, rawData, transformation, query) {
   const data = rawData;
   const evalFunction = Function(['data', 'moment', '_', 'components', 'queries', 'globals'], transformation);
