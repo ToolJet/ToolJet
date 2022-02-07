@@ -3,6 +3,7 @@ import React from 'react';
 export const BaseUrl = ({ dataSourceURL, theme }) => {
   return (
     <span
+      className="col-auto"
       htmlFor=""
       style={{
         padding: '5px',

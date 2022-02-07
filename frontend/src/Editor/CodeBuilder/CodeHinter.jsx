@@ -66,7 +66,7 @@ export function CodeHinter({
     singleLine: true,
     mode: mode || 'handlebars',
     tabSize: 2,
-    theme: darkMode ? 'monokai' : 'default',
+    theme: theme ? theme : darkMode ? 'monokai' : 'default',
     readOnly: false,
     highlightSelectionMatches: true,
     placeholder,
@@ -183,7 +183,10 @@ export function CodeHinter({
 
   return (
     <>
-      <div className="row" style={{ width: width, display: codeShow ? 'flex' : 'none' }}>
+      <div
+        className={`${(height === '150px' || height === '300px') && 'tablr-gutter-x-0'} row`}
+        style={{ width: width, display: codeShow ? 'flex' : 'none' }}
+      >
         <div className={`col`} style={{ marginBottom: '16px' }}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
             <div
