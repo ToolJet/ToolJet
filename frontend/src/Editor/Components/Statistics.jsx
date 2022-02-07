@@ -5,7 +5,6 @@ export const Statistics = function Statistics({ height, properties, styles, dark
 
   const baseStyle = {
     borderRadius: 4,
-    height,
     backgroundColor: darkMode ? '#47505D' : '#ffffff',
     alignItems: 'center',
     flexDirection: 'column',
@@ -17,6 +16,8 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     display: visibility ? 'flex' : 'none',
     wordBreak: 'break-all',
     textAlign: 'center',
+    overflow: 'hidden',
+    height,
   };
 
   const letterStyle = {
@@ -33,6 +34,7 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     marginBottom: '0px',
     wordBreak: 'break-all',
     padding: '0 10px',
+    overflow: 'hidden',
   };
 
   const marginStyle = {
