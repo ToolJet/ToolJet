@@ -7,7 +7,7 @@
     "name": "SendGrid",
     "kind": "sendgrid",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

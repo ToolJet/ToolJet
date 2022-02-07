@@ -7,7 +7,7 @@
     "name": "Slack",
     "kind": "slack",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

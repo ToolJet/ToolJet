@@ -7,7 +7,7 @@
     "name": "BigQuery",
     "kind": "bigquery",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

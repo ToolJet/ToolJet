@@ -7,7 +7,7 @@
     "name": "Twilio",
     "kind": "twilio",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },
