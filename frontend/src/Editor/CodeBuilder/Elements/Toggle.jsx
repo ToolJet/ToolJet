@@ -5,20 +5,20 @@ import FxButton from './FxButton';
 export const Toggle = ({ value, onChange, paramLabel, forceCodeBox }) => {
   return (
     <div className="row">
-      <div className="col-10">
+      <div className="col">
         <div className="field mb-3">
-          <label className="form-check form-switch my-2">
+          <label className="form-check form-switch my-1">
             <input
               className="form-check-input"
               type="checkbox"
               onClick={() => onChange(`{{${!value}}}`)}
               checked={value}
             />
-            <ToolTip label={paramLabel} meta={{}} labelClass="form-check-label" />
+            {/* <ToolTip label={paramLabel} meta={{}} labelClass="form-check-label" /> */}
           </label>
         </div>
       </div>
-      <div className="col-2 pt-2">
+      <div className="col-auto pt-1">
         <FxButton active={false} onPress={forceCodeBox} />
       </div>
     </div>

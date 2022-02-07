@@ -6,7 +6,7 @@ export const Select = ({ value, onChange, forceCodeBox, meta }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <div className="row">
-      <div className="col-10">
+      <div className="col">
         <div className="field mb-3">
           <SelectSearch
             options={meta.options}
@@ -19,7 +19,7 @@ export const Select = ({ value, onChange, forceCodeBox, meta }) => {
           />
         </div>
       </div>
-      <div className="col-2 pt-2">
+      <div className="col-auto pt-2">
         <FxButton active={false} onPress={forceCodeBox} />
       </div>
     </div>
