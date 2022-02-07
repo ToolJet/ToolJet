@@ -1,10 +1,10 @@
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Bigquery datasource",
-  "description": "A schema defining bigquery datasource",
+  "description": "A schema defining BigQuery datasource",
   "type": "api",
   "source": {
-    "name": "Big Query",
+    "name": "BigQuery",
     "kind": "bigquery",
     "exposedVariables": {
       "isLoading": {},

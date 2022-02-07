@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
-  "title": "Bigquery datasource",
-  "description": "A schema defining bigquery datasource",
+  "title": "BigQuery datasource",
+  "description": "A schema defining BigQuery datasource",
   "type": "api",
   "defaults": {},
   "properties": {

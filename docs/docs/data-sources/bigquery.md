@@ -5,11 +5,11 @@ sidebar_position: 18
 
 ---
 
-# bigquery
+# BigQuery
 
   
 
-ToolJet can connect to bigquery databases to run Big Query quries.
+ToolJet can connect to bigquery databases to run BigQuery quries.
 
   
 
@@ -17,15 +17,15 @@ ToolJet can connect to bigquery databases to run Big Query quries.
 
   
 
-Please refer [this](https://cloud.google.com/bigquery/docs/bigquery-web-ui) link to enable Big Query API in Google cloud console. 
+Please refer [this](https://cloud.google.com/bigquery/docs/bigquery-web-ui) link to enable BigQuery API in Google cloud console. 
 
 Create Service Account and key, then get your configs downloaded as json
 
-To add a new Big Query, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select Big Query from the modal that pops up.
+To add a new BigQuery, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select BigQuery from the modal that pops up.
 
   
 
-ToolJet requires the configs json downloaded from your account to connect to Big Query. Paste the json into the `Private key` field
+ToolJet requires the configs json downloaded from your account to connect to BigQuery. Paste the json into the `Private key` field
 The json looks like :
 
  ```json
@@ -45,7 +45,7 @@ The json looks like :
 
   
 
-<img  src="/img/datasource-reference/bigquery/bq-create.png"  alt="ToolJet - Big Query connection"  height="250"/>
+<img  src="/img/datasource-reference/bigquery/bq-create.png"  alt="ToolJet - BigQuery connection"  height="250"/>
 
   
 
@@ -53,7 +53,7 @@ Click on 'Test connection' button to verify if the credentials are correct and t
 
   
 
-## Querying Big Query
+## Querying BigQuery
 
   
 
@@ -61,7 +61,7 @@ Click on `+` button of the query manager at the bottom panel of the editor and s
 
   
 
-<img  src="/img/datasource-reference/bigquery/bq-query.png"  alt="ToolJet - Big Query query"  height="250"/>
+<img  src="/img/datasource-reference/bigquery/bq-query.png"  alt="ToolJet - BigQuery query"  height="250"/>
 
   
 
