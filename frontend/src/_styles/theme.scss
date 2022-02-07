@@ -3259,6 +3259,10 @@ input[type="text"] {
 }
 .empty-action {
   margin-top: 0 !important;
+  
+  a + a.btn-loading::after {
+    color: $primary;
+  }
 }
 .empty-action a {
   height: 36px;
