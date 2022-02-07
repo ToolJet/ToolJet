@@ -5,6 +5,8 @@ const categoryTitles = {
   all: 'All categories',
   sales: 'Sales',
   'product-management': 'Product management',
+  operations: 'Operations',
+  'data-and-analytics': 'Data and Analytics',
 };
 
 export default function Categories(props) {
