@@ -9,13 +9,12 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
     backgroundColor: 'transparent',
     border: 'none',
     color: darkMode && '#fff',
-    padding: '0.18rem 0.75rem',
   };
   return (
     <>
       <div className="row">
-        <div className="col-10">
-          <div className="field mb-3 form-control">
+        <div className="col">
+          <div className="field form-control" style={{ padding: '0.225rem 0.35rem' }}>
             <input
               style={numberTheme}
               type="text"
@@ -27,7 +26,7 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
             />
           </div>
         </div>
-        <div className="col-2 pt-2">
+        <div className="col-auto pt-2">
           <FxButton active={false} onPress={forceCodeBox} />
         </div>
       </div>
