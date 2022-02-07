@@ -11,19 +11,19 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     flexDirection: 'column',
     margin: '0px auto',
     minWidth: '196px',
-    border: ' 0.75px solid #A6B6CC',
+    border: darkMode ? ' 0.75px solid #232A35' : ' 0.75px solid #A6B6CC',
     fontFamily: 'Inter',
     justifyContent: 'center',
     display: visibility ? 'flex' : 'none',
     wordBreak: 'break-all',
+    textAlign: 'center',
   };
 
   const letterStyle = {
     fontSize: '14px',
     fontWeight: '500',
     wordBreak: 'break-all',
-    padding: '12px',
-    marginTop: '12px',
+    padding: '12px 20px 0px 20px ',
   };
 
   const primaryStyle = {
@@ -45,8 +45,9 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     justifyContent: 'center',
     alignItems: ' center',
     padding: '5px 8px',
+    marginStyle: '14px 20px 0px 20px ',
     minWidth: '61px',
-    height: '24px',
+    minHeight: '24px',
     background:
       secondarySignDisplay !== 'negative' ? (darkMode ? '#206953' : '#EDFFF9') : darkMode ? '#F8ABB8' : '#FDEAED',
     borderRadius: '58px',
@@ -87,6 +88,8 @@ export const Statistics = function Statistics({ height, properties, styles, dark
           style={{
             ...letterStyle,
             color: secondaryLabelColour !== '#8092AB' ? secondaryLabelColour : darkMode && '#FFFFFC',
+            padding: '6px 20px 12px 20px ',
+            marginBottom: '0px',
           }}
         >
           {secondaryValueLabel}
