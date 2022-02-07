@@ -678,6 +678,20 @@ button {
   width: 40px;
 }
 
+.folder-icon-skeleton {
+  display: inline-block;
+  background-color: #858896;
+  border-radius: 4px;
+  height: 14px;
+  width: 14px;
+}
+
+.folders-skeleton{
+  padding: 9px 12px;
+  height: 34px;
+  margin-bottom: 4px;
+}
+
 .card-skeleton-button {
   height: 20px;
   width: 60px;
@@ -2932,6 +2946,15 @@ input:focus-visible {
   }
 
   .app-icon-skeleton::after {
+    background-image: linear-gradient(
+      to right,
+      #566177 0,
+      #5a6170 40%,
+      #4c5b79 80%
+    );
+  }
+
+  .folder-icon-skeleton::after {
     background-image: linear-gradient(
       to right,
       #566177 0,
