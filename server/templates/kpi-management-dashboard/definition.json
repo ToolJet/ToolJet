@@ -1,0 +1,3866 @@
+{
+  "id": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+  "name": "Company wide KPI dashboard",
+  "slug": "kpi-dashboard",
+  "isPublic": true,
+  "icon": null,
+  "organizationId": "bd274bab-15ae-4015-9bb6-eb10e1428302",
+  "currentVersionId": "b9d8f3be-a780-480f-b2a6-4d1bff13723a",
+  "userId": "a63b96d1-171d-4799-b7fb-1c457c45130c",
+  "createdAt": "2022-02-02T06:46:10.397Z",
+  "updatedAt": "2022-02-02T18:58:02.829Z",
+  "dataQueries": [
+    {
+      "id": "ac1a9cb9-b576-4ee4-8b7b-2e8d8d122442",
+      "name": "airtable1",
+      "kind": "airtable",
+      "options": {
+        "operation": "list_records",
+        "base_id": "appFvkoWIoYbiJqHZ",
+        "table_name": "table",
+        "enableTransformation": true,
+        "transformation": "var preferredOrder = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'july', 'aug', 'sep', 'oct', 'nov', 'dec'];\n\nconst list = data.records.map(list => list.fields).sort((a,b) => {\n\treturn preferredOrder.indexOf(a.month) - preferredOrder.indexOf(b.month);\n})\n\nreturn data = list.map((i) => {\n\treturn {\"x\": i.month, \"y\": i.newsubs }\n})",
+        "runOnPageLoad": true
+      },
+      "dataSourceId": "11e0254a-6ab5-4443-87c1-6a0ab9f38915",
+      "appId": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+      "appVersionId": "b9d8f3be-a780-480f-b2a6-4d1bff13723a",
+      "createdAt": "2022-02-02T14:53:57.120Z",
+      "updatedAt": "2022-02-02T18:57:21.717Z"
+    },
+    {
+      "id": "66d41af6-75f6-4810-8d21-feb6d3fdc2e7",
+      "name": "airtable1",
+      "kind": "airtable",
+      "options": {
+        "operation": "list_records",
+        "base_id": "appFvkoWIoYbiJqHZ",
+        "table_name": "table",
+        "enableTransformation": true,
+        "transformation": "var preferredOrder = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'july', 'aug', 'sep', 'oct', 'nov', 'dec'];\n\nconst list = data.records.map(list => list.fields).sort((a,b) => {\n\treturn preferredOrder.indexOf(a.month) - preferredOrder.indexOf(b.month);\n})\n\nreturn data = list.map((i) => {\n\treturn {\"x\": i.month, \"y\": i.newsubs }\n})"
+      },
+      "dataSourceId": "68fe2dbd-38ec-401f-bb9b-0d73f6b88b9e",
+      "appId": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+      "appVersionId": "56905efd-6c95-4094-82f2-3437b44f47db",
+      "createdAt": "2022-02-02T12:00:32.682Z",
+      "updatedAt": "2022-02-02T14:41:11.302Z"
+    },
+    {
+      "id": "52db844b-5103-4dce-a317-3e18926154f6",
+      "name": "airtable2",
+      "kind": "airtable",
+      "options": {
+        "operation": "list_records",
+        "base_id": "appFvkoWIoYbiJqHZ",
+        "table_name": "table",
+        "enableTransformation": true,
+        "transformation": "// write your code here\n// return value will be set as data and the original data will be available as rawData\nvar preferredOrder = [‘jan’, ‘feb’, ‘mar’, ‘apr’, ‘may’, ‘jun’, ‘july’, ‘aug’, ‘sep’, ‘oct’, ‘nov’, ‘dec’];\n\nconst list = data.records.map(list => list.fields).sort((a,b) => {\n\treturn preferredOrder.indexOf(a.month) - preferredOrder.indexOf(b.month);\n})\n\nreturn data = list.map((i) => {\n\treturn {“x”: i.month, “y”: i.newsubs }\n})"
+      },
+      "dataSourceId": "68fe2dbd-38ec-401f-bb9b-0d73f6b88b9e",
+      "appId": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+      "appVersionId": "56905efd-6c95-4094-82f2-3437b44f47db",
+      "createdAt": "2022-02-02T14:53:42.784Z",
+      "updatedAt": "2022-02-02T14:53:42.784Z"
+    },
+    {
+      "id": "78903b11-d17a-4b0c-aee9-178115421e12",
+      "name": "airtable2",
+      "kind": "airtable",
+      "options": {
+        "operation": "list_records",
+        "base_id": "appFvkoWIoYbiJqHZ",
+        "table_name": "table",
+        "enableTransformation": true,
+        "transformation": "// write your code here\n// return value will be set as data and the original data will be available as rawData\nvar preferredOrder = [‘jan’, ‘feb’, ‘mar’, ‘apr’, ‘may’, ‘jun’, ‘july’, ‘aug’, ‘sep’, ‘oct’, ‘nov’, ‘dec’];\n\nconst list = data.records.map(list => list.fields).sort((a,b) => {\n\treturn preferredOrder.indexOf(a.month) - preferredOrder.indexOf(b.month);\n})\n\nreturn data = list.map((i) => {\n\treturn {“x”: i.month, “y”: i.newsubs }\n})",
+        "runOnPageLoad": true
+      },
+      "dataSourceId": "bb369435-d414-4aff-8a0a-01358d5fe2fd",
+      "appId": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+      "appVersionId": "4cc498af-18cf-49ba-af3f-25c9eb3c4c55",
+      "createdAt": "2022-02-02T18:52:50.661Z",
+      "updatedAt": "2022-02-02T18:53:34.877Z"
+    },
+    {
+      "id": "c1a6b146-a7de-472d-888a-884fb6bcdadc",
+      "name": "airtable3",
+      "kind": "airtable",
+      "options": {
+        "operation": "list_records",
+        "enableTransformation": true,
+        "transformation": "var prefOrder = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'july', 'aug', 'sep', 'oct', 'nov', 'dec'];\n\nconst lists = data.records.map(lists => lists.fields).sort((a,b) => {\n\treturn prefOrder.indexOf(a.month) - prefOrder.indexOf(b.month);\n})\n\nreturn data = lists.map((i) => {\n\treturn {\"x\": i.month, \"y\": i.newsubs }\n})",
+        "base_id": "appFvkoWIoYbiJqHZ",
+        "table_name": "table",
+        "runOnPageLoad": true
+      },
+      "dataSourceId": "bb369435-d414-4aff-8a0a-01358d5fe2fd",
+      "appId": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+      "appVersionId": "4cc498af-18cf-49ba-af3f-25c9eb3c4c55",
+      "createdAt": "2022-02-02T18:53:52.135Z",
+      "updatedAt": "2022-02-02T18:54:15.585Z"
+    },
+    {
+      "id": "470f6da3-6c56-41d9-90cc-7a5252bce743",
+      "name": "airtable3",
+      "kind": "airtable",
+      "options": {
+        "operation": "list_records",
+        "base_id": "appFvkoWIoYbiJqHZ",
+        "table_name": "table",
+        "enableTransformation": true,
+        "transformation": "var prefOrder = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'july', 'aug', 'sep', 'oct', 'nov', 'dec'];\n\nconst lists = data.records.map(lists => lists.fields).sort((a,b) => {\n\treturn prefOrder.indexOf(a.month) - prefOrder.indexOf(b.month);\n})\n\nreturn data = lists.map((i) => {\n\treturn {\"x\": i.month, \"y\": i.newsubs }\n})",
+        "runOnPageLoad": true
+      },
+      "dataSourceId": "11e0254a-6ab5-4443-87c1-6a0ab9f38915",
+      "appId": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+      "appVersionId": "b9d8f3be-a780-480f-b2a6-4d1bff13723a",
+      "createdAt": "2022-02-02T15:15:41.660Z",
+      "updatedAt": "2022-02-02T18:57:14.915Z"
+    },
+    {
+      "id": "4d74c9c2-cf8c-47f7-8148-3e84c7425ef5",
+      "name": "airtable1",
+      "kind": "airtable",
+      "options": {
+        "operation": "list_records",
+        "base_id": "appFvkoWIoYbiJqHZ",
+        "table_name": "table",
+        "enableTransformation": true,
+        "transformation": "var preferredOrder = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'july', 'aug', 'sep', 'oct', 'nov', 'dec'];\n\nconst list = data.records.map(list => list.fields).sort((a,b) => {\n\treturn preferredOrder.indexOf(a.month) - preferredOrder.indexOf(b.month);\n})\n\nreturn data = list.map((i) => {\n\treturn {\"x\": i.month, \"y\": i.newsubs }\n})",
+        "runOnPageLoad": true
+      },
+      "dataSourceId": "bb369435-d414-4aff-8a0a-01358d5fe2fd",
+      "appId": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+      "appVersionId": "4cc498af-18cf-49ba-af3f-25c9eb3c4c55",
+      "createdAt": "2022-02-02T18:52:50.661Z",
+      "updatedAt": "2022-02-02T18:53:31.086Z"
+    },
+    {
+      "id": "b05fd9ca-4f53-47e5-b0f1-7551b674e2e2",
+      "name": "airtable2",
+      "kind": "airtable",
+      "options": {
+        "operation": "list_records",
+        "base_id": "appFvkoWIoYbiJqHZ",
+        "table_name": "table",
+        "enableTransformation": false,
+        "transformation": "// write your code here\n// return value will be set as data and the original data will be available as rawData\nvar preferredOrder = [‘jan’, ‘feb’, ‘mar’, ‘apr’, ‘may’, ‘jun’, ‘july’, ‘aug’, ‘sep’, ‘oct’, ‘nov’, ‘dec’];\n\nconst list = data.records.map(list => list.fields).sort((a,b) => {\n\treturn preferredOrder.indexOf(a.month) - preferredOrder.indexOf(b.month);\n})\n\nreturn data = list.map((i) => {\n\treturn {“x”: i.month, “y”: i.newsubs }\n})",
+        "runOnPageLoad": true
+      },
+      "dataSourceId": "11e0254a-6ab5-4443-87c1-6a0ab9f38915",
+      "appId": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+      "appVersionId": "b9d8f3be-a780-480f-b2a6-4d1bff13723a",
+      "createdAt": "2022-02-02T14:53:57.120Z",
+      "updatedAt": "2022-02-02T18:57:18.707Z"
+    }
+  ],
+  "dataSources": [
+    {
+      "id": "68fe2dbd-38ec-401f-bb9b-0d73f6b88b9e",
+      "name": "Airtable",
+      "kind": "airtable",
+      "options": {
+        "api_key": {
+          "credential_id": "4d260acf-03ba-413e-a1b7-d61cde91583f",
+          "encrypted": true
+        }
+      },
+      "appId": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+      "appVersionId": "56905efd-6c95-4094-82f2-3437b44f47db",
+      "createdAt": "2022-02-02T11:59:44.664Z",
+      "updatedAt": "2022-02-02T11:59:44.664Z"
+    },
+    {
+      "id": "11e0254a-6ab5-4443-87c1-6a0ab9f38915",
+      "name": "Airtable",
+      "kind": "airtable",
+      "options": {
+        "api_key": {
+          "credential_id": "a803245f-1d14-4132-acb3-5f4c0adf1ff7",
+          "encrypted": true
+        }
+      },
+      "appId": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+      "appVersionId": "b9d8f3be-a780-480f-b2a6-4d1bff13723a",
+      "createdAt": "2022-02-02T14:53:57.120Z",
+      "updatedAt": "2022-02-02T14:53:57.120Z"
+    },
+    {
+      "id": "bb369435-d414-4aff-8a0a-01358d5fe2fd",
+      "name": "Airtable",
+      "kind": "airtable",
+      "options": {
+        "api_key": {
+          "credential_id": "7ee052b2-c3f7-4811-8a8b-644722e7abe1",
+          "encrypted": true
+        }
+      },
+      "appId": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+      "appVersionId": "4cc498af-18cf-49ba-af3f-25c9eb3c4c55",
+      "createdAt": "2022-02-02T18:52:50.661Z",
+      "updatedAt": "2022-02-02T18:52:50.661Z"
+    }
+  ],
+  "appVersions": [
+    {
+      "id": "b9d8f3be-a780-480f-b2a6-4d1bff13723a",
+      "name": "v3",
+      "definition": {
+        "components": {
+          "40a4c16f-8929-4399-b6b5-7e84268f8592": {
+            "component": {
+              "name": "container1",
+              "displayName": "Container",
+              "description": "Wrapper for multiple components",
+              "defaultSize": {
+                "width": 5,
+                "height": 200
+              },
+              "component": "Container",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {},
+              "events": {},
+              "styles": {
+                "backgroundColor": {
+                  "type": "color"
+                },
+                "borderRadius": {
+                  "type": "code",
+                  "displayName": "Border Radius"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "visible": {
+                    "value": true
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "backgroundColor": {
+                    "value": "#f4f8fcff"
+                  },
+                  "borderRadius": {
+                    "value": "15"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "layouts": {
+              "desktop": {
+                "top": 0,
+                "left": 0,
+                "width": 43,
+                "height": 910
+              }
+            }
+          },
+          "6e9f3607-f1c1-42f1-86fd-99ce1bb5704e": {
+            "component": {
+              "name": "text1",
+              "displayName": "Text",
+              "description": "Display markdown or HTML",
+              "component": "Text",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Show loading state"
+                }
+              },
+              "defaultSize": {
+                "width": 5,
+                "height": 30
+              },
+              "events": [],
+              "styles": {
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                },
+                "textAlign": {
+                  "type": "alignButtons",
+                  "displayName": "Align Text"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "<h1>Company-wide KPI dashboard</h1>"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "groupActions": {
+                    "value": "left"
+                  },
+                  "textColor": {
+                    "value": "#0e2340ff"
+                  },
+                  "textAlign": {
+                    "value": "left"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "40a4c16f-8929-4399-b6b5-7e84268f8592",
+            "layouts": {
+              "desktop": {
+                "top": 80,
+                "left": 2.32918801322441,
+                "width": 12.027906976744186,
+                "height": 40
+              }
+            }
+          },
+          "22892782-687e-416f-857f-260bc08b5bda": {
+            "component": {
+              "name": "image1",
+              "displayName": "Image",
+              "description": "Display an Image",
+              "defaultSize": {
+                "width": 3,
+                "height": 100
+              },
+              "component": "Image",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "source": {
+                  "type": "code",
+                  "displayName": "URL"
+                }
+              },
+              "events": {
+                "onClick": {
+                  "displayName": "On click"
+                }
+              },
+              "styles": {
+                "borderType": {
+                  "type": "select",
+                  "displayName": "Border type",
+                  "options": [
+                    {
+                      "name": "None",
+                      "value": "none"
+                    },
+                    {
+                      "name": "Rounded",
+                      "value": "rounded"
+                    },
+                    {
+                      "name": "Circle",
+                      "value": "rounded-circle"
+                    },
+                    {
+                      "name": "Thumbnail",
+                      "value": "img-thumbnail"
+                    }
+                  ]
+                },
+                "backgroundColor": {
+                  "type": "color",
+                  "displayName": "Background color"
+                },
+                "padding": {
+                  "type": "code",
+                  "displayName": "Padding"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "source": {
+                    "value": "https://jayambepetrocheminfra.com/wp-content/uploads/2019/04/clients-logo.png"
+                  },
+                  "visible": {
+                    "value": true
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "borderType": {
+                    "value": "none"
+                  },
+                  "padding": {
+                    "value": "0"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "40a4c16f-8929-4399-b6b5-7e84268f8592",
+            "layouts": {
+              "desktop": {
+                "top": 0,
+                "left": 2.3146411984465844,
+                "width": 4.010077519379845,
+                "height": 70
+              }
+            }
+          },
+          "ba064f68-416c-4eed-8a2c-be2429faa60e": {
+            "component": {
+              "name": "container2",
+              "displayName": "Container",
+              "description": "Wrapper for multiple components",
+              "defaultSize": {
+                "width": 5,
+                "height": 200
+              },
+              "component": "Container",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {},
+              "events": {},
+              "styles": {
+                "backgroundColor": {
+                  "type": "color"
+                },
+                "borderRadius": {
+                  "type": "code",
+                  "displayName": "Border Radius"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "visible": {
+                    "value": true
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "backgroundColor": {
+                    "value": "#ffffffff"
+                  },
+                  "borderRadius": {
+                    "value": "15"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "40a4c16f-8929-4399-b6b5-7e84268f8592",
+            "layouts": {
+              "desktop": {
+                "top": 150,
+                "left": 2.370661921545448,
+                "width": 12.027906976744186,
+                "height": 350
+              }
+            }
+          },
+          "c28fef99-5786-4833-8a03-8252c1dbe18d": {
+            "component": {
+              "name": "container3",
+              "displayName": "Container",
+              "description": "Wrapper for multiple components",
+              "defaultSize": {
+                "width": 5,
+                "height": 200
+              },
+              "component": "Container",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {},
+              "events": {},
+              "styles": {
+                "backgroundColor": {
+                  "type": "color"
+                },
+                "borderRadius": {
+                  "type": "code",
+                  "displayName": "Border Radius"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "visible": {
+                    "value": true
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "backgroundColor": {
+                    "value": "#fff"
+                  },
+                  "borderRadius": {
+                    "value": "15"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "40a4c16f-8929-4399-b6b5-7e84268f8592",
+            "layouts": {
+              "desktop": {
+                "top": 150,
+                "left": 32.77120206378193,
+                "width": 27.99457364341085,
+                "height": 350
+              }
+            }
+          },
+          "b568158d-9241-4a58-be03-37a7bf96ad80": {
+            "component": {
+              "name": "container4",
+              "displayName": "Container",
+              "description": "Wrapper for multiple components",
+              "defaultSize": {
+                "width": 5,
+                "height": 200
+              },
+              "component": "Container",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {},
+              "events": {},
+              "styles": {
+                "backgroundColor": {
+                  "type": "color"
+                },
+                "borderRadius": {
+                  "type": "code",
+                  "displayName": "Border Radius"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "visible": {
+                    "value": true
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "backgroundColor": {
+                    "value": "#1b2755ff"
+                  },
+                  "borderRadius": {
+                    "value": "15"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "40a4c16f-8929-4399-b6b5-7e84268f8592",
+            "layouts": {
+              "desktop": {
+                "top": 520,
+                "left": 2.332798393887263,
+                "width": 12.027906976744186,
+                "height": 350
+              }
+            }
+          },
+          "4aa18b35-1afa-4c5e-bac8-2f3086338ec1": {
+            "component": {
+              "name": "container5",
+              "displayName": "Container",
+              "description": "Wrapper for multiple components",
+              "defaultSize": {
+                "width": 5,
+                "height": 200
+              },
+              "component": "Container",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {},
+              "events": {},
+              "styles": {
+                "backgroundColor": {
+                  "type": "color"
+                },
+                "borderRadius": {
+                  "type": "code",
+                  "displayName": "Border Radius"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "visible": {
+                    "value": true
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "backgroundColor": {
+                    "value": "#fff"
+                  },
+                  "borderRadius": {
+                    "value": "15"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "40a4c16f-8929-4399-b6b5-7e84268f8592",
+            "layouts": {
+              "desktop": {
+                "top": 520,
+                "left": 32.65918486274147,
+                "width": 27.99457364341085,
+                "height": 350
+              }
+            }
+          },
+          "d99baaa3-9639-4119-ad63-9910be6e4f66": {
+            "component": {
+              "name": "chart2",
+              "displayName": "Chart",
+              "description": "Display charts",
+              "component": "Chart",
+              "defaultSize": {
+                "width": 20,
+                "height": 400
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "title": {
+                  "type": "code",
+                  "displayName": "Title"
+                },
+                "data": {
+                  "type": "json",
+                  "displayName": "Data"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Loading State"
+                },
+                "markerColor": {
+                  "type": "color",
+                  "displayName": "Marker color"
+                },
+                "showAxes": {
+                  "type": "toggle",
+                  "displayName": "Show axes"
+                },
+                "showGridLines": {
+                  "type": "toggle",
+                  "displayName": "Show grid lines"
+                },
+                "type": {
+                  "type": "select",
+                  "displayName": "Chart type",
+                  "options": [
+                    {
+                      "name": "Line",
+                      "value": "line"
+                    },
+                    {
+                      "name": "Bar",
+                      "value": "bar"
+                    },
+                    {
+                      "name": "Pie",
+                      "value": "pie"
+                    }
+                  ]
+                },
+                "jsonDescription": {
+                  "type": "json",
+                  "displayName": "Json Description"
+                },
+                "plotFromJson": {
+                  "type": "toggle",
+                  "displayName": "Use Plotly JSON schema"
+                }
+              },
+              "events": {},
+              "styles": {
+                "padding": {
+                  "type": "code",
+                  "displayName": "Padding"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {
+                "show": null
+              },
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "title": {
+                    "value": "New users per month"
+                  },
+                  "markerColor": {
+                    "value": "#4dcfffff"
+                  },
+                  "showAxes": {
+                    "value": true,
+                    "fxActive": false
+                  },
+                  "showGridLines": {
+                    "value": true
+                  },
+                  "plotFromJson": {
+                    "value": false
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  },
+                  "jsonDescription": {
+                    "value": "{\n            \"data\": [\n                {\n                    \"x\": [\n                        \"Jan\",\n                        \"Feb\",\n                        \"Mar\"\n                    ],\n                    \"y\": [\n                        100,\n                        80,\n                        40\n                    ],\n                    \"type\": \"bar\"\n                }\n            ]\n        }"
+                  },
+                  "type": {
+                    "value": "bar"
+                  },
+                  "data": {
+                    "value": "{{queries.airtable3.data}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "padding": {
+                    "value": "25"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "4aa18b35-1afa-4c5e-bac8-2f3086338ec1",
+            "layouts": {
+              "desktop": {
+                "top": 8,
+                "left": 2.217973929913321,
+                "width": 41.03767950738859,
+                "height": 340
+              }
+            }
+          },
+          "128e091b-0040-4b16-8a59-45ffaf642fff": {
+            "component": {
+              "name": "statistics1",
+              "displayName": "Statistics",
+              "description": "Statistics can be used to display different statistical information",
+              "component": "Statistics",
+              "defaultSize": {
+                "width": 9.2,
+                "height": 152
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "primaryValueLabel": {
+                  "type": "code",
+                  "displayName": "Primary value label"
+                },
+                "primaryValue": {
+                  "type": "code",
+                  "displayName": "Primary value"
+                },
+                "secondaryValueLabel": {
+                  "type": "code",
+                  "displayName": "Secondary value label"
+                },
+                "secondaryValue": {
+                  "type": "code",
+                  "displayName": "Secondary value"
+                },
+                "secondarySignDisplay": {
+                  "type": "code",
+                  "displayName": "Secondary sign display"
+                }
+              },
+              "events": {},
+              "styles": {
+                "primaryLabelColour": {
+                  "type": "color",
+                  "displayName": "Primary Label Colour"
+                },
+                "primaryTextColour": {
+                  "type": "color",
+                  "displayName": "Primary Text  Colour"
+                },
+                "secondaryLabelColour": {
+                  "type": "color",
+                  "displayName": "Secondary Label Colour"
+                },
+                "secondaryTextColour": {
+                  "type": "color",
+                  "displayName": "Secondary Text Colour"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                }
+              },
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "primaryValueLabel": {
+                    "value": "MoM Revenue"
+                  },
+                  "primaryValue": {
+                    "value": "{{queries.airtable2.data.records[10].fields.momrev}} USD"
+                  },
+                  "secondaryValueLabel": {
+                    "value": "Last month"
+                  },
+                  "secondaryValue": {
+                    "value": "{{queries.airtable2.data.records[10].fields.momrevper}}%"
+                  },
+                  "secondarySignDisplay": {
+                    "value": "negative"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "primaryLabelColour": {
+                    "value": "#8092AB"
+                  },
+                  "primaryTextColour": {
+                    "value": "#000000"
+                  },
+                  "secondaryLabelColour": {
+                    "value": "#8092AB"
+                  },
+                  "secondaryTextColour": {
+                    "value": "#36AF8B"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  }
+                }
+              }
+            },
+            "parent": "ba064f68-416c-4eed-8a2c-be2429faa60e",
+            "layouts": {
+              "desktop": {
+                "top": 0,
+                "left": -0.6743273578478922,
+                "width": 42.93180409906472,
+                "height": 160
+              }
+            }
+          },
+          "5ab2c384-58be-449b-a01d-baef5c195fd5": {
+            "component": {
+              "name": "statistics2",
+              "displayName": "Statistics",
+              "description": "Statistics can be used to display different statistical information",
+              "component": "Statistics",
+              "defaultSize": {
+                "width": 9.2,
+                "height": 152
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "primaryValueLabel": {
+                  "type": "code",
+                  "displayName": "Primary value label"
+                },
+                "primaryValue": {
+                  "type": "code",
+                  "displayName": "Primary value"
+                },
+                "secondaryValueLabel": {
+                  "type": "code",
+                  "displayName": "Secondary value label"
+                },
+                "secondaryValue": {
+                  "type": "code",
+                  "displayName": "Secondary value"
+                },
+                "secondarySignDisplay": {
+                  "type": "code",
+                  "displayName": "Secondary sign display"
+                }
+              },
+              "events": {},
+              "styles": {
+                "primaryLabelColour": {
+                  "type": "color",
+                  "displayName": "Primary Label Colour"
+                },
+                "primaryTextColour": {
+                  "type": "color",
+                  "displayName": "Primary Text  Colour"
+                },
+                "secondaryLabelColour": {
+                  "type": "color",
+                  "displayName": "Secondary Label Colour"
+                },
+                "secondaryTextColour": {
+                  "type": "color",
+                  "displayName": "Secondary Text Colour"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                }
+              },
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "primaryValueLabel": {
+                    "value": "MoM new users"
+                  },
+                  "primaryValue": {
+                    "value": "{{queries.airtable2.data.records[10].fields.newusers}}"
+                  },
+                  "secondaryValueLabel": {
+                    "value": "Last month"
+                  },
+                  "secondaryValue": {
+                    "value": "28%"
+                  },
+                  "secondarySignDisplay": {
+                    "value": "positive"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "primaryLabelColour": {
+                    "value": "#8092AB"
+                  },
+                  "primaryTextColour": {
+                    "value": "#000000"
+                  },
+                  "secondaryLabelColour": {
+                    "value": "#8092AB"
+                  },
+                  "secondaryTextColour": {
+                    "value": "#36AF8B"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  }
+                }
+              }
+            },
+            "parent": "ba064f68-416c-4eed-8a2c-be2429faa60e",
+            "layouts": {
+              "desktop": {
+                "top": 178,
+                "left": -0.38861295930573253,
+                "width": 42.9318056027148,
+                "height": 170
+              }
+            }
+          },
+          "c2613713-ffbe-4a0b-9746-f8397a1d59c8": {
+            "component": {
+              "name": "circularprogressbar1",
+              "displayName": "Circular Progressbar",
+              "description": "Show the progress using circular progressbar",
+              "component": "CircularProgressBar",
+              "defaultSize": {
+                "width": 2,
+                "height": 50
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
+                "progress": {
+                  "type": "code",
+                  "displayName": "Progress"
+                }
+              },
+              "events": {},
+              "styles": {
+                "color": {
+                  "type": "color",
+                  "displayName": "Color"
+                },
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                },
+                "textSize": {
+                  "type": "code",
+                  "displayName": "Text Size"
+                },
+                "strokeWidth": {
+                  "type": "code",
+                  "displayName": "Stroke Width"
+                },
+                "counterClockwise": {
+                  "type": "code",
+                  "displayName": "Counter Clockwise"
+                },
+                "circleRatio": {
+                  "type": "code",
+                  "displayName": "Circle Ratio"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "{{queries.airtable2.data.records[11].fields.momrevper}}%"
+                  },
+                  "progress": {
+                    "value": "{{queries.airtable2.data.records[11].fields.momrevper}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "color": {
+                    "value": "#5fa8ffff"
+                  },
+                  "textColor": {
+                    "value": "#ffffffff"
+                  },
+                  "textSize": {
+                    "value": "{{20}}"
+                  },
+                  "strokeWidth": {
+                    "value": "{{8}}"
+                  },
+                  "counterClockwise": {
+                    "value": "{{false}}"
+                  },
+                  "circleRatio": {
+                    "value": "{{1}}"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  }
+                }
+              }
+            },
+            "parent": "b568158d-9241-4a58-be03-37a7bf96ad80",
+            "layouts": {
+              "desktop": {
+                "top": 110,
+                "left": 38.738603826136476,
+                "width": 26.067970755568766,
+                "height": 180
+              }
+            }
+          },
+          "52cc1be2-4cd1-49a4-a6d5-42327971e5e0": {
+            "component": {
+              "name": "text3",
+              "displayName": "Text",
+              "description": "Display markdown or HTML",
+              "component": "Text",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Show loading state"
+                }
+              },
+              "defaultSize": {
+                "width": 5,
+                "height": 30
+              },
+              "events": [],
+              "styles": {
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                },
+                "textAlign": {
+                  "type": "alignButtons",
+                  "displayName": "Align Text"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "<h1>Monthly Profits</h1>"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "groupActions": {
+                    "value": "left"
+                  },
+                  "textColor": {
+                    "value": "#ffffffff"
+                  },
+                  "textAlign": {
+                    "value": "left"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b568158d-9241-4a58-be03-37a7bf96ad80",
+            "layouts": {
+              "desktop": {
+                "top": 20,
+                "left": 4.114528002827358,
+                "width": 20.960370782665667,
+                "height": 40
+              }
+            }
+          },
+          "2e3f1f75-22c7-4cf7-81e7-b85e7fc0eb5f": {
+            "component": {
+              "name": "text4",
+              "displayName": "Text",
+              "description": "Display markdown or HTML",
+              "component": "Text",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Show loading state"
+                }
+              },
+              "defaultSize": {
+                "width": 5,
+                "height": 30
+              },
+              "events": [],
+              "styles": {
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                },
+                "textAlign": {
+                  "type": "alignButtons",
+                  "displayName": "Align Text"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "Total profit gain of {{queries.airtable2.data.records[11].fields.momrevper}}"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "groupActions": {
+                    "value": "left"
+                  },
+                  "textColor": {
+                    "value": "#ffffffff"
+                  },
+                  "textAlign": {
+                    "value": "left"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b568158d-9241-4a58-be03-37a7bf96ad80",
+            "layouts": {
+              "desktop": {
+                "top": 60,
+                "left": 4.716288885608838,
+                "width": 20.960370782665667,
+                "height": 30
+              }
+            }
+          },
+          "098e187c-ee10-40bc-a147-fb5cec3a5233": {
+            "component": {
+              "name": "text5",
+              "displayName": "Text",
+              "description": "Display markdown or HTML",
+              "component": "Text",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Show loading state"
+                }
+              },
+              "defaultSize": {
+                "width": 5,
+                "height": 30
+              },
+              "events": [],
+              "styles": {
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                },
+                "textAlign": {
+                  "type": "alignButtons",
+                  "displayName": "Align Text"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "Last month: {{queries.airtable2.data.records[10].fields.momrevper}}%"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "groupActions": {
+                    "value": "left"
+                  },
+                  "textColor": {
+                    "value": "#e0d1d1ff"
+                  },
+                  "textAlign": {
+                    "value": "left"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b568158d-9241-4a58-be03-37a7bf96ad80",
+            "layouts": {
+              "desktop": {
+                "top": 110,
+                "left": 4.66414505788613,
+                "width": 17.96919648589596,
+                "height": 30
+              }
+            }
+          },
+          "f8523650-758f-4ad9-8429-04c937248c5b": {
+            "component": {
+              "name": "text6",
+              "displayName": "Text",
+              "description": "Display markdown or HTML",
+              "component": "Text",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Show loading state"
+                }
+              },
+              "defaultSize": {
+                "width": 5,
+                "height": 30
+              },
+              "events": [],
+              "styles": {
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                },
+                "textAlign": {
+                  "type": "alignButtons",
+                  "displayName": "Align Text"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "This month: {{queries.airtable2.data.records[11].fields.momrevper}}%"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "groupActions": {
+                    "value": "left"
+                  },
+                  "textColor": {
+                    "value": "#e0d1d1ff"
+                  },
+                  "textAlign": {
+                    "value": "left"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b568158d-9241-4a58-be03-37a7bf96ad80",
+            "layouts": {
+              "desktop": {
+                "top": 160,
+                "left": 4.677128237663242,
+                "width": 14.978022189126255,
+                "height": 30
+              }
+            }
+          },
+          "cfd5d92d-f9ed-4c41-8429-c1e7473a6a09": {
+            "component": {
+              "name": "chart2",
+              "displayName": "Chart",
+              "description": "Display charts",
+              "component": "Chart",
+              "defaultSize": {
+                "width": 20,
+                "height": 400
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "title": {
+                  "type": "code",
+                  "displayName": "Title"
+                },
+                "data": {
+                  "type": "json",
+                  "displayName": "Data"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Loading State"
+                },
+                "markerColor": {
+                  "type": "color",
+                  "displayName": "Marker color"
+                },
+                "showAxes": {
+                  "type": "toggle",
+                  "displayName": "Show axes"
+                },
+                "showGridLines": {
+                  "type": "toggle",
+                  "displayName": "Show grid lines"
+                },
+                "type": {
+                  "type": "select",
+                  "displayName": "Chart type",
+                  "options": [
+                    {
+                      "name": "Line",
+                      "value": "line"
+                    },
+                    {
+                      "name": "Bar",
+                      "value": "bar"
+                    },
+                    {
+                      "name": "Pie",
+                      "value": "pie"
+                    }
+                  ]
+                },
+                "jsonDescription": {
+                  "type": "json",
+                  "displayName": "Json Description"
+                },
+                "plotFromJson": {
+                  "type": "toggle",
+                  "displayName": "Use Plotly JSON schema"
+                }
+              },
+              "events": {},
+              "styles": {
+                "padding": {
+                  "type": "code",
+                  "displayName": "Padding"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {
+                "show": null
+              },
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "title": {
+                    "value": "New Subscriptions"
+                  },
+                  "markerColor": {
+                    "value": "#b06cecff"
+                  },
+                  "showAxes": {
+                    "value": true
+                  },
+                  "showGridLines": {
+                    "value": true
+                  },
+                  "plotFromJson": {
+                    "value": false
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  },
+                  "jsonDescription": {
+                    "value": "{\n            \"data\": [\n                {\n                    \"x\": [\n                        \"Jan\",\n                        \"Feb\",\n                        \"Mar\"\n                    ],\n                    \"y\": [\n                        100,\n                        80,\n                        40\n                    ],\n                    \"type\": \"bar\"\n                }\n            ]\n        }"
+                  },
+                  "type": {
+                    "value": "line"
+                  },
+                  "data": {
+                    "value": "{{queries.airtable1.data}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "padding": {
+                    "value": "50"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "c28fef99-5786-4833-8a03-8252c1dbe18d",
+            "layouts": {
+              "desktop": {
+                "top": 10,
+                "left": 2.33115689342485,
+                "width": 40.9772915446946,
+                "height": 338
+              }
+            }
+          },
+          "ecf496e1-b9b9-4169-8b85-783db0ef1f87": {
+            "component": {
+              "name": "button2",
+              "displayName": "Button",
+              "description": "Trigger actions: queries, alerts etc",
+              "component": "Button",
+              "defaultSize": {
+                "width": 3,
+                "height": 30
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Button Text"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Loading State"
+                }
+              },
+              "events": {
+                "onClick": {
+                  "displayName": "On click"
+                }
+              },
+              "styles": {
+                "backgroundColor": {
+                  "type": "color",
+                  "displayName": "Background color"
+                },
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text color"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                },
+                "borderRadius": {
+                  "type": "code",
+                  "displayName": "Border radius"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "Refresh"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{queries.airtable2.isLoading}}"
+                  }
+                },
+                "events": [
+                  {
+                    "eventId": "onClick",
+                    "actionId": "run-query",
+                    "message": "Hello world!",
+                    "alertType": "info",
+                    "queryId": "ac1a9cb9-b576-4ee4-8b7b-2e8d8d122442",
+                    "queryName": "airtable1"
+                  },
+                  {
+                    "eventId": "onClick",
+                    "actionId": "run-query",
+                    "message": "Hello world!",
+                    "alertType": "info",
+                    "queryId": "b05fd9ca-4f53-47e5-b0f1-7551b674e2e2",
+                    "queryName": "airtable2"
+                  },
+                  {
+                    "eventId": "onClick",
+                    "actionId": "run-query",
+                    "message": "Hello world!",
+                    "alertType": "info",
+                    "queryId": "470f6da3-6c56-41d9-90cc-7a5252bce743",
+                    "queryName": "airtable3"
+                  }
+                ],
+                "styles": {
+                  "backgroundColor": {
+                    "value": "#666d7cff"
+                  },
+                  "textColor": {
+                    "value": "#fff"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "borderRadius": {
+                    "value": "{{15}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "layouts": {
+              "desktop": {
+                "top": 100,
+                "left": 90.69767529750386,
+                "width": 3,
+                "height": 30
+              }
+            }
+          }
+        },
+        "globalSettings": {
+          "hideHeader": true,
+          "canvasMaxWidth": 1292,
+          "canvasBackgroundColor": "#edeff5"
+        }
+      },
+      "appId": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+      "createdAt": "2022-02-02T14:53:57.119Z",
+      "updatedAt": "2022-02-02T18:58:00.902Z"
+    }
+  ],
+  "editingVersion": {
+    "id": "b9d8f3be-a780-480f-b2a6-4d1bff13723a",
+    "name": "v3",
+    "definition": {
+      "components": {
+        "40a4c16f-8929-4399-b6b5-7e84268f8592": {
+          "component": {
+            "name": "container1",
+            "displayName": "Container",
+            "description": "Wrapper for multiple components",
+            "defaultSize": {
+              "width": 5,
+              "height": 200
+            },
+            "component": "Container",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {},
+            "events": {},
+            "styles": {
+              "backgroundColor": {
+                "type": "color"
+              },
+              "borderRadius": {
+                "type": "code",
+                "displayName": "Border Radius"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "visible": {
+                  "value": true
+                }
+              },
+              "events": [],
+              "styles": {
+                "backgroundColor": {
+                  "value": "#f4f8fcff"
+                },
+                "borderRadius": {
+                  "value": "15"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "layouts": {
+            "desktop": {
+              "top": 0,
+              "left": 0,
+              "width": 43,
+              "height": 910
+            }
+          }
+        },
+        "6e9f3607-f1c1-42f1-86fd-99ce1bb5704e": {
+          "component": {
+            "name": "text1",
+            "displayName": "Text",
+            "description": "Display markdown or HTML",
+            "component": "Text",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Show loading state"
+              }
+            },
+            "defaultSize": {
+              "width": 5,
+              "height": 30
+            },
+            "events": [],
+            "styles": {
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              },
+              "textAlign": {
+                "type": "alignButtons",
+                "displayName": "Align Text"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "<h1>Company-wide KPI dashboard</h1>"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "groupActions": {
+                  "value": "left"
+                },
+                "textColor": {
+                  "value": "#0e2340ff"
+                },
+                "textAlign": {
+                  "value": "left"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "40a4c16f-8929-4399-b6b5-7e84268f8592",
+          "layouts": {
+            "desktop": {
+              "top": 80,
+              "left": 2.32918801322441,
+              "width": 12.027906976744186,
+              "height": 40
+            }
+          }
+        },
+        "22892782-687e-416f-857f-260bc08b5bda": {
+          "component": {
+            "name": "image1",
+            "displayName": "Image",
+            "description": "Display an Image",
+            "defaultSize": {
+              "width": 3,
+              "height": 100
+            },
+            "component": "Image",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "source": {
+                "type": "code",
+                "displayName": "URL"
+              }
+            },
+            "events": {
+              "onClick": {
+                "displayName": "On click"
+              }
+            },
+            "styles": {
+              "borderType": {
+                "type": "select",
+                "displayName": "Border type",
+                "options": [
+                  {
+                    "name": "None",
+                    "value": "none"
+                  },
+                  {
+                    "name": "Rounded",
+                    "value": "rounded"
+                  },
+                  {
+                    "name": "Circle",
+                    "value": "rounded-circle"
+                  },
+                  {
+                    "name": "Thumbnail",
+                    "value": "img-thumbnail"
+                  }
+                ]
+              },
+              "backgroundColor": {
+                "type": "color",
+                "displayName": "Background color"
+              },
+              "padding": {
+                "type": "code",
+                "displayName": "Padding"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "source": {
+                  "value": "https://jayambepetrocheminfra.com/wp-content/uploads/2019/04/clients-logo.png"
+                },
+                "visible": {
+                  "value": true
+                }
+              },
+              "events": [],
+              "styles": {
+                "borderType": {
+                  "value": "none"
+                },
+                "padding": {
+                  "value": "0"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "40a4c16f-8929-4399-b6b5-7e84268f8592",
+          "layouts": {
+            "desktop": {
+              "top": 0,
+              "left": 2.3146411984465844,
+              "width": 4.010077519379845,
+              "height": 70
+            }
+          }
+        },
+        "ba064f68-416c-4eed-8a2c-be2429faa60e": {
+          "component": {
+            "name": "container2",
+            "displayName": "Container",
+            "description": "Wrapper for multiple components",
+            "defaultSize": {
+              "width": 5,
+              "height": 200
+            },
+            "component": "Container",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {},
+            "events": {},
+            "styles": {
+              "backgroundColor": {
+                "type": "color"
+              },
+              "borderRadius": {
+                "type": "code",
+                "displayName": "Border Radius"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "visible": {
+                  "value": true
+                }
+              },
+              "events": [],
+              "styles": {
+                "backgroundColor": {
+                  "value": "#ffffffff"
+                },
+                "borderRadius": {
+                  "value": "15"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "40a4c16f-8929-4399-b6b5-7e84268f8592",
+          "layouts": {
+            "desktop": {
+              "top": 150,
+              "left": 2.370661921545448,
+              "width": 12.027906976744186,
+              "height": 350
+            }
+          }
+        },
+        "c28fef99-5786-4833-8a03-8252c1dbe18d": {
+          "component": {
+            "name": "container3",
+            "displayName": "Container",
+            "description": "Wrapper for multiple components",
+            "defaultSize": {
+              "width": 5,
+              "height": 200
+            },
+            "component": "Container",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {},
+            "events": {},
+            "styles": {
+              "backgroundColor": {
+                "type": "color"
+              },
+              "borderRadius": {
+                "type": "code",
+                "displayName": "Border Radius"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "visible": {
+                  "value": true
+                }
+              },
+              "events": [],
+              "styles": {
+                "backgroundColor": {
+                  "value": "#fff"
+                },
+                "borderRadius": {
+                  "value": "15"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "40a4c16f-8929-4399-b6b5-7e84268f8592",
+          "layouts": {
+            "desktop": {
+              "top": 150,
+              "left": 32.77120206378193,
+              "width": 27.99457364341085,
+              "height": 350
+            }
+          }
+        },
+        "b568158d-9241-4a58-be03-37a7bf96ad80": {
+          "component": {
+            "name": "container4",
+            "displayName": "Container",
+            "description": "Wrapper for multiple components",
+            "defaultSize": {
+              "width": 5,
+              "height": 200
+            },
+            "component": "Container",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {},
+            "events": {},
+            "styles": {
+              "backgroundColor": {
+                "type": "color"
+              },
+              "borderRadius": {
+                "type": "code",
+                "displayName": "Border Radius"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "visible": {
+                  "value": true
+                }
+              },
+              "events": [],
+              "styles": {
+                "backgroundColor": {
+                  "value": "#1b2755ff"
+                },
+                "borderRadius": {
+                  "value": "15"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "40a4c16f-8929-4399-b6b5-7e84268f8592",
+          "layouts": {
+            "desktop": {
+              "top": 520,
+              "left": 2.332798393887263,
+              "width": 12.027906976744186,
+              "height": 350
+            }
+          }
+        },
+        "4aa18b35-1afa-4c5e-bac8-2f3086338ec1": {
+          "component": {
+            "name": "container5",
+            "displayName": "Container",
+            "description": "Wrapper for multiple components",
+            "defaultSize": {
+              "width": 5,
+              "height": 200
+            },
+            "component": "Container",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {},
+            "events": {},
+            "styles": {
+              "backgroundColor": {
+                "type": "color"
+              },
+              "borderRadius": {
+                "type": "code",
+                "displayName": "Border Radius"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "visible": {
+                  "value": true
+                }
+              },
+              "events": [],
+              "styles": {
+                "backgroundColor": {
+                  "value": "#fff"
+                },
+                "borderRadius": {
+                  "value": "15"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "40a4c16f-8929-4399-b6b5-7e84268f8592",
+          "layouts": {
+            "desktop": {
+              "top": 520,
+              "left": 32.65918486274147,
+              "width": 27.99457364341085,
+              "height": 350
+            }
+          }
+        },
+        "d99baaa3-9639-4119-ad63-9910be6e4f66": {
+          "component": {
+            "name": "chart2",
+            "displayName": "Chart",
+            "description": "Display charts",
+            "component": "Chart",
+            "defaultSize": {
+              "width": 20,
+              "height": 400
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "title": {
+                "type": "code",
+                "displayName": "Title"
+              },
+              "data": {
+                "type": "json",
+                "displayName": "Data"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Loading State"
+              },
+              "markerColor": {
+                "type": "color",
+                "displayName": "Marker color"
+              },
+              "showAxes": {
+                "type": "toggle",
+                "displayName": "Show axes"
+              },
+              "showGridLines": {
+                "type": "toggle",
+                "displayName": "Show grid lines"
+              },
+              "type": {
+                "type": "select",
+                "displayName": "Chart type",
+                "options": [
+                  {
+                    "name": "Line",
+                    "value": "line"
+                  },
+                  {
+                    "name": "Bar",
+                    "value": "bar"
+                  },
+                  {
+                    "name": "Pie",
+                    "value": "pie"
+                  }
+                ]
+              },
+              "jsonDescription": {
+                "type": "json",
+                "displayName": "Json Description"
+              },
+              "plotFromJson": {
+                "type": "toggle",
+                "displayName": "Use Plotly JSON schema"
+              }
+            },
+            "events": {},
+            "styles": {
+              "padding": {
+                "type": "code",
+                "displayName": "Padding"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {
+              "show": null
+            },
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "title": {
+                  "value": "New users per month"
+                },
+                "markerColor": {
+                  "value": "#4dcfffff"
+                },
+                "showAxes": {
+                  "value": true,
+                  "fxActive": false
+                },
+                "showGridLines": {
+                  "value": true
+                },
+                "plotFromJson": {
+                  "value": false
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                },
+                "jsonDescription": {
+                  "value": "{\n            \"data\": [\n                {\n                    \"x\": [\n                        \"Jan\",\n                        \"Feb\",\n                        \"Mar\"\n                    ],\n                    \"y\": [\n                        100,\n                        80,\n                        40\n                    ],\n                    \"type\": \"bar\"\n                }\n            ]\n        }"
+                },
+                "type": {
+                  "value": "bar"
+                },
+                "data": {
+                  "value": "{{queries.airtable3.data}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "padding": {
+                  "value": "25"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "4aa18b35-1afa-4c5e-bac8-2f3086338ec1",
+          "layouts": {
+            "desktop": {
+              "top": 8,
+              "left": 2.217973929913321,
+              "width": 41.03767950738859,
+              "height": 340
+            }
+          }
+        },
+        "128e091b-0040-4b16-8a59-45ffaf642fff": {
+          "component": {
+            "name": "statistics1",
+            "displayName": "Statistics",
+            "description": "Statistics can be used to display different statistical information",
+            "component": "Statistics",
+            "defaultSize": {
+              "width": 9.2,
+              "height": 152
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "primaryValueLabel": {
+                "type": "code",
+                "displayName": "Primary value label"
+              },
+              "primaryValue": {
+                "type": "code",
+                "displayName": "Primary value"
+              },
+              "secondaryValueLabel": {
+                "type": "code",
+                "displayName": "Secondary value label"
+              },
+              "secondaryValue": {
+                "type": "code",
+                "displayName": "Secondary value"
+              },
+              "secondarySignDisplay": {
+                "type": "code",
+                "displayName": "Secondary sign display"
+              }
+            },
+            "events": {},
+            "styles": {
+              "primaryLabelColour": {
+                "type": "color",
+                "displayName": "Primary Label Colour"
+              },
+              "primaryTextColour": {
+                "type": "color",
+                "displayName": "Primary Text  Colour"
+              },
+              "secondaryLabelColour": {
+                "type": "color",
+                "displayName": "Secondary Label Colour"
+              },
+              "secondaryTextColour": {
+                "type": "color",
+                "displayName": "Secondary Text Colour"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              }
+            },
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "primaryValueLabel": {
+                  "value": "MoM Revenue"
+                },
+                "primaryValue": {
+                  "value": "{{queries.airtable2.data.records[10].fields.momrev}} USD"
+                },
+                "secondaryValueLabel": {
+                  "value": "Last month"
+                },
+                "secondaryValue": {
+                  "value": "{{queries.airtable2.data.records[10].fields.momrevper}}%"
+                },
+                "secondarySignDisplay": {
+                  "value": "negative"
+                }
+              },
+              "events": [],
+              "styles": {
+                "primaryLabelColour": {
+                  "value": "#8092AB"
+                },
+                "primaryTextColour": {
+                  "value": "#000000"
+                },
+                "secondaryLabelColour": {
+                  "value": "#8092AB"
+                },
+                "secondaryTextColour": {
+                  "value": "#36AF8B"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                }
+              }
+            }
+          },
+          "parent": "ba064f68-416c-4eed-8a2c-be2429faa60e",
+          "layouts": {
+            "desktop": {
+              "top": 0,
+              "left": -0.6743273578478922,
+              "width": 42.93180409906472,
+              "height": 160
+            }
+          }
+        },
+        "5ab2c384-58be-449b-a01d-baef5c195fd5": {
+          "component": {
+            "name": "statistics2",
+            "displayName": "Statistics",
+            "description": "Statistics can be used to display different statistical information",
+            "component": "Statistics",
+            "defaultSize": {
+              "width": 9.2,
+              "height": 152
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "primaryValueLabel": {
+                "type": "code",
+                "displayName": "Primary value label"
+              },
+              "primaryValue": {
+                "type": "code",
+                "displayName": "Primary value"
+              },
+              "secondaryValueLabel": {
+                "type": "code",
+                "displayName": "Secondary value label"
+              },
+              "secondaryValue": {
+                "type": "code",
+                "displayName": "Secondary value"
+              },
+              "secondarySignDisplay": {
+                "type": "code",
+                "displayName": "Secondary sign display"
+              }
+            },
+            "events": {},
+            "styles": {
+              "primaryLabelColour": {
+                "type": "color",
+                "displayName": "Primary Label Colour"
+              },
+              "primaryTextColour": {
+                "type": "color",
+                "displayName": "Primary Text  Colour"
+              },
+              "secondaryLabelColour": {
+                "type": "color",
+                "displayName": "Secondary Label Colour"
+              },
+              "secondaryTextColour": {
+                "type": "color",
+                "displayName": "Secondary Text Colour"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              }
+            },
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "primaryValueLabel": {
+                  "value": "MoM new users"
+                },
+                "primaryValue": {
+                  "value": "{{queries.airtable2.data.records[10].fields.newusers}}"
+                },
+                "secondaryValueLabel": {
+                  "value": "Last month"
+                },
+                "secondaryValue": {
+                  "value": "28%"
+                },
+                "secondarySignDisplay": {
+                  "value": "positive"
+                }
+              },
+              "events": [],
+              "styles": {
+                "primaryLabelColour": {
+                  "value": "#8092AB"
+                },
+                "primaryTextColour": {
+                  "value": "#000000"
+                },
+                "secondaryLabelColour": {
+                  "value": "#8092AB"
+                },
+                "secondaryTextColour": {
+                  "value": "#36AF8B"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                }
+              }
+            }
+          },
+          "parent": "ba064f68-416c-4eed-8a2c-be2429faa60e",
+          "layouts": {
+            "desktop": {
+              "top": 178,
+              "left": -0.38861295930573253,
+              "width": 42.9318056027148,
+              "height": 170
+            }
+          }
+        },
+        "c2613713-ffbe-4a0b-9746-f8397a1d59c8": {
+          "component": {
+            "name": "circularprogressbar1",
+            "displayName": "Circular Progressbar",
+            "description": "Show the progress using circular progressbar",
+            "component": "CircularProgressBar",
+            "defaultSize": {
+              "width": 2,
+              "height": 50
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
+              "progress": {
+                "type": "code",
+                "displayName": "Progress"
+              }
+            },
+            "events": {},
+            "styles": {
+              "color": {
+                "type": "color",
+                "displayName": "Color"
+              },
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              },
+              "textSize": {
+                "type": "code",
+                "displayName": "Text Size"
+              },
+              "strokeWidth": {
+                "type": "code",
+                "displayName": "Stroke Width"
+              },
+              "counterClockwise": {
+                "type": "code",
+                "displayName": "Counter Clockwise"
+              },
+              "circleRatio": {
+                "type": "code",
+                "displayName": "Circle Ratio"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "{{queries.airtable2.data.records[11].fields.momrevper}}%"
+                },
+                "progress": {
+                  "value": "{{queries.airtable2.data.records[11].fields.momrevper}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "color": {
+                  "value": "#5fa8ffff"
+                },
+                "textColor": {
+                  "value": "#ffffffff"
+                },
+                "textSize": {
+                  "value": "{{20}}"
+                },
+                "strokeWidth": {
+                  "value": "{{8}}"
+                },
+                "counterClockwise": {
+                  "value": "{{false}}"
+                },
+                "circleRatio": {
+                  "value": "{{1}}"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                }
+              }
+            }
+          },
+          "parent": "b568158d-9241-4a58-be03-37a7bf96ad80",
+          "layouts": {
+            "desktop": {
+              "top": 110,
+              "left": 38.738603826136476,
+              "width": 26.067970755568766,
+              "height": 180
+            }
+          }
+        },
+        "52cc1be2-4cd1-49a4-a6d5-42327971e5e0": {
+          "component": {
+            "name": "text3",
+            "displayName": "Text",
+            "description": "Display markdown or HTML",
+            "component": "Text",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Show loading state"
+              }
+            },
+            "defaultSize": {
+              "width": 5,
+              "height": 30
+            },
+            "events": [],
+            "styles": {
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              },
+              "textAlign": {
+                "type": "alignButtons",
+                "displayName": "Align Text"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "<h1>Monthly Profits</h1>"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "groupActions": {
+                  "value": "left"
+                },
+                "textColor": {
+                  "value": "#ffffffff"
+                },
+                "textAlign": {
+                  "value": "left"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b568158d-9241-4a58-be03-37a7bf96ad80",
+          "layouts": {
+            "desktop": {
+              "top": 20,
+              "left": 4.114528002827358,
+              "width": 20.960370782665667,
+              "height": 40
+            }
+          }
+        },
+        "2e3f1f75-22c7-4cf7-81e7-b85e7fc0eb5f": {
+          "component": {
+            "name": "text4",
+            "displayName": "Text",
+            "description": "Display markdown or HTML",
+            "component": "Text",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Show loading state"
+              }
+            },
+            "defaultSize": {
+              "width": 5,
+              "height": 30
+            },
+            "events": [],
+            "styles": {
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              },
+              "textAlign": {
+                "type": "alignButtons",
+                "displayName": "Align Text"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "Total profit gain of {{queries.airtable2.data.records[11].fields.momrevper}}"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "groupActions": {
+                  "value": "left"
+                },
+                "textColor": {
+                  "value": "#ffffffff"
+                },
+                "textAlign": {
+                  "value": "left"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b568158d-9241-4a58-be03-37a7bf96ad80",
+          "layouts": {
+            "desktop": {
+              "top": 60,
+              "left": 4.716288885608838,
+              "width": 20.960370782665667,
+              "height": 30
+            }
+          }
+        },
+        "098e187c-ee10-40bc-a147-fb5cec3a5233": {
+          "component": {
+            "name": "text5",
+            "displayName": "Text",
+            "description": "Display markdown or HTML",
+            "component": "Text",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Show loading state"
+              }
+            },
+            "defaultSize": {
+              "width": 5,
+              "height": 30
+            },
+            "events": [],
+            "styles": {
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              },
+              "textAlign": {
+                "type": "alignButtons",
+                "displayName": "Align Text"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "Last month: {{queries.airtable2.data.records[10].fields.momrevper}}%"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "groupActions": {
+                  "value": "left"
+                },
+                "textColor": {
+                  "value": "#e0d1d1ff"
+                },
+                "textAlign": {
+                  "value": "left"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b568158d-9241-4a58-be03-37a7bf96ad80",
+          "layouts": {
+            "desktop": {
+              "top": 110,
+              "left": 4.66414505788613,
+              "width": 17.96919648589596,
+              "height": 30
+            }
+          }
+        },
+        "f8523650-758f-4ad9-8429-04c937248c5b": {
+          "component": {
+            "name": "text6",
+            "displayName": "Text",
+            "description": "Display markdown or HTML",
+            "component": "Text",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Show loading state"
+              }
+            },
+            "defaultSize": {
+              "width": 5,
+              "height": 30
+            },
+            "events": [],
+            "styles": {
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              },
+              "textAlign": {
+                "type": "alignButtons",
+                "displayName": "Align Text"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "This month: {{queries.airtable2.data.records[11].fields.momrevper}}%"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "groupActions": {
+                  "value": "left"
+                },
+                "textColor": {
+                  "value": "#e0d1d1ff"
+                },
+                "textAlign": {
+                  "value": "left"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b568158d-9241-4a58-be03-37a7bf96ad80",
+          "layouts": {
+            "desktop": {
+              "top": 160,
+              "left": 4.677128237663242,
+              "width": 14.978022189126255,
+              "height": 30
+            }
+          }
+        },
+        "cfd5d92d-f9ed-4c41-8429-c1e7473a6a09": {
+          "component": {
+            "name": "chart2",
+            "displayName": "Chart",
+            "description": "Display charts",
+            "component": "Chart",
+            "defaultSize": {
+              "width": 20,
+              "height": 400
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "title": {
+                "type": "code",
+                "displayName": "Title"
+              },
+              "data": {
+                "type": "json",
+                "displayName": "Data"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Loading State"
+              },
+              "markerColor": {
+                "type": "color",
+                "displayName": "Marker color"
+              },
+              "showAxes": {
+                "type": "toggle",
+                "displayName": "Show axes"
+              },
+              "showGridLines": {
+                "type": "toggle",
+                "displayName": "Show grid lines"
+              },
+              "type": {
+                "type": "select",
+                "displayName": "Chart type",
+                "options": [
+                  {
+                    "name": "Line",
+                    "value": "line"
+                  },
+                  {
+                    "name": "Bar",
+                    "value": "bar"
+                  },
+                  {
+                    "name": "Pie",
+                    "value": "pie"
+                  }
+                ]
+              },
+              "jsonDescription": {
+                "type": "json",
+                "displayName": "Json Description"
+              },
+              "plotFromJson": {
+                "type": "toggle",
+                "displayName": "Use Plotly JSON schema"
+              }
+            },
+            "events": {},
+            "styles": {
+              "padding": {
+                "type": "code",
+                "displayName": "Padding"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {
+              "show": null
+            },
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "title": {
+                  "value": "New Subscriptions"
+                },
+                "markerColor": {
+                  "value": "#b06cecff"
+                },
+                "showAxes": {
+                  "value": true
+                },
+                "showGridLines": {
+                  "value": true
+                },
+                "plotFromJson": {
+                  "value": false
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                },
+                "jsonDescription": {
+                  "value": "{\n            \"data\": [\n                {\n                    \"x\": [\n                        \"Jan\",\n                        \"Feb\",\n                        \"Mar\"\n                    ],\n                    \"y\": [\n                        100,\n                        80,\n                        40\n                    ],\n                    \"type\": \"bar\"\n                }\n            ]\n        }"
+                },
+                "type": {
+                  "value": "line"
+                },
+                "data": {
+                  "value": "{{queries.airtable1.data}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "padding": {
+                  "value": "50"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "c28fef99-5786-4833-8a03-8252c1dbe18d",
+          "layouts": {
+            "desktop": {
+              "top": 10,
+              "left": 2.33115689342485,
+              "width": 40.9772915446946,
+              "height": 338
+            }
+          }
+        },
+        "ecf496e1-b9b9-4169-8b85-783db0ef1f87": {
+          "component": {
+            "name": "button2",
+            "displayName": "Button",
+            "description": "Trigger actions: queries, alerts etc",
+            "component": "Button",
+            "defaultSize": {
+              "width": 3,
+              "height": 30
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Button Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Loading State"
+              }
+            },
+            "events": {
+              "onClick": {
+                "displayName": "On click"
+              }
+            },
+            "styles": {
+              "backgroundColor": {
+                "type": "color",
+                "displayName": "Background color"
+              },
+              "textColor": {
+                "type": "color",
+                "displayName": "Text color"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              },
+              "borderRadius": {
+                "type": "code",
+                "displayName": "Border radius"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "Refresh"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{queries.airtable2.isLoading}}"
+                }
+              },
+              "events": [
+                {
+                  "eventId": "onClick",
+                  "actionId": "run-query",
+                  "message": "Hello world!",
+                  "alertType": "info",
+                  "queryId": "ac1a9cb9-b576-4ee4-8b7b-2e8d8d122442",
+                  "queryName": "airtable1"
+                },
+                {
+                  "eventId": "onClick",
+                  "actionId": "run-query",
+                  "message": "Hello world!",
+                  "alertType": "info",
+                  "queryId": "b05fd9ca-4f53-47e5-b0f1-7551b674e2e2",
+                  "queryName": "airtable2"
+                },
+                {
+                  "eventId": "onClick",
+                  "actionId": "run-query",
+                  "message": "Hello world!",
+                  "alertType": "info",
+                  "queryId": "470f6da3-6c56-41d9-90cc-7a5252bce743",
+                  "queryName": "airtable3"
+                }
+              ],
+              "styles": {
+                "backgroundColor": {
+                  "value": "#666d7cff"
+                },
+                "textColor": {
+                  "value": "#fff"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "borderRadius": {
+                  "value": "{{15}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "layouts": {
+            "desktop": {
+              "top": 100,
+              "left": 90.69767529750386,
+              "width": 3,
+              "height": 30
+            }
+          }
+        }
+      },
+      "globalSettings": {
+        "hideHeader": true,
+        "canvasMaxWidth": 1292,
+        "canvasBackgroundColor": "#edeff5"
+      }
+    },
+    "appId": "95c8084c-b5a0-4f36-a193-a93ad01c65cf",
+    "createdAt": "2022-02-02T14:53:57.119Z",
+    "updatedAt": "2022-02-02T18:58:00.902Z"
+  },
+  "tooljetVersion": "0.13.5"
+}
