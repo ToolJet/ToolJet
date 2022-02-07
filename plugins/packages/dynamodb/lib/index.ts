@@ -1,4 +1,4 @@
-import { ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugins/common'
+import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@tooljet-plugins/common'
 
 import { deleteItem, getItem, listTables, queryTable, scanTable } from './operations';
 const AWS = require('aws-sdk');
@@ -30,6 +30,7 @@ export default class DynamodbQueryService implements QueryService {
       }
     } catch (err) {
       console.log(err);
+      throw new QueryError('Query could not be completed', err.message, {});
     }
 
     return {
