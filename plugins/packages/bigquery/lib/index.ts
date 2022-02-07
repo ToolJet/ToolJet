@@ -1,6 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
-import { BigQuery, Query } from '@google-cloud/bigquery';
+import { BigQuery } from '@google-cloud/bigquery';
+const JSON5 = require('json5');
 
 export default class Bigquery implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -11,26 +12,16 @@ export default class Bigquery implements QueryService {
     try {
       switch (operation) {
         case 'list_datasets':
-          const [datasets] = await client.getDatasets(queryOptions.options || {});
+          const [datasets] = await client.getDatasets(this.parseJSON(queryOptions.options));
           result = datasets;
           break;
         case 'list_tables':
-          const [tables] = await client.dataset(queryOptions.datasetId).getTables(queryOptions.options || {});
+          const [tables] = await client.dataset(queryOptions.datasetId).getTables(this.parseJSON(queryOptions.options));
           result = tables;
           break;
-        case 'list_jobs':
-          const [jobs] = await client.getJobs(queryOptions.options || {});
-          result = jobs;
-          break;
-        case 'list_routines':
-          const [routines] = await client.dataset(queryOptions.datasetId).getRoutines(queryOptions.options || {});
-          result = routines;
-          break;
         case 'query':
-          const options: Query = queryOptions.options || {}
-          options.query = queryOptions.query;
-          const [job] = await client.createQueryJob(options);
-          const [rows] = await job.getQueryResults();
+          const [job] = await client.createQueryJob({ ...this.parseJSON(queryOptions.queryOptions), query: queryOptions.query });
+          const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
           result = rows;
           break;
       }
@@ -46,7 +37,8 @@ export default class Bigquery implements QueryService {
   }
 
   async getConnection(sourceOptions: any, _options?: object): Promise<any> {
-    const privateKey = JSON.parse(sourceOptions['private_key']);
+    const privateKey = this.getPrivateKey(sourceOptions?.private_key);
+
     const client = new BigQuery({
       projectId: privateKey?.project_id,
       credentials: {
@@ -59,11 +51,7 @@ export default class Bigquery implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const privateKey: {
-      project_id: string;
-      client_email: string;
-      private_key: string;
-    } = JSON.parse(sourceOptions?.private_key);
+    const privateKey = this.getPrivateKey(sourceOptions?.private_key);
   
     const client = new BigQuery({
       projectId: privateKey?.project_id,
@@ -82,5 +70,19 @@ export default class Bigquery implements QueryService {
     return {
       status: 'ok',
     };
+  }
+
+  private parseJSON(json?: string): object {
+    if (!json) return {};
+
+    return JSON5.parse(json);
+  }
+
+  private getPrivateKey(configs?: string): {
+    project_id?: string;
+    client_email?: string;
+    private_key?: string;
+  } {
+    return this.parseJSON(configs);
   }
 }

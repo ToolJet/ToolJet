@@ -53,39 +53,7 @@
         "key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ 'filter': 'labels.color:green' }",
-        "description": "Enter options",
-        "height": "150px"
-      }
-    },
-    "list_jobs": {
-      "options": {
-        "label": "Options",
-        "key": "options",
-        "type": "codehinter",
-        "mode": "javascript",
-        "placeholder": "{ 'maxResults': 10 }",
-        "description": "Enter options",
-        "height": "150px"
-      }
-    },
-    "list_routines": {
-      "datasetId": {
-        "label": "Dataset",
-        "key": "datasetId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter dataset",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter dataset"
-      },
-      "options": {
-        "label": "Options",
-        "key": "options",
-        "type": "codehinter",
-        "mode": "javascript",
+        "placeholder": "{ filter: 'labels.color:green' }",
         "description": "Enter options",
         "height": "150px"
       }
@@ -100,13 +68,22 @@
         "description": "Enter query",
         "height": "150px"
       },
-      "options": {
-        "label": "Options",
-        "key": "options",
+      "queryOptions": {
+        "label": "Query options",
+        "key": "queryOptions",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ location: 'US', dryRun: true }",
-        "description": "Enter options",
+        "description": "Enter query options",
+        "height": "150px"
+      },
+      "queryResultsOptions": {
+        "label": "Query results options",
+        "key": "queryResultsOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ wrapIntegers: true }",
+        "description": "Enter Query results options",
         "height": "150px"
       }
     }

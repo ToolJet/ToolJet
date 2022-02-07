@@ -19,6 +19,7 @@
   "dependencies": {
     "@google-cloud/bigquery": "^5.10.0",
     "@tooljet-plugins/common": "file:../common",
+    "json5": "^2.2.0",
     "react": "^17.0.2"
   }
 }

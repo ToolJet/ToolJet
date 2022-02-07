@@ -3,7 +3,9 @@ export type SourceOptions = {
 };
 export type QueryOptions = {
   operation: string;
-  options: object;
+  options: string;
   query: string;
   datasetId: string;
+  queryOptions: string;
+  queryResultsOptions: string;
 };
