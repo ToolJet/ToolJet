@@ -1,0 +1,4060 @@
+{
+  "id": "2c069ded-9922-4ef1-923d-d7b4433b766c",
+  "name": "Job Application Tracker",
+  "slug": "job-application-tracker",
+  "isPublic": true,
+  "organizationId": "7fff090d-7c26-48c4-8a58-c1c8bee62225",
+  "currentVersionId": "d59702de-b67c-4c2c-b5b0-3c89f4a8fa16",
+  "userId": "255e4bf9-ba1e-458e-9269-030735c526ad",
+  "createdAt": "2021-12-15T08:45:35.002Z",
+  "updatedAt": "2022-01-17T15:18:56.408Z",
+  "dataQueries": [
+    {
+      "id": "a2786483-2ab1-4225-abb6-c7c9457ef905",
+      "name": "googlesheetsAppend",
+      "kind": "googlesheets",
+      "options": {
+        "operation": "append",
+        "spreadsheet_id": "1xugVYEkwDZui5ogTtsUGmesRB4QOWAAGuIoKn-lEk1w",
+        "spreadsheet_range": "",
+        "runOnPageLoad": false,
+        "events": [
+          {
+            "eventId": "onDataQuerySuccess",
+            "actionId": "run-query",
+            "message": "Hello world!",
+            "queryId": "d97ba2cf-b8b9-4ea5-b6f5-9e3967763634",
+            "queryName": "googlesheets1"
+          }
+        ],
+        "where_field": "company",
+        "where_value": "{{components.textinput1.value}}",
+        "where_operation": "===",
+        "rows": "[{\"id\": \"{{components.textinput4.value ?? ''}}\", \"company\": \"{{components.textinput1.value ?? ''}}\", \"position\": \"{{components.textinput2.value ?? ''}}\", \"date-applied\": \"{{components.datepicker1.value ?? ''}}\", \"status\": \"{{components.dropdown1.value ?? ''}}\"}]"
+      },
+      "dataSourceId": "ce0b9339-a46d-4728-acad-5ebfb962ace2",
+      "appId": "2c069ded-9922-4ef1-923d-d7b4433b766c",
+      "appVersionId": "d59702de-b67c-4c2c-b5b0-3c89f4a8fa16",
+      "createdAt": "2021-12-15T21:03:20.406Z",
+      "updatedAt": "2022-01-19T09:31:08.565Z"
+    },
+    {
+      "id": "d97ba2cf-b8b9-4ea5-b6f5-9e3967763634",
+      "name": "googlesheets1",
+      "kind": "googlesheets",
+      "options": {
+        "operation": "read",
+        "spreadsheet_id": "1xugVYEkwDZui5ogTtsUGmesRB4QOWAAGuIoKn-lEk1w",
+        "spreadsheet_range": "A1:H100",
+        "runOnPageLoad": true
+      },
+      "dataSourceId": "ce0b9339-a46d-4728-acad-5ebfb962ace2",
+      "appId": "2c069ded-9922-4ef1-923d-d7b4433b766c",
+      "appVersionId": "d59702de-b67c-4c2c-b5b0-3c89f4a8fa16",
+      "createdAt": "2021-12-15T20:42:29.146Z",
+      "updatedAt": "2022-01-19T09:31:08.565Z"
+    },
+    {
+      "id": "40a00654-078d-4dc0-8b5e-bfbfce9999a2",
+      "name": "googlesheetsDelete",
+      "kind": "googlesheets",
+      "options": {
+        "operation": "delete_row",
+        "spreadsheet_id": "1xugVYEkwDZui5ogTtsUGmesRB4QOWAAGuIoKn-lEk1w",
+        "sheet": "0",
+        "row_index": "{{components.dropdown2.value}}",
+        "runOnPageLoad": false,
+        "events": [
+          {
+            "eventId": "onDataQuerySuccess",
+            "actionId": "run-query",
+            "message": "Hello world!",
+            "queryId": "d97ba2cf-b8b9-4ea5-b6f5-9e3967763634",
+            "queryName": "googlesheets1"
+          }
+        ]
+      },
+      "dataSourceId": "ce0b9339-a46d-4728-acad-5ebfb962ace2",
+      "appId": "2c069ded-9922-4ef1-923d-d7b4433b766c",
+      "appVersionId": "d59702de-b67c-4c2c-b5b0-3c89f4a8fa16",
+      "createdAt": "2021-12-15T23:34:42.783Z",
+      "updatedAt": "2022-01-19T09:31:08.565Z"
+    },
+    {
+      "id": "215cb249-3e75-495c-9858-e23844b9e3e2",
+      "name": "googlesheetsUpdate",
+      "kind": "googlesheets",
+      "options": {
+        "operation": "update",
+        "spreadsheet_id": "1xugVYEkwDZui5ogTtsUGmesRB4QOWAAGuIoKn-lEk1w",
+        "runOnPageLoad": false,
+        "events": [
+          {
+            "eventId": "onDataQuerySuccess",
+            "actionId": "run-query",
+            "message": "Hello world!",
+            "queryId": "d97ba2cf-b8b9-4ea5-b6f5-9e3967763634",
+            "queryName": "googlesheets1"
+          }
+        ],
+        "where_field": "id",
+        "where_operation": "===",
+        "where_value": "{{components.dropdown2.value}}",
+        "body": "{{({id: components.textinput4.value, company: components.textinput1.value, position: components.textinput2.value, url: components.textinput3.value, 'date-applied': components.datepicker1.value, status: components.dropdown1.value})}}"
+      },
+      "dataSourceId": "ce0b9339-a46d-4728-acad-5ebfb962ace2",
+      "appId": "2c069ded-9922-4ef1-923d-d7b4433b766c",
+      "appVersionId": "d59702de-b67c-4c2c-b5b0-3c89f4a8fa16",
+      "createdAt": "2021-12-15T23:33:50.149Z",
+      "updatedAt": "2022-01-19T09:31:08.565Z"
+    }
+  ],
+  "dataSources": [
+    {
+      "id": "ce0b9339-a46d-4728-acad-5ebfb962ace2",
+      "name": "Google Sheets",
+      "kind": "googlesheets",
+      "options": {
+        "access_type": {
+          "value": "write",
+          "encrypted": false
+        },
+        "access_token": {
+          "credential_id": "2f4aec24-854f-4220-8c89-685da595891c",
+          "encrypted": true
+        }
+      },
+      "appId": "2c069ded-9922-4ef1-923d-d7b4433b766c",
+      "appVersionId": "d59702de-b67c-4c2c-b5b0-3c89f4a8fa16",
+      "createdAt": "2021-12-15T20:01:30.175Z",
+      "updatedAt": "2022-02-03T14:56:42.624Z"
+    }
+  ],
+  "appVersions": [
+    {
+      "id": "d59702de-b67c-4c2c-b5b0-3c89f4a8fa16",
+      "name": "V1",
+      "definition": {
+        "components": {
+          "1b324a3f-9e7c-44d4-90f6-1242eeef59cb": {
+            "component": {
+              "name": "text1",
+              "displayName": "Text",
+              "description": "Display markdown or HTML",
+              "component": "Text",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Show loading state"
+                }
+              },
+              "defaultSize": {
+                "width": 3,
+                "height": 30
+              },
+              "events": [],
+              "styles": {
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "<h1>Job Application Tracker<h1>"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "textColor": {
+                    "value": "#000"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "layouts": {
+              "desktop": {
+                "top": 30,
+                "left": 41.86046588531589,
+                "width": 9,
+                "height": 60
+              }
+            }
+          },
+          "2560cda0-23cf-44e2-9d76-a550b9567450": {
+            "component": {
+              "name": "container1",
+              "displayName": "Container",
+              "description": "Wrapper for multiple components",
+              "defaultSize": {
+                "width": 5,
+                "height": 200
+              },
+              "component": "Container",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {},
+              "events": {},
+              "styles": {
+                "backgroundColor": {
+                  "type": "color"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "visible": {
+                    "value": true
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "backgroundColor": {
+                    "value": "#fff"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "layouts": {
+              "desktop": {
+                "top": 150,
+                "left": 4.645767448118227,
+                "width": 32,
+                "height": 570
+              }
+            }
+          },
+          "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36": {
+            "component": {
+              "name": "container2",
+              "displayName": "Container",
+              "description": "Wrapper for multiple components",
+              "defaultSize": {
+                "width": 5,
+                "height": 200
+              },
+              "component": "Container",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {},
+              "events": {},
+              "styles": {
+                "backgroundColor": {
+                  "type": "color"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "visible": {
+                    "value": true
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "backgroundColor": {
+                    "value": "#fff"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "layouts": {
+              "desktop": {
+                "top": 150,
+                "left": 81.39534114684113,
+                "width": 7,
+                "height": 570
+              }
+            }
+          },
+          "152beb57-24cb-4e86-b09d-220e36d56fe3": {
+            "component": {
+              "name": "textinput1",
+              "displayName": "Text Input",
+              "description": "Text field for forms",
+              "component": "TextInput",
+              "defaultSize": {
+                "width": 4,
+                "height": 30
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "value": {
+                  "type": "code",
+                  "displayName": "Default value"
+                },
+                "placeholder": {
+                  "type": "code",
+                  "displayName": "Placeholder"
+                }
+              },
+              "validation": {
+                "regex": {
+                  "type": "code",
+                  "displayName": "Regex"
+                },
+                "minLength": {
+                  "type": "code",
+                  "displayName": "Min length"
+                },
+                "maxLength": {
+                  "type": "code",
+                  "displayName": "Max length"
+                },
+                "customRule": {
+                  "type": "code",
+                  "displayName": "Custom validation"
+                }
+              },
+              "events": {},
+              "styles": {
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {
+                "value": ""
+              },
+              "definition": {
+                "validation": {
+                  "regex": {
+                    "value": ""
+                  },
+                  "minLength": {
+                    "value": null
+                  },
+                  "maxLength": {
+                    "value": null
+                  },
+                  "customRule": {
+                    "value": null
+                  }
+                },
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "value": {
+                    "value": ""
+                  },
+                  "placeholder": {
+                    "value": "Company Name"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+            "layouts": {
+              "desktop": {
+                "top": 110,
+                "left": 7.112299072589562,
+                "width": 35.93058840767797,
+                "height": 30
+              }
+            },
+            "id": "152beb57-24cb-4e86-b09d-220e36d56fe3"
+          },
+          "b03e3e60-945f-4893-a573-0570eaa66c02": {
+            "component": {
+              "name": "textinput2",
+              "displayName": "Text Input",
+              "description": "Text field for forms",
+              "component": "TextInput",
+              "defaultSize": {
+                "width": 4,
+                "height": 30
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "value": {
+                  "type": "code",
+                  "displayName": "Default value"
+                },
+                "placeholder": {
+                  "type": "code",
+                  "displayName": "Placeholder"
+                }
+              },
+              "validation": {
+                "regex": {
+                  "type": "code",
+                  "displayName": "Regex"
+                },
+                "minLength": {
+                  "type": "code",
+                  "displayName": "Min length"
+                },
+                "maxLength": {
+                  "type": "code",
+                  "displayName": "Max length"
+                },
+                "customRule": {
+                  "type": "code",
+                  "displayName": "Custom validation"
+                }
+              },
+              "events": {},
+              "styles": {
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {
+                "value": ""
+              },
+              "definition": {
+                "validation": {
+                  "regex": {
+                    "value": ""
+                  },
+                  "minLength": {
+                    "value": null
+                  },
+                  "maxLength": {
+                    "value": null
+                  },
+                  "customRule": {
+                    "value": null
+                  }
+                },
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "value": {
+                    "value": ""
+                  },
+                  "placeholder": {
+                    "value": "Position"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+            "layouts": {
+              "desktop": {
+                "top": 160,
+                "left": 7.914394427590114,
+                "width": 35.93058840767797,
+                "height": 30
+              }
+            },
+            "id": "b03e3e60-945f-4893-a573-0570eaa66c02"
+          },
+          "5304206b-1413-44ea-bf64-f7d66ddea30b": {
+            "component": {
+              "name": "dropdown1",
+              "displayName": "Dropdown",
+              "description": "Select one value from options",
+              "defaultSize": {
+                "width": 8,
+                "height": 30
+              },
+              "component": "DropDown",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "validation": {
+                "customRule": {
+                  "type": "code",
+                  "displayName": "Custom validation"
+                }
+              },
+              "properties": {
+                "label": {
+                  "type": "code",
+                  "displayName": "Label"
+                },
+                "value": {
+                  "type": "code",
+                  "displayName": "Default value"
+                },
+                "values": {
+                  "type": "code",
+                  "displayName": "Option values"
+                },
+                "display_values": {
+                  "type": "code",
+                  "displayName": "Option labels"
+                }
+              },
+              "events": {
+                "onSelect": {
+                  "displayName": "On select"
+                }
+              },
+              "styles": {
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {
+                "value": null
+              },
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "validation": {
+                  "customRule": {
+                    "value": null
+                  }
+                },
+                "properties": {
+                  "label": {
+                    "value": ""
+                  },
+                  "value": {
+                    "value": "{{\"1\"}}"
+                  },
+                  "values": {
+                    "value": "{{[\"wishlist\", \"applied\", \"interview\", \"offer\", \"rejected\"]}}"
+                  },
+                  "display_values": {
+                    "value": "{{[\"wishlist\", \"applied\", \"interview\", \"offer\", \"rejected\"]}}"
+                  },
+                  "visible": {
+                    "value": true
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+            "layouts": {
+              "desktop": {
+                "top": 310,
+                "left": 7.734300224510034,
+                "width": 35.94398509618404,
+                "height": 30
+              }
+            },
+            "id": "5304206b-1413-44ea-bf64-f7d66ddea30b"
+          },
+          "2af3d2e6-af6a-40bd-ae59-e7b25a1d9764": {
+            "component": {
+              "name": "table1",
+              "displayName": "Table",
+              "description": "Display paginated tabular data",
+              "component": "Table",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "displayName": "Title"
+                },
+                "data": {
+                  "type": "code",
+                  "displayName": "Table data"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Loading state"
+                },
+                "columns": {
+                  "type": "array",
+                  "displayName": "Table Columns"
+                },
+                "serverSidePagination": {
+                  "type": "toggle",
+                  "displayName": "Server-side pagination"
+                },
+                "clientSidePagination": {
+                  "type": "toggle",
+                  "displayName": "Client-side pagination"
+                },
+                "serverSideSearch": {
+                  "type": "toggle",
+                  "displayName": "Server-side search"
+                },
+                "actionButtonBackgroundColor": {
+                  "type": "color",
+                  "displayName": "Background color"
+                },
+                "actionButtonTextColor": {
+                  "type": "color",
+                  "displayName": "Text color"
+                },
+                "displaySearchBox": {
+                  "type": "toggle",
+                  "displayName": "Show search box"
+                },
+                "showDownloadButton": {
+                  "type": "toggle",
+                  "displayName": "Show download button"
+                },
+                "showFilterButton": {
+                  "type": "toggle",
+                  "displayName": "Show filter button"
+                },
+                "showBulkUpdateActions": {
+                  "type": "toggle",
+                  "displayName": "Show bulk update actions"
+                },
+                "showBulkSelector": {
+                  "type": "toggle",
+                  "displayName": "Bulk selection"
+                },
+                "highlightSelectedRow": {
+                  "type": "toggle",
+                  "displayName": "Highlight selected row"
+                }
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop "
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "defaultSize": {
+                "width": 20,
+                "height": 300
+              },
+              "events": {
+                "onRowClicked": {
+                  "displayName": "Row clicked"
+                },
+                "onBulkUpdate": {
+                  "displayName": "Bulk update"
+                },
+                "onPageChanged": {
+                  "displayName": "Page changed"
+                },
+                "onSearch": {
+                  "displayName": "Search"
+                }
+              },
+              "styles": {
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                },
+                "tableType": {
+                  "type": "select",
+                  "displayName": "Table type",
+                  "options": [
+                    {
+                      "name": "Bordered",
+                      "value": ""
+                    },
+                    {
+                      "name": "Borderless",
+                      "value": "table-borderless"
+                    },
+                    {
+                      "name": "Classic",
+                      "value": "table-classic"
+                    },
+                    {
+                      "name": "Striped",
+                      "value": "table-striped"
+                    },
+                    {
+                      "name": "Striped & bordered",
+                      "value": "table-striped table-bordered"
+                    }
+                  ]
+                },
+                "cellSize": {
+                  "type": "select",
+                  "displayName": "Cell size",
+                  "options": [
+                    {
+                      "name": "Compact",
+                      "value": "compact"
+                    },
+                    {
+                      "name": "Spacious",
+                      "value": "spacious"
+                    }
+                  ]
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {
+                "selectedRow": {},
+                "changeSet": {},
+                "dataUpdates": [],
+                "pageIndex": 0,
+                "searchText": "",
+                "selectedRows": []
+              },
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "title": {
+                    "value": "Table"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{[object Object]}}"
+                  },
+                  "data": {
+                    "value": "{{queries.googlesheets1.data}}"
+                  },
+                  "serverSidePagination": {
+                    "value": false
+                  },
+                  "clientSidePagination": {
+                    "value": false
+                  },
+                  "displaySearchBox": {
+                    "value": true
+                  },
+                  "showDownloadButton": {
+                    "value": true
+                  },
+                  "showFilterButton": {
+                    "value": true
+                  },
+                  "columns": {
+                    "value": [
+                      {
+                        "name": "id",
+                        "id": "35f092ef-2eba-4504-ba01-72546b5b9f1d"
+                      },
+                      {
+                        "name": "Company",
+                        "id": "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737",
+                        "key": "company"
+                      },
+                      {
+                        "name": "Position",
+                        "id": "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a",
+                        "key": "position"
+                      },
+                      {
+                        "name": "Date Applied",
+                        "id": "1f7e4a2a-8763-4cf0-bf40-f2a704d0e327",
+                        "key": "date-applied",
+                        "columnType": "default"
+                      },
+                      {
+                        "name": "Status",
+                        "id": "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f",
+                        "key": "status"
+                      }
+                    ]
+                  },
+                  "showBulkUpdateActions": {
+                    "value": true
+                  },
+                  "showBulkSelector": {
+                    "value": false
+                  },
+                  "highlightSelectedRow": {
+                    "value": false
+                  },
+                  "columnSizes": {
+                    "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f": 150,
+                    "1f7e4a2a-8763-4cf0-bf40-f2a704d0e327": 176,
+                    "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a": 180,
+                    "rightActions": 161,
+                    "35f092ef-2eba-4504-ba01-72546b5b9f1d": 33,
+                    "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737": 206
+                  },
+                  "actions": {
+                    "value": [
+                      {
+                        "name": "Action0",
+                        "buttonText": "Open Application",
+                        "events": [
+                          {
+                            "eventId": "onClick",
+                            "actionId": "open-webpage",
+                            "message": "Hello world!",
+                            "url": "{{components.table1.selectedRow.url}}"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "textColor": {},
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  },
+                  "cellSize": {
+                    "value": "compact"
+                  }
+                }
+              }
+            },
+            "parent": "2560cda0-23cf-44e2-9d76-a550b9567450",
+            "layouts": {
+              "desktop": {
+                "top": 48,
+                "left": 1.2674399905548228,
+                "width": 41.98523840740829,
+                "height": 480
+              }
+            }
+          },
+          "d84f30d6-6986-4427-b0c9-c1dcd3edda0c": {
+            "component": {
+              "name": "text2",
+              "displayName": "Text",
+              "description": "Display markdown or HTML",
+              "component": "Text",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Show loading state"
+                }
+              },
+              "defaultSize": {
+                "width": 3,
+                "height": 30
+              },
+              "events": [],
+              "styles": {
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "<b>Modify Applications</b>"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "textColor": {
+                    "value": "#000"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+            "layouts": {
+              "desktop": {
+                "top": 20,
+                "left": 17.602561037353734,
+                "width": 30.09585609723763,
+                "height": 30
+              }
+            }
+          },
+          "06da8521-92c2-402e-ab4a-89f8db7f226a": {
+            "component": {
+              "name": "text3",
+              "displayName": "Text",
+              "description": "Display markdown or HTML",
+              "component": "Text",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Show loading state"
+                }
+              },
+              "defaultSize": {
+                "width": 3,
+                "height": 30
+              },
+              "events": [],
+              "styles": {
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "<b>Job Applications</b>"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "textColor": {
+                    "value": "#000"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "2560cda0-23cf-44e2-9d76-a550b9567450",
+            "layouts": {
+              "desktop": {
+                "top": 10,
+                "left": 41.939886435635685,
+                "width": 5.0048517307889675,
+                "height": 30
+              }
+            }
+          },
+          "017a2ab5-5025-409f-9822-bd0c576aa41f": {
+            "component": {
+              "name": "button1",
+              "displayName": "Button",
+              "description": "Trigger actions: queries, alerts etc",
+              "component": "Button",
+              "defaultSize": {
+                "width": 3,
+                "height": 30
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Button Text"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Loading State"
+                }
+              },
+              "events": {
+                "onClick": {
+                  "displayName": "On click"
+                }
+              },
+              "styles": {
+                "backgroundColor": {
+                  "type": "color",
+                  "displayName": "Background color"
+                },
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text color"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                },
+                "borderRadius": {
+                  "type": "code",
+                  "displayName": "Border radius"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "Create"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
+                },
+                "events": [
+                  {
+                    "eventId": "onClick",
+                    "actionId": "run-query",
+                    "message": "Hello world!",
+                    "queryId": "a2786483-2ab1-4225-abb6-c7c9457ef905",
+                    "queryName": "googlesheetscompany"
+                  }
+                ],
+                "styles": {
+                  "backgroundColor": {
+                    "value": "#2b8a69"
+                  },
+                  "textColor": {
+                    "value": "#fff"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "borderRadius": {
+                    "value": "{{5}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+            "layouts": {
+              "desktop": {
+                "top": 360,
+                "left": 19.033978144608994,
+                "width": 24.93534004563247,
+                "height": 30
+              }
+            }
+          },
+          "04e62296-5320-450e-b9ad-5a577a4b7f1f": {
+            "component": {
+              "name": "text4",
+              "displayName": "Text",
+              "description": "Display markdown or HTML",
+              "component": "Text",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Show loading state"
+                }
+              },
+              "defaultSize": {
+                "width": 3,
+                "height": 30
+              },
+              "events": [],
+              "styles": {
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "Welcome! Organize all your job applications in one place.<br>\nAdd, update or delete applications from the Modify Application section."
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "textColor": {
+                    "value": "#000"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "layouts": {
+              "desktop": {
+                "top": 90,
+                "left": 4.651163532268891,
+                "width": 21,
+                "height": 50
+              }
+            }
+          },
+          "2113ef8f-5e58-4970-ac46-7a7d712a7a06": {
+            "component": {
+              "name": "datepicker1",
+              "displayName": "Date Picker",
+              "description": "Select a date and time",
+              "component": "Datepicker",
+              "defaultSize": {
+                "width": 4,
+                "height": 30
+              },
+              "validation": {
+                "customRule": {
+                  "type": "code",
+                  "displayName": "Custom validation"
+                }
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "defaultValue": {
+                  "type": "code",
+                  "displayName": "Default value"
+                },
+                "format": {
+                  "type": "code",
+                  "displayName": "Format"
+                },
+                "enableTime": {
+                  "type": "code",
+                  "displayName": "Enable time selection?"
+                },
+                "enableDate": {
+                  "type": "code",
+                  "displayName": "Enable date selection?"
+                }
+              },
+              "events": {},
+              "styles": {
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {
+                "value": ""
+              },
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "validation": {
+                  "customRule": {
+                    "value": null
+                  }
+                },
+                "properties": {
+                  "defaultValue": {
+                    "value": "01/04/2021"
+                  },
+                  "format": {
+                    "value": "DD/MM/YYYY"
+                  },
+                  "enableTime": {
+                    "value": "{{false}}"
+                  },
+                  "enableDate": {
+                    "value": "{{true}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+            "layouts": {
+              "desktop": {
+                "top": 260,
+                "left": 7.593904518016088,
+                "width": 35.93058840767797,
+                "height": 30
+              }
+            }
+          },
+          "27de8655-5174-4477-9aaa-58dae906bdcc": {
+            "component": {
+              "name": "textinput3",
+              "displayName": "Text Input",
+              "description": "Text field for forms",
+              "component": "TextInput",
+              "defaultSize": {
+                "width": 4,
+                "height": 30
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "value": {
+                  "type": "code",
+                  "displayName": "Default value"
+                },
+                "placeholder": {
+                  "type": "code",
+                  "displayName": "Placeholder"
+                }
+              },
+              "validation": {
+                "regex": {
+                  "type": "code",
+                  "displayName": "Regex"
+                },
+                "minLength": {
+                  "type": "code",
+                  "displayName": "Min length"
+                },
+                "maxLength": {
+                  "type": "code",
+                  "displayName": "Max length"
+                },
+                "customRule": {
+                  "type": "code",
+                  "displayName": "Custom validation"
+                }
+              },
+              "events": {},
+              "styles": {
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {
+                "value": ""
+              },
+              "definition": {
+                "validation": {
+                  "regex": {
+                    "value": ""
+                  },
+                  "minLength": {
+                    "value": null
+                  },
+                  "maxLength": {
+                    "value": null
+                  },
+                  "customRule": {
+                    "value": null
+                  }
+                },
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "value": {
+                    "value": ""
+                  },
+                  "placeholder": {
+                    "value": "Application URL"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+            "layouts": {
+              "desktop": {
+                "top": 210,
+                "left": 7.18101693802521,
+                "width": 36.13700904974218,
+                "height": 30
+              }
+            }
+          },
+          "068188b9-66a4-4ff8-99f0-e5aed2a416ec": {
+            "component": {
+              "name": "textinput4",
+              "displayName": "Text Input",
+              "description": "Text field for forms",
+              "component": "TextInput",
+              "defaultSize": {
+                "width": 4,
+                "height": 30
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "value": {
+                  "type": "code",
+                  "displayName": "Default value"
+                },
+                "placeholder": {
+                  "type": "code",
+                  "displayName": "Placeholder"
+                }
+              },
+              "validation": {
+                "regex": {
+                  "type": "code",
+                  "displayName": "Regex"
+                },
+                "minLength": {
+                  "type": "code",
+                  "displayName": "Min length"
+                },
+                "maxLength": {
+                  "type": "code",
+                  "displayName": "Max length"
+                },
+                "customRule": {
+                  "type": "code",
+                  "displayName": "Custom validation"
+                }
+              },
+              "events": {
+                "onChange": {
+                  "displayName": "On change"
+                }
+              },
+              "styles": {
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {
+                "value": ""
+              },
+              "definition": {
+                "validation": {
+                  "regex": {
+                    "value": ""
+                  },
+                  "minLength": {
+                    "value": null
+                  },
+                  "maxLength": {
+                    "value": null
+                  },
+                  "customRule": {
+                    "value": null
+                  }
+                },
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "value": {
+                    "value": ""
+                  },
+                  "placeholder": {
+                    "value": "ID"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+            "layouts": {
+              "desktop": {
+                "top": 60,
+                "left": 7.18101693802521,
+                "width": 35.93058840767797,
+                "height": 30
+              }
+            }
+          },
+          "4453bfc0-f076-4f74-a458-0edeb0dbe3ed": {
+            "component": {
+              "name": "button2",
+              "displayName": "Button",
+              "description": "Trigger actions: queries, alerts etc",
+              "component": "Button",
+              "defaultSize": {
+                "width": 3,
+                "height": 30
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Button Text"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Loading State"
+                }
+              },
+              "events": {
+                "onClick": {
+                  "displayName": "On click"
+                }
+              },
+              "styles": {
+                "backgroundColor": {
+                  "type": "color",
+                  "displayName": "Background color"
+                },
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text color"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                },
+                "borderRadius": {
+                  "type": "code",
+                  "displayName": "Border radius"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "Update"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
+                },
+                "events": [
+                  {
+                    "eventId": "onClick",
+                    "actionId": "run-query",
+                    "message": "Hello world!",
+                    "alertType": "info",
+                    "queryId": "215cb249-3e75-495c-9858-e23844b9e3e2",
+                    "queryName": "googlesheetsUpdate"
+                  }
+                ],
+                "styles": {
+                  "backgroundColor": {
+                    "value": "#0e3e77"
+                  },
+                  "textColor": {
+                    "value": "#fff"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "borderRadius": {
+                    "value": "{{5}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+            "layouts": {
+              "desktop": {
+                "top": 460,
+                "left": 19.58412733925807,
+                "width": 24.93534004563247,
+                "height": 30
+              }
+            }
+          },
+          "37646292-7f05-43c2-9757-b995bd0bc123": {
+            "component": {
+              "name": "dropdown2",
+              "displayName": "Dropdown",
+              "description": "Select one value from options",
+              "defaultSize": {
+                "width": 8,
+                "height": 30
+              },
+              "component": "DropDown",
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "validation": {
+                "customRule": {
+                  "type": "code",
+                  "displayName": "Custom validation"
+                }
+              },
+              "properties": {
+                "label": {
+                  "type": "code",
+                  "displayName": "Label"
+                },
+                "value": {
+                  "type": "code",
+                  "displayName": "Default value"
+                },
+                "values": {
+                  "type": "code",
+                  "displayName": "Option values"
+                },
+                "display_values": {
+                  "type": "code",
+                  "displayName": "Option labels"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Options loading state"
+                }
+              },
+              "events": {
+                "onSelect": {
+                  "displayName": "On select"
+                },
+                "onSearchTextChanged": {
+                  "displayName": "On search text changed"
+                }
+              },
+              "styles": {
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                }
+              },
+              "exposedVariables": {
+                "value": null,
+                "searchText": ""
+              },
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "validation": {
+                  "customRule": {
+                    "value": null
+                  }
+                },
+                "properties": {
+                  "label": {
+                    "value": "Row"
+                  },
+                  "value": {
+                    "value": ""
+                  },
+                  "values": {
+                    "value": "{{queries.googlesheets1.data.map((datum) => datum[\"id\"])}}"
+                  },
+                  "display_values": {
+                    "value": "{{queries.googlesheets1.data.map((datum) => datum[\"id\"])}}"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
+                },
+                "events": [],
+                "styles": {
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+            "layouts": {
+              "desktop": {
+                "top": 410,
+                "left": 10.203674397390534,
+                "width": 33.87977867554198,
+                "height": 30
+              }
+            }
+          },
+          "3a7fd4c7-dd32-4857-8c57-7993067628ec": {
+            "component": {
+              "name": "button3",
+              "displayName": "Button",
+              "description": "Trigger actions: queries, alerts etc",
+              "component": "Button",
+              "defaultSize": {
+                "width": 3,
+                "height": 30
+              },
+              "others": {
+                "showOnDesktop": {
+                  "type": "toggle",
+                  "displayName": "Show on desktop"
+                },
+                "showOnMobile": {
+                  "type": "toggle",
+                  "displayName": "Show on mobile"
+                }
+              },
+              "properties": {
+                "text": {
+                  "type": "code",
+                  "displayName": "Button Text"
+                },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Loading State"
+                }
+              },
+              "events": {
+                "onClick": {
+                  "displayName": "On click"
+                }
+              },
+              "styles": {
+                "backgroundColor": {
+                  "type": "color",
+                  "displayName": "Background color"
+                },
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text color"
+                },
+                "visibility": {
+                  "type": "code",
+                  "displayName": "Visibility"
+                },
+                "disabledState": {
+                  "type": "code",
+                  "displayName": "Disable"
+                },
+                "borderRadius": {
+                  "type": "code",
+                  "displayName": "Border radius"
+                }
+              },
+              "exposedVariables": {},
+              "definition": {
+                "others": {
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
+                },
+                "properties": {
+                  "text": {
+                    "value": "Delete"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
+                },
+                "events": [
+                  {
+                    "eventId": "onClick",
+                    "actionId": "run-query",
+                    "message": "Hello world!",
+                    "alertType": "info",
+                    "queryId": "40a00654-078d-4dc0-8b5e-bfbfce9999a2",
+                    "queryName": "googlesheetsDelete"
+                  }
+                ],
+                "styles": {
+                  "backgroundColor": {
+                    "value": "#d0021b"
+                  },
+                  "textColor": {
+                    "value": "#fff"
+                  },
+                  "visibility": {
+                    "value": "{{true}}"
+                  },
+                  "borderRadius": {
+                    "value": "{{5}}"
+                  },
+                  "disabledState": {
+                    "value": "{{false}}"
+                  }
+                }
+              }
+            },
+            "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+            "layouts": {
+              "desktop": {
+                "top": 510,
+                "left": 19.64855033810399,
+                "width": 24.935340045632472,
+                "height": 30
+              }
+            }
+          }
+        },
+        "globalSettings": {
+          "hideHeader": false,
+          "canvasMaxWidth": 1292,
+          "canvasBackgroundColor": "#edeff5"
+        }
+      },
+      "appId": "2c069ded-9922-4ef1-923d-d7b4433b766c",
+      "createdAt": "2021-12-15T21:54:07.261Z",
+      "updatedAt": "2022-01-19T13:12:04.860Z"
+    }
+  ],
+  "editingVersion": {
+    "id": "d59702de-b67c-4c2c-b5b0-3c89f4a8fa16",
+    "name": "V1",
+    "definition": {
+      "components": {
+        "1b324a3f-9e7c-44d4-90f6-1242eeef59cb": {
+          "component": {
+            "name": "text1",
+            "displayName": "Text",
+            "description": "Display markdown or HTML",
+            "component": "Text",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Show loading state"
+              }
+            },
+            "defaultSize": {
+              "width": 3,
+              "height": 30
+            },
+            "events": [],
+            "styles": {
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "<h1>Job Application Tracker<h1>"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "textColor": {
+                  "value": "#000"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "layouts": {
+            "desktop": {
+              "top": 30,
+              "left": 41.86046588531589,
+              "width": 9,
+              "height": 60
+            }
+          }
+        },
+        "2560cda0-23cf-44e2-9d76-a550b9567450": {
+          "component": {
+            "name": "container1",
+            "displayName": "Container",
+            "description": "Wrapper for multiple components",
+            "defaultSize": {
+              "width": 5,
+              "height": 200
+            },
+            "component": "Container",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {},
+            "events": {},
+            "styles": {
+              "backgroundColor": {
+                "type": "color"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "visible": {
+                  "value": true
+                }
+              },
+              "events": [],
+              "styles": {
+                "backgroundColor": {
+                  "value": "#fff"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "layouts": {
+            "desktop": {
+              "top": 150,
+              "left": 4.645767448118227,
+              "width": 32,
+              "height": 570
+            }
+          }
+        },
+        "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36": {
+          "component": {
+            "name": "container2",
+            "displayName": "Container",
+            "description": "Wrapper for multiple components",
+            "defaultSize": {
+              "width": 5,
+              "height": 200
+            },
+            "component": "Container",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {},
+            "events": {},
+            "styles": {
+              "backgroundColor": {
+                "type": "color"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "visible": {
+                  "value": true
+                }
+              },
+              "events": [],
+              "styles": {
+                "backgroundColor": {
+                  "value": "#fff"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "layouts": {
+            "desktop": {
+              "top": 150,
+              "left": 81.39534114684113,
+              "width": 7,
+              "height": 570
+            }
+          }
+        },
+        "152beb57-24cb-4e86-b09d-220e36d56fe3": {
+          "component": {
+            "name": "textinput1",
+            "displayName": "Text Input",
+            "description": "Text field for forms",
+            "component": "TextInput",
+            "defaultSize": {
+              "width": 4,
+              "height": 30
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "value": {
+                "type": "code",
+                "displayName": "Default value"
+              },
+              "placeholder": {
+                "type": "code",
+                "displayName": "Placeholder"
+              }
+            },
+            "validation": {
+              "regex": {
+                "type": "code",
+                "displayName": "Regex"
+              },
+              "minLength": {
+                "type": "code",
+                "displayName": "Min length"
+              },
+              "maxLength": {
+                "type": "code",
+                "displayName": "Max length"
+              },
+              "customRule": {
+                "type": "code",
+                "displayName": "Custom validation"
+              }
+            },
+            "events": {},
+            "styles": {
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {
+              "value": ""
+            },
+            "definition": {
+              "validation": {
+                "regex": {
+                  "value": ""
+                },
+                "minLength": {
+                  "value": null
+                },
+                "maxLength": {
+                  "value": null
+                },
+                "customRule": {
+                  "value": null
+                }
+              },
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "value": {
+                  "value": ""
+                },
+                "placeholder": {
+                  "value": "Company Name"
+                }
+              },
+              "events": [],
+              "styles": {
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+          "layouts": {
+            "desktop": {
+              "top": 110,
+              "left": 7.112299072589562,
+              "width": 35.93058840767797,
+              "height": 30
+            }
+          },
+          "id": "152beb57-24cb-4e86-b09d-220e36d56fe3"
+        },
+        "b03e3e60-945f-4893-a573-0570eaa66c02": {
+          "component": {
+            "name": "textinput2",
+            "displayName": "Text Input",
+            "description": "Text field for forms",
+            "component": "TextInput",
+            "defaultSize": {
+              "width": 4,
+              "height": 30
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "value": {
+                "type": "code",
+                "displayName": "Default value"
+              },
+              "placeholder": {
+                "type": "code",
+                "displayName": "Placeholder"
+              }
+            },
+            "validation": {
+              "regex": {
+                "type": "code",
+                "displayName": "Regex"
+              },
+              "minLength": {
+                "type": "code",
+                "displayName": "Min length"
+              },
+              "maxLength": {
+                "type": "code",
+                "displayName": "Max length"
+              },
+              "customRule": {
+                "type": "code",
+                "displayName": "Custom validation"
+              }
+            },
+            "events": {},
+            "styles": {
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {
+              "value": ""
+            },
+            "definition": {
+              "validation": {
+                "regex": {
+                  "value": ""
+                },
+                "minLength": {
+                  "value": null
+                },
+                "maxLength": {
+                  "value": null
+                },
+                "customRule": {
+                  "value": null
+                }
+              },
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "value": {
+                  "value": ""
+                },
+                "placeholder": {
+                  "value": "Position"
+                }
+              },
+              "events": [],
+              "styles": {
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+          "layouts": {
+            "desktop": {
+              "top": 160,
+              "left": 7.914394427590114,
+              "width": 35.93058840767797,
+              "height": 30
+            }
+          },
+          "id": "b03e3e60-945f-4893-a573-0570eaa66c02"
+        },
+        "5304206b-1413-44ea-bf64-f7d66ddea30b": {
+          "component": {
+            "name": "dropdown1",
+            "displayName": "Dropdown",
+            "description": "Select one value from options",
+            "defaultSize": {
+              "width": 8,
+              "height": 30
+            },
+            "component": "DropDown",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "validation": {
+              "customRule": {
+                "type": "code",
+                "displayName": "Custom validation"
+              }
+            },
+            "properties": {
+              "label": {
+                "type": "code",
+                "displayName": "Label"
+              },
+              "value": {
+                "type": "code",
+                "displayName": "Default value"
+              },
+              "values": {
+                "type": "code",
+                "displayName": "Option values"
+              },
+              "display_values": {
+                "type": "code",
+                "displayName": "Option labels"
+              }
+            },
+            "events": {
+              "onSelect": {
+                "displayName": "On select"
+              }
+            },
+            "styles": {
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {
+              "value": null
+            },
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "validation": {
+                "customRule": {
+                  "value": null
+                }
+              },
+              "properties": {
+                "label": {
+                  "value": ""
+                },
+                "value": {
+                  "value": "{{\"1\"}}"
+                },
+                "values": {
+                  "value": "{{[\"wishlist\", \"applied\", \"interview\", \"offer\", \"rejected\"]}}"
+                },
+                "display_values": {
+                  "value": "{{[\"wishlist\", \"applied\", \"interview\", \"offer\", \"rejected\"]}}"
+                },
+                "visible": {
+                  "value": true
+                }
+              },
+              "events": [],
+              "styles": {
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+          "layouts": {
+            "desktop": {
+              "top": 310,
+              "left": 7.734300224510034,
+              "width": 35.94398509618404,
+              "height": 30
+            }
+          },
+          "id": "5304206b-1413-44ea-bf64-f7d66ddea30b"
+        },
+        "2af3d2e6-af6a-40bd-ae59-e7b25a1d9764": {
+          "component": {
+            "name": "table1",
+            "displayName": "Table",
+            "description": "Display paginated tabular data",
+            "component": "Table",
+            "properties": {
+              "title": {
+                "type": "string",
+                "displayName": "Title"
+              },
+              "data": {
+                "type": "code",
+                "displayName": "Table data"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Loading state"
+              },
+              "columns": {
+                "type": "array",
+                "displayName": "Table Columns"
+              },
+              "serverSidePagination": {
+                "type": "toggle",
+                "displayName": "Server-side pagination"
+              },
+              "clientSidePagination": {
+                "type": "toggle",
+                "displayName": "Client-side pagination"
+              },
+              "serverSideSearch": {
+                "type": "toggle",
+                "displayName": "Server-side search"
+              },
+              "actionButtonBackgroundColor": {
+                "type": "color",
+                "displayName": "Background color"
+              },
+              "actionButtonTextColor": {
+                "type": "color",
+                "displayName": "Text color"
+              },
+              "displaySearchBox": {
+                "type": "toggle",
+                "displayName": "Show search box"
+              },
+              "showDownloadButton": {
+                "type": "toggle",
+                "displayName": "Show download button"
+              },
+              "showFilterButton": {
+                "type": "toggle",
+                "displayName": "Show filter button"
+              },
+              "showBulkUpdateActions": {
+                "type": "toggle",
+                "displayName": "Show bulk update actions"
+              },
+              "showBulkSelector": {
+                "type": "toggle",
+                "displayName": "Bulk selection"
+              },
+              "highlightSelectedRow": {
+                "type": "toggle",
+                "displayName": "Highlight selected row"
+              }
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop "
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "defaultSize": {
+              "width": 20,
+              "height": 300
+            },
+            "events": {
+              "onRowClicked": {
+                "displayName": "Row clicked"
+              },
+              "onBulkUpdate": {
+                "displayName": "Bulk update"
+              },
+              "onPageChanged": {
+                "displayName": "Page changed"
+              },
+              "onSearch": {
+                "displayName": "Search"
+              }
+            },
+            "styles": {
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              },
+              "tableType": {
+                "type": "select",
+                "displayName": "Table type",
+                "options": [
+                  {
+                    "name": "Bordered",
+                    "value": ""
+                  },
+                  {
+                    "name": "Borderless",
+                    "value": "table-borderless"
+                  },
+                  {
+                    "name": "Classic",
+                    "value": "table-classic"
+                  },
+                  {
+                    "name": "Striped",
+                    "value": "table-striped"
+                  },
+                  {
+                    "name": "Striped & bordered",
+                    "value": "table-striped table-bordered"
+                  }
+                ]
+              },
+              "cellSize": {
+                "type": "select",
+                "displayName": "Cell size",
+                "options": [
+                  {
+                    "name": "Compact",
+                    "value": "compact"
+                  },
+                  {
+                    "name": "Spacious",
+                    "value": "spacious"
+                  }
+                ]
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {
+              "selectedRow": {},
+              "changeSet": {},
+              "dataUpdates": [],
+              "pageIndex": 0,
+              "searchText": "",
+              "selectedRows": []
+            },
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "title": {
+                  "value": "Table"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{[object Object]}}"
+                },
+                "data": {
+                  "value": "{{queries.googlesheets1.data}}"
+                },
+                "serverSidePagination": {
+                  "value": false
+                },
+                "clientSidePagination": {
+                  "value": false
+                },
+                "displaySearchBox": {
+                  "value": true
+                },
+                "showDownloadButton": {
+                  "value": true
+                },
+                "showFilterButton": {
+                  "value": true
+                },
+                "columns": {
+                  "value": [
+                    {
+                      "name": "id",
+                      "id": "35f092ef-2eba-4504-ba01-72546b5b9f1d"
+                    },
+                    {
+                      "name": "Company",
+                      "id": "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737",
+                      "key": "company"
+                    },
+                    {
+                      "name": "Position",
+                      "id": "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a",
+                      "key": "position"
+                    },
+                    {
+                      "name": "Date Applied",
+                      "id": "1f7e4a2a-8763-4cf0-bf40-f2a704d0e327",
+                      "key": "date-applied",
+                      "columnType": "default"
+                    },
+                    {
+                      "name": "Status",
+                      "id": "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f",
+                      "key": "status"
+                    }
+                  ]
+                },
+                "showBulkUpdateActions": {
+                  "value": true
+                },
+                "showBulkSelector": {
+                  "value": false
+                },
+                "highlightSelectedRow": {
+                  "value": false
+                },
+                "columnSizes": {
+                  "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f": 150,
+                  "1f7e4a2a-8763-4cf0-bf40-f2a704d0e327": 176,
+                  "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a": 180,
+                  "rightActions": 161,
+                  "35f092ef-2eba-4504-ba01-72546b5b9f1d": 33,
+                  "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737": 206
+                },
+                "actions": {
+                  "value": [
+                    {
+                      "name": "Action0",
+                      "buttonText": "Open Application",
+                      "events": [
+                        {
+                          "eventId": "onClick",
+                          "actionId": "open-webpage",
+                          "message": "Hello world!",
+                          "url": "{{components.table1.selectedRow.url}}"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "events": [],
+              "styles": {
+                "textColor": {},
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                },
+                "cellSize": {
+                  "value": "compact"
+                }
+              }
+            }
+          },
+          "parent": "2560cda0-23cf-44e2-9d76-a550b9567450",
+          "layouts": {
+            "desktop": {
+              "top": 48,
+              "left": 1.2674399905548228,
+              "width": 41.98523840740829,
+              "height": 480
+            }
+          }
+        },
+        "d84f30d6-6986-4427-b0c9-c1dcd3edda0c": {
+          "component": {
+            "name": "text2",
+            "displayName": "Text",
+            "description": "Display markdown or HTML",
+            "component": "Text",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Show loading state"
+              }
+            },
+            "defaultSize": {
+              "width": 3,
+              "height": 30
+            },
+            "events": [],
+            "styles": {
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "<b>Modify Applications</b>"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "textColor": {
+                  "value": "#000"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+          "layouts": {
+            "desktop": {
+              "top": 20,
+              "left": 17.602561037353734,
+              "width": 30.09585609723763,
+              "height": 30
+            }
+          }
+        },
+        "06da8521-92c2-402e-ab4a-89f8db7f226a": {
+          "component": {
+            "name": "text3",
+            "displayName": "Text",
+            "description": "Display markdown or HTML",
+            "component": "Text",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Show loading state"
+              }
+            },
+            "defaultSize": {
+              "width": 3,
+              "height": 30
+            },
+            "events": [],
+            "styles": {
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "<b>Job Applications</b>"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "textColor": {
+                  "value": "#000"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "2560cda0-23cf-44e2-9d76-a550b9567450",
+          "layouts": {
+            "desktop": {
+              "top": 10,
+              "left": 41.939886435635685,
+              "width": 5.0048517307889675,
+              "height": 30
+            }
+          }
+        },
+        "017a2ab5-5025-409f-9822-bd0c576aa41f": {
+          "component": {
+            "name": "button1",
+            "displayName": "Button",
+            "description": "Trigger actions: queries, alerts etc",
+            "component": "Button",
+            "defaultSize": {
+              "width": 3,
+              "height": 30
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Button Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Loading State"
+              }
+            },
+            "events": {
+              "onClick": {
+                "displayName": "On click"
+              }
+            },
+            "styles": {
+              "backgroundColor": {
+                "type": "color",
+                "displayName": "Background color"
+              },
+              "textColor": {
+                "type": "color",
+                "displayName": "Text color"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              },
+              "borderRadius": {
+                "type": "code",
+                "displayName": "Border radius"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "Create"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "events": [
+                {
+                  "eventId": "onClick",
+                  "actionId": "run-query",
+                  "message": "Hello world!",
+                  "queryId": "a2786483-2ab1-4225-abb6-c7c9457ef905",
+                  "queryName": "googlesheetscompany"
+                }
+              ],
+              "styles": {
+                "backgroundColor": {
+                  "value": "#2b8a69"
+                },
+                "textColor": {
+                  "value": "#fff"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "borderRadius": {
+                  "value": "{{5}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+          "layouts": {
+            "desktop": {
+              "top": 360,
+              "left": 19.033978144608994,
+              "width": 24.93534004563247,
+              "height": 30
+            }
+          }
+        },
+        "04e62296-5320-450e-b9ad-5a577a4b7f1f": {
+          "component": {
+            "name": "text4",
+            "displayName": "Text",
+            "description": "Display markdown or HTML",
+            "component": "Text",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Show loading state"
+              }
+            },
+            "defaultSize": {
+              "width": 3,
+              "height": 30
+            },
+            "events": [],
+            "styles": {
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "Welcome! Organize all your job applications in one place.<br>\nAdd, update or delete applications from the Modify Application section."
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "textColor": {
+                  "value": "#000"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "layouts": {
+            "desktop": {
+              "top": 90,
+              "left": 4.651163532268891,
+              "width": 21,
+              "height": 50
+            }
+          }
+        },
+        "2113ef8f-5e58-4970-ac46-7a7d712a7a06": {
+          "component": {
+            "name": "datepicker1",
+            "displayName": "Date Picker",
+            "description": "Select a date and time",
+            "component": "Datepicker",
+            "defaultSize": {
+              "width": 4,
+              "height": 30
+            },
+            "validation": {
+              "customRule": {
+                "type": "code",
+                "displayName": "Custom validation"
+              }
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "defaultValue": {
+                "type": "code",
+                "displayName": "Default value"
+              },
+              "format": {
+                "type": "code",
+                "displayName": "Format"
+              },
+              "enableTime": {
+                "type": "code",
+                "displayName": "Enable time selection?"
+              },
+              "enableDate": {
+                "type": "code",
+                "displayName": "Enable date selection?"
+              }
+            },
+            "events": {},
+            "styles": {
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {
+              "value": ""
+            },
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "validation": {
+                "customRule": {
+                  "value": null
+                }
+              },
+              "properties": {
+                "defaultValue": {
+                  "value": "01/04/2021"
+                },
+                "format": {
+                  "value": "DD/MM/YYYY"
+                },
+                "enableTime": {
+                  "value": "{{false}}"
+                },
+                "enableDate": {
+                  "value": "{{true}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+          "layouts": {
+            "desktop": {
+              "top": 260,
+              "left": 7.593904518016088,
+              "width": 35.93058840767797,
+              "height": 30
+            }
+          }
+        },
+        "27de8655-5174-4477-9aaa-58dae906bdcc": {
+          "component": {
+            "name": "textinput3",
+            "displayName": "Text Input",
+            "description": "Text field for forms",
+            "component": "TextInput",
+            "defaultSize": {
+              "width": 4,
+              "height": 30
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "value": {
+                "type": "code",
+                "displayName": "Default value"
+              },
+              "placeholder": {
+                "type": "code",
+                "displayName": "Placeholder"
+              }
+            },
+            "validation": {
+              "regex": {
+                "type": "code",
+                "displayName": "Regex"
+              },
+              "minLength": {
+                "type": "code",
+                "displayName": "Min length"
+              },
+              "maxLength": {
+                "type": "code",
+                "displayName": "Max length"
+              },
+              "customRule": {
+                "type": "code",
+                "displayName": "Custom validation"
+              }
+            },
+            "events": {},
+            "styles": {
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {
+              "value": ""
+            },
+            "definition": {
+              "validation": {
+                "regex": {
+                  "value": ""
+                },
+                "minLength": {
+                  "value": null
+                },
+                "maxLength": {
+                  "value": null
+                },
+                "customRule": {
+                  "value": null
+                }
+              },
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "value": {
+                  "value": ""
+                },
+                "placeholder": {
+                  "value": "Application URL"
+                }
+              },
+              "events": [],
+              "styles": {
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+          "layouts": {
+            "desktop": {
+              "top": 210,
+              "left": 7.18101693802521,
+              "width": 36.13700904974218,
+              "height": 30
+            }
+          }
+        },
+        "068188b9-66a4-4ff8-99f0-e5aed2a416ec": {
+          "component": {
+            "name": "textinput4",
+            "displayName": "Text Input",
+            "description": "Text field for forms",
+            "component": "TextInput",
+            "defaultSize": {
+              "width": 4,
+              "height": 30
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "value": {
+                "type": "code",
+                "displayName": "Default value"
+              },
+              "placeholder": {
+                "type": "code",
+                "displayName": "Placeholder"
+              }
+            },
+            "validation": {
+              "regex": {
+                "type": "code",
+                "displayName": "Regex"
+              },
+              "minLength": {
+                "type": "code",
+                "displayName": "Min length"
+              },
+              "maxLength": {
+                "type": "code",
+                "displayName": "Max length"
+              },
+              "customRule": {
+                "type": "code",
+                "displayName": "Custom validation"
+              }
+            },
+            "events": {
+              "onChange": {
+                "displayName": "On change"
+              }
+            },
+            "styles": {
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {
+              "value": ""
+            },
+            "definition": {
+              "validation": {
+                "regex": {
+                  "value": ""
+                },
+                "minLength": {
+                  "value": null
+                },
+                "maxLength": {
+                  "value": null
+                },
+                "customRule": {
+                  "value": null
+                }
+              },
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "value": {
+                  "value": ""
+                },
+                "placeholder": {
+                  "value": "ID"
+                }
+              },
+              "events": [],
+              "styles": {
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+          "layouts": {
+            "desktop": {
+              "top": 60,
+              "left": 7.18101693802521,
+              "width": 35.93058840767797,
+              "height": 30
+            }
+          }
+        },
+        "4453bfc0-f076-4f74-a458-0edeb0dbe3ed": {
+          "component": {
+            "name": "button2",
+            "displayName": "Button",
+            "description": "Trigger actions: queries, alerts etc",
+            "component": "Button",
+            "defaultSize": {
+              "width": 3,
+              "height": 30
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Button Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Loading State"
+              }
+            },
+            "events": {
+              "onClick": {
+                "displayName": "On click"
+              }
+            },
+            "styles": {
+              "backgroundColor": {
+                "type": "color",
+                "displayName": "Background color"
+              },
+              "textColor": {
+                "type": "color",
+                "displayName": "Text color"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              },
+              "borderRadius": {
+                "type": "code",
+                "displayName": "Border radius"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "Update"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "events": [
+                {
+                  "eventId": "onClick",
+                  "actionId": "run-query",
+                  "message": "Hello world!",
+                  "alertType": "info",
+                  "queryId": "215cb249-3e75-495c-9858-e23844b9e3e2",
+                  "queryName": "googlesheetsUpdate"
+                }
+              ],
+              "styles": {
+                "backgroundColor": {
+                  "value": "#0e3e77"
+                },
+                "textColor": {
+                  "value": "#fff"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "borderRadius": {
+                  "value": "{{5}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+          "layouts": {
+            "desktop": {
+              "top": 460,
+              "left": 19.58412733925807,
+              "width": 24.93534004563247,
+              "height": 30
+            }
+          }
+        },
+        "37646292-7f05-43c2-9757-b995bd0bc123": {
+          "component": {
+            "name": "dropdown2",
+            "displayName": "Dropdown",
+            "description": "Select one value from options",
+            "defaultSize": {
+              "width": 8,
+              "height": 30
+            },
+            "component": "DropDown",
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "validation": {
+              "customRule": {
+                "type": "code",
+                "displayName": "Custom validation"
+              }
+            },
+            "properties": {
+              "label": {
+                "type": "code",
+                "displayName": "Label"
+              },
+              "value": {
+                "type": "code",
+                "displayName": "Default value"
+              },
+              "values": {
+                "type": "code",
+                "displayName": "Option values"
+              },
+              "display_values": {
+                "type": "code",
+                "displayName": "Option labels"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Options loading state"
+              }
+            },
+            "events": {
+              "onSelect": {
+                "displayName": "On select"
+              },
+              "onSearchTextChanged": {
+                "displayName": "On search text changed"
+              }
+            },
+            "styles": {
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              }
+            },
+            "exposedVariables": {
+              "value": null,
+              "searchText": ""
+            },
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "validation": {
+                "customRule": {
+                  "value": null
+                }
+              },
+              "properties": {
+                "label": {
+                  "value": "Row"
+                },
+                "value": {
+                  "value": ""
+                },
+                "values": {
+                  "value": "{{queries.googlesheets1.data.map((datum) => datum[\"id\"])}}"
+                },
+                "display_values": {
+                  "value": "{{queries.googlesheets1.data.map((datum) => datum[\"id\"])}}"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "events": [],
+              "styles": {
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+          "layouts": {
+            "desktop": {
+              "top": 410,
+              "left": 10.203674397390534,
+              "width": 33.87977867554198,
+              "height": 30
+            }
+          }
+        },
+        "3a7fd4c7-dd32-4857-8c57-7993067628ec": {
+          "component": {
+            "name": "button3",
+            "displayName": "Button",
+            "description": "Trigger actions: queries, alerts etc",
+            "component": "Button",
+            "defaultSize": {
+              "width": 3,
+              "height": 30
+            },
+            "others": {
+              "showOnDesktop": {
+                "type": "toggle",
+                "displayName": "Show on desktop"
+              },
+              "showOnMobile": {
+                "type": "toggle",
+                "displayName": "Show on mobile"
+              }
+            },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Button Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Loading State"
+              }
+            },
+            "events": {
+              "onClick": {
+                "displayName": "On click"
+              }
+            },
+            "styles": {
+              "backgroundColor": {
+                "type": "color",
+                "displayName": "Background color"
+              },
+              "textColor": {
+                "type": "color",
+                "displayName": "Text color"
+              },
+              "visibility": {
+                "type": "code",
+                "displayName": "Visibility"
+              },
+              "disabledState": {
+                "type": "code",
+                "displayName": "Disable"
+              },
+              "borderRadius": {
+                "type": "code",
+                "displayName": "Border radius"
+              }
+            },
+            "exposedVariables": {},
+            "definition": {
+              "others": {
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
+              },
+              "properties": {
+                "text": {
+                  "value": "Delete"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "events": [
+                {
+                  "eventId": "onClick",
+                  "actionId": "run-query",
+                  "message": "Hello world!",
+                  "alertType": "info",
+                  "queryId": "40a00654-078d-4dc0-8b5e-bfbfce9999a2",
+                  "queryName": "googlesheetsDelete"
+                }
+              ],
+              "styles": {
+                "backgroundColor": {
+                  "value": "#d0021b"
+                },
+                "textColor": {
+                  "value": "#fff"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "borderRadius": {
+                  "value": "{{5}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                }
+              }
+            }
+          },
+          "parent": "b3dbbd57-ddb5-403a-8aa3-0e4c38c41a36",
+          "layouts": {
+            "desktop": {
+              "top": 510,
+              "left": 19.64855033810399,
+              "width": 24.935340045632472,
+              "height": 30
+            }
+          }
+        }
+      },
+      "globalSettings": {
+        "hideHeader": false,
+        "canvasMaxWidth": 1292,
+        "canvasBackgroundColor": "#edeff5"
+      }
+    },
+    "appId": "2c069ded-9922-4ef1-923d-d7b4433b766c",
+    "createdAt": "2021-12-15T21:54:07.261Z",
+    "updatedAt": "2022-01-19T13:12:04.860Z"
+  },
+  "tooljetVersion": "0.13.5-ee1.3.6\n"
+}
