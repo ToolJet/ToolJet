@@ -31,16 +31,18 @@ return data.filter(row => row.amount > 1000);`;
 
   return (
     <div className="field mb-2 transformation-editor">
-      <span style={{ fontWeight: 600 }} className="form-check-label">
-        Transformations
-      </span>
-      <div className="form-check form-switch my-2">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          onClick={toggleEnableTransformation}
-          checked={enableTransformation}
-        />
+      <div className="mb-2" style={{ display: 'flex' }}>
+        <span style={{ fontWeight: 600 }} className="form-check-label">
+          Transformations
+        </span>
+        <div className="form-check form-switch mx-3">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            onClick={toggleEnableTransformation}
+            checked={enableTransformation}
+          />
+        </div>
       </div>
       {!enableTransformation && (
         <Alert svg="circular-info">
