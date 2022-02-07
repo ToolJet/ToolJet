@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import cx from 'classnames';
 import { useSpring, config, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -183,8 +184,8 @@ export function CodeHinter({
 
   return (
     <>
-      <div className="row" style={{ width: width, display: codeShow ? 'flex' : 'none' }}>
-        <div className={`col`} style={{ marginBottom: '16px' }}>
+      <div className="row animation-fade" style={{ width: width, display: codeShow ? 'flex' : 'none' }}>
+        <div className={`col`} style={{ marginBottom: 4 }}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
             <div
               className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
@@ -195,6 +196,8 @@ export function CodeHinter({
                 maxHeight: '320px',
                 overflow: 'auto',
                 fontSize: ' .875rem',
+                padding: 5,
+                paddingLeft: 12,
               }}
             >
               {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
@@ -241,7 +244,7 @@ export function CodeHinter({
         </div>
       </div>
       {!codeShow && (
-        <div style={{ display: !codeShow ? 'block' : 'none' }}>
+        <div className="animation-fade" style={{ display: !codeShow ? 'block' : 'none' }}>
           <ElementToRender
             value={resolveReferences(initialValue, realState)}
             onChange={onChange}
