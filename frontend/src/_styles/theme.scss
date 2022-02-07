@@ -2272,7 +2272,7 @@ hr {
 
 .codehinter-default-input {
   font-family: "Roboto", sans-serif;
-  padding: 0.0475rem 0rem;
+  padding: 0.0475rem 0rem !important;
   display: block;
   width: 100%;
   font-size: 0.875rem;
@@ -4340,4 +4340,6 @@ div#driver-highlighted-element-stage, div#driver-page-overlay {
 .editor .editor-sidebar .inspector .form-control-plaintext {
   padding: 2px 4px;
 }
-
+.tablr-gutter-x-0 {
+  --tblr-gutter-x: 0!important;
+}
