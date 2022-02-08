@@ -6,7 +6,7 @@ sidebar_label: Docker
 # Deploying ToolJet using docker-compose
 
 :::info
-You should setup a PostgreSQL database manually to be used by the ToolJet server.
+  You should setup a PostgreSQL database manually to be used by the ToolJet server.
 :::
 
 Follow the steps below to deploy ToolJet on a server using docker-compose. This setup will deploy both ToolJet server and ToolJet client.
@@ -14,13 +14,13 @@ Follow the steps below to deploy ToolJet on a server using docker-compose. This 
 1. Setup a PostgreSQL database and make sure that the database is accessible.
 
 2. Make sure that the server can receive traffic on port 80, 443 and 22.
-For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
+  For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
 
    protocol| port     | allowed_cidr|
-   ----| -----------  | ----------- |
-   tcp | 22           | your IP |
-   tcp | 80           | 0.0.0.0/0 |
-   tcp | 443          | 0.0.0.0/0   |
+   --------| -------  | ----------- |
+   tcp     | 22       | your IP     |
+   tcp     | 80       | 0.0.0.0/0   |
+   tcp     | 443      | 0.0.0.0/0   |
 
 3. Install docker and docker-compose on the server.
 [Docker Installation](https://docs.docker.com/engine/install/)
@@ -28,14 +28,13 @@ For example, if the server is an AWS EC2 instance and the installation should re
 
 4. Download our production docker-compose file into the server by running:
   ```bash
-   curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose.yaml
+  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose.yaml
   ```
 
 5. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded):
 
   ```bash
-     curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/.env.example
-     mv .env.example .env
+  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/.env.example mv .env.example .env
   ```
 
   Set up environment variables in `.env` file as explained in [environment variables reference](/docs/deployment/env-vars)
@@ -43,27 +42,27 @@ For example, if the server is an AWS EC2 instance and the installation should re
 
   `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use.
 
-:::info
-We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
-:::
+  :::info
+    We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
+  :::
 
   Examples:
   `TOOLJET_HOST=http://12.34.56.78` or
   `TOOLJET_HOST=https://yourdomain.com` or
   `TOOLJET_HOST=https://tooljet.yourdomain.com`
 
-:::info
-  Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
-:::
+  :::info
+    Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
+  :::
 
-:::info
-  If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
-:::
+  :::info
+    If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
+  :::
 
 6. Once you've populated the `.env` file, run
 
   ```bash
-     docker-compose up -d
+  docker-compose up -d
   ```
   to start all the required services.
 

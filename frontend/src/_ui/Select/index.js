@@ -2,6 +2,7 @@ import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 const Select = ({ options = [], value, hasSearch = false, onChange }) => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <SelectSearch
       options={options}
@@ -10,6 +11,7 @@ const Select = ({ options = [], value, hasSearch = false, onChange }) => {
       onChange={onChange}
       filterOptions={fuzzySearch}
       placeholder="Select.."
+      className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
     />
   );
 };

@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
+import cx from 'classnames';
 import { useDrag } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { getEmptyImage } from 'react-dnd-html5-backend';
@@ -16,28 +17,28 @@ const resizerClasses = {
 
 const resizerStyles = {
   topRight: {
-    width: '12px',
-    height: '12px',
-    right: '-6px',
-    top: '-6px',
+    width: '8px',
+    height: '8px',
+    right: '-4px',
+    top: '-4px',
   },
   bottomRight: {
-    width: '12px',
-    height: '12px',
-    right: '-6px',
-    bottom: '-6px',
+    width: '8px',
+    height: '8px',
+    right: '-4px',
+    bottom: '-4px',
   },
   bottomLeft: {
-    width: '12px',
-    height: '12px',
-    left: '-6px',
-    bottom: '-6px',
+    width: '8px',
+    height: '8px',
+    left: '-4px',
+    bottom: '-4px',
   },
   topLeft: {
-    width: '12px',
-    height: '12px',
-    left: '-6px',
-    top: '-6px',
+    width: '8px',
+    height: '8px',
+    left: '-4px',
+    top: '-4px',
   },
 };
 
@@ -57,11 +58,14 @@ function getStyles(isDragging, isSelectedComponent) {
 
 export const DraggableBox = function DraggableBox({
   id,
+  className,
   mode,
   title,
   _left,
   _top,
   parent,
+  allComponents,
+  extraProps,
   component,
   index,
   inCanvas,
@@ -76,7 +80,7 @@ export const DraggableBox = function DraggableBox({
   resizingStatusChanged,
   zoomLevel,
   containerProps,
-  configHandleClicked,
+  setSelectedComponent,
   removeComponent,
   currentLayout,
   layouts,
@@ -85,11 +89,20 @@ export const DraggableBox = function DraggableBox({
   draggingStatusChanged,
   darkMode,
   canvasWidth,
+  readOnly,
+  customResolvables,
+  parentId,
+  hoveredComponent,
+  onComponentHover,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
   const [mouseOver, setMouseOver] = useState(false);
+
+  useEffect(() => {
+    setMouseOver(hoveredComponent === id);
+  }, [hoveredComponent]);
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
@@ -124,6 +137,10 @@ export const DraggableBox = function DraggableBox({
   useEffect(() => {
     if (draggingStatusChanged) {
       draggingStatusChanged(isDragging2);
+    }
+
+    if (isDragging2 && !isSelectedComponent) {
+      setSelectedComponent(id, component);
     }
   }, [isDragging2]);
 
@@ -171,9 +188,14 @@ export const DraggableBox = function DraggableBox({
     >
       {inCanvas ? (
         <div
-          className="draggable-box "
-          onMouseOver={() => setMouseOver(true)}
-          onMouseLeave={() => setMouseOver(false)}
+          className={cx(`draggable-box widget-${id}`, { [className]: !!className })}
+          onMouseEnter={(e) => {
+            if (e.currentTarget.className.includes(`widget-${id}`)) {
+              onComponentHover(id);
+              e.stopPropagation();
+            }
+          }}
+          onMouseLeave={() => onComponentHover(false)}
           style={getStyles(isDragging, isSelectedComponent)}
         >
           <Rnd
@@ -189,23 +211,27 @@ export const DraggableBox = function DraggableBox({
               y: currentLayoutOptions ? currentLayoutOptions.top : 0,
             }}
             defaultSize={{}}
-            className={`resizer ${mouseOver || isResizing || isSelectedComponent ? 'resizer-active' : ''} `}
+            className={`resizer ${
+              mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
+            } `}
             onResize={() => setResizing(true)}
             onDrag={(e) => {
               e.preventDefault();
               e.stopImmediatePropagation();
-              setDragging(true);
+              if (!isDragging2) {
+                setDragging(true);
+              }
             }}
             resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
-            disableDragging={mode !== 'edit'}
+            enableResizing={mode === 'edit' && !readOnly}
+            disableDragging={mode !== 'edit' || readOnly}
             onDragStop={(e, direction) => {
               setDragging(false);
               onDragStop(e, id, direction, currentLayout, currentLayoutOptions);
             }}
-            cancel={`div.table-responsive.jet-data-table, div.calendar-widget`}
+            cancel={`div.table-responsive.jet-data-table, div.calendar-widget, div.text-input, .textarea, .map-widget`}
             onDragStart={(e) => e.stopPropagation()}
-            enableResizing={mode === 'edit'}
             onResizeStop={(e, direction, ref, d, position) => {
               setResizing(false);
               onResizeStop(id, e, direction, ref, d, position);
@@ -213,12 +239,15 @@ export const DraggableBox = function DraggableBox({
             bounds={parent !== undefined ? `#canvas-${parent}` : '.real-canvas'}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-              {mode === 'edit' && mouseOver && !isResizing && (
+              {mode === 'edit' && !readOnly && (mouseOver || isSelectedComponent) && !isResizing && (
                 <ConfigHandle
                   id={id}
                   removeComponent={removeComponent}
                   component={component}
-                  configHandleClicked={(id, component) => configHandleClicked(id, component)}
+                  position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
+                  widgetTop={currentLayoutOptions.top}
+                  widgetHeight={currentLayoutOptions.height}
+                  setSelectedComponent={(id, component) => setSelectedComponent(id, component)}
                 />
               )}
               <Box
@@ -239,6 +268,11 @@ export const DraggableBox = function DraggableBox({
                 darkMode={darkMode}
                 removeComponent={removeComponent}
                 canvasWidth={canvasWidth}
+                readOnly={readOnly}
+                customResolvables={customResolvables}
+                parentId={parentId}
+                allComponents={allComponents}
+                extraProps={extraProps}
               />
             </div>
           </Rnd>

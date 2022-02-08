@@ -9,6 +9,7 @@ import {
   Query,
   Request,
   UseGuards,
+  Body,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
@@ -103,7 +104,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(@Request() req, @Param() params) {
+  async update(@Request() req, @Param() params, @Body('app') appChanges) {
     const app = await this.appsService.find(params.id);
     const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
@@ -111,7 +112,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.update(req.user, params.id, req.body.app);
+    const result = await this.appsService.update(req.user, params.id, appChanges);
     const response = decamelizeKeys(result);
 
     return response;
@@ -152,13 +153,13 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/import')
-  async import(@Request() req) {
+  async import(@Request() req, @Body() body) {
     const ability = await this.appsAbilityFactory.appsActions(req.user, {});
 
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    await this.appImportExportService.import(req.user, req.body);
+    await this.appImportExportService.import(req.user, body);
 
     return;
   }
@@ -247,9 +248,12 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/versions')
-  async createVersion(@Request() req, @Param() params) {
-    const versionName = req.body['versionName'];
-
+  async createVersion(
+    @Request() req,
+    @Param() params,
+    @Body('versionName') versionName,
+    @Body('versionFromId') versionFromId
+  ) {
     const app = await this.appsService.find(params.id);
     const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
@@ -257,7 +261,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const appUser = await this.appsService.createVersion(req.user, app, versionName);
+    const appUser = await this.appsService.createVersion(req.user, app, versionName, versionFromId);
     return decamelizeKeys(appUser);
   }
 
@@ -278,9 +282,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id/versions/:versionId')
-  async updateVersion(@Request() req, @Param() params) {
-    const definition = req.body['definition'];
-
+  async updateVersion(@Request() req, @Param() params, @Body('definition') definition) {
     const version = await this.appsService.findVersion(params.versionId);
     const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
@@ -289,6 +291,20 @@ export class AppsController {
     }
 
     const appUser = await this.appsService.updateVersion(req.user, version, definition);
+    return decamelizeKeys(appUser);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id/icons')
+  async updateIcon(@Request() req, @Param() params, @Body('icon') icon) {
+    const app = await this.appsService.find(params.id);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
+
+    if (!ability.can('updateIcon', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    const appUser = await this.appsService.update(req.user, params.id, { icon });
     return decamelizeKeys(appUser);
   }
 }

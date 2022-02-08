@@ -66,4 +66,17 @@ export const ActionTypes = [
       { name: 'pageIndex', type: 'text', default: '{{1}}' },
     ],
   },
+  {
+    name: 'Set variable',
+    id: 'set-custom-variable',
+    options: [
+      { name: 'key', type: 'code', default: '' },
+      { name: 'value', type: 'code', default: '' },
+    ],
+  },
+  {
+    name: 'Unset variable',
+    id: 'unset-custom-variable',
+    options: [{ name: 'key', type: 'code', default: '' }],
+  },
 ];

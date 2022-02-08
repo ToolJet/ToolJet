@@ -31,7 +31,7 @@ export class CredentialsService {
   }
 
   async getValue(credentialId: string): Promise<string> {
-    const credential = await this.credentialsRepository.findOne(credentialId);
+    const credential = await this.credentialsRepository.findOne({ where: { id: credentialId } });
     const decryptedValue = await this.encryptionService.decryptColumnValue(
       'credentials',
       'value',

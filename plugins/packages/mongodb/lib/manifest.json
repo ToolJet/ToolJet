@@ -1,0 +1,118 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Mongodb datasource",
+  "description": "A schema defining mongodb datasource",
+  "type": "database",
+  "source": {
+    "name": "MongoDB",
+    "kind": "mongodb",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      },
+      "connection_type": {
+        "type": "options"
+      },
+      "connection_string": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "database": {
+      "value": ""
+    },
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 27017
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "connection_type": {
+      "value": "manual"
+    },
+    "connection_string": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "connection_type": {
+      "label": "",
+      "key": "connection_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for connection_type",
+      "list": [
+        {
+          "name": "Manual connection",
+          "value": "manual"
+        },
+        {
+          "name": "Connect using connection string",
+          "value": "string"
+        }
+      ]
+    },
+    "manual": {
+      "host": {
+        "label": "Host",
+        "key": "host",
+        "type": "text",
+        "description": "Enter host"
+      },
+      "port": {
+        "label": "Port",
+        "key": "port",
+        "type": "text",
+        "description": "Enter port"
+      },
+      "database": {
+        "label": "Database Name",
+        "key": "database",
+        "type": "text",
+        "description": "Name of the database"
+      },
+      "username": {
+        "label": "Username",
+        "key": "username",
+        "type": "text",
+        "description": "Enter username"
+      },
+      "password": {
+        "label": "Password",
+        "key": "password",
+        "type": "password",
+        "description": "Enter password"
+      }
+    },
+    "string": {
+      "connection_string": {
+        "label": "Connection string",
+        "key": "connection_string",
+        "type": "text",
+        "description": "mongodb+srv://tooljet:<password>@cluster0.i1vq4.mongodb.net/mydb?retryWrites=true&w=majority"
+      }
+    }
+  }
+}

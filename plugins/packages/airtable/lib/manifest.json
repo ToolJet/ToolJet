@@ -1,0 +1,39 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Airtable datasource",
+  "description": "A schema defining airtable datasource",
+  "type": "api",
+  "source": {
+    "name": "Airtable",
+    "kind": "airtable",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "api_key": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "api_key": {
+      "label": "API key",
+      "key": "api_key",
+      "type": "password",
+      "description": "Api key for airtable",
+      "helpText": "For generating API key, visit: <a href='https://airtable.com/account' target='_blank' rel='noreferrer'>Airtable account page</a>"
+    }
+  },
+  "required": [
+    "api_key"
+  ]
+}

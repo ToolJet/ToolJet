@@ -21,7 +21,7 @@ Filepicker widget allows the user to drag and drop files or upload files by brow
 On file selected event can be triggered when one or more files are selected.
 
 
-#### Properties
+## Properties
 
 | properties      | description |
 | ----------- | ----------- |
@@ -33,8 +33,20 @@ On file selected event can be triggered when one or more files are selected.
 | Max size limit| Maximum file size (in bytes).|
 | Min size limit| Minimum file size (in bytes).|
 
-:::tip::
+:::tip
 Files can be accepted or rejected based on the file types, maximum file count, maximum file size (in bytes) and minimum file size (in bytes).
 If `Pick mulitple files` is set to false and additional files are dropped, all files besides the first will be rejected. 
 Any file that does not have a size in the range of `Max size limit` and `Min size limit` will be rejected.
+:::
+
+## Options
+
+| options      | description |
+| ----------- | ----------- |
+| Parse content | parse the selected files, supports **CSV** files. |
+| File type | If **Parse content** is enabled, options to auto-detect files and parse content or parse selected file types. |
+
+
+:::info
+If the **Parse content** option is toggled on, it only parses the next file that is selected, not the already selected one.
 :::

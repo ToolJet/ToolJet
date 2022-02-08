@@ -1,24 +1,19 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import cx from 'classnames';
+import { v4 as uuidv4 } from 'uuid';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
-import { computeComponentName } from '@/_helpers/utils';
+import { computeComponentName, resolveReferences } from '@/_helpers/utils';
 import useRouter from '@/_hooks/use-router';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
-
-function uuidv4() {
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
-  );
-}
 
 export const Container = ({
   canvasWidth,
@@ -32,7 +27,7 @@ export const Container = ({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   appLoading,
-  configHandleClicked,
+  setSelectedComponent,
   zoomLevel,
   currentLayout,
   removeComponent,
@@ -44,6 +39,8 @@ export const Container = ({
   socket,
   handleUndo,
   handleRedo,
+  onComponentHover,
+  hoveredComponent,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -78,13 +75,18 @@ export const Container = ({
           },
         })
       );
-      console.log('new boxes - 1', boxes);
     },
     [boxes]
   );
 
+  // Dont update first time to skip
+  // redundant save on app definition load
+  const firstUpdate = useRef(true);
   useEffect(() => {
-    console.log('new boxes - 2', boxes);
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
+    }
     appDefinitionChanged({ ...appDefinition, components: boxes });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
@@ -159,9 +161,13 @@ export const Container = ({
         const offsetFromTopOfWindow = canvasBoundingRect.top;
         const offsetFromLeftOfWindow = canvasBoundingRect.left;
         const currentOffset = monitor.getSourceClientOffset();
+        const initialClientOffset = monitor.getInitialClientOffset();
+        const delta = monitor.getDifferenceFromInitialOffset();
 
         left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
-        top = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
+        top = Math.round(
+          initialClientOffset.y - 10 + delta.y + initialClientOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow
+        );
 
         id = uuidv4();
 
@@ -195,7 +201,6 @@ export const Container = ({
             },
           },
         });
-
         return undefined;
       },
     }),
@@ -302,9 +307,7 @@ export const Container = ({
     }
   }
 
-  React.useEffect(() => {
-    console.log('current component => ', selectedComponent);
-  }, [selectedComponent]);
+  React.useEffect(() => {}, [selectedComponent]);
 
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
@@ -412,6 +415,8 @@ export const Container = ({
               key={index}
               style={{
                 transform: `translate(${(previewComment.x * canvasWidth) / 100}px, ${previewComment.y}px)`,
+                position: 'absolute',
+                zIndex: 2,
               }}
             >
               <label className="form-selectgroup-item comment-preview-bubble">
@@ -431,10 +436,10 @@ export const Container = ({
         const box = boxes[key];
         const canShowInCurrentLayout =
           box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
-
-        if (!box.parent && canShowInCurrentLayout) {
+        if (!box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
           return (
             <DraggableBox
+              className={showComments && 'pointer-events-none'}
               canvasWidth={canvasWidth}
               onComponentClick={
                 config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
@@ -454,12 +459,14 @@ export const Container = ({
               draggingStatusChanged={(status) => setIsDragging(status)}
               inCanvas={true}
               zoomLevel={zoomLevel}
-              configHandleClicked={configHandleClicked}
+              setSelectedComponent={setSelectedComponent}
               removeComponent={removeComponent}
               currentLayout={currentLayout}
               deviceWindowWidth={deviceWindowWidth}
               isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
               darkMode={darkMode}
+              onComponentHover={onComponentHover}
+              hoveredComponent={hoveredComponent}
               containerProps={{
                 mode,
                 snapToGrid,
@@ -472,12 +479,14 @@ export const Container = ({
                 onComponentOptionsChanged,
                 appLoading,
                 zoomLevel,
-                configHandleClicked,
+                setSelectedComponent,
                 removeComponent,
                 currentLayout,
                 deviceWindowWidth,
                 selectedComponent,
                 darkMode,
+                onComponentHover,
+                hoveredComponent,
               }}
             />
           );

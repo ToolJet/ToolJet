@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Stripe datasource",
+  "description": "A schema defining stripe datasource",
+  "type": "api",
+  "source": {
+    "name": "Stripe",
+    "kind": "stripe",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "api_key": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "api_key": {
+      "label": "API key",
+      "key": "api_key",
+      "type": "password",
+      "description": "Api key for stripe"
+    }
+  },
+  "required": [
+    "api_key"
+  ]
+}

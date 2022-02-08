@@ -1,13 +1,13 @@
+import allPlugins from '@tooljet/plugins/dist/server';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataQuery } from '../../src/entities/data_query.entity';
 import { CredentialsService } from './credentials.service';
-import { allPlugins } from 'src/modules/data_sources/plugins';
 import { DataSource } from 'src/entities/data_source.entity';
-import RestapiQueryService from '@plugins/datasources/restapi';
 import { DataSourcesService } from './data_sources.service';
+const got = require('got');
 
 @Injectable()
 export class DataQueriesService {
@@ -19,7 +19,10 @@ export class DataQueriesService {
   ) {}
 
   async findOne(dataQueryId: string): Promise<DataQuery> {
-    return await this.dataQueriesRepository.findOne({ id: dataQueryId }, { relations: ['dataSource', 'app'] });
+    return await this.dataQueriesRepository.findOne({
+      where: { id: dataQueryId },
+      relations: ['dataSource', 'app'],
+    });
   }
 
   async all(user: User, query: object): Promise<DataQuery[]> {
@@ -70,25 +73,76 @@ export class DataQueriesService {
     return dataQuery;
   }
 
-  async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
-    const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
+  async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions) {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
     const kind = dataQuery.kind;
-    const plugins = await allPlugins;
-    const pluginServiceClass = plugins[kind];
+    const service = new allPlugins[kind]();
+    return { service, sourceOptions, parsedQueryOptions };
+  }
 
-    const service = new pluginServiceClass();
-    const result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
+  async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
+    const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
+    let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
+      dataSource,
+      dataQuery,
+      queryOptions
+    );
+    let result;
+
+    try {
+      return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
+    } catch (error) {
+      if (error.constructor.name === 'OAuthUnauthorizedClientError') {
+        console.log('Access token expired. Attempting refresh token flow.');
+
+        const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id);
+        await this.dataSourcesService.updateOAuthAccessToken(accessTokenDetails, dataSource.options);
+        await dataSource.reload();
+
+        ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
+          dataSource,
+          dataQuery,
+          queryOptions
+        ));
+
+        result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
+      } else {
+        throw error;
+      }
+    }
 
     return result;
+  }
+
+  /* This function fetches the access token from the token url set in REST API (oauth) datasource */
+  async fetchOAuthToken(sourceOptions: any, code: string): Promise<any> {
+    const tooljetHost = process.env.TOOLJET_HOST;
+    const accessTokenUrl = sourceOptions['access_token_url'];
+
+    const customParams = Object.fromEntries(sourceOptions['custom_auth_params']);
+    Object.keys(customParams).forEach((key) => (customParams[key] === '' ? delete customParams[key] : {}));
+
+    const response = await got(accessTokenUrl, {
+      method: 'post',
+      json: {
+        code,
+        client_id: sourceOptions['client_id'],
+        client_secret: sourceOptions['client_secret'],
+        grant_type: sourceOptions['grant_type'],
+        redirect_uri: `${tooljetHost}/oauth2/authorize`,
+        ...customParams,
+      },
+    });
+
+    const result = JSON.parse(response.body);
+    return { access_token: result['access_token'] };
   }
 
   /* This function fetches access token from authorization code */
   async authorizeOauth2(dataSource: DataSource, code: string): Promise<any> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
-    const queryService = new RestapiQueryService();
-    const tokenData = await queryService.fetchOAuthToken(sourceOptions, code);
+    const tokenData = await this.fetchOAuthToken(sourceOptions, code);
 
     const tokenOptions = [
       {

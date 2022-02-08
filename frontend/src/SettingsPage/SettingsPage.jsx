@@ -30,20 +30,18 @@ function SettingsPage(props) {
 
   const changePassword = async () => {
     setPasswordChangeInProgress(true);
-    const response = await userService.changePassword(currentpassword, newPassword);
-    response
-      .then(() => {
-        toast.success('Password updated successfully', {
-          duration: 3000,
-        });
-        setCurrentPassword('');
-        setNewPassword('');
-      })
-      .catch(() => {
-        toast.error('Please verify that you have entered the correct password', {
-          duration: 3000,
-        });
+    try {
+      await userService.changePassword(currentpassword, newPassword);
+      toast.success('Password updated successfully', {
+        duration: 3000,
       });
+      setCurrentPassword('');
+      setNewPassword('');
+    } catch (error) {
+      toast.error('Please verify that you have entered the correct password', {
+        duration: 3000,
+      });
+    }
     setPasswordChangeInProgress(false);
   };
 
