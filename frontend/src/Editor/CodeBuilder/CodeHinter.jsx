@@ -184,7 +184,7 @@ export function CodeHinter({
   return (
     <>
       <div
-        className={`${(height === '150px' || height === '300px') && 'tablr-gutter-x-0'} row`}
+        className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''}`}
         style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col`} style={{ marginBottom: '0.5rem' }}>
@@ -195,8 +195,8 @@ export function CodeHinter({
               style={{
                 height: height || 'auto',
                 minHeight,
-                maxHeight: 'auto',
-                overflow: 'hidden',
+                maxHeight: '320px',
+                overflow: 'auto',
                 fontSize: ' .875rem',
               }}
             >
@@ -216,7 +216,7 @@ export function CodeHinter({
                   value={typeof initialValue === 'string' ? initialValue : ''}
                   realState={realState}
                   scrollbarStyle={null}
-                  height={height || 'auto'}
+                  height={'100%'}
                   onFocus={() => setFocused(true)}
                   onBlur={(editor) => {
                     const value = editor.getValue();
