@@ -7,7 +7,7 @@
     "name": "Redis",
     "kind": "redis",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

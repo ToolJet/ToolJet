@@ -7,7 +7,7 @@
     "name": "AWS S3",
     "kind": "s3",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },
