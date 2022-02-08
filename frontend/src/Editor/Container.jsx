@@ -7,7 +7,7 @@ import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
-import { computeComponentName } from '@/_helpers/utils';
+import { computeComponentName, resolveReferences } from '@/_helpers/utils';
 import useRouter from '@/_hooks/use-router';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
@@ -201,7 +201,6 @@ export const Container = ({
             },
           },
         });
-
         return undefined;
       },
     }),
@@ -416,6 +415,8 @@ export const Container = ({
               key={index}
               style={{
                 transform: `translate(${(previewComment.x * canvasWidth) / 100}px, ${previewComment.y}px)`,
+                position: 'absolute',
+                zIndex: 2,
               }}
             >
               <label className="form-selectgroup-item comment-preview-bubble">
@@ -435,8 +436,7 @@ export const Container = ({
         const box = boxes[key];
         const canShowInCurrentLayout =
           box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
-
-        if (!box.parent && canShowInCurrentLayout) {
+        if (!box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
           return (
             <DraggableBox
               className={showComments && 'pointer-events-none'}

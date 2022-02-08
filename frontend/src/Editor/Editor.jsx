@@ -251,7 +251,7 @@ class Editor extends React.Component {
       this.setState({
         isTopOfQueryPane: true,
       });
-    } else {
+    } else if (this.state.isTopOfQueryPane) {
       this.setState({
         isTopOfQueryPane: false,
       });

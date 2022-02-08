@@ -6,14 +6,14 @@ to: <%= plugins_path %>/packages/<%= name %>/lib/manifest.json
 %>
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
-  "title": "<%= Name %> datasource",
-  "description": "A schema defining <%= name %> datasource",
+  "title": "<%= Display_name %> datasource",
+  "description": "A schema defining <%= Display_name %> datasource",
   "type": "<%= type %>",
   "source": {
     "name": "<%= Display_name %>",
     "kind": "<%= name %>",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

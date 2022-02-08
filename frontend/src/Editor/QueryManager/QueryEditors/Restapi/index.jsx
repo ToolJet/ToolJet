@@ -132,6 +132,7 @@ class Restapi extends React.Component {
       }),
     };
 
+    const currentValue = { label: options.method.toUpperCase(), value: options.method };
     return (
       <div>
         <div className="row mt-2" style={{ height: 'fit-content' }}>
@@ -144,21 +145,21 @@ class Restapi extends React.Component {
                 { label: 'PATCH', value: 'patch' },
                 { label: 'DELETE', value: 'delete' },
               ]}
-              onChange={(value) => {
-                changeOption(this, 'method', value);
+              onChange={(object) => {
+                changeOption(this, 'method', object.value);
               }}
-              value={options.method === '' ? 'get' : options.method}
+              value={currentValue}
               defaultValue={{ label: 'GET', value: 'get' }}
               placeholder="Method"
               styles={selectStyles}
             />
           </div>
 
-          <div className="col field mx-3" style={{ display: 'flex' }}>
+          <div className="col field mx-3 w-100" style={{ display: 'flex', maxWidth: '700px' }}>
             {dataSourceURL && (
               <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
             )}
-            <div className="col-6 rest-methods-field">
+            <div className="col">
               <CodeHinter
                 currentState={this.props.currentState}
                 initialValue={options.url}

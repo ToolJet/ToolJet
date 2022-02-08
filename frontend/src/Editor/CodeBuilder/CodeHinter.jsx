@@ -51,7 +51,7 @@ export function CodeHinter({
   componentName = null,
   usePortalEditor = true,
   className,
-  width = '100%',
+  width = '',
   paramName,
   paramLabel,
   type,
@@ -66,7 +66,7 @@ export function CodeHinter({
     singleLine: true,
     mode: mode || 'handlebars',
     tabSize: 2,
-    theme: darkMode ? 'monokai' : 'default',
+    theme: theme ? theme : darkMode ? 'monokai' : 'default',
     readOnly: false,
     highlightSelectionMatches: true,
     placeholder,
@@ -183,8 +183,11 @@ export function CodeHinter({
 
   return (
     <>
-      <div className="row" style={{ width: width, display: codeShow ? 'flex' : 'none' }}>
-        <div className={`col-${(type ?? 'code') === 'code' ? 12 : 10}`} style={{ marginBottom: '16px' }}>
+      <div
+        className={`${(height === '150px' || height === '300px') && 'tablr-gutter-x-0'} row`}
+        style={{ width: width, display: codeShow ? 'flex' : 'none' }}
+      >
+        <div className={`col`} style={{ marginBottom: '0.5rem' }}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
             <div
               className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
@@ -194,7 +197,6 @@ export function CodeHinter({
                 minHeight,
                 maxHeight: '320px',
                 overflow: 'auto',
-                padding: '0.18rem 0.75rem',
                 fontSize: ' .875rem',
               }}
             >
@@ -231,7 +233,7 @@ export function CodeHinter({
             {enablePreview && !isOpen && getPreview()}
           </div>
         </div>
-        <div className={`col-2 ${(type ?? 'code') === 'code' ? 'd-none' : ''} pt-2`}>
+        <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} pt-2`}>
           <FxButton
             active={true}
             onPress={() => {

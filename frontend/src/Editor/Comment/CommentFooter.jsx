@@ -7,7 +7,7 @@ import Button from '@/_ui/Button';
 import usePopover from '@/_hooks/use-popover';
 import { useHotkeys } from 'react-hotkeys-hook';
 
-function CommentFooter({ users, editComment = '', editCommentId, handleSubmit }) {
+function CommentFooter({ users, editComment = '', editCommentId, setEditCommentId, handleSubmit }) {
   const [comment, setComment] = React.useState(editComment);
   const [loading, setLoading] = React.useState(false);
   const [open, trigger, content, setOpen] = usePopover(false);
@@ -20,6 +20,7 @@ function CommentFooter({ users, editComment = '', editCommentId, handleSubmit })
     setLoading(true);
     await handleSubmit(comment, editCommentId);
     setComment('');
+    setEditCommentId('');
     setLoading(false);
   };
 

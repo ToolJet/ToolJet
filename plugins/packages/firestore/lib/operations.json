@@ -115,7 +115,6 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter field",
-        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins col-4",
         "placeholder": "Enter field"
@@ -171,7 +170,6 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter value",
-        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins col-4",
         "placeholder": "Enter value"

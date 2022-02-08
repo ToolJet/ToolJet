@@ -49,47 +49,43 @@ export const Folders = function Folders({
 
   return (
     <div className="w-100 px-3 pe-lg-4 folder-list">
-      {isLoading && (
-        <div className="px-1 py-2" style={{ minHeight: '200px' }}>
-          {[1, 2, 3, 4, 5].map((element, index) => {
-            return (
-              <div className="row" key={index}>
-                <div className="col p-1">
-                  <div className="skeleton-line w-100"></div>
-                </div>
-                <div className="col-2 pt-1">
-                  <div className="skeleton-line w-100"></div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {!isLoading && (
-        <div
-          data-testid="applicationFoldersList"
-          className={`list-group list-group-transparent mb-3 ${darkMode && 'dark'}`}
+      <div
+        data-testid="applicationFoldersList"
+        className={`list-group list-group-transparent mb-3 ${darkMode && 'dark'}`}
+      >
+        <a
+          className={`list-group-item list-group-item-action d-flex align-items-center all-apps-link ${
+            !activeFolder.id ? 'active' : ''
+          }`}
+          onClick={() => handleFolderChange({})}
         >
-          <a
-            className={`list-group-item list-group-item-action d-flex align-items-center all-apps-link ${
-              !activeFolder.id ? 'active' : ''
-            }`}
-            onClick={() => handleFolderChange({})}
-          >
-            All applications
-          </a>
-          <hr></hr>
-          <div className="d-flex justify-content-between mb-3">
-            <div className="folder-info">Folders</div>
-            {canCreateFolder && (
-              <div className="folder-create-btn" onClick={() => setShowForm(true)}>
-                + Create new folder
-              </div>
-            )}
+          All applications
+        </a>
+        <hr></hr>
+        <div className="d-flex justify-content-between mb-3">
+          <div className="folder-info">Folders</div>
+          {canCreateFolder && (
+            <div className="folder-create-btn" onClick={() => setShowForm(true)}>
+              + Create new folder
+            </div>
+          )}
+        </div>
+
+        {isLoading && (
+          <div className="px-1" style={{ minHeight: '200px' }}>
+            {[1, 2, 3, 4, 5].map((element, index) => {
+              return (
+                <div className="folders-skeleton row" key={index}>
+                  <div className="folder-icon-skeleton col-2 me-2"></div>
+                  <div className="skeleton-line w-100 col"></div>
+                </div>
+              );
+            })}
           </div>
-          {folders && folders.length > 0 ? (
-            folders.map((folder, index) => (
+        )}
+
+        {!isLoading && folders && folders.length > 0
+          ? folders.map((folder, index) => (
               <a
                 key={index}
                 className={`list-group-item list-group-item-action d-flex align-items-center ${
@@ -103,35 +99,35 @@ export const Folders = function Folders({
                 {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
               </a>
             ))
-          ) : (
-            <div className="folder-info">You haven&apos;t created any folders. Use folders to organize your apps</div>
-          )}
-          <Modal show={showForm} closeModal={() => setShowForm(false)} title="Create folder">
-            <div className="row">
-              <div className="col modal-main">
-                <input
-                  type="text"
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  className="form-control"
-                  placeholder="folder name"
-                  disabled={isCreating}
-                  maxLength={25}
-                />
-              </div>
+          : !isLoading && (
+              <div className="folder-info">You haven&apos;t created any folders. Use folders to organize your apps</div>
+            )}
+
+        <Modal show={showForm} closeModal={() => setShowForm(false)} title="Create folder">
+          <div className="row">
+            <div className="col modal-main">
+              <input
+                type="text"
+                onChange={(e) => setNewFolderName(e.target.value)}
+                className="form-control"
+                placeholder="folder name"
+                disabled={isCreating}
+                maxLength={25}
+              />
             </div>
-            <div className="row">
-              <div className="col d-flex modal-footer-btn">
-                <button className="btn btn-light" onClick={() => setShowForm(false)}>
-                  Cancel
-                </button>
-                <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={saveFolder}>
-                  Create folder
-                </button>
-              </div>
+          </div>
+          <div className="row">
+            <div className="col d-flex modal-footer-btn">
+              <button className="btn btn-light" onClick={() => setShowForm(false)}>
+                Cancel
+              </button>
+              <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={saveFolder}>
+                Create folder
+              </button>
             </div>
-          </Modal>
-        </div>
-      )}
+          </div>
+        </Modal>
+      </div>
     </div>
   );
 };

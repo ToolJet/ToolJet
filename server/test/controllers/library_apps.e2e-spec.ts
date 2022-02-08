@@ -79,7 +79,8 @@ describe('library apps controller', () => {
 
       const templateAppIds = response.body['template_app_manifests'].map((manifest) => manifest.id);
 
-      expect(new Set(templateAppIds)).toEqual(new Set(['github-contributors', 'customer-dashboard']));
+      expect(new Set(templateAppIds)).toContain('github-contributors');
+      expect(new Set(templateAppIds)).toContain('customer-dashboard');
     });
   });
 

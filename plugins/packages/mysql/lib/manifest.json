@@ -7,7 +7,7 @@
     "name": "MySQL",
     "kind": "mysql",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

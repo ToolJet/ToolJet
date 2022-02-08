@@ -7,7 +7,7 @@
     "name": "MongoDB",
     "kind": "mongodb",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

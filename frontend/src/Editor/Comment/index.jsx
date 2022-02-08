@@ -1,6 +1,5 @@
 import React from 'react';
 import cx from 'classnames';
-import { useSpring, animated } from 'react-spring';
 
 import { useDrag } from 'react-dnd';
 import { ItemTypes } from '@/Editor/ItemTypes';
@@ -108,20 +107,16 @@ const Comment = ({
     );
   };
 
-  const commentFadeStyle = useSpring({ from: { opacity: 0 }, to: { opacity: 1 } });
-  const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 });
-
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
   return (
     <>
-      <animated.div
+      <div
         ref={drag}
         id={`thread-${threadId}`}
-        className={cx('comments cursor-move', { open: open })}
+        className={cx('comments cursor-move', { open })}
         style={{
           transform: `translate(${(x * canvasWidth) / 100}px, ${y}px)`,
-          ...commentFadeStyle,
         }}
         onDragStart={() => setOpen(false)}
         onDragEnd={() => setOpen(true)}
@@ -136,9 +131,8 @@ const Comment = ({
             {`${user.firstName?.charAt(0)}${user.lastName?.charAt(0)}`}
           </span>
         </label>
-        <animated.div
+        <div
           {...content}
-          style={popoverFadeStyle}
           className={cx('card popover comment-popover', {
             'open-left': placement === 'left',
             'open-right': placement === 'right',
@@ -173,10 +167,11 @@ const Comment = ({
             users={users}
             editComment={editComment}
             editCommentId={editCommentId}
+            setEditCommentId={setEditCommentId}
             handleSubmit={editCommentId ? handleEdit : handleSubmit}
           />
-        </animated.div>
-      </animated.div>
+        </div>
+      </div>
       {open && <div className="comment-overlay" onClick={(e) => e.stopPropagation()} />}
     </>
   );

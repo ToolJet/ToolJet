@@ -7,7 +7,7 @@
     "name": "Elasticsearch",
     "kind": "elasticsearch",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },
@@ -28,11 +28,21 @@
     }
   },
   "defaults": {
-    "host": { "value": "localhost" },
-    "port": { "value": 9200 },
-    "username": { "value": "" },
-    "password": { "value": "" },
-    "ssl_enabled": { "value": true }
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 9200
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "ssl_enabled": {
+      "value": true
+    }
   },
   "properties": {
     "host": {
