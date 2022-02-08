@@ -195,8 +195,8 @@ export function CodeHinter({
               style={{
                 height: height || 'auto',
                 minHeight,
-                maxHeight: '320px',
-                overflow: 'auto',
+                maxHeight: 'auto',
+                overflow: 'hidden',
                 fontSize: ' .875rem',
               }}
             >
