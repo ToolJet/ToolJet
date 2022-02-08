@@ -3174,6 +3174,17 @@ input[type="text"] {
   }
 }
 
+/* Hide scrollbar for Chrome, Safari and Opera */
+.invitation-page::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.invitation-page {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 .show {
   display: block;
 }
