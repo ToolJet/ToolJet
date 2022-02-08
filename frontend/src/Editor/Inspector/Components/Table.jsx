@@ -124,11 +124,12 @@ class Table extends React.Component {
 
   columnPopover = (column, index) => {
     return (
-      <Popover id="popover-basic-2" className="shadow">
+      <Popover id="popover-basic-2" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
         <Popover.Content>
           <div className="field mb-2">
             <label className="form-label">Column type</label>
             <SelectSearch
+              className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
               options={[
                 { name: 'Default', value: 'default' },
                 { name: 'String', value: 'string' },
@@ -372,7 +373,7 @@ class Table extends React.Component {
                 />
               </div>
               <div className="field mb-2">
-                <label className="form-check form-switch my-2">
+                <div className="form-check form-switch my-2">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -382,12 +383,12 @@ class Table extends React.Component {
                     checked={column.isTimeChecked}
                   />
                   <span className="form-check-label">show time</span>
-                </label>
+                </div>
               </div>
             </div>
           )}
 
-          <label className="form-check form-switch my-4">
+          <div className="form-check form-switch my-4">
             <input
               className="form-check-input"
               type="checkbox"
@@ -395,7 +396,7 @@ class Table extends React.Component {
               checked={column.isEditable}
             />
             <span className="form-check-label">make editable</span>
-          </label>
+          </div>
         </Popover.Content>
       </Popover>
     );
@@ -411,7 +412,7 @@ class Table extends React.Component {
     };
 
     return (
-      <Popover id="popover-basic">
+      <Popover id="popover-basic" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
         <Popover.Content>
           <div className="field mb-2">
             <label className="form-label">Button Text</label>
@@ -428,6 +429,7 @@ class Table extends React.Component {
           <div className="field mb-2">
             <label className="form-label">Button position</label>
             <SelectSearch
+              className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
               options={[
                 { name: 'Left', value: 'left' },
                 { name: 'Right', value: 'right' },

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-export const Pagination = function Pagination({ currentPage, count, pageChanged, itemsPerPage = 10 }) {
+export const Pagination = function Pagination({ currentPage, count, pageChanged, itemsPerPage = 10, darkMode }) {
   const totalPages = useMemo(() => {
     return Math.floor((count - 1) / itemsPerPage) + 1;
   }, [count, itemsPerPage]);
@@ -53,7 +53,7 @@ export const Pagination = function Pagination({ currentPage, count, pageChanged,
 
   return (
     <div className="card-footer d-flex align-items-center px-1">
-      <p className="m-0 text-muted">
+      <p className={`m-0 ${darkMode ? 'text-white-50' : 'text-muted'}`}>
         Showing <span>{startingAppCount()}</span> to <span>{endingAppCount()}</span> of <span>{count}</span>
       </p>
       <ul className="pagination m-0 ms-auto">

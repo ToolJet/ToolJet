@@ -9,7 +9,6 @@ import { AllExceptionsFilter } from './all-exceptions-filter';
 const fs = require('fs');
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8');
-globalThis.CACHED_CONNECTIONS = {};
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

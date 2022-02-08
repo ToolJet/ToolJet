@@ -1,0 +1,178 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "TypeSense datasource",
+  "description": "A schema defining TypeSense datasource",
+  "type": "database",
+  "defaults": {
+    "query": "",
+    "operation": "search"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "create_collection",
+          "name": "Create a collection"
+        },
+        {
+          "value": "search",
+          "name": "Search"
+        },
+        {
+          "value": "index_document",
+          "name": "Index a document"
+        },
+        {
+          "value": "get",
+          "name": "Get a document"
+        },
+        {
+          "value": "update",
+          "name": "Update a document"
+        },
+        {
+          "value": "delete",
+          "name": "Delete a document"
+        }
+      ]
+    },
+    "create_collection": {
+      "schema": {
+        "label": "Schema",
+        "key": "schema",
+        "type": "codehinter",
+        "placeholder": "{ \"name\": \"\" }",
+        "description": "Enter schema",
+        "height": "150px"
+      }
+    },
+    "search": {
+      "index": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection name"
+      },
+      "query": {
+        "label": "Search parameters",
+        "key": "searchParams",
+        "type": "codehinter",
+        "placeholder": "{ \"name\": \"\" }",
+        "description": "Enter search parameters",
+        "height": "150px"
+      }
+    },
+    "index_document": {
+      "index": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection name"
+      },
+      "document": {
+        "label": "Document",
+        "key": "document",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ \"name\": \"The Hitchhikers Guide to the Galaxy\" }",
+        "description": "Enter document",
+        "height": "150px"
+      }
+    },
+    "get": {
+      "index": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection"
+      },
+      "id": {
+        "label": "Id",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter id"
+      }
+    },
+    "update": {
+      "index": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection"
+      },
+      "id": {
+        "label": "Id",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter id"
+      },
+      "document": {
+        "label": "Document",
+        "key": "document",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ doc: { page_count: 225 } }",
+        "description": "Enter body",
+        "height": "150px"
+      }
+    },
+    "delete": {
+      "index": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection"
+      },
+      "id": {
+        "label": "Id",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter id"
+      }
+    }
+  }
+}

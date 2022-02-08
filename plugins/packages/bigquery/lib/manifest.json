@@ -1,0 +1,37 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Bigquery datasource",
+  "description": "A schema defining BigQuery datasource",
+  "type": "database",
+  "source": {
+    "name": "BigQuery",
+    "kind": "bigquery",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "private_key": {
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "private_key": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "private_key": {
+      "label": "Private key",
+      "key": "private_key",
+      "type": "textarea",
+      "encrypted": true,
+      "description": "Enter JSON private key for service account"
+    }
+  },
+  "required": [
+    "private_key"
+  ]
+}

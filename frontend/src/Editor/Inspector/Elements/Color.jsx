@@ -16,6 +16,15 @@ export const Color = ({ param, definition, onChange, paramType, componentMeta })
   const paramMeta = componentMeta[paramType][param.name] || {};
   const displayName = paramMeta.displayName || param.name;
 
+  const decimalToHex = (alpha) => {
+    let aHex = Math.round(255 * alpha).toString(16);
+    return alpha === 0 ? '00' : aHex.length < 2 ? `0${aHex}` : aHex;
+  };
+  const handleColorChange = (color) => {
+    const hexCode = `${color.hex}${decimalToHex(color?.rgb?.a ?? 1.0)}`;
+    onChange(param, 'value', hexCode, paramType);
+  };
+
   return (
     <div className="field mb-3">
       <ToolTip label={displayName} meta={paramMeta} />
@@ -26,7 +35,7 @@ export const Color = ({ param, definition, onChange, paramType, componentMeta })
           <SketchPicker
             onFocus={() => setShowPicker(true)}
             color={definition.value}
-            onChangeComplete={(color) => onChange(param, 'value', color.hex, paramType)}
+            onChangeComplete={handleColorChange}
           />
         </div>
       )}
@@ -42,7 +51,9 @@ export const Color = ({ param, definition, onChange, paramType, componentMeta })
             border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(definition.value) && '#c5c8c9'}`,
           }}
         ></div>
-        <div className="col">{definition.value}</div>
+        <div style={{ height: '20px' }} className="col">
+          {definition.value}
+        </div>
       </div>
     </div>
   );

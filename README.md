@@ -19,26 +19,49 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 <p align="center">
   <kbd>
-    <img src="https://user-images.githubusercontent.com/7828962/144586771-c6d6cba5-8f79-4e0c-80b4-aa1a38657229.png"/>
+    <img src="https://user-images.githubusercontent.com/7828962/149466475-1d1f0b3e-8e25-49e8-a5c9-73e068f78de9.png"/>
   </kbd>
 </p>
 
 
-## Features
+---
 
-- Visual app builder with widgets, such as tables, charts, modals, buttons, dropdowns, and more.
-- All widgets are responsive
-- Mobile 📱 & desktop layouts 🖥
-- Dark mode
-- Connect to databases, cloud storages and APIs.
-- Deploy on-premise (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
-- Granular access control on organization-level and app-level.
-- Write JS code almost anywhere in the builder.
-- Query editors for all supported data sources.
-- Transform query results using JS code. 
-- All the credentials are securely encrypted using `aes-256-gcm`.
-- ToolJet acts only as a proxy and doesn't store any data.
-- Support for OAuth.
+### Visual application builder 
+<p align="center">
+  <kbd>
+    <img src="https://user-images.githubusercontent.com/7828962/152667206-aaa0ae52-1260-48ce-9d0d-0f2e478f9fd1.png"/>
+  </kbd>
+</p>
+
+
+![2_alt](https://user-images.githubusercontent.com/7828962/152912302-625f7f3e-3659-46cc-9be6-b52c4a3c370c.png)
+
+
+
+![3](https://user-images.githubusercontent.com/7828962/152912291-f5019ed6-e319-4b00-910f-ee7bdb1c05d7.png)
+![Final_comment_final](https://user-images.githubusercontent.com/7828962/152912265-a9d4a25f-0853-43af-b92a-322af6b0a4eb.gif)
+![5](https://user-images.githubusercontent.com/7828962/152912276-e85c16a4-438f-4b88-9072-18e60017f74b.png)
+![6](https://user-images.githubusercontent.com/7828962/152912278-422458b9-eec0-477c-9554-672091734901.png)
+
+
+
+## All features
+
+- *Visual app builder:* 35+ built-in responsive widgets such as Tables, Charts, Lists, Forms, Progressbars, and more.
+- *20+ data sources:* connect to databases, cloud storages and APIs.
+- *Desktop & mobile*: ;layout widths can be customised to support different screens. 
+- *Self-host:* (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
+- *Collaborate:* add comments anywhere on the canvas and tag your team members.
+- *Extend with plugins:*: use our [commandline tool](https://www.npmjs.com/package/tooljet) to easily boostrap new connectors.
+- *Version control:* every application have different versions with proper release cycle.
+- *Run JS code:* ability custom JavaScript snippets
+- *Granular access control* on organization-level and app-level.
+- *low-code:* write JS code almost anywhere in the builder. For example, the color property of text can be set to `status === 'success' ? 'green' : 'red'`
+- *no-code query editors* for all supported data sources.
+- *Join and transform data:* transform query results using just JavaScript code. 
+- *Secure:* All the credentials are securely encrypted using `aes-256-gcm`.
+- *Doesn't store data:* ToolJet acts only as a proxy and doesn't store any data.
+- *SSO:* Supports multiple SSO providers
 
 <hr>
 
@@ -99,4 +122,4 @@ Kindly read our [Contributing Guide](CONTRIBUTING.md) to learn and understand ab
 </a>
 
 ## Licence
-ToolJet © 2021, ToolJet Solutions Inc - Released under the GNU Affero General Public License v3.0.
+ToolJet © 2022, ToolJet Solutions Inc - Released under the GNU Affero General Public License v3.0.

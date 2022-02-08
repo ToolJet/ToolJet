@@ -11,17 +11,23 @@ class InvitationPage extends React.Component {
       isLoading: false,
       newSignup: queryString.parse(props.location.search).signup,
     };
+    this.formRef = React.createRef(null);
   }
 
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
 
+  calculateOffset() {
+    const elementHeight = this.formRef.current.getBoundingClientRect().top;
+    return window.innerHeight - elementHeight;
+  }
+
   setPassword = (e) => {
     e.preventDefault();
 
     const token = this.props.match.params.token;
-    const { password, organization, newSignup, firstName, lastName, password_confirmation } = this.state;
+    const { password, organization, role, newSignup, firstName, lastName, password_confirmation } = this.state;
     this.setState({ isLoading: true });
 
     if (!password || !password_confirmation || !password.trim() || !password_confirmation.trim()) {
@@ -45,6 +51,7 @@ class InvitationPage extends React.Component {
         token,
         password,
         organization,
+        role,
         newSignup,
         firstName,
         lastName,
@@ -64,10 +71,30 @@ class InvitationPage extends React.Component {
 
   render() {
     const { isLoading, newSignup } = this.state;
+    const roles = [
+      'CTO/CIO',
+      'Founder/CEO',
+      'IT Manager',
+      'Developer',
+      'Designer',
+      'Sales Professional',
+      'Marketing Professional',
+      'Product Manager',
+      'Other',
+    ];
+
+    const roleOptions = roles.map((role, index) => (
+      <option key={index} value={role}>
+        {role}
+      </option>
+    ));
 
     return (
-      <div className="page page-center">
-        <div className="container-tight py-2">
+      <div className="page page-center" ref={this.formRef}>
+        <div
+          className="container-tight py-2 invitation-page"
+          style={{ overflowY: 'scroll', maxHeight: this.formRef.current && this.calculateOffset() }}
+        >
           <div className="text-center mb-4">
             <a href=".">
               <img src="/assets/images/logo-color.svg" height="30" alt="" />
@@ -116,6 +143,15 @@ class InvitationPage extends React.Component {
                       />
                       <span className="input-group-text"></span>
                     </div>
+                  </div>
+                  <div className="mb-3">
+                    <div className="form-label">Role</div>
+                    <select className="form-select" name="role" defaultValue="" onChange={this.handleChange}>
+                      <option value="" disabled>
+                        Please select
+                      </option>
+                      {roleOptions}
+                    </select>
                   </div>
                 </>
               )}

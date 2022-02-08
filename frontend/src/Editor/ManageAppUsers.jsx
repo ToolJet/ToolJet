@@ -164,7 +164,7 @@ class ManageAppUsers extends React.Component {
             ) : (
               <div>
                 <div className="make-public mb-3">
-                  <label className="form-check form-switch">
+                  <div className="form-check form-switch">
                     <input
                       className="form-check-input"
                       type="checkbox"
@@ -173,7 +173,7 @@ class ManageAppUsers extends React.Component {
                       disabled={this.state.ischangingVisibility}
                     />
                     <span className="form-check-label">Make application public ?</span>
-                  </label>
+                  </div>
                 </div>
                 <div className="shareable-link mb-3">
                   <label className="form-label">

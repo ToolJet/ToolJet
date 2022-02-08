@@ -42,16 +42,26 @@ export function Table({
   setExposedVariable,
   registerAction,
 }) {
-  const color = component.definition.styles.textColor.value;
+  const color =
+    component.definition.styles.textColor.value !== '#000'
+      ? component.definition.styles.textColor.value
+      : darkMode && '#fff';
+
   const actions = component.definition.properties.actions || { value: [] };
   const serverSidePaginationProperty = component.definition.properties.serverSidePagination;
-  const serverSidePagination = serverSidePaginationProperty ? serverSidePaginationProperty.value : false;
+  const serverSidePagination = serverSidePaginationProperty
+    ? resolveWidgetFieldValue(serverSidePaginationProperty.value, currentState)
+    : false;
 
   const serverSideSearchProperty = component.definition.properties.serverSideSearch;
-  const serverSideSearch = serverSideSearchProperty ? serverSideSearchProperty.value : false;
+  const serverSideSearch = serverSideSearchProperty
+    ? resolveWidgetFieldValue(serverSideSearchProperty.value, currentState)
+    : false;
 
   const displaySearchBoxProperty = component.definition.properties.displaySearchBox;
-  const displaySearchBox = displaySearchBoxProperty ? displaySearchBoxProperty.value : true;
+  const displaySearchBox = displaySearchBoxProperty
+    ? resolveWidgetFieldValue(displaySearchBoxProperty.value, currentState)
+    : true;
 
   const showDownloadButtonProperty = component.definition.properties.showDownloadButton?.value;
   const showDownloadButton = resolveWidgetFieldValue(showDownloadButtonProperty, currentState) ?? true; // default is true for backward compatibility
@@ -77,6 +87,7 @@ export function Table({
   tableType = tableType === '' ? 'table-bordered' : tableType;
 
   const cellSizeType = component.definition.styles.cellSize?.value;
+  const borderRadius = component.definition.styles.borderRadius?.value;
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -583,7 +594,13 @@ export function Table({
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
-                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  style={{
+                    background: action.backgroundColor,
+                    color: action.textColor,
+                    borderRadius: component.definition.styles.actionButtonRadius?.value
+                      ? parseFloat(component.definition.styles.actionButtonRadius?.value)
+                      : 0,
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
                     onEvent('onTableActionButtonClicked', {
@@ -615,7 +632,13 @@ export function Table({
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
-                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  style={{
+                    background: action.backgroundColor,
+                    color: action.textColor,
+                    borderRadius: component.definition.styles.actionButtonRadius?.value
+                      ? parseFloat(component.definition.styles.actionButtonRadius?.value)
+                      : 0,
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
                     onEvent('onTableActionButtonClicked', {
@@ -801,7 +824,13 @@ export function Table({
     <div
       data-disabled={parsedDisabledState}
       className="card jet-table"
-      style={{ width: `100%`, height: `${height}px`, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{
+        width: `100%`,
+        height: `${height}px`,
+        display: parsedWidgetVisibility ? '' : 'none',
+        overflow: 'hidden',
+        borderRadius: Number.parseFloat(borderRadius),
+      }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component, event);

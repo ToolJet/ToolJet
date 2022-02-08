@@ -47,10 +47,11 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
 
         try {
           const evalFunction = Function(
-            ['components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)],
+            ['variables', 'components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)],
             `return ${code}`
           );
           result = evalFunction(
+            state.variables,
             state.components,
             state.queries,
             state.globals,
@@ -71,11 +72,13 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
 
       if (dynamicVariables) {
         if (dynamicVariables.length === 1 && dynamicVariables[0] === object) {
-          object = resolveReferences(dynamicVariables[0], state);
+          object = resolveReferences(dynamicVariables[0], state, null, customObjects);
         } else {
           for (const dynamicVariable of dynamicVariables) {
-            const value = resolveReferences(dynamicVariable, state);
-            object = object.replace(dynamicVariable, value);
+            const value = resolveReferences(dynamicVariable, state, null, customObjects);
+            if (typeof value !== 'function') {
+              object = object.replace(dynamicVariable, value);
+            }
           }
         }
       }
@@ -129,7 +132,9 @@ export function computeComponentName(componentType, currentComponents) {
 
   while (!found) {
     componentName = `${componentType.toLowerCase()}${currentNumber}`;
-    if (Object.values(currentComponents).find((component) => component.name === componentName) === undefined) {
+    if (
+      Object.values(currentComponents).find((component) => component.component.name === componentName) === undefined
+    ) {
       found = true;
     }
     currentNumber = currentNumber + 1;
@@ -267,4 +272,31 @@ export async function executeMultilineJS(currentState, code) {
   }
 
   return result;
+}
+
+export function toQuery(params, delimiter = '&') {
+  const keys = Object.keys(params);
+
+  return keys.reduce((str, key, index) => {
+    let query = `${str}${key}=${params[key]}`;
+
+    if (index < keys.length - 1) {
+      query += delimiter;
+    }
+
+    return query;
+  }, '');
+}
+
+export const isJson = (str) => {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+};
+
+export function buildURLWithQuery(url, query = {}) {
+  return `${url}?${toQuery(query)}`;
 }

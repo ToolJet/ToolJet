@@ -1,0 +1,86 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Elastic search datasource",
+  "description": "A schema defining elastic search datasource",
+  "type": "database",
+  "source": {
+    "name": "Elasticsearch",
+    "kind": "elasticsearch",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 9200
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "ssl_enabled": {
+      "value": true
+    }
+  },
+  "properties": {
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "Enter host"
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "Enter port"
+    },
+    "username": {
+      "label": "Username",
+      "key": "username",
+      "type": "text",
+      "description": "Enter username"
+    },
+    "ssl_enabled": {
+      "label": "SSL",
+      "key": "ssl_enabled",
+      "type": "toggle",
+      "description": "Toggle for ssl_enabled"
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "Enter password"
+    }
+  },
+  "required": [
+    "scheme",
+    "ssl_enabled",
+    "host",
+    "port",
+    "password"
+  ]
+}

@@ -12,8 +12,8 @@ export const StarRating = function StarRating({ properties, styles, fireEvent, s
   const allowHalfStar = properties.allowHalfStar ?? false;
   const tooltips = properties.tooltips;
 
-  const { visibility, disabledState, textColorProperty, labelColor } = styles;
-  const color = textColorProperty ?? '#ffb400';
+  const { visibility, disabledState, textColor, labelColor } = styles;
+  const color = textColor ?? '#ffb400';
 
   const animatedStars = useTrail(maxRating, {
     config: {
@@ -68,7 +68,6 @@ export const StarRating = function StarRating({ properties, styles, fireEvent, s
 
   return (
     <div data-disabled={disabledState} className="star-rating" style={{ display: visibility ? '' : 'none' }}>
-      {/* TODO: Add label color defination property instead of hardcoded color*/}
       <span className="label form-check-label col-auto" style={{ color: labelColor }}>
         {label}
       </span>

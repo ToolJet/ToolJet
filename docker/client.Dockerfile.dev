@@ -3,8 +3,12 @@ FROM node:14.17.3-alpine
 
 ENV NODE_ENV=development
 
+RUN npm i -g npm@7.20.0
+
 # set working directory
 WORKDIR /app
+
+COPY ./package.json ./package.json
 
 # add `/app/node_modules/.bin` to $PATH
 ENV PATH /app/node_modules/.bin:$PATH
@@ -12,16 +16,12 @@ ENV PATH /app/node_modules/.bin:$PATH
 # Fix for heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-
 # install app dependencies
-COPY package.json package-lock.json  ./
-RUN npm install
-RUN npm install react-scripts@3.4.1 -g --silent
-
-# add app
-COPY . ./
+COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
+RUN npm --prefix frontend install
+COPY ./frontend/ ./frontend/
 
 # start app
-CMD ["npm", "start"]
+CMD ["npm", "--prefix", "frontend", "start"]
 
 EXPOSE 8082

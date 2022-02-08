@@ -1,0 +1,213 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Googlesheets datasource",
+  "description": "A schema defining Googlesheets datasource",
+  "type": "api",
+  "defaults": {
+    "operation": "read"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "read",
+          "name": "Read data from a spreadsheet"
+        },
+        {
+          "value": "append",
+          "name": "Append data to a spreadsheet"
+        },
+        {
+          "value": "info",
+          "name": "Get spreadsheet info"
+        },
+        {
+          "value": "update",
+          "name": "Update data to a spreadsheet"
+        },
+        {
+          "value": "delete_row",
+          "name": "Delete row from a spreadsheet"
+        }
+      ]
+    },
+    "read": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+      },
+      "spreadsheet_range": {
+        "label": "Range",
+        "key": "spreadsheet_range",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "A1:Z500",
+        "description": "Enter range",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "sheet": {
+        "label": "Sheet",
+        "key": "sheet",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "Leave blank to use first sheet",
+        "description": "Enter sheet",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "append": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+      },
+      "sheet": {
+        "label": "Sheet",
+        "key": "sheet",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "Leave blank to use first sheet",
+        "description": "Enter sheet",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "rows": {
+        "label": "Rows",
+        "key": "rows",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter rows",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter rows"
+      }
+    },
+    "info": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+        
+      }
+    },
+    "delete_row": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+      },
+      "sheet": {
+        "label": "GID",
+        "key": "sheet",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter sheet",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter sheet"
+      },
+      "row_index": {
+        "label": "Delete row number",
+        "key": "row_index",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter row number",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter row number"
+      }
+    },
+    "update": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+      },
+      "where_field": {
+        "label": "Where",
+        "key": "where_field",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter field",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter field"
+      },
+      "where_operation": {
+        "label": "Operator",
+        "key": "where_operation",
+        "className": "col-4",
+        "type": "dropdown",
+        "description": "Single select dropdown for where operation",
+        "list": [
+          {
+            "value": "===",
+            "name": "==="
+          }
+        ]
+      },
+      "where_value": {
+        "label": "Value",
+        "key": "where_value",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter value",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter spreadsheet_id"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter body",
+        "lineNumbers": false,
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    }
+  }
+}

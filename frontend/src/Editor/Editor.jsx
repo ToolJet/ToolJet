@@ -1,9 +1,10 @@
 /* eslint-disable import/no-named-as-default */
 import React, { createRef } from 'react';
-import { datasourceService, dataqueryService, appService, authenticationService } from '@/_services';
+import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty } from 'lodash';
+import { computeComponentName } from '@/_helpers/utils';
+import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
 import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
@@ -13,7 +14,7 @@ import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
 import { Link } from 'react-router-dom';
 import { ManageAppUsers } from './ManageAppUsers';
-import { SaveAndPreview } from './SaveAndPreview';
+import { ReleaseVersionButton } from './ReleaseVersionButton';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
@@ -23,6 +24,9 @@ import {
   runQuery,
   setStateAsync,
   computeComponentState,
+  getSvgIcon,
+  addToLocalStorage,
+  getDataFromLocalStorage,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -34,9 +38,16 @@ import queryString from 'query-string';
 import toast from 'react-hot-toast';
 import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
 import Logo from './Icons/logo.svg';
+import RunjsIcon from './Icons/runjs.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+import { AppVersionsManager } from './AppVersionsManager';
+import * as Driver from 'driver.js';
+import 'driver.js/dist/driver.min.css';
+import { SearchBoxComponent } from '@/_ui/Search';
 
 setAutoFreeze(false);
 enablePatches();
@@ -73,6 +84,7 @@ class Editor extends React.Component {
       allComponentTypes: componentTypes,
       isQueryPaneDragging: false,
       queryPaneHeight: 70,
+      isTopOfQueryPane: false,
       isLoading: true,
       users: null,
       appId,
@@ -94,6 +106,7 @@ class Editor extends React.Component {
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
         errors: {},
+        variables: {},
       },
       apps: [],
       dataQueriesDefaultText: "You haven't created queries yet.",
@@ -102,7 +115,23 @@ class Editor extends React.Component {
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
       socket: null,
+      showInitVersionCreateModal: false,
+      isCreatingInitVersion: false,
+      initVersionName: 'v1',
+      isSavingEditingVersion: false,
+      showSaveDetail: false,
+      hasAppDefinitionChanged: false,
+      showCreateVersionModalPrompt: false,
     };
+
+    this.autoSave = debounce(this.saveEditingVersion, 3000);
+
+    // setup for closing versions dropdown on oustide click
+    this.wrapperRef = React.createRef();
+  }
+
+  setWindowTitle(name) {
+    document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
   }
 
   componentDidMount() {
@@ -117,9 +146,120 @@ class Editor extends React.Component {
     });
   }
 
+  initWalkThrough() {
+    const driver = new Driver({
+      allowClose: true,
+      closeBtnText: 'Skip',
+      nextBtnText: 'Next',
+      prevBtnText: 'Previous',
+      padding: 2,
+      onReset: () => {
+        // Here we need to write the logic to update walkthroughCompleted column of the current user.
+        addToLocalStorage({ key: 'walkthroughCompleted', value: true });
+      },
+      className: `${this.props.darkMode ? 'dark-theme' : 'light-theme'}-walkthrough`,
+    });
+
+    if (
+      getDataFromLocalStorage('walkthroughCompleted') == undefined ||
+      !getDataFromLocalStorage('walkthroughCompleted')
+    ) {
+      driver.defineSteps([
+        {
+          element: '.component-image-holder',
+          popover: {
+            title: 'Drag and drop widgets',
+            description: 'From the widget sidebar, drag and drop widgets to the canvas.',
+            position: 'left',
+            closeBtnText: 'Skip (1/6)',
+          },
+        },
+        {
+          element: '.sidebar-datasources',
+          popover: {
+            title: 'Connect to data sources',
+            description: 'You can manage your data sources from here.',
+            position: 'right',
+            closeBtnText: 'Skip (2/6)',
+          },
+        },
+        {
+          element: '.left-sidebar-inspector',
+          popover: {
+            title: 'Inspector',
+            description: 'Inspector lets you check the properties of widgets, results of queries etc.',
+            position: 'right',
+            closeBtnText: 'Skip (3/6)',
+          },
+        },
+        {
+          element: '.queries-header ',
+          popover: {
+            title: 'Create queries',
+            description:
+              'Create queries to interact with your data sources, run JavaScript snippets and to make API requests.',
+            position: 'top',
+            closeBtnText: 'Skip (4/6)',
+          },
+        },
+        {
+          element: '.release-buttons',
+          popover: {
+            title: 'Preview, release & share',
+            description:
+              'Click on preview to view the current changes on app viewer. Click on share button to view the sharing options. Release the editing version to make the changes live. Released versions cannot be modified, you will have to create another version to make more changes.',
+            position: 'bottom',
+            closeBtnText: 'Skip (5/6)',
+          },
+        },
+        {
+          element: '.sidebar-comments',
+          popover: {
+            title: 'Collaborate',
+            description: 'Add comments on canvas and tag your team members to collaborate.',
+            position: 'right',
+            closeBtnText: 'Skip (6/6)',
+          },
+        },
+      ]);
+
+      driver.start();
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.editingVersion == undefined && this.state.editingVersion) {
+      this.initWalkThrough();
+    }
+  }
+
+  isVersionReleased = (version = this.state.editingVersion) => {
+    if (isEmpty(version)) {
+      return false;
+    }
+    return this.state.app.current_version_id === version.id;
+  };
+
+  closeCreateVersionModalPrompt = () => {
+    this.setState({ showCreateVersionModalPrompt: false });
+  };
+
   onMouseMove = (e) => {
+    const componentTop = Math.round(this.queryPaneRef.current.getBoundingClientRect().top);
+    const clientY = e.clientY;
+
+    if ((clientY >= componentTop) & (clientY <= componentTop + 5)) {
+      this.setState({
+        isTopOfQueryPane: true,
+      });
+    } else if (this.state.isTopOfQueryPane) {
+      this.setState({
+        isTopOfQueryPane: false,
+      });
+    }
+
     if (this.state.isQueryPaneDragging) {
-      let queryPaneHeight = (e.clientY / window.screen.height) * 100;
+      let queryPaneHeight = (clientY / window.innerHeight) * 100;
 
       if (queryPaneHeight > 95) queryPaneHeight = 100;
       if (queryPaneHeight < 4.5) queryPaneHeight = 4.5;
@@ -131,9 +271,10 @@ class Editor extends React.Component {
   };
 
   onMouseDown = () => {
-    this.setState({
-      isQueryPaneDragging: true,
-    });
+    this.state.isTopOfQueryPane &&
+      this.setState({
+        isQueryPaneDragging: true,
+      });
   };
 
   onMouseUp = () => {
@@ -153,6 +294,7 @@ class Editor extends React.Component {
     if (this.state.socket) {
       this.state.socket?.close();
     }
+    document.title = 'Tooljet - Dashboard';
   }
 
   getWebsocketUrl = () => {
@@ -268,6 +410,7 @@ class Editor extends React.Component {
                     ...queryState,
                   },
                 },
+                showQuerySearchField: false,
               });
             }
           );
@@ -307,10 +450,15 @@ class Editor extends React.Component {
           slug: data.slug,
         },
         () => {
+          this.setState({
+            showInitVersionCreateModal: isEmpty(this.state.editingVersion),
+          });
+
           computeComponentState(this, this.state.appDefinition.components).then(() => {
             console.log('Default component state computed and set');
             this.runQueries(data.data_queries);
           });
+          this.setWindowTitle(data.name);
         }
       );
 
@@ -320,7 +468,7 @@ class Editor extends React.Component {
   };
 
   setAppDefinitionFromVersion = (version) => {
-    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition));
+    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), { skipAutoSave: true });
     this.setState({
       editingVersion: version,
     });
@@ -410,7 +558,7 @@ class Editor extends React.Component {
     }
   };
 
-  appDefinitionChanged = (newDefinition) => {
+  appDefinitionChanged = (newDefinition, opts = {}) => {
     produce(
       this.state.appDefinition,
       (draft) => {
@@ -418,7 +566,9 @@ class Editor extends React.Component {
       },
       this.handleAddPatch
     );
-    this.setState({ appDefinition: newDefinition });
+    this.setState({ appDefinition: newDefinition }, () => {
+      if (!opts.skipAutoSave) this.autoSave();
+    });
     computeComponentState(this, newDefinition.components);
   };
 
@@ -436,22 +586,42 @@ class Editor extends React.Component {
     this.setState({ slug: newSlug });
   };
 
-  removeComponent = (component) => {
-    let newDefinition = cloneDeep(this.state.appDefinition);
-    // Delete child components when parent is deleted
-    const childComponents = Object.keys(newDefinition.components).filter(
-      (key) => newDefinition.components[key].parent === component.id
-    );
-    childComponents.forEach((componentId) => {
-      delete newDefinition.components[componentId];
-    });
+  handleClickOutsideAppVersionsDropdown = (event) => {
+    if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
+      this.setState({ showAppVersionsDropdown: false });
+    }
+  };
 
-    delete newDefinition.components[component.id];
-    toast('Component deleted! (⌘Z to undo)', {
-      icon: '🗑️',
-    });
-    this.appDefinitionChanged(newDefinition);
-    this.handleInspectorView(component);
+  removeComponent = (component) => {
+    if (!this.isVersionReleased()) {
+      let newDefinition = cloneDeep(this.state.appDefinition);
+      // Delete child components when parent is deleted
+
+      let childComponents = [];
+
+      if (newDefinition.components[component.id].component.component === 'Tabs') {
+        childComponents = Object.keys(newDefinition.components).filter((key) =>
+          newDefinition.components[key].parent?.startsWith(component.id)
+        );
+      } else {
+        childComponents = Object.keys(newDefinition.components).filter(
+          (key) => newDefinition.components[key].parent === component.id
+        );
+      }
+
+      childComponents.forEach((componentId) => {
+        delete newDefinition.components[componentId];
+      });
+
+      delete newDefinition.components[component.id];
+      toast('Component deleted! (⌘Z to undo)', {
+        icon: '🗑️',
+      });
+      this.appDefinitionChanged(newDefinition, {
+        skipAutoSave: this.isVersionReleased(),
+      });
+      this.handleInspectorView(component);
+    }
   };
 
   componentDefinitionChanged = (componentDefinition) => {
@@ -474,28 +644,27 @@ class Editor extends React.Component {
     return setStateAsync(_self, newDefinition);
   };
 
-  componentChanged = (newComponent) => {
-    this.setState({
-      appDefinition: {
-        ...this.state.appDefinition,
-        components: {
-          ...this.state.appDefinition.components,
-          [newComponent.id]: {
-            ...this.state.appDefinition.components[newComponent.id],
-            ...newComponent,
-          },
-        },
-      },
-    });
+  cloneComponent = (newComponent) => {
+    const appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
+
+    newComponent.component.name = computeComponentName(newComponent.component.component, appDefinition.components);
+
+    appDefinition.components[newComponent.id] = newComponent;
+    this.appDefinitionChanged(appDefinition);
   };
 
   globalSettingsChanged = (key, value) => {
     const appDefinition = { ...this.state.appDefinition };
 
     appDefinition.globalSettings[key] = value;
-    this.setState({
-      appDefinition,
-    });
+    this.setState(
+      {
+        appDefinition,
+      },
+      () => {
+        this.autoSave();
+      }
+    );
   };
 
   saveApp = (id, attributes, notify = false) => {
@@ -528,16 +697,14 @@ class Editor extends React.Component {
         role="button"
         key={dataSource.name}
         onClick={() => {
-          this.setState({ selectedDataSource: dataSource, showDataSourceManagerModal: true });
+          this.setState({
+            selectedDataSource: dataSource,
+            showDataSourceManagerModal: true,
+          });
         }}
       >
         <td>
-          <img
-            src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
-            width="20"
-            height="20"
-          />{' '}
-          {dataSource.name}
+          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)} {dataSource.name}
         </td>
       </tr>
     );
@@ -552,7 +719,10 @@ class Editor extends React.Component {
   };
 
   executeDataQueryDeletion = () => {
-    this.setState({ showDataQueryDeletionConfirmation: false, isDeletingDataQuery: true });
+    this.setState({
+      showDataQueryDeletionConfirmation: false,
+      isDeletingDataQuery: true,
+    });
     dataqueryService
       .del(this.state.selectedQuery.id)
       .then(() => {
@@ -584,7 +754,11 @@ class Editor extends React.Component {
 
     return (
       <div
-        className={'row query-row py-2 px-3' + (isSeletedQuery ? ' query-row-selected' : '')}
+        className={
+          'row query-row mb-1 py-2 px-3' +
+          (isSeletedQuery ? ' query-row-selected' : '') +
+          (this.props.darkMode ? ' dark' : '')
+        }
         key={dataQuery.id}
         onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
         role="button"
@@ -592,12 +766,11 @@ class Editor extends React.Component {
         onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col">
-          <img
-            className="svg-icon"
-            src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
-            width="20"
-            height="20"
-          />
+          {sourceMeta.kind === 'runjs' ? (
+            <RunjsIcon style={{ height: 25, width: 25 }} />
+          ) : (
+            getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)
+          )}
           <span className="p-3">{dataQuery.name}</span>
         </div>
         <div className="col-auto mx-1">
@@ -609,22 +782,28 @@ class Editor extends React.Component {
             <button
               className="btn badge bg-azure-lt"
               onClick={this.deleteDataQuery}
-              style={{ display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none' }}
+              style={{
+                display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
+                marginTop: '3px',
+              }}
             >
               <div>
-                <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
+                <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" className="mx-1" />
               </div>
             </button>
           )}
         </div>
-        <div className="col-auto">
+        <div className="col-auto" style={{ width: '28px' }}>
           {isLoading === true ? (
-            <div className="px-2">
-              <div className="text-center spinner-border spinner-border-sm" role="status"></div>
-            </div>
+            <center>
+              <div className="pt-1">
+                <div className="text-center spinner-border spinner-border-sm" role="status"></div>
+              </div>
+            </center>
           ) : (
             <button
-              className="btn badge bg-azure-lt"
+              style={{ marginTop: '3px' }}
+              className="btn badge bg-light-1"
               onClick={() => {
                 runQuery(this, dataQuery.id, dataQuery.name).then(() => {
                   toast(`Query (${dataQuery.name}) completed.`, {
@@ -633,7 +812,7 @@ class Editor extends React.Component {
                 });
               }}
             >
-              <div>
+              <div className={`query-icon ${this.props.darkMode && 'dark'}`}>
                 <img src="/assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
               </div>
             </button>
@@ -647,6 +826,7 @@ class Editor extends React.Component {
     this.setState({
       app: { ...this.state.app, name: newName },
     });
+    this.setWindowTitle(newName);
   };
 
   toggleQueryEditor = () => {
@@ -660,7 +840,7 @@ class Editor extends React.Component {
     this.setState({ showComments: !this.state.showComments });
   };
 
-  configHandleClicked = (id, component) => {
+  setSelectedComponent = (id, component) => {
     this.switchSidebarTab(1);
     this.setState({ selectedComponent: { id, component } });
   };
@@ -671,7 +851,7 @@ class Editor extends React.Component {
       const results = fuse.search(value);
       this.setState({
         dataQueries: results.map((result) => result.item),
-        dataQueriesDefaultText: results.length ?? 'No Queries found.',
+        dataQueriesDefaultText: 'No Queries found.',
       });
     } else {
       this.fetchDataQueries();
@@ -679,10 +859,12 @@ class Editor extends React.Component {
   };
 
   toggleQuerySearch = () => {
-    this.setState((prev) => ({ showQuerySearchField: !prev.showQuerySearchField }));
+    this.setState((prev) => ({
+      showQuerySearchField: !prev.showQuerySearchField,
+    }));
   };
 
-  onVersionDeploy = (versionId) => {
+  onVersionRelease = (versionId) => {
     this.setState({
       app: {
         ...this.state.app,
@@ -707,22 +889,142 @@ class Editor extends React.Component {
   renderLayoutIcon = (isDesktopSelected) => {
     if (isDesktopSelected)
       return (
-        <span onClick={() => this.setState({ currentLayout: isDesktopSelected ? 'mobile' : 'desktop' })}>
+        <span
+          onClick={() =>
+            this.setState({
+              currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
+            })
+          }
+        >
           <DesktopSelectedIcon />
         </span>
       );
 
     return (
-      <span onClick={() => this.setState({ currentLayout: isDesktopSelected ? 'mobile' : 'desktop' })}>
+      <span
+        onClick={() =>
+          this.setState({
+            currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
+          })
+        }
+      >
         <MobileSelectedIcon />
       </span>
     );
   };
+  handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      // eslint-disable-next-line no-undef
+      this.createInitVersion();
+    }
+  };
+  createInitVersion = () => {
+    const newVersionName = this.state.initVersionName;
+    const appId = this.state.appId;
+
+    if (!isEmpty(newVersionName?.trim())) {
+      this.setState({ isCreatingInitVersion: true });
+      appVersionService.create(appId, newVersionName).then(() => {
+        this.setState({
+          showInitVersionCreateModal: false,
+          isCreatingInitVersion: false,
+        });
+        toast.success('Version Created');
+        this.fetchApp();
+      });
+    } else {
+      toast.error('The name of version should not be empty');
+      this.setState({ isCreatingInitVersion: false });
+    }
+  };
+
+  saveEditingVersion = () => {
+    if (this.isVersionReleased()) {
+      this.setState({ showCreateVersionModalPrompt: true });
+    } else if (!isEmpty(this.state.editingVersion)) {
+      this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
+      appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
+        this.setState({ isSavingEditingVersion: false });
+        setTimeout(() => this.setState({ showSaveDetail: false }), 3000);
+      });
+    }
+  };
+
+  renderInitVersionCreateModal = (showModal) => {
+    return (
+      <Modal
+        contentClassName={this.props.darkMode ? 'theme-dark' : ''}
+        show={showModal}
+        size="md"
+        backdrop="static"
+        keyboard={true}
+        enforceFocus={false}
+        animation={false}
+        centered={true}
+        // eslint-disable-next-line no-undef
+      >
+        <Modal.Header>
+          <Modal.Title>Create Version</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row m-2">
+            <div className="col">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="version name"
+                defaultValue={this.state.initVersionName}
+                onChange={(e) => this.setState({ initVersionName: e.target.value })}
+                onKeyPress={(e) => this.handleKeyPress(e)}
+              />
+            </div>
+          </div>
+
+          <div className="row m-2">
+            <div className="col">
+              <small className="muted">Create a version to start building your app</small>
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            className={`${this.state.isCreatingInitVersion ? 'btn-loading' : ''}`}
+            onClick={() => this.createInitVersion()}
+          >
+            Create
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  };
+
+  handleOnComponentOptionChanged = (component, optionName, value) => {
+    onComponentOptionChanged(this, component, optionName, value);
+  };
+
+  handleOnComponentOptionsChanged = (component, options) => {
+    onComponentOptionsChanged(this, component, options);
+  };
+
+  handleComponentClick = (id, component) => {
+    this.setState({
+      selectedComponent: { id, component },
+    });
+    this.switchSidebarTab(1);
+  };
+
+  handleComponentHover = (id) => {
+    this.setState({
+      hoveredComponent: id,
+    });
+  };
+
+  handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
   render() {
     const {
       currentSidebarTab,
-      selectedComponent,
+      selectedComponent = {},
       appDefinition,
       appId,
       slug,
@@ -751,6 +1053,11 @@ class Editor extends React.Component {
       defaultComponentStateComputed,
       showComments,
       editingVersion,
+      showInitVersionCreateModal,
+      isSavingEditingVersion,
+      showSaveDetail,
+      showCreateVersionModalPrompt,
+      hoveredComponent,
     } = this.state;
 
     const appLink = slug ? `/applications/${slug}` : '';
@@ -807,13 +1114,38 @@ class Editor extends React.Component {
                     </span>
                   </div>
                 )}
-                {this.state.editingVersion && (
-                  <small className="app-version-name">{`App version: ${this.state.editingVersion.name}`}</small>
+                {showSaveDetail && (
+                  <div className="nav-auto-save">
+                    <img src={'/assets/images/icons/editor/auto-save.svg'} width="25" height="25" />
+                    <em className="small lh-base p-1">{isSavingEditingVersion ? 'Auto Saving..' : 'Auto Saved'}</em>
+                  </div>
                 )}
+
+                {editingVersion && (
+                  <AppVersionsManager
+                    appId={appId}
+                    editingVersion={editingVersion}
+                    releasedVersionId={app.current_version_id}
+                    setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                    showCreateVersionModalPrompt={showCreateVersionModalPrompt}
+                    closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
+                  />
+                )}
+
                 <div className="layout-buttons cursor-pointer">
                   {this.renderLayoutIcon(currentLayout === 'desktop')}
                 </div>
-                <div className="navbar-nav flex-row order-md-last">
+                <div className="navbar-nav flex-row order-md-last release-buttons">
+                  <div className="nav-item dropdown d-none d-md-flex me-2">
+                    <a
+                      href={appLink}
+                      target="_blank"
+                      className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
+                      rel="noreferrer"
+                    >
+                      Preview
+                    </a>
+                  </div>
                   <div className="nav-item dropdown d-none d-md-flex me-2">
                     {app.id && (
                       <ManageAppUsers
@@ -824,28 +1156,16 @@ class Editor extends React.Component {
                       />
                     )}
                   </div>
-                  <div className="nav-item dropdown d-none d-md-flex me-2">
-                    <a
-                      href={appLink}
-                      target="_blank"
-                      className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
-                      rel="noreferrer"
-                    >
-                      Launch
-                    </a>
-                  </div>
                   <div className="nav-item dropdown me-2">
                     {app.id && (
-                      <SaveAndPreview
+                      <ReleaseVersionButton
+                        isVersionReleased={this.isVersionReleased()}
                         appId={app.id}
                         appName={app.name}
-                        appDefinition={appDefinition}
-                        app={app}
-                        darkMode={this.props.darkMode}
-                        onVersionDeploy={this.onVersionDeploy}
-                        editingVersionId={this.state.editingVersion ? this.state.editingVersion.id : null}
-                        setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                        onVersionRelease={this.onVersionRelease}
+                        editingVersion={editingVersion}
                         fetchApp={this.fetchApp}
+                        saveEditingVersion={this.saveEditingVersion}
                       />
                     )}
                   </div>
@@ -857,9 +1177,7 @@ class Editor extends React.Component {
             <LeftSidebar
               appVersionsId={this.state?.editingVersion?.id}
               errorLogs={currentState.errors}
-              queries={currentState.queries}
               components={currentState.components}
-              globals={currentState.globals}
               appId={appId}
               darkMode={this.props.darkMode}
               dataSources={this.state.dataSources}
@@ -869,6 +1187,7 @@ class Editor extends React.Component {
               switchDarkMode={this.props.switchDarkMode}
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
+              currentState={currentState}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
@@ -903,24 +1222,19 @@ class Editor extends React.Component {
                         zoomLevel={zoomLevel}
                         currentLayout={currentLayout}
                         deviceWindowWidth={deviceWindowWidth}
-                        selectedComponent={selectedComponent || {}}
+                        selectedComponent={selectedComponent}
                         appLoading={isLoading}
-                        onEvent={(eventName, options) => onEvent(this, eventName, options, 'edit')}
-                        onComponentOptionChanged={(component, optionName, value) =>
-                          onComponentOptionChanged(this, component, optionName, value)
-                        }
-                        onComponentOptionsChanged={(component, options) =>
-                          onComponentOptionsChanged(this, component, options)
-                        }
+                        onEvent={this.handleEvent}
+                        onComponentOptionChanged={this.handleOnComponentOptionChanged}
+                        onComponentOptionsChanged={this.handleOnComponentOptionsChanged}
                         currentState={this.state.currentState}
-                        configHandleClicked={this.configHandleClicked}
+                        setSelectedComponent={this.setSelectedComponent}
                         handleUndo={this.handleUndo}
                         handleRedo={this.handleRedo}
                         removeComponent={this.removeComponent}
-                        onComponentClick={(id, component) => {
-                          this.setState({ selectedComponent: { id, component } });
-                          this.switchSidebarTab(1);
-                        }}
+                        onComponentClick={this.handleComponentClick}
+                        onComponentHover={this.handleComponentHover}
+                        hoveredComponent={hoveredComponent}
                       />
                       <CustomDragLayer
                         snapToGrid={true}
@@ -968,93 +1282,92 @@ class Editor extends React.Component {
                 onMouseDown={this.onMouseDown}
                 className="query-pane"
                 style={{
-                  height: `calc(100% - ${this.state.queryPaneHeight - 1}%)`,
-                  background: 'transparent',
-                  border: 0,
-                  cursor: 'row-resize',
-                }}
-              ></div>
-              <div
-                className="query-pane"
-                style={{
                   height: `calc(100% - ${this.state.queryPaneHeight}%)`,
                   width: !showLeftSidebar ? '85%' : '',
                   left: !showLeftSidebar ? '0' : '',
-                  cursor: this.state.isQueryPaneDragging ? 'row-resize' : 'default',
+                  cursor: this.state.isQueryPaneDragging || this.state.isTopOfQueryPane ? 'row-resize' : 'default',
                 }}
               >
                 <div className="row main-row">
-                  <div className="col-md-3 data-pane">
+                  <div className="col-3 data-pane">
                     <div className="queries-container">
-                      <div className="queries-header row mt-2">
-                        <div className="col">
-                          <h5 className="py-1 px-3 text-muted">QUERIES</h5>
-                        </div>
-                        <div className="col-auto px-3">
-                          <button
-                            className="btn btn-sm btn-light mx-2"
-                            data-class="py-1 px-2"
-                            data-tip="Search query"
-                            onClick={this.toggleQuerySearch}
-                          >
-                            <img className="py-1" src="/assets/images/icons/lens.svg" width="17" height="17" />
-                          </button>
-
-                          <span
-                            data-tip="Add new query"
-                            data-class="py-1 px-2"
-                            className="btn btn-sm btn-light btn-px-1 text-muted"
-                            onClick={() =>
-                              this.setState({
-                                options: {},
-                                selectedDataSource: null,
-                                selectedQuery: {},
-                                editingQuery: false,
-                                addingQuery: true,
-                              })
-                            }
-                          >
-                            +
-                          </span>
-                        </div>
-                      </div>
-
-                      {showQuerySearchField && (
-                        <div className="row mt-2 pt-1 px-2">
-                          <div className="col-12">
-                            <div className="queries-search">
-                              <input
-                                type="text"
-                                className="form-control mb-2"
-                                placeholder="Search…"
-                                autoFocus
-                                onChange={(e) => this.filterQueries(e.target.value)}
+                      <div className="queries-header row">
+                        {showQuerySearchField && (
+                          <div className="col-12 p-1">
+                            <div className="queries-search px-1">
+                              <SearchBoxComponent
+                                onChange={this.filterQueries}
+                                callback={this.toggleQuerySearch}
+                                placeholder={'Search queries'}
                               />
                             </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+
+                        {!showQuerySearchField && (
+                          <>
+                            <div className="col">
+                              <h5 style={{ fontSize: '14px' }} className="py-1 px-3 mt-2 text-muted">
+                                Queries
+                              </h5>
+                            </div>
+
+                            <div className="col-auto mx-1">
+                              <span
+                                className={`query-btn mx-1 ${this.props.darkMode ? 'dark' : ''}`}
+                                data-class="py-1 px-0"
+                                onClick={this.toggleQuerySearch}
+                              >
+                                <img className="py-1 mt-2" src="/assets/images/icons/lens.svg" width="24" height="24" />
+                              </span>
+
+                              <span
+                                className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
+                                data-tip="Add new query"
+                                data-class="py-1 px-2"
+                                onClick={() =>
+                                  this.setState({
+                                    options: {},
+                                    selectedDataSource: null,
+                                    selectedQuery: {},
+                                    editingQuery: false,
+                                    addingQuery: true,
+                                  })
+                                }
+                              >
+                                <img className="mt-2" src="/assets/images/icons/plus.svg" width="24" height="24" />
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </div>
 
                       {loadingDataQueries ? (
                         <div className="p-5">
                           <center>
-                            <div className="spinner-border text-azure" role="status"></div>
+                            <div className="spinner-border" role="status"></div>
                           </center>
                         </div>
                       ) : (
-                        <div className="query-list">
+                        <div className="query-list p-1 mt-1">
                           <div>{dataQueries.map((query) => this.renderDataQuery(query))}</div>
                           {dataQueries.length === 0 && (
                             <div className="mt-5">
                               <center>
-                                <span className="text-muted">{dataQueriesDefaultText}</span> <br />
+                                <span className="mute-text">{dataQueriesDefaultText}</span> <br />
                                 <button
-                                  className="btn btn-sm btn-outline-azure mt-3"
+                                  className={`button-family-secondary mt-3 ${this.props.darkMode && 'dark'}`}
                                   onClick={() =>
-                                    this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
+                                    this.setState({
+                                      options: {},
+                                      selectedDataSource: null,
+                                      selectedQuery: {},
+                                      editingQuery: false,
+                                      addingQuery: true,
+                                    })
                                   }
                                 >
-                                  create query
+                                  {'Create query'}
                                 </button>
                               </center>
                             </div>
@@ -1063,7 +1376,7 @@ class Editor extends React.Component {
                       )}
                     </div>
                   </div>
-                  <div className="col-md-9 query-definition-pane-wrapper">
+                  <div className="col-9 query-definition-pane-wrapper">
                     {!loadingDataSources && (
                       <div className="query-definition-pane">
                         <div>
@@ -1103,9 +1416,9 @@ class Editor extends React.Component {
                   !isEmpty(appDefinition.components) &&
                   !isEmpty(appDefinition.components[selectedComponent.id]) ? (
                     <Inspector
+                      cloneComponent={this.cloneComponent}
                       componentDefinitionChanged={this.componentDefinitionChanged}
                       dataQueries={dataQueries}
-                      componentChanged={this.componentChanged}
                       removeComponent={this.removeComponent}
                       selectedComponentId={selectedComponent.id}
                       currentState={currentState}
@@ -1138,6 +1451,7 @@ class Editor extends React.Component {
               />
             )}
           </div>
+          {this.renderInitVersionCreateModal(showInitVersionCreateModal)}
         </DndProvider>
       </div>
     );
