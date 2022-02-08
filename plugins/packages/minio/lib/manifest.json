@@ -7,7 +7,7 @@
     "name": "Minio",
     "kind": "minio",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

@@ -7,7 +7,7 @@ export const componentTypes = [
     properties: {
       title: { type: 'string', displayName: 'Title' },
       data: { type: 'code', displayName: 'Table data' },
-      loadingState: { type: 'code', displayName: 'Loading state' },
+      loadingState: { type: 'toggle', displayName: 'Loading state' },
       columns: { type: 'array', displayName: 'Table Columns' },
       serverSidePagination: { type: 'toggle', displayName: 'Server-side pagination' },
       clientSidePagination: { type: 'toggle', displayName: 'Client-side pagination' },
@@ -58,8 +58,8 @@ export const componentTypes = [
         ],
       },
       borderRadius: { type: 'code', displayName: 'Border Radius' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       selectedRow: {},
@@ -124,7 +124,7 @@ export const componentTypes = [
     },
     properties: {
       text: { type: 'code', displayName: 'Button Text' },
-      loadingState: { type: 'code', displayName: 'Loading State' },
+      loadingState: { type: 'toggle', displayName: 'Loading State' },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -132,8 +132,8 @@ export const componentTypes = [
     styles: {
       backgroundColor: { type: 'color', displayName: 'Background color' },
       textColor: { type: 'color', displayName: 'Text color' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
       borderRadius: { type: 'number', displayName: 'Border radius' },
     },
     exposedVariables: {},
@@ -173,7 +173,7 @@ export const componentTypes = [
     properties: {
       title: { type: 'code', displayName: 'Title' },
       data: { type: 'json', displayName: 'Data' },
-      loadingState: { type: 'code', displayName: 'Loading State' },
+      loadingState: { type: 'toggle', displayName: 'Loading State' },
       markerColor: { type: 'color', displayName: 'Marker color' },
       showAxes: { type: 'toggle', displayName: 'Show axes' },
       showGridLines: { type: 'toggle', displayName: 'Show grid lines' },
@@ -192,8 +192,8 @@ export const componentTypes = [
     events: {},
     styles: {
       padding: { type: 'code', displayName: 'Padding' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       show: null,
@@ -273,7 +273,7 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      disabledState: { type: 'code', displayName: 'Disable' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       show: null,
@@ -320,8 +320,8 @@ export const componentTypes = [
       onChange: { displayName: 'On change' },
     },
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
       borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
@@ -371,8 +371,8 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
       borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
@@ -421,8 +421,8 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
       borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
@@ -474,8 +474,8 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
       borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
@@ -526,8 +526,8 @@ export const componentTypes = [
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
       checkboxColor: { type: 'color', displayName: 'Checkbox Color' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {},
     definition: {
@@ -572,8 +572,8 @@ export const componentTypes = [
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
       activeColor: { type: 'color', displayName: 'Active Color' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {},
     definition: {
@@ -619,8 +619,8 @@ export const componentTypes = [
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
       toggleSwitchColor: { type: 'color', displayName: 'Toggle Switch Color' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       value: false,
@@ -661,8 +661,8 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
       borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
@@ -707,8 +707,8 @@ export const componentTypes = [
     events: {},
     styles: {
       borderRadius: { type: 'code', displayName: 'Border radius' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       endDate: {},
@@ -741,7 +741,7 @@ export const componentTypes = [
     },
     properties: {
       text: { type: 'code', displayName: 'Text' },
-      loadingState: { type: 'code', displayName: 'Show loading state' },
+      loadingState: { type: 'toggle', displayName: 'Show loading state' },
     },
     defaultSize: {
       width: 6,
@@ -751,8 +751,8 @@ export const componentTypes = [
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
       textAlign: { type: 'alignButtons', displayName: 'Align Text' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {},
     definition: {
@@ -807,8 +807,8 @@ export const componentTypes = [
       },
       backgroundColor: { type: 'color', displayName: 'Background color' },
       padding: { type: 'code', displayName: 'Padding' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {},
     definition: {
@@ -847,8 +847,8 @@ export const componentTypes = [
     styles: {
       backgroundColor: { type: 'color' },
       borderRadius: { type: 'code', displayName: 'Border Radius' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {},
     definition: {
@@ -889,7 +889,7 @@ export const componentTypes = [
       value: { type: 'code', displayName: 'Default value' },
       values: { type: 'code', displayName: 'Option values' },
       display_values: { type: 'code', displayName: 'Option labels' },
-      loadingState: { type: 'code', displayName: 'Options loading state' },
+      loadingState: { type: 'toggle', displayName: 'Options loading state' },
     },
     events: {
       onSelect: { displayName: 'On select' },
@@ -897,9 +897,9 @@ export const componentTypes = [
     },
     styles: {
       borderRadius: { type: 'code', displayName: 'Border radius' },
-      visibility: { type: 'code', displayName: 'Visibility' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
       selectedTextColor: { type: 'color', displayName: 'Selected Text Color' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       value: null,
@@ -953,8 +953,8 @@ export const componentTypes = [
     },
     styles: {
       borderRadius: { type: 'code', displayName: 'Border radius' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       values: {},
@@ -998,8 +998,8 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       value: '',
@@ -1062,8 +1062,8 @@ export const componentTypes = [
       onMarkerClick: { displayName: 'On marker click' },
     },
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       center: {},
@@ -1110,8 +1110,8 @@ export const componentTypes = [
       onDetect: { displayName: 'On detect' },
     },
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       lastDetectedValue: '',
@@ -1155,8 +1155,8 @@ export const componentTypes = [
     styles: {
       textColor: { type: 'color', displayName: 'Star Color' },
       labelColor: { type: 'color', displayName: 'Label Color' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       value: 0,
@@ -1200,7 +1200,7 @@ export const componentTypes = [
     events: {},
     styles: {
       dividerColor: { type: 'color', displayName: 'Divider Color' },
-      visibility: { type: 'code', displayName: 'Visibility' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
     },
     exposedVariables: {
       value: {},
@@ -1251,8 +1251,8 @@ export const componentTypes = [
     },
     events: { onFileSelected: { displayName: 'On File Selected' } },
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
       borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
@@ -1316,7 +1316,7 @@ export const componentTypes = [
       onCalendarViewChange: { displayName: 'On View Change' },
     },
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
       cellSizeInViewsClassifiedByResource: {
         type: 'select',
         displayName: 'Cell size in views classified by resource',
@@ -1400,8 +1400,8 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {},
     definition: {
@@ -1440,8 +1440,8 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
       borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
@@ -1485,8 +1485,8 @@ export const componentTypes = [
     events: {},
     styles: {
       highlightColor: { type: 'color', displayName: 'Highlight Color' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {},
     definition: {
@@ -1542,8 +1542,8 @@ export const componentTypes = [
       onReset: { displayName: 'On Reset' },
     },
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       value: '',
@@ -1592,8 +1592,8 @@ export const componentTypes = [
     },
     styles: {
       backgroundColor: { type: 'color' },
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       data: [{}],
@@ -1639,7 +1639,7 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
     },
     exposedVariables: {},
     definition: {
@@ -1681,8 +1681,8 @@ export const componentTypes = [
       onPageChange: { displayName: 'On Page Change' },
     },
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
-      disabledState: { type: 'code', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       totalPages: null,
@@ -1734,7 +1734,7 @@ export const componentTypes = [
       strokeWidth: { type: 'code', displayName: 'Stroke Width' },
       counterClockwise: { type: 'code', displayName: 'Counter Clockwise' },
       circleRatio: { type: 'code', displayName: 'Circle Ratio' },
-      visibility: { type: 'code', displayName: 'Visibility' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
     },
     exposedVariables: {},
     definition: {
@@ -1778,7 +1778,7 @@ export const componentTypes = [
     properties: {},
     events: {},
     styles: {
-      visibility: { type: 'code', displayName: 'Visibility' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
       colour: { type: 'color', displayName: 'Colour' },
       size: {
         type: 'select',
@@ -1830,7 +1830,7 @@ export const componentTypes = [
       primaryTextColour: { type: 'color', displayName: 'Primary Text  Colour' },
       secondaryLabelColour: { type: 'color', displayName: 'Secondary Label Colour' },
       secondaryTextColour: { type: 'color', displayName: 'Secondary Text Colour' },
-      visibility: { type: 'code', displayName: 'Visibility' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
     },
     definition: {
       others: {

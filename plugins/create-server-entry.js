@@ -4,17 +4,9 @@ const packages = readdirSync("./packages", { withFileTypes: true }).filter(
   (dirent) => dirent.isDirectory() && dirent.name !== "common"
 );
 
-const mapImportNameToOldValue = (str) => {
-  if (str === "mongo") return "mongodb";
-  if (str === "twilioapi") return "twilio";
-  if (str === "typesenseapi") return "typesense";
-  if (str === "minioapi") return "minio";
-  return str;
-};
-
 const imports = packages.map(
   (dirent) =>
-    `import ${mapImportNameToOldValue(dirent.name)} from './packages/${
+    `import ${dirent.name} from './packages/${
       dirent.name
     }/lib'`
 );
@@ -23,7 +15,7 @@ imports.push([
 ]);
 
 const outs = `export default {\n${packages
-  .map((dirent) => `  ${mapImportNameToOldValue(dirent.name)}`)
+  .map((dirent) => `  ${dirent.name}`)
   .join(",\n")},
 }`;
 

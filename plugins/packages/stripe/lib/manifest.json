@@ -7,7 +7,7 @@
     "name": "Stripe",
     "kind": "stripe",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

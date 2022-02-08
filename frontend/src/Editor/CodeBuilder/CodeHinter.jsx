@@ -187,7 +187,7 @@ export function CodeHinter({
         className={`${(height === '150px' || height === '300px') && 'tablr-gutter-x-0'} row`}
         style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
-        <div className={`col`} style={{ marginBottom: '16px' }}>
+        <div className={`col`} style={{ marginBottom: '0.5rem' }}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
             <div
               className={`${defaultClassName} ${className || 'codehinter-default-input'}`}

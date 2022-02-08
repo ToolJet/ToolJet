@@ -111,8 +111,11 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
     return newData;
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const memoizedChartData = useMemo(() => computeChartData(data, dataString), [data, dataString, chartType]);
+  const memoizedChartData = useMemo(
+    () => computeChartData(data, dataString),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data, dataString, chartType, markerColor]
+  );
 
   return (
     <div data-disabled={disabledState} style={computedStyles}>
