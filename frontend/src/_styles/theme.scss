@@ -3947,6 +3947,10 @@ input[type="text"] {
   }
 }
 
+.onboarding-modal.dark .modal-content {
+  @extend .modal-content.home-modal-component.dark;
+}
+
 .modal-content.home-modal-component.dark {
   background-color: $bg-dark-light !important;
   color: $white !important;
@@ -4329,6 +4333,29 @@ input[type="text"] {
 div#driver-highlighted-element-stage, div#driver-page-overlay {
   background: transparent !important;
   outline: 5000px solid rgba(0, 0, 0, .75)
+}
+
+.dark-theme-walkthrough#driver-popover-item {
+  background-color: $bg-dark-light!important;
+  border-color: rgba(101, 109, 119, 0.16)!important;
+
+  .driver-popover-title {
+    color: #fff !important;
+  }
+  .driver-popover-tip {
+    border-color: transparent transparent transparent $bg-dark-light!important;
+  }
+  .driver-popover-description {
+    color: #D9DCDE !important;
+  }
+  .driver-popover-footer .driver-close-btn {
+    color: #fff!important;
+    text-shadow: none!important;
+  }
+
+  .driver-prev-btn, .driver-next-btn {
+    text-shadow: none!important;
+  }
 }
 
 #driver-popover-item{
