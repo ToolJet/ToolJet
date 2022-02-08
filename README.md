@@ -34,13 +34,15 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 </p>
 
 
-<img width="1270" alt="2" src="https://user-images.githubusercontent.com/7828962/152630861-49af6c65-8ba1-4ea8-9205-9da271188f16.png">
-
-![3](https://user-images.githubusercontent.com/7828962/152630864-6016f2f5-0e4c-421a-aba2-a86497bca5b5.png)
+![2_alt](https://user-images.githubusercontent.com/7828962/152912302-625f7f3e-3659-46cc-9be6-b52c4a3c370c.png)
 
 
-### Collaborate
-![Comment_final_final](https://user-images.githubusercontent.com/7828962/152097198-ab886d76-1275-48d5-b3b6-5bfdc8bfff65.gif)
+
+![3](https://user-images.githubusercontent.com/7828962/152912291-f5019ed6-e319-4b00-910f-ee7bdb1c05d7.png)
+![Final_comment_final](https://user-images.githubusercontent.com/7828962/152912265-a9d4a25f-0853-43af-b92a-322af6b0a4eb.gif)
+![5](https://user-images.githubusercontent.com/7828962/152912276-e85c16a4-438f-4b88-9072-18e60017f74b.png)
+![6](https://user-images.githubusercontent.com/7828962/152912278-422458b9-eec0-477c-9554-672091734901.png)
+
 
 
 ## All features
