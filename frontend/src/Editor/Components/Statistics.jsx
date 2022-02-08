@@ -9,7 +9,6 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     alignItems: 'center',
     flexDirection: 'column',
     margin: '0px auto',
-    minWidth: '196px',
     border: darkMode ? ' 0.75px solid #232A35' : ' 0.75px solid #A6B6CC',
     fontFamily: 'Inter',
     justifyContent: 'center',
@@ -34,7 +33,6 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     marginBottom: '0px',
     wordBreak: 'break-all',
     padding: '0 10px',
-    overflow: 'hidden',
   };
 
   const marginStyle = {
@@ -47,8 +45,9 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     justifyContent: 'center',
     alignItems: ' center',
     padding: '5px 8px',
-    marginStyle: '14px 20px 0px 20px ',
+    margin: '14px 20px 0px 20px ',
     minWidth: '61px',
+    wordBreak: 'break-all',
     minHeight: '24px',
     background:
       secondarySignDisplay !== 'negative' ? (darkMode ? '#206953' : '#EDFFF9') : darkMode ? '#F8ABB8' : '#FDEAED',
@@ -84,7 +83,7 @@ export const Statistics = function Statistics({ height, properties, styles, dark
               style={{ ...marginStyle, marginRight: '6.5px' }}
             />
           )}
-          <p style={{ ...marginStyle, ...secondaryContainerStyle }}>{secondaryValue}</p>
+          <p style={{ ...secondaryContainerStyle }}>{secondaryValue}</p>
         </div>
         <p
           style={{
