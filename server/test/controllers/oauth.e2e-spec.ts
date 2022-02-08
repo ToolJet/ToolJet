@@ -53,7 +53,7 @@ describe('oauth controller', () => {
 
       expect(googleVerifyMock).toHaveBeenCalledWith({
         idToken: token,
-        audience: undefined,
+        audience: process.env.SSO_GOOGLE_OAUTH2_CLIENT_ID,
       });
 
       expect(response.statusCode).toBe(201);
@@ -120,7 +120,7 @@ describe('oauth controller', () => {
 
       expect(googleVerifyMock).toHaveBeenCalledWith({
         idToken: token,
-        audience: undefined,
+        audience: process.env.SSO_GOOGLE_OAUTH2_CLIENT_ID,
       });
 
       expect(response.statusCode).toBe(401);
@@ -153,7 +153,7 @@ describe('oauth controller', () => {
 
       expect(googleVerifyMock).toHaveBeenCalledWith({
         idToken: token,
-        audience: undefined,
+        audience: process.env.SSO_GOOGLE_OAUTH2_CLIENT_ID,
       });
 
       expect(response.statusCode).toBe(401);
@@ -186,7 +186,7 @@ describe('oauth controller', () => {
 
       expect(googleVerifyMock).toHaveBeenCalledWith({
         idToken: token,
-        audience: undefined,
+        audience: process.env.SSO_GOOGLE_OAUTH2_CLIENT_ID,
       });
 
       expect(response.statusCode).toBe(201);
@@ -218,7 +218,7 @@ describe('oauth controller', () => {
 
       expect(googleVerifyMock).toHaveBeenCalledWith({
         idToken: token,
-        audience: undefined,
+        audience: process.env.SSO_GOOGLE_OAUTH2_CLIENT_ID,
       });
 
       expect(response.statusCode).toBe(201);
