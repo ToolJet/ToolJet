@@ -7,7 +7,7 @@
     "name": "GCS",
     "kind": "gcs",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

@@ -7,7 +7,7 @@
     "name": "SQL Server",
     "kind": "mssql",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

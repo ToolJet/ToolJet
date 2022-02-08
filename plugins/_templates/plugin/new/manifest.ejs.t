@@ -13,7 +13,7 @@ to: <%= plugins_path %>/packages/<%= name %>/lib/manifest.json
     "name": "<%= Display_name %>",
     "kind": "<%= name %>",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

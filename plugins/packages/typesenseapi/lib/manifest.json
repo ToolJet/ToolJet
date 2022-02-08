@@ -7,7 +7,7 @@
     "name": "TypeSense",
     "kind": "typesense",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },
