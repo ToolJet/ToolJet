@@ -9,10 +9,11 @@ export default function TemplateDisplay(props) {
   const [isloaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    setLoaded(false);
     if (componentRef.current) {
-      setLoaded(true);
+      setInterval(() => setLoaded(true), 1000);
     }
-  }, [componentRef]);
+  }, [componentRef, id]);
 
   return (
     <div className="template-display" ref={componentRef}>
@@ -49,13 +50,15 @@ export default function TemplateDisplay(props) {
           </span>
         </Row>
         <Row className="align-items-center justify-content-center" style={{ height: '88%' }}>
-          {isloaded && (
+          {isloaded ? (
             <LazyLoad>
               <img
                 className="template-image"
                 src={`/assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`}
               />
             </LazyLoad>
+          ) : (
+            <div className="spinner-border text-center" style={{ width: '3rem', height: '3rem' }} role="status"></div>
           )}
         </Row>
       </Container>
