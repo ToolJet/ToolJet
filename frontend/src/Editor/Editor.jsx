@@ -157,6 +157,7 @@ class Editor extends React.Component {
         // Here we need to write the logic to update walkthroughCompleted column of the current user.
         addToLocalStorage({ key: 'walkthroughCompleted', value: true });
       },
+      className: `${this.props.darkMode ? 'dark-theme' : 'light-theme'}-walkthrough`,
     });
 
     if (
