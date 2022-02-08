@@ -132,7 +132,7 @@ class Restapi extends React.Component {
       }),
     };
 
-    const currentValue = { label: options.method.toUpperCase(), value: options.method };
+    const currentValue = { label: options.method?.toUpperCase(), value: options.method };
     return (
       <div>
         <div className="row mt-2" style={{ height: 'fit-content' }}>

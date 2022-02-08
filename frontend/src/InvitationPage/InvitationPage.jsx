@@ -11,11 +11,17 @@ class InvitationPage extends React.Component {
       isLoading: false,
       newSignup: queryString.parse(props.location.search).signup,
     };
+    this.formRef = React.createRef(null);
   }
 
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
+
+  calculateOffset() {
+    const elementHeight = this.formRef.current.getBoundingClientRect().top;
+    return window.innerHeight - elementHeight;
+  }
 
   setPassword = (e) => {
     e.preventDefault();
@@ -84,8 +90,11 @@ class InvitationPage extends React.Component {
     ));
 
     return (
-      <div className="page page-center">
-        <div className="container-tight py-2">
+      <div className="page page-center" ref={this.formRef}>
+        <div
+          className="container-tight py-2 invitation-page"
+          style={{ overflowY: 'scroll', maxHeight: this.formRef.current && this.calculateOffset() }}
+        >
           <div className="text-center mb-4">
             <a href=".">
               <img src="/assets/images/logo-color.svg" height="30" alt="" />

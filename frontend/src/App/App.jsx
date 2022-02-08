@@ -124,7 +124,7 @@ class App extends React.Component {
               </div>
             )}
 
-            {!onboarded && <OnboardingModal />}
+            {!onboarded && <OnboardingModal darkMode={this.state.darkMode} />}
 
             {window.location.host === 'apps.tooljet.com' ? (
               <PrivateRoute
