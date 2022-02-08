@@ -24,8 +24,8 @@
     "@tooljet-plugins/gcs": "file:packages/gcs",
     "@tooljet-plugins/googlesheets": "file:packages/googlesheets",
     "@tooljet-plugins/graphql": "file:packages/graphql",
-    "@tooljet-plugins/minioapi": "file:packages/minioapi",
-    "@tooljet-plugins/mongo": "file:packages/mongo",
+    "@tooljet-plugins/minio": "file:packages/minio",
+    "@tooljet-plugins/mongodb": "file:packages/mongodb",
     "@tooljet-plugins/mssql": "file:packages/mssql",
     "@tooljet-plugins/mysql": "file:packages/mysql",
     "@tooljet-plugins/postgresql": "file:packages/postgresql",
@@ -35,8 +35,8 @@
     "@tooljet-plugins/sendgrid": "file:packages/sendgrid",
     "@tooljet-plugins/slack": "file:packages/slack",
     "@tooljet-plugins/stripe": "file:packages/stripe",
-    "@tooljet-plugins/twilioapi": "file:packages/twilioapi",
-    "@tooljet-plugins/typesenseapi": "file:packages/typesenseapi"
+    "@tooljet-plugins/twilio": "file:packages/twilio",
+    "@tooljet-plugins/typesense": "file:packages/typesense"
   },
   "devDependencies": {
     "jest": "^27.4.5",

@@ -1,11 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-list-details" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M13 5h8" />
-  <path d="M13 9h5" />
-  <path d="M13 15h8" />
-  <path d="M13 19h5" />
-  <rect x="3" y="4" width="6" height="6" rx="1" />
-  <rect x="3" y="14" width="6" height="6" rx="1" />
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 5H21" stroke="#61656F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M13 9H18" stroke="#61656F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M13 15H21" stroke="#61656F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M13 19H18" stroke="#61656F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8 4H4C3.44772 4 3 4.44772 3 5V9C3 9.55228 3.44772 10 4 10H8C8.55228 10 9 9.55228 9 9V5C9 4.44772 8.55228 4 8 4Z" stroke="#61656F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8 14H4C3.44772 14 3 14.4477 3 15V19C3 19.5523 3.44772 20 4 20H8C8.55228 20 9 19.5523 9 19V15C9 14.4477 8.55228 14 8 14Z" stroke="#61656F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
-
-

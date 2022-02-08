@@ -678,6 +678,20 @@ button {
   width: 40px;
 }
 
+.folder-icon-skeleton {
+  display: inline-block;
+  background-color: #858896;
+  border-radius: 4px;
+  height: 14px;
+  width: 14px;
+}
+
+.folders-skeleton{
+  padding: 9px 12px;
+  height: 34px;
+  margin-bottom: 4px;
+}
+
 .card-skeleton-button {
   height: 20px;
   width: 60px;
@@ -1087,6 +1101,12 @@ button {
         font-weight: 400;
       }
     }
+  }
+  .layout-buttons {
+   svg {
+    filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg) brightness(99%) contrast(96%);
+   }
+    
   }
 }
 
@@ -2940,6 +2960,15 @@ input:focus-visible {
     );
   }
 
+  .folder-icon-skeleton::after {
+    background-image: linear-gradient(
+      to right,
+      #566177 0,
+      #5a6170 40%,
+      #4c5b79 80%
+    );
+  }
+
   .select-search__input {
     color: rgb(224, 224, 224);
     background-color: #2b3547;
@@ -3029,6 +3058,10 @@ input:focus-visible {
 
   .widget-documentation-link a {
     color: rgb(66, 153, 225);
+  }
+
+  .app-version-name.form-select {
+    border-color: $border-grey-dark;
   }
 }
 

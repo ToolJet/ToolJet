@@ -7,7 +7,7 @@
     "name": "Airtable",
     "kind": "airtable",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

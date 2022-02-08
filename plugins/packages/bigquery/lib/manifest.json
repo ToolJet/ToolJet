@@ -7,7 +7,7 @@
     "name": "BigQuery",
     "kind": "bigquery",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },
@@ -27,6 +27,7 @@
       "label": "Private key",
       "key": "private_key",
       "type": "textarea",
+      "encrypted": true,
       "description": "Enter JSON private key for service account"
     }
   },

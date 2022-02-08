@@ -63,7 +63,7 @@ class Chart extends React.Component {
     const jsonDescription = this.state.component.component.definition.properties.jsonDescription;
 
     const plotFromJson = resolveReferences(
-      this.state.component.component.definition.properties.plotFromJson.value,
+      this.state.component.component.definition.properties.plotFromJson?.value,
       currentState
     );
 
@@ -105,7 +105,7 @@ class Chart extends React.Component {
         children: (
           <CodeHinter
             currentState={this.props.currentState}
-            initialValue={jsonDescription.value}
+            initialValue={jsonDescription?.value ?? {}}
             theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
             mode="javascript"
             lineNumbers={false}
