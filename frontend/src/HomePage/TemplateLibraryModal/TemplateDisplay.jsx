@@ -45,6 +45,7 @@ export default function TemplateDisplay(props) {
           <LazyLoadImage
             src={`/assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`}
             className="template-image"
+            beforeLoad={() => setLoaded(false)}
             afterLoad={() => setLoaded(true)}
           />
           {!isloaded && (
