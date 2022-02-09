@@ -1,22 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Badge } from 'react-bootstrap';
-import LazyLoad from 'react-lazyload';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { getSvgIcon } from '@/_helpers/appUtils';
 
 export default function TemplateDisplay(props) {
   const { id, name, description, sources } = props?.app ?? {};
-  const componentRef = useRef(null);
   const [isloaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    setLoaded(false);
-    if (componentRef.current) {
-      setInterval(() => setLoaded(true), 1000);
-    }
-  }, [componentRef, id]);
-
   return (
-    <div className="template-display" ref={componentRef}>
+    <div className="template-display">
       <Container fluid className="pt-2">
         <Row style={{ height: '10%' }}>
           <h3 className="title">{name}</h3>
@@ -49,16 +41,18 @@ export default function TemplateDisplay(props) {
             ))}
           </span>
         </Row>
-        <Row className="align-items-center justify-content-center" style={{ height: '88%' }}>
-          {isloaded ? (
-            <LazyLoad>
-              <img
-                className="template-image"
-                src={`/assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`}
-              />
-            </LazyLoad>
-          ) : (
-            <div className="spinner-border text-center" style={{ width: '3rem', height: '3rem' }} role="status"></div>
+        <Row className="align-items-center justify-content-center" style={{ height: '88%', position: 'relative' }}>
+          <LazyLoadImage
+            src={`/assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`}
+            className="template-image"
+            afterLoad={() => setLoaded(true)}
+          />
+          {!isloaded && (
+            <div
+              className="spinner-border text-center template-spinner"
+              style={{ width: '3rem', height: '3rem' }}
+              role="status"
+            ></div>
           )}
         </Row>
       </Container>

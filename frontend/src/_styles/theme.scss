@@ -920,6 +920,15 @@ button {
       object-fit: contain;
     }
 
+    .template-spinner{
+      margin: auto;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0
+    }
+
     .row {
       margin-bottom: 0;
     }
