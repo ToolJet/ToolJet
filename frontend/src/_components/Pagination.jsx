@@ -48,11 +48,11 @@ export const Pagination = function Pagination({
     gotoPage(currentPage - 1);
   }
 
-  function startingCount(currentPage) {
+  function startingCount() {
     return (currentPage - 1) * itemsPerPage + 1;
   }
 
-  function endingCount(currentPage) {
+  function endingCount() {
     const num = currentPage * itemsPerPage;
 
     return num > count ? count : num;
