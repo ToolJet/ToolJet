@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Container, Row, Badge } from 'react-bootstrap';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { ImageWithSpinner } from '@/_components';
 import { getSvgIcon } from '@/_helpers/appUtils';
 
 export default function TemplateDisplay(props) {
   const { id, name, description, sources } = props?.app ?? {};
-  const [isloaded, setLoaded] = useState(false);
 
   return (
     <div className="template-display">
@@ -42,19 +41,12 @@ export default function TemplateDisplay(props) {
           </span>
         </Row>
         <Row className="align-items-center justify-content-center" style={{ height: '88%', position: 'relative' }}>
-          <LazyLoadImage
+          <ImageWithSpinner
             src={`/assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`}
             className="template-image"
-            beforeLoad={() => setLoaded(false)}
-            afterLoad={() => setLoaded(true)}
+            spinnerClassName="template-spinner"
+            useSmallSpinner={true}
           />
-          {!isloaded && (
-            <div
-              className="spinner-border text-center template-spinner"
-              style={{ width: '3rem', height: '3rem' }}
-              role="status"
-            ></div>
-          )}
         </Row>
       </Container>
     </div>
