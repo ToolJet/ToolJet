@@ -1,0 +1,56 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "N8n datasource",
+  "description": "A schema defining N8n datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single request type",
+      "list": [
+        {
+          "value": "get",
+          "name": "Trigger workflow"
+        },
+        {
+          "value": "post",
+          "name": "Trigger workflow by passing data"
+        }
+      ]
+    },
+    "get":{
+      "parameters": {
+        "label": "Url params",
+        "key": "url_params",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ filter: 'labels.color:green' }",
+        "description": "Enter options",
+        "height": "150px"
+      }
+    },
+    "post":{
+      "parameters": {
+        "label": "Url params",
+        "key": "url_params",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ filter: 'labels.color:green' }",
+        "description": "Enter url parameters",
+        "height": "150px"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ filter: 'labels.color:green' }",
+        "description": "Enter body parameters",
+        "height": "150px"
+      }
+    }
+  }
+}

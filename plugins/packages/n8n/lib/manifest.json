@@ -1,0 +1,54 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "N8n datasource",
+  "description": "A schema defining N8n datasource",
+  "type": "api",
+  "source": {
+    "name": "N8n",
+    "kind": "n8n",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": {
+        "type": "string"
+      },
+      "headers": {
+        "type": "array"
+      },
+      "url_params": {
+        "type": "array"
+      },
+      "body": {
+        "type": "array"
+      }
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "host": {"value":""},
+    "headers": {
+      "value": [
+        ["",""]
+      ]
+    }
+  },
+  "properties": {
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "Enter url of n8n webhook trigger"
+    },
+    "headers": {
+      "label": "Headers",
+      "key": "headers",
+      "type": "react-component-headers",
+      "description": "key-value pair headers for rest api"
+    }
+  },
+  "required": ["host"]
+}
