@@ -16,11 +16,15 @@ export default class N8n implements QueryService {
     Object.keys(headers).forEach((key) => (headers[key] === '' ? delete headers[key] : {}));
 
     const paramsContent = url_params ? JSON.parse(url_params) : '';
-    const bodyContent =  url_params ? JSON.parse(url_params) : '';
+    const bodyContent =  body ? JSON.parse(body) : '';
     
     try {
       switch(operation){
         case 'post' : {
+          if(bodyContent === ''){
+            throw new Error("Please provide body content");
+          }
+
           const response = await got(url, {
             method: 'post',
             headers,
