@@ -20,8 +20,7 @@
         "type": "string"
       },
       "username": {
-        "type": "string",
-        "encrypted": true
+        "type": "string"
       },
       "password": {
         "type": "string",
@@ -73,7 +72,7 @@
         "label": "Host",
         "key": "host",
         "type": "text",
-        "description": "Enter url of n8n webhook trigger"
+        "description": "https://tooljet.n8n.cloud"
       }
     },
     "basic":{
@@ -81,13 +80,12 @@
         "label": "Host",
         "key": "host",
         "type": "text",
-        "description": "Enter url of n8n webhook trigger"
+        "description": "https://tooljet.n8n.cloud"
       },
       "username": {
         "label": "Username",
         "key": "username",
         "type": "text",
-        "encrypted": true,
         "description": "Enter username"
       },
       "password": {
@@ -103,7 +101,7 @@
         "label": "Host",
         "key": "host",
         "type": "text",
-        "description": "Enter url of n8n webhook trigger"
+        "description": "https://tooljet.n8n.cloud"
       },
       "name": {
         "label": "Name",

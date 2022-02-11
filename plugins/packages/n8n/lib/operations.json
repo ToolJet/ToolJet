@@ -23,7 +23,7 @@
     },
     "get":{
       "parameters": {
-        "label": "Url params",
+        "label": "URL parameters",
         "key": "url_params",
         "type": "codehinter",
         "mode": "javascript",
@@ -34,7 +34,7 @@
     },
     "post":{
       "parameters": {
-        "label": "Url params",
+        "label": "URL parameters",
         "key": "url_params",
         "type": "codehinter",
         "mode": "javascript",
