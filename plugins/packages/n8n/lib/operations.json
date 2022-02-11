@@ -27,7 +27,7 @@
         "key": "url_params",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ filter: 'labels.color:green' }",
+        "placeholder": "{ \"name\": \"bob\" }",
         "description": "Enter options",
         "height": "150px"
       }
@@ -38,7 +38,7 @@
         "key": "url_params",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ filter: 'labels.color:green' }",
+        "placeholder": "{ \"name\": \"bob\" }",
         "description": "Enter url parameters",
         "height": "150px"
       },
@@ -47,7 +47,7 @@
         "key": "body",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ filter: 'labels.color:green' }",
+        "placeholder": "{ \"age\": \"12\" }",
         "description": "Enter body parameters",
         "height": "150px"
       }

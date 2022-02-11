@@ -1,15 +1,26 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult, parseJson } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import got from 'got';
-import { HTTPError } from 'got';
+import { HTTPError, OptionsOfTextResponseBody, Method } from 'got';
+
+const constructHeaders = (sourceOptions: SourceOptions) =>{
+  let headers = {};
+  if(sourceOptions.auth_type === 'header'){
+    headers[sourceOptions.name] = sourceOptions.value
+  }
+  return headers;
+}
 
 export default class N8n implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const url = sourceOptions.host;
+    const authType = sourceOptions.auth_type;
+    const headers = constructHeaders(sourceOptions);
+
     const operation = queryOptions.operation;
     const url_params = queryOptions.url_params;
     const body = queryOptions.body;
-    const headers = Object.fromEntries(sourceOptions['headers']);
+    
     let result = {};
 
     // Remove invalid headers from the headers object
@@ -17,6 +28,17 @@ export default class N8n implements QueryService {
 
     const paramsContent = url_params ? JSON.parse(url_params) : '';
     const bodyContent =  body ? JSON.parse(body) : '';
+
+    const constructPayload = (method:string) : OptionsOfTextResponseBody => {
+      return {
+        method: method === 'post' ? 'POST' : 'GET',
+        headers: headers,
+        username: authType === 'basic' && sourceOptions.username,
+        password: authType === 'basic' && sourceOptions.password,
+        searchParams: paramsContent,
+        json: method === 'post' ? bodyContent : undefined,
+      }
+    }
     
     try {
       switch(operation){
@@ -24,22 +46,12 @@ export default class N8n implements QueryService {
           if(bodyContent === ''){
             throw new Error("Please provide body content");
           }
-
-          const response = await got(url, {
-            method: 'post',
-            headers,
-            searchParams: paramsContent,
-            json: bodyContent,
-          });
+          const response = await got(url, constructPayload('post'));
           result = JSON.parse(response.body);
           break;
         }
         case 'get': {
-          const response = await got(url, {
-            method: 'get',
-            headers,
-            searchParams: paramsContent,
-          });
+          const response = await got(url,constructPayload('get'));
           result = JSON.parse(response.body);
           break;
         }

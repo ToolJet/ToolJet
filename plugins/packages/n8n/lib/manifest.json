@@ -1,11 +1,11 @@
 
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
-  "title": "N8n datasource",
+  "title": "n8n datasource",
   "description": "A schema defining N8n datasource",
   "type": "api",
   "source": {
-    "name": "N8n",
+    "name": "n8n",
     "kind": "n8n",
     "exposedVariables": {
       "isLoading": false,
@@ -13,23 +13,34 @@
       "rawData": {}
     },
     "options": {
+      "auth_type":{
+        "type":"string"
+      },
       "host": {
         "type": "string"
       },
-      "headers": {
-        "type": "array"
+      "username": {
+        "type": "string",
+        "encrypted": true
       },
-      "url_params": {
-        "type": "array"
+      "password": {
+        "type": "string",
+        "encrypted": true
       },
-      "body": {
-        "type": "array"
+      "name": {
+        "type": "string",
+        "encrypted": true
+      },
+      "value": {
+        "type": "string",
+        "encrypted": true
       }
     },
     "customTesting": true
   },
   "defaults": {
     "host": {"value":""},
+    "auth_type": {"value":"none"},
     "headers": {
       "value": [
         ["",""]
@@ -37,17 +48,77 @@
     }
   },
   "properties": {
-    "host": {
-      "label": "Host",
-      "key": "host",
-      "type": "text",
-      "description": "Enter url of n8n webhook trigger"
+    "auth_type": {
+      "label": "Authentication Type",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "description": "Select auth type",
+      "list": [
+        {
+          "value": "none",
+          "name": "None"
+        },
+        {
+          "value": "basic",
+          "name": "Basic Auth"
+        },
+        {
+          "value": "header",
+          "name": "Header Auth"
+        }
+      ]
     },
-    "headers": {
-      "label": "Headers",
-      "key": "headers",
-      "type": "react-component-headers",
-      "description": "key-value pair headers for rest api"
+    "none":{
+      "host": {
+        "label": "Host",
+        "key": "host",
+        "type": "text",
+        "description": "Enter url of n8n webhook trigger"
+      }
+    },
+    "basic":{
+      "host": {
+        "label": "Host",
+        "key": "host",
+        "type": "text",
+        "description": "Enter url of n8n webhook trigger"
+      },
+      "username": {
+        "label": "Username",
+        "key": "username",
+        "type": "text",
+        "encrypted": true,
+        "description": "Enter username"
+      },
+      "password": {
+        "label": "Password",
+        "key": "password",
+        "type": "text",
+        "encrypted": true,
+        "description": "Enter username"
+      }
+    },
+    "header":{
+      "host": {
+        "label": "Host",
+        "key": "host",
+        "type": "text",
+        "description": "Enter url of n8n webhook trigger"
+      },
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "text",
+        "encrypted": true,
+        "description": "Enter key name"
+      },
+      "value": {
+        "label": "Value",
+        "key": "value",
+        "type": "text",
+        "encrypted": true,
+        "description": "Enter value"
+      }
     }
   },
   "required": ["host"]
