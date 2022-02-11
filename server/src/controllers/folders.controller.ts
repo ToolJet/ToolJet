@@ -26,6 +26,13 @@ export class FoldersController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const folderName = req.body.name;
+    const folders = await this.foldersService.allFolders(req.user);
+
+    const isFolderNameExists = folders.find((f) => f.name === folderName);
+
+    if (isFolderNameExists) {
+      throw new ForbiddenException('Folder name already exists');
+    }
 
     const folder = await this.foldersService.create(req.user, folderName);
     return decamelizeKeys(folder);

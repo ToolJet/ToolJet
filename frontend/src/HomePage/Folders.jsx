@@ -31,15 +31,26 @@ export const Folders = function Folders({
       return;
     }
     setCreationStatus(true);
-    folderService.create(newFolderName).then(() => {
-      toast.success('folder created.', {
-        position: 'top-center',
+    folderService
+      .create(newFolderName)
+      .then(() => {
+        toast.success('folder created.', {
+          position: 'top-center',
+        });
+        setCreationStatus(false);
+        setShowForm(false);
+        setNewFolderName('');
+        foldersChanged();
+      })
+      .catch((err) => {
+        // Name already exists
+        if (err.data.statusCode === 403) {
+          toast.error(err.data.message, {
+            position: 'top-center',
+          });
+          setCreationStatus(false);
+        }
       });
-      setCreationStatus(false);
-      setShowForm(false);
-      setNewFolderName('');
-      foldersChanged();
-    });
   }
 
   function handleFolderChange(folder) {
