@@ -3986,6 +3986,7 @@ input[type="text"] {
 
   .form-control {
     border-color: $border-grey-dark !important;
+    color: inherit;
   }
   input {
     background-color: $bg-dark-light !important;
