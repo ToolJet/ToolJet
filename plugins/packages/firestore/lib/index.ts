@@ -3,7 +3,7 @@ import {
   QueryError,
   QueryResult,
   QueryService,
-  parseJson 
+  parseJson
 } from '@tooljet-plugins/common'
 
 import {
@@ -57,7 +57,7 @@ export default class FirestoreQueryService implements QueryService {
           result = await bulkUpdate(
             firestore,
             queryOptions.collection,
-            JSON.parse(queryOptions.records),
+            typeof queryOptions.records === 'string' ? JSON.parse(queryOptions.records) : queryOptions.records,
             queryOptions['document_id_key']
           );
           break;
