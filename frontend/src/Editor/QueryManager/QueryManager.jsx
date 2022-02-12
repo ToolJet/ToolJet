@@ -72,7 +72,10 @@ let QueryManager = class QueryManager extends React.Component {
           }
 
           this.setState({
-            options: paneHeightChanged ? this.state.options : selectedQuery.options,
+            options:
+              paneHeightChanged || this.state.selectedQuery?.id === selectedQuery?.id
+                ? this.state.options
+                : selectedQuery.options,
             selectedDataSource: source,
             selectedQuery,
             queryName: selectedQuery.name,
