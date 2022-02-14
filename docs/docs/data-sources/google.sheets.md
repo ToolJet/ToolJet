@@ -22,13 +22,13 @@ You can create a Google Sheets datasource with one of either of the two permissi
 
 Using Google sheets data source you can perfom several operations from your applications like:
 
-  1. **[Read data from a spreadsheet](/docs/data-sources/google.sheets#read-data-from-a-spreadsheet)**
-  2. **[Append data from a spreadsheet](/docs/data-sources/google.sheets#append-data-from-a-spreadsheet)**
-  3. **[Update data from a spreadsheet](/docs/data-sources/google.sheets#update-data-from-a-spreadsheet)**
-  4. **[Delete row from a spreadsheet](/docs/data-sources/google.sheets#delete-data-from-a-spreadsheet)**
+  1. **[Read data from a sheet](/docs/data-sources/google.sheets#read-data-from-a-sheet)**
+  2. **[Append data to a sheet](/docs/data-sources/google.sheets#append-data-to-a-sheet)**
+  3. **[Update single row of a sheet](/docs/data-sources/google.sheets#update-single-row-of-a-sheet)**
+  4. **[Delete row from a sheet](/docs/data-sources/google.sheets#delete-row-from-a-sheet)**
   5. **[Get spreadsheet info](/docs/data-sources/google.sheets#get-spreadsheet-info)**
 
-### Read data from a spreadsheet
+### Read data from a sheet
 
 This operation returns the table data from the spreadsheet in the form of json object. 
 
@@ -45,7 +45,7 @@ This operation returns the table data from the spreadsheet in the form of json o
 
 </div>
 
-### Append data from a spreadsheet
+### Append data to a sheet
 
 You can add more rows to the table using the append operation.
 
@@ -61,7 +61,7 @@ You can add more rows to the table using the append operation.
 
 </div>
 
-### Update data from a spreadsheet
+### Update single row of a sheet
 
 You can update the existing data in sheet using this operation.
 
@@ -79,7 +79,7 @@ You can update the existing data in sheet using this operation.
 
 </div>
 
-### Delete data from a spreadsheet
+### Delete row from a sheet
 
 Use this operation delete a specific row from the sheet.
 
