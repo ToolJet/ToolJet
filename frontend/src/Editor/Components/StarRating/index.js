@@ -14,7 +14,7 @@ export const StarRating = function StarRating({ properties, styles, fireEvent, s
 
   const { visibility, disabledState, textColor, labelColor } = styles;
   const color = textColor ?? '#ffb400';
-  const labelColorStyle = labelColor === '#333' ? (darkMode ? '#fff' : '#000') : labelColor;
+  const labelColorStyle = labelColor === '#333' ? (darkMode ? '#fff' : '#333') : labelColor;
 
   const animatedStars = useTrail(maxRating, {
     config: {
