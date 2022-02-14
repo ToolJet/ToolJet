@@ -1,0 +1,77 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "SMTP Server datasource",
+  "description": "A schema defining SMTP Server datasource",
+  "type": "api",
+  "source": {
+    "name": "SMTP Server",
+    "kind": "smtp_server",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "user": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 465
+    },
+    "user": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "Enter host"
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "Recommended port 465 (Secured)"
+    },
+    "user": {
+      "label": "User",
+      "key": "user",
+      "type": "text",
+      "description": "Enter username / email"
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "Enter password"
+    }
+  },
+  "required": [
+    "host",
+    "port",
+    "user",
+    "password"
+  ]
+}

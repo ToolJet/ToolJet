@@ -1,0 +1,9 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "SMTP Server datasource",
+  "description": "A schema defining SMTP Server datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {}
+}
