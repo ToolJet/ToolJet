@@ -2256,6 +2256,8 @@ body {
 
   .CodeMirror-scroll {
     overflow: hidden !important;
+    position: static;
+    width: 100%;
   }
 }
 
@@ -4268,20 +4270,19 @@ input[type="text"] {
     margin-top: 0.65rem !important;
   }
   .CodeMirror pre.CodeMirror-line {
-    height: 36px !important;
+    height: 32px !important;
     margin-bottom: 6px !important;
   }
   .CodeMirror-placeholder {
-    height: 36px !important;
+    height: 21px !important;
     position: absolute !important;
-    margin-top: 0px !important;
+    margin-top: 3px !important;
   }
   .CodeMirror-cursor {
     height: inherit !important;
   }
   .CodeMirror-lines {
-    margin-top: 6px !important;
-    height: 36px !important;
+    height: 32px !important;
   }
 }
 
