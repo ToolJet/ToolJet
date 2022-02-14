@@ -9,7 +9,8 @@ import { SignupPage } from '@/SignupPage';
 import { InvitationPage } from '@/InvitationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
-import { Editor, Viewer } from '@/Editor';
+import { Viewer } from '@/Editor';
+import { MultiplayerEditor } from '@/Editor/MultiplayerEditor';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
@@ -122,7 +123,7 @@ class App extends React.Component {
             <PrivateRoute
               exact
               path="/apps/:id"
-              component={Editor}
+              component={MultiplayerEditor}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />

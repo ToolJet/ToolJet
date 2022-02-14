@@ -20,10 +20,22 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: any): void {}
 
-  broadcast(data) {
-    this.server.clients.forEach((client: any) => {
-      if (client.isAuthenticated && client.appId === data.appId) client.send(data.message);
-    });
+  broadcast(data: any) {
+    switch (data.message) {
+      case 'subscribe':
+        this.server.clients.size > 1 &&
+          this.server.clients.forEach((client: any) => {
+            if (client.isAuthenticated && client.appId === data.appId && client.id !== data.clientId)
+              client.send(JSON.stringify(data));
+          });
+        break;
+
+      default:
+        this.server.clients.forEach((client: any) => {
+          if (client.isAuthenticated && client.appId === data.appId) client.send(data.message);
+        });
+        break;
+    }
   }
 
   @SubscribeMessage('authenticate')
@@ -36,7 +48,12 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('subscribe')
   onSubscribeEvent(client: any, data: string) {
-    client.appId = data;
+    const _data = JSON.parse(data);
+    client.appId = _data.appId;
+    client.id = _data.clientId;
+    client.meta = _data.meta;
+    _data.message = 'subscribe';
+    this.broadcast(_data);
     return;
   }
 
