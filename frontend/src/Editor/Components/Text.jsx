@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({ height, properties, styles }) {
+export const Text = function Text({ height, properties, styles, darkMode }) {
   const [loadingState, setLoadingState] = useState(false);
 
   const { textColor, textAlign, visibility, disabledState } = styles;
   const text = properties.text ?? '';
-  const color = textColor;
+  const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
