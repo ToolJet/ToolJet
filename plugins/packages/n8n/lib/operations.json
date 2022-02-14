@@ -13,15 +13,25 @@
       "list": [
         {
           "value": "get",
-          "name": "Trigger workflow"
+          "name": "GET"
         },
         {
           "value": "post",
-          "name": "Trigger workflow by passing data"
+          "name": "POST"
         }
       ]
     },
     "get":{
+      "url":{
+        "label": "URL",
+        "key": "url",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "https://tooljet.com",
+        "description": "Enter webhook URL"
+      },
       "parameters": {
         "label": "URL parameters",
         "key": "url_params",
@@ -33,6 +43,16 @@
       }
     },
     "post":{
+      "url":{
+        "label": "URL",
+        "key": "url",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "https://tooljet.com",
+        "description": "Enter webhook URL"
+      },
       "parameters": {
         "label": "URL parameters",
         "key": "url_params",

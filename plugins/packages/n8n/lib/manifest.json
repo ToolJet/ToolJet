@@ -16,9 +16,6 @@
       "auth_type":{
         "type":"string"
       },
-      "host": {
-        "type": "string"
-      },
       "username": {
         "type": "string"
       },
@@ -38,7 +35,6 @@
     "customTesting": true
   },
   "defaults": {
-    "host": {"value":""},
     "auth_type": {"value":"none"},
     "headers": {
       "value": [
@@ -67,21 +63,8 @@
         }
       ]
     },
-    "none":{
-      "host": {
-        "label": "Host",
-        "key": "host",
-        "type": "text",
-        "description": "https://tooljet.n8n.cloud"
-      }
-    },
+    "none":{},
     "basic":{
-      "host": {
-        "label": "Host",
-        "key": "host",
-        "type": "text",
-        "description": "https://tooljet.n8n.cloud"
-      },
       "username": {
         "label": "Username",
         "key": "username",
@@ -97,12 +80,6 @@
       }
     },
     "header":{
-      "host": {
-        "label": "Host",
-        "key": "host",
-        "type": "text",
-        "description": "https://tooljet.n8n.cloud"
-      },
       "name": {
         "label": "Name",
         "key": "name",
@@ -119,5 +96,5 @@
       }
     }
   },
-  "required": ["host"]
+  "required": []
 }

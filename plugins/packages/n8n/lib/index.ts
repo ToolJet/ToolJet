@@ -13,14 +13,14 @@ const constructHeaders = (sourceOptions: SourceOptions) =>{
 
 export default class N8n implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    const url = sourceOptions.host;
     const authType = sourceOptions.auth_type;
     const headers = constructHeaders(sourceOptions);
 
     const operation = queryOptions.operation;
+    const url = queryOptions.url;
     const url_params = queryOptions.url_params;
     const body = queryOptions.body;
-    
+
     let result = {};
 
     // Remove invalid headers from the headers object
