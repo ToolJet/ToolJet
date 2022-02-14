@@ -106,8 +106,8 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     return (
       <>
         {renderList(commonSection.title, commonSection.items)}
-        {renderList(formSection.title, formSection.items)}
         {renderList(layoutsSection.title, layoutsSection.items)}
+        {renderList(formSection.title, formSection.items)}
         {renderList(otherSection.title, otherSection.items)}
         {renderList(integrationSection.title, integrationSection.items)}
       </>
