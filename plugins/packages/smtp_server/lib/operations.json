@@ -4,6 +4,68 @@
   "title": "SMTP Server datasource",
   "description": "A schema defining SMTP Server datasource",
   "type": "api",
-  "defaults": {},
-  "properties": {}
+  "defaults": {
+    "content_type":{
+      "value":"plain_text"
+    }
+  },
+  "properties": {
+    "from": {
+      "key": "from",
+      "label": "From",
+      "type": "codehinter",
+      "description": "Field for sender address",
+      "placeholder": "Enter sender address",
+      "width": "320px",
+      "height": "36px",
+      "className": "codehinter-plugins col-6",
+      "lineNumbers": false
+    },
+    "to": {
+      "key": "to",
+      "label": "To",
+      "type": "codehinter",
+      "description": "Field for reciever address",
+      "placeholder": "Enter reciever address",
+      "width": "320px",
+      "height": "36px",
+      "className": "codehinter-plugins col-6",
+      "lineNumbers": false
+    },
+    "subject": {
+      "key": "subject",
+      "label": "Subject",
+      "type": "codehinter",
+      "height": "36px",
+      "placeholder": "Enter subject",
+      "description": "Field for email subject",
+      "className": "codehinter-plugins",
+      "lineNumbers": false
+    },
+    "content_type": {
+      "label": "Content type",
+      "key": "content_type",
+      "type": "dropdown",
+      "description": "Single select dropdown for content type",
+      "className": "col-3",
+      "list": [
+        {
+          "value": "plain_text",
+          "name": "Plain Text"
+        },
+        {
+          "value": "html",
+          "name": "Html"
+        }
+      ]
+    },
+    "content": {
+      "key": "content",
+      "label": "Content",
+      "type": "codehinter",
+      "description": "Field for message",
+      "placeholder": "Enter message",
+      "height": "150px"
+    }
+  }
 }
