@@ -34,6 +34,7 @@
     "@tooljet-plugins/s3": "file:packages/s3",
     "@tooljet-plugins/sendgrid": "file:packages/sendgrid",
     "@tooljet-plugins/slack": "file:packages/slack",
+    "@tooljet-plugins/snowflake": "file:packages/snowflake",
     "@tooljet-plugins/stripe": "file:packages/stripe",
     "@tooljet-plugins/twilio": "file:packages/twilio",
     "@tooljet-plugins/typesense": "file:packages/typesense"
