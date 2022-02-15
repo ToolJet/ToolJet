@@ -1,7 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult, parseJson } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import got from 'got';
-import { HTTPError, OptionsOfTextResponseBody, Method } from 'got';
+import { HTTPError, OptionsOfTextResponseBody } from 'got';
 
 const constructHeaders = (sourceOptions: SourceOptions) =>{
   let headers = {};
@@ -11,12 +11,16 @@ const constructHeaders = (sourceOptions: SourceOptions) =>{
   return headers;
 }
 
+const extractJsonData = (content:any)=>{
+  return typeof content === 'string' ? JSON.parse(content) : content;
+}
+
 export default class N8n implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const authType = sourceOptions.auth_type;
     const headers = constructHeaders(sourceOptions);
 
-    const operation = queryOptions.operation;
+    const operation = queryOptions.method;
     const url = queryOptions.url;
     const url_params = queryOptions.url_params;
     const body = queryOptions.body;
@@ -26,8 +30,8 @@ export default class N8n implements QueryService {
     // Remove invalid headers from the headers object
     Object.keys(headers).forEach((key) => (headers[key] === '' ? delete headers[key] : {}));
 
-    const paramsContent = url_params ? JSON.parse(url_params) : '';
-    const bodyContent =  body ? JSON.parse(body) : '';
+    const paramsContent = url_params ? extractJsonData(url_params) : '';
+    const bodyContent =  body ?  extractJsonData(body) : '';
 
     const constructPayload = (method:string) : OptionsOfTextResponseBody => {
       return {

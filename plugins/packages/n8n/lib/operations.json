@@ -5,9 +5,10 @@
   "type": "api",
   "defaults": {},
   "properties": {
-    "operation": {
-      "label": "Operation",
-      "key": "operation",
+    "method": {
+      "label": "Method",
+      "key": "method",
+      "className":"col-md-4",
       "type": "dropdown-component-flip",
       "description": "Single request type",
       "list": [
@@ -19,19 +20,21 @@
           "value": "post",
           "name": "POST"
         }
-      ]
+      ],
+      "commonFields":{
+        "url":{
+          "label": "Webhook URL",
+          "key": "url",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "webhook URL of your workflow",
+          "description": "Field for url"
+        }
+      }
     },
     "get":{
-      "url":{
-        "label": "URL",
-        "key": "url",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "https://tooljet.com",
-        "description": "Enter webhook URL"
-      },
       "parameters": {
         "label": "URL parameters",
         "key": "url_params",
@@ -43,16 +46,6 @@
       }
     },
     "post":{
-      "url":{
-        "label": "URL",
-        "key": "url",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "https://tooljet.com",
-        "description": "Enter webhook URL"
-      },
       "parameters": {
         "label": "URL parameters",
         "key": "url_params",
