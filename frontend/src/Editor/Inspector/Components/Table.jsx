@@ -165,10 +165,7 @@ class Table extends React.Component {
               defaultValue={column.name}
             />
           </div>
-          {(column.columnType === 'string' ||
-            column.columnType === undefined ||
-            column.columnType === 'default' ||
-            column.columnType === 'text') && (
+          {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
             <div className="field mb-2">
               <label className="form-label">Overflow</label>
               <SelectSearch
