@@ -17,12 +17,6 @@ class Stripe extends React.Component {
     super(props);
     this.state = {
       loadingSpec: true,
-    };
-  }
-
-  componentDidMount() {
-    this.setState({
-      loadingSpec: true,
       options: {
         params: {
           path: {},
@@ -30,7 +24,16 @@ class Stripe extends React.Component {
           request: {},
         },
       },
+    };
+  }
+
+  componentDidMount() {
+    this.setState({
+      loadingSpec: true,
+      options: { ...(this.props.options ?? {}) },
     });
+
+    console.log('this.props.operation', this.props);
 
     this.fetchOpenApiSpec();
   }
@@ -65,11 +68,9 @@ class Stripe extends React.Component {
       {
         selectedOperation: this.state.specJson.paths[path][operation],
         options: {
-          params: {
-            ...this.state.options?.params,
-            path,
-            operation,
-          },
+          ...this.state.options,
+          path,
+          operation,
         },
       },
       () => {
@@ -202,9 +203,9 @@ class Stripe extends React.Component {
     };
 
     const currentValue = {
-      value: this.props.options.params?.operation + ',' + this.props.options.params?.path,
-      name: this.props.options.params?.path,
-      operation: this.props.options.params?.operation,
+      value: this.state.options?.operation + ',' + this.props.options?.path,
+      name: this.props.options?.path,
+      operation: this.props.options?.operation,
     };
     return (
       <div>
