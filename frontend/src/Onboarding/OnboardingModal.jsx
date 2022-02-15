@@ -51,6 +51,7 @@ class OnboardingModal extends React.Component {
         centered={true}
         keyboard={true}
         onEscapeKeyDown={this.hideModal}
+        className={`${this.props.darkMode && 'dark'} onboarding-modal`}
       >
         <Modal.Header>
           <Modal.Title className="text-center">Finish ToolJet installation</Modal.Title>

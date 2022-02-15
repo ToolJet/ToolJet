@@ -1,4 +1,5 @@
 import React from 'react';
+import TemplateLibraryModal from './TemplateLibraryModal/';
 
 export const BlankPage = function BlankPage({
   createApp,
@@ -7,6 +8,9 @@ export const BlankPage = function BlankPage({
   handleImportApp,
   isImportingApp,
   fileInput,
+  showTemplateLibraryModal,
+  hideTemplateLibraryModal,
+  viewTemplateLibraryModal,
 }) {
   return (
     <div>
@@ -22,29 +26,39 @@ export const BlankPage = function BlankPage({
                 />
               </div>
               <h3 className="empty-welcome-header" style={{ color: darkMode && '#ffffff' }}>
-                Welcome to Tooljet!
+                Welcome to ToolJet!
               </h3>
-              <p className="empty-title" style={{ color: darkMode && '#ffffff' }}>
+              <p className={`empty-title ${darkMode && 'text-white-50'}`}>
                 You can get started by creating a new application or by creating an application using a template in
                 ToolJet Library.
               </p>
               <div className="empty-action">
-                <a onClick={createApp} className="btn btn-primary">
-                  {creatingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
+                <a onClick={createApp} className={`btn btn-primary ${creatingApp ? 'btn-loading' : ''}`}>
                   Create new application
                 </a>
-                <a className="btn empty-import-button" onChange={handleImportApp}>
-                  <label>
-                    {isImportingApp && <span className="spinner-border spinner-border-sm me-2" role="status"></span>}
+                <a
+                  className={`btn empty-import-button ${isImportingApp ? 'btn-loading' : ''}`}
+                  onChange={handleImportApp}
+                >
+                  <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}>
                     Import an application
                     <input type="file" ref={fileInput} style={{ display: 'none' }} />
                   </label>
+                </a>
+                <a onClick={viewTemplateLibraryModal} className="btn btn-primary" style={{ marginLeft: '24px' }}>
+                  Choose from template
                 </a>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <TemplateLibraryModal
+        show={showTemplateLibraryModal}
+        onHide={hideTemplateLibraryModal}
+        onCloseButtonClick={hideTemplateLibraryModal}
+        darkMode={darkMode}
+      />
     </div>
   );
 };

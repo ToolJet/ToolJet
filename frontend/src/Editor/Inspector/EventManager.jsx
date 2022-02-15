@@ -113,9 +113,15 @@ export const EventManager = ({
     eventsChanged(newEvents);
   }
 
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   function eventPopover(event, index) {
     return (
-      <Popover id="popover-basic" style={{ width: '350px', maxWidth: '350px' }} className="shadow">
+      <Popover
+        id="popover-basic"
+        style={{ width: '350px', maxWidth: '350px' }}
+        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow`}
+      >
         <Popover.Content>
           <div className="row">
             <div className="col-3 p-2">
@@ -123,6 +129,7 @@ export const EventManager = ({
             </div>
             <div className="col-9">
               <SelectSearch
+                className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 options={possibleEvents}
                 value={event.eventId}
                 search={false}
@@ -138,6 +145,7 @@ export const EventManager = ({
             </div>
             <div className="col-9 popover-action-select-search">
               <SelectSearch
+                className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 options={actionOptions}
                 value={event.actionId}
                 search={false}
@@ -156,6 +164,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">Message</div>
                   <div className="col-9">
                     <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
                       currentState={currentState}
                       initialValue={event.message}
                       onChange={(value) => handlerChanged(index, 'message', value)}
@@ -167,6 +176,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">Alert Type</div>
                   <div className="col-9">
                     <SelectSearch
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={alertOptions}
                       value={event.alertType}
                       search={false}
@@ -183,6 +193,7 @@ export const EventManager = ({
               <div className="p-1">
                 <label className="form-label mt-1">URL</label>
                 <CodeHinter
+                  theme={darkMode ? 'monokai' : 'default'}
                   currentState={currentState}
                   initialValue={event.url}
                   onChange={(value) => handlerChanged(index, 'url', value)}
@@ -206,6 +217,7 @@ export const EventManager = ({
                 <div className="col-3 p-2">Modal</div>
                 <div className="col-9">
                   <SelectSearch
+                    className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                     options={getComponentOptions('Modal')}
                     value={event.modal?.id ?? event.modal}
                     search={true}
@@ -224,6 +236,7 @@ export const EventManager = ({
                 <div className="col-3 p-2">Modal</div>
                 <div className="col-9">
                   <SelectSearch
+                    className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                     options={getComponentOptions('Modal')}
                     value={event.modal?.id ?? event.modal}
                     search={true}
@@ -241,6 +254,7 @@ export const EventManager = ({
               <div className="p-1">
                 <label className="form-label mt-1">Text</label>
                 <CodeHinter
+                  theme={darkMode ? 'monokai' : 'default'}
                   currentState={currentState}
                   onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
                   usePortalEditor={false}
@@ -253,6 +267,7 @@ export const EventManager = ({
                 <div className="col-3 p-2">Query</div>
                 <div className="col-9">
                   <SelectSearch
+                    className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                     options={dataQueries.map((query) => {
                       return { name: query.name, value: query.id };
                     })}
@@ -276,6 +291,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">Key</div>
                   <div className="col-9">
                     <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
                       currentState={currentState}
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
@@ -288,6 +304,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">Value</div>
                   <div className="col-9">
                     <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
                       currentState={currentState}
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
@@ -304,6 +321,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">Type</div>
                   <div className="col-9">
                     <SelectSearch
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={[{ name: 'CSV', value: 'csv' }]}
                       value={'csv'}
                       search={true}
@@ -319,6 +337,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">File name</div>
                   <div className="col-9">
                     <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
                       currentState={currentState}
                       initialValue={event.fileName}
                       onChange={(value) => handlerChanged(index, 'fileName', value)}
@@ -330,6 +349,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">Data</div>
                   <div className="col-9">
                     <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
                       currentState={currentState}
                       initialValue={event.data}
                       onChange={(value) => handlerChanged(index, 'data', value)}
@@ -345,6 +365,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">Table</div>
                   <div className="col-9">
                     <SelectSearch
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={getComponentOptions('Table')}
                       value={event.table}
                       search={true}
@@ -360,6 +381,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">Page index</div>
                   <div className="col-9">
                     <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
                       currentState={currentState}
                       initialValue={event.pageIndex ?? '{{1}}'}
                       onChange={(value) => handlerChanged(index, 'pageIndex', value)}
@@ -376,6 +398,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">Key</div>
                   <div className="col-9">
                     <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
                       currentState={currentState}
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
@@ -387,6 +410,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">Value</div>
                   <div className="col-9">
                     <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
                       currentState={currentState}
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
@@ -402,6 +426,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">Key</div>
                   <div className="col-9">
                     <CodeHinter
+                      theme={darkMode ? 'monokai' : 'default'}
                       currentState={currentState}
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}

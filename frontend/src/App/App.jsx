@@ -104,7 +104,7 @@ class App extends React.Component {
               </div>
             )}
 
-            {!onboarded && <OnboardingModal />}
+            {!onboarded && <OnboardingModal darkMode={this.state.darkMode} />}
 
             <PrivateRoute
               exact

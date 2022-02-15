@@ -51,7 +51,9 @@ export const Color = ({ param, definition, onChange, paramType, componentMeta })
             border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(definition.value) && '#c5c8c9'}`,
           }}
         ></div>
-        <div className="col">{definition.value}</div>
+        <div style={{ height: '20px' }} className="col">
+          {definition.value}
+        </div>
       </div>
     </div>
   );

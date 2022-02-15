@@ -7,7 +7,7 @@ import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
-import { computeComponentName } from '@/_helpers/utils';
+import { computeComponentName, resolveReferences } from '@/_helpers/utils';
 import useRouter from '@/_hooks/use-router';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
@@ -27,7 +27,7 @@ export const Container = ({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   appLoading,
-  configHandleClicked,
+  setSelectedComponent,
   zoomLevel,
   currentLayout,
   removeComponent,
@@ -75,7 +75,6 @@ export const Container = ({
           },
         })
       );
-      console.log('new boxes - 1', boxes);
     },
     [boxes]
   );
@@ -88,7 +87,6 @@ export const Container = ({
       firstUpdate.current = false;
       return;
     }
-    console.log('new boxes - 2', boxes);
     appDefinitionChanged({ ...appDefinition, components: boxes });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
@@ -163,9 +161,13 @@ export const Container = ({
         const offsetFromTopOfWindow = canvasBoundingRect.top;
         const offsetFromLeftOfWindow = canvasBoundingRect.left;
         const currentOffset = monitor.getSourceClientOffset();
+        const initialClientOffset = monitor.getInitialClientOffset();
+        const delta = monitor.getDifferenceFromInitialOffset();
 
         left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
-        top = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
+        top = Math.round(
+          initialClientOffset.y - 10 + delta.y + initialClientOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow
+        );
 
         id = uuidv4();
 
@@ -199,7 +201,6 @@ export const Container = ({
             },
           },
         });
-
         return undefined;
       },
     }),
@@ -306,9 +307,7 @@ export const Container = ({
     }
   }
 
-  React.useEffect(() => {
-    console.log('current component => ', selectedComponent);
-  }, [selectedComponent]);
+  React.useEffect(() => {}, [selectedComponent]);
 
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
@@ -416,6 +415,8 @@ export const Container = ({
               key={index}
               style={{
                 transform: `translate(${(previewComment.x * canvasWidth) / 100}px, ${previewComment.y}px)`,
+                position: 'absolute',
+                zIndex: 2,
               }}
             >
               <label className="form-selectgroup-item comment-preview-bubble">
@@ -435,8 +436,7 @@ export const Container = ({
         const box = boxes[key];
         const canShowInCurrentLayout =
           box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
-
-        if (!box.parent && canShowInCurrentLayout) {
+        if (!box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
           return (
             <DraggableBox
               className={showComments && 'pointer-events-none'}
@@ -459,7 +459,7 @@ export const Container = ({
               draggingStatusChanged={(status) => setIsDragging(status)}
               inCanvas={true}
               zoomLevel={zoomLevel}
-              configHandleClicked={configHandleClicked}
+              setSelectedComponent={setSelectedComponent}
               removeComponent={removeComponent}
               currentLayout={currentLayout}
               deviceWindowWidth={deviceWindowWidth}
@@ -479,7 +479,7 @@ export const Container = ({
                 onComponentOptionsChanged,
                 appLoading,
                 zoomLevel,
-                configHandleClicked,
+                setSelectedComponent,
                 removeComponent,
                 currentLayout,
                 deviceWindowWidth,

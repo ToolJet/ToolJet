@@ -7,7 +7,7 @@
     "name": "Google Sheets",
     "kind": "googlesheets",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

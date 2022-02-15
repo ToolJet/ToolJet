@@ -12,6 +12,7 @@ export const AppMenu = function AppMenu({
   onMenuOpen,
   isMenuOpen,
   openAppActionModal,
+  darkMode,
 }) {
   const closeMenu = () => {
     document.body.click();
@@ -39,7 +40,7 @@ export const AppMenu = function AppMenu({
       rootClose
       onToggle={onMenuOpen}
       overlay={
-        <Popover id="popover-app-menu">
+        <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'}>
           <Popover.Content bsPrefix="popover-body">
             <div>
               {canUpdateApp && <Field text="Change icon" onClick={() => openAppActionModal('change-icon')} />}

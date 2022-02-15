@@ -80,7 +80,7 @@ export const DraggableBox = function DraggableBox({
   resizingStatusChanged,
   zoomLevel,
   containerProps,
-  configHandleClicked,
+  setSelectedComponent,
   removeComponent,
   currentLayout,
   layouts,
@@ -138,6 +138,10 @@ export const DraggableBox = function DraggableBox({
     if (draggingStatusChanged) {
       draggingStatusChanged(isDragging2);
     }
+
+    if (isDragging2 && !isSelectedComponent) {
+      setSelectedComponent(id, component);
+    }
   }, [isDragging2]);
 
   const style = {
@@ -185,7 +189,7 @@ export const DraggableBox = function DraggableBox({
       {inCanvas ? (
         <div
           className={cx(`draggable-box widget-${id}`, { [className]: !!className })}
-          onMouseOver={(e) => {
+          onMouseEnter={(e) => {
             if (e.currentTarget.className.includes(`widget-${id}`)) {
               onComponentHover(id);
               e.stopPropagation();
@@ -207,12 +211,16 @@ export const DraggableBox = function DraggableBox({
               y: currentLayoutOptions ? currentLayoutOptions.top : 0,
             }}
             defaultSize={{}}
-            className={`resizer ${mouseOver || isResizing || isSelectedComponent ? 'resizer-active' : ''} `}
+            className={`resizer ${
+              mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
+            } `}
             onResize={() => setResizing(true)}
             onDrag={(e) => {
               e.preventDefault();
               e.stopImmediatePropagation();
-              setDragging(true);
+              if (!isDragging2) {
+                setDragging(true);
+              }
             }}
             resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
@@ -239,7 +247,7 @@ export const DraggableBox = function DraggableBox({
                   position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
                   widgetTop={currentLayoutOptions.top}
                   widgetHeight={currentLayoutOptions.height}
-                  configHandleClicked={(id, component) => configHandleClicked(id, component)}
+                  setSelectedComponent={(id, component) => setSelectedComponent(id, component)}
                 />
               )}
               <Box

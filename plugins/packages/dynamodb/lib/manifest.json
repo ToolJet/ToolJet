@@ -7,7 +7,7 @@
     "name": "DynamoDB",
     "kind": "dynamodb",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

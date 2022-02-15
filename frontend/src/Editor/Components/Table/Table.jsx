@@ -42,7 +42,11 @@ export function Table({
   setExposedVariable,
   registerAction,
 }) {
-  const color = component.definition.styles.textColor.value;
+  const color =
+    component.definition.styles.textColor.value !== '#000'
+      ? component.definition.styles.textColor.value
+      : darkMode && '#fff';
+
   const actions = component.definition.properties.actions || { value: [] };
   const serverSidePaginationProperty = component.definition.properties.serverSidePagination;
   const serverSidePagination = serverSidePaginationProperty

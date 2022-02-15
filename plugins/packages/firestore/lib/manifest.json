@@ -7,7 +7,7 @@
     "name": "Firestore",
     "kind": "firestore",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": [],
       "rawData": []
     },

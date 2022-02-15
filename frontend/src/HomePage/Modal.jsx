@@ -2,10 +2,11 @@ import React from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 
 export default function Modal({ title, show, closeModal, customClassName, children }) {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <BootstrapModal
       onHide={() => closeModal(false)}
-      contentClassName={`home-modal-component${customClassName ? ` ${customClassName}` : ''}`}
+      contentClassName={`home-modal-component${customClassName ? ` ${customClassName}` : ''} ${darkMode && 'dark'}`}
       show={show}
       size="md"
       backdrop={true}
