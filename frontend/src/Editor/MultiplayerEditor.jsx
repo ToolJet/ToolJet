@@ -8,9 +8,25 @@ import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 const MultiplayerEditor = (props) => {
   const { socket } = React.useMemo(() => createWebsocketConnection(props.match.params.id), [props.match.params.id]);
 
-  const { updatePresence } = useSelf(socket);
+  const { updatePresence } = useSelf(socket, props.match.params.id);
 
-  const others = useOthers(socket);
+  const [users, setUsers] = React.useState({});
+
+  socket?.addEventListener('message', (event) => {
+    const data = JSON.parse(event.data);
+    if (data.message === 'updatePresense') {
+      try {
+        // throttled(_users);
+        setUsers((users) => (users[data.clientId] = data.meta));
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  });
+
+  // const others = useOthers(socket);
+
+  // console.log('222', others);
 
   const handlePointerMove = React.useCallback(
     (e) => {
@@ -27,10 +43,10 @@ const MultiplayerEditor = (props) => {
   }, [socket]);
 
   return (
-    <div onPointerMove={handlePointerMove}>
-      <Editor {...props} socket={socket} />
-      {Object.keys(others).map((key) => {
-        return <Cursor key={key} color={others[key].color} x={others[key].x} y={others[key].y} />;
+    <div onPointerMove={handlePointerMove} style={{ height: '100vh', width: '100%' }}>
+      {/* <Editor {...props} socket={socket} /> */}
+      {Object.keys(users).map((key) => {
+        return <Cursor key={key} color={users[key].color} x={users[key].x} y={users[key].y} />;
       })}
     </div>
   );

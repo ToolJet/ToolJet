@@ -9,12 +9,13 @@ import {
 import { Server } from 'ws';
 import { AuthService } from 'src/services/auth.service';
 import { isEmpty } from 'lodash';
+import { Logger } from '@nestjs/common';
 
 @WebSocketGateway()
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private authService: AuthService) {}
-  @WebSocketServer()
-  server: Server;
+  @WebSocketServer() server: Server;
+  private logger: Logger = new Logger('EventsGateway');
 
   handleConnection(client: any): void {}
 
@@ -22,12 +23,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   broadcast(data: any) {
     switch (data.message) {
-      case 'subscribe':
-        this.server.clients.size > 1 &&
-          this.server.clients.forEach((client: any) => {
-            if (client.isAuthenticated && client.appId === data.appId && client.id !== data.clientId)
-              client.send(JSON.stringify(data));
-          });
+      case 'updatePresense':
+        this.server.clients.forEach((client: any) => {
+          if (client.isAuthenticated && client.appId === data.appId && client.id !== data.clientId)
+            client.send(JSON.stringify(data));
+        });
         break;
 
       default:
@@ -52,7 +52,14 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.appId = _data.appId;
     client.id = _data.clientId;
     client.meta = _data.meta;
-    _data.message = 'subscribe';
+    _data.message = 'updatePresense';
+    this.broadcast(_data);
+    return;
+  }
+
+  @SubscribeMessage('updatePresense')
+  onUpdatePresenseEvent(_: any, data: string) {
+    const _data = JSON.parse(data);
     this.broadcast(_data);
     return;
   }
