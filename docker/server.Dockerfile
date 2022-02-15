@@ -32,6 +32,9 @@ RUN apk add postgresql-client freetds
 
 RUN mkdir -p /app
 
+# copy npm scripts
+COPY --from=builder /app/package.json ./app/package.json
+
 # copy plugins dependencies
 COPY --from=builder /app/plugins/dist ./app/plugins/dist
 COPY --from=builder /app/plugins/client.js ./app/plugins/client.js

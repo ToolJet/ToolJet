@@ -150,7 +150,7 @@ export class DataSourcesService {
     return parsedOptions;
   }
 
-  async parseOptionsForUpdate(dataSource: DataSource, options: Array<object>) {
+  async parseOptionsForUpdate(dataSource: DataSource, options: Array<object>, entityManager = getManager()) {
     if (!options) return {};
 
     const optionsWithOauth = await this.parseOptionsForOauthDataSource(options);
@@ -158,14 +158,24 @@ export class DataSourcesService {
 
     for (const option of optionsWithOauth) {
       if (option['encrypted']) {
-        const existingCredentialId = dataSource.options[option['key']]['credential_id'];
+        const existingCredentialId =
+          dataSource.options[option['key']] && dataSource.options[option['key']]['credential_id'];
 
-        await this.credentialsService.update(existingCredentialId, option['value'] || '');
+        if (existingCredentialId) {
+          await this.credentialsService.update(existingCredentialId, option['value'] || '');
 
-        parsedOptions[option['key']] = {
-          credential_id: existingCredentialId,
-          encrypted: option['encrypted'],
-        };
+          parsedOptions[option['key']] = {
+            credential_id: existingCredentialId,
+            encrypted: option['encrypted'],
+          };
+        } else {
+          const credential = await this.credentialsService.create(option['value'] || '', entityManager);
+
+          parsedOptions[option['key']] = {
+            credential_id: credential.id,
+            encrypted: option['encrypted'],
+          };
+        }
       } else {
         parsedOptions[option['key']] = {
           value: option['value'],
@@ -175,6 +185,11 @@ export class DataSourcesService {
     }
 
     return parsedOptions;
+  }
+
+  async updateOAuthAccessToken(accessTokenDetails: object, dataSourceOptions: object) {
+    const existingCredentialId = dataSourceOptions['access_token']['credential_id'];
+    await this.credentialsService.update(existingCredentialId, accessTokenDetails['access_token']);
   }
 
   async getAuthUrl(provider): Promise<object> {

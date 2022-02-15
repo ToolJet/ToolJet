@@ -31,16 +31,18 @@ return data.filter(row => row.amount > 1000);`;
 
   return (
     <div className="field mb-2 transformation-editor">
-      <span style={{ fontWeight: 600 }} className="form-check-label">
-        Transformations
-      </span>
-      <div className="form-check form-switch my-2">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          onClick={toggleEnableTransformation}
-          checked={enableTransformation}
-        />
+      <div className="mb-2" style={{ display: 'flex' }}>
+        <div className="form-check form-switch">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            onClick={toggleEnableTransformation}
+            checked={enableTransformation}
+          />
+        </div>
+        <span style={{ fontWeight: 600 }} className="form-check-label mx-1">
+          Transformations
+        </span>
       </div>
       {!enableTransformation && (
         <Alert svg="circular-info">
@@ -61,7 +63,7 @@ return data.filter(row => row.amount > 1000);`;
             mode="javascript"
             theme={darkMode ? 'monokai' : 'base16-light'}
             lineNumbers={true}
-            height={300}
+            height={'300px'}
             className="query-hinter"
             ignoreBraces={true}
             onChange={(value) => codeChanged(value)}

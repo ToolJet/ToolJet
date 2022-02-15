@@ -3,6 +3,7 @@ import React, { createRef } from 'react';
 import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { computeComponentName } from '@/_helpers/utils';
 import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
 import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -24,6 +25,8 @@ import {
   setStateAsync,
   computeComponentState,
   getSvgIcon,
+  addToLocalStorage,
+  getDataFromLocalStorage,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -42,6 +45,8 @@ import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { AppVersionsManager } from './AppVersionsManager';
+import * as Driver from 'driver.js';
+import 'driver.js/dist/driver.min.css';
 import { SearchBoxComponent } from '@/_ui/Search';
 
 setAutoFreeze(false);
@@ -141,6 +146,93 @@ class Editor extends React.Component {
     });
   }
 
+  initWalkThrough() {
+    const driver = new Driver({
+      allowClose: true,
+      closeBtnText: 'Skip',
+      nextBtnText: 'Next',
+      prevBtnText: 'Previous',
+      padding: 2,
+      onReset: () => {
+        // Here we need to write the logic to update walkthroughCompleted column of the current user.
+        addToLocalStorage({ key: 'walkthroughCompleted', value: true });
+      },
+      className: `${this.props.darkMode ? 'dark-theme' : 'light-theme'}-walkthrough`,
+    });
+
+    if (
+      getDataFromLocalStorage('walkthroughCompleted') == undefined ||
+      !getDataFromLocalStorage('walkthroughCompleted')
+    ) {
+      driver.defineSteps([
+        {
+          element: '.component-image-holder',
+          popover: {
+            title: 'Drag and drop widgets',
+            description: 'From the widget sidebar, drag and drop widgets to the canvas.',
+            position: 'left',
+            closeBtnText: 'Skip (1/6)',
+          },
+        },
+        {
+          element: '.sidebar-datasources',
+          popover: {
+            title: 'Connect to data sources',
+            description: 'You can manage your data sources from here.',
+            position: 'right',
+            closeBtnText: 'Skip (2/6)',
+          },
+        },
+        {
+          element: '.left-sidebar-inspector',
+          popover: {
+            title: 'Inspector',
+            description: 'Inspector lets you check the properties of widgets, results of queries etc.',
+            position: 'right',
+            closeBtnText: 'Skip (3/6)',
+          },
+        },
+        {
+          element: '.queries-header ',
+          popover: {
+            title: 'Create queries',
+            description:
+              'Create queries to interact with your data sources, run JavaScript snippets and to make API requests.',
+            position: 'top',
+            closeBtnText: 'Skip (4/6)',
+          },
+        },
+        {
+          element: '.release-buttons',
+          popover: {
+            title: 'Preview, release & share',
+            description:
+              'Click on preview to view the current changes on app viewer. Click on share button to view the sharing options. Release the editing version to make the changes live. Released versions cannot be modified, you will have to create another version to make more changes.',
+            position: 'bottom',
+            closeBtnText: 'Skip (5/6)',
+          },
+        },
+        {
+          element: '.sidebar-comments',
+          popover: {
+            title: 'Collaborate',
+            description: 'Add comments on canvas and tag your team members to collaborate.',
+            position: 'right',
+            closeBtnText: 'Skip (6/6)',
+          },
+        },
+      ]);
+
+      driver.start();
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.editingVersion == undefined && this.state.editingVersion) {
+      this.initWalkThrough();
+    }
+  }
+
   isVersionReleased = (version = this.state.editingVersion) => {
     if (isEmpty(version)) {
       return false;
@@ -160,7 +252,7 @@ class Editor extends React.Component {
       this.setState({
         isTopOfQueryPane: true,
       });
-    } else {
+    } else if (this.state.isTopOfQueryPane) {
       this.setState({
         isTopOfQueryPane: false,
       });
@@ -504,9 +596,19 @@ class Editor extends React.Component {
     if (!this.isVersionReleased()) {
       let newDefinition = cloneDeep(this.state.appDefinition);
       // Delete child components when parent is deleted
-      const childComponents = Object.keys(newDefinition.components).filter(
-        (key) => newDefinition.components[key].parent === component.id
-      );
+
+      let childComponents = [];
+
+      if (newDefinition.components[component.id].component.component === 'Tabs') {
+        childComponents = Object.keys(newDefinition.components).filter((key) =>
+          newDefinition.components[key].parent?.startsWith(component.id)
+        );
+      } else {
+        childComponents = Object.keys(newDefinition.components).filter(
+          (key) => newDefinition.components[key].parent === component.id
+        );
+      }
+
       childComponents.forEach((componentId) => {
         delete newDefinition.components[componentId];
       });
@@ -542,19 +644,13 @@ class Editor extends React.Component {
     return setStateAsync(_self, newDefinition);
   };
 
-  componentChanged = (newComponent) => {
-    this.setState({
-      appDefinition: {
-        ...this.state.appDefinition,
-        components: {
-          ...this.state.appDefinition.components,
-          [newComponent.id]: {
-            ...this.state.appDefinition.components[newComponent.id],
-            ...newComponent,
-          },
-        },
-      },
-    });
+  cloneComponent = (newComponent) => {
+    const appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
+
+    newComponent.component.name = computeComponentName(newComponent.component.component, appDefinition.components);
+
+    appDefinition.components[newComponent.id] = newComponent;
+    this.appDefinitionChanged(appDefinition);
   };
 
   globalSettingsChanged = (key, value) => {
@@ -697,11 +793,13 @@ class Editor extends React.Component {
             </button>
           )}
         </div>
-        <div className="col-auto">
+        <div className="col-auto" style={{ width: '28px' }}>
           {isLoading === true ? (
-            <div className="px-2">
-              <div className="text-center spinner-border spinner-border-sm" role="status"></div>
-            </div>
+            <center>
+              <div className="pt-1">
+                <div className="text-center spinner-border spinner-border-sm" role="status"></div>
+              </div>
+            </center>
           ) : (
             <button
               style={{ marginTop: '3px' }}
@@ -742,7 +840,7 @@ class Editor extends React.Component {
     this.setState({ showComments: !this.state.showComments });
   };
 
-  configHandleClicked = (id, component) => {
+  setSelectedComponent = (id, component) => {
     this.switchSidebarTab(1);
     this.setState({ selectedComponent: { id, component } });
   };
@@ -915,6 +1013,12 @@ class Editor extends React.Component {
     this.switchSidebarTab(1);
   };
 
+  handleComponentHover = (id) => {
+    this.setState({
+      hoveredComponent: id,
+    });
+  };
+
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
   render() {
@@ -953,6 +1057,7 @@ class Editor extends React.Component {
       isSavingEditingVersion,
       showSaveDetail,
       showCreateVersionModalPrompt,
+      hoveredComponent,
     } = this.state;
 
     const appLink = slug ? `/applications/${slug}` : '';
@@ -1030,7 +1135,7 @@ class Editor extends React.Component {
                 <div className="layout-buttons cursor-pointer">
                   {this.renderLayoutIcon(currentLayout === 'desktop')}
                 </div>
-                <div className="navbar-nav flex-row order-md-last">
+                <div className="navbar-nav flex-row order-md-last release-buttons">
                   <div className="nav-item dropdown d-none d-md-flex me-2">
                     <a
                       href={appLink}
@@ -1060,6 +1165,7 @@ class Editor extends React.Component {
                         onVersionRelease={this.onVersionRelease}
                         editingVersion={editingVersion}
                         fetchApp={this.fetchApp}
+                        saveEditingVersion={this.saveEditingVersion}
                       />
                     )}
                   </div>
@@ -1122,11 +1228,13 @@ class Editor extends React.Component {
                         onComponentOptionChanged={this.handleOnComponentOptionChanged}
                         onComponentOptionsChanged={this.handleOnComponentOptionsChanged}
                         currentState={this.state.currentState}
-                        configHandleClicked={this.configHandleClicked}
+                        setSelectedComponent={this.setSelectedComponent}
                         handleUndo={this.handleUndo}
                         handleRedo={this.handleRedo}
                         removeComponent={this.removeComponent}
                         onComponentClick={this.handleComponentClick}
+                        onComponentHover={this.handleComponentHover}
+                        hoveredComponent={hoveredComponent}
                       />
                       <CustomDragLayer
                         snapToGrid={true}
@@ -1308,9 +1416,9 @@ class Editor extends React.Component {
                   !isEmpty(appDefinition.components) &&
                   !isEmpty(appDefinition.components[selectedComponent.id]) ? (
                     <Inspector
+                      cloneComponent={this.cloneComponent}
                       componentDefinitionChanged={this.componentDefinitionChanged}
                       dataQueries={dataQueries}
-                      componentChanged={this.componentChanged}
                       removeComponent={this.removeComponent}
                       selectedComponentId={selectedComponent.id}
                       currentState={currentState}

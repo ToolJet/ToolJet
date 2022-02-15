@@ -22,6 +22,7 @@ Supported queries:
 
 - Listing records 
 - Retrieving a record
+- Creating a record
 - Updating a record
 - Deleting a record
 
@@ -95,6 +96,67 @@ Example response from Airtable:
         "Name": "dsfdsf"
     },
     "createdTime": "2021-05-12T14:30:33.000Z"
+}
+```
+
+## Creating a record
+
+Required parameters:
+- Base ID
+- Table name
+- Records
+
+<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-create.png" alt="ToolJet - Datasource Airtable Create Operarion" height="420"/>
+
+#### Example Records:
+
+```json
+[
+    {
+        "fields": {
+            "Notes": "sdfdsf",
+            "Name": "dsfdsf"
+        }
+    },
+    {
+        "fields": {
+            "Notes": "note1",
+            "Name": "dsfdsf"
+        }
+    }
+]
+ 
+
+```
+
+
+Click on the `run` button to run the query.
+
+:::info
+NOTE: Query must be saved before running.
+:::
+
+Example response from Airtable:
+```json
+{
+    "records": [
+        {
+            "id": "rec5RuZ1COoZGtGDY",
+            "fields": {
+                "Notes": "sdfdsf",
+                "Name": "dsfdsf"
+            },
+            "createdTime": "2022-02-07T20:25:27.000Z"
+        },
+        {
+            "id": "recaYbFPonNNu6Cwj",
+            "fields": {
+                "Notes": "note1",
+                "Name": "dsfdsf"
+            },
+            "createdTime": "2022-02-07T20:25:27.000Z"
+        }
+    ]
 }
 ```
 

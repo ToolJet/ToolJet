@@ -72,7 +72,10 @@ let QueryManager = class QueryManager extends React.Component {
           }
 
           this.setState({
-            options: paneHeightChanged ? this.state.options : selectedQuery.options,
+            options:
+              paneHeightChanged || this.state.selectedQuery?.id === selectedQuery?.id
+                ? this.state.options
+                : selectedQuery.options,
             selectedDataSource: source,
             selectedQuery,
             queryName: selectedQuery.name,
@@ -288,6 +291,11 @@ let QueryManager = class QueryManager extends React.Component {
       }),
       control: (provided) => ({
         ...provided,
+        borderColor: 'hsl(0, 0%, 80%)',
+        boxShadow: 'none',
+        '&:hover': {
+          borderColor: 'hsl(0, 0%, 80%)',
+        },
         backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
         height: '32px!important',
         minHeight: '32px!important',

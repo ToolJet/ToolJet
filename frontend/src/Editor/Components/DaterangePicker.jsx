@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import 'react-datetime/css/react-datetime.css';
 import { DateRangePicker } from 'react-dates';
 import 'react-dates/lib/css/_datepicker.css';
@@ -12,7 +12,7 @@ export const DaterangePicker = function DaterangePicker({
   exposedVariables,
   setExposedVariable,
 }) {
-  const { visibility, disabledState } = styles;
+  const { borderRadius, visibility, disabledState } = styles;
 
   const startDateProp = isEmpty(exposedVariables.startDate) ? null : exposedVariables.startDate;
   const endDateProp = isEmpty(exposedVariables.endDate) ? null : exposedVariables.endDate;
@@ -21,6 +21,15 @@ export const DaterangePicker = function DaterangePicker({
   const [focusedInput, setFocusedInput] = useState(null);
   const [startDate, setStartDate] = useState(startDateProp);
   const [endDate, setEndDate] = useState(endDateProp);
+
+  const dateRangeRef = useRef(null);
+
+  useEffect(() => {
+    dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.borderRadius = `${Number.parseFloat(
+      borderRadius
+    )}px`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRangeRef.current, borderRadius]);
 
   function onDateChange(dates) {
     const start = dates.startDate;
@@ -56,6 +65,7 @@ export const DaterangePicker = function DaterangePicker({
         focusedInput={focusedInput}
         hideKeyboardShortcutsPanel={true}
         displayFormat={formatProp}
+        ref={dateRangeRef}
       />
     </div>
   );

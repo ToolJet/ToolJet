@@ -72,10 +72,10 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
 
       if (dynamicVariables) {
         if (dynamicVariables.length === 1 && dynamicVariables[0] === object) {
-          object = resolveReferences(dynamicVariables[0], state);
+          object = resolveReferences(dynamicVariables[0], state, null, customObjects);
         } else {
           for (const dynamicVariable of dynamicVariables) {
-            const value = resolveReferences(dynamicVariable, state);
+            const value = resolveReferences(dynamicVariable, state, null, customObjects);
             if (typeof value !== 'function') {
               object = object.replace(dynamicVariable, value);
             }
@@ -132,7 +132,9 @@ export function computeComponentName(componentType, currentComponents) {
 
   while (!found) {
     componentName = `${componentType.toLowerCase()}${currentNumber}`;
-    if (Object.values(currentComponents).find((component) => component.name === componentName) === undefined) {
+    if (
+      Object.values(currentComponents).find((component) => component.component.name === componentName) === undefined
+    ) {
       found = true;
     }
     currentNumber = currentNumber + 1;
