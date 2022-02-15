@@ -45,7 +45,7 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     justifyContent: 'center',
     alignItems: ' center',
     padding: '5px 8px',
-    margin: '14px 20px 0px 20px ',
+    margin: '14px 20px 0px 0px ',
     minWidth: '61px',
     wordBreak: 'break-all',
     minHeight: '24px',
@@ -74,7 +74,7 @@ export const Statistics = function Statistics({ height, properties, styles, dark
       </p>
       <h2 style={primaryStyle}>{primaryValue}</h2>
       <div>
-        <div className="d-flex flex-row justify-content-center">
+        <div className="d-flex flex-row justify-content-center align-items-baseline">
           {secondarySignDisplay !== 'negative' ? (
             <img src="/assets/images/icons/widgets/upstatistics.svg" style={{ ...marginStyle, marginRight: '6.5px' }} />
           ) : (
