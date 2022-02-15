@@ -6,14 +6,14 @@ sidebar_position: 16
 
 ToolJet can connect to your SendGrid account to send emails.
 
-<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-datasource.png" alt="ToolJet - Datasource SendGrid" height="420" />
+<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-datasource.png" alt="ToolJet - Data source - SendGrid" height="420" />
 
 :::info
 The SendGrid API Datasource supports for interaction with the mail endpoint of the [SendGrid v3 API](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/authentication).
 :::
 
 ## Connection
-To add a new SendGrid API datasource, click the Datasource manager icon on the left-sidebar of the app builder and click on the `Add datasource` button, then select SendGrid API from the modal that pops up.
+To add a new SendGrid API datasource, click the **Datasource manager** icon on the left-sidebar of the app builder and click on the `Add datasource` button, then select SendGrid API from the modal that pops up.
  
 Enter your **SendGrid API key** in the "API key" field.
 
@@ -21,7 +21,7 @@ Enter your **SendGrid API key** in the "API key" field.
 SendGrid API key is required to create an SendGrid datasource on ToolJet. You can generate API key by visiting [SendGrid account page](https://app.sendgrid.com/settings/api_keys). 
 :::
 
-Click on the 'Save' button to save the datasource.
+Click on the 'Save' button to save the data source.
 
 ## Supported operations
 1.  Email service

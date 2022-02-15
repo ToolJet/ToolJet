@@ -11,7 +11,7 @@ sidebar_label: Architecture
 ToolJet have two main components: **ToolJet Server** and **ToolJet Client**.
 
 1.  ### ToolJet Server  
-    ToolJet server is a Node.js API application. Server is responsible for authentication, authorization, persisting application definitions, running queries, storing datasource credentials securely and more. 
+    ToolJet server is a Node.js API application. Server is responsible for authentication, authorization, persisting application definitions, running queries, storing data source credentials securely and more. 
 
     Dependencies:
     -  PostgreSQL - ToolJet server persists data to a postgres database. 

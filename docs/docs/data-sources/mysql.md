@@ -10,7 +10,7 @@ ToolJet can connect to MySQL databases to read and write data.
 
 ToolJet requires the following to connect to your MySQL database. Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
 
-To add a new MySQL database, click on the `+` button on datasources panel at left sidebar in the app editor. Select MySQL from the modal that pops up.
+To add a new MySQL database, click on the `+` button on data sources panel at left sidebar in the app editor. Select MySQL from the modal that pops up.
 
 ToolJet requires the following to connect to your MySQL database.
 
@@ -23,15 +23,15 @@ It is recommended to create a new MySQL database user so that you can control th
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Datasource - MySQL](/img/datasource-reference/mysql/mysql.png)
+![ToolJet - Data source - MySQL](/img/datasource-reference/mysql/mysql.png)
 
 </div>
 
-Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the datasource.
+Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
 
 ## Querying MySQL
 
-Once you have added a MySQL datasource, click on `+` button of the query manager to create a new query. There are two modes by which you can query SQL:
+Once you have added a MySQL data source, click on `+` button of the query manager to create a new query. There are two modes by which you can query SQL:
 
   1. **[SQL mode](/docs/data-sources/mysql#sql-mode)**
   2. **[GUI mode](/docs/data-sources/mysql#gui-mode)**
@@ -44,7 +44,7 @@ SQL mode can be used to write raw SQL queries. Select SQL mode from the dropdown
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Datasource - MySQL](/img/datasource-reference/mysql/mysql-sqlmode.png)
+![ToolJet - Data source - MySQL](/img/datasource-reference/mysql/mysql-sqlmode.png)
 
 </div>
 
@@ -57,7 +57,7 @@ GUI mode can be used to query MySQL database without writing queries. Select GUI
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Datasource - MySQL](/img/datasource-reference/mysql/mysql-guimode.png)
+![ToolJet - Data source - MySQL](/img/datasource-reference/mysql/mysql-guimode.png)
 
 </div>
 

@@ -8,13 +8,13 @@ ToolJet can connect to Google Sheet using OAuth 2.0, which helps us to limit an 
 
 ## Authorization Scopes 
 
-You can create a Google Sheets datasource with one of either of the two permission scopes :
+You can create a Google Sheets data source with one of either of the two permission scopes :
   1. **Read Only**
   2. **Read and Write**
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Datasource Google Sheets](/img/datasource-reference/google-sheets/googlesheets.gif)
+![ToolJet - ToolJet - Data source Google Sheets](/img/datasource-reference/google-sheets/googlesheets.gif)
 
 </div>
 
@@ -41,7 +41,7 @@ This operation returns the table data from the spreadsheet in the form of json o
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Datasource Google Sheets](/img/datasource-reference/google-sheets/read-data-op.png)
+![ToolJet- Data source - Google Sheets](/img/datasource-reference/google-sheets/read-data-op.png)
 
 </div>
 
@@ -57,7 +57,7 @@ You can add more rows to the table using the append operation.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Datasource Google Sheets](/img/datasource-reference/google-sheets/append-data-op.png)
+![ToolJet - ToolJet - Data source Google Sheets](/img/datasource-reference/google-sheets/append-data-op.png)
 
 </div>
 
@@ -75,7 +75,7 @@ You can update the existing data in sheet using this operation.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Datasource Google Sheets](/img/datasource-reference/google-sheets/update-data-op.png)
+![ToolJet - ToolJet - Data source - Google Sheets](/img/datasource-reference/google-sheets/update-data-op.png)
 
 </div>
 
@@ -92,7 +92,7 @@ Use this operation delete a specific row from the sheet.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Datasource Google Sheets](/img/datasource-reference/google-sheets/delete-row-op.png)
+![ToolJet - ToolJet - Data source Google Sheets](/img/datasource-reference/google-sheets/delete-row-op.png)
 
 </div>
 
@@ -104,6 +104,6 @@ Here is the `Preview` of the query that used the get spreadsheet info operation.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Datasource Google Sheets](/img/datasource-reference/google-sheets/get-info2.png)
+![ToolJet - ToolJet - Data source Google Sheets](/img/datasource-reference/google-sheets/get-info2.png)
 
 </div>

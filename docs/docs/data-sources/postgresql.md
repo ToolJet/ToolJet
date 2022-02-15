@@ -10,7 +10,7 @@ ToolJet can connect to PostgreSQL databases to read and write data.
 
 Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
 
-To add a new PostgreSQL database, click on the `+` button on datasources panel at the left-bottom corner of the app editor. Select PostgreSQL from the modal that pops up.
+To add a new PostgreSQL database, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select PostgreSQL from the modal that pops up.
 
 ToolJet requires the following to connect to your PostgreSQL database.
 
@@ -23,15 +23,15 @@ It is recommended to create a new PostgreSQL database user so that you can contr
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Datasource - PostgreSQL](/img/datasource-reference/postgresql/pgconnect.png)
+![ToolJet - Data source - PostgreSQL](/img/datasource-reference/postgresql/pgconnect.png)
 
 </div>
 
-Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the datasource.
+Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
 
 ## Querying PostgreSQL
 
-Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the datasource. PostgreSQL query editor has two modes, SQL & GUI. **[SQL mode](/docs/data-sources/postgresql#sql-mode)** can be used to write raw SQL queries and **[GUI mode](/docs/data-sources/postgresql#gui-mode)** can be used to query your PostgreSQL database without writing queries.
+Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. PostgreSQL query editor has two modes, SQL & GUI. **[SQL mode](/docs/data-sources/postgresql#sql-mode)** can be used to write raw SQL queries and **[GUI mode](/docs/data-sources/postgresql#gui-mode)** can be used to query your PostgreSQL database without writing queries.
 
 #### SQL mode
 
@@ -41,7 +41,7 @@ Select SQL mode from the dropdown and enter the query in the editor. Click on th
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Datasource - PostgreSQL](/img/datasource-reference/postgresql/pg-sql.png)
+![ToolJet - Data source - PostgreSQL](/img/datasource-reference/postgresql/pg-sql.png)
 
 </div>
 
@@ -53,7 +53,7 @@ Click on the `run` button to run the query. **NOTE**: Query should be saved befo
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Datasource - PostgreSQL](/img/datasource-reference/postgresql/pg-gui.png)
+![ToolJet - Data source - PostgreSQL](/img/datasource-reference/postgresql/pg-gui.png)
 
 </div>
 
