@@ -40,7 +40,6 @@ export default class Snowflake implements QueryService {
       dataSourceUpdatedAt
     );
 
-
     try {
       const result: any = await this.connExecuteAsync(connection, {
         sqlText,
