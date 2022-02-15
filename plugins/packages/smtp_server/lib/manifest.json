@@ -20,7 +20,8 @@
         "type": "string"
       },
       "user": {
-        "type": "string"
+        "type": "string",
+        "encrypted":true
       },
       "password": {
         "type": "string",
@@ -59,7 +60,8 @@
       "label": "User",
       "key": "user",
       "type": "text",
-      "description": "Enter username / email"
+      "description": "Enter username / email",
+      "encrypted": true
     },
     "password": {
       "label": "Password",
