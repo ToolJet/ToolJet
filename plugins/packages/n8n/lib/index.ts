@@ -60,7 +60,7 @@ export default class N8n implements QueryService {
           break;
         }
         default : {
-          throw new Error("Select an operation");
+          throw new Error("Select a method");
         }
       }
     } catch (error) {
