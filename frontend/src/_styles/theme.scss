@@ -1605,7 +1605,7 @@ button {
     overflow-x: auto;
   }
   .hide-wrapper{
-   visibility: hidden !important;
+   overflow-x: hidden !important;
   }
   td {
     .text-container:focus-visible,
