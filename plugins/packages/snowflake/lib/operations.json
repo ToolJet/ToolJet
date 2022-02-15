@@ -3,7 +3,6 @@
   "title": "Snowflake datasource",
   "description": "A schema defining Snowflake datasource",
   "type": "database",
-  "defaults": {},
   "defaults": {
     "mode": "sql"
   },
@@ -17,10 +16,6 @@
         {
           "name": "SQL mode",
           "value": "sql"
-        },
-        {
-          "name": "GUI mode",
-          "value": "gui"
         }
       ]
     },
