@@ -2,7 +2,6 @@
 import moment from 'moment';
 import _ from 'lodash';
 import axios from 'axios';
-import { toast } from 'react-hot-toast';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
