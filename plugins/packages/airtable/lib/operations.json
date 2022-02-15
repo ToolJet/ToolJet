@@ -20,6 +20,10 @@
           "name": "Retrieve record"
         },
         {
+          "value": "create_record",
+          "name": "Create record"
+        },
+        {
           "value": "update_record",
           "name": "Update record"
         },
@@ -108,6 +112,38 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "recu9xMnUdr2n2cw8"
+      }
+    },
+    "create_record": {
+      "base_id": {
+        "label": "Base ID",
+        "key": "base_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter base ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "appwKbrBctcQF9pYr"
+      },
+      "table_name": {
+        "label": "Table name",
+        "key": "table_name",
+        "lineNumbers": false,
+        "type": "codehinter",
+        "description": "Enter table name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Table_name"
+      },
+      "body": {
+        "label": "Records",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter list of records",
+        "height": "150px",
+        "placeholder": "[{ \"fields\": {} }]"
       }
     },
     "update_record": {

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/",
+  "title": "TypeSense datasource",
+  "description": "A schema defining TypeSense datasource",
+  "type": "database",
+  "source": {
+    "name": "TypeSense",
+    "kind": "typesense",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "api_key": {
+        "type": "string ",
+        "encrypted": true
+      },
+      "protocol": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {
+    "scheme": {
+      "value": "https"
+    },
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 8108
+    },
+    "protocol": {
+      "value": "http"
+    }
+  },
+  "properties": {
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "Enter host"
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "Enter port"
+    },
+    "api_key": {
+      "label": "API Key",
+      "key": "api_key",
+      "type": "text",
+      "description": "Enter API key"
+    },
+    "protocol": {
+      "label": "Protocol",
+      "key": "protocol",
+      "type": "dropdown",
+      "list": [
+        {
+          "name": "HTTP",
+          "value": "http"
+        },
+        {
+          "name": "HTTPS",
+          "value": "https"
+        }
+      ],
+      "description": "Enter protocol"
+    }
+  },
+  "required": [
+    "host",
+    "port",
+    "api_key",
+    "protocol"
+  ]
+}

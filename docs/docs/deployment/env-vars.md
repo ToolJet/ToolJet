@@ -14,17 +14,6 @@ Both the ToolJet server and client requires some environment variables to start 
 | ------------ | --------------------------------------------------------------- |
 | TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com ) |
 
-#### Database configuration ( required )
-
-ToolJet server uses PostgreSQL as the database.
-
-| variable | description            |
-| -------- | ---------------------- |
-| PG_HOST  | postgres database host |
-| PG_DB    | name of the database   |
-| PG_USER  | username               |
-| PG_PASS  | password               |
-
 #### Lockbox configuration ( required )
 
 ToolJet server uses lockbox to encrypt datasource credentials. You should set the environment variable `LOCKBOX_MASTER_KEY` with a 32 byte hexadecimal string.
@@ -39,6 +28,37 @@ If you have `openssl` installed, you can run the following commands to generate 
 For `LOCKBOX_MASTER_KEY` use `openssl rand -hex 32`
 For `SECRET_KEY_BASE` use `openssl rand -hex 64`
 :::
+
+#### Database configuration ( required )
+
+ToolJet server uses PostgreSQL as the database.
+
+| variable | description            |
+| -------- | ---------------------- |
+| PG_HOST  | postgres database host |
+| PG_DB    | name of the database   |
+| PG_USER  | username               |
+| PG_PASS  | password               |
+
+#### Check for updates ( optional )
+
+Self-hosted version of ToolJet pings our server to fetch the latest product updates every 24 hours. You can disable this by setting the value of `CHECK_FOR_UPDATES` environment variable to `0`. This feature is enabled by default.
+
+#### Comment feature enable ( optional )
+
+Use this environment variable to enable/disable the feature that allows you to add comments on the canvas. 
+
+| variable | value            |
+| -------- | ---------------------- |
+| COMMENT_FEATURE_ENABLE  | `true` or `false` |
+
+#### Server Host ( optional )
+
+You can specify a different server for backend if it is hosted on another server.
+
+| variable | value            |
+| -------- | ---------------------- |
+| SERVER_HOST  | Configure a hostname for the server as a proxy pass. If no value is set, it defaults to `server`. |
 
 #### Disabling signups ( optional )
 
@@ -105,16 +125,27 @@ Specify application monitoring vendor. Currently supported values - `sentry`.
 
 | variable   | description                               |
 | ---------- | ----------------------------------------- |
-| APM VENDOR | Application performance monitoring vendor |
+| APM_VENDOR | Application performance monitoring vendor |
 
 #### SENTRY DNS ( optional )
 
-DSN tells a Sentry SDK where to send events so the events are associated with the correct project
+| variable   | description                               |
+| ---------- | ----------------------------------------- |
+| SENTRY_DNS |  DSN tells a Sentry SDK where to send events so the events are associated with the correct project  |
 
 #### SENTRY DEBUG ( optional )
 
-Prints logs for sentry. Supported values: `true` | `false`
-Default value is `false`
+Prints logs for sentry. 
+
+| variable   | description                               |
+| ---------- | ----------------------------------------- |
+| SENTRY_DEBUG | `true` or `false`. Default value is `false` |
+
+#### SSO ( optional )
+
+:::info
+We currently support GitHub and Google SSO. Check out docs for **[GitHub SSO](/docs/sso/github)** and **[Google SSO](/docs/sso/google)** for more information on respective environment variables.
+:::
 
 #### Server URL ( optional)
 

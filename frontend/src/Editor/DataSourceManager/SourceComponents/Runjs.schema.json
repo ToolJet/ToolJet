@@ -8,7 +8,7 @@
     "name": "Run JavaScript",
     "kind": "runjs",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },
