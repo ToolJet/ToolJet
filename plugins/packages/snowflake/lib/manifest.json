@@ -14,56 +14,28 @@
     "options": {
       "username": { "type": "string" },
       "account": { "type": "string" },
-      "database": { "type": "string" },
-      "warehouse": { "type": "string" },
-      "schema": { "type": "string" },
-      "role": { "type": "string" },
       "password": { "type": "string", "encrypted": true }
     }
   },
   "properties": {
     "username": {
-      "$label": "Username",
-      "$key": "username",
+      "label": "Username",
+      "key": "username",
       "type": "text",
       "description": "Enter username"
     },
     "account": {
-      "$label": "Account",
-      "$key": "account",
+      "label": "Account",
+      "key": "account",
       "type": "text",
       "description": "Enter account"
     },
-    "database": {
-      "$label": "Database Name",
-      "$key": "database",
-      "type": "text",
-      "description": "Name of the database"
-    },
-    "warehouse": {
-      "$label": "Warehouse",
-      "$key": "warehouse",
-      "type": "text",
-      "description": "Enter warehouse"
-    },
-    "schema": {
-      "$label": "Schema",
-      "$key": "schema",
-      "type": "text",
-      "description": "Enter schema"
-    },
-    "role": {
-      "$label": "Role",
-      "$key": "role",
-      "type": "text",
-      "description": "Enter role"
-    },
     "password": {
-      "$label": "Password",
-      "$key": "password",
+      "label": "Password",
+      "key": "password",
       "type": "password",
       "description": "Enter password"
     }
   },
-  "required": ["account", "username"]
+  "required": ["account", "username", "password"]
 }

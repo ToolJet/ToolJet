@@ -40,6 +40,7 @@ export default class Snowflake implements QueryService {
       dataSourceUpdatedAt
     );
 
+
     try {
       const result: any = await this.connExecuteAsync(connection, {
         sqlText,
@@ -57,18 +58,25 @@ export default class Snowflake implements QueryService {
     return { status: "ok" };
   }
 
+  async connAsync(connection: snowflake.Connection) {
+    return new Promise((resolve, reject) => {
+      connection.connect(
+        function(err, conn) {
+          if (err) reject(err);
+          resolve(conn);
+        }
+      );
+    });
+  }
+
   async buildConnection(sourceOptions: SourceOptions) {
-    const connection = snowflake.createConnection({
+    let connection = snowflake.createConnection({
       account: sourceOptions.account,
       username: sourceOptions.username,
       password: sourceOptions.password,
-      database: sourceOptions.database,
-      warehouse: sourceOptions.warehouse,
-      schema: sourceOptions.schema,
-      role: sourceOptions.role,
     });
 
-    return connection;
+    return await this.connAsync(connection)
   }
 
   async getConnection(
