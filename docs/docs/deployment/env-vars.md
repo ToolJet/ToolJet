@@ -95,7 +95,7 @@ ToolJet uses SMTP services to send emails ( Eg: invitation email when you add ne
 
 #### Slack configuration ( optional )
 
-If your ToolJet installation requires Slack as a datasource, you need to create a Slack app and set the following environment variables:
+If your ToolJet installation requires Slack as a data source, you need to create a Slack app and set the following environment variables:
 
 | variable            | description                    |
 | ------------------- | ------------------------------ |
@@ -104,7 +104,7 @@ If your ToolJet installation requires Slack as a datasource, you need to create 
 
 #### Google OAuth ( optional )
 
-If your ToolJet installation needs access to datasources such as Google sheets, you need to create OAuth credentials from Google Cloud Console.
+If your ToolJet installation needs access to data sources such as Google sheets, you need to create OAuth credentials from Google Cloud Console.
 
 | variable             | description   |
 | -------------------- | ------------- |

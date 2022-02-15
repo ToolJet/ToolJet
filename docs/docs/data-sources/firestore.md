@@ -17,11 +17,11 @@ To generate a new key, check out Firestore's official documentation: [https://cl
 
 Once the key is downloaded, click on `+` button of data sources panel at the left-bottom corner of the app editor. Select Firestore from the modal that pops up. Paste the key in the field for GCP key. Click on 'Test connection' button to verify if the service account can access Firestore from ToolJet server. Click on 'Save' button to save the datasource.
 
-<img class="screenshot-full" src="/img/datasource-reference/firestore/firestore-intro.gif" alt="ToolJet - Datasource Firestore" height="420" />
+<img class="screenshot-full" src="/img/datasource-reference/firestore/firestore-intro.gif" alt="ToolJet - Data source - Firestore" height="420" />
 
 ## Querying Firestore 
 
-Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the datasource.
+Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source.
 
 <img class="screenshot-full" src="/img/datasource-reference/firestore/firestore-query.png" alt="ToolJet - Firestore connection" height="420"/>
 

@@ -23,7 +23,7 @@ ToolJet requires the following to connect to your Elasticsearch cluster:
 
 ## Querying Firestore 
 
-Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the datasource.  
+Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source.  
 Select the operation that you want to perform on Firestore and click 'Save' to save the query. 
 
 :::tip
