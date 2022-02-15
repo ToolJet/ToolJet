@@ -35,6 +35,30 @@
       "key": "password",
       "type": "password",
       "description": "Enter password"
+    },
+    "database": {
+      "label": "Database",
+      "key": "database",
+      "type": "text",
+      "description": "Enter database"
+    },
+    "schema": {
+      "label": "Schema",
+      "key": "schema",
+      "type": "text",
+      "description": "Enter schema"
+    },
+    "warehouse": {
+      "label": "Warehouse",
+      "key": "warehouse",
+      "type": "text",
+      "description": "Enter warehouse"
+    },
+    "role": {
+      "label": "Role",
+      "key": "role",
+      "type": "text",
+      "description": "Enter role"
     }
   },
   "required": ["account", "username", "password"]

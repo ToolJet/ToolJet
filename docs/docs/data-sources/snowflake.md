@@ -18,6 +18,8 @@ ToolJet requires the following to connect to your Snowflake database.
 - **Username**
 - **Password**
 
+You can also configure for [additional optional parameters](https://docs.snowflake.com/en/user-guide/nodejs-driver-use.html#additional-connection-options).
+
 <img src="/img/datasource-reference/snowflake/snowflake-connect.png" alt="ToolJet - Snowflake connection" height="250"/>
 
 ## Querying Snowflake
