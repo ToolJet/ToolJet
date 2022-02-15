@@ -33,8 +33,6 @@ class Stripe extends React.Component {
       options: { ...(this.props.options ?? {}) },
     });
 
-    console.log('this.props.operation', this.props);
-
     this.fetchOpenApiSpec();
   }
 
