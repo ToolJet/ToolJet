@@ -10,23 +10,8 @@ const MultiplayerEditor = (props) => {
 
   const { updatePresence } = useSelf(socket, props.match.params.id);
 
-  const [users, setUsers] = React.useState({});
-
-  socket?.addEventListener('message', (event) => {
-    const data = JSON.parse(event.data);
-    if (data.message === 'updatePresense') {
-      try {
-        // throttled(_users);
-        setUsers((users) => (users[data.clientId] = data.meta));
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  });
-
-  // const others = useOthers(socket);
-
-  // console.log('222', others);
+  const others = useOthers(socket);
+  console.log('222', others);
 
   const handlePointerMove = React.useCallback(
     (e) => {
@@ -45,8 +30,8 @@ const MultiplayerEditor = (props) => {
   return (
     <div onPointerMove={handlePointerMove} style={{ height: '100vh', width: '100%' }}>
       {/* <Editor {...props} socket={socket} /> */}
-      {Object.keys(users).map((key) => {
-        return <Cursor key={key} color={users[key].color} x={users[key].x} y={users[key].y} />;
+      {Object.keys(others).map((key) => {
+        return <Cursor key={key} color={others[key].color} x={others[key].x} y={others[key].y} />;
       })}
     </div>
   );
