@@ -146,7 +146,7 @@ export const Box = function Box({
     const listItem = isListView
       ? resolveReferences(allComponents[component.parent].component.definition.properties.data.value, currentState)[
           extraProps.listviewItemIndex
-        ]
+        ] ?? {}
       : {};
     onEvent(eventName, { ...options, customVariables: { listItem }, component });
   };
