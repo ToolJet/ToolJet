@@ -60,8 +60,7 @@
       "password": {
         "label": "Password",
         "key": "password",
-        "type": "text",
-        "encrypted": true,
+        "type": "password",
         "description": "Enter username"
       }
     },
