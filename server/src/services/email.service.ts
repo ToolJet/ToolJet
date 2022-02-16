@@ -50,7 +50,7 @@ export class EmailService {
   }
 
   stripTrailingSlash(hostname: string) {
-    return hostname.endsWith('/') ? hostname.slice(0, -1) : hostname;
+    return hostname?.endsWith('/') ? hostname.slice(0, -1) : hostname;
   }
 
   async sendWelcomeEmail(to: string, name: string, invitationtoken: string) {
