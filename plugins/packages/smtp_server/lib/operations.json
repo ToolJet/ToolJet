@@ -63,6 +63,7 @@
       "label": "Attachments",
       "type": "codehinter",
       "description": "Field for file attachments",
+      "placeholder": "{{components.filepicker1.file}}",
       "width": "320px",
       "height": "36px",
       "className": "codehinter-plugins col-6",
