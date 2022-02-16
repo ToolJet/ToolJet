@@ -9,6 +9,6 @@ export type QueryOptions = {
   from:string,
   to:string,
   subject:string,
-  content_type:string,
-  content:string
+  textContent:string,
+  htmlContent:string,
 };

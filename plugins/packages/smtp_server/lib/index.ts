@@ -9,15 +9,24 @@ export default class Smtp_server implements QueryService {
     const from = queryOptions.from;
     const to = queryOptions.to;
     const subject = queryOptions.subject;
-    const contentType = queryOptions.content_type;
-    const content = queryOptions.content;
+    const textContent = queryOptions.textContent;
+    const htmlContent = queryOptions.htmlContent;
+    const attachments = queryOptions['attachment_array'] && typeof queryOptions['attachment_array'] === 'string' ? JSON.parse(queryOptions['attachment_array']) : queryOptions['attachment_array'];
+
+    const filesData = (array:any)=>{
+      const newFiles = array.map(x=>{
+        return { filename: x.name, content: Buffer.from(x.dataURL, 'base64') } 
+      })
+      return newFiles;
+    }
     
     const mailOptions = {
       from,
       to,
       subject,
-      text: contentType == 'plain_text' && content,
-      html: contentType == 'html' && content
+      text: textContent,
+      html: htmlContent,
+      attachments: attachments && filesData(attachments),
     };
  
     try {

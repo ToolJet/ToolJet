@@ -13,18 +13,10 @@
       "rawData": {}
     },
     "options": {
-      "host": {
-        "type": "string"
-      },
-      "port": {
-        "type": "string"
-      },
       "user": {
-        "type": "string",
         "encrypted":true
       },
       "password": {
-        "type": "string",
         "encrypted": true
       }
     }

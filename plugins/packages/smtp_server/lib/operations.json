@@ -42,30 +42,31 @@
       "className": "codehinter-plugins",
       "lineNumbers": false
     },
-    "content_type": {
-      "label": "Content type",
-      "key": "content_type",
-      "type": "dropdown",
-      "description": "Single select dropdown for content type",
-      "className": "col-3",
-      "list": [
-        {
-          "value": "plain_text",
-          "name": "Plain Text"
-        },
-        {
-          "value": "html",
-          "name": "Html"
-        }
-      ]
+    "textContent":{
+      "key": "textContent",
+      "label": "Text",
+      "type": "codehinter",
+      "description": "Field for message",
+      "placeholder": "Enter message",
+      "height": "150px"    
     },
-    "content": {
-      "key": "content",
-      "label": "Content",
+    "htmlContent":{
+      "key": "htmlContent",
+      "label": "HTML",
       "type": "codehinter",
       "description": "Field for message",
       "placeholder": "Enter message",
       "height": "150px"
+    },
+    "attachment_array": {
+      "key": "attachment_array",
+      "label": "Attachments",
+      "type": "codehinter",
+      "description": "Field for file attachments",
+      "width": "320px",
+      "height": "36px",
+      "className": "codehinter-plugins col-6",
+      "lineNumbers": false
     }
   }
 }
