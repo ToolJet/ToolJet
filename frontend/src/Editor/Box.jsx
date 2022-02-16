@@ -143,12 +143,12 @@ export const Box = function Box({
     if (mode === 'edit' && eventName === 'onClick') {
       onComponentClick(id, component);
     }
-    const listItemData = isListView
+    const listItem = isListView
       ? resolveReferences(allComponents[component.parent].component.definition.properties.data.value, currentState)[
           extraProps.listviewItemIndex
         ]
       : {};
-    onEvent(eventName, { ...options, customVariables: { listItemData }, component });
+    onEvent(eventName, { ...options, customVariables: { listItem }, component });
   };
   const validate = (value) =>
     validateWidget({
