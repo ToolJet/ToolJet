@@ -43,6 +43,7 @@
       "key": "auth_type",
       "type": "dropdown-component-flip",
       "description": "Select auth type",
+      "helpText": "Webhook credentials and instance credentials are different. Please use the credentials that you use with the webhook trigger.",
       "list": [
         {
           "value": "none",

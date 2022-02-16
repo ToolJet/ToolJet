@@ -210,6 +210,9 @@ const DynamicForm = ({
             >
               {flipComponentDropdown.label && <label className="form-label">{flipComponentDropdown.label}</label>}
               <Select {...getElementProps(flipComponentDropdown)} />
+              {flipComponentDropdown.helpText && (
+                <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
+              )}
             </div>
           </div>
           {getLayout(obj[selector])}
