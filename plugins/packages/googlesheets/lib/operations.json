@@ -166,6 +166,17 @@
         "className": "codehinter-plugins",
         "placeholder": "Enter spreadsheet_id"
       },
+      "sheet": {
+        "label": "Sheet name",
+        "key": "sheet",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter sheet name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter sheet name"
+      },
       "where_field": {
         "label": "Where",
         "key": "where_field",
