@@ -13,22 +13,13 @@
       "rawData": {}
     },
     "options": {
-      "auth_type":{
-        "type":"string"
-      },
-      "username": {
-        "type": "string"
-      },
       "password": {
-        "type": "string",
         "encrypted": true
       },
       "name": {
-        "type": "string",
         "encrypted": true
       },
       "value": {
-        "type": "string",
         "encrypted": true
       }
     },
@@ -59,7 +50,6 @@
         }
       ]
     },
-    "none":{},
     "basic":{
       "username": {
         "label": "Username",
