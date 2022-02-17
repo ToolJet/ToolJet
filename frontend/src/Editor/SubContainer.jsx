@@ -4,9 +4,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
-import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
+import { produce, setAutoFreeze } from 'immer';
+
+setAutoFreeze(false);
 
 export const SubContainer = ({
   mode,
@@ -66,10 +68,9 @@ export const SubContainer = ({
   const moveBox = useCallback(
     (id, left, top) => {
       setBoxes(
-        update(boxes, {
-          [id]: {
-            $merge: { left, top },
-          },
+        produce(boxes, (draft) => {
+          draft[id].layouts.left = left;
+          draft[id].layouts.top = top;
         })
       );
     },
@@ -156,21 +157,10 @@ export const SubContainer = ({
 
           left = convertXToPercentage(left, canvasBoundingRect.width);
 
-          let newBoxes = {
-            ...boxes,
-            [id]: {
-              ...boxes[id],
-              parent: parent,
-              layouts: {
-                ...boxes[id]['layouts'],
-                [item.currentLayout]: {
-                  ...boxes[id]['layouts'][item.currentLayout],
-                  top: top,
-                  left: left,
-                },
-              },
-            },
-          };
+          let newBoxes = produce(boxes, (draft) => {
+            draft[id].layouts[item.currentLayout].top = top;
+            draft[id].layouts[item.currentLayout].left = left;
+          });
 
           setBoxes(newBoxes);
         } else {
@@ -262,20 +252,10 @@ export const SubContainer = ({
     // Computing the top offset
     const top = nodeBounds.y - canvasBounds.y;
 
-    let newBoxes = {
-      ...boxes,
-      [id]: {
-        ...boxes[id],
-        layouts: {
-          ...boxes[id]['layouts'],
-          [currentLayout]: {
-            ...boxes[id]['layouts'][currentLayout],
-            top: top,
-            left: left,
-          },
-        },
-      },
-    };
+    let newBoxes = produce(boxes, (draft) => {
+      draft[id].layouts[currentLayout].top = top;
+      draft[id].layouts[currentLayout].left = left;
+    });
 
     setBoxes(newBoxes);
   }
@@ -304,22 +284,12 @@ export const SubContainer = ({
     width = width + (deltaWidth * 43) / subContainerWidth;
     height = height + deltaHeight;
 
-    let newBoxes = {
-      ...boxes,
-      [id]: {
-        ...boxes[id],
-        layouts: {
-          ...boxes[id]['layouts'],
-          [currentLayout]: {
-            ...boxes[id]['layouts'][currentLayout],
-            width,
-            height,
-            top,
-            left,
-          },
-        },
-      },
-    };
+    let newBoxes = produce(boxes, (draft) => {
+      draft[id].layouts[currentLayout].top = top;
+      draft[id].layouts[currentLayout].left = left;
+      draft[id].layouts[currentLayout].width = width;
+      draft[id].layouts[currentLayout].height = height;
+    });
 
     setBoxes(newBoxes);
   }
@@ -327,21 +297,8 @@ export const SubContainer = ({
   function paramUpdated(id, param, value) {
     if (Object.keys(value).length > 0) {
       setBoxes(
-        update(boxes, {
-          [id]: {
-            $merge: {
-              component: {
-                ...boxes[id].component,
-                definition: {
-                  ...boxes[id].component.definition,
-                  properties: {
-                    ...boxes[id].component.definition.properties,
-                    [param]: value,
-                  },
-                },
-              },
-            },
-          },
+        produce(boxes, (draft) => {
+          draft[id].component.definition.properties[param] = value;
         })
       );
     }
