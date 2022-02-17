@@ -22,7 +22,7 @@ module.exports = {
       '@ee': path.resolve(__dirname, 'ee/'),
     },
   },
-  ...(environment === 'development' && { devtool: 'inline-source-map' }),
+  devtool: environment === 'development' ? 'inline-source-map' : 'source-map',
   module: {
     rules: [
       {

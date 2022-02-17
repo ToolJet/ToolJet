@@ -26,10 +26,10 @@ The following optional parameters are also supported:
 
 <img class="screenshot-full" src="/img/datasource-reference/graphql/add-source.gif" alt="ToolJet - GraphQL connection" height="420"/>
 
-Click on the 'Save' button to save the datasource.
+Click on the 'Save' button to save the data source.
 
 ## Querying GraphQL
-Click on `+` button of the query manager at the bottom panel of the editor and select the GraphQL endpoint added in the previous step as the datasource. 
+Click on `+` button of the query manager at the bottom panel of the editor and select the GraphQL endpoint added in the previous step as the  data source. 
 
 <img class="screenshot-full" src="/img/datasource-reference/graphql-query.png" alt="ToolJet - GraphQL connection" height="420"/>
 
