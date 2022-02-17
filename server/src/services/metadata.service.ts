@@ -13,13 +13,12 @@ export class MetadataService {
     private metadataRepository: Repository<Metadata>
   ) {}
 
-  async getMetaData(opts = {}) {
-    let metadata = await this.metadataRepository.findOne(opts);
+  async getMetaData() {
+    let metadata = await this.metadataRepository.findOne({});
 
     if (!metadata) {
       metadata = await this.metadataRepository.save(
         this.metadataRepository.create({
-          ...opts,
           data: {},
           createdAt: new Date(),
           updatedAt: new Date(),
