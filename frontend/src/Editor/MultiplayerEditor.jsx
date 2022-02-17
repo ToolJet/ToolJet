@@ -11,13 +11,12 @@ const MultiplayerEditor = (props) => {
   const { updatePresence } = useSelf(socket, props.match.params.id);
 
   const others = useOthers(socket);
-  console.log('222', others);
 
   const handlePointerMove = React.useCallback(
     (e) => {
       updatePresence({
-        x: e.clientX,
-        y: e.clientY,
+        x: e.pageX / document.documentElement.clientWidth,
+        y: e.pageY / document.documentElement.clientHeight,
       });
     },
     [updatePresence]
@@ -28,10 +27,17 @@ const MultiplayerEditor = (props) => {
   }, [socket]);
 
   return (
-    <div onPointerMove={handlePointerMove} style={{ height: '100vh', width: '100%' }}>
-      {/* <Editor {...props} socket={socket} /> */}
+    <div onPointerMove={handlePointerMove}>
+      <Editor {...props} socket={socket} />
       {Object.keys(others).map((key) => {
-        return <Cursor key={key} color={others[key].color} x={others[key].x} y={others[key].y} />;
+        return (
+          <Cursor
+            key={key}
+            color={others[key].color}
+            x={others[key].x * document.documentElement.clientWidth}
+            y={others[key].y * document.documentElement.clientHeight}
+          />
+        );
       })}
     </div>
   );
