@@ -57,9 +57,15 @@ export class MetadataController {
     const diffTime = (now.getTime() - updateLastCheckedAt.getTime()) / 1000;
 
     if (diffTime > 86400) {
-      const result = await this.metadataService.checkForUpdates(installedVersion, ignoredVersion);
-      latestVersion = result.latestVersion;
-      versionIgnored = false;
+      if (process.env.CHECK_FOR_UPDATES) {
+        const result = await this.metadataService.checkForUpdates(installedVersion, ignoredVersion);
+        latestVersion = result.latestVersion;
+        versionIgnored = false;
+      }
+
+      if (!process.env.DISABLED_TOOLJET_TELEMETRY) {
+        await this.metadataService.sendTelemetryData(metadata, req.user);
+      }
     }
 
     return {
