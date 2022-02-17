@@ -50,10 +50,8 @@ export class MetadataService {
     });
   }
 
-  async sendTelemetryData(metadata: Metadata, user: User) {
-    const totalUserCount = await getManager().count(User, {
-      where: { organizationId: user.organizationId },
-    });
+  async sendTelemetryData(metadata: Metadata) {
+    const totalUserCount = await getManager().count(User);
 
     return await got('https://hub.tooljet.io/telemetry', {
       method: 'post',
