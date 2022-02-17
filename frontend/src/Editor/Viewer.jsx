@@ -124,6 +124,7 @@ class Viewer extends React.Component {
       this.setStateForApp(data);
       this.setStateForContainer(data);
       this.setState({ isLoading: false });
+      this.setWindowTitle(data.name);
     });
   };
 
@@ -154,6 +155,10 @@ class Viewer extends React.Component {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
     return canvasBoundingRect?.width;
   };
+
+  setWindowTitle(name) {
+    document.title = name ?? 'Untitled App';
+  }
 
   render() {
     const {

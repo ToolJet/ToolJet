@@ -35,8 +35,8 @@ export function resolve(data, state) {
 }
 
 export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
+  const reservedKeyword = ['app']; //Keywords that slows down the app
   object = _.clone(object);
-
   const objectType = typeof object;
   let error;
   switch (objectType) {
@@ -45,9 +45,23 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
         const code = object.replace('{{', '').replace('}}', '');
         let result = '';
 
+        if (reservedKeyword.includes(code)) {
+          error = `${code} is a reserved keyword`;
+          return [{}, error];
+        }
+
         try {
           const evalFunction = Function(
-            ['variables', 'components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)],
+            [
+              'variables',
+              'components',
+              'queries',
+              'globals',
+              'moment',
+              '_',
+              ...Object.keys(customObjects),
+              reservedKeyword,
+            ],
             `return ${code}`
           );
           result = evalFunction(
@@ -57,13 +71,13 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
             state.globals,
             moment,
             _,
-            ...Object.values(customObjects)
+            ...Object.values(customObjects),
+            null
           );
         } catch (err) {
           error = err;
           console.log('eval_error', err);
         }
-
         if (withError) return [result, error];
         return result;
       }
@@ -299,4 +313,27 @@ export const isJson = (str) => {
 
 export function buildURLWithQuery(url, query = {}) {
   return `${url}?${toQuery(query)}`;
+}
+
+export const handleCircularStructureToJSON = () => {
+  const seen = new WeakSet();
+
+  return (key, value) => {
+    if (typeof value === 'object' && value !== null) {
+      if (seen.has(value)) {
+        return 'Object';
+      }
+      seen.add(value);
+    }
+    return value;
+  };
+};
+
+export function hasCircularDependency(obj) {
+  try {
+    JSON.stringify(obj);
+  } catch (e) {
+    return String(e).includes('Converting circular structure to JSON');
+  }
+  return false;
 }
