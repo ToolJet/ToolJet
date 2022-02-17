@@ -4,11 +4,11 @@ sidebar_position: 4
 
 # Custom JavaScript
 
-You can write custom JavaScript code to interact with components and queries. To do that, you just need to create a new query and select **Run JavaScript Code** from the datasources dropdown.
+You can write custom JavaScript code to interact with components and queries. To do that, you just need to create a new query and select **Run JavaScript Code** from the data sources dropdown.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Datasource Custom JavaScript](/img/datasource-reference/custom-javascript/custom-javascript.png)
+![ToolJet - Data source - Custom JavaScript](/img/datasource-reference/custom-javascript/custom-javascript.png)
 
 </div>
 

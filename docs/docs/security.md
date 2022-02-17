@@ -7,7 +7,7 @@ sidebar_label: Security
 
 ## Data storage
 
-ToolJet does not store data returned from your data sources. ToolJet server acts as a proxy and passes the data as it is to the ToolJet client. The credentials for the data sources are hanlded by the server and never exposed to the client. For example, if you are making an API request, the query is run from the server and not from the frontend.
+ToolJet does not store data returned from your data sources. ToolJet server acts as a proxy and passes the data as it is to the ToolJet client. The credentials for the data sources are handled by the server and never exposed to the client. For example, if you are making an API request, the query is run from the server and not from the frontend.
 
 ## Datasource credentials
 All the datasource credentials are securely encrypted using `aes-256-gcm`. The credentials are never exposed to the frontend ( ToolJet client ).

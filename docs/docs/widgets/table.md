@@ -54,7 +54,7 @@ To let the user select one or more rows from the current page of a table, enable
 Activate this option on the inspector to have the last selected(clicked on) row to be highlighted.
 
 ## Search
-Client-side search is enabled by default and server-side search can be enabled from the events section of the inspector. Whenever the search text is changed, the `searchText` property of the table component is updated. If server-side search is enabled, `on search` event is fired after the content of `searchText` property is changed. `searchText` can be used to run a specific query to search for the records in your datasource.
+Client-side search is enabled by default and server-side search can be enabled from the events section of the inspector. Whenever the search text is changed, the `searchText` property of the table component is updated. If server-side search is enabled, `on search` event is fired after the content of `searchText` property is changed. `searchText` can be used to run a specific query to search for the records in your data source.
 
 If you don't wish to use the search feature altogether, you can disable it from the inspector.
 
@@ -96,7 +96,7 @@ Along with `changeSet`, `dataUpdates` property will also be changed when the val
 }]
 ```
 
-If the data of a cell is changed, "save changes" button will be shown at the bottom of the table. This button when clicked will trigger the `Bulk update query` event. This event can be used to run a query to update the data on your datasource.
+If the data of a cell is changed, "save changes" button will be shown at the bottom of the table. This button when clicked will trigger the `Bulk update query` event. This event can be used to run a query to update the data on your data source.
 
 #### Exposed variables
 
@@ -127,7 +127,7 @@ If the data of a cell is changed, "save changes" button will be shown at the bot
 | Loading state | Shows a loading status if the value is `true`. This property is often used with the `isLoading` property of queries so that the table shows a spinner while the query is being run. Default value is `false` .|
 | Server-side pagination | Server-side pagination can be used to run a query whenever the page is changed. If enabled, `pageIndex` property will be exposed on the table object, this property will have the current page index. |
 | Client-side pagination | Client-side pagination is enabled by default. The number of records per page is 10 by default and can be changed to upto 50. |
-| Server-side search | If server-side search is enabled, `on search` event is fired after the content of `searchText` property is changed. `searchText` can be used to run a specific query to search for the records in your datasource. |
+| Server-side search | If server-side search is enabled, `on search` event is fired after the content of `searchText` property is changed. `searchText` can be used to run a specific query to search for the records in your data source. |
 | Background color (Action Button) | Background color of the action button. |
 | Text color (Action Button) | Color of button-text of the action button. |
 | Show search box | It can be used to show or hide Table Search box. |

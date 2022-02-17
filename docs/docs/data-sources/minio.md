@@ -19,11 +19,11 @@ ToolJet requires the following to connect to your DynamoDB:
 
 </div>
 
-Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the datasource.
+Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
 
 ## Querying Minio
 
-Click on `+` button of the **query manager** at the bottom panel of the editor and select the datasource added in the previous step as the datasource. Select the operation that you want to perform and click **Save** to save the query.
+Click on `+` button of the **query manager** at the bottom panel of the editor and select the data source added in the previous step as the data source. Select the operation that you want to perform and click **Save** to save the query.
 
 ![ToolJet - Mino query](/img/datasource-reference/minio-query.png)
 
