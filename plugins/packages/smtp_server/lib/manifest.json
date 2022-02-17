@@ -5,7 +5,7 @@
   "description": "A schema defining SMTP Server datasource",
   "type": "api",
   "source": {
-    "name": "SMTP Server",
+    "name": "SMTP",
     "kind": "smtp_server",
     "exposedVariables": {
       "isLoading": false,
