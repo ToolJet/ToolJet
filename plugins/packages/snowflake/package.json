@@ -20,6 +20,6 @@
     "@tooljet-plugins/common": "file:../common",
     "@types/snowflake-sdk": "^1.6.2",
     "react": "^17.0.2",
-    "snowflake-sdk": "github:akshaysasidrn/snowflake-connector-nodejs"
+    "snowflake-sdk": "github:ToolJet/snowflake-connector-nodejs#chore/update-https-agent"
   }
 }
