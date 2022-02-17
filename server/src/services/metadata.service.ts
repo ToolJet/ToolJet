@@ -33,13 +33,15 @@ export class MetadataService {
     return await this.metadataRepository.update(metadata.id, { data: { ...metadata.data, ...newOptions } });
   }
 
-  async finishInstallation(installedVersion: string, name: string, email: string) {
-    return await got('https://hub.tooljet.io/updates', {
+  async finishInstallation(metadata: any, installedVersion: string, name: string, email: string, org: string) {
+    return await got('https://hub.tooljet.io/subscribe', {
       method: 'post',
       json: {
+        id: metadata.id,
         installed_version: installedVersion,
         name,
         email,
+        org,
       },
     });
   }

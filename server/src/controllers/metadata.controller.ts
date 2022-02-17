@@ -9,10 +9,11 @@ export class MetadataController {
   @UseGuards(JwtAuthGuard)
   @Post('finish_installation')
   async finishInstallation(@Request() req) {
-    const { name, email } = req.body;
+    const { name, email, org } = req.body;
     const installedVersion = globalThis.TOOLJET_VERSION;
 
-    await this.metadataService.finishInstallation(installedVersion, name, email);
+    const metadata = await this.metadataService.getMetaData();
+    await this.metadataService.finishInstallation(metadata, installedVersion, name, email, org);
 
     await this.metadataService.updateMetaData({
       onboarded: true,
