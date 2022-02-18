@@ -21,6 +21,17 @@
       "className": "codehinter-plugins col-6",
       "lineNumbers": false
     },
+    "from_name": {
+      "key": "from_name",
+      "label": "From Name",
+      "type": "codehinter",
+      "description": "Field for sender address",
+      "placeholder": "Enter sender address",
+      "width": "320px",
+      "height": "36px",
+      "className": "codehinter-plugins",
+      "lineNumbers": false
+    },
     "to": {
       "key": "to",
       "label": "To",
@@ -29,7 +40,7 @@
       "placeholder": "Enter reciever address",
       "width": "320px",
       "height": "36px",
-      "className": "codehinter-plugins col-6",
+      "className": "codehinter-plugins",
       "lineNumbers": false
     },
     "subject": {

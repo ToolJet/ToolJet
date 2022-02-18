@@ -7,6 +7,7 @@ export default class Smtp_server implements QueryService {
     const nodemailerTransport = await this.getConnection(sourceOptions);
 
     const from = queryOptions.from;
+    const from_name = queryOptions.from_name;
     const to = queryOptions.to;
     const subject = queryOptions.subject;
     const textContent = queryOptions.textContent;
@@ -21,7 +22,10 @@ export default class Smtp_server implements QueryService {
     }
     
     const mailOptions = {
-      from,
+      from:{
+        name:from_name,
+        address: from,
+      },
       to,
       subject,
       text: textContent,

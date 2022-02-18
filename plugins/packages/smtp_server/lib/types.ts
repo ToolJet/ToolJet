@@ -7,6 +7,7 @@ export type SourceOptions = {
 export type QueryOptions = {
   operation: string;
   from:string,
+  from_name:string,
   to:string,
   subject:string,
   textContent:string,
