@@ -54,11 +54,11 @@ export const Listview = function Listview({
           >
             <SubContainer
               parentComponent={component}
-              readOnly={index !== 0}
               containerCanvasWidth={width}
               parent={`${id}`}
               parentName={component.name}
               {...containerProps}
+              readOnly={index !== 0}
               customResolvables={{ listItem }}
               parentRef={parentRef}
               removeComponent={removeComponent}

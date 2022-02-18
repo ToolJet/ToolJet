@@ -35,6 +35,7 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
 
 export async function batchUpdateToSheet(
   spreadSheetId: string,
+  sheet: string='',
   requestBody: any,
   filterData: any,
   filterOperator: string,
@@ -44,7 +45,7 @@ export async function batchUpdateToSheet(
     return new Error('filterOperator is required');
   }
 
-  const lookUpData = await lookUpSheetData(spreadSheetId, authHeader);
+  const lookUpData = await lookUpSheetData(spreadSheetId, sheet, authHeader);  
 
   const updateBody = (requestBody, filterCondition, filterOperator, data) => {
     const rowsIndexes = getRowsIndex(filterCondition, filterOperator, data) as any[];
@@ -72,7 +73,7 @@ export async function batchUpdateToSheet(
     const _data = body.map((data) => {
       return {
         majorDimension: 'ROWS',
-        range: data.cellIndex,
+        range: `${sheet}!${data.cellIndex}`,
         values: [[data.cellValue]],
       };
     });
@@ -182,8 +183,9 @@ export async function deleteData(
   return await deleteDataFromSheet(spreadSheetId, sheet, rowIndex, authHeader);
 }
 
-async function lookUpSheetData(spreadSheetId: string, authHeader: any) {
-  const responseLookUpCellValues = await makeRequestToLookUpCellValues(spreadSheetId, 'A1:Z500', authHeader);
+async function lookUpSheetData(spreadSheetId: string, sheet:string, authHeader: any) {
+  const range = `${sheet}!A1:Z500`;
+  const responseLookUpCellValues = await makeRequestToLookUpCellValues(spreadSheetId, range, authHeader);
   const data = await responseLookUpCellValues['values'];
 
   return data;
