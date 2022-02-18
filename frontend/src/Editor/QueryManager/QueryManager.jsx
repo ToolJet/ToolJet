@@ -228,12 +228,17 @@ let QueryManager = class QueryManager extends React.Component {
     return (
       <div>
         {props.kind === 'runjs' ? (
-          <RunjsIcon style={{ height: 25, width: 25 }} />
+          <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
         ) : (
           Icon && <Icon style={{ height: 25, width: 25 }} />
         )}
 
-        <span className={`mx-2 ${this.props.darkMode ? 'text-white' : 'text-muted'}`}>{props.label}</span>
+        <span
+          style={{ height: '25px', display: 'inline-block', marginTop: '3.5px' }}
+          className={`mx-2 ${this.props.darkMode ? 'text-white' : 'text-muted'}`}
+        >
+          {props.label}
+        </span>
       </div>
     );
   };
