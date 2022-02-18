@@ -2,7 +2,7 @@ import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@to
 import { SourceOptions, QueryOptions } from './types';
 import nodemailer from 'nodemailer';
 
-export default class Smtp_server implements QueryService {
+export default class Smtp implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const nodemailerTransport = await this.getConnection(sourceOptions);
 

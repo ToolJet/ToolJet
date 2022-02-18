@@ -1,12 +1,12 @@
 
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
-  "title": "SMTP Server datasource",
-  "description": "A schema defining SMTP Server datasource",
+  "title": "SMTP datasource",
+  "description": "A schema defining SMTP datasource",
   "type": "api",
   "source": {
     "name": "SMTP",
-    "kind": "smtp_server",
+    "kind": "smtp",
     "exposedVariables": {
       "isLoading": false,
       "data": {},
