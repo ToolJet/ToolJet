@@ -1,3 +1,7 @@
+---
+sidebar_position: 19
+---
+
 # Snowflake
 
 ToolJet can connect to Snowflake databases to read and write data.
