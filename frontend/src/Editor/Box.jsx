@@ -38,7 +38,7 @@ import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { resolveProperties, resolveStyles } from './component-properties-resolution';
-import { validateWidget } from '@/_helpers/utils';
+import { validateWidget, resolveReferences } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
 
 const AllComponents = {
@@ -123,10 +123,11 @@ export const Box = function Box({
   resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
 
   let exposedVariables = {};
+  let isListView = false;
 
   if (component.parent) {
     const parentComponent = allComponents[component.parent];
-    const isListView = parentComponent?.component?.component === 'Listview';
+    isListView = parentComponent?.component?.component === 'Listview';
 
     if (isListView) {
       const itemsAtIndex = currentState?.components[parentId]?.data[extraProps.listviewItemIndex];
@@ -142,7 +143,12 @@ export const Box = function Box({
     if (mode === 'edit' && eventName === 'onClick') {
       onComponentClick(id, component);
     }
-    onEvent(eventName, { ...options, component });
+    const listItem = isListView
+      ? resolveReferences(allComponents[component.parent].component.definition.properties.data.value, currentState)[
+          extraProps.listviewItemIndex
+        ] ?? {}
+      : {};
+    onEvent(eventName, { ...options, customVariables: { listItem }, component });
   };
   const validate = (value) =>
     validateWidget({

@@ -9,10 +9,13 @@ export class MetadataController {
   @UseGuards(JwtAuthGuard)
   @Post('finish_installation')
   async finishInstallation(@Request() req) {
-    const { name, email } = req.body;
+    const { name, email, org } = req.body;
     const installedVersion = globalThis.TOOLJET_VERSION;
 
-    await this.metadataService.finishInstallation(installedVersion, name, email);
+    const metadata = await this.metadataService.getMetaData();
+    if (process.env.NODE_ENV == 'production') {
+      await this.metadataService.finishInstallation(metadata, installedVersion, name, email, org);
+    }
 
     await this.metadataService.updateMetaData({
       onboarded: true,
@@ -55,10 +58,16 @@ export class MetadataController {
     const updateLastCheckedAt = new Date(data['last_checked'] || null);
     const diffTime = (now.getTime() - updateLastCheckedAt.getTime()) / 1000;
 
-    if (diffTime > 86400) {
-      const result = await this.metadataService.checkForUpdates(installedVersion, ignoredVersion);
-      latestVersion = result.latestVersion;
-      versionIgnored = false;
+    if (diffTime > 86400 && process.env.NODE_ENV == 'production') {
+      if (process.env.CHECK_FOR_UPDATES) {
+        const result = await this.metadataService.checkForUpdates(installedVersion, ignoredVersion);
+        latestVersion = result.latestVersion;
+        versionIgnored = false;
+      }
+
+      if (!process.env.DISABLED_TOOLJET_TELEMETRY) {
+        await this.metadataService.sendTelemetryData(metadata);
+      }
     }
 
     return {

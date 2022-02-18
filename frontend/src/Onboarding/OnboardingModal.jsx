@@ -55,40 +55,63 @@ class OnboardingModal extends React.Component {
       >
         <Modal.Header>
           <Modal.Title className="text-center">Finish ToolJet installation</Modal.Title>
+          <br />
         </Modal.Header>
 
         <Modal.Body>
-          <h3>Receive product updates from the ToolJet team? </h3>
-          <small>We hate spam and we will never spam</small>
+          <div className="mb-3 mt-2">
+            <label className="form-label">Organization</label>
+            <div className="input-group input-group-flat">
+              <input
+                type="text"
+                className="form-control"
+                onChange={(e) => {
+                  this.changeOptions('org', e.target.value);
+                }}
+              />
+              <span className="input-group-text"></span>
+            </div>
+          </div>
 
-          <input
-            type="text"
-            className="form-control mt-3"
-            placeholder={'Your name'}
-            onChange={(e) => {
-              this.changeOptions('name', e.target.value);
-            }}
-          />
+          <div className="mb-3">
+            <label className="form-label">Name</label>
+            <div className="input-group input-group-flat">
+              <input
+                type="text"
+                className="form-control"
+                onChange={(e) => {
+                  this.changeOptions('name', e.target.value);
+                }}
+              />
+              <span className="input-group-text"></span>
+            </div>
+          </div>
 
-          <input
-            type="text"
-            className="form-control mt-3"
-            placeholder={'Your email'}
-            onChange={(e) => {
-              this.changeOptions('email', e.target.value);
-            }}
-          />
+          <div className="mb-3">
+            <label className="form-label">Email</label>
+            <div className="input-group input-group-flat">
+              <input
+                type="text"
+                className="form-control"
+                onChange={(e) => {
+                  this.changeOptions('email', e.target.value);
+                }}
+              />
+              <span className="input-group-text"></span>
+            </div>
+          </div>
+          <small>You will receive updates from the ToolJet team ( 1-2 emails every month, we do not spam )</small>
         </Modal.Body>
 
         <Modal.Footer>
-          <div className="row w-100">
+          <div className="row w-100 gx-0">
             <div className="col">
               <button className={`btn btn-primary`} onClick={this.finishOnboarding}>
                 Finish setup
               </button>
             </div>
             <div className="col-auto">
-              <a onClick={this.skipOnboard} className="mt-2">
+              <a onClick={this.skipOnboard} className="mt-3 text-muted">
                 Skip
               </a>
             </div>
