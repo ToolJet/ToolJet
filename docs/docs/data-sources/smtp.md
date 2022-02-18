@@ -1,10 +1,11 @@
 
-# smtp_server
+# smtp
 
 ToolJet can connect to SMTP Server databases to read and write data. 
 
-- [Connection](#connection)
-- [Getting Started](#querying-smtp_server)
+- [smtp](#smtp)
+  - [Connection](#connection)
+  - [Querying SMTP Server](#querying-smtp-server)
 
 ## Connection
 
