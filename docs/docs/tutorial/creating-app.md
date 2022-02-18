@@ -5,7 +5,7 @@ sidebar_position: 1
 # Creating new app
 
 :::info
-Apps in ToolJet binds the widgets, datasources and queries together.
+Apps in ToolJet binds the widgets, data sources and queries together.
 :::
 
 This tutorial will walk you through building a simple app to fetch customer information from a PostgreSQL database and display the data using the table widget.
@@ -29,4 +29,4 @@ The main components of an app:
 
 - **[Widgets](https://docs.tooljet.com/docs/tutorial/adding-widget)** - UI components such as tables, buttons, dropdowns.
 - **[Data sources](https://docs.tooljet.com/docs/tutorial/adding-a-datasource)** - ToolJet can connect to databases, APIs and external services to fetch and modify data.
-- **[Queries](https://docs.tooljet.com/docs/tutorial/building-queries)** - Queries are used to access the connected datasources.
+- **[Queries](https://docs.tooljet.com/docs/tutorial/building-queries)** - Queries are used to access the connected data sources.
