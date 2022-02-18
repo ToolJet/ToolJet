@@ -132,6 +132,7 @@ export const componentTypes = [
     styles: {
       backgroundColor: { type: 'color', displayName: 'Background color' },
       textColor: { type: 'color', displayName: 'Text color' },
+      loaderColor: { type: 'color', displayName: 'Loader color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
       borderRadius: { type: 'number', displayName: 'Border radius' },
@@ -151,6 +152,7 @@ export const componentTypes = [
       styles: {
         backgroundColor: { value: '#375FCF' },
         textColor: { value: '#fff' },
+        loaderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
         disabledState: { value: '{{false}}' },

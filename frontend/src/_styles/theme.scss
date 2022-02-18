@@ -4426,3 +4426,8 @@ div#driver-highlighted-element-stage, div#driver-page-overlay {
 .tablr-gutter-x-0 {
   --tblr-gutter-x: 0!important;
 }
+
+.btn-loading:after {
+  border: 1px solid var(--loader-color);
+  border-right-color: transparent;
+}
