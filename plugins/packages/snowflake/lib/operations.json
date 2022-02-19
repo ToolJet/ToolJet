@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Snowflake datasource",
+  "description": "A schema defining Snowflake datasource",
+  "type": "database",
+  "defaults": {
+    "mode": "sql"
+  },
+  "properties": {
+    "mode": {
+      "label": "",
+      "key": "mode",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for mode",
+      "list": [
+        {
+          "name": "SQL mode",
+          "value": "sql"
+        }
+      ]
+    },
+    "sql": {
+      "query": {
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px"
+      }
+    }
+  }
+}
