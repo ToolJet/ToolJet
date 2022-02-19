@@ -3,10 +3,12 @@ import { OauthService } from '../services/oauth/oauth.service';
 
 @Controller('oauth')
 export class OauthController {
-  constructor(private oauthService: OauthService) {}
+  constructor(private oauthService: OauthService) { }
 
   @Post('sign-in')
-  async create(@Request() req, @Body() body) {
+  async create(@Request() req: Request, @Body() body) {
+    console.log(req);
+    console.log(body);
     const result = await this.oauthService.signIn(body);
     return result;
   }

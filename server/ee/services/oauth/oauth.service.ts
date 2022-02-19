@@ -9,6 +9,7 @@ import { GoogleOAuthService } from './google_oauth.service';
 import { decamelizeKeys } from 'humps';
 import { GitOAuthService } from './git_oauth.service';
 import UserResponse from './models/user_response';
+import { OidcOAuthService } from './oidc_oauth.service';
 
 @Injectable()
 export class OauthService {
@@ -19,8 +20,9 @@ export class OauthService {
     private readonly organizationUsersService: OrganizationUsersService,
     private readonly googleOAuthService: GoogleOAuthService,
     private readonly gitOAuthService: GitOAuthService,
+    private readonly oidcOuthService: OidcOAuthService,
     private readonly configService: ConfigService
-  ) {}
+  ) { }
 
   #isValidDomain(domain: string): boolean {
     const restrictedDomain = this.configService.get<string>('SSO_RESTRICTED_DOMAIN');
@@ -100,6 +102,7 @@ export class OauthService {
         break;
 
       default:
+        userResponse = await this.oidcOuthService.signIn(token)
         break;
     }
 
@@ -123,6 +126,7 @@ interface SSOResponse {
   origin: 'google' | 'git';
   state?: string;
   redirectUri?: string;
+
 }
 
 interface JWTPayload {

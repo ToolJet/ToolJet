@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import OIDCSSOLoginButton from '@ee/components/LoginPage/OIDCSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 
 class LoginPage extends React.Component {
@@ -159,6 +160,7 @@ class LoginPage extends React.Component {
                   />
                 )}
                 {window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID && <GitSSOLoginButton />}
+                {window.public_config?.SSO_OIDC_CLIENT_ID && <OIDCSSOLoginButton />}
               </div>
             </div>
           </form>
