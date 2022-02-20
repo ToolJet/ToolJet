@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "CouchDB datasource",
@@ -12,9 +11,41 @@
       "data": {},
       "rawData": {}
     },
-    "options": {}
+    "options": {
+      "username": {
+        "type": "string",
+        "encrypted": true
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": true
   },
-  "defaults": {},
-  "properties": {},
-  "required": []
+  "defaults": {
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "username": {
+      "label": "Username",
+      "key": "username",
+      "type": "text",
+      "description": "username for couchDB",
+      "helpText": "Username for DB"
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "password for couchDB",
+      "helpText": "Password for DB"
+    }
+  },
+  "required": ["username","password"]
 }
