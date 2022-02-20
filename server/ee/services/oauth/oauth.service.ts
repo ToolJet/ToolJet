@@ -10,6 +10,7 @@ import { decamelizeKeys } from 'humps';
 import { GitOAuthService } from './git_oauth.service';
 import UserResponse from './models/user_response';
 import { OidcOAuthService } from './oidc_oauth.service';
+import { Request } from 'express';
 
 @Injectable()
 export class OauthService {
@@ -82,7 +83,7 @@ export class OauthService {
     });
   }
 
-  async signIn(ssoResponse: SSOResponse): Promise<any> {
+  async signIn(req: Request, ssoResponse: SSOResponse): Promise<any> {
     const ssoSignUpDisabled =
       this.configService.get<string>('SSO_DISABLE_SIGNUP') &&
       this.configService.get<string>('SSO_DISABLE_SIGNUP') === 'true';
@@ -101,9 +102,13 @@ export class OauthService {
         userResponse = await this.gitOAuthService.signIn(token);
         break;
 
-      default:
-        userResponse = await this.oidcOuthService.signIn(token)
+      case 'oidc':
+        userResponse = await this.oidcOuthService.signIn(req, token)
         break;
+
+      default:
+        break;
+        
     }
 
     if (!(userResponse.userSSOId && userResponse.email)) {
@@ -123,7 +128,7 @@ export class OauthService {
 
 interface SSOResponse {
   token: string;
-  origin: 'google' | 'git';
+  origin: 'google' | 'git' | 'oidc';
   state?: string;
   redirectUri?: string;
 

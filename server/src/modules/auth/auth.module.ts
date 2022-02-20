@@ -17,6 +17,7 @@ import { OauthService, GoogleOAuthService, GitOAuthService } from '@ee/services/
 import { OauthController } from '@ee/controllers/oauth.controller';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
+import { OidcOAuthService } from '@ee/services/oauth/oidc_oauth.service';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { App } from 'src/entities/app.entity';
     OauthService,
     GoogleOAuthService,
     GitOAuthService,
+    OidcOAuthService,
   ],
   controllers: [OauthController],
   exports: [AuthService],

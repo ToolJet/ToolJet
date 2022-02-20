@@ -5,6 +5,7 @@ import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from './all-exceptions-filter';
+import * as cookieParser from 'cookie-parser';
 
 const fs = require('fs');
 
@@ -24,7 +25,12 @@ async function bootstrap() {
     app.useWebSocketAdapter(new WsAdapter(app));
   }
   app.setGlobalPrefix('api');
-  app.enableCors();
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
+  app.use(cookieParser());
 
   app.use(
     helmet.contentSecurityPolicy({

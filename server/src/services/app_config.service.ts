@@ -24,6 +24,7 @@ export class AppConfigService {
       'SENTRY_DEBUG',
       'SSO_GOOGLE_OAUTH2_CLIENT_ID',
       'SSO_GIT_OAUTH2_CLIENT_ID',
+      'SSO_OIDC_NAME',
       'DISABLE_PASSWORD_LOGIN',
     ];
   }
