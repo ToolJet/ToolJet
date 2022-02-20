@@ -160,7 +160,7 @@ class LoginPage extends React.Component {
                   />
                 )}
                 {window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID && <GitSSOLoginButton />}
-                {window.public_config?.SSO_OIDC_CLIENT_ID && <OidcSSOLoginButton />}
+                {window.public_config?.SSO_OIDC_NAME && <OidcSSOLoginButton />}
               </div>
             </div>
           </form>
