@@ -4,5 +4,11 @@
     "params": {
       "token": "code"
     }
+  },
+  "oidc": {
+    "name": "Oidc",
+    "params": {
+      "token": "code"
+    }
   }
 }
