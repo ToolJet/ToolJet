@@ -242,7 +242,7 @@ export function Table({
       if (filterValue.operation === 'equals') {
         return rows.filter((row) => row.values[columnIds[0]] === filterValue.value);
       }
-      
+
       if (filterValue.operation === 'ne') {
         return rows.filter((row) => row.values[columnIds[0]] !== filterValue.value);
       }
@@ -252,10 +252,10 @@ export function Table({
           row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
         );
       }
-      
+
       if (filterValue.operation === 'nl') {
-        return rows.filter((row) =>
-          !row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
+        return rows.filter(
+          (row) => !row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
         );
       }
 
