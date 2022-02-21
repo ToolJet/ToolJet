@@ -56,7 +56,12 @@ class Editor extends React.Component {
     const appId = this.props.match.params.id;
 
     const currentUser = authenticationService.currentUserValue;
+
+    const { socket } = createWebsocketConnection(appId);
+
     let userVars = {};
+
+    this.socket = socket;
 
     if (currentUser) {
       userVars = {
@@ -75,8 +80,6 @@ class Editor extends React.Component {
         canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
       },
     };
-
-    this.socket = createWebsocketConnection(appId);
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
@@ -203,6 +206,7 @@ class Editor extends React.Component {
     document.removeEventListener('mousemove', this.onMouseMove);
     document.removeEventListener('mouseup', this.onMouseUp);
     document.title = 'Tooljet - Dashboard';
+    this.socket && this.socket?.close();
   }
 
   // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
