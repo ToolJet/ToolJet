@@ -920,6 +920,17 @@ button {
       object-fit: contain;
     }
 
+    .template-spinner{
+      width: 3rem;
+      height: 3rem;
+      margin: auto;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0
+    }
+
     .row {
       margin-bottom: 0;
     }
@@ -1083,9 +1094,9 @@ button {
         background-color: #2c405c;
 
         button.edit-button {
-          background: #ffffff;
-          border: 1px solid #4d72fa;
-          color: #4d72fa;
+          background: transparent;
+          border: 1px solid #ffffff;
+          color: #ffffff;
         }
 
         button.launch-button {
@@ -2245,6 +2256,8 @@ body {
 
   .CodeMirror-scroll {
     overflow: hidden !important;
+    position: static;
+    width: 100%;
   }
 }
 
@@ -2795,7 +2808,7 @@ input:focus-visible {
 
   .editor-sidebar {
     border: solid rgba(255, 255, 255, 0.09);
-    border-width: 0px 0px 0px 1px !important;
+    border-width: 0px 0px 0px 0px !important;
 
     .nav-tabs {
       border-bottom: 1px solid rgba(255, 255, 255, 0.09) !important;
@@ -3226,7 +3239,6 @@ input[type="text"] {
     min-height: 26px;
     padding: 0;
     padding-left: 2px;
-    background-color: $white;
   }
 
   td.rdtActive,
@@ -3975,6 +3987,7 @@ input[type="text"] {
 
   .form-control {
     border-color: $border-grey-dark !important;
+    color: inherit;
   }
   input {
     background-color: $bg-dark-light !important;
@@ -4256,20 +4269,19 @@ input[type="text"] {
     margin-top: 0.65rem !important;
   }
   .CodeMirror pre.CodeMirror-line {
-    height: 36px !important;
+    height: 32px !important;
     margin-bottom: 6px !important;
   }
   .CodeMirror-placeholder {
-    height: 36px !important;
+    height: 21px !important;
     position: absolute !important;
-    margin-top: 0px !important;
+    margin-top: 3px !important;
   }
   .CodeMirror-cursor {
     height: inherit !important;
   }
   .CodeMirror-lines {
-    margin-top: 6px !important;
-    height: 36px !important;
+    height: 32px !important;
   }
 }
 

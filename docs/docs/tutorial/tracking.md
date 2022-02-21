@@ -5,7 +5,7 @@ sidebar_position: 13
 # Tracking    
 
 :::tip
-ToolJet does not store any data fetched from the datasources. ToolJet acts as a proxy and the data from datasources is sent to the client application without storing.
+ToolJet does not store any data fetched from the data sources. ToolJet acts as a proxy and the data from data sources is sent to the client application without storing.
 :::
 
 ## Server
@@ -16,6 +16,6 @@ Self-hosted version of ToolJet pings our server to fetch the latest product upda
 
 ## Client 
 
-ToolJet tracks anonymous usage data such as page loads and clicks. ToolJet tracks only the events and doesn't capture data from datasources.
+ToolJet tracks anonymous usage data such as page loads and clicks. ToolJet tracks only the events and doesn't capture data from data sources.
 
 Tracking can be disabled by setting the value environment variable `ENABLE_TRACKING` to `0`. 

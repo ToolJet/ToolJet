@@ -5,3 +5,4 @@ export * from './ConfirmDialog';
 export * from './DarkModeToggle';
 export * from './SearchBox';
 export * from './ToolTip';
+export * from './ImageWithSpinner';
