@@ -132,6 +132,7 @@ export default class GooglesheetsQueryService implements QueryService {
         case "update":
           result = await batchUpdateToSheet(
             spreadsheetId,
+            queryOptions.sheet,
             queryOptions.body,
             queryOptionFilter,
             queryOptions.where_operation,

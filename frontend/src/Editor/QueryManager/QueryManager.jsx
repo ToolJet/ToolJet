@@ -11,6 +11,7 @@ import { allSvgs } from '@tooljet/plugins/client';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
+import RunjsIcon from '../Icons/runjs.svg';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -72,7 +73,10 @@ let QueryManager = class QueryManager extends React.Component {
           }
 
           this.setState({
-            options: paneHeightChanged ? this.state.options : selectedQuery.options,
+            options:
+              paneHeightChanged || this.state.selectedQuery?.id === selectedQuery?.id
+                ? this.state.options
+                : selectedQuery.options,
             selectedDataSource: source,
             selectedQuery,
             queryName: selectedQuery.name,
@@ -220,12 +224,21 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   renderDataSourceOption = (props) => {
-    //Todo: add icon for the "runjs" query
     const Icon = allSvgs[props.kind];
     return (
       <div>
-        {Icon && <Icon style={{ height: 25, width: 25 }} />}
-        <span className={`mx-2 ${this.props.darkMode ? 'text-white' : 'text-muted'}`}>{props.label}</span>
+        {props.kind === 'runjs' ? (
+          <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
+        ) : (
+          Icon && <Icon style={{ height: 25, width: 25 }} />
+        )}
+
+        <span
+          style={{ height: '25px', display: 'inline-block', marginTop: '3.5px' }}
+          className={`mx-2 ${this.props.darkMode ? 'text-white' : 'text-muted'}`}
+        >
+          {props.label}
+        </span>
       </div>
     );
   };
