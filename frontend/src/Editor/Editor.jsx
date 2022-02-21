@@ -45,6 +45,7 @@ import Button from 'react-bootstrap/Button';
 import { AppVersionsManager } from './AppVersionsManager';
 import { SearchBoxComponent } from '@/_ui/Search';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
+import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 
 setAutoFreeze(false);
 enablePatches();
@@ -74,6 +75,8 @@ class Editor extends React.Component {
         canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
       },
     };
+
+    this.socket = createWebsocketConnection(appId);
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
@@ -111,7 +114,6 @@ class Editor extends React.Component {
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
-      socket: null,
       showInitVersionCreateModal: false,
       isCreatingInitVersion: false,
       initVersionName: 'v1',
@@ -136,7 +138,6 @@ class Editor extends React.Component {
     this.fetchApp();
     this.initComponentVersioning();
     this.initEventListeners();
-    config.COMMENT_FEATURE_ENABLE && this.initWebSocket();
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
@@ -201,58 +202,8 @@ class Editor extends React.Component {
   componentWillUnmount() {
     document.removeEventListener('mousemove', this.onMouseMove);
     document.removeEventListener('mouseup', this.onMouseUp);
-    if (this.state.socket) {
-      this.state.socket?.close();
-    }
     document.title = 'Tooljet - Dashboard';
   }
-
-  getWebsocketUrl = () => {
-    const re = /https?:\/\//g;
-    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '');
-
-    return window.location.host;
-  };
-
-  initWebSocket = () => {
-    // TODO: add retry policy
-    const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.getWebsocketUrl()}`);
-
-    const appId = this.props.match.params.id;
-
-    // Connection opened
-    socket.addEventListener('open', function (event) {
-      console.log('connection established', event);
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
-      socket.send(
-        JSON.stringify({
-          event: 'authenticate',
-          data: currentUser.auth_token,
-        })
-      );
-      socket.send(
-        JSON.stringify({
-          event: 'subscribe',
-          data: appId,
-        })
-      );
-    });
-
-    // Connection closed
-    socket.addEventListener('close', function (event) {
-      console.log('connection closed', event);
-    });
-
-    // Listen for possible errors
-    socket.addEventListener('error', function (event) {
-      console.log('WebSocket error: ', event);
-    });
-
-    this.setState({
-      socket,
-    });
-  };
 
   // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
   // 2. Whenever you perform an undo – you can always redo and keep doing undo as long as we have a patch for it.
@@ -1127,7 +1078,7 @@ class Editor extends React.Component {
                     <>
                       <Container
                         canvasWidth={this.getCanvasWidth()}
-                        socket={this.state.socket}
+                        socket={this.socket}
                         showComments={showComments}
                         appVersionsId={this.state?.editingVersion?.id}
                         appDefinition={appDefinition}
@@ -1361,7 +1312,7 @@ class Editor extends React.Component {
             </div>
             {config.COMMENT_FEATURE_ENABLE && showComments && (
               <CommentNotifications
-                socket={this.state.socket}
+                socket={this.socket}
                 appVersionsId={this.state?.editingVersion?.id}
                 toggleComments={this.toggleComments}
               />
