@@ -5,7 +5,6 @@ import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
-import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName, resolveReferences } from '@/_helpers/utils';
 import useRouter from '@/_hooks/use-router';
@@ -14,6 +13,8 @@ import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
+import { produce, setAutoFreeze } from 'immer';
+setAutoFreeze(false);
 
 export const Container = ({
   canvasWidth,
@@ -69,10 +70,8 @@ export const Container = ({
   const moveBox = useCallback(
     (id, layouts) => {
       setBoxes(
-        update(boxes, {
-          [id]: {
-            $merge: { layouts },
-          },
+        produce(boxes, (draft) => {
+          draft[id].layouts = layouts;
         })
       );
     },
@@ -222,20 +221,10 @@ export const Container = ({
     // Computing the top offset
     const top = nodeBounds.y - canvasBounds.y;
 
-    let newBoxes = {
-      ...boxes,
-      [id]: {
-        ...boxes[id],
-        layouts: {
-          ...boxes[id]['layouts'],
-          [currentLayout]: {
-            ...boxes[id]['layouts'][currentLayout],
-            top: top,
-            left: left,
-          },
-        },
-      },
-    };
+    let newBoxes = produce(boxes, (draft) => {
+      draft[id].layouts[currentLayout].top = top;
+      draft[id].layouts[currentLayout].left = left;
+    });
 
     setBoxes(newBoxes);
   }
@@ -264,22 +253,12 @@ export const Container = ({
     top = y;
     left = (x * 100) / canvasWidth;
 
-    let newBoxes = {
-      ...boxes,
-      [id]: {
-        ...boxes[id],
-        layouts: {
-          ...boxes[id]['layouts'],
-          [currentLayout]: {
-            ...boxes[id]['layouts'][currentLayout],
-            width,
-            height,
-            top,
-            left,
-          },
-        },
-      },
-    };
+    let newBoxes = produce(boxes, (draft) => {
+      draft[id].layouts[currentLayout].width = width;
+      draft[id].layouts[currentLayout].height = height;
+      draft[id].layouts[currentLayout].top = top;
+      draft[id].layouts[currentLayout].left = left;
+    });
 
     setBoxes(newBoxes);
   }
@@ -287,27 +266,12 @@ export const Container = ({
   function paramUpdated(id, param, value) {
     if (Object.keys(value).length > 0) {
       setBoxes(
-        update(boxes, {
-          [id]: {
-            $merge: {
-              component: {
-                ...boxes[id].component,
-                definition: {
-                  ...boxes[id].component.definition,
-                  properties: {
-                    ...boxes[id].component.definition.properties,
-                    [param]: value,
-                  },
-                },
-              },
-            },
-          },
+        produce(boxes, (draft) => {
+          draft[id].component.definition.properties[param] = value;
         })
       );
     }
   }
-
-  React.useEffect(() => {}, [selectedComponent]);
 
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
