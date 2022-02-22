@@ -163,7 +163,7 @@ button {
     }
 
     .query-name-field input {
-      max-width: 120px;
+      max-width: 180px;
       font-weight: 600;
     }
   }
@@ -643,7 +643,8 @@ button {
 .homepage-body {
   height: 100vh;
 
-  .list-group.list-group-transparent.dark .all-apps-link, .list-group-item-action.dark.active {
+  .list-group.list-group-transparent.dark .all-apps-link,
+  .list-group-item-action.dark.active {
     background-color: $dark-background !important;
   }
 }
@@ -686,7 +687,7 @@ button {
   width: 14px;
 }
 
-.folders-skeleton{
+.folders-skeleton {
   padding: 9px 12px;
   height: 34px;
   margin-bottom: 4px;
@@ -920,7 +921,7 @@ button {
       object-fit: contain;
     }
 
-    .template-spinner{
+    .template-spinner {
       width: 3rem;
       height: 3rem;
       margin: auto;
@@ -928,7 +929,7 @@ button {
       top: 0;
       bottom: 0;
       left: 0;
-      right: 0
+      right: 0;
     }
 
     .row {
@@ -1094,9 +1095,9 @@ button {
         background-color: #2c405c;
 
         button.edit-button {
-          background: #ffffff;
-          border: 1px solid #4d72fa;
-          color: #4d72fa;
+          background: transparent;
+          border: 1px solid #ffffff;
+          color: #ffffff;
         }
 
         button.launch-button {
@@ -1114,10 +1115,10 @@ button {
     }
   }
   .layout-buttons {
-   svg {
-    filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg) brightness(99%) contrast(96%);
-   }
-    
+    svg {
+      filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg)
+        brightness(99%) contrast(96%);
+    }
   }
 }
 
@@ -2369,7 +2370,7 @@ hr {
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
 
-      .delete-part{
+      .delete-part {
         margin-left: 10px;
         float: right;
       }
@@ -2378,9 +2379,9 @@ hr {
         height: 12px;
         display: inline-block;
         width: 2px;
-        background-color: rgba(255,255,255,0.8);
+        background-color: rgba(255, 255, 255, 0.8);
         opacity: 0.5;
-        content: '';
+        content: "";
         vertical-align: middle;
       }
     }
@@ -2808,7 +2809,7 @@ input:focus-visible {
 
   .editor-sidebar {
     border: solid rgba(255, 255, 255, 0.09);
-    border-width: 0px 0px 0px 1px !important;
+    border-width: 0px 0px 0px 0px !important;
 
     .nav-tabs {
       border-bottom: 1px solid rgba(255, 255, 255, 0.09) !important;
@@ -3194,8 +3195,8 @@ input[type="text"] {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .invitation-page {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .show {
@@ -3315,7 +3316,7 @@ input[type="text"] {
 }
 .empty-action {
   margin-top: 0 !important;
-  
+
   a + a.btn-loading::after {
     color: $primary;
   }
@@ -3733,7 +3734,7 @@ input[type="text"] {
 
 .tabs-inspector.dark {
   .nav-link.active {
-    border-bottom: 1px solid $primary!important;
+    border-bottom: 1px solid $primary !important;
   }
 }
 
@@ -3977,7 +3978,7 @@ input[type="text"] {
 .modal-content.home-modal-component.dark {
   background-color: $bg-dark-light !important;
   color: $white !important;
-  
+
   .modal-header {
     background-color: $bg-dark-light !important;
   }
@@ -3994,9 +3995,9 @@ input[type="text"] {
   }
 
   .form-select {
-    background-color: $bg-dark!important;
-    color: $white!important;
-    border-color: $border-grey-dark!important;
+    background-color: $bg-dark !important;
+    color: $white !important;
+    border-color: $border-grey-dark !important;
   }
 }
 
@@ -4353,40 +4354,42 @@ input[type="text"] {
   margin-top: -1px !important;
 }
 
-div#driver-highlighted-element-stage, div#driver-page-overlay {
+div#driver-highlighted-element-stage,
+div#driver-page-overlay {
   background: transparent !important;
-  outline: 5000px solid rgba(0, 0, 0, .75)
+  outline: 5000px solid rgba(0, 0, 0, 0.75);
 }
 
 .dark-theme-walkthrough#driver-popover-item {
-  background-color: $bg-dark-light!important;
-  border-color: rgba(101, 109, 119, 0.16)!important;
+  background-color: $bg-dark-light !important;
+  border-color: rgba(101, 109, 119, 0.16) !important;
 
   .driver-popover-title {
     color: #fff !important;
   }
   .driver-popover-tip {
-    border-color: transparent transparent transparent $bg-dark-light!important;
+    border-color: transparent transparent transparent $bg-dark-light !important;
   }
   .driver-popover-description {
-    color: #D9DCDE !important;
+    color: #d9dcde !important;
   }
   .driver-popover-footer .driver-close-btn {
-    color: #fff!important;
-    text-shadow: none!important;
+    color: #fff !important;
+    text-shadow: none !important;
   }
 
-  .driver-prev-btn, .driver-next-btn {
-    text-shadow: none!important;
+  .driver-prev-btn,
+  .driver-next-btn {
+    text-shadow: none !important;
   }
 }
 
-#driver-popover-item{
+#driver-popover-item {
   padding: 20px !important;
 
   .driver-prev-btn,
   .driver-next-btn,
-  .driver-close-btn{
+  .driver-close-btn {
     border: none !important;
     background: none !important;
     padding-left: 0 !important;
@@ -4398,12 +4401,12 @@ div#driver-highlighted-element-stage, div#driver-page-overlay {
     color: $primary !important;
   }
 
-  .driver-disabled{
+  .driver-disabled {
     color: $primary;
     opacity: 0.5;
   }
 
-  .driver-popover-footer{
+  .driver-popover-footer {
     margin-top: 20px !important;
   }
 }
@@ -4414,9 +4417,9 @@ div#driver-highlighted-element-stage, div#driver-page-overlay {
 
 .popover.popover-dark-themed {
   background-color: $bg-dark-light;
-  border-color: rgba(101, 109, 119, 0.16); 
+  border-color: rgba(101, 109, 119, 0.16);
   .popover-body {
-    color: #D9DCDE !important;
+    color: #d9dcde !important;
   }
 }
 
@@ -4424,10 +4427,17 @@ div#driver-highlighted-element-stage, div#driver-page-overlay {
   padding: 2px 4px;
 }
 .tablr-gutter-x-0 {
-  --tblr-gutter-x: 0!important;
+  --tblr-gutter-x: 0 !important;
 }
 
 .btn-loading:after {
   border: 1px solid var(--loader-color);
   border-right-color: transparent;
+}
+
+.flip-dropdown-help-text {
+  padding: 10px 5px 0 0;
+  float: left;
+  font-size: 14px;
+  color: $light-gray;
 }

@@ -1,0 +1,85 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "n8n datasource",
+  "description": "A schema defining N8n datasource",
+  "type": "api",
+  "source": {
+    "name": "n8n",
+    "kind": "n8n",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "password": {
+        "encrypted": true
+      },
+      "name": {
+        "encrypted": true
+      },
+      "value": {
+        "encrypted": true
+      }
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "auth_type": {"value":"none"}
+  },
+  "properties": {
+    "auth_type": {
+      "label": "Authentication Type",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "description": "Select auth type",
+      "helpText": "Webhook credentials and instance credentials are different. Please use the credentials that you use with the Webhook trigger.",
+      "list": [
+        {
+          "value": "none",
+          "name": "None"
+        },
+        {
+          "value": "basic",
+          "name": "Basic Auth"
+        },
+        {
+          "value": "header",
+          "name": "Header Auth"
+        }
+      ]
+    },
+    "basic":{
+      "username": {
+        "label": "Username",
+        "key": "username",
+        "type": "text",
+        "description": "Enter username"
+      },
+      "password": {
+        "label": "Password",
+        "key": "password",
+        "type": "password",
+        "description": "Enter username"
+      }
+    },
+    "header":{
+      "name": {
+        "label": "Name",
+        "key": "name",
+        "type": "text",
+        "encrypted": true,
+        "description": "Enter key name"
+      },
+      "value": {
+        "label": "Value",
+        "key": "value",
+        "type": "text",
+        "encrypted": true,
+        "description": "Enter value"
+      }
+    }
+  },
+  "required": []
+}

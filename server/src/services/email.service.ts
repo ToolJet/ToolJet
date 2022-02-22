@@ -10,7 +10,7 @@ export class EmailService {
 
   constructor() {
     this.FROM_EMAIL = process.env.DEFAULT_FROM_EMAIL || 'hello@tooljet.io';
-    this.TOOLJET_HOST = process.env.TOOLJET_HOST;
+    this.TOOLJET_HOST = this.stripTrailingSlash(process.env.TOOLJET_HOST);
     this.NODE_ENV = process.env.NODE_ENV || 'development';
   }
 
@@ -47,6 +47,10 @@ export class EmailService {
       const info = await transporter.sendMail(message);
       console.log('Message sent: %s', info);
     }
+  }
+
+  stripTrailingSlash(hostname: string) {
+    return hostname?.endsWith('/') ? hostname.slice(0, -1) : hostname;
   }
 
   async sendWelcomeEmail(to: string, name: string, invitationtoken: string) {
