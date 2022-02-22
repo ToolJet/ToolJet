@@ -19,6 +19,9 @@
       "password": {
         "type": "string",
         "encrypted": true
+      },
+      "database": {
+        "type": "string"
       }
     },
     "customTesting": true
@@ -28,6 +31,9 @@
       "value": ""
     },
     "password": {
+      "value": ""
+    },
+    "database": {
       "value": ""
     }
   },
@@ -45,7 +51,14 @@
       "type": "password",
       "description": "password for couchDB",
       "helpText": "Password for DB"
+    },
+    "database": {
+      "label": "Database Name",
+      "key": "database",
+      "type": "text",
+      "description": "database name",
+      "helpText": "Name of database"
     }
   },
-  "required": ["username","password"]
+  "required": ["username","password","database"]
 }
