@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { Metadata } from 'src/entities/metadata.entity';
 import { gt } from 'semver';
-const got = require('got');
+import got from 'got';
+import { User } from 'src/entities/user.entity';
+
 @Injectable()
 export class MetadataService {
   constructor(
@@ -30,16 +32,32 @@ export class MetadataService {
   async updateMetaData(newOptions: any) {
     const metadata = await this.metadataRepository.findOne({});
 
-    return await this.metadataRepository.update(metadata.id, { data: { ...metadata.data, ...newOptions } });
+    return await this.metadataRepository.update(metadata.id, {
+      data: { ...metadata.data, ...newOptions },
+    });
   }
 
-  async finishInstallation(installedVersion: string, name: string, email: string) {
-    return await got('https://hub.tooljet.io/updates', {
+  async finishInstallation(metadata: any, installedVersion: string, name: string, email: string, org: string) {
+    return await got('https://hub.tooljet.io/subscribe', {
       method: 'post',
       json: {
+        id: metadata.id,
         installed_version: installedVersion,
         name,
         email,
+        org,
+      },
+    });
+  }
+
+  async sendTelemetryData(metadata: Metadata) {
+    const totalUserCount = await getManager().count(User);
+
+    return await got('https://hub.tooljet.io/telemetry', {
+      method: 'post',
+      json: {
+        id: metadata.id,
+        total_users: totalUserCount,
       },
     });
   }

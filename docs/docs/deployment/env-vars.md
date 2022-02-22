@@ -46,7 +46,7 @@ Self-hosted version of ToolJet pings our server to fetch the latest product upda
 
 #### Comment feature enable ( optional )
 
-Use this environment variable to enable/disable the feature that allows you to add comments on the canvas. 
+Use this environment variable to enable/disable the feature that allows you to add comments on the canvas.
 
 | variable | value            |
 | -------- | ---------------------- |
@@ -95,7 +95,7 @@ ToolJet uses SMTP services to send emails ( Eg: invitation email when you add ne
 
 #### Slack configuration ( optional )
 
-If your ToolJet installation requires Slack as a datasource, you need to create a Slack app and set the following environment variables:
+If your ToolJet installation requires Slack as a data source, you need to create a Slack app and set the following environment variables:
 
 | variable            | description                    |
 | ------------------- | ------------------------------ |
@@ -104,7 +104,7 @@ If your ToolJet installation requires Slack as a datasource, you need to create 
 
 #### Google OAuth ( optional )
 
-If your ToolJet installation needs access to datasources such as Google sheets, you need to create OAuth credentials from Google Cloud Console.
+If your ToolJet installation needs access to data sources such as Google sheets, you need to create OAuth credentials from Google Cloud Console.
 
 | variable             | description   |
 | -------------------- | ------------- |
@@ -135,7 +135,7 @@ Specify application monitoring vendor. Currently supported values - `sentry`.
 
 #### SENTRY DEBUG ( optional )
 
-Prints logs for sentry. 
+Prints logs for sentry.
 
 | variable   | description                               |
 | ---------- | ----------------------------------------- |
@@ -166,6 +166,11 @@ Tooljet needs to be configured for custom CA certificate to be able to trust and
 | variable            | description                                                       |
 | ------------------  | ----------------------------------------------------------------- |
 | NODE_EXTRA_CA_CERTS | absolute path to certifcate PEM file ( eg: /ToolJet/ca/cert.pem ) |
+
+
+#### Disable telemetry ( optional )
+
+Pings our server to update the total user count every 24 hours. You can disable this by setting the value of `DISABLE_TOOLJET_TELEMETRY` environment variable to `true`. This feature is enabled by default.
 
 ## ToolJet client
 

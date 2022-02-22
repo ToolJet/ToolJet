@@ -29,7 +29,7 @@ Query results can be previewed by clicking the `preview` button. Previewing quer
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Building a query](/img/tutorial/building-queries/preview.gif)
+![ToolJet - Tutorial - Building a query](/img/tutorial/building-queries/preview.png)
 
 </div>
 

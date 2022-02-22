@@ -14,7 +14,7 @@ import 'codemirror/theme/base16-light.css';
 import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
 import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, hasCircularDependency, handleCircularStructureToJSON } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
 import usePortal from '@/_hooks/use-portal';
 import { Color } from './Elements/Color';
@@ -129,8 +129,14 @@ export function CodeHinter({
       );
     }
 
-    const previewType = typeof preview;
-    const content = getPreviewContent(preview, previewType);
+    let previewType = typeof preview;
+    let previewContent = preview;
+
+    if (hasCircularDependency(preview)) {
+      previewContent = JSON.stringify(preview, handleCircularStructureToJSON());
+      previewType = typeof previewContent;
+    }
+    const content = getPreviewContent(previewContent, previewType);
 
     return (
       <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
