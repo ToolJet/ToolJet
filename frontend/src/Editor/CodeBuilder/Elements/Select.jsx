@@ -15,11 +15,16 @@ export const Select = ({ value, onChange, forceCodeBox, meta }) => {
   const selectStyles = {
     container: (provided) => ({
       ...provided,
-      width: '100%',
+      width: 224,
       height: 32,
     }),
     control: (provided) => ({
       ...provided,
+      borderColor: 'hsl(0, 0%, 80%)',
+      boxShadow: 'none',
+      '&:hover': {
+        borderColor: 'hsl(0, 0%, 80%)',
+      },
       backgroundColor: darkMode ? '#2b3547' : '#fff',
       height: '32px!important',
       minHeight: '32px!important',
