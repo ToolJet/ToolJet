@@ -1,7 +1,6 @@
 import React from 'react';
 import 'codemirror/theme/duotone-light.css';
 import DOMPurify from 'dompurify';
-// import SelectSearch, { fuzzySearch } from 'react-select-search';
 import Select from 'react-select';
 import { openapiService } from '@/_services';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
@@ -18,12 +17,6 @@ class Stripe extends React.Component {
     super(props);
     this.state = {
       loadingSpec: true,
-    };
-  }
-
-  componentDidMount() {
-    this.setState({
-      loadingSpec: true,
       options: {
         params: {
           path: {},
@@ -31,6 +24,13 @@ class Stripe extends React.Component {
           request: {},
         },
       },
+    };
+  }
+
+  componentDidMount() {
+    this.setState({
+      loadingSpec: true,
+      options: { ...(this.props.options ?? {}) },
     });
 
     this.fetchOpenApiSpec();
@@ -119,7 +119,6 @@ class Stripe extends React.Component {
 
   computeOperationSelectionOptions = (paths) => {
     let options = [];
-
     for (const path of Object.keys(paths)) {
       for (const operation of Object.keys(paths[path])) {
         options.push({
@@ -129,7 +128,6 @@ class Stripe extends React.Component {
         });
       }
     }
-
     return options;
   };
 
@@ -208,6 +206,7 @@ class Stripe extends React.Component {
       operation: this.props.options?.operation,
     };
 
+    console.log('stripe ==>', this.state);
     return (
       <div>
         {loadingSpec && (
@@ -299,7 +298,7 @@ class Stripe extends React.Component {
                         <div className="col-6 field" style={{ width: '300px' }}>
                           <CodeHinter
                             currentState={this.props.currentState}
-                            initialValue={this.state.options.params.query[param.name]}
+                            initialValue={this.state.options.params?.query[param.name]}
                             mode="text"
                             placeholder={'value'}
                             theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
@@ -380,4 +379,4 @@ class Stripe extends React.Component {
   }
 }
 
-export { Stripe };
+// export { Stripe };
