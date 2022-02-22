@@ -1,12 +1,33 @@
 
-# smtp
+# Smtp
 
-ToolJet can connect to SMTP Server databases to read and write data. 
-
-- [smtp](#smtp)
-  - [Connection](#connection)
-  - [Querying SMTP Server](#querying-smtp-server)
+Smtp plugin for connect **SMTP servers** to your tooljet application.
 
 ## Connection
 
-## Querying SMTP Server
+A smtp server can connect with following credentails
+- **Host**
+- **Port**
+- **User**
+- **Password**
+
+Fill above fields and test your connection is `ok` or `not`
+
+## Send Email
+
+For sending your emails, You should provide these details.
+
+  Properties :
+  - **From Address** `required`
+  - **From name** 
+  - **To Address** `required`
+  - **Subject**
+
+#### Send email with `raw text`
+You can send email with raw text by filling **Text** Field.
+
+#### Send email with `HTML`
+Smtp servers also provide a feature for sending email with HTML content. So through filling **HTML** field You can also send them.
+
+#### Send email with `Attachments`
+As normal email, Tooljet provides an option to send email with attachments. You can pass an array of `{{ name: 'filename.jpg', dataURL: '......' }}` object to **Attachments** Field to accomplish this.
