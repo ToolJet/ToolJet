@@ -13,9 +13,6 @@
       "rawData": {}
     },
     "options": {
-      "user": {
-        "encrypted":true
-      },
       "password": {
         "encrypted": true
       }
@@ -52,8 +49,7 @@
       "label": "User",
       "key": "user",
       "type": "text",
-      "description": "Enter username / email",
-      "encrypted": true
+      "description": "Enter username"
     },
     "password": {
       "label": "Password",
