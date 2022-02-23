@@ -1,3 +1,7 @@
+---
+sidebar_position: 11
+---
+
 # MinIO
 
 ToolJet can connect to minio and perform various operation on them.

@@ -58,6 +58,7 @@ export class MetadataService {
       json: {
         id: metadata.id,
         total_users: totalUserCount,
+        tooljet_version: globalThis.TOOLJET_VERSION,
       },
     });
   }

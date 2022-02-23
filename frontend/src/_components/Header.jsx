@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
-import cx from 'classnames';
+
 import LogoIcon from '../Editor/Icons/logo.svg';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
+  // eslint-disable-next-line no-unused-vars
   const [pathName, setPathName] = useState(document.location.pathname);
 
   useEffect(() => {
