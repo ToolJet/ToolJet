@@ -243,9 +243,19 @@ export function Table({
         return rows.filter((row) => row.values[columnIds[0]] === filterValue.value);
       }
 
+      if (filterValue.operation === 'ne') {
+        return rows.filter((row) => row.values[columnIds[0]] !== filterValue.value);
+      }
+
       if (filterValue.operation === 'matches') {
         return rows.filter((row) =>
           row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
+        );
+      }
+
+      if (filterValue.operation === 'nl') {
+        return rows.filter(
+          (row) => !row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
         );
       }
 
@@ -689,6 +699,7 @@ export function Table({
     () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [
       JSON.stringify(columnData),
+      JSON.stringify(actions),
       leftActionsCellData.length,
       rightActionsCellData.length,
       componentState.changeSet,
@@ -1051,7 +1062,9 @@ export function Table({
                     options={[
                       { name: 'contains', value: 'contains' },
                       { name: 'matches', value: 'matches' },
+                      { name: 'does not match', value: 'nl' },
                       { name: 'equals', value: 'equals' },
+                      { name: 'does not equal', value: 'ne' },
                       { name: 'greater than', value: 'gt' },
                       { name: 'less than', value: 'lt' },
                       { name: 'greater than or equals', value: 'gte' },

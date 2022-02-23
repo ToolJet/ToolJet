@@ -163,7 +163,7 @@ button {
     }
 
     .query-name-field input {
-      max-width: 120px;
+      max-width: 180px;
       font-weight: 600;
     }
   }
@@ -1094,9 +1094,9 @@ button {
         background-color: #2c405c;
 
         button.edit-button {
-          background: #ffffff;
-          border: 1px solid #4d72fa;
-          color: #4d72fa;
+          background: transparent;
+          border: 1px solid #ffffff;
+          color: #ffffff;
         }
 
         button.launch-button {
@@ -2808,7 +2808,7 @@ input:focus-visible {
 
   .editor-sidebar {
     border: solid rgba(255, 255, 255, 0.09);
-    border-width: 0px 0px 0px 1px !important;
+    border-width: 0px 0px 0px 0px !important;
 
     .nav-tabs {
       border-bottom: 1px solid rgba(255, 255, 255, 0.09) !important;
@@ -4425,4 +4425,11 @@ div#driver-highlighted-element-stage, div#driver-page-overlay {
 }
 .tablr-gutter-x-0 {
   --tblr-gutter-x: 0!important;
+}
+
+.flip-dropdown-help-text{
+  padding: 10px 5px 0 0;
+  float: left;
+  font-size: 14px;
+  color: $light-gray;
 }
