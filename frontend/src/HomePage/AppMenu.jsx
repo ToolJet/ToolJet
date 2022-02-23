@@ -5,6 +5,7 @@ import Popover from 'react-bootstrap/Popover';
 export const AppMenu = function AppMenu({
   deleteApp,
   cloneApp,
+  removeAppFromFolder,
   exportApp,
   canCreateApp,
   canDeleteApp,
@@ -13,6 +14,7 @@ export const AppMenu = function AppMenu({
   isMenuOpen,
   openAppActionModal,
   darkMode,
+  currentFolder,
 }) {
   const closeMenu = () => {
     document.body.click();
@@ -47,6 +49,8 @@ export const AppMenu = function AppMenu({
               {canCreateApp && (
                 <>
                   <Field text="Add to folder" onClick={() => openAppActionModal('add-to-folder')} />
+
+                  {currentFolder.id && <Field text="Remove from folder" onClick={removeAppFromFolder} />}
                   <Field text="Clone app" onClick={cloneApp} />
                   <Field text="Export app" onClick={exportApp} />
                 </>

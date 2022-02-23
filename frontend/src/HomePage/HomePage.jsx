@@ -362,6 +362,22 @@ class HomePage extends React.Component {
       });
   };
 
+  removeAppFromFolder = (app, currentFolder) => {
+    folderService
+      .removeAppFromFolder(app.id, currentFolder.id)
+      .then(() => {
+        toast.success('Removed from folder.', {
+          position: 'top-center',
+        });
+
+        this.fetchApps(1, currentFolder.id);
+        this.fetchFolders();
+      })
+      .catch(({ error }) => {
+        toast.error(error, { position: 'top-center' });
+      });
+  };
+
   appActionModal = (app, action) => {
     const { appOperations } = this.state;
 
@@ -595,6 +611,7 @@ class HomePage extends React.Component {
                       isLoading={isLoading}
                       darkMode={this.props.darkMode}
                       appActionModal={this.appActionModal}
+                      removeAppFromFolder={this.removeAppFromFolder}
                     />
                     <div className="homepage-pagination">
                       {this.pageCount() > 10 && (

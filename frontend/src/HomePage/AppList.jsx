@@ -33,10 +33,12 @@ const AppList = (props) => {
                     <AppCard
                       app={props.apps[rowIndex * 5 + index]}
                       key={props.apps[rowIndex * 5 + index].id}
+                      currentFolder={props.currentFolder}
                       canCreateApp={props.canCreateApp}
                       canDeleteApp={props.canDeleteApp}
                       canUpdateApp={props.canUpdateApp}
                       deleteApp={props.deleteApp}
+                      removeAppFromFolder={props.removeAppFromFolder}
                       cloneApp={props.cloneApp}
                       exportApp={props.exportApp}
                       appActionModal={props.appActionModal}
