@@ -8,7 +8,7 @@ export type SourceOptions = {
 export type QueryOptions = {
   operation: string;
   doc_name: string;
-  record_id: string;
+  recordId: string;
   body: string;
   rev_id:string;
 };

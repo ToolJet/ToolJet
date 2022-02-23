@@ -8,13 +8,8 @@ export default class Couchdb implements QueryService {
   ): Promise<QueryResult> {
     let result = {};
     let response = null;
-    const operation = queryOptions.operation;
-    const recordId = queryOptions.record_id;
-    const username = sourceOptions.username;
-    const password = sourceOptions.password;
-    const port = sourceOptions.port;
-    const host = sourceOptions.host;
-    const database = sourceOptions.database;
+    const { operation, recordId } = queryOptions;
+    const { username, password,port,host,database } = sourceOptions;
 
     const authHeader = () => {
       const combined = `${username}:${password}`;
