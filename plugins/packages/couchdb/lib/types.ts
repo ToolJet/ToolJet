@@ -1,7 +1,8 @@
 export type SourceOptions = {
   username: string;
   password: string;
-  database: string;
+  database: string;  
+  port: string;
 };
 export type QueryOptions = {
   operation: string;
