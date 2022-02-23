@@ -25,6 +25,7 @@ class Stripe extends React.Component {
     this.setState({
       loadingSpec: true,
       options: {
+        ...this.props.options,
         params: {
           path: {},
           query: {},
@@ -64,11 +65,12 @@ class Stripe extends React.Component {
 
     this.setState(
       {
-        selectedOperation: this.state.specJson.paths[path][operation],
+        // selectedOperation: this.state.specJson.paths[path][operation],
         options: {
           ...this.state.options,
           path,
           operation,
+          selectedOperation: this.state.specJson.paths[path][operation],
         },
       },
       () => {
@@ -134,7 +136,9 @@ class Stripe extends React.Component {
   };
 
   render() {
-    const { options, selectedOperation, specJson, loadingSpec } = this.state;
+    const { options, specJson, loadingSpec } = this.state;
+    const selectedOperation = options?.selectedOperation;
+
     let pathParams = [];
     let queryParams = [];
     let requestBody = [];
@@ -225,7 +229,7 @@ class Stripe extends React.Component {
               </div>
               <div className="col stripe-operation-options" style={{ width: '90px', marginTop: 0 }}>
                 <Select
-                  className="stripe-operation-select"
+                  className="stripe-operation-select mb-2"
                   options={this.computeOperationSelectionOptions(specJson.paths)}
                   formatOptionLabel={this.renderOperationOption}
                   onChange={(value) => this.changeOperation(value)}
