@@ -22,15 +22,16 @@ class Stripe extends React.Component {
   }
 
   componentDidMount() {
+    const queryParams = {
+      path: this.props.options.params.path ?? {},
+      query: this.props.options.params.query ?? {},
+      request: this.props.options.params.request ?? {},
+    };
     this.setState({
       loadingSpec: true,
       options: {
         ...this.props.options,
-        params: {
-          path: {},
-          query: {},
-          request: {},
-        },
+        params: queryParams,
       },
     });
 
@@ -65,7 +66,6 @@ class Stripe extends React.Component {
 
     this.setState(
       {
-        // selectedOperation: this.state.specJson.paths[path][operation],
         options: {
           ...this.state.options,
           path,
@@ -81,6 +81,7 @@ class Stripe extends React.Component {
 
   changeParam = (paramType, paramName, value) => {
     const options = this.state.options;
+
     const newOptions = {
       ...options,
       params: {
@@ -303,7 +304,7 @@ class Stripe extends React.Component {
                         <div className="col-6 field" style={{ width: '300px' }}>
                           <CodeHinter
                             currentState={this.props.currentState}
-                            initialValue={this.state.options.params.query[param.name]}
+                            initialValue={this.state.options.params?.query[param.name] ?? ''}
                             mode="text"
                             placeholder={'value'}
                             theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
@@ -345,12 +346,12 @@ class Stripe extends React.Component {
                         <div className="col-6 field" style={{ width: '300px' }}>
                           <CodeHinter
                             currentState={this.props.currentState}
-                            initialValue={this.state.options.params.request[param.name]}
+                            initialValue={this.state.options.params?.request[param] ?? ''}
                             mode="text"
                             placeholder={'value'}
                             theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                             lineNumbers={false}
-                            onChange={(value) => this.changeParam('request', param.name, value)}
+                            onChange={(value) => this.changeParam('request', param, value)}
                             height={'36px'}
                             width="268px"
                           />
