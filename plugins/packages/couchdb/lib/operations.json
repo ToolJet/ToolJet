@@ -45,7 +45,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "recu9xMnUdr2n2cw8"
+        "placeholder": ""
       }
     },
     "create_record": {
@@ -68,7 +68,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "appwKbrBctcQF9pYr"
+        "placeholder": ""
       },
       "body": {
         "label": "Body",
@@ -88,7 +88,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "appwKbrBctcQF9pYr"
+        "placeholder": ""
       },
       "rev_id": {
         "label": "Revision ID",
@@ -99,7 +99,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "appwKbrBctcQF9pYr"
+        "placeholder": ""
       }
     }
   }

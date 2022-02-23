@@ -1,6 +1,6 @@
 import { QueryError, QueryResult, QueryService } from "@tooljet-plugins/common";
 import { SourceOptions, QueryOptions } from "./types";
-import got, { Headers } from "got";
+import got from "got";
 export default class Couchdb implements QueryService {
   async run(
     sourceOptions: SourceOptions,
@@ -9,7 +9,7 @@ export default class Couchdb implements QueryService {
     let result = {};
     let response = null;
     const { operation, recordId } = queryOptions;
-    const { username, password,port,host,database } = sourceOptions;
+    const { username, password, port, host, database } = sourceOptions;
 
     const authHeader = () => {
       const combined = `${username}:${password}`;
@@ -52,9 +52,7 @@ export default class Couchdb implements QueryService {
           response = await got(`${host}:${port}/${database}/${recordId}`, {
             method: "put",
             headers: authHeader(),
-            json: {
-              category: JSON.parse(queryOptions.body),
-            },
+            json: JSON.parse(queryOptions.body),
           });
 
           result = JSON.parse(response.body);
