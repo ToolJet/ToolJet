@@ -1,7 +1,6 @@
 import React from 'react';
 import 'codemirror/theme/duotone-light.css';
 import DOMPurify from 'dompurify';
-// import SelectSearch, { fuzzySearch } from 'react-select-search';
 import Select from 'react-select';
 import { openapiService } from '@/_services';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
@@ -81,7 +80,6 @@ class Stripe extends React.Component {
 
   changeParam = (paramType, paramName, value) => {
     const options = this.state.options;
-
     const newOptions = {
       ...options,
       params: {
@@ -89,6 +87,26 @@ class Stripe extends React.Component {
         [paramType]: {
           ...options.params[paramType],
           [paramName]: value,
+        },
+      },
+    };
+
+    this.setState({
+      options: newOptions,
+    });
+
+    this.props.optionsChanged(newOptions);
+  };
+
+  removeParam = (paramType, paramName) => {
+    const options = this.state.options;
+    const newOptions = {
+      ...options,
+      params: {
+        ...options.params,
+        [paramType]: {
+          ...options.params[paramType],
+          [paramName]: undefined, // the value is undefined, it will be considered as removed as operation params are from the spec
         },
       },
     };
@@ -272,7 +290,11 @@ class Stripe extends React.Component {
                             width="268px"
                           />
                         </div>
-                        <span className="btn-sm col-2 mt-2" role="button">
+                        <span
+                          className="btn-sm col-2 mt-2"
+                          role="button"
+                          onClick={() => this.removeParam('path', param.name)}
+                        >
                           <svg
                             width="12"
                             height="13"
@@ -314,7 +336,11 @@ class Stripe extends React.Component {
                             width="268px"
                           />
                         </div>
-                        <span className="btn-sm col-2 mt-2" role="button">
+                        <span
+                          className="btn-sm col-2 mt-2"
+                          role="button"
+                          onClick={() => this.removeParam('query', param.name)}
+                        >
                           <svg
                             width="12"
                             height="13"
@@ -356,7 +382,11 @@ class Stripe extends React.Component {
                             width="268px"
                           />
                         </div>
-                        <span className="btn-sm col-2 mt-2" role="button">
+                        <span
+                          className="btn-sm col-2 mt-2"
+                          role="button"
+                          onClick={() => this.removeParam('request', param)}
+                        >
                           <svg
                             width="12"
                             height="13"
