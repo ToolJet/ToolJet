@@ -409,7 +409,7 @@ let QueryManager = class QueryManager extends React.Component {
                 }}
                 className={`btn button-family-secondary m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${
                   this.props.darkMode ? 'dark' : ''
-                } `}
+                } ${this.state.selectedDataSource ? '' : 'disabled'}`}
                 style={{ width: '72px', height: '28px' }}
               >
                 Preview
@@ -419,7 +419,9 @@ let QueryManager = class QueryManager extends React.Component {
               <button
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled}
-                className={`btn btn-primary m-1 float-right ${isUpdating || isCreating ? 'btn-loading' : ''}`}
+                className={`btn btn-primary m-1 float-right ${isUpdating || isCreating ? 'btn-loading' : ''} ${
+                  this.state.selectedDataSource ? '' : 'disabled'
+                }`}
                 style={{ width: '72px', height: '28px' }}
               >
                 {buttonText}

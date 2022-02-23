@@ -22,7 +22,7 @@ The query will now look like this:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Query result transformations](/img/tutorial/transformations/transform.gif)
+![ToolJet - Tutorial - Query result transformations](/img/tutorial/transformations/transform.png)
 
 </div>
 
@@ -30,7 +30,7 @@ Click the `create` button to create the query. Saved queries can be run using th
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Query result transformations](/img/tutorial/transformations/result.gif)
+![ToolJet - Tutorial - Query result transformations](/img/tutorial/transformations/result.png)
 
 </div>
 

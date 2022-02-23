@@ -9,11 +9,11 @@ sidebar_label: Docker
 You should setup a PostgreSQL database manually to be used by the ToolJet server.
 :::
 
-Follow the steps below to deploy ToolJet on a server using docker-compose. This setup will deploy both ToolJet server and ToolJet client.
+Follow the steps below to deploy ToolJet on a server using docker-compose. This setup will deploy both **ToolJet server** and **ToolJet client**.
 
 1. Setup a PostgreSQL database and make sure that the database is accessible.
 
-2. Make sure that the server can receive traffic on port 80, 443 and 22.
+2. Make sure that the server can receive traffic on port 80, 443 and 22. 
    For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
 
    | protocol | port | allowed_cidr |
@@ -23,8 +23,8 @@ Follow the steps below to deploy ToolJet on a server using docker-compose. This 
    | tcp      | 443  | 0.0.0.0/0    |
 
 3. Install docker and docker-compose on the server.
-   [Docker Installation](https://docs.docker.com/engine/install/)
-   [Docker Compose Installation](https://docs.docker.com/compose/install/)
+   - Docs for [Docker Installation](https://docs.docker.com/engine/install/)
+   - Docs for [Docker Compose Installation](https://docs.docker.com/compose/install/)
 
 4. Download our production docker-compose file into the server by running:
 
