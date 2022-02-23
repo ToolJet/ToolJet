@@ -9,7 +9,10 @@ const API_URL = {
   development: 'http://localhost:3000',
 };
 
+const ASSET_PATH = process.env.ASSET_PATH || '/';
+
 module.exports = {
+  entry: ['./src/public-path.js', './src/index.jsx'],
   mode: environment,
   optimization: {
     usedExports: true,
@@ -87,12 +90,15 @@ module.exports = {
       template: './src/index.html',
     }),
     new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
+    new webpack.DefinePlugin({
+      'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
+    }),
   ],
   devServer: {
-    historyApiFallback: true,
+    historyApiFallback: {index: ASSET_PATH},
   },
   output: {
-    publicPath: process.env.ASSET_PATH || '/',
+    publicPath: ASSET_PATH,
     path: path.resolve(__dirname, 'build'),
   },
   externals: {
