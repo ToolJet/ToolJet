@@ -14,6 +14,6 @@ On select event is triggered when an option is selected.
 | properties      | description |
 | ----------- | ----------- |
 | Label | The text is to be used as the label for the multiselect widget. |
-| Default value | The value of the default option. |
+| Default value | The value of the default option. This should always be an array. |
 | Option values | Values for different items/options in the list of the multiselect. |
 | Option labels | Labels for different items/options in the list of the multiselect.  |

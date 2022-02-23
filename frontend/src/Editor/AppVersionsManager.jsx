@@ -21,12 +21,14 @@ export const AppVersionsManager = function AppVersionsManager({
 
   useEffect(() => {
     setCreateAppVersionFrom(editingAppVersion);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appVersions]);
 
   useEffect(() => {
     appVersionService.getAll(appId).then((data) => {
       setAppVersions(data.versions);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const wrapperRef = useRef(null);
