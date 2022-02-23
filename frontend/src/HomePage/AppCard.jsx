@@ -40,6 +40,7 @@ export default function AppCard({
 
   useEffect(() => {
     !isMenuOpen && setFocused(!!isHovered);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHovered]);
 
   const updated = moment(app.created_at).fromNow(true);

@@ -172,20 +172,19 @@ export const FilePicker = ({
       });
 
       setSelectedFiles(fileData);
-      onComponentOptionChanged(component, 'file', fileData).then(() =>
-        onEvent('onFileSelected', { component }).then(() => {
-          setAccepted(true);
-          // eslint-disable-next-line no-unused-vars
-          return new Promise(function (resolve, reject) {
-            setTimeout(() => {
-              setShowSelectedFiles(true);
-              setAccepted(false);
-              onComponentOptionChanged(component, 'isParsing', false);
-              resolve();
-            }, 600);
-          });
-        })
-      );
+      onComponentOptionChanged(component, 'file', fileData);
+      onEvent('onFileSelected', { component }).then(() => {
+        setAccepted(true);
+        // eslint-disable-next-line no-unused-vars
+        return new Promise(function (resolve, reject) {
+          setTimeout(() => {
+            setShowSelectedFiles(true);
+            setAccepted(false);
+            onComponentOptionChanged(component, 'isParsing', false);
+            resolve();
+          }, 600);
+        });
+      });
     }
 
     if (fileRejections.length > 0) {
@@ -231,7 +230,7 @@ export const FilePicker = ({
                 <FilePicker.Signifiers
                   signifier={selectedFiles.length > 0}
                   feedback={acceptedFile.name}
-                  cls="text-secondary d-flex justify-content-start file-list"
+                  cls="text-secondary d-flex justify-content-start file-list mb-2"
                 />
               </div>
               <div className="col-2 mt-1">
@@ -274,7 +273,7 @@ export const FilePicker = ({
 
 FilePicker.Signifiers = ({ signifier, feedback, cls }) => {
   if (signifier) {
-    return <center>{feedback === null ? <div className={cls}></div> : <p className={cls}>{feedback}</p>}</center>;
+    return <>{feedback === null ? <div className={cls}></div> : <p className={cls}>{feedback}</p>}</>;
   }
 
   return null;
