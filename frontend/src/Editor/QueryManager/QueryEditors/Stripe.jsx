@@ -23,9 +23,9 @@ class Stripe extends React.Component {
 
   componentDidMount() {
     const queryParams = {
-      path: this.props.options.params.path ?? {},
-      query: this.props.options.params.query ?? {},
-      request: this.props.options.params.request ?? {},
+      path: this.props.options?.params?.path ?? {},
+      query: this.props.options?.params?.query ?? {},
+      request: this.props.options?.params?.request ?? {},
     };
     this.setState({
       loadingSpec: true,
