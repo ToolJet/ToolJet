@@ -13,8 +13,7 @@
     },
     "options": {
       "username": {
-        "type": "string",
-        "encrypted": true
+        "type": "string"
       },
       "password": {
         "type": "string",
@@ -58,7 +57,14 @@
       "type": "text",
       "description": "database name",
       "helpText": "Name of database"
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "5984 ",
+      "helpText": "Port number"
     }
   },
-  "required": ["username","password","database"]
+  "required": ["username","password","database","port"]
 }
