@@ -699,6 +699,7 @@ export function Table({
     () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [
       JSON.stringify(columnData),
+      JSON.stringify(actions),
       leftActionsCellData.length,
       rightActionsCellData.length,
       componentState.changeSet,
