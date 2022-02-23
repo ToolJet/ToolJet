@@ -507,7 +507,6 @@ export function Table({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
-                  readonly={!column.isEditable}
                 />
               </div>
             );
