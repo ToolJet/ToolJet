@@ -21,6 +21,12 @@
       },
       "database": {
         "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "host": {
+        "type": "string"
       }
     },
     "customTesting": true
@@ -34,6 +40,12 @@
     },
     "database": {
       "value": ""
+    },
+    "port": {
+      "value": "5984"
+    },
+    "host": {
+      "value": "localhost"
     }
   },
   "properties": {
@@ -58,6 +70,12 @@
       "description": "database name",
       "helpText": "Name of database"
     },
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "Enter host"
+    },
     "port": {
       "label": "Port",
       "key": "port",
@@ -66,5 +84,5 @@
       "helpText": "Port number"
     }
   },
-  "required": ["username","password","database","port"]
+  "required": ["username","password","database","port","host"]
 }

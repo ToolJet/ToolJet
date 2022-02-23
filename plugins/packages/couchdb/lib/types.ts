@@ -3,6 +3,7 @@ export type SourceOptions = {
   password: string;
   database: string;  
   port: string;
+  host:string;
 };
 export type QueryOptions = {
   operation: string;

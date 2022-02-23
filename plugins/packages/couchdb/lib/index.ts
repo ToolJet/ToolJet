@@ -13,6 +13,8 @@ export default class Couchdb implements QueryService {
     const username = sourceOptions.username;
     const password = sourceOptions.password;
     const port = sourceOptions.port;
+    const host = sourceOptions.host;
+    const database = sourceOptions.database;
 
     const authHeader = () => {
       const combined = `${username}:${password}`;
@@ -23,18 +25,17 @@ export default class Couchdb implements QueryService {
     try {
       switch (operation) {
         case "list_records": {
-          response = await got(`http://127.0.0.1:5984/users`, {
+          response = await got(`${host}:${port}/${database}`, {
             method: "get",
-            headers:{ Authorization: `Basic YWRtaW46cGFzc3dvcmQ=` },
+            headers: authHeader(),
           });
           result = JSON.parse(response.body);
-          console.log("checkkkkkkkkkkkkk,result",result)
           break;
         }
 
         case "retrieve_record": {
-          response = await got(`http://127.0.0.1:${port}/users/${recordId}`, {
-            headers: { Authorization: `Basic YWRtaW46cGFzc3dvcmQ=` },
+          response = await got(`${host}:${port}/${database}/${recordId}`, {
+            headers: authHeader(),
             method: "get",
           });
 
@@ -43,7 +44,7 @@ export default class Couchdb implements QueryService {
         }
 
         case "create_record": {
-          response = await got(`http://127.0.0.1:${port}/users`, {
+          response = await got(`${host}:${port}/${database}`, {
             method: "post",
             headers: authHeader(),
             json: JSON.parse(queryOptions.body),
@@ -53,7 +54,7 @@ export default class Couchdb implements QueryService {
         }
 
         case "update_record": {
-          response = await got(`http://127.0.0.1:${port}/users/${recordId}`, {
+          response = await got(`${host}:${port}/${database}/${recordId}`, {
             method: "put",
             headers: authHeader(),
             json: {
@@ -66,7 +67,7 @@ export default class Couchdb implements QueryService {
         }
 
         case "delete_record": {
-          response = await got(`http://127.0.0.1:${port}/users/${recordId}`, {
+          response = await got(`${host}:${port}/${database}/${recordId}`, {
             method: "delete",
             headers: authHeader(),
             json: {
