@@ -12,7 +12,7 @@ const API_URL = {
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
 module.exports = {
-  entry: ['./src/public-path.js', './src/index.jsx'],
+  entry: './src/index.jsx',
   mode: environment,
   optimization: {
     usedExports: true,
