@@ -20,13 +20,19 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
 
   const currentValue = typeof value === 'string' ? selectOptions.find((option) => option.value === value) : value;
 
+  console.log('SelectComponent', currentValue);
+
+  const handleOnChange = (newValue) => {
+    onChange(newValue.value);
+  };
+
   return (
     <React.Fragment>
       <Select
         options={selectOptions}
         value={currentValue}
         search={hasSearch}
-        onChange={onChange}
+        onChange={handleOnChange}
         placeholder={placeholder}
         styles={useStyles}
       />

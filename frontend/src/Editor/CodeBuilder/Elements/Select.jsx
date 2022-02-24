@@ -3,10 +3,6 @@ import SelectComponent from '@/_ui/Select';
 import FxButton from './FxButton';
 
 export const Select = ({ value, onChange, forceCodeBox, meta }) => {
-  const handleOnChange = (newValue) => {
-    onChange(newValue.value);
-  };
-
   return (
     <div className="row">
       <div className="col">
@@ -15,7 +11,7 @@ export const Select = ({ value, onChange, forceCodeBox, meta }) => {
             options={meta.options}
             value={value}
             hasSearch={true}
-            onChange={handleOnChange}
+            onChange={onChange}
             width={224}
             height={32}
           />
