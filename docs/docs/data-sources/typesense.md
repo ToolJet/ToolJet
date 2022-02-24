@@ -37,7 +37,7 @@ Query results can be transformed using transformations. Read our transformations
 
 ## Supported operations
 
-#### 1. Create collection
+#### 1. Create a Collection
 
 With this operation you can easily create `Collections` in your TypeSense cluster. In the schema field, you'll need to define the schema for creating a new collection. Check out TypeSense docs to know more about collections **[here](https://typesense.org/docs/0.22.2/api/collections.html#create-a-collection)**
 
@@ -47,7 +47,7 @@ With this operation you can easily create `Collections` in your TypeSense cluste
 
 </div>
 
-#### 2. Index document
+#### 2. Index a document
 
 Use this operation to index a document to your collection. You'll need to specify the **Collection Name** where you want your document to be indexed and also provide the document data according the schema defined in the collection. Read more about Indexing a document in TypeSense **[here](
 https://typesense.org/docs/0.22.2/api/documents.html#index-a-single-document)**.
@@ -58,7 +58,7 @@ https://typesense.org/docs/0.22.2/api/documents.html#index-a-single-document)**.
 
 </div>
 
-#### 3. Search documents
+#### 3. Search
 
 Use this operation to perform a search within the specified collection. Know more about the search parameters in the TypeSense doc **[here](https://typesense.org/docs/0.22.2/api/documents.html#search)**.
 
@@ -68,7 +68,7 @@ Use this operation to perform a search within the specified collection. Know mor
 
 </div>
 
-#### 4. Get document
+#### 4. Get a document
 
 Use this operation to fetch an individual document in a collection by providing the `id` of the document. Read more about it **[here](https://typesense.org/docs/0.22.2/api/documents.html#retrieve-a-document)**.
 
@@ -78,7 +78,7 @@ Use this operation to fetch an individual document in a collection by providing 
 
 </div>
 
-#### 5. Update document
+#### 5. Update a document
 
 Use this operation to update an individual document by providing the **Collection Name** and **Id** of the document. You'll need to provide the updated document data in the form of specified schema. Check out the TypeSense's doc on updating a document **[here](https://typesense.org/docs/0.22.2/api/documents.html#update-a-document)**.
 
@@ -88,7 +88,7 @@ Use this operation to update an individual document by providing the **Collectio
 
 </div>
 
-#### 6. Delete document
+#### 6. Delete a document
 
 Delete a document from collection by providing the `Id` of the document. Check out the TypeSense's doc on deleting documents **[here](https://typesense.org/docs/0.22.2/api/documents.html#delete-documents)**.
 
