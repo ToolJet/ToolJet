@@ -18,7 +18,6 @@ export default function AppCard({
   appActionModal,
   canUpdateApp,
   currentFolder,
-  removeAppFromFolder,
 }) {
   const canUpdate = canUpdateApp(app);
   const [hoverRef, isHovered] = useHover();
@@ -35,9 +34,9 @@ export default function AppCard({
 
   const appActionModalCallBack = useCallback(
     (action) => {
-      appActionModal(app, action);
+      appActionModal(app, currentFolder, action);
     },
-    [app, appActionModal]
+    [app, appActionModal, currentFolder]
   );
 
   useEffect(() => {
@@ -72,7 +71,6 @@ export default function AppCard({
                 exportApp={() => exportApp(app)}
                 isMenuOpen={isMenuOpen}
                 darkMode={darkMode}
-                removeAppFromFolder={() => removeAppFromFolder(app, currentFolder)}
                 currentFolder={currentFolder}
               />
             )}
