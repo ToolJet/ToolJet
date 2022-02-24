@@ -101,6 +101,7 @@ const DynamicForm = ({
           options: list,
           value: options[key]?.value || options[key],
           onChange: (value) => optionchanged(key, value),
+          width: width || '100%',
         };
       case 'react-component-headers':
         return {
