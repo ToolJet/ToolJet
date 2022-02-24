@@ -390,7 +390,7 @@ export const SubContainer = ({
       id={`canvas-${parent}`}
       className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
     >
-      {Object.keys(childComponents).map((key, index) => (
+      {Object.keys(childComponents).map((key) => (
         <DraggableBox
           onComponentClick={onComponentClick}
           onEvent={onEvent}

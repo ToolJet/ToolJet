@@ -88,9 +88,11 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-import-resolver-webpack": "^0.13.1",
     "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-jest": "^26.1.1",
     "eslint-plugin-prettier": "^3.4.1",
     "eslint-plugin-react": "^7.25.2",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "jest": "^27.5.1",
     "path": "^0.12.7",
     "prettier": "^2.3.2",
     "webpack-dev-server": "^3.11.2"
@@ -99,7 +101,8 @@
     "start": "webpack serve --port 8082 --host 0.0.0.0",
     "build": "webpack --mode production && cp -a ./assets/. ./build/assets/",
     "lint": "eslint . '**/*.{js,jsx}'",
-    "format": "eslint . --fix '**/*.{js,jsx}'"
+    "format": "eslint . --fix '**/*.{js,jsx}'",
+    "test": "jest"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -107,5 +110,27 @@
   "browserslist": {
     "production": [],
     "development": []
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.js?$": "babel-jest",
+      "^.+\\.svg$": "<rootDir>/__mocks__/svg.js"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(react|mpx-error-boundary)/)"
+    ],
+    "moduleNameMapper": {
+      "@/(.*)": "<rootDir>/src/$1"
+    },
+    "testEnvironment": "jest-environment-jsdom",
+    "moduleDirectories": [
+      "node_modules",
+      "src"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "jsx"
+    ]
   }
 }
