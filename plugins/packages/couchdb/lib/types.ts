@@ -15,4 +15,5 @@ export type QueryOptions = {
   start_key:string;
   end_key:string;
   limit:string;
+  skip:string;
 };

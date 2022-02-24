@@ -160,6 +160,17 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": ""
+      },
+      "skip": {
+        "label": "skip",
+        "key": "skip",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter skip",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
       }
     }
   }

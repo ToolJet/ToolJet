@@ -8,7 +8,7 @@ export default class Couchdb implements QueryService {
   ): Promise<QueryResult> {
     let result = {};
     let response = null;
-    const { operation, record_id,limit,view_url,start_key,end_key } = queryOptions;
+    const { operation, record_id,limit,view_url,start_key,end_key,skip } = queryOptions;
     const { username, password, port, host, database } = sourceOptions;
     const revision_id = queryOptions.rev_id;
 
@@ -91,6 +91,7 @@ export default class Couchdb implements QueryService {
                 limit,
                 start_key,
                 end_key,
+                skip,
               },
             }
           );
