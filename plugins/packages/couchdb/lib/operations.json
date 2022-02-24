@@ -30,11 +30,14 @@
         {
           "value": "delete_record",
           "name": "Delete record"
+        },
+        {
+          "value": "get_view",
+          "name": "Get view"
         }
       ]
     },
-    "list_records": {
-    },
+    "list_records": {},
     "retrieve_record": {
       "record_id": {
         "label": "Record ID",
@@ -89,7 +92,7 @@
         "height": "150px"
       }
     },
-    "delete_record": {
+    "delete_recordcc": {
       "record_id": {
         "label": "Record ID",
         "key": "record_id",
@@ -107,6 +110,52 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter revision id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      }
+    },
+    "get_view": {
+      "view_url": {
+        "label": "View url",
+        "key": "view_url",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter view url",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "start_key": {
+        "label": "Start key",
+        "key": "start_key",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter start key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "end_key": {
+        "label": "End key",
+        "key": "end_key",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter end key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "limit": {
+        "label": "limit",
+        "key": "limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter limit",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",

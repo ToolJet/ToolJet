@@ -11,4 +11,8 @@ export type QueryOptions = {
   record_id: string;
   body: string;
   rev_id:string;
+  view_url:string;
+  start_key:string;
+  end_key:string;
+  limit:string;
 };

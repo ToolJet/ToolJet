@@ -8,7 +8,7 @@ export default class Couchdb implements QueryService {
   ): Promise<QueryResult> {
     let result = {};
     let response = null;
-    const { operation, record_id } = queryOptions;
+    const { operation, record_id,limit,view_url,start_key,end_key } = queryOptions;
     const { username, password, port, host, database } = sourceOptions;
     const revision_id = queryOptions.rev_id;
 
@@ -67,7 +67,7 @@ export default class Couchdb implements QueryService {
           break;
         }
 
-        case "delete_record": {
+        case "delete_recordxx": {
           response = await got(
             `${host}:${port}/${database}/${record_id}`,
             {
@@ -75,6 +75,22 @@ export default class Couchdb implements QueryService {
               headers: authHeader(),
               searchParams: {
                 rev:revision_id,
+              },
+            }
+          );
+          result = JSON.parse(response.body);
+          break;
+        }
+        case "get_view": {
+          response = await got(
+            `${view_url}`,
+            {
+              method: "get",
+              headers: authHeader(),
+              searchParams: {
+                limit,
+                start_key,
+                end_key,
               },
             }
           );
