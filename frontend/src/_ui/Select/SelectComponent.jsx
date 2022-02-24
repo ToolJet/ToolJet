@@ -1,6 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
-import Selects from 'react-select';
+import Select from 'react-select';
 import defaultStyles from './styles';
 
 export const SelectComponent = ({ options = [], value, onChange, ...restProps }) => {
@@ -22,7 +22,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
 
   return (
     <React.Fragment>
-      <Selects
+      <Select
         options={selectOptions}
         value={currentValue}
         search={hasSearch}
