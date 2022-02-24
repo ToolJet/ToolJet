@@ -54,34 +54,34 @@
       "key": "username",
       "type": "text",
       "description": "username for couchDB",
-      "helpText": "Username for DB"
+      "helpText": ""
     },
     "password": {
       "label": "Password",
       "key": "password",
       "type": "password",
       "description": "password for couchDB",
-      "helpText": "Password for DB"
+      "helpText": ""
     },
     "database": {
       "label": "Database Name",
       "key": "database",
       "type": "text",
       "description": "database name",
-      "helpText": "Name of database"
+      "helpText": ""
     },
     "host": {
       "label": "Host",
       "key": "host",
       "type": "text",
-      "description": "Enter host"
+      "description": ""
     },
     "port": {
       "label": "Port",
       "key": "port",
       "type": "text",
       "description": "5984 ",
-      "helpText": "Port number"
+      "helpText": ""
     }
   },
   "required": ["username","password","database","port","host"]
