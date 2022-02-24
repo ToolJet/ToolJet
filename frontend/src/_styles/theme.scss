@@ -475,6 +475,12 @@ button {
         .query-copy-button {
           display: none;
         }
+        .query-name {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 100%;
+        }
       }
 
       .query-row-selected {
@@ -1117,7 +1123,7 @@ button {
    svg {
     filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg) brightness(99%) contrast(96%);
    }
-    
+
   }
 }
 
@@ -3315,7 +3321,7 @@ input[type="text"] {
 }
 .empty-action {
   margin-top: 0 !important;
-  
+
   a + a.btn-loading::after {
     color: $primary;
   }
@@ -3977,7 +3983,7 @@ input[type="text"] {
 .modal-content.home-modal-component.dark {
   background-color: $bg-dark-light !important;
   color: $white !important;
-  
+
   .modal-header {
     background-color: $bg-dark-light !important;
   }
@@ -4414,7 +4420,7 @@ div#driver-highlighted-element-stage, div#driver-page-overlay {
 
 .popover.popover-dark-themed {
   background-color: $bg-dark-light;
-  border-color: rgba(101, 109, 119, 0.16); 
+  border-color: rgba(101, 109, 119, 0.16);
   .popover-body {
     color: #D9DCDE !important;
   }
