@@ -1,5 +1,4 @@
 @import "./tabler.scss";
-@import "./tabler-vendors.scss";
 @import "./colors.scss";
 @import "./z-index.scss";
 @import "./mixins.scss";
@@ -4433,10 +4432,4 @@ div#driver-highlighted-element-stage, div#driver-page-overlay {
   float: left;
   font-size: 14px;
   color: $light-gray;
-}
-
-.range-slider{
-  .noUi-base {
-    background: #fff;
-  }
 }
