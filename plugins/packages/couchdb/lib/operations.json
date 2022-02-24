@@ -70,6 +70,17 @@
         "className": "codehinter-plugins",
         "placeholder": ""
       },
+      "rev_id": {
+        "label": "Revision ID",
+        "key": "rev_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter revision id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
       "body": {
         "label": "Body",
         "key": "body",
@@ -92,7 +103,7 @@
       },
       "rev_id": {
         "label": "Revision ID",
-        "key": "revision",
+        "key": "rev_id",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter revision id",

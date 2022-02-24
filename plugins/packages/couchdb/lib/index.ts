@@ -8,8 +8,9 @@ export default class Couchdb implements QueryService {
   ): Promise<QueryResult> {
     let result = {};
     let response = null;
-    const { operation, recordId } = queryOptions;
+    const { operation, record_id } = queryOptions;
     const { username, password, port, host, database } = sourceOptions;
+    const revision_id = queryOptions.rev_id;
 
     const authHeader = () => {
       const combined = `${username}:${password}`;
@@ -29,10 +30,13 @@ export default class Couchdb implements QueryService {
         }
 
         case "retrieve_record": {
-          response = await got(`${host}:${port}/${database}/${recordId}`, {
-            headers: authHeader(),
-            method: "get",
-          });
+          response = await got(
+            `${host}:${port}/${database}/${record_id}`,
+            {
+              headers: authHeader(),
+              method: "get",
+            }
+          );
 
           result = JSON.parse(response.body);
           break;
@@ -42,31 +46,38 @@ export default class Couchdb implements QueryService {
           response = await got(`${host}:${port}/${database}`, {
             method: "post",
             headers: authHeader(),
-            json: JSON.parse(queryOptions.body),
+            json: {
+              records: JSON.parse(queryOptions.body),
+            },
           });
           result = JSON.parse(response.body);
           break;
         }
 
         case "update_record": {
-          response = await got(`${host}:${port}/${database}/${recordId}`, {
+          response = await got(`${host}:${port}/${database}/${record_id}`, {
             method: "put",
             headers: authHeader(),
-            json: JSON.parse(queryOptions.body),
+            json: {
+              _rev: revision_id,
+              records: JSON.parse(queryOptions.body),
+            },
           });
-
           result = JSON.parse(response.body);
           break;
         }
 
         case "delete_record": {
-          response = await got(`${host}:${port}/${database}/${recordId}`, {
-            method: "delete",
-            headers: authHeader(),
-            json: {
-              _rev: queryOptions.rev_id,
-            },
-          });
+          response = await got(
+            `${host}:${port}/${database}/${record_id}`,
+            {
+              method: "delete",
+              headers: authHeader(),
+              searchParams: {
+                rev:revision_id,
+              },
+            }
+          );
           result = JSON.parse(response.body);
           break;
         }
