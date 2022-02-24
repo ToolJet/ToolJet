@@ -7,11 +7,11 @@ import {
   BeforeInsert,
   BeforeUpdate,
   OneToMany,
-  ManyToOne,
-  JoinColumn,
   BaseEntity,
   ManyToMany,
   JoinTable,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { GroupPermission } from './group_permission.entity';
 import { Organization } from './organization.entity';
@@ -51,16 +51,10 @@ export class User extends BaseEntity {
   password: string;
 
   @Column({ name: 'organization_id' })
-  organizationId: string;
+  defaultOrganizationId: string;
 
   @Column({ name: 'role' })
   role: string;
-
-  @Column({ name: 'sso_id' })
-  ssoId: string;
-
-  @Column({ name: 'sso' })
-  sso: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
@@ -73,7 +67,7 @@ export class User extends BaseEntity {
 
   @ManyToOne(() => Organization, (organization) => organization.id)
   @JoinColumn({ name: 'organization_id' })
-  organization: Organization;
+  defaultOrganization: Organization;
 
   @ManyToMany(() => GroupPermission)
   @JoinTable({
@@ -89,4 +83,6 @@ export class User extends BaseEntity {
 
   @OneToMany(() => UserGroupPermission, (userGroupPermission) => userGroupPermission.user, { onDelete: 'CASCADE' })
   userGroupPermissions: UserGroupPermission[];
+
+  organizationId: string;
 }

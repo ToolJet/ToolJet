@@ -40,15 +40,17 @@ export class OauthService {
     return true;
   }
 
-  async #findOrCreateUser({ userSSOId, firstName, lastName, email, sso }: UserResponse): Promise<User> {
-    const organization = await this.organizationService.findFirst();
+  async #findOrCreateUser(
+    { userSSOId, firstName, lastName, email, sso }: UserResponse,
+    organizationId: string
+  ): Promise<User> {
     const { user, newUserCreated } = await this.usersService.findOrCreateByEmail(
       { firstName, lastName, email, ssoId: userSSOId, sso },
-      organization
+      organizationId
     );
 
     if (newUserCreated) {
-      const organizationUser = await this.organizationUsersService.create(user, organization);
+      const organizationUser = await this.organizationUsersService.create(user, organizationId);
       await this.organizationUsersService.activate(organizationUser);
     } else if (userSSOId) {
       await this.usersService.updateSSODetails(user, { userSSOId, sso });
@@ -56,13 +58,17 @@ export class OauthService {
     return user;
   }
 
-  async #findAndActivateUser(email: string): Promise<User> {
+  async #findAndActivateUser(email: string, organizationId: string): Promise<User> {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const organizationUser = user.organizationUsers[0];
-    if (organizationUser.status != 'active') await this.organizationUsersService.activate(organizationUser);
+    const organizationUser: any = user.organizationUsers.find((ou) => ou.organizationId === organizationId);
+
+    if (!(organizationUser && organizationUser.length > 0)) {
+      throw new UnauthorizedException('Organisation not found');
+    }
+    if (organizationUser[0].status != 'active') await this.organizationUsersService.activate(organizationUser[0]);
     return user;
   }
 

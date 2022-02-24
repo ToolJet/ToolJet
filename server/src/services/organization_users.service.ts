@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { getManager, Repository } from 'typeorm';
-import { Organization } from 'src/entities/organization.entity';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
@@ -29,12 +28,12 @@ export class OrganizationUsersService {
       email: params['email'],
     };
 
-    const existingUser = await this.usersService.findByEmail(userParams.email);
+    const existingUser = await this.usersService.findByEmail(userParams.email, currentUser.organizationId);
     if (existingUser) {
       throw new BadRequestException('User with such email already exists.');
     }
-    const user = await this.usersService.create(userParams, currentUser.organization, ['all_users']);
-    const organizationUser = await this.create(user, currentUser.organization);
+    const user = await this.usersService.create(userParams, currentUser.organizationId, ['all_users']);
+    const organizationUser = await this.create(user, currentUser.organizationId);
 
     await this.emailService.sendOrganizationUserWelcomeEmail(
       user.email,
@@ -46,11 +45,11 @@ export class OrganizationUsersService {
     return organizationUser;
   }
 
-  async create(user: User, organization: Organization): Promise<OrganizationUser> {
+  async create(user: User, organizationId: string): Promise<OrganizationUser> {
     return await this.organizationUsersRepository.save(
       this.organizationUsersRepository.create({
         user,
-        organization,
+        organizationId,
         role: 'all_users',
         createdAt: new Date(),
         updatedAt: new Date(),

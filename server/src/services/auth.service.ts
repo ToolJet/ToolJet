@@ -66,9 +66,8 @@ export class AuthService {
 
     const { email } = params;
     const organization = await this.organizationsService.create('Untitled organization');
-    const user = await this.usersService.create({ email }, organization, ['all_users', 'admin']);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const organizationUser = await this.organizationUsersService.create(user, organization);
+    const user = await this.usersService.create({ email }, organization.id, ['all_users', 'admin']);
+    await this.organizationUsersService.create(user, organization.id);
 
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 

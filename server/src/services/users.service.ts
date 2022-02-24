@@ -29,17 +29,22 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  async findByEmail(email: string): Promise<User> {
-    return this.usersRepository.findOne({
-      where: { email },
-      relations: ['organization'],
-    });
-  }
-
-  async findBySSOId(ssoId: string): Promise<User> {
-    return this.usersRepository.findOne({
-      where: { ssoId },
-    });
+  async findByEmail(email: string, organisationId?: string): Promise<User> {
+    if (!organisationId) {
+      return this.usersRepository.findOne({
+        where: { email },
+      });
+    } else {
+      return await createQueryBuilder(User, 'users')
+        .innerJoin(
+          'users.organizationUsers',
+          'organization_users',
+          'organization_users.organizationId = :organisationId',
+          { organisationId }
+        )
+        .where('LOWER(users.users) = :email', { email: email.toLowerCase() })
+        .getOne();
+    }
   }
 
   async findByPasswordResetToken(token: string): Promise<User> {
@@ -48,11 +53,11 @@ export class UsersService {
     });
   }
 
-  async create(userParams: any, organization: Organization, groups?: string[]): Promise<User> {
+  async create(userParams: any, organizationId?: string, groups?: string[]): Promise<User> {
     const password = uuid.v4();
     const invitationToken = uuid.v4();
 
-    const { email, firstName, lastName, ssoId, sso } = userParams;
+    const { email, firstName, lastName } = userParams;
     let user: User;
 
     await getManager().transaction(async (manager) => {
@@ -62,9 +67,7 @@ export class UsersService {
         lastName,
         password,
         invitationToken,
-        ssoId,
-        sso,
-        organizationId: organization.id,
+        defaultOrganizationId: organizationId,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -73,7 +76,7 @@ export class UsersService {
       for (const group of groups) {
         const orgGroupPermission = await manager.findOne(GroupPermission, {
           where: {
-            organizationId: organization.id,
+            organizationId: organizationId,
             group: group,
           },
         });
@@ -93,31 +96,20 @@ export class UsersService {
     return user;
   }
 
-  async updateSSODetails(user: User, { userSSOId, sso }) {
-    await this.usersRepository.save({
-      ...user,
-      ssoId: userSSOId,
-      sso,
-    });
-  }
-
   async status(user: User) {
     const orgUser = await this.organizationUsersRepository.findOne({ where: { user } });
     return orgUser.status;
   }
 
-  async findOrCreateByEmail(
-    userParams: any,
-    organization: Organization
-  ): Promise<{ user: User; newUserCreated: boolean }> {
+  async findOrCreateByEmail(userParams: any, organizationId: string): Promise<{ user: User; newUserCreated: boolean }> {
     let user: User;
     let newUserCreated = false;
 
-    user = await this.findByEmail(userParams.email);
+    user = await this.findByEmail(userParams.email, organizationId);
 
     if (!user) {
       const groups = ['all_users'];
-      user = await this.create({ ...userParams }, organization, groups);
+      user = await this.create({ ...userParams }, organizationId, groups);
       newUserCreated = true;
     }
 

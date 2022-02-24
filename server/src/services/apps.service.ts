@@ -77,7 +77,7 @@ export class AppsService {
         name: 'Untitled app',
         createdAt: new Date(),
         updatedAt: new Date(),
-        organizationId: user.organization.id,
+        organizationId: user.organizationId,
         user: user,
       })
     );

@@ -8,7 +8,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { GroupPermission } from './group_permission.entity';
-import { User } from './user.entity';
+import { SSOConfigs } from './sso_config.entity';
+import { OrganizationUser } from './organization_user.entity';
 
 @Entity({ name: 'organizations' })
 export class Organization {
@@ -21,6 +22,12 @@ export class Organization {
   @Column({ name: 'domain' })
   domain: string;
 
+  @Column({ name: 'auto_assign' })
+  autoAssign: boolean;
+
+  @Column({ name: 'enable_sign_up' })
+  enableSignUp: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
@@ -31,7 +38,9 @@ export class Organization {
   @JoinColumn({ name: 'organization_id' })
   groupPermissions: GroupPermission[];
 
-  @OneToMany(() => User, (user) => user.organization)
-  @JoinColumn({ name: 'organization_id' })
-  users: User[];
+  @OneToMany(() => SSOConfigs, (ssoConfigs) => ssoConfigs.organization)
+  ssoConfigs: SSOConfigs[];
+
+  @OneToMany(() => OrganizationUser, (organizationUser) => organizationUser.organization)
+  organizationUsers: OrganizationUser[];
 }

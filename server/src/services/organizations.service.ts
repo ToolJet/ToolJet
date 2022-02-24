@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
-import { Repository } from 'typeorm';
+import { createQueryBuilder, Repository } from 'typeorm';
 import { Organization } from 'src/entities/organization.entity';
 import { UsersService } from './users.service';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -83,5 +83,39 @@ export class OrganizationsService {
   async findFirst(): Promise<Organization> {
     const organizations = await this.organizationsRepository.find();
     return organizations[0];
+  }
+
+  async fetchOrganisations(user: any): Promise<Organization[]> {
+    return await createQueryBuilder(Organization, 'organization')
+      .innerJoin(
+        'organization.organizationUsers',
+        'organisation_users',
+        'organisation_users.status IN(:...statusList)',
+        {
+          statusList: ['invited', 'active'],
+        }
+      )
+      .andWhere('organisation_users.userId = :userId', {
+        userId: user.id,
+      })
+      .orderBy('name', 'ASC')
+      .getMany();
+  }
+
+  async updateOrganisation(user: any): Promise<Organization[]> {
+    return await createQueryBuilder(Organization, 'organization')
+      .innerJoin(
+        'organization.organizationUsers',
+        'organisation_users',
+        'organisation_users.status IN(:...statusList)',
+        {
+          statusList: ['invited', 'active'],
+        }
+      )
+      .andWhere('organisation_users.userId = :userId', {
+        userId: user.id,
+      })
+      .orderBy('name', 'ASC')
+      .getMany();
   }
 }
