@@ -464,7 +464,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   }
 }
 
-function getQueryVariables(options, state) {
+export function getQueryVariables(options, state) {
   let queryVariables = {};
   const optionsType = typeof options;
   switch (optionsType) {
@@ -591,6 +591,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
+        console.log('here');
         queryExecutionPromise = executeMultilineJS(_self.state.currentState, query.options.code);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
@@ -732,7 +733,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
   });
 }
 
-function setTablePageIndex(_ref, tableId, index) {
+export function setTablePageIndex(_ref, tableId, index) {
   if (_.isEmpty(tableId)) {
     console.log('No table is associated with this event.');
     return Promise.resolve();
@@ -752,7 +753,7 @@ export function renderTooltip({ props, text }) {
   );
 }
 
-export function computeComponentState(_ref, components) {
+export function computeComponentState(_ref, components = {}) {
   let componentState = {};
   const currentComponents = _ref.state.currentState.components;
   Object.keys(components).forEach((key) => {
