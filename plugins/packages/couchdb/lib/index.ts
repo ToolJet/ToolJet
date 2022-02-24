@@ -21,7 +21,7 @@ export default class Couchdb implements QueryService {
     try {
       switch (operation) {
         case "list_records": {
-          response = await got(`${host}:${port}/${database}`, {
+          response = await got(`${host}:${port}/${database}/_all_docs`, {
             method: "get",
             headers: authHeader(),
           });
