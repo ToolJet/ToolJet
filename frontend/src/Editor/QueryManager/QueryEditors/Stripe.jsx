@@ -218,7 +218,7 @@ class Stripe extends React.Component {
     };
 
     const currentValue = {
-      value: this.state.options?.operation + ',' + this.props.options?.path,
+      value: `${this.state.options?.operation},${this.props.options?.path}` ?? '',
       name: this.props.options?.path,
       operation: this.props.options?.operation,
     };
