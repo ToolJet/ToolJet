@@ -1,0 +1,9 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Oracle DB datasource",
+  "description": "A schema defining Oracle DB datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {}
+}
