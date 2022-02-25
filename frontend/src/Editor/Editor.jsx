@@ -870,7 +870,7 @@ class Editor extends React.Component {
   };
 
   handleOnComponentOptionChanged = (component, optionName, value) => {
-    onComponentOptionChanged(this, component, optionName, value);
+    return onComponentOptionChanged(this, component, optionName, value);
   };
 
   handleOnComponentOptionsChanged = (component, options) => {
