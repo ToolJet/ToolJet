@@ -9,7 +9,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
 
   const useStyles = styles || defaultStyles(darkMode, width, height);
   const selectOptions =
-    options.length === 0
+    Array.isArray(options) && options.length === 0
       ? options
       : options.map((option) => {
           if (!option.hasOwnProperty('label')) {
