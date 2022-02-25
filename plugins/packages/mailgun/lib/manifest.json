@@ -12,7 +12,12 @@
       "data": {},
       "rawData": {}
     },
-    "options": {}
+    "options": {
+      "api_key": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
   },
   "defaults": {},
   "properties": {},
