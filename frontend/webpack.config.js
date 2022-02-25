@@ -95,7 +95,7 @@ module.exports = {
     }),
   ],
   devServer: {
-    historyApiFallback: {index: ASSET_PATH},
+    historyApiFallback: { index: ASSET_PATH },
   },
   output: {
     publicPath: ASSET_PATH,
