@@ -100,16 +100,8 @@ class Stripe extends React.Component {
 
   removeParam = (paramType, paramName) => {
     const options = this.state.options;
-    const newOptions = {
-      ...options,
-      params: {
-        ...options.params,
-        [paramType]: {
-          ...options.params[paramType],
-          [paramName]: undefined, // the value is undefined, it will be considered as removed as operation params are from the spec
-        },
-      },
-    };
+    const newOptions = JSON.parse(JSON.stringify(options));
+    options[paramName] = undefined;
 
     this.setState({
       options: newOptions,
