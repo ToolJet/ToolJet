@@ -1,33 +1,49 @@
 
-# Smtp
+# SMTP
 
-Smtp plugin for connect **SMTP servers** to your tooljet application.
+SMTP plugin can connect ToolJet applications to **SMTP servers** for sending emails.
 
 ## Connection
 
-A smtp server can connect with following credentails
+A SMTP server can be connected with the following credentails:
 - **Host**
 - **Port**
 - **User**
 - **Password**
 
-Fill above fields and test your connection is `ok` or `not`
+:::info
+You can also test your connection before saving the configuration by clicking on `Test Connection` button.
+:::
 
-## Send Email
+<div style={{textAlign: 'center'}}>
 
-For sending your emails, You should provide these details.
+![ToolJet - Data source - n8n](/img/datasource-reference/smtp/connect.png)
 
-  Properties :
-  - **From Address** `required`
-  - **From name** 
-  - **To Address** `required`
-  - **Subject**
+</div>
 
-#### Send email with `raw text`
-You can send email with raw text by filling **Text** Field.
+## Querying SMTP
 
-#### Send email with `HTML`
-Smtp servers also provide a feature for sending email with HTML content. So through filling **HTML** field You can also send them.
+Go to the query manager at the bottom panel of the editor and click on the `+` button on the left to create a new query. Select `SMTP` from the datasource dropdown.
 
-#### Send email with `Attachments`
-As normal email, Tooljet provides an option to send email with attachments. You can pass an array of `{{ name: 'filename.jpg', dataURL: '......' }}` object to **Attachments** Field to accomplish this.
+To create a query for sending email, you will need to provide the following properties:
+  - **From** `required` : Email address of the sender
+  - **From Name** : Name of the sender
+  - **To** `required` : Recipient's email address
+  - **Subject** : Subject of the email
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - n8n](/img/datasource-reference/smtp/query1.png)
+
+</div>
+
+  - **Body** : You can enter the body text either in the form of `raw text` or `html` in their respective fields.
+  - **Attachments** : Attachments can be added to a SMTP query by referencing the file from the `File Picker` component in the attachments field. 
+  
+  For example, you can set the `Attachments` field value to `{{ components.filepicker1.file }}` or you can pass an array of `{{ name: 'filename.jpg', dataURL: '......' }}` object to accomplish this.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - n8n](/img/datasource-reference/smtp/query2.png)
+
+</div>

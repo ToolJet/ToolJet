@@ -46,7 +46,7 @@ export const Modal = function Modal({
         keyboard={true}
         enforceFocus={false}
         animation={false}
-        onEscapeKeyDown={() => setShowModal(false)}
+        onEscapeKeyDown={() => hideModal()}
       >
         {containerProps.mode === 'edit' && (
           <ConfigHandle id={id} component={component} setSelectedComponent={containerProps.onComponentClick} />

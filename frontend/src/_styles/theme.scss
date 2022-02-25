@@ -475,6 +475,12 @@ button {
         .query-copy-button {
           display: none;
         }
+        .query-name {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 100%;
+        }
       }
 
       .query-row-selected {
@@ -1116,8 +1122,7 @@ button {
   }
   .layout-buttons {
     svg {
-      filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg)
-        brightness(99%) contrast(96%);
+      filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg) brightness(99%) contrast(96%);
     }
   }
 }
