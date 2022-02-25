@@ -46,6 +46,8 @@ import { AppVersionsManager } from './AppVersionsManager';
 import { SearchBoxComponent } from '@/_ui/Search';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
+import Tooltip from 'react-bootstrap/Tooltip';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 setAutoFreeze(false);
 enablePatches();
@@ -630,13 +632,22 @@ class Editor extends React.Component {
         onMouseEnter={() => this.setShowHiddenOptionsForDataQuery(dataQuery.id)}
         onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
-        <div className="col">
+        <div className="col-auto" style={{ width: '28px' }}>
           {sourceMeta.kind === 'runjs' ? (
             <RunjsIcon style={{ height: 25, width: 25 }} />
           ) : (
             getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)
           )}
-          <span className="p-3">{dataQuery.name}</span>
+        </div>
+        <div className="col">
+          <OverlayTrigger
+            trigger={['hover', 'focus']}
+            placement="top"
+            delay={{ show: 800, hide: 100 }}
+            overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
+          >
+            <div className="px-3 query-name">{dataQuery.name}</div>
+          </OverlayTrigger>
         </div>
         <div className="col-auto mx-1">
           {isQueryBeingDeleted ? (
