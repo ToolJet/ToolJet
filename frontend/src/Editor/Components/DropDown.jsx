@@ -153,7 +153,8 @@ export const DropDown = function DropDown({
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'select-option') {
                 setCurrentValue(selectedOption.value);
-                setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
+                setExposedVariable('value', selectedOption.value);
+                fireEvent('onSelect');
               }
             }}
             options={selectOptions}
