@@ -90,6 +90,10 @@ module.exports = {
   ],
   devServer: {
     historyApiFallback: true,
+    static: {
+      directory: path.resolve(__dirname, 'assets'),
+      publicPath: '/assets/',
+    },
   },
   output: {
     publicPath: process.env.ASSET_PATH || '/',
