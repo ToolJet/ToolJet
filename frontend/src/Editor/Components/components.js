@@ -1868,8 +1868,8 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      min: { type: 'code', displayName: 'Min' },
-      max: { type: 'code', displayName: 'Max' },
+      min: { type: 'number', displayName: 'Min' },
+      max: { type: 'number', displayName: 'Max' },
       value: { type: 'code', displayName: 'Value' },
       enableTwoHandle: { type: 'toggle', displayName: 'Two handles' },
     },
