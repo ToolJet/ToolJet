@@ -12,9 +12,74 @@
       "data": {},
       "rawData": {}
     },
-    "options": {}
+    "options": {
+      "password": {
+        "encrypted": true
+      }
+    }
   },
-  "defaults": {},
-  "properties": {},
-  "required": []
+  "defaults": {
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 1521
+    },
+    "database": {
+      "value": ""
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "ssl_enabled": {
+      "value": true
+    }
+  },
+  "properties": {
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "Enter host"
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "Enter port"
+    },
+    "database": {
+      "label": "Database Name",
+      "key": "database",
+      "type": "text",
+      "description": "Name of the database"
+    },
+    "ssl_enabled": {
+      "label": "SSL",
+      "key": "ssl_enabled",
+      "type": "toggle",
+      "description": "Toggle for ssl_enabled"
+    },
+    "username": {
+      "label": "Username",
+      "key": "username",
+      "type": "text",
+      "description": "Enter username"
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "Enter password"
+    }
+  },
+  "required": [
+    "host",
+    "port",
+    "username",
+    "password"
+  ]
 }
