@@ -19,6 +19,11 @@ module.exports = {
       textColor: '#ffffff',
       isCloseable: true,
     },
+    gtag: {
+      trackingID: process.env.GA_MID,
+      // Optional fields.
+      anonymizeIP: true, // Should IPs be anonymized?
+     },
     colorMode: {
       switchConfig: {
         darkIcon: '\00a0 ',
@@ -112,11 +117,6 @@ module.exports = {
           customCss: require.resolve('./src/css/custom.css'),
         },
         sitemap: {},
-        gtag: {
-          trackingID: process.env.GA_MID,
-          // Optional fields.
-          anonymizeIP: true, // Should IPs be anonymized?
-        },
       },
     ],
   ],
