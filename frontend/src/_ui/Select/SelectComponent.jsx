@@ -7,7 +7,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { styles, hasSearch = false, height, width, placeholder = 'Select..' } = restProps;
 
-  const useStyles = styles || defaultStyles(darkMode, width, height);
+  const useStyles = !_.isEmpty(styles) ? styles : defaultStyles(darkMode, width, height);
   const selectOptions =
     Array.isArray(options) && options.length === 0
       ? options
@@ -18,9 +18,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
           return option;
         });
 
-  const currentValue = typeof value === 'string' ? selectOptions.find((option) => option.value === value) : value;
-
-  console.log('SelectComponent', currentValue);
+  const currentValue = selectOptions.find((option) => option.value === value) || {};
 
   const handleOnChange = (newValue) => {
     onChange(newValue.value);
