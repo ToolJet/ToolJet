@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: tooljet-deployment
 spec:
-  replicas: 4
+  replicas: 5
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -26,11 +26,11 @@ spec:
           args: ["npm", "run", "start:prod"]
           resources:
             limits:
-              memory: "3001Mi"
-              cpu: "500m"
+              memory: "3002Mi"
+              cpu: "700m"
             requests:
               memory: "3000Mi"
-              cpu: "500m"
+              cpu: "700m"
           ports:
             - containerPort: 3000
           readinessProbe:
@@ -95,10 +95,7 @@ spec:
                   name: server
                   key: secret_key_base
             - name: TOOLJET_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: server
-                  key: tj_host
+              value: "https://app.tooljet.com"
             - name: SMTP_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -143,6 +140,11 @@ spec:
                 secretKeyRef:
                   name: other
                   key: customerIoSiteId
+            - name: FWAPIKey
+              valueFrom:
+                secretKeyRef:
+                  name: other
+                  key: FWAPIKey      
             - name: customerIoApiKey
               valueFrom:
                 secretKeyRef:

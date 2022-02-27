@@ -8,6 +8,7 @@ import { EmailService } from './email.service';
 import { decamelizeKeys } from 'humps';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import got from 'got';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const { TrackClient, RegionUS } = require('customerio-node');
@@ -88,6 +89,21 @@ export class AuthService {
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 
     const cio = new TrackClient(process.env.customerIoSiteId, process.env.customerIoApiKey, { region: RegionUS });
+
+    await got('https://tooljet-417912114917301615.myfreshworks.com/crm/sales/api/contacts', {
+      method: 'post',
+      headers: { Authorization: `Token token= ${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
+      json: {
+        contact: {
+          email: user.email,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          custom_field: {
+            job_title: user.role,
+          },
+        },
+      },
+    });
 
     cio.identify(user.email, {
       email: user.email,
