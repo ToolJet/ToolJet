@@ -32,12 +32,50 @@
           "name": "Delete record"
         },
         {
+          "value": "find",
+          "name": "Find"
+        },
+        {
           "value": "get_view",
           "name": "Get view"
         }
       ]
     },
-    "list_records": {},
+    "list_records": {
+      "descending": {
+        "label": "descending order",
+        "key": "descending",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter true/false",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "true"
+      },
+      "limit": {
+        "label": "limit",
+        "key": "limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter limit",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "skip": {
+        "label": "skip",
+        "key": "skip",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter skip",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      }
+    },
     "retrieve_record": {
       "record_id": {
         "label": "Record ID",
@@ -92,7 +130,7 @@
         "height": "150px"
       }
     },
-    "delete_recordcc": {
+    "delete_record": {
       "record_id": {
         "label": "Record ID",
         "key": "record_id",
@@ -114,6 +152,16 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": ""
+      }
+    },
+    "find": {
+      "body": {
+        "label": "Mangoquery",
+        "key": "body",
+        "type": "codehinter",
+        "description": "",
+        "height": "150px",
+        "placeholder": "[{ \"fields\": {} }]"
       }
     },
     "get_view": {
