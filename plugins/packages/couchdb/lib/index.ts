@@ -109,10 +109,11 @@ export default class Couchdb implements QueryService {
             method: "get",
             headers: authHeader(),
             searchParams: {
-              limit,
-              start_key,
-              end_key,
-              skip,
+              ...(limit?.length > 0 && { limit }),
+              ...(skip?.length > 0 && { skip }),
+              ...(descending && { descending }),
+              ...(start_key?.length > 0 && { start_key }),
+              ...(end_key?.length > 0 && { end_key }),
             },
           });
           result = JSON.parse(response.body);
