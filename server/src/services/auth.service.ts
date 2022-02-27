@@ -92,7 +92,7 @@ export class AuthService {
 
     await got('https://tooljet-417912114917301615.myfreshworks.com/crm/sales/api/contacts', {
       method: 'post',
-      headers: { Authorization: `Token token= ${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
       json: {
         contact: {
           email: user.email,
