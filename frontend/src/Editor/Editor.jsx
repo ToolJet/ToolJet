@@ -999,7 +999,7 @@ class Editor extends React.Component {
                 {showSaveDetail && (
                   <div className="nav-auto-save">
                     <img src={'/assets/images/icons/editor/auto-save.svg'} width="25" height="25" />
-                    <em className="small lh-base p-1">{isSavingEditingVersion ? 'Auto Saving..' : 'Auto Saved'}</em>
+                    <em className="small lh-base p-1">{isSavingEditingVersion ? 'Auto Saving..' : 'Saved'}</em>
                   </div>
                 )}
 
@@ -1295,8 +1295,8 @@ class Editor extends React.Component {
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
                   {selectedComponent &&
-                  !isEmpty(appDefinition.components) &&
-                  !isEmpty(appDefinition.components[selectedComponent.id]) ? (
+                    !isEmpty(appDefinition.components) &&
+                    !isEmpty(appDefinition.components[selectedComponent.id]) ? (
                     <Inspector
                       cloneComponent={this.cloneComponent}
                       componentDefinitionChanged={this.componentDefinitionChanged}
