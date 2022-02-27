@@ -39,9 +39,9 @@ export default class Couchdb implements QueryService {
             method: "get",
             headers: authHeader(),
             searchParams: {
-              limit,
-              skip,
-              descending,
+              ...(limit?.length > 0 && { limit }),
+              ...(skip?.length > 0 && { skip }),
+              ...(descending && { descending }),
             },
           });
           result = JSON.parse(response.body);
@@ -133,6 +133,8 @@ export default class Couchdb implements QueryService {
   async testConnection(
     sourceOptions: SourceOptions
   ): Promise<ConnectionTestResult> {
+    const client = await this.getConnection(sourceOptions);
+
     return {
       status: "ok",
     };
@@ -142,6 +144,8 @@ export default class Couchdb implements QueryService {
     const host = sourceOptions.host;
     const port = sourceOptions.port;
 
-    return {};
+    const client = got(`${host}:${port}/`);
+
+    return client;
   }
 }
