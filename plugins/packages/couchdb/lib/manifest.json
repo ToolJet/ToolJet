@@ -49,6 +49,19 @@
     }
   },
   "properties": {
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": ""
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "5984 ",
+      "helpText": ""
+    },
     "username": {
       "label": "Username",
       "key": "username",
@@ -68,19 +81,6 @@
       "key": "database",
       "type": "text",
       "description": "database name",
-      "helpText": ""
-    },
-    "host": {
-      "label": "Host",
-      "key": "host",
-      "type": "text",
-      "description": ""
-    },
-    "port": {
-      "label": "Port",
-      "key": "port",
-      "type": "text",
-      "description": "5984 ",
       "helpText": ""
     }
   },
