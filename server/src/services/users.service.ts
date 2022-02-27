@@ -11,9 +11,10 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import got from 'got';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
-
+const freshdeskBaseUrl = 'https://tooljet-417912114917301615.myfreshworks.com/crm/sales/api/';
 @Injectable()
 export class UsersService {
   constructor(
@@ -135,6 +136,42 @@ export class UsersService {
     return { user, newUserCreated };
   }
 
+  async updateCRM(user: User): Promise<boolean> {
+    const response = await got(`${freshdeskBaseUrl}lookup?q=${user.email}&f=email&entities=contact`, {
+      method: 'get',
+      headers: {
+        Authorization: `Token token=${process.env.FWAPIKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const contacts = JSON.parse(response.body)['contacts']['contacts'];
+    let contact = undefined;
+
+    if (contacts) {
+      if (contacts.length > 0) {
+        contact = contacts[0];
+      }
+    }
+
+    await got(`${freshdeskBaseUrl}contacts/${contact.id}`, {
+      method: 'put',
+      headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
+      json: {
+        contact: {
+          email: user.email,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          custom_field: {
+            job_title: user.role,
+          },
+        },
+      },
+    });
+
+    return true;
+  }
+
   async setupAccountFromInvitationToken(request: any): Promise<void> {
     const params = request.body;
     const { organization, password, token, role } = params; // TODO: organization is the name of the organization, this should be changed
@@ -166,6 +203,8 @@ export class UsersService {
           name: organization,
         });
       }
+
+      void this.updateCRM(user);
     }
 
     await this.auditLoggerService.perform({
