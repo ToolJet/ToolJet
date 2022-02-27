@@ -772,7 +772,6 @@ export function Table({
             ),
             Cell: ({ row }) => (
               <div className="d-flex flex-column align-items-center">
-                ]
                 <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
               </div>
             ),
