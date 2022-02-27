@@ -6,6 +6,8 @@ import {
 } from "@tooljet-plugins/common";
 import { SourceOptions, QueryOptions } from "./types";
 import got from "got";
+// const NodeCouchDb = require('node-couchdb');
+
 export default class Couchdb implements QueryService {
   async run(
     sourceOptions: SourceOptions,
@@ -23,42 +25,47 @@ export default class Couchdb implements QueryService {
       skip,
       descending,
     } = queryOptions;
-    const { username, password, port, host, database } = sourceOptions;
+    const { username, password, port, host, database, protocol } =
+      sourceOptions;
     const revision_id = queryOptions.rev_id;
-
     const authHeader = () => {
       const combined = `${username}:${password}`;
       const key = Buffer.from(combined).toString("base64");
       return { Authorization: `Basic ${key}` };
     };
-
     try {
       switch (operation) {
         case "list_records": {
-          response = await got(`${host}:${port}/${database}/_all_docs`, {
-            method: "get",
-            headers: authHeader(),
-            searchParams: {
-              ...(limit?.length > 0 && { limit }),
-              ...(skip?.length > 0 && { skip }),
-              ...(descending && { descending }),
-            },
-          });
+          response = await got(
+            `${protocol}://${host}:${port}/${database}/_all_docs`,
+            {
+              method: "get",
+              headers: authHeader(),
+              searchParams: {
+                ...(limit?.length > 0 && { limit }),
+                ...(skip?.length > 0 && { skip }),
+                ...(descending && { descending }),
+              },
+            }
+          );
           result = JSON.parse(response.body);
           break;
         }
         case "retrieve_record": {
-          response = await got(`${host}:${port}/${database}/${record_id}`, {
-            headers: authHeader(),
-            method: "get",
-          });
+          response = await got(
+            `${protocol}://${host}:${port}/${database}/${record_id}`,
+            {
+              headers: authHeader(),
+              method: "get",
+            }
+          );
 
           result = JSON.parse(response.body);
           break;
         }
 
         case "create_record": {
-          response = await got(`${host}:${port}/${database}`, {
+          response = await got(`${protocol}://${host}:${port}/${database}`, {
             method: "post",
             headers: authHeader(),
             json: {
@@ -70,37 +77,46 @@ export default class Couchdb implements QueryService {
         }
 
         case "update_record": {
-          response = await got(`${host}:${port}/${database}/${record_id}`, {
-            method: "put",
-            headers: authHeader(),
-            json: {
-              _rev: revision_id,
-              records: JSON.parse(queryOptions.body),
-            },
-          });
+          response = await got(
+            `${protocol}://${host}:${port}/${database}/${record_id}`,
+            {
+              method: "put",
+              headers: authHeader(),
+              json: {
+                _rev: revision_id,
+                records: JSON.parse(queryOptions.body),
+              },
+            }
+          );
           result = JSON.parse(response.body);
           break;
         }
 
         case "delete_record": {
-          response = await got(`${host}:${port}/${database}/${record_id}`, {
-            method: "delete",
-            headers: authHeader(),
-            searchParams: {
-              rev: revision_id,
-            },
-          });
+          response = await got(
+            `${protocol}://${host}:${port}/${database}/${record_id}`,
+            {
+              method: "delete",
+              headers: authHeader(),
+              searchParams: {
+                rev: revision_id,
+              },
+            }
+          );
           result = JSON.parse(response.body);
           break;
         }
         case "find": {
-          response = await got(`${host}:${port}/${database}/_find`, {
-            method: "post",
-            headers: authHeader(),
-            json: {
-              records: JSON.parse(queryOptions.body),
-            },
-          });
+          response = await got(
+            `${protocol}://${host}:${port}/${database}/_find`,
+            {
+              method: "post",
+              headers: authHeader(),
+              json: {
+                records: JSON.parse(queryOptions.body),
+              },
+            }
+          );
           result = JSON.parse(response.body);
           break;
         }
@@ -135,7 +151,10 @@ export default class Couchdb implements QueryService {
     sourceOptions: SourceOptions
   ): Promise<ConnectionTestResult> {
     const client = await this.getConnection(sourceOptions);
-
+    // const couch = new NodeCouchDb();
+    //   couch.listDatabases().then(dbs => dbs.map(...), err => {
+    //     // request error occured
+    // });
     return {
       status: "ok",
     };
@@ -146,7 +165,13 @@ export default class Couchdb implements QueryService {
     const port = sourceOptions.port;
 
     const client = got(`${host}:${port}/`);
+    // const couchAuth = new NodeCouchDb({
+    //   auth: {
+    //       user: 'login',
+    //       pass: 'secret'
+    //   }
+    // });
 
-    return client;
+    // return couchAuth;
   }
 }

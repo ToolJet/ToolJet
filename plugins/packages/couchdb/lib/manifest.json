@@ -27,6 +27,9 @@
       },
       "host": {
         "type": "string"
+      },
+      "protocol": {
+        "type": "string"
       }
     },
     "customTesting": true
@@ -46,6 +49,9 @@
     },
     "host": {
       "value": ""
+    },
+    "protocol": {
+      "type": "HTTP"
     }
   },
   "properties": {
@@ -82,7 +88,23 @@
       "type": "text",
       "description": "database name",
       "helpText": ""
+    },
+    "protocol": {
+      "label": "Protocol",
+      "key": "protocol",
+      "type": "dropdown",
+      "list": [
+        {
+          "name": "HTTP",
+          "value": "http"
+        },
+        {
+          "name": "HTTPS",
+          "value": "https"
+        }
+      ],
+      "description": "Enter protocol"
     }
   },
-  "required": ["username","password","database","port","host"]
+  "required": ["username", "password", "database", "port", "host", "protocol"]
 }
