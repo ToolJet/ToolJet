@@ -325,7 +325,7 @@ class Table extends React.Component {
                   mode="javascript"
                   lineNumbers={false}
                   placeholder={'{{[1, 2, 3]}}'}
-                  onChange={(value) => this.onColumnItemChange(index, 'values', value)}
+                  onChange={(value) => this.onColumnItemChange(index, 'values', value, true, 'array')}
                   componentName={this.getPopoverFieldSource(column.columnType, 'values')}
                 />
               </div>
