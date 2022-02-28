@@ -1,6 +1,13 @@
-import { Knex, knex } from 'knex';
-import { cacheConnection, getCachedConnection, ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugins/common'
-import { SourceOptions, QueryOptions } from './types'
+import { Knex, knex } from "knex";
+import oracledb from "oracledb";
+import {
+  cacheConnection,
+  getCachedConnection,
+  ConnectionTestResult,
+  QueryService,
+  QueryResult,
+} from "@tooljet-plugins/common";
+import { SourceOptions, QueryOptions } from "./types";
 
 export default class OracledbQueryService implements QueryService {
   private static _instance: OracledbQueryService;
@@ -9,11 +16,10 @@ export default class OracledbQueryService implements QueryService {
     if (OracledbQueryService._instance) {
       return OracledbQueryService._instance;
     }
-  
+
     OracledbQueryService._instance = this;
     return OracledbQueryService._instance;
   }
-
 
   async run(
     sourceOptions: SourceOptions,
@@ -24,17 +30,23 @@ export default class OracledbQueryService implements QueryService {
     let result = {
       rows: [],
     };
-    let query = '';
+    let query = "";
 
-    if (queryOptions.mode === 'gui') {
-      if (queryOptions.operation === 'bulk_update_pkey') {
+    if (queryOptions.mode === "gui") {
+      if (queryOptions.operation === "bulk_update_pkey") {
         query = await this.buildBulkUpdateQuery(queryOptions);
       }
     } else {
       query = queryOptions.query;
     }
 
-    const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+    const knexInstance = await this.getConnection(
+      sourceOptions,
+      {},
+      true,
+      dataSourceId,
+      dataSourceUpdatedAt
+    );
 
     try {
       result = await knexInstance.raw(query);
@@ -43,24 +55,42 @@ export default class OracledbQueryService implements QueryService {
     }
 
     return {
-      status: 'ok',
+      status: "ok",
       data: result[0],
     };
   }
 
-  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
+  async testConnection(
+    sourceOptions: SourceOptions
+  ): Promise<ConnectionTestResult> {
     const knexInstance = await this.getConnection(sourceOptions, {}, false);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const result = await knexInstance.raw('select @@version;');
+    const result = await knexInstance.raw("select @@version;");
 
     return {
-      status: 'ok',
+      status: "ok",
     };
   }
 
   async buildConnection(sourceOptions: SourceOptions) {
+    const oracledb = require("oracledb");
+    // we should add this to our datasource documentation
+    try {
+      if (process.platform === "darwin") {
+        oracledb.initOracleClient({
+          libDir: process.env.HOME + "/Downloads/instantclient_19_8",
+        });
+      } else if (process.platform === "win32") {
+        oracledb.initOracleClient({ libDir: "C:\\oracle\\instantclient_19_8" }); // note the double backslashes
+      }
+    } catch (err) {
+      console.error("Whoops!");
+      console.error(err);
+      process.exit(1);
+    }
+
     const config: Knex.Config = {
-      client: 'oracledb',
+      client: "oracledb",
       connection: {
         host: sourceOptions.host,
         user: sourceOptions.username,
@@ -83,12 +113,16 @@ export default class OracledbQueryService implements QueryService {
     dataSourceUpdatedAt?: string
   ): Promise<any> {
     if (checkCache) {
-      let connection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
+      let connection = await getCachedConnection(
+        dataSourceId,
+        dataSourceUpdatedAt
+      );
 
       if (connection) {
         return connection;
       } else {
         connection = await this.buildConnection(sourceOptions);
+        console.log(connection);
         dataSourceId && cacheConnection(dataSourceId, connection);
         return connection;
       }
@@ -98,11 +132,11 @@ export default class OracledbQueryService implements QueryService {
   }
 
   async buildBulkUpdateQuery(queryOptions: any): Promise<string> {
-    let queryText = '';
+    let queryText = "";
 
-    const tableName = queryOptions['table'];
-    const primaryKey = queryOptions['primary_key_column'];
-    const records = queryOptions['records'];
+    const tableName = queryOptions["table"];
+    const primaryKey = queryOptions["primary_key_column"];
+    const records = queryOptions["records"];
 
     for (const record of records) {
       queryText = `${queryText} UPDATE ${tableName} SET`;
