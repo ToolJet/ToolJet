@@ -615,7 +615,6 @@ class Table extends React.Component {
 
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
-    console.log('JSON ==>', JSON.stringify(component));
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
 
