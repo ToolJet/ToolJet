@@ -2,7 +2,7 @@ import React from 'react';
 import Accordion from '@/_ui/Accordion';
 
 import { renderElement } from '../Utils';
-import { computeActionName } from '@/_helpers/utils';
+import { computeActionName, resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
 import SortableList, { SortableItem } from 'react-easy-sort';
 import arrayMove from 'array-move';
@@ -122,7 +122,32 @@ class Table extends React.Component {
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
   };
 
+  validateInputType(value, type) {
+    const [resolvedValue] = resolveReferences(value, this.state.currentState, null, {}, true);
+    console.log('validateInputType', resolvedValue);
+    if (type === 'array') {
+      return Array.isArray(resolvedValue);
+    }
+
+    return false;
+  }
+
   columnPopover = (column, index) => {
+    if (
+      column.columnType === 'dropdown' ||
+      column.columnType === 'multiselect' ||
+      column.columnType === 'badge' ||
+      column.columnType === 'badges' ||
+      column.columnType === 'radio'
+    ) {
+      if (!this.validateInputType(column.labels, 'array')) {
+        column.labels = '{{[]}}';
+      }
+      if (!this.validateInputType(column.values, 'array')) {
+        column.values = '{{[]}}';
+      }
+    }
+
     return (
       <Popover id="popover-basic-2" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
         <Popover.Content>
@@ -314,7 +339,7 @@ class Table extends React.Component {
                   mode="javascript"
                   lineNumbers={false}
                   placeholder={'{{["one", "two", "three"]}}'}
-                  onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
+                  onChange={(value) => this.onColumnItemChange(index, 'labels', value, true, 'array')}
                   componentName={this.getPopoverFieldSource(column.columnType, 'labels')}
                 />
               </div>
@@ -542,7 +567,20 @@ class Table extends React.Component {
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
   };
 
-  onColumnItemChange = (index, item, value) => {
+  onColumnItemChange = (index, item, value, validateInputType = false, expectedInputType = undefined) => {
+    if (validateInputType) {
+      const isResolved = this.validateInputType(value, expectedInputType);
+      if (!isResolved) {
+        switch (expectedInputType) {
+          case 'array':
+            value = [];
+            break;
+
+          default:
+            break;
+        }
+      }
+    }
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
 
@@ -577,7 +615,7 @@ class Table extends React.Component {
 
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
-
+    console.log('JSON ==>', JSON.stringify(component));
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
 
