@@ -6,14 +6,12 @@ import {
 } from "@tooljet-plugins/common";
 import { SourceOptions, QueryOptions } from "./types";
 import got from "got";
-const JSON5 = require('json5')
+const JSON5 = require("json5");
 export default class Couchdb implements QueryService {
   async run(
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions
-  ): Promise<QueryResult> 
-  {
-    
+  ): Promise<QueryResult> {
     let result = {};
     let response = null;
     const {
@@ -51,7 +49,7 @@ export default class Couchdb implements QueryService {
               },
             }
           );
-          result = JSON5.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
 
@@ -63,7 +61,7 @@ export default class Couchdb implements QueryService {
               method: "get",
             }
           );
-          result = JSON5.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
 
@@ -72,10 +70,10 @@ export default class Couchdb implements QueryService {
             method: "post",
             headers: authHeader(),
             json: {
-              records: JSON5.parse(queryOptions.body),
+              records: this.parseJSON(queryOptions.body),
             },
           });
-          result = JSON5.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
 
@@ -87,11 +85,11 @@ export default class Couchdb implements QueryService {
               headers: authHeader(),
               json: {
                 _rev: revision_id,
-                records: JSON5.parse(queryOptions.body),
+                records: this.parseJSON(queryOptions.body),
               },
             }
           );
-          result = JSON5.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
 
@@ -106,7 +104,7 @@ export default class Couchdb implements QueryService {
               },
             }
           );
-          result = JSON5.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
 
@@ -116,10 +114,10 @@ export default class Couchdb implements QueryService {
             {
               method: "post",
               headers: authHeader(),
-              json: JSON5.parse(queryOptions.body),
+              json: this.parseJSON(queryOptions.body),
             }
           );
-          result = JSON5.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
 
@@ -135,7 +133,7 @@ export default class Couchdb implements QueryService {
               ...(end_key?.length > 0 && { end_key }),
             },
           });
-          result = JSON5.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
       }
@@ -168,5 +166,11 @@ export default class Couchdb implements QueryService {
     return {
       status: "ok",
     };
+  }
+
+  private parseJSON(json?: string): object {
+    if (!json) return {};
+
+    return JSON5.parse(json);
   }
 }
