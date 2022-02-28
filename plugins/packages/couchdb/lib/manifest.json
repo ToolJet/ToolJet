@@ -9,7 +9,8 @@
     "exposedVariables": {
       "isLoading": false,
       "data": {},
-      "rawData": {}
+      "rawData": {},
+      "customTesting": false
     },
     "options": {
       "username": {
@@ -31,8 +32,7 @@
       "protocol": {
         "type": "string"
       }
-    },
-    "customTesting": true
+    }
   },
   "defaults": {
     "username": {

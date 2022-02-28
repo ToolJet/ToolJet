@@ -6,8 +6,6 @@ import {
 } from "@tooljet-plugins/common";
 import { SourceOptions, QueryOptions } from "./types";
 import got from "got";
-// const NodeCouchDb = require('node-couchdb');
-
 export default class Couchdb implements QueryService {
   async run(
     sourceOptions: SourceOptions,
@@ -28,11 +26,13 @@ export default class Couchdb implements QueryService {
     const { username, password, port, host, database, protocol } =
       sourceOptions;
     const revision_id = queryOptions.rev_id;
+
     const authHeader = () => {
       const combined = `${username}:${password}`;
       const key = Buffer.from(combined).toString("base64");
       return { Authorization: `Basic ${key}` };
     };
+
     try {
       switch (operation) {
         case "list_records": {
@@ -51,6 +51,7 @@ export default class Couchdb implements QueryService {
           result = JSON.parse(response.body);
           break;
         }
+
         case "retrieve_record": {
           response = await got(
             `${protocol}://${host}:${port}/${database}/${record_id}`,
@@ -59,7 +60,6 @@ export default class Couchdb implements QueryService {
               method: "get",
             }
           );
-
           result = JSON.parse(response.body);
           break;
         }
@@ -106,6 +106,7 @@ export default class Couchdb implements QueryService {
           result = JSON.parse(response.body);
           break;
         }
+
         case "find": {
           response = await got(
             `${protocol}://${host}:${port}/${database}/_find`,
@@ -120,6 +121,7 @@ export default class Couchdb implements QueryService {
           result = JSON.parse(response.body);
           break;
         }
+
         case "get_view": {
           response = await got(`${view_url}`, {
             method: "get",
@@ -150,28 +152,20 @@ export default class Couchdb implements QueryService {
   async testConnection(
     sourceOptions: SourceOptions
   ): Promise<ConnectionTestResult> {
-    const client = await this.getConnection(sourceOptions);
-    // const couch = new NodeCouchDb();
-    //   couch.listDatabases().then(dbs => dbs.map(...), err => {
-    //     // request error occured
-    // });
+    const { username, password, port, host, database, protocol } =
+      sourceOptions;
+    const combined = `${username}:${password}`;
+    const key = Buffer.from(combined).toString("base64");
+    const client = await got(`${protocol}://${host}:${port}/_all_dbs`, {
+      method: "get",
+      headers: { Authorization: `Basic ${key}` },
+    });
+    if (!client) {
+      throw new Error("Error");
+    }
+
     return {
       status: "ok",
     };
-  }
-
-  async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const host = sourceOptions.host;
-    const port = sourceOptions.port;
-
-    const client = got(`${host}:${port}/`);
-    // const couchAuth = new NodeCouchDb({
-    //   auth: {
-    //       user: 'login',
-    //       pass: 'secret'
-    //   }
-    // });
-
-    // return couchAuth;
   }
 }
