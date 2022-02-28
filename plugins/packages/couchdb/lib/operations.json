@@ -162,7 +162,8 @@
         "type": "codehinter",
         "description": "",
         "height": "150px",
-        "placeholder": "[{ \"fields\": \"value\"}]"
+        "placeholder": ""
+      }
     },
     "get_view": {
       "view_url": {
