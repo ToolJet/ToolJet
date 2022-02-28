@@ -364,9 +364,9 @@ export const SubContainer = ({
           [optionName]: value,
         },
       };
-      onComponentOptionChanged(parentComponent, 'data', newData);
+      return onComponentOptionChanged(parentComponent, 'data', newData);
     } else {
-      onComponentOptionChanged(component, optionName, value, extraProps);
+      return onComponentOptionChanged(component, optionName, value, extraProps);
     }
   }
 
