@@ -20,6 +20,8 @@ export class AppImportExportService {
   ) {}
 
   async export(user: User, id: string): Promise<App> {
+    // https://github.com/typeorm/typeorm/issues/3857
+    // Making use of query builder
     const appToExport = getManager()
       .createQueryBuilder(App, 'apps')
       .leftJoinAndSelect('apps.dataQueries', 'data_queries')
@@ -33,11 +35,6 @@ export class AppImportExportService {
         organizationId: user.organizationId,
       })
       .getOne();
-
-    // const appToExport = this.appsRepository.findOne({
-    //   relations: ['dataQueries', 'dataSources', 'appVersions'],
-    //   where: { id, organizationId: user.organizationId },
-    // });
 
     return appToExport;
   }
