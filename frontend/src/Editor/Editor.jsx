@@ -999,7 +999,7 @@ class Editor extends React.Component {
                 {showSaveDetail && (
                   <div className="nav-auto-save">
                     <img src={'/assets/images/icons/editor/auto-save.svg'} width="25" height="25" />
-                    <em className="small lh-base p-1">{isSavingEditingVersion ? 'Auto Saving..' : 'Auto Saved'}</em>
+                    <em className="small lh-base p-1">{isSavingEditingVersion ? 'Saving..' : 'Saved'}</em>
                   </div>
                 )}
 
