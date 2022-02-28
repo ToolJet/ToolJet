@@ -123,12 +123,6 @@ body {
   article  h2 {
     font-size: 1.5rem !important;
   }
-  .menu::-webkit-scrollbar {
-    width: 0;
-  }
-  .menu:hover::-webkit-scrollbar{
-    width: 6.5px;
-  }
 }
 
 .menu__list {
@@ -155,4 +149,12 @@ strong {
 
 .alert a {
   color: inherit;
+}
+
+.menu {
+  overflow: hidden;
+}
+
+.menu:hover {
+  overflow-y: overlay;
 }

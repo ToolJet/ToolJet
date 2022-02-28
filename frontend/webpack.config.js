@@ -12,7 +12,6 @@ const API_URL = {
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
 module.exports = {
-  entry: './src/index.jsx',
   mode: environment,
   optimization: {
     usedExports: true,
@@ -96,6 +95,10 @@ module.exports = {
   ],
   devServer: {
     historyApiFallback: { index: ASSET_PATH },
+    static: {
+      directory: path.resolve(__dirname, 'assets'),
+      publicPath: '/assets/',
+    },
   },
   output: {
     publicPath: ASSET_PATH,
