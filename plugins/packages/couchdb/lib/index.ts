@@ -116,9 +116,7 @@ export default class Couchdb implements QueryService {
             {
               method: "post",
               headers: authHeader(),
-              json: {
-                records: JSON5.parse(queryOptions.body),
-              },
+              json: JSON5.parse(queryOptions.body),
             }
           );
           result = JSON5.parse(response.body);

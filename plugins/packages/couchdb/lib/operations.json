@@ -96,7 +96,7 @@
         "type": "codehinter",
         "description": "Enter list of records",
         "height": "150px",
-        "placeholder": "[{ \"fields\": {} }]"
+        "placeholder": "[{ \"fields\": \"value\"}]"
       }
     },
     "update_record": {
@@ -127,7 +127,8 @@
         "key": "body",
         "type": "codehinter",
         "description": "Enter body",
-        "height": "150px"
+        "height": "150px",
+        "placeholder": "[{ \"fields\": \"value\"}]"
       }
     },
     "delete_record": {
@@ -161,8 +162,7 @@
         "type": "codehinter",
         "description": "",
         "height": "150px",
-        "placeholder": "[{ \"fields\": {} }]"
-      }
+        "placeholder": "[{ \"fields\": \"value\"}]"
     },
     "get_view": {
       "view_url": {

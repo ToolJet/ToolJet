@@ -193,17 +193,28 @@ Example response from CouchDb:
 ## Find 
 
 Find documents using a declarative JSON querying syntax.
+
+Required parameters:
+- Selector
+
+:::info
+NOTE:
+selector syntax: https://pouchdb.com/guides/mango-queries.html
+:::
+
 <img class="screenshot-full" src="/img/datasource-reference/couchdb/find.png" alt="ToolJet - Data source - CouchDb Find Operarion" height="420"/>
 
 #### Example body:
 
 ```json
 {
-    "ok": true,
-    "id": "rev_id=2-3d01e0e87139c57e9bd083e48ecde13d&record_id=e33dc4e209689cb0400d095fc401a1e0",
-    "rev": "1-2b99ef28c03e68ea70bb668ee55ffb7b"
+    "selector": {
+        "year":  {"$gte": 2015}
+    },
+    "fields": ["year"]
 }
 ```
+
 
 Click on the `run` button to run the query.
 
@@ -215,13 +226,7 @@ More information : https://docs.couchdb.org/en/stable/api/database/find.html
 :::
 
 Example response from CouchDb:
-```json
-{
-    "ok": true,
-    "id": "23212104e60a71edb42ebc509f005737",
-    "rev": "1-67bc805c32b46dc708b902f5f12e4436"
-}
-```
+<img class="screenshot-full" src="/img/datasource-reference/couchdb/find_response.png" alt="ToolJet - Data source - CouchDb Find Operarion" height="420"/>
 
 ## Retrieving a view
 
@@ -246,8 +251,6 @@ Click on the `run` button to run the query.
 
 :::info
 startkey (json) – Return records starting with the specified key.
-
-descending (boolean) – Return the documents in descending order by key. Default is false.
 
 endkey (json) – Stop returning records when the specified key is reached.
 
