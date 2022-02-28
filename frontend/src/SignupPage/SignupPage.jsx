@@ -42,7 +42,7 @@ class SignupPage extends React.Component {
         this.setState({ isLoading: false, signupSuccess: true });
       },
       () => {
-        toast.error('Invalid email', {
+        toast.error('Email already exists', {
           position: 'top-center',
         });
         this.setState({ isLoading: false });
