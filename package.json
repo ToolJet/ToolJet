@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "@nestjs/cli": "^8.1.0",
-    "nano": "^9.0.5",
     "ts-node": "^10.1.0"
   },
   "scripts": {

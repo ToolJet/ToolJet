@@ -13,9 +13,6 @@
       "customTesting": false
     },
     "options": {
-      "username": {
-        "type": "string"
-      },
       "password": {
         "type": "string",
         "encrypted": true
