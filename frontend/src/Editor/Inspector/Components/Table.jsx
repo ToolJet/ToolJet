@@ -124,11 +124,10 @@ class Table extends React.Component {
 
   validateInputType(value, type) {
     const [resolvedValue] = resolveReferences(value, this.state.currentState, null, {}, true);
-    console.log('validateInputType', resolvedValue);
+
     if (type === 'array') {
       return Array.isArray(resolvedValue);
     }
-
     return false;
   }
 
