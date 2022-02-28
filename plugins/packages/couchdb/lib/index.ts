@@ -11,7 +11,9 @@ export default class Couchdb implements QueryService {
   async run(
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions
-  ): Promise<QueryResult> {
+  ): Promise<QueryResult> 
+  {
+    
     let result = {};
     let response = null;
     const {
