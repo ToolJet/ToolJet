@@ -39,60 +39,89 @@
     },
     "ssl_enabled": {
       "value": true
+    },
+    "client_path_type":{
+      "value": "default"
     }
   },
   "properties": {
-    "host": {
-      "label": "Host",
-      "key": "host",
-      "type": "text",
-      "description": "Enter host"
-    },
-    "port": {
-      "label": "Port",
-      "key": "port",
-      "type": "text",
-      "description": "Enter port"
-    },
-    "database_type": {
-      "label": "Database Name Type",
-      "key": "database_type",
-      "type": "dropdown",
-      "description": "Type of the database",
+    "client_path_type": {
+      "label": "Client Library Location",
+      "key": "client_path_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for client library",
       "list": [
         {
-          "name": "SID",
-          "value": "SID"
+          "value": "default",
+          "name": "Default"
         },
         {
-          "name": "Service name",
-          "value": "SERVICE_NAME"
+          "value": "custom",
+          "name": "Custom"
         }
-      ]
+      ],
+      "commonFields":{
+        "host": {
+          "label": "Host",
+          "key": "host",
+          "type": "text",
+          "description": "Enter host"
+        },
+        "port": {
+          "label": "Port",
+          "key": "port",
+          "type": "text",
+          "description": "Enter port"
+        },
+        "database_type": {
+          "label": "Database Type",
+          "key": "database_type",
+          "type": "dropdown",
+          "description": "Type of the database",
+          "list": [
+            {
+              "name": "SID",
+              "value": "SID"
+            },
+            {
+              "name": "Service name",
+              "value": "SERVICE_NAME"
+            }
+          ]
+        },
+        "database": {
+          "label": "Database Name",
+          "key": "database",
+          "type": "text",
+          "description": "Name of the database"
+        },
+        "ssl_enabled": {
+          "label": "SSL",
+          "key": "ssl_enabled",
+          "type": "toggle",
+          "description": "Toggle for ssl_enabled"
+        },
+        "username": {
+          "label": "Username",
+          "key": "username",
+          "type": "text",
+          "description": "Enter username"
+        },
+        "password": {
+          "label": "Password",
+          "key": "password",
+          "type": "password",
+          "description": "Enter password"
+        }
+      }
     },
-    "database": {
-      "label": "Database Name",
-      "key": "database",
-      "type": "text",
-      "description": "Name of the database"
-    },
-    "ssl_enabled": {
-      "label": "SSL",
-      "key": "ssl_enabled",
-      "type": "toggle",
-      "description": "Toggle for ssl_enabled"
-    },
-    "username": {
-      "label": "Username",
-      "key": "username",
-      "type": "text",
-      "description": "Enter username"
-    },
-    "password": {
-      "label": "Password",
-      "key": "password",
-      "type": "password",
-      "description": "Enter password"
+    "custom":{
+      "path": {
+        "label": "Path",
+        "key": "path",
+        "type": "text",
+        "description": "Enter path"
+      }
     }
   },
   "required": [

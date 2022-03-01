@@ -6,6 +6,8 @@ export type SourceOptions = {
   username: string;
   password: string;
   ssl_enabled: boolean; 
+  client_path_type: string; 
+  path: string; 
 };
 export type QueryOptions = { 
   operation: string;

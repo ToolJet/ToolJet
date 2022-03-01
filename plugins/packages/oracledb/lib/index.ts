@@ -72,20 +72,22 @@ export default class OracledbQueryService implements QueryService {
     };
   }
 
-  initOracleClient() {
+  initOracleClient(clientPathType:string, customPath:string) {
     try {
-      if (process.platform === "darwin") {
-        oracledb.initOracleClient({
-          libDir: process.env.HOME + "/Downloads/instantclient_19_8",
-        });
-      } else if (process.platform === "win32") {
-        oracledb.initOracleClient({
-          libDir: "C:\\oracle\\instantclient_19_8",
-        }); // note the double backslashes
+      if(clientPathType === 'custom'){
+        if (process.platform === "darwin") {
+          oracledb.initOracleClient({libDir: process.env.HOME + customPath});
+        } else if (process.platform === "win32") {
+          oracledb.initOracleClient({
+            libDir: customPath,
+          }); // note the double backslashes
+        }
+      }else{
+        oracledb.initOracleClient(); 
       }
     } catch (err) {
       console.error(err);
-      process.exit(1);
+      throw err;
     }
   }
 
@@ -94,8 +96,8 @@ export default class OracledbQueryService implements QueryService {
     try{
       oracledb.oracleClientVersion
     }catch(err){
-      console.log('oracle client is not initailized');
-      this.initOracleClient()
+      console.log('Oracle client is not initailized');
+      this.initOracleClient(sourceOptions.client_path_type, sourceOptions.path)
     }
 
     const config: Knex.Config = {
