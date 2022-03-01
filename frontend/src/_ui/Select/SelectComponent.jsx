@@ -5,7 +5,7 @@ import defaultStyles from './styles';
 
 export const SelectComponent = ({ options = [], value, onChange, ...restProps }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { styles, hasSearch = false, height, width, placeholder = 'Select..' } = restProps;
+  const { styles, hasSearch = false, height, width, placeholder = 'Select..', customOption = undefined } = restProps;
 
   const useStyles = !_.isEmpty(styles) ? styles : defaultStyles(darkMode, width, height);
   const selectOptions =
@@ -18,10 +18,18 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
           return option;
         });
 
-  const currentValue = selectOptions.find((option) => option.value === value) || {};
+  const currentValue = selectOptions.find((option) => option.value === value) || value;
 
   const handleOnChange = (newValue) => {
     onChange(newValue.value);
+  };
+
+  const renderCustomOption = (option) => {
+    if (customOption) {
+      return customOption(option);
+    }
+
+    return option.label;
   };
 
   return (
@@ -33,6 +41,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
         onChange={handleOnChange}
         placeholder={placeholder}
         styles={useStyles}
+        formatOptionLabel={(option) => renderCustomOption(option)}
         menuPortalTarget={document.body}
       />
     </React.Fragment>

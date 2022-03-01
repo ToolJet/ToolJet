@@ -1,7 +1,7 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import Select from 'react-select';
+import Select from '@/_ui/Select';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
@@ -82,13 +82,6 @@ let QueryManager = class QueryManager extends React.Component {
             queryName: selectedQuery.name,
           });
         }
-        // } else {
-        // this.setState({
-        //   options: {},
-        //   selectedQuery: null,
-        //   selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
-        // });
-        // }
       }
     );
   };
@@ -293,62 +286,6 @@ let QueryManager = class QueryManager extends React.Component {
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
 
-    const selectStyles = {
-      container: (provided) => ({
-        ...provided,
-        width: 224,
-        height: 32,
-      }),
-      control: (provided) => ({
-        ...provided,
-        borderColor: 'hsl(0, 0%, 80%)',
-        boxShadow: 'none',
-        '&:hover': {
-          borderColor: 'hsl(0, 0%, 80%)',
-        },
-        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
-        height: '32px!important',
-        minHeight: '32px!important',
-      }),
-      valueContainer: (provided, _state) => ({
-        ...provided,
-        height: 32,
-        marginBottom: '4px',
-      }),
-      indicatorsContainer: (provided, _state) => ({
-        ...provided,
-        height: 32,
-      }),
-      indicatorSeparator: (_state) => ({
-        display: 'none',
-      }),
-      input: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-      }),
-      menu: (provided) => ({
-        ...provided,
-        zIndex: 2,
-        backgroundColor: this.props.darkMode ? 'rgb(31,40,55)' : 'white',
-      }),
-      option: (provided) => ({
-        ...provided,
-        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-        ':hover': {
-          backgroundColor: this.props.darkMode ? '#323C4B' : '#d8dce9',
-        },
-      }),
-      placeholder: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#808080',
-      }),
-      singleValue: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-      }),
-    };
-
     return (
       <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
@@ -442,6 +379,7 @@ let QueryManager = class QueryManager extends React.Component {
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mt-1 mb-2">
                     <label className="form-label col-md-2">Datasource</label>
+
                     <Select
                       options={[
                         ...dataSources.map((source) => {
@@ -451,10 +389,9 @@ let QueryManager = class QueryManager extends React.Component {
                           return { label: source.name, value: source.id, kind: source.kind };
                         }),
                       ]}
-                      formatOptionLabel={this.renderDataSourceOption}
-                      onChange={(newValue) => this.changeDataSource(newValue.value)}
                       placeholder="Select a data source"
-                      styles={selectStyles}
+                      onChange={this.changeDataSource}
+                      customOption={this.renderDataSourceOption}
                     />
                   </div>
                 )}
