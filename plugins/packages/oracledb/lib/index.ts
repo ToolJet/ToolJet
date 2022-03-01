@@ -50,14 +50,14 @@ export default class OracledbQueryService implements QueryService {
 
     try {
       result = await knexInstance.raw(query);
+      
+      return {
+        status: "ok",
+        data: result,
+      };
     } catch (err) {
-      console.log(err);
+      throw err;
     }
-
-    return {
-      status: "ok",
-      data: result[0],
-    };
   }
 
   async testConnection(
@@ -65,7 +65,7 @@ export default class OracledbQueryService implements QueryService {
   ): Promise<ConnectionTestResult> {
     const knexInstance = await this.getConnection(sourceOptions, {}, false);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const result = await knexInstance.raw("select @@version;");
+    const result = await knexInstance.raw("SELECT * FROM v$version");
 
     return {
       status: "ok",
@@ -84,7 +84,6 @@ export default class OracledbQueryService implements QueryService {
         oracledb.initOracleClient({ libDir: "C:\\oracle\\instantclient_19_8" }); // note the double backslashes
       }
     } catch (err) {
-      console.error("Whoops!");
       console.error(err);
       process.exit(1);
     }
@@ -92,11 +91,9 @@ export default class OracledbQueryService implements QueryService {
     const config: Knex.Config = {
       client: "oracledb",
       connection: {
-        host: sourceOptions.host,
         user: sourceOptions.username,
         password: sourceOptions.password,
-        database: sourceOptions.database,
-        port: +sourceOptions.port,
+        connectString: `(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${sourceOptions.host})(PORT=${sourceOptions.port}))(CONNECT_DATA=(SERVER=DEDICATED)(${sourceOptions.database_type}=${sourceOptions.database})))`,
         multipleStatements: true,
         ssl: sourceOptions.ssl_enabled ?? false, // Disabling by default for backward compatibility
       },
@@ -122,7 +119,6 @@ export default class OracledbQueryService implements QueryService {
         return connection;
       } else {
         connection = await this.buildConnection(sourceOptions);
-        console.log(connection);
         dataSourceId && cacheConnection(dataSourceId, connection);
         return connection;
       }
@@ -148,7 +144,7 @@ export default class OracledbQueryService implements QueryService {
       }
 
       queryText = queryText.slice(0, -1);
-      queryText = `${queryText} WHERE ${primaryKey} = ${record[primaryKey]};`;
+      queryText = `begin ${queryText} WHERE ${primaryKey} = ${record[primaryKey]}; end;`;
     }
 
     return queryText.trim();

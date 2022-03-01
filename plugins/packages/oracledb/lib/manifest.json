@@ -28,6 +28,9 @@
     "database": {
       "value": ""
     },
+    "database_type": {
+      "value": "SID"
+    },
     "username": {
       "value": ""
     },
@@ -50,6 +53,22 @@
       "key": "port",
       "type": "text",
       "description": "Enter port"
+    },
+    "database_type": {
+      "label": "Database Name Type",
+      "key": "database_type",
+      "type": "dropdown",
+      "description": "Type of the database",
+      "list": [
+        {
+          "name": "SID",
+          "value": "SID"
+        },
+        {
+          "name": "Service name",
+          "value": "SERVICE_NAME"
+        }
+      ]
     },
     "database": {
       "label": "Database Name",

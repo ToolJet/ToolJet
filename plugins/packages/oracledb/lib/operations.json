@@ -27,6 +27,7 @@
         "key": "query",
         "type": "codehinter",
         "description": "Enter query",
+        "placeholder": "SELECT * FROM customers",
         "height": "150px"
       }
     },

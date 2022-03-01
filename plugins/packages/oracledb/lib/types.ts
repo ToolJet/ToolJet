@@ -1,5 +1,6 @@
 export type SourceOptions = { 
   database: string; 
+  database_type: string; 
   host: string; 
   port: string; 
   username: string;
