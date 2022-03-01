@@ -19,6 +19,7 @@ const Comments = ({ newThread = {}, appVersionsId, socket, canvasWidth }) => {
       const _users = data.users.map((u) => ({
         id: u.id,
         display: `${capitalize(u.first_name)} ${capitalize(u.last_name)}`,
+        email: u.email,
       }));
       setUsers(_users);
     });

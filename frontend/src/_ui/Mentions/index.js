@@ -28,13 +28,15 @@ const Mentions = ({ users, value, setValue, placeholder }) => {
             backgroundColor: 'white',
             boxShadow: '0px 2px 12px rgba(41, 45, 55, 0.156863)',
             borderRadius: '4',
-            marginTop: '-20px',
-            height: '22px',
+            marginTop: '-100px',
+            height: '100%',
+            width: '270px',
             fontSize: '14px',
             color: '#282D37',
           },
           item: {
             padding: '10px 16px',
+            height: '56px',
 
             '&focused': {
               background: '#EEF3F9',
@@ -56,6 +58,45 @@ const Mentions = ({ users, value, setValue, placeholder }) => {
         //   backgroundColor: '#218DE3',
         // }}
         appendSpaceOnAdd
+        renderSuggestion={(suggestion) => (
+          <div
+            style={{
+              display: 'flex',
+            }}
+          >
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '100%',
+                backgroundColor: '#4D72FA',
+                display: 'flex',
+                textAlign: 'center',
+                justifyContent: 'center',
+                marginRight: '12px',
+                alignItems: 'center',
+                color: 'white',
+              }}
+            >
+              {suggestion.display.slice(0, 2)}
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <p
+                style={{
+                  marginBottom: '0px',
+                }}
+              >
+                {suggestion.display}
+              </p>
+              <p>{suggestion.email}</p>
+            </div>
+          </div>
+        )}
       />
     </MentionsInput>
   );
