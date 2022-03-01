@@ -13,13 +13,52 @@
       "rawData": {}
     },
     "options": {
+      "domain": {
+        "type": "string"
+      },
       "api_key": {
         "type": "string",
         "encrypted": true
+      },
+      "eu_hosted": {
+        "type": "boolean"
       }
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "api_key": {
+      "value": ""
+    },
+    "eu_hosted": {
+      "value": false
     }
   },
-  "defaults": {},
-  "properties": {},
-  "required": []
+  "properties": {
+    "domain": {
+      "label": "Domain",
+      "key": "domain",
+      "type": "text",
+      "description": "Domain for sending emails from",
+      "helpText": "For setting up a new domain, visit: <a href='https://app.mailgun.com/app/sending/domains/new' target='_blank' rel='noreferrer'>Mailgun dashboard</a>"
+    },
+    "api_key": {
+      "label": "Api key",
+      "key": "api_key",
+      "type": "password",
+      "description": "Api key for Mailgun",
+      "helpText": "For generating Api Key, visit: <a href='https://app.mailgun.com/app/account/security/api_keys' target='_blank' rel='noreferrer'>Mailgun dashboard</a>"
+    },
+    "eu_hosted": {
+      "label": "EU hosted",
+      "key": "eu_hosted",
+      "type": "toggle",
+      "description": "Hosted in the EU",
+      "helpText": "Enable when the mailgun account is hosted in the EU"
+    }
+  },
+  "required": [
+    "domain",
+    "api_key"
+  ]
 }
