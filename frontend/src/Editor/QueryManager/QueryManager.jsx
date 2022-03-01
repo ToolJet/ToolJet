@@ -392,6 +392,8 @@ let QueryManager = class QueryManager extends React.Component {
                       placeholder="Select a data source"
                       onChange={this.changeDataSource}
                       customOption={this.renderDataSourceOption}
+                      width={224}
+                      height={32}
                     />
                   </div>
                 )}
