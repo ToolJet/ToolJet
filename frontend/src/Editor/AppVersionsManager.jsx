@@ -31,6 +31,12 @@ export const AppVersionsManager = function AppVersionsManager({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    appVersions[appVersions.findIndex((appVersion) => appVersion.id === editingVersion.id)] = editingVersion;
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingVersion]);
+
   const wrapperRef = useRef(null);
   useEffect(() => {
     const handleClickOutside = (event) => {
