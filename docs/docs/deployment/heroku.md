@@ -24,7 +24,7 @@ Follow the steps below to deploy ToolJet on Heroku:
 
 3. Now let's enter the `Config vars` to configure additional [environment variables](/docs/deployment/env-vars) that are required for the installation.
    - **LOCKBOX_MASTER_KEY**: ToolJet server uses lockbox to encrypt datasource credentials. You should set the environment variable LOCKBOX_MASTER_KEY with a 32 byte hexadecimal string. If you have OpenSSL installed, you can run the command `openssl rand -hex 32` to generate the key.
-   - **NODE_ENV**: By default NODE_ENV is set to production. If NODE_ENV is any other value, the pruning step will be skipped.
+   - **NODE_ENV**: By default NODE_ENV is set to production. 
    - **NODE_OPTIONS**: Node options are configured to increase node memory to support app build.
    - **SECRET_KEY_BASE**: ToolJet server uses a secure 64 byte hexadecimal string to encrypt session cookies. You should set the environment variable SECRET_KEY_BASE. If you have OpenSSL installed, you can run the command `openssl rand -hex 64` to generate the key.
    - **TOOLJET_HOST**: Public URL of ToolJet installtion. This is usually `https://<app-name-in-first-step\>.herokuapp.com`.
