@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, getManager, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
@@ -20,10 +20,21 @@ export class AppImportExportService {
   ) {}
 
   async export(user: User, id: string): Promise<App> {
-    const appToExport = this.appsRepository.findOne({
-      relations: ['dataQueries', 'dataSources', 'appVersions'],
-      where: { id, organizationId: user.organizationId },
-    });
+    // https://github.com/typeorm/typeorm/issues/3857
+    // Making use of query builder
+    const appToExport = getManager()
+      .createQueryBuilder(App, 'apps')
+      .leftJoinAndSelect('apps.dataQueries', 'data_queries')
+      .orderBy('data_queries.created_at', 'ASC')
+      .leftJoinAndSelect('apps.dataSources', 'data_sources')
+      .orderBy('data_sources.created_at', 'ASC')
+      .leftJoinAndSelect('apps.appVersions', 'app_versions')
+      .orderBy('app_versions.created_at', 'ASC')
+      .where('apps.id = :id AND apps.organization_id = :organizationId', {
+        id,
+        organizationId: user.organizationId,
+      })
+      .getOne();
 
     return appToExport;
   }
@@ -152,7 +163,9 @@ export class AppImportExportService {
         await manager.save(newQuery);
       }
 
-      const version = await manager.findOne(AppVersion, { where: { id: appVersionMapping[appVersion.id] } });
+      const version = await manager.findOne(AppVersion, {
+        where: { id: appVersionMapping[appVersion.id] },
+      });
       version.definition = this.replaceDataQueryIdWithinDefinitions(version.definition, dataQueryMapping);
       await manager.save(version);
     }
