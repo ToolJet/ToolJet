@@ -942,7 +942,7 @@ class Editor extends React.Component {
       hoveredComponent,
     } = this.state;
 
-    const appLink = slug ? `/applications/${slug}` : '';
+    const appVersionPreviewLink = editingVersion ? `/applications/${app.id}/versions/${editingVersion.id}` : '';
 
     return (
       <div className="editor wrapper">
@@ -1020,7 +1020,7 @@ class Editor extends React.Component {
                 <div className="navbar-nav flex-row order-md-last release-buttons">
                   <div className="nav-item dropdown d-none d-md-flex me-2">
                     <a
-                      href={appLink}
+                      href={appVersionPreviewLink}
                       target="_blank"
                       className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
                       rel="noreferrer"
