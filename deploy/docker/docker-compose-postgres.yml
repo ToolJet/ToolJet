@@ -29,8 +29,26 @@ services:
     environment:
       SERVE_CLIENT: "false"
     command: npm run start:prod
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:13
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=postgres
 
 volumes:
+  postgres:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${PWD}/postgres_data
   certs:
   logs:
   fallbackcerts:

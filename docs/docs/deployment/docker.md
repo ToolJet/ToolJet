@@ -5,15 +5,10 @@ sidebar_label: Docker
 
 # Deploying ToolJet using docker-compose
 
-:::info
-You should setup a PostgreSQL database manually to be used by the ToolJet server.
-:::
-
 Follow the steps below to deploy ToolJet on a server using docker-compose. This setup will deploy both **ToolJet server** and **ToolJet client**.
 
-1. Setup a PostgreSQL database and make sure that the database is accessible.
 
-2. Make sure that the server can receive traffic on port 80, 443 and 22. 
+1. Make sure that the server can receive traffic on port 80, 443 and 22.
    For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
 
    | protocol | port | allowed_cidr |
@@ -22,20 +17,37 @@ Follow the steps below to deploy ToolJet on a server using docker-compose. This 
    | tcp      | 80   | 0.0.0.0/0    |
    | tcp      | 443  | 0.0.0.0/0    |
 
-3. Install docker and docker-compose on the server.
+2. Install docker and docker-compose on the server.
    - Docs for [Docker Installation](https://docs.docker.com/engine/install/)
    - Docs for [Docker Compose Installation](https://docs.docker.com/compose/install/)
 
-4. Download our production docker-compose file into the server by running:
+3. Setup a PostgreSQL database and make sure that the database is accessible. (Optional)
+:::info
+ We recommend to use managed postgres service on production for ease of administration, security and management (backups, monitoring etc).
+ If you'd want to run posgres with persistent volume rather, curl for the alternate docker compose file shared in the next step.
+:::
 
+4. Download our production docker-compose file into the server.
+
+For managed PostgreSQL database:
 ```bash
 curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose.yaml
+```
+
+OR
+
+For PostgreSQL database setup with persistent volume:
+```bash
+curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose-postgres.yaml
+mv docker-compose-postgres.yml docker-compose.yml
+mkdir postgres_data
 ```
 
 5. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded):
 
 ```bash
-curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/.env.example mv .env.example .env
+curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/.env.example
+mv .env.example .env
 ```
 
 Set up environment variables in `.env` file as explained in [environment variables reference](/docs/deployment/env-vars)
