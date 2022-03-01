@@ -135,11 +135,6 @@ body {
   width: 0.75rem;
 }
 
-.menu::-webkit-scrollbar {
-  width: 0;
-  background: transparent;
-}
-
 .hero--primary {
   --ifm-hero-background-color: #00bcd4;
 }
@@ -154,4 +149,12 @@ strong {
 
 .alert a {
   color: inherit;
+}
+
+.menu {
+  overflow: hidden;
+}
+
+.menu:hover {
+  overflow-y: overlay;
 }

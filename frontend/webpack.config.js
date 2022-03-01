@@ -9,6 +9,8 @@ const API_URL = {
   development: 'http://localhost:3000',
 };
 
+const ASSET_PATH = process.env.ASSET_PATH || '/';
+
 module.exports = {
   mode: environment,
   optimization: {
@@ -22,7 +24,7 @@ module.exports = {
       '@ee': path.resolve(__dirname, 'ee/'),
     },
   },
-  ...(environment === 'development' && { devtool: 'inline-source-map' }),
+  devtool: environment === 'development' ? 'inline-source-map' : 'source-map',
   module: {
     rules: [
       {
@@ -87,12 +89,19 @@ module.exports = {
       template: './src/index.html',
     }),
     new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
+    new webpack.DefinePlugin({
+      'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
+    }),
   ],
   devServer: {
-    historyApiFallback: true,
+    historyApiFallback: { index: ASSET_PATH },
+    static: {
+      directory: path.resolve(__dirname, 'assets'),
+      publicPath: '/assets/',
+    },
   },
   output: {
-    publicPath: process.env.ASSET_PATH || '/',
+    publicPath: ASSET_PATH,
     path: path.resolve(__dirname, 'build'),
   },
   externals: {

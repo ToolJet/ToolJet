@@ -71,7 +71,9 @@ const DynamicForm = ({
     lineNumbers = true,
     initialValue,
     height = 'auto',
+    width,
     ignoreBraces = false,
+    className,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -134,11 +136,12 @@ const DynamicForm = ({
             : initialValue,
           mode,
           lineNumbers,
-          className: lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
+          className: className ? className : lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
           onChange: (value) => optionchanged(key, value),
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
           height,
+          width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
           ignoreBraces,
         };
@@ -198,9 +201,18 @@ const DynamicForm = ({
       return (
         <>
           <div className="row">
-            <div className="col-md-12 my-2">
+            {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
+            <div
+              className={cx('my-2', {
+                'col-md-12': !flipComponentDropdown.className,
+                [flipComponentDropdown.className]: !!flipComponentDropdown.className,
+              })}
+            >
               {flipComponentDropdown.label && <label className="form-label">{flipComponentDropdown.label}</label>}
               <Select {...getElementProps(flipComponentDropdown)} />
+              {flipComponentDropdown.helpText && (
+                <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
+              )}
             </div>
           </div>
           {getLayout(obj[selector])}

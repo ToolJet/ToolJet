@@ -62,6 +62,14 @@ export function fetchOAuthToken(authUrl, dataSourceId) {
   window.open(authUrl);
 }
 
+export function addToLocalStorage(object) {
+  localStorage.setItem(object['key'], object['value']);
+}
+
+export function getDataFromLocalStorage(key) {
+  return localStorage.getItem(key);
+}
+
 export function runTransformation(_ref, rawData, transformation, query) {
   const data = rawData;
   const evalFunction = Function(['data', 'moment', '_', 'components', 'queries', 'globals'], transformation);
@@ -79,12 +87,12 @@ export function runTransformation(_ref, rawData, transformation, query) {
   return result;
 }
 
-export async function executeActionsForEventId(_ref, eventId, component, mode) {
+export async function executeActionsForEventId(_ref, eventId, component, mode, customVariables) {
   const events = component.definition.events || [];
   const filteredEvents = events.filter((event) => event.eventId === eventId);
 
   for (const event of filteredEvents) {
-    await executeAction(_ref, event, mode); // skipcq: JS-0032
+    await executeAction(_ref, event, mode, customVariables); // skipcq: JS-0032
   }
 }
 
@@ -115,7 +123,7 @@ async function copyToClipboard(text) {
 }
 
 function showModal(_ref, modal, show) {
-  const modalId = modal.id;
+  const modalId = modal?.id ?? modal;
   if (_.isEmpty(modalId)) {
     console.log('No modal is associated with this event.');
     return Promise.resolve();
@@ -141,11 +149,12 @@ function showModal(_ref, modal, show) {
   return Promise.resolve();
 }
 
-function executeAction(_ref, event, mode) {
+function executeAction(_ref, event, mode, customVariables) {
+  console.log('nopski', customVariables);
   if (event) {
     switch (event.actionId) {
       case 'show-alert': {
-        const message = resolveReferences(event.message, _ref.state.currentState);
+        const message = resolveReferences(event.message, _ref.state.currentState, undefined, customVariables);
         switch (event.alertType) {
           case 'success':
           case 'error':
@@ -169,20 +178,22 @@ function executeAction(_ref, event, mode) {
       }
 
       case 'open-webpage': {
-        const url = resolveReferences(event.url, _ref.state.currentState);
+        const url = resolveReferences(event.url, _ref.state.currentState, undefined, customVariables);
         window.open(url, '_blank');
         return Promise.resolve();
       }
 
       case 'go-to-app': {
-        const slug = resolveReferences(event.slug, _ref.state.currentState);
+        const slug = resolveReferences(event.slug, _ref.state.currentState, undefined, customVariables);
         const queryParams = event.queryParams?.reduce(
           (result, queryParam) => ({
             ...result,
             ...{
               [resolveReferences(queryParam[0], _ref.state.currentState)]: resolveReferences(
                 queryParam[1],
-                _ref.state.currentState
+                _ref.state.currentState,
+                undefined,
+                customVariables
               ),
             },
           }),
@@ -215,15 +226,20 @@ function executeAction(_ref, event, mode) {
         return showModal(_ref, event.modal, false);
 
       case 'copy-to-clipboard': {
-        const contentToCopy = resolveReferences(event.contentToCopy, _ref.state.currentState);
+        const contentToCopy = resolveReferences(
+          event.contentToCopy,
+          _ref.state.currentState,
+          undefined,
+          customVariables
+        );
         copyToClipboard(contentToCopy);
 
         return Promise.resolve();
       }
 
       case 'set-localstorage-value': {
-        const key = resolveReferences(event.key, _ref.state.currentState);
-        const value = resolveReferences(event.value, _ref.state.currentState);
+        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
+        const value = resolveReferences(event.value, _ref.state.currentState, undefined, customVariables);
         localStorage.setItem(key, value);
 
         return Promise.resolve();
@@ -231,8 +247,9 @@ function executeAction(_ref, event, mode) {
 
       case 'generate-file': {
         // const fileType = event.fileType;
-        const data = resolveReferences(event.data, _ref.state.currentState) ?? [];
-        const fileName = resolveReferences(event.fileName, _ref.state.currentState) ?? 'data.txt';
+        const data = resolveReferences(event.data, _ref.state.currentState, undefined, customVariables) ?? [];
+        const fileName =
+          resolveReferences(event.fileName, _ref.state.currentState, undefined, customVariables) ?? 'data.txt';
 
         const csv = generateCSV(data);
         generateFile(fileName, csv);
@@ -245,8 +262,8 @@ function executeAction(_ref, event, mode) {
       }
 
       case 'set-custom-variable': {
-        const key = resolveReferences(event.key, _ref.state.currentState);
-        const value = resolveReferences(event.value, _ref.state.currentState);
+        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
+        const value = resolveReferences(event.value, _ref.state.currentState, undefined, customVariables);
         const customVariables = { ..._ref.state.currentState.variables };
         customVariables[key] = value;
 
@@ -259,7 +276,7 @@ function executeAction(_ref, event, mode) {
       }
 
       case 'unset-custom-variable': {
-        const key = resolveReferences(event.key, _ref.state.currentState);
+        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
         const customVariables = { ..._ref.state.currentState.variables };
         delete customVariables[key];
 
@@ -278,6 +295,8 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
   console.log('Event: ', eventName);
 
+  const { customVariables } = options;
+
   if (eventName === 'onRowClicked') {
     const { component, data, rowId } = options;
     _self.setState(
@@ -295,7 +314,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
       () => {
-        executeActionsForEventId(_ref, 'onRowClicked', component, mode);
+        executeActionsForEventId(_ref, 'onRowClicked', component, mode, customVariables);
       }
     );
   }
@@ -316,7 +335,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
       () => {
-        executeActionsForEventId(_ref, 'onCalendarEventSelect', component, mode);
+        executeActionsForEventId(_ref, 'onCalendarEventSelect', component, mode, customVariables);
       }
     );
   }
@@ -337,7 +356,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
       () => {
-        executeActionsForEventId(_ref, 'onCalendarSlotSelect', component, mode);
+        executeActionsForEventId(_ref, 'onCalendarSlotSelect', component, mode, customVariables);
       }
     );
   }
@@ -363,7 +382,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
           for (const event of action.events) {
             if (event.actionId) {
               // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-              await executeAction(_self, { ...event, ...event.options }, mode);
+              await executeAction(_self, { ...event, ...event.options }, mode, customVariables);
             }
           }
         } else {
@@ -394,7 +413,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
           for (const event of column.events) {
             if (event.actionId) {
               // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-              await executeAction(_self, { ...event, ...event.options }, mode);
+              await executeAction(_self, { ...event, ...event.options }, mode, customVariables);
             }
           }
         } else {
@@ -431,25 +450,26 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     ].includes(eventName)
   ) {
     const { component } = options;
-    executeActionsForEventId(_ref, eventName, component, mode);
+    executeActionsForEventId(_ref, eventName, component, mode, customVariables);
   }
 
   if (eventName === 'onBulkUpdate') {
     onComponentOptionChanged(_self, options.component, 'isSavingChanges', true);
-    await executeActionsForEventId(_self, eventName, options.component, mode);
+    await executeActionsForEventId(_self, eventName, options.component, mode, customVariables);
     onComponentOptionChanged(_self, options.component, 'isSavingChanges', false);
   }
 
   if (['onDataQuerySuccess', 'onDataQueryFailure'].includes(eventName)) {
-    await executeActionsForEventId(_self, eventName, options, mode);
+    await executeActionsForEventId(_self, eventName, options, mode, customVariables);
   }
 }
 
-function getQueryVariables(options, state) {
+export function getQueryVariables(options, state) {
   let queryVariables = {};
   const optionsType = typeof options;
   switch (optionsType) {
     case 'string': {
+      options = options.replace(/\n/g, ' ');
       const dynamicVariables = getDynamicVariables(options) || [];
       dynamicVariables.forEach((variable) => {
         queryVariables[variable] = resolveReferences(variable, state);
@@ -572,6 +592,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
+        console.log('here');
         queryExecutionPromise = executeMultilineJS(_self.state.currentState, query.options.code);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
@@ -713,15 +734,15 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
   });
 }
 
-function setTablePageIndex(_ref, table, index) {
-  if (_.isEmpty(table.id)) {
+export function setTablePageIndex(_ref, tableId, index) {
+  if (_.isEmpty(tableId)) {
     console.log('No table is associated with this event.');
     return Promise.resolve();
   }
 
-  const tableMeta = _ref.state.currentState.components[table.name];
+  const table = Object.entries(_ref.state.currentState.components).filter((entry) => entry[1].id === tableId)[0][1];
   const newPageIndex = resolveReferences(index, _ref.state.currentState);
-  tableMeta.setPage(newPageIndex);
+  table.setPage(newPageIndex ?? 1);
   return Promise.resolve();
 }
 
@@ -733,7 +754,7 @@ export function renderTooltip({ props, text }) {
   );
 }
 
-export function computeComponentState(_ref, components) {
+export function computeComponentState(_ref, components = {}) {
   let componentState = {};
   const currentComponents = _ref.state.currentState.components;
   Object.keys(components).forEach((key) => {

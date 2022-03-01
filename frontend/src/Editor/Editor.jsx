@@ -3,6 +3,7 @@ import React, { createRef } from 'react';
 import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { computeComponentName } from '@/_helpers/utils';
 import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
 import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -42,6 +43,11 @@ import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { AppVersionsManager } from './AppVersionsManager';
+import { SearchBoxComponent } from '@/_ui/Search';
+import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
+import { createWebsocketConnection } from '@/_helpers/websocketConnection';
+import Tooltip from 'react-bootstrap/Tooltip';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 setAutoFreeze(false);
 enablePatches();
@@ -52,7 +58,12 @@ class Editor extends React.Component {
     const appId = this.props.match.params.id;
 
     const currentUser = authenticationService.currentUserValue;
+
+    const { socket } = createWebsocketConnection(appId);
+
     let userVars = {};
+
+    this.socket = socket;
 
     if (currentUser) {
       userVars = {
@@ -108,7 +119,6 @@ class Editor extends React.Component {
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
-      socket: null,
       showInitVersionCreateModal: false,
       isCreatingInitVersion: false,
       initVersionName: 'v1',
@@ -133,7 +143,6 @@ class Editor extends React.Component {
     this.fetchApp();
     this.initComponentVersioning();
     this.initEventListeners();
-    config.COMMENT_FEATURE_ENABLE && this.initWebSocket();
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
@@ -159,7 +168,7 @@ class Editor extends React.Component {
       this.setState({
         isTopOfQueryPane: true,
       });
-    } else {
+    } else if (this.state.isTopOfQueryPane) {
       this.setState({
         isTopOfQueryPane: false,
       });
@@ -198,58 +207,9 @@ class Editor extends React.Component {
   componentWillUnmount() {
     document.removeEventListener('mousemove', this.onMouseMove);
     document.removeEventListener('mouseup', this.onMouseUp);
-    if (this.state.socket) {
-      this.state.socket?.close();
-    }
     document.title = 'Tooljet - Dashboard';
+    this.socket && this.socket?.close();
   }
-
-  getWebsocketUrl = () => {
-    const re = /https?:\/\//g;
-    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '');
-
-    return window.location.host;
-  };
-
-  initWebSocket = () => {
-    // TODO: add retry policy
-    const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.getWebsocketUrl()}`);
-
-    const appId = this.props.match.params.id;
-
-    // Connection opened
-    socket.addEventListener('open', function (event) {
-      console.log('connection established', event);
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
-      socket.send(
-        JSON.stringify({
-          event: 'authenticate',
-          data: currentUser.auth_token,
-        })
-      );
-      socket.send(
-        JSON.stringify({
-          event: 'subscribe',
-          data: appId,
-        })
-      );
-    });
-
-    // Connection closed
-    socket.addEventListener('close', function (event) {
-      console.log('connection closed', event);
-    });
-
-    // Listen for possible errors
-    socket.addEventListener('error', function (event) {
-      console.log('WebSocket error: ', event);
-    });
-
-    this.setState({
-      socket,
-    });
-  };
 
   // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
   // 2. Whenever you perform an undo – you can always redo and keep doing undo as long as we have a patch for it.
@@ -317,6 +277,7 @@ class Editor extends React.Component {
                     ...queryState,
                   },
                 },
+                showQuerySearchField: false,
               });
             }
           );
@@ -502,9 +463,19 @@ class Editor extends React.Component {
     if (!this.isVersionReleased()) {
       let newDefinition = cloneDeep(this.state.appDefinition);
       // Delete child components when parent is deleted
-      const childComponents = Object.keys(newDefinition.components).filter(
-        (key) => newDefinition.components[key].parent === component.id
-      );
+
+      let childComponents = [];
+
+      if (newDefinition.components[component.id].component.component === 'Tabs') {
+        childComponents = Object.keys(newDefinition.components).filter((key) =>
+          newDefinition.components[key].parent?.startsWith(component.id)
+        );
+      } else {
+        childComponents = Object.keys(newDefinition.components).filter(
+          (key) => newDefinition.components[key].parent === component.id
+        );
+      }
+
       childComponents.forEach((componentId) => {
         delete newDefinition.components[componentId];
       });
@@ -540,28 +511,27 @@ class Editor extends React.Component {
     return setStateAsync(_self, newDefinition);
   };
 
-  componentChanged = (newComponent) => {
-    this.setState({
-      appDefinition: {
-        ...this.state.appDefinition,
-        components: {
-          ...this.state.appDefinition.components,
-          [newComponent.id]: {
-            ...this.state.appDefinition.components[newComponent.id],
-            ...newComponent,
-          },
-        },
-      },
-    });
+  cloneComponent = (newComponent) => {
+    const appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
+
+    newComponent.component.name = computeComponentName(newComponent.component.component, appDefinition.components);
+
+    appDefinition.components[newComponent.id] = newComponent;
+    this.appDefinitionChanged(appDefinition);
   };
 
   globalSettingsChanged = (key, value) => {
     const appDefinition = { ...this.state.appDefinition };
 
     appDefinition.globalSettings[key] = value;
-    this.setState({
-      appDefinition,
-    });
+    this.setState(
+      {
+        appDefinition,
+      },
+      () => {
+        this.autoSave();
+      }
+    );
   };
 
   saveApp = (id, attributes, notify = false) => {
@@ -651,20 +621,33 @@ class Editor extends React.Component {
 
     return (
       <div
-        className={'row query-row py-2 px-3' + (isSeletedQuery ? ' query-row-selected' : '')}
+        className={
+          'row query-row mb-1 py-2 px-3' +
+          (isSeletedQuery ? ' query-row-selected' : '') +
+          (this.props.darkMode ? ' dark' : '')
+        }
         key={dataQuery.id}
         onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
         role="button"
         onMouseEnter={() => this.setShowHiddenOptionsForDataQuery(dataQuery.id)}
         onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
-        <div className="col">
+        <div className="col-auto" style={{ width: '28px' }}>
           {sourceMeta.kind === 'runjs' ? (
             <RunjsIcon style={{ height: 25, width: 25 }} />
           ) : (
             getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)
           )}
-          <span className="p-3">{dataQuery.name}</span>
+        </div>
+        <div className="col">
+          <OverlayTrigger
+            trigger={['hover', 'focus']}
+            placement="top"
+            delay={{ show: 800, hide: 100 }}
+            overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
+          >
+            <div className="px-3 query-name">{dataQuery.name}</div>
+          </OverlayTrigger>
         </div>
         <div className="col-auto mx-1">
           {isQueryBeingDeleted ? (
@@ -677,22 +660,26 @@ class Editor extends React.Component {
               onClick={this.deleteDataQuery}
               style={{
                 display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
+                marginTop: '3px',
               }}
             >
               <div>
-                <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
+                <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" className="mx-1" />
               </div>
             </button>
           )}
         </div>
-        <div className="col-auto">
+        <div className="col-auto" style={{ width: '28px' }}>
           {isLoading === true ? (
-            <div className="px-2">
-              <div className="text-center spinner-border spinner-border-sm" role="status"></div>
-            </div>
+            <center>
+              <div className="pt-1">
+                <div className="text-center spinner-border spinner-border-sm" role="status"></div>
+              </div>
+            </center>
           ) : (
             <button
-              className="btn badge bg-azure-lt"
+              style={{ marginTop: '3px' }}
+              className="btn badge bg-light-1"
               onClick={() => {
                 runQuery(this, dataQuery.id, dataQuery.name).then(() => {
                   toast(`Query (${dataQuery.name}) completed.`, {
@@ -701,7 +688,7 @@ class Editor extends React.Component {
                 });
               }}
             >
-              <div>
+              <div className={`query-icon ${this.props.darkMode && 'dark'}`}>
                 <img src="/assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
               </div>
             </button>
@@ -729,7 +716,7 @@ class Editor extends React.Component {
     this.setState({ showComments: !this.state.showComments });
   };
 
-  configHandleClicked = (id, component) => {
+  setSelectedComponent = (id, component) => {
     this.switchSidebarTab(1);
     this.setState({ selectedComponent: { id, component } });
   };
@@ -740,7 +727,7 @@ class Editor extends React.Component {
       const results = fuse.search(value);
       this.setState({
         dataQueries: results.map((result) => result.item),
-        dataQueriesDefaultText: results.length ?? 'No Queries found.',
+        dataQueriesDefaultText: 'No Queries found.',
       });
     } else {
       this.fetchDataQueries();
@@ -801,12 +788,14 @@ class Editor extends React.Component {
       </span>
     );
   };
+
   handleKeyPress = (event) => {
     if (event.key === 'Enter') {
       // eslint-disable-next-line no-undef
       this.createInitVersion();
     }
   };
+
   createInitVersion = () => {
     const newVersionName = this.state.initVersionName;
     const appId = this.state.appId;
@@ -814,10 +803,15 @@ class Editor extends React.Component {
     if (!isEmpty(newVersionName?.trim())) {
       this.setState({ isCreatingInitVersion: true });
       appVersionService.create(appId, newVersionName).then(() => {
-        this.setState({
-          showInitVersionCreateModal: false,
-          isCreatingInitVersion: false,
-        });
+        this.setState(
+          {
+            showInitVersionCreateModal: false,
+            isCreatingInitVersion: false,
+          },
+          () => {
+            initEditorWalkThrough();
+          }
+        );
         toast.success('Version Created');
         this.fetchApp();
       });
@@ -850,7 +844,6 @@ class Editor extends React.Component {
         enforceFocus={false}
         animation={false}
         centered={true}
-        // eslint-disable-next-line no-undef
       >
         <Modal.Header>
           <Modal.Title>Create Version</Modal.Title>
@@ -887,10 +880,33 @@ class Editor extends React.Component {
     );
   };
 
+  handleOnComponentOptionChanged = (component, optionName, value) => {
+    return onComponentOptionChanged(this, component, optionName, value);
+  };
+
+  handleOnComponentOptionsChanged = (component, options) => {
+    onComponentOptionsChanged(this, component, options);
+  };
+
+  handleComponentClick = (id, component) => {
+    this.setState({
+      selectedComponent: { id, component },
+    });
+    this.switchSidebarTab(1);
+  };
+
+  handleComponentHover = (id) => {
+    this.setState({
+      hoveredComponent: id,
+    });
+  };
+
+  handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
+
   render() {
     const {
       currentSidebarTab,
-      selectedComponent,
+      selectedComponent = {},
       appDefinition,
       appId,
       slug,
@@ -923,9 +939,10 @@ class Editor extends React.Component {
       isSavingEditingVersion,
       showSaveDetail,
       showCreateVersionModalPrompt,
+      hoveredComponent,
     } = this.state;
 
-    const appLink = slug ? `/applications/${slug}` : '';
+    const appVersionPreviewLink = editingVersion ? `/applications/${app.id}/versions/${editingVersion.id}` : '';
 
     return (
       <div className="editor wrapper">
@@ -982,7 +999,7 @@ class Editor extends React.Component {
                 {showSaveDetail && (
                   <div className="nav-auto-save">
                     <img src={'/assets/images/icons/editor/auto-save.svg'} width="25" height="25" />
-                    <em className="small lh-base p-1">{isSavingEditingVersion ? 'Auto Saving..' : 'Auto Saved'}</em>
+                    <em className="small lh-base p-1">{isSavingEditingVersion ? 'Saving..' : 'Saved'}</em>
                   </div>
                 )}
 
@@ -1000,10 +1017,10 @@ class Editor extends React.Component {
                 <div className="layout-buttons cursor-pointer">
                   {this.renderLayoutIcon(currentLayout === 'desktop')}
                 </div>
-                <div className="navbar-nav flex-row order-md-last">
+                <div className="navbar-nav flex-row order-md-last release-buttons">
                   <div className="nav-item dropdown d-none d-md-flex me-2">
                     <a
-                      href={appLink}
+                      href={appVersionPreviewLink}
                       target="_blank"
                       className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
                       rel="noreferrer"
@@ -1030,6 +1047,7 @@ class Editor extends React.Component {
                         onVersionRelease={this.onVersionRelease}
                         editingVersion={editingVersion}
                         fetchApp={this.fetchApp}
+                        saveEditingVersion={this.saveEditingVersion}
                       />
                     )}
                   </div>
@@ -1075,7 +1093,7 @@ class Editor extends React.Component {
                     <>
                       <Container
                         canvasWidth={this.getCanvasWidth()}
-                        socket={this.state.socket}
+                        socket={this.socket}
                         showComments={showComments}
                         appVersionsId={this.state?.editingVersion?.id}
                         appDefinition={appDefinition}
@@ -1086,26 +1104,19 @@ class Editor extends React.Component {
                         zoomLevel={zoomLevel}
                         currentLayout={currentLayout}
                         deviceWindowWidth={deviceWindowWidth}
-                        selectedComponent={selectedComponent || {}}
+                        selectedComponent={selectedComponent}
                         appLoading={isLoading}
-                        onEvent={(eventName, options) => onEvent(this, eventName, options, 'edit')}
-                        onComponentOptionChanged={(component, optionName, value) =>
-                          onComponentOptionChanged(this, component, optionName, value)
-                        }
-                        onComponentOptionsChanged={(component, options) =>
-                          onComponentOptionsChanged(this, component, options)
-                        }
+                        onEvent={this.handleEvent}
+                        onComponentOptionChanged={this.handleOnComponentOptionChanged}
+                        onComponentOptionsChanged={this.handleOnComponentOptionsChanged}
                         currentState={this.state.currentState}
-                        configHandleClicked={this.configHandleClicked}
+                        setSelectedComponent={this.setSelectedComponent}
                         handleUndo={this.handleUndo}
                         handleRedo={this.handleRedo}
                         removeComponent={this.removeComponent}
-                        onComponentClick={(id, component) => {
-                          this.setState({
-                            selectedComponent: { id, component },
-                          });
-                          this.switchSidebarTab(1);
-                        }}
+                        onComponentClick={this.handleComponentClick}
+                        onComponentHover={this.handleComponentHover}
+                        hoveredComponent={hoveredComponent}
                       />
                       <CustomDragLayer
                         snapToGrid={true}
@@ -1160,56 +1171,58 @@ class Editor extends React.Component {
                 }}
               >
                 <div className="row main-row">
-                  <div className="col-md-3 data-pane">
+                  <div className="col-3 data-pane">
                     <div className="queries-container">
-                      <div className="queries-header row mt-2">
-                        <div className="col">
-                          <h5 className="py-1 px-3 text-muted">QUERIES</h5>
-                        </div>
-                        <div className="col-auto px-3">
-                          <button
-                            className="btn btn-sm btn-light mx-2"
-                            data-class="py-1 px-2"
-                            data-tip="Search query"
-                            onClick={this.toggleQuerySearch}
-                          >
-                            <img className="py-1" src="/assets/images/icons/lens.svg" width="17" height="17" />
-                          </button>
-
-                          <span
-                            data-tip="Add new query"
-                            data-class="py-1 px-2"
-                            className="btn btn-sm btn-light btn-px-1 text-muted"
-                            onClick={() =>
-                              this.setState({
-                                options: {},
-                                selectedDataSource: null,
-                                selectedQuery: {},
-                                editingQuery: false,
-                                addingQuery: true,
-                              })
-                            }
-                          >
-                            +
-                          </span>
-                        </div>
-                      </div>
-
-                      {showQuerySearchField && (
-                        <div className="row mt-2 pt-1 px-2">
-                          <div className="col-12">
-                            <div className="queries-search">
-                              <input
-                                type="text"
-                                className="form-control mb-2"
-                                placeholder="Search…"
-                                autoFocus
-                                onChange={(e) => this.filterQueries(e.target.value)}
+                      <div className="queries-header row">
+                        {showQuerySearchField && (
+                          <div className="col-12 p-1">
+                            <div className="queries-search px-1">
+                              <SearchBoxComponent
+                                onChange={this.filterQueries}
+                                callback={this.toggleQuerySearch}
+                                placeholder={'Search queries'}
                               />
                             </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+
+                        {!showQuerySearchField && (
+                          <>
+                            <div className="col">
+                              <h5 style={{ fontSize: '14px' }} className="py-1 px-3 mt-2 text-muted">
+                                Queries
+                              </h5>
+                            </div>
+
+                            <div className="col-auto mx-1">
+                              <span
+                                className={`query-btn mx-1 ${this.props.darkMode ? 'dark' : ''}`}
+                                data-class="py-1 px-0"
+                                onClick={this.toggleQuerySearch}
+                              >
+                                <img className="py-1 mt-2" src="/assets/images/icons/lens.svg" width="24" height="24" />
+                              </span>
+
+                              <span
+                                className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
+                                data-tip="Add new query"
+                                data-class="py-1 px-2"
+                                onClick={() =>
+                                  this.setState({
+                                    options: {},
+                                    selectedDataSource: null,
+                                    selectedQuery: {},
+                                    editingQuery: false,
+                                    addingQuery: true,
+                                  })
+                                }
+                              >
+                                <img className="mt-2" src="/assets/images/icons/plus.svg" width="24" height="24" />
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </div>
 
                       {loadingDataQueries ? (
                         <div className="p-5">
@@ -1218,23 +1231,25 @@ class Editor extends React.Component {
                           </center>
                         </div>
                       ) : (
-                        <div className="query-list">
+                        <div className="query-list p-1 mt-1">
                           <div>{dataQueries.map((query) => this.renderDataQuery(query))}</div>
                           {dataQueries.length === 0 && (
                             <div className="mt-5">
                               <center>
-                                <span className="text-muted">{dataQueriesDefaultText}</span> <br />
+                                <span className="mute-text">{dataQueriesDefaultText}</span> <br />
                                 <button
-                                  className="btn font-500 color-primary btn-sm mt-3"
+                                  className={`button-family-secondary mt-3 ${this.props.darkMode && 'dark'}`}
                                   onClick={() =>
                                     this.setState({
+                                      options: {},
+                                      selectedDataSource: null,
                                       selectedQuery: {},
                                       editingQuery: false,
                                       addingQuery: true,
                                     })
                                   }
                                 >
-                                  create query
+                                  {'Create query'}
                                 </button>
                               </center>
                             </div>
@@ -1243,7 +1258,7 @@ class Editor extends React.Component {
                       )}
                     </div>
                   </div>
-                  <div className="col-md-9 query-definition-pane-wrapper">
+                  <div className="col-9 query-definition-pane-wrapper">
                     {!loadingDataSources && (
                       <div className="query-definition-pane">
                         <div>
@@ -1283,9 +1298,9 @@ class Editor extends React.Component {
                   !isEmpty(appDefinition.components) &&
                   !isEmpty(appDefinition.components[selectedComponent.id]) ? (
                     <Inspector
+                      cloneComponent={this.cloneComponent}
                       componentDefinitionChanged={this.componentDefinitionChanged}
                       dataQueries={dataQueries}
-                      componentChanged={this.componentChanged}
                       removeComponent={this.removeComponent}
                       selectedComponentId={selectedComponent.id}
                       currentState={currentState}
@@ -1312,7 +1327,7 @@ class Editor extends React.Component {
             </div>
             {config.COMMENT_FEATURE_ENABLE && showComments && (
               <CommentNotifications
-                socket={this.state.socket}
+                socket={this.socket}
                 appVersionsId={this.state?.editingVersion?.id}
                 toggleComments={this.toggleComments}
               />

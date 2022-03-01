@@ -12,6 +12,8 @@ export const AppMenu = function AppMenu({
   onMenuOpen,
   isMenuOpen,
   openAppActionModal,
+  darkMode,
+  currentFolder,
 }) {
   const closeMenu = () => {
     document.body.click();
@@ -39,13 +41,17 @@ export const AppMenu = function AppMenu({
       rootClose
       onToggle={onMenuOpen}
       overlay={
-        <Popover id="popover-app-menu">
+        <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'}>
           <Popover.Content bsPrefix="popover-body">
             <div>
               {canUpdateApp && <Field text="Change icon" onClick={() => openAppActionModal('change-icon')} />}
               {canCreateApp && (
                 <>
                   <Field text="Add to folder" onClick={() => openAppActionModal('add-to-folder')} />
+
+                  {currentFolder.id && (
+                    <Field text="Remove from folder" onClick={() => openAppActionModal('remove-app-from-folder')} />
+                  )}
                   <Field text="Clone app" onClick={cloneApp} />
                   <Field text="Export app" onClick={exportApp} />
                 </>

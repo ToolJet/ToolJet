@@ -21,12 +21,14 @@ export const AppVersionsManager = function AppVersionsManager({
 
   useEffect(() => {
     setCreateAppVersionFrom(editingAppVersion);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appVersions]);
 
   useEffect(() => {
     appVersionService.getAll(appId).then((data) => {
       setAppVersions(data.versions);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const wrapperRef = useRef(null);
@@ -54,7 +56,7 @@ export const AppVersionsManager = function AppVersionsManager({
       appVersionService
         .create(appId, versionName, createAppVersionFrom.id)
         .then(() => {
-          setShowModal(false);
+          closeModal();
           toast.success('Version Created');
 
           appVersionService.getAll(appId).then((data) => {
@@ -148,8 +150,20 @@ const CreateVersionModal = function CreateVersionModal({
   appVersions,
   showCreateVersionModalPrompt,
 }) {
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      // eslint-disable-next-line no-undef
+      createVersion(versionName, createAppVersionFrom);
+    }
+  };
   return (
-    <Modal show={showModal || showCreateVersionModalPrompt} setShow={setShowModal} title="Create Version">
+    <Modal
+      show={showModal || showCreateVersionModalPrompt}
+      setShow={setShowModal}
+      title="Create Version"
+      autoFocus={false}
+      closeModal={() => setShowModal(false)}
+    >
       <div className="mb-3">
         <div className="col">
           <label className="form-label">Version Name</label>
@@ -160,6 +174,8 @@ const CreateVersionModal = function CreateVersionModal({
             placeholder="Enter version name"
             disabled={isCreatingVersion}
             value={versionName}
+            autoFocus={true}
+            onKeyPress={(e) => handleKeyPress(e)}
           />
         </div>
       </div>

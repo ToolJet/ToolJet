@@ -580,7 +580,7 @@ class DataSourceManager extends React.Component {
                       </svg>
                     </div>
                     <div className="col" style={{ maxWidth: '480px' }}>
-                      <p>Please white-list our IP address if your databases are not publicly accessabile</p>
+                      <p>Please white-list our IP address if the data source is not publicly accessible.</p>
                     </div>
                     <div className="col-auto">
                       {isCopied ? (

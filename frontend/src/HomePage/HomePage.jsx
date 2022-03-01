@@ -28,10 +28,13 @@ class HomePage extends React.Component {
       isCloningApp: false,
       isExportingApp: false,
       isImportingApp: false,
+      isDeletingAppFromFolder: false,
       currentFolder: {},
       currentPage: 1,
       appSearchKey: '',
+      appToBeDeleted: false,
       showAppDeletionConfirmation: false,
+      showRemoveAppFromFolderConfirmation: false,
       showAddToFolderModal: false,
       apps: [],
       folders: [],
@@ -362,16 +365,54 @@ class HomePage extends React.Component {
       });
   };
 
-  appActionModal = (app, action) => {
+  removeAppFromFolder = () => {
+    const { appOperations } = this.state;
+    if (!appOperations?.selectedFolder || !appOperations?.selectedApp) {
+      return toast.error('Select a folder', { position: 'top-center' });
+    }
+    this.setState({ isDeletingAppFromFolder: true });
+
+    folderService
+      .removeAppFromFolder(appOperations.selectedApp.id, appOperations.selectedFolder.id)
+      .then(() => {
+        toast.success('Removed from folder.', {
+          position: 'top-center',
+        });
+
+        this.fetchApps(1, appOperations.selectedFolder.id);
+        this.fetchFolders();
+      })
+      .catch(({ error }) => {
+        toast.error(error, { position: 'top-center' });
+      })
+      .finally(() => {
+        this.setState({
+          appOperations: {},
+          isDeletingAppFromFolder: false,
+          showRemoveAppFromFolderConfirmation: false,
+        });
+      });
+  };
+
+  appActionModal = (app, folder, action) => {
     const { appOperations } = this.state;
 
-    if (action === 'add-to-folder') {
-      this.setState({ appOperations: { ...appOperations, selectedApp: app }, showAddToFolderModal: true });
-    } else if (action === 'change-icon') {
-      this.setState({
-        appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
-        showChangeIconModal: true,
-      });
+    switch (action) {
+      case 'add-to-folder':
+        this.setState({ appOperations: { ...appOperations, selectedApp: app }, showAddToFolderModal: true });
+        break;
+      case 'change-icon':
+        this.setState({
+          appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
+          showChangeIconModal: true,
+        });
+        break;
+      case 'remove-app-from-folder':
+        this.setState({
+          appOperations: { ...appOperations, selectedApp: app, selectedFolder: folder },
+          showRemoveAppFromFolderConfirmation: true,
+        });
+        break;
     }
   };
 
@@ -424,7 +465,12 @@ class HomePage extends React.Component {
       });
   };
 
-  showTemplateLibraryModal = () => this.setState({ showTemplateLibraryModal: true });
+  showTemplateLibraryModal = () => {
+    this.setState({ showTemplateLibraryModal: true });
+  };
+  hideTemplateLibraryModal = () => {
+    this.setState({ showTemplateLibraryModal: false });
+  };
 
   render() {
     const {
@@ -434,8 +480,10 @@ class HomePage extends React.Component {
       meta,
       currentFolder,
       showAppDeletionConfirmation,
+      showRemoveAppFromFolderConfirmation,
       isDeletingApp,
       isImportingApp,
+      isDeletingAppFromFolder,
       appSearchKey,
       showAddToFolderModal,
       showChangeIconModal,
@@ -455,6 +503,20 @@ class HomePage extends React.Component {
           onCancel={() => this.cancelDeleteAppDialog()}
         />
 
+        <ConfirmDialog
+          show={showRemoveAppFromFolderConfirmation}
+          message={'The app will be removed from this folder, do you want to continue?'}
+          confirmButtonLoading={isDeletingAppFromFolder}
+          onConfirm={() => this.removeAppFromFolder()}
+          onCancel={() =>
+            this.setState({
+              appOperations: {},
+              isDeletingAppFromFolder: false,
+              showRemoveAppFromFolderConfirmation: false,
+            })
+          }
+        />
+
         <Modal
           show={showAddToFolderModal && !!appOperations.selectedApp}
           closeModal={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
@@ -469,6 +531,7 @@ class HomePage extends React.Component {
               </div>
               <div>
                 <SelectSearch
+                  className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                   options={this.state.folders.map((folder) => {
                     return { name: folder.name, value: folder.id };
                   })}
@@ -538,6 +601,11 @@ class HomePage extends React.Component {
             isImportingApp={isImportingApp}
             fileInput={this.fileInput}
             handleImportApp={this.handleImportApp}
+            creatingApp={creatingApp}
+            darkMode={this.props.darkMode}
+            showTemplateLibraryModal={this.state.showTemplateLibraryModal}
+            viewTemplateLibraryModal={this.showTemplateLibraryModal}
+            hideTemplateLibraryModal={this.hideTemplateLibraryModal}
           />
         )}
 
@@ -584,6 +652,7 @@ class HomePage extends React.Component {
                       isLoading={isLoading}
                       darkMode={this.props.darkMode}
                       appActionModal={this.appActionModal}
+                      removeAppFromFolder={this.removeAppFromFolder}
                     />
                     <div className="homepage-pagination">
                       {this.pageCount() > 10 && (
@@ -601,6 +670,7 @@ class HomePage extends React.Component {
             </div>
             <TemplateLibraryModal
               show={this.state.showTemplateLibraryModal}
+              onHide={() => this.setState({ showTemplateLibraryModal: false })}
               onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
               darkMode={this.props.darkMode}
             />

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 14
+sidebar_position: 16
 ---
 
 # Redis
@@ -16,7 +16,7 @@ ToolJet requires the following to connect to your Redis instances.
 - **Username**
 - **Password**
 
-Click on "Test" button to test the connection and click "Save" to save the datasource.
+Click on "Test" button to test the connection and click "Save" to save the data source.
 
 ## Redis Queries
 

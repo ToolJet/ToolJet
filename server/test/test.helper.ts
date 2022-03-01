@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { getConnection, Repository } from 'typeorm';
+import { getConnection, getManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { User } from 'src/entities/user.entity';
@@ -203,10 +203,17 @@ export async function createUserGroupPermissions(nestApp, user, groups) {
         },
       });
     } else {
-      groupPermission = groupPermissionRepository.create({
-        organizationId: user.organizationId,
-        group: group,
-      });
+      groupPermission =
+        (await groupPermissionRepository.findOne({
+          where: {
+            organizationId: user.organizationId,
+            group: group,
+          },
+        })) ||
+        groupPermissionRepository.create({
+          organizationId: user.organizationId,
+          group: group,
+        });
       await groupPermissionRepository.save(groupPermission);
     }
 
@@ -301,27 +308,35 @@ export async function maybeCreateAllUsersAppGroupPermissions(nestApp, app) {
   const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
   const appGroupPermissionRepository: Repository<AppGroupPermission> = nestApp.get('AppGroupPermissionRepository');
 
-  const orgGroupPermissions = await groupPermissionRepository.findOne({
+  const allUsersGroup = await groupPermissionRepository.findOne({
     where: {
       organizationId: app.organizationId,
       group: 'all_users',
     },
   });
 
-  if (orgGroupPermissions) {
+  if (allUsersGroup) {
     const permissions = {
-      read: true,
+      read: false,
       update: false,
       delete: false,
     };
 
     const appGroupPermission = appGroupPermissionRepository.create({
-      groupPermissionId: orgGroupPermissions.id,
+      groupPermissionId: allUsersGroup.id,
       appId: app.id,
       ...permissions,
     });
     await appGroupPermissionRepository.save(appGroupPermission);
   }
+}
+
+export async function addAppToGroupPermission(app: App, groupPermission: GroupPermission, permissions = {}) {
+  getManager().create(AppGroupPermission, {
+    groupPermissionId: groupPermission.id,
+    appId: app.id,
+    ...permissions,
+  });
 }
 
 export async function addAllUsersGroupToUser(nestApp, user) {
@@ -395,4 +410,27 @@ export async function createThread(_nestApp, { appId, x, y, userId, organization
     userId,
     organizationId
   );
+}
+
+export async function setupOrganization(nestApp) {
+  const adminUserData = await createUser(nestApp, {
+    email: 'admin@tooljet.io',
+    groups: ['all_users', 'admin'],
+  });
+  const adminUser = adminUserData.user;
+  const organization = adminUserData.organization;
+  const defaultUserData = await createUser(nestApp, {
+    email: 'developer@tooljet.io',
+    groups: ['all_users'],
+    organization,
+  });
+  const defaultUser = defaultUserData.user;
+
+  const app = await createApplication(nestApp, {
+    user: adminUser,
+    name: 'sample app',
+    isPublic: false,
+  });
+
+  return { adminUser, defaultUser, app };
 }

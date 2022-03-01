@@ -37,7 +37,7 @@ class Viewer extends React.Component {
         queries: {},
         components: {},
         globals: {
-          current_user: {},
+          currentUser: {},
           urlparams: {},
         },
       },
@@ -61,6 +61,7 @@ class Viewer extends React.Component {
         email: currentUser.email,
         firstName: currentUser.first_name,
         lastName: currentUser.last_name,
+        groups: currentUser?.group_permissions.map((group) => group.group),
       };
     }
 
@@ -96,7 +97,7 @@ class Viewer extends React.Component {
           queries: queryState,
           components: {},
           globals: {
-            current_user: userVars,
+            currentUser: userVars,
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
           },
         },
@@ -123,6 +124,7 @@ class Viewer extends React.Component {
       this.setStateForApp(data);
       this.setStateForContainer(data);
       this.setState({ isLoading: false });
+      this.setWindowTitle(data.name);
     });
   };
 
@@ -153,6 +155,10 @@ class Viewer extends React.Component {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
     return canvasBoundingRect?.width;
   };
+
+  setWindowTitle(name) {
+    document.title = name ?? 'Untitled App';
+  }
 
   render() {
     const {
@@ -230,9 +236,9 @@ class Viewer extends React.Component {
                             });
                             onComponentClick(this, id, component, 'view');
                           }}
-                          onComponentOptionChanged={(component, optionName, value) =>
-                            onComponentOptionChanged(this, component, optionName, value)
-                          }
+                          onComponentOptionChanged={(component, optionName, value) => {
+                            return onComponentOptionChanged(this, component, optionName, value);
+                          }}
                           onComponentOptionsChanged={(component, options) =>
                             onComponentOptionsChanged(this, component, options)
                           }

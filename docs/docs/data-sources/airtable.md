@@ -5,23 +5,23 @@ sidebar_position: 1
 # Airtable
 
 
-ToolJet can connect to your Airtable account to read and write data. Airtable API key is required to create an Airtable datasource on ToolJet. You can generate API key by visiting [Airtable account page](https://airtable.com/account). 
+ToolJet can connect to your Airtable account to read and write data. Airtable API key is required to create an Airtable data source on ToolJet. You can generate API key by visiting [Airtable account page](https://airtable.com/account). 
 
-<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-intro.gif" alt="ToolJet - Datasource Airtable" height="420" />
+<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-intro.gif" alt="ToolJet - Data source - Airtable" height="420" />
 
 :::info
 Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here [Airtable API]( https://airtable.com/api ).
 :::
 
 :::tip
-This guide assumes that you have already gone through [Adding a datasource
-](/docs/tutorial/adding-a-datasource) tutorial.
+This guide assumes that you have already gone through [Adding a data source](/docs/tutorial/adding-a-datasource) tutorial.
 :::
 
 Supported queries: 
 
 - Listing records 
 - Retrieving a record
+- Creating a record
 - Updating a record
 - Deleting a record
 
@@ -83,7 +83,7 @@ Required parameters:
 - Table name 
 - Record ID
 
-<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-retrive-record.png" alt="ToolJet - Datasource Airtable Retrieve Operation" height="420" />
+<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-retrive-record.png" alt="ToolJet - Data source - Airtable Retrieve Operation" height="420" />
 
 Example response from Airtable: 
 
@@ -98,6 +98,67 @@ Example response from Airtable:
 }
 ```
 
+## Creating a record
+
+Required parameters:
+- Base ID
+- Table name
+- Records
+
+<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-create.png" alt="ToolJet - Data source - Airtable Create Operarion" height="420"/>
+
+#### Example Records:
+
+```json
+[
+    {
+        "fields": {
+            "Notes": "sdfdsf",
+            "Name": "dsfdsf"
+        }
+    },
+    {
+        "fields": {
+            "Notes": "note1",
+            "Name": "dsfdsf"
+        }
+    }
+]
+ 
+
+```
+
+
+Click on the `run` button to run the query.
+
+:::info
+NOTE: Query must be saved before running.
+:::
+
+Example response from Airtable:
+```json
+{
+    "records": [
+        {
+            "id": "rec5RuZ1COoZGtGDY",
+            "fields": {
+                "Notes": "sdfdsf",
+                "Name": "dsfdsf"
+            },
+            "createdTime": "2022-02-07T20:25:27.000Z"
+        },
+        {
+            "id": "recaYbFPonNNu6Cwj",
+            "fields": {
+                "Notes": "note1",
+                "Name": "dsfdsf"
+            },
+            "createdTime": "2022-02-07T20:25:27.000Z"
+        }
+    ]
+}
+```
+
 ## Updating a record
 
 Required parameters:
@@ -105,11 +166,11 @@ Required parameters:
 - Table name
 - Record ID
 
-<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-update.png" alt="ToolJet - Datasource Airtable Update Operarion" height="420"/>
+<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-update.png" alt="ToolJet - Data source - Airtable Update Operarion" height="420"/>
 
 #### Example body:
 
-<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-update-example-body.png" alt="ToolJet - Datasource Airtable Update Operarion Body" height="200" width="650" />
+<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-update-example-body.png" alt="ToolJet - Data source - Airtable Update Operarion Body" height="200" width="650" />
 
 
 Click on the `run` button to run the query.

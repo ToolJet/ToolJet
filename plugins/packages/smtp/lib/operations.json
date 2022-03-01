@@ -1,0 +1,84 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "SMTP datasource",
+  "description": "A schema defining SMTP datasource",
+  "type": "api",
+  "defaults": {
+    "content_type":{
+      "value":"plain_text"
+    }
+  },
+  "properties": {
+    "from": {
+      "key": "from",
+      "label": "From",
+      "type": "codehinter",
+      "description": "Field for sender address",
+      "placeholder": "Enter sender address",
+      "width": "320px",
+      "height": "36px",
+      "className": "codehinter-plugins col-6",
+      "lineNumbers": false
+    },
+    "from_name": {
+      "key": "from_name",
+      "label": "From Name",
+      "type": "codehinter",
+      "description": "Field for sender address",
+      "placeholder": "Enter sender address",
+      "width": "320px",
+      "height": "36px",
+      "className": "codehinter-plugins",
+      "lineNumbers": false
+    },
+    "to": {
+      "key": "to",
+      "label": "To",
+      "type": "codehinter",
+      "description": "Field for reciever address",
+      "placeholder": "Enter reciever address",
+      "width": "320px",
+      "height": "36px",
+      "className": "codehinter-plugins",
+      "lineNumbers": false
+    },
+    "subject": {
+      "key": "subject",
+      "label": "Subject",
+      "type": "codehinter",
+      "height": "36px",
+      "placeholder": "Enter subject",
+      "description": "Field for email subject",
+      "className": "codehinter-plugins",
+      "lineNumbers": false
+    },
+    "textContent":{
+      "key": "textContent",
+      "label": "Text",
+      "type": "codehinter",
+      "description": "Field for message",
+      "placeholder": "Enter message",
+      "height": "150px"    
+    },
+    "htmlContent":{
+      "key": "htmlContent",
+      "label": "HTML",
+      "type": "codehinter",
+      "description": "Field for message",
+      "placeholder": "Enter message",
+      "height": "150px"
+    },
+    "attachment_array": {
+      "key": "attachment_array",
+      "label": "Attachments",
+      "type": "codehinter",
+      "description": "Field for file attachments",
+      "placeholder": "{{components.filepicker1.file}}",
+      "width": "320px",
+      "height": "36px",
+      "className": "codehinter-plugins col-6",
+      "lineNumbers": false
+    }
+  }
+}

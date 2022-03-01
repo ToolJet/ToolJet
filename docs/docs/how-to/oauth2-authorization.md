@@ -13,7 +13,7 @@ Google Cloud Platform provides access to more than 350 APIs and Services that ca
 3. Enter the Application details and select the appropriate scopes for your application. We will select the profile and the email scopes. 
 4. Once you have created the OAuth consent screen, Create new credentials for the **OAuth client ID** from the **Credentials** section in the left sidebar.
 5. Select the application type, enter the application name, and then add the following URIs under Authorised Redirect URIs:
-    1. `https://app.tooljet.io/oauth2/authorize` (if you’re using ToolJet cloud)
+    1. `https://app.tooljet.com/oauth2/authorize` (if you’re using ToolJet cloud)
     2. `http://localhost:8082/oauth2/authorize` (if you’re using ToolJet locally)
 6. Now save and then you’ll get the **Client ID and Client secret** for your application.
 
@@ -23,10 +23,10 @@ Google Cloud Platform provides access to more than 350 APIs and Services that ca
 
 Let's follow the steps to authorize ToolJet to access your Google profile data:
 
-- Select **add datasource** from the left sidebar, and choose **REST API** from the dialog window.
+- Select **add data source** from the left sidebar, and choose **REST API** from the dialog window.
 
 :::info
-You can rename the datasource by clicking on its default name `REST API`
+You can rename the data source by clicking on its default name `REST API`
 :::
 
 - In the **URL** field, enter the base URL `https://www.googleapis.com/oauth2/v1/userinfo`; the base URL specifies the network address of the API service.
@@ -42,9 +42,9 @@ You can rename the datasource by clicking on its default name `REST API`
     | ----------- | ----------- |
     | response_type | code ( `code` refers to the Authorization Code) |
     | client_id | **Client ID**  |
-    | redirect_uri | `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.io/oauth2/authorize` if using ToolJet Cloud.  |
+    | redirect_uri | `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.com/oauth2/authorize` if using ToolJet Cloud.  |
     
-- Keep the default selection for **Client Authentication** and **Save** the datasource.
+- Keep the default selection for **Client Authentication** and **Save** the data source.
 
 <img class="screenshot-full" src="/img/how-to/oauth2-authorization/restapi.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0"/>
 

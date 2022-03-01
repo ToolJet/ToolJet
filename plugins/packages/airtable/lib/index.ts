@@ -44,6 +44,20 @@ export default class AirtableQueryService implements QueryService {
           break;
         }
 
+        case 'create_record': {
+          response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
+            method: 'post',
+            headers: this.authHeader(apiKey),
+            json: {
+              records: JSON.parse(queryOptions.body),
+            },
+          });
+
+          result = JSON.parse(response.body);
+
+          break;
+        }
+
         case 'update_record': {
           response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
             method: 'patch',

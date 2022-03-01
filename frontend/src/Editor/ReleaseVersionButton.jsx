@@ -9,11 +9,13 @@ export const ReleaseVersionButton = function DeployVersionButton({
   isVersionReleased,
   fetchApp,
   onVersionRelease,
+  saveEditingVersion,
 }) {
   const [isReleasing, setIsReleasing] = useState(false);
 
   const releaseVersion = (editingVersion) => {
     setIsReleasing(true);
+    saveEditingVersion();
     appService
       .saveApp(appId, {
         name: appName,
@@ -36,10 +38,9 @@ export const ReleaseVersionButton = function DeployVersionButton({
   return (
     <div>
       <button
-        className={'btn btn-primary btn-sm ' + (isVersionReleased ? 'disabled' : '')}
+        className={`btn btn-primary btn-sm ${isVersionReleased ? 'disabled' : ''} ${isReleasing ? 'btn-loading' : ''}`}
         onClick={() => releaseVersion(editingVersion)}
       >
-        {isReleasing && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
         Release
       </button>
     </div>
