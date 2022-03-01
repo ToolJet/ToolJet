@@ -33,6 +33,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
         onChange={handleOnChange}
         placeholder={placeholder}
         styles={useStyles}
+        menuPortalTarget={document.body}
       />
     </React.Fragment>
   );
