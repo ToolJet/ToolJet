@@ -50,7 +50,7 @@ export default class OracledbQueryService implements QueryService {
 
     try {
       result = await knexInstance.raw(query);
-      
+
       return {
         status: "ok",
         data: result,
@@ -72,20 +72,30 @@ export default class OracledbQueryService implements QueryService {
     };
   }
 
-  async buildConnection(sourceOptions: SourceOptions) {
-    const oracledb = require("oracledb");
-    // we should add this to our datasource documentation
+  initOracleClient() {
     try {
       if (process.platform === "darwin") {
         oracledb.initOracleClient({
           libDir: process.env.HOME + "/Downloads/instantclient_19_8",
         });
       } else if (process.platform === "win32") {
-        oracledb.initOracleClient({ libDir: "C:\\oracle\\instantclient_19_8" }); // note the double backslashes
+        oracledb.initOracleClient({
+          libDir: "C:\\oracle\\instantclient_19_8",
+        }); // note the double backslashes
       }
     } catch (err) {
       console.error(err);
       process.exit(1);
+    }
+  }
+
+  async buildConnection(sourceOptions: SourceOptions) {
+    // we should add this to our datasource documentation
+    try{
+      oracledb.oracleClientVersion
+    }catch(err){
+      console.log('oracle client is not initailized');
+      this.initOracleClient()
     }
 
     const config: Knex.Config = {
