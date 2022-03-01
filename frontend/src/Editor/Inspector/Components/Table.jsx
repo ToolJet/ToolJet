@@ -130,6 +130,14 @@ class Table extends React.Component {
     }
     return false;
   }
+  onColumnItemChanged = (index, key, value, validateInputType, expectedInputType) => {
+    if (validateInputType) {
+      const isResolved = this.validateInputType(value, expectedInputType);
+      if (isResolved) {
+        this.onColumnItemChange(index, key, value);
+      }
+    }
+  };
 
   columnPopover = (column, index) => {
     if (
@@ -325,7 +333,7 @@ class Table extends React.Component {
                   mode="javascript"
                   lineNumbers={false}
                   placeholder={'{{[1, 2, 3]}}'}
-                  onChange={(value) => this.onColumnItemChange(index, 'values', value, true, 'array')}
+                  onChange={(value) => this.onColumnItemChanged(index, 'values', value, true, 'array')}
                   componentName={this.getPopoverFieldSource(column.columnType, 'values')}
                 />
               </div>
@@ -338,7 +346,7 @@ class Table extends React.Component {
                   mode="javascript"
                   lineNumbers={false}
                   placeholder={'{{["one", "two", "three"]}}'}
-                  onChange={(value) => this.onColumnItemChange(index, 'labels', value, true, 'array')}
+                  onChange={(value) => this.onColumnItemChanged(index, 'labels', value, true, 'array')}
                   componentName={this.getPopoverFieldSource(column.columnType, 'labels')}
                 />
               </div>
@@ -566,20 +574,7 @@ class Table extends React.Component {
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
   };
 
-  onColumnItemChange = (index, item, value, validateInputType = false, expectedInputType = undefined) => {
-    if (validateInputType) {
-      const isResolved = this.validateInputType(value, expectedInputType);
-      if (!isResolved) {
-        switch (expectedInputType) {
-          case 'array':
-            value = [];
-            break;
-
-          default:
-            break;
-        }
-      }
-    }
+  onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
 
