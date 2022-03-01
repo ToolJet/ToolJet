@@ -13,6 +13,7 @@ import {
   JoinTable,
   AfterInsert,
   getRepository,
+  getManager,
 } from 'typeorm';
 import { User } from './user.entity';
 import { AppVersion } from './app_version.entity';
@@ -100,12 +101,9 @@ export class App extends BaseEntity {
 
   @AfterLoad()
   async afterLoad(): Promise<void> {
-    if (this.currentVersionId) {
-      this.editingVersion = this.appVersions
-        ? this.appVersions.find((version) => version.id === this.currentVersionId)
-        : {};
-    } else {
-      this.editingVersion = this.appVersions ? this.appVersions[0] : {};
-    }
+    this.editingVersion = await getManager().findOne(AppVersion, {
+      where: { appId: this.id },
+      order: { updatedAt: 'DESC' },
+    });
   }
 }
