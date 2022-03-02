@@ -9,7 +9,7 @@ export default class MysqlQueryService implements QueryService {
     if (MysqlQueryService._instance) {
       return MysqlQueryService._instance;
     }
-  
+
     MysqlQueryService._instance = this;
     return MysqlQueryService._instance;
   }
@@ -104,6 +104,11 @@ export default class MysqlQueryService implements QueryService {
     const records = queryOptions['records'];
 
     for (const record of records) {
+      const primaryKeyValue =
+        typeof record[primaryKey] === "string"
+          ? `'${record[primaryKey]}'`
+          : record[primaryKey];
+
       queryText = `${queryText} UPDATE ${tableName} SET`;
 
       for (const key of Object.keys(record)) {
@@ -113,7 +118,7 @@ export default class MysqlQueryService implements QueryService {
       }
 
       queryText = queryText.slice(0, -1);
-      queryText = `${queryText} WHERE ${primaryKey} = ${record[primaryKey]};`;
+      queryText = `${queryText} WHERE ${primaryKey} = ${primaryKeyValue};`;
     }
 
     return queryText.trim();
