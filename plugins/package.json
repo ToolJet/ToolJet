@@ -12,7 +12,9 @@
     "build": "npm run create:client && npm run create:server && npm run build:packages && npm run build:server",
     "prebuild:packages": "npm run clean:packages",
     "build:packages": "npx lerna run build --stream",
-    "clean:packages": "npx lerna run clean --parallel"
+    "clean:packages": "npx lerna run clean --parallel",
+    "lint": "eslint .  '**/*.ts'",
+    "format": "eslint . --fix '**/*.ts'"
   },
   "dependencies": {
     "@tooljet-plugins/airtable": "file:packages/airtable",
@@ -42,8 +44,16 @@
     "@tooljet-plugins/typesense": "file:packages/typesense"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.31.1",
+    "@typescript-eslint/parser": "^4.31.1",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-cypress": "^2.12.1",
+    "eslint-plugin-jest": "^24.4.2",
+    "eslint-plugin-prettier": "^3.4.1",
     "jest": "^27.4.5",
     "lerna": "^4.0.0",
+    "prettier": "^2.3.2",
     "rimraf": "^3.0.2",
     "ts-jest": "^27.1.2",
     "typescript": "^4.5.4"
