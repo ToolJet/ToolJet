@@ -1,8 +1,8 @@
-import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@tooljet-plugins/common'
+import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@tooljet-plugins/common';
 
 import { deleteItem, getItem, listTables, queryTable, scanTable } from './operations';
 const AWS = require('aws-sdk');
-import { SourceOptions, QueryOptions } from './types'
+import { SourceOptions, QueryOptions } from './types';
 
 export default class DynamodbQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {

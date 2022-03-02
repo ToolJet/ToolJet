@@ -3,5 +3,5 @@
 const smtp = require('../lib');
 
 describe('smtp', () => {
-    it.todo('needs tests');
+  it.todo('needs tests');
 });

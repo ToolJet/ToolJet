@@ -1,6 +1,6 @@
-import { ConnectionTestResult, QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
+import { ConnectionTestResult, QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import Redis from 'ioredis';
-import { SourceOptions, QueryOptions } from './types'
+import { SourceOptions, QueryOptions } from './types';
 
 export default class RedisQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {

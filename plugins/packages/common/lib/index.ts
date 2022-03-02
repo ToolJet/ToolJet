@@ -11,5 +11,5 @@ export {
   cacheConnection,
   getCachedConnection,
   parseJson,
-  ConnectionTestResult
-}
+  ConnectionTestResult,
+};

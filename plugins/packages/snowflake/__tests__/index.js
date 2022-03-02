@@ -3,5 +3,5 @@
 const snowflake = require('../lib');
 
 describe('snowflake', () => {
-    it.todo('needs tests');
+  it.todo('needs tests');
 });

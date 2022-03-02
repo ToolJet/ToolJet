@@ -1,11 +1,17 @@
 const urrl = require('url');
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
-import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-import got, { Headers, HTTPError } from 'got'
+import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import got, { Headers, HTTPError } from 'got';
 
 function isEmpty(value: number | null | undefined | string) {
-  return value === undefined || value === null || value === NaN || (typeof value === 'object' && Object.keys(value).length === 0) || (typeof value === 'string' && value.trim().length === 0);
+  return (
+    value === undefined ||
+    value === null ||
+    !isNaN(value as number) ||
+    (typeof value === 'object' && Object.keys(value).length === 0) ||
+    (typeof value === 'string' && value.trim().length === 0)
+  );
 }
 
 interface RestAPIResult extends QueryResult {
