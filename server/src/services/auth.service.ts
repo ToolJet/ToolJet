@@ -8,6 +8,7 @@ import { EmailService } from './email.service';
 import { decamelizeKeys } from 'humps';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import got from 'got';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const { TrackClient, RegionUS } = require('customerio-node');
@@ -72,6 +73,25 @@ export class AuthService {
     }
   }
 
+  async createCRMUser(user): Promise<boolean> {
+    await got('https://tooljet-417912114917301615.myfreshworks.com/crm/sales/api/contacts', {
+      method: 'post',
+      headers: { Authorization: `Token token= ${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
+      json: {
+        contact: {
+          email: user.email,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          custom_field: {
+            job_title: user.role,
+          },
+        },
+      },
+    });
+
+    return true;
+  }
+
   async signup(request: any) {
     const params = request.body;
     // Check if the installation allows user signups
@@ -95,6 +115,8 @@ export class AuthService {
       first_name: user.firstName,
       last_name: user.lastName,
     });
+
+    void this.createCRMUser(user);
 
     await this.auditLoggerService.perform({
       request,
