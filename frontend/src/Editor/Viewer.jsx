@@ -236,9 +236,9 @@ class Viewer extends React.Component {
                             });
                             onComponentClick(this, id, component, 'view');
                           }}
-                          onComponentOptionChanged={(component, optionName, value) =>
-                            onComponentOptionChanged(this, component, optionName, value)
-                          }
+                          onComponentOptionChanged={(component, optionName, value) => {
+                            return onComponentOptionChanged(this, component, optionName, value);
+                          }}
                           onComponentOptionsChanged={(component, options) =>
                             onComponentOptionsChanged(this, component, options)
                           }

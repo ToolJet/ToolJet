@@ -86,6 +86,7 @@ export const Multiselect = function Multiselect({
           filterOptions={fuzzySearch}
           placeholder="Select.."
           ref={selectRef}
+          closeOnSelect={false}
         />
       </div>
     </div>
