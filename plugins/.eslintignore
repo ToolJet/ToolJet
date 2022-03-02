@@ -1,2 +1,5 @@
 dist
 migrations
+.eslintrc.js
+packages/*/__tests__/*.js
+packages/*/dist/*
