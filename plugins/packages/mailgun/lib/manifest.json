@@ -13,15 +13,9 @@
       "rawData": {}
     },
     "options": {
-      "domain": {
-        "type": "string"
-      },
       "api_key": {
         "type": "string",
         "encrypted": true
-      },
-      "eu_hosted": {
-        "type": "boolean"
       }
     },
     "customTesting": true

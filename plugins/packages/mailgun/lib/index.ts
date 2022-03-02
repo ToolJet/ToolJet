@@ -31,6 +31,7 @@ export default class Mailgun implements QueryService {
     try {
       result = await mailGunClient.messages.create(sourceOptions.domain, emailOptions);
     } catch (error) {
+      console.error(error.response);
       throw new QueryError('Query could not be completed', error.message, {});
     }
     return {

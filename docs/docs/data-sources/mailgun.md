@@ -41,9 +41,9 @@ Optional parameters:
 <img class="screenshot-full" src="/img/datasource-reference/MailGun/MailGun-query.jpg" alt="ToolJet - Query MailGun" height="420"/>
 
 :::info
-**Send mail to** - accepts an array/list of emails separated by comma.
+**Send mail to** - accepts a single email id.
 For example:
-`{{["dev@tooljet.io", "admin@tooljet.io"]}}`.
+`{{"dev@tooljet.io"}}`.
 
 **Send mail from** - accepts a string.
 For example: `admin@tooljet.io`
