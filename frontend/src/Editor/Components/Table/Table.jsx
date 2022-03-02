@@ -49,9 +49,11 @@ export function Table({
 
   const actions = component.definition.properties.actions || { value: [] };
   const serverSidePaginationProperty = component.definition.properties.serverSidePagination;
-  const serverSidePagination = serverSidePaginationProperty
+  let serverSidePagination = serverSidePaginationProperty
     ? resolveWidgetFieldValue(serverSidePaginationProperty.value, currentState)
     : false;
+
+  if (typeof serverSidePagination !== 'boolean') serverSidePagination = false;
 
   const serverSideSearchProperty = component.definition.properties.serverSideSearch;
   const serverSideSearch = serverSideSearchProperty
@@ -79,8 +81,10 @@ export function Table({
   const highlightSelectedRow = resolveWidgetFieldValue(highlightSelectedRowProperty, currentState) ?? false; // default is false for backward compatibility
 
   const clientSidePaginationProperty = component.definition.properties.clientSidePagination?.value;
-  const clientSidePagination =
+  let clientSidePagination =
     resolveWidgetFieldValue(clientSidePaginationProperty, currentState) ?? !serverSidePagination; // default is true for backward compatibility
+
+  if (typeof clientSidePagination !== 'boolean') clientSidePagination = true;
 
   const tableTypeProperty = component.definition.styles.tableType;
   let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
