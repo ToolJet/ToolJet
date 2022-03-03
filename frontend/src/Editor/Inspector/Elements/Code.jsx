@@ -47,7 +47,6 @@ export const Code = ({
         fieldMeta={paramMeta}
         onFxPress={onFxPress}
         fxActive={fxActive}
-        paramMeta={paramMeta}
       />
     </div>
   );

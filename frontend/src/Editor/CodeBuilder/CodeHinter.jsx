@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-// import Tooltip from 'react-bootstrap/Tooltip';
+import Tooltip from 'react-bootstrap/Tooltip';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/mode/handlebars/handlebars';
 import 'codemirror/mode/javascript/javascript';
@@ -25,7 +25,7 @@ import { AlignButtons } from './Elements/AlignButtons';
 import { TypeMapping } from './TypeMapping';
 import { Number } from './Elements/Number';
 import FxButton from './Elements/FxButton';
-import { ToolTip } from '../../_components/ToolTip';
+import { ToolTip } from '../Inspector/Elements/Components/ToolTip';
 
 const AllElements = {
   Color,
@@ -59,8 +59,6 @@ export function CodeHinter({
   fieldMeta,
   onFxPress,
   fxActive,
-  displayName,
-  paramMeta,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -196,16 +194,17 @@ export function CodeHinter({
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''}`}
         style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
-        {/* <ToolTip label={paramLabel} /> */}
-
-        <div>
-          <FxButton
-            active={true}
-            onPress={() => {
-              setForceCodeBox(false);
-              onFxPress(false);
-            }}
-          />
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <ToolTip label={paramLabel} meta={fieldMeta} />
+          <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} pt-2`}>
+            <FxButton
+              active={true}
+              onPress={() => {
+                setForceCodeBox(false);
+                onFxPress(false);
+              }}
+            />
+          </div>
         </div>
         <div className={`col`} style={{ marginBottom: '0.5rem' }}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
@@ -282,7 +281,7 @@ const PopupIcon = ({ callback }) => {
         trigger={['hover', 'focus']}
         placement="top"
         delay={{ show: 800, hide: 100 }}
-        // overlay={<Tooltip id="button-tooltip">{'Pop out code editor into a new window'}</Tooltip>}
+        overlay={<Tooltip id="button-tooltip">{'Pop out code editor into a new window'}</Tooltip>}
       >
         <img
           className="svg-icon m-2 popup-btn"
