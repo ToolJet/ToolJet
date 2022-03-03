@@ -74,7 +74,7 @@
           "description": "Enter port"
         },
         "database_type": {
-          "label": "Database Type",
+          "label": "SID / Service Name",
           "key": "database_type",
           "type": "dropdown",
           "description": "Type of the database",
