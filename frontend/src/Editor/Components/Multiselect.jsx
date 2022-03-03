@@ -51,7 +51,7 @@ export const Multiselect = function Multiselect({
       setCurrentValue(properties.value);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, []);
 
   useEffect(() => {
     selectRef.current.querySelector('.select-search__input').style.borderRadius = `${Number.parseFloat(
@@ -61,7 +61,7 @@ export const Multiselect = function Multiselect({
   }, [borderRadius, selectRef.current]);
 
   const handleChange = (value) => {
-    setCurrentValue(value);
+    // setCurrentValue(value);
     setExposedVariable('values', value).then(() => fireEvent('onSelect'));
   };
 
@@ -86,6 +86,7 @@ export const Multiselect = function Multiselect({
           filterOptions={fuzzySearch}
           placeholder="Select.."
           ref={selectRef}
+          closeOnSelect={false}
         />
       </div>
     </div>
