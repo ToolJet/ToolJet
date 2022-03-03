@@ -90,16 +90,15 @@ export class AppsController {
     }
 
     const app = await this.appsService.findBySlug(params.slug);
-
-    const dataQueriesForVersion = app.editingVersion
-      ? await this.appsService.findDataQueriesForVersion(app.editingVersion.id)
-      : [];
+    const versionToLoad = app.currentVersionId
+      ? await this.appsService.findVersion(app.currentVersionId)
+      : await this.appsService.findVersion(app.editingVersion.id);
 
     // serialize
     return {
       current_version_id: app['currentVersionId'],
-      data_queries: dataQueriesForVersion,
-      definition: app.editingVersion?.definition,
+      data_queries: versionToLoad.dataQueries,
+      definition: versionToLoad?.definition,
       is_public: app.isPublic,
       name: app.name,
       slug: app.slug,
