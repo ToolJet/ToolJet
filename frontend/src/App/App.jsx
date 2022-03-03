@@ -39,16 +39,53 @@ class App extends React.Component {
   componentDidMount() {
     authenticationService.currentUser.subscribe((x) => {
       this.setState({ currentUser: x });
-      window.addEventListener('chatwoot:ready', function () {
-        try {
-          window.$chatwoot.setUser(x.email, {
-            email: x.email,
-            name: `${x.first_name} ${x.last_name}`,
-          });
-        } catch (error) {
-          console.error(error);
-        }
-      });
+
+      function initFreshChat() {
+        window.fcWidget.init({
+          token: '0ef214a3-8ae1-41fb-b0d0-57764bf8f64b',
+          host: 'https://wchat.freshchat.com',
+          config: {
+            cssNames: {
+              widget: 'custom_fc_frame',
+            },
+            content: {
+              actions: {
+                push_notify_yes: 'Yes',
+              },
+            },
+            headerProperty: {
+              hideChatButton: true,
+              direction: 'rtl',
+            },
+          },
+        });
+
+        window.fcWidget.user.setFirstName(`${x.first_name} ${x.last_name}`);
+
+        window.fcWidget.user.setEmail(x.email);
+      }
+      function initialize(i, t) {
+        var e;
+        i.getElementById(t)
+          ? initFreshChat()
+          : (((e = i.createElement('script')).id = t),
+            (e.async = !0),
+            (e.src = 'https://wchat.freshchat.com/js/widget.js'),
+            (e.onload = initFreshChat),
+            i.head.appendChild(e));
+      }
+      function initiateCall() {
+        initialize(document, 'Freshdesk Messaging-js-sdk');
+      }
+      window.addEventListener
+        ? window.addEventListener('load', initiateCall, !1)
+        : window.attachEvent('load', initiateCall, !1);
+
+      try {
+        initiateCall();
+      } catch (e) {
+        console.log(e);
+      }
 
       posthog.init('1OhSAF2367nMhuGI3cLvE6m5D0PJPBEA5zR5JFTM-yw', {
         api_host: 'https://app.posthog.com',

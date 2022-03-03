@@ -53,10 +53,6 @@ class Editor extends React.Component {
   constructor(props) {
     super(props);
 
-    window.chatwootSettings = {
-      hideMessageBubble: true,
-    };
-
     const appId = this.props.match.params.id;
 
     const currentUser = authenticationService.currentUserValue;

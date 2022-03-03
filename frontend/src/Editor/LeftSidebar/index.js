@@ -60,7 +60,7 @@ export const LeftSidebar = ({
           <a
             type="button"
             onClick={() => {
-              window.$chatwoot.toggle();
+              window.fcWidget.open();
             }}
             // disabled={currentLayout === 'mobile'}
           >
