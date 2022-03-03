@@ -35,6 +35,7 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
 
 export async function batchUpdateToSheet(
   spreadSheetId: string,
+  spreadsheetRange: string='A1:Z500',
   sheet: string='',
   requestBody: any,
   filterData: any,
@@ -45,7 +46,7 @@ export async function batchUpdateToSheet(
     return new Error('filterOperator is required');
   }
 
-  const lookUpData = await lookUpSheetData(spreadSheetId, sheet, authHeader);  
+  const lookUpData = await lookUpSheetData(spreadSheetId,spreadsheetRange, sheet, authHeader);  
 
   const updateBody = (requestBody, filterCondition, filterOperator, data) => {
     const rowsIndexes = getRowsIndex(filterCondition, filterOperator, data) as any[];
@@ -183,8 +184,8 @@ export async function deleteData(
   return await deleteDataFromSheet(spreadSheetId, sheet, rowIndex, authHeader);
 }
 
-async function lookUpSheetData(spreadSheetId: string, sheet:string, authHeader: any) {
-  const range = `${sheet}!A1:Z500`;
+async function lookUpSheetData(spreadSheetId: string, spreadsheetRange:string, sheet:string, authHeader: any) {
+  const range = `${sheet}!${spreadsheetRange}`;
   const responseLookUpCellValues = await makeRequestToLookUpCellValues(spreadSheetId, range, authHeader);
   const data = await responseLookUpCellValues['values'];
 
@@ -196,11 +197,17 @@ const getInputKeys = (inputBody, data) => {
   const keys = Object.keys(inputBody);
   const arr = [];
   keys.map((key) =>
-    data.filter((val, index) => {
-      if (val[0] === key) {
-        const kIndex = `${String.fromCharCode(65 + index)}`;
-        arr.push({ col: val[0], colIndex: kIndex });
-      }
+  data.filter((val, index) => {
+    if (val[0] === key) {
+        let keyIndex = '';
+        if(index > 26) {
+          keyIndex = numberToLetters(index);
+        } else {
+          keyIndex = `${String.fromCharCode(65 + index)}`;
+        }
+         
+        arr.push({ col: val[0], colIndex: keyIndex });
+    }
     })
   );
   return arr;
@@ -233,6 +240,15 @@ const getRowsIndex = (inputFilter, filterOperator, response) => {
   if (rowIndex.length === 0) {
     return -1;
   }
-
   return rowIndex;
 };
+
+
+function numberToLetters(num) {
+  let letters = ''
+  while (num >= 0) {
+      letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[num % 26] + letters
+      num = Math.floor(num / 26) - 1
+  }
+  return letters
+}
