@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-export const Pagination = function Pagination({ currentPage, count, pageChanged, itemsPerPage = 10, darkMode }) {
+export function Pagination({ currentPage, count, pageChanged, itemsPerPage = 10, darkMode }) {
   const totalPages = useMemo(() => {
     return Math.floor((count - 1) / itemsPerPage) + 1;
   }, [count, itemsPerPage]);
@@ -77,8 +77,8 @@ export const Pagination = function Pagination({ currentPage, count, pageChanged,
             </svg>
           </a>
         </li>
-        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-          <a style={{ cursor: 'pointer' }} className="page-link" onClick={gotoPreviousPage}>
+        <li data-testid="previous-0" className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+          <a data-testid="previous" style={{ cursor: 'pointer' }} className="page-link" onClick={gotoPreviousPage}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
@@ -100,7 +100,7 @@ export const Pagination = function Pagination({ currentPage, count, pageChanged,
         {getPageLinks(currentPage)}
         {getPageLinks(currentPage + 1)}
         <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-          <a style={{ cursor: 'pointer' }} className="page-link" onClick={gotoNextPage}>
+          <a data-testid="next" style={{ cursor: 'pointer' }} className="page-link" onClick={gotoNextPage}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
@@ -141,4 +141,4 @@ export const Pagination = function Pagination({ currentPage, count, pageChanged,
       </ul>
     </div>
   );
-};
+}
