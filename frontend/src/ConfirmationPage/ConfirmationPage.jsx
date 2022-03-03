@@ -3,13 +3,13 @@ import { userService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import queryString from 'query-string';
 
-class InvitationPage extends React.Component {
+class ConfirmationPage extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
       isLoading: false,
-      newSignup: queryString.parse(props.location.search).signup,
+      newSignup: queryString.parse(props.location.state.search).signup,
     };
     this.formRef = React.createRef(null);
   }
@@ -26,7 +26,7 @@ class InvitationPage extends React.Component {
   setPassword = (e) => {
     e.preventDefault();
 
-    const token = this.props.match.params.token;
+    const token = this.props.location.state.token;
     const { password, organization, role, newSignup, firstName, lastName, password_confirmation } = this.state;
     this.setState({ isLoading: true });
 
@@ -203,4 +203,4 @@ class InvitationPage extends React.Component {
   }
 }
 
-export { InvitationPage };
+export { ConfirmationPage };
