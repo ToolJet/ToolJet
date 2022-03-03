@@ -58,7 +58,9 @@ export class AppsController {
     const response = decamelizeKeys(app);
 
     const seralizedQueries = [];
-    const dataQueriesForVersion = await this.appsService.findDataQueriesForVersion(app.editingVersion.id);
+    const dataQueriesForVersion = app.editingVersion
+      ? await this.appsService.findDataQueriesForVersion(app.editingVersion.id)
+      : [];
 
     // serialize queries
     for (const query of dataQueriesForVersion) {
@@ -89,7 +91,9 @@ export class AppsController {
 
     const app = await this.appsService.findBySlug(params.slug);
 
-    const dataQueriesForVersion = await this.appsService.findDataQueriesForVersion(app.editingVersion.id);
+    const dataQueriesForVersion = app.editingVersion
+      ? await this.appsService.findDataQueriesForVersion(app.editingVersion.id)
+      : [];
 
     // serialize
     return {
