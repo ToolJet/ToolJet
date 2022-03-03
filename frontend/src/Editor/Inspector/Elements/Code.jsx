@@ -30,7 +30,7 @@ export const Code = ({
 
   return (
     <div className={`mb-2 field ${options.className}`}>
-      <ToolTip label={displayName} meta={paramMeta} />
+      {/* <ToolTip label={displayName} meta={paramMeta} /> */}
       <CodeHinter
         enablePreview={true}
         currentState={currentState}
@@ -47,6 +47,7 @@ export const Code = ({
         fieldMeta={paramMeta}
         onFxPress={onFxPress}
         fxActive={fxActive}
+        paramMeta={paramMeta}
       />
     </div>
   );
