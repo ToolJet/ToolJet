@@ -1603,7 +1603,16 @@ button {
   .has-actions {
     margin: 0;
   }
-
+  .wrap-wrapper{
+    white-space:normal !important;
+    word-break: break-all;
+  }
+  .scroll-wrapper{
+    overflow-x: auto;
+  }
+  .hide-wrapper{
+   overflow-x: hidden !important;
+  }
   td {
     .text-container:focus-visible,
     .text-container:focus,
@@ -1655,6 +1664,10 @@ button {
     background: transparent;
     height: 0;
     width: 0;
+  }
+  td:hover::-webkit-scrollbar {
+    height: 4px;
+    width:4px;
   }
   .th {
     white-space: normal;
