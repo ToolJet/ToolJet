@@ -51,7 +51,6 @@ export class AppsService {
   async find(id: string): Promise<App> {
     return this.appsRepository.findOne({
       where: { id },
-      relations: ['dataQueries'],
     });
   }
 
@@ -60,7 +59,6 @@ export class AppsService {
       where: {
         slug,
       },
-      relations: ['dataQueries'],
     });
   }
 
@@ -68,6 +66,12 @@ export class AppsService {
     return this.appVersionsRepository.findOne({
       where: { id },
       relations: ['app', 'dataQueries'],
+    });
+  }
+
+  async findDataQueriesForVersion(appVersionId: string): Promise<DataQuery[]> {
+    return this.dataQueriesRepository.find({
+      where: { appVersionId },
     });
   }
 
