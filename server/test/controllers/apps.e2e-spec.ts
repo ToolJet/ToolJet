@@ -1228,6 +1228,7 @@ describe('apps controller', () => {
         user: adminUserData.user,
         slug: 'foo',
       });
+      await createApplicationVersion(app, application);
       // setup app permissions for developer
       const developerUserGroup = await getRepository(GroupPermission).findOne({
         where: {
@@ -1282,12 +1283,13 @@ describe('apps controller', () => {
         email: 'another@tooljet.io',
         groups: ['all_users', 'admin'],
       });
-      await createApplication(app, {
+      const application = await createApplication(app, {
         name: 'name',
         user: adminUserData.user,
         slug: 'foo',
       });
 
+      await createApplicationVersion(app, application);
       const response = await request(app.getHttpServer())
         .get('/api/apps/slugs/foo')
         .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));

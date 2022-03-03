@@ -107,6 +107,11 @@ export function Table({
   }
 
   const [loadingState, setLoadingState] = useState(false);
+  const [columnProperties, setColumnProperties] = useState();
+
+  useEffect(() => {
+    setColumnProperties(component?.definition?.properties?.columns?.value);
+  }, [component?.definition?.properties]);
 
   useEffect(() => {
     const loadingStateProperty = component.definition.properties.loadingState;
@@ -595,6 +600,13 @@ export function Table({
   const leftActions = () => actions.value.filter((action) => action.position === 'left');
   const rightActions = () => actions.value.filter((action) => [undefined, 'right'].includes(action.position));
 
+  const textWrapActions = (id) => {
+    let wrapOption = columnProperties?.find((item) => {
+      return item?.id == id;
+    });
+    return wrapOption?.textWrap;
+  };
+
   const leftActionsCellData =
     leftActions().length > 0
       ? [
@@ -921,7 +933,6 @@ export function Table({
                       if (componentState.changeSet) {
                         if (componentState.changeSet[cell.row.index]) {
                           const currentColumn = columnData.find((column) => column.id === cell.column.id);
-
                           if (
                             _.get(componentState.changeSet[cell.row.index], currentColumn?.accessor, undefined) !==
                             undefined
@@ -932,12 +943,12 @@ export function Table({
                           }
                         }
                       }
-
+                      const wrapAction = textWrapActions(cell.column.id);
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
                         <td
-                          className={cx({
+                          className={cx(`${wrapAction ? wrapAction : 'wrap'}-wrapper`, {
                             'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
                             'has-text': cell.column.columnType === 'text' || cell.column.isEditable,
                             'has-dropdown': cell.column.columnType === 'dropdown',
