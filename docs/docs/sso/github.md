@@ -39,4 +39,4 @@ Set the environment variable `SSO_DISABLE_SIGNUP` to `true` to ensure that users
 :::
 
 <br />
-The Git sign-in button will now be available in your ToolJet login screen.
+The GitHub sign-in button will now be available in your ToolJet login screen.
