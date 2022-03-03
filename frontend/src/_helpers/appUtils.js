@@ -469,6 +469,7 @@ export function getQueryVariables(options, state) {
   const optionsType = typeof options;
   switch (optionsType) {
     case 'string': {
+      options = options.replace(/\n/g, ' ');
       const dynamicVariables = getDynamicVariables(options) || [];
       dynamicVariables.forEach((variable) => {
         queryVariables[variable] = resolveReferences(variable, state);
