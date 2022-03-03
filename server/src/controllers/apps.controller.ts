@@ -58,12 +58,12 @@ export class AppsController {
     const response = decamelizeKeys(app);
 
     const seralizedQueries = [];
-    const dataQueriesBelongingToEditingVersion = app.dataQueries.filter(
-      (query) => query.appVersionId === app.editingVersion.id
-    );
+    const dataQueriesForVersion = app.editingVersion
+      ? await this.appsService.findDataQueriesForVersion(app.editingVersion.id)
+      : [];
 
     // serialize queries
-    for (const query of dataQueriesBelongingToEditingVersion) {
+    for (const query of dataQueriesForVersion) {
       const decamelizedQuery = decamelizeKeys(query);
       decamelizedQuery['options'] = query.options;
       seralizedQueries.push(decamelizedQuery);
@@ -90,12 +90,15 @@ export class AppsController {
     }
 
     const app = await this.appsService.findBySlug(params.slug);
+    const versionToLoad = app.currentVersionId
+      ? await this.appsService.findVersion(app.currentVersionId)
+      : await this.appsService.findVersion(app.editingVersion.id);
 
     // serialize
     return {
       current_version_id: app['currentVersionId'],
-      data_queries: app.dataQueries.filter((query) => query.appVersionId === app['currentVersionId']),
-      definition: app.editingVersion?.definition,
+      data_queries: versionToLoad.dataQueries,
+      definition: versionToLoad?.definition,
       is_public: app.isPublic,
       name: app.name,
       slug: app.slug,
@@ -304,7 +307,9 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const appUser = await this.appsService.update(req.user, params.id, { icon });
+    const appUser = await this.appsService.update(req.user, params.id, {
+      icon,
+    });
     return decamelizeKeys(appUser);
   }
 }

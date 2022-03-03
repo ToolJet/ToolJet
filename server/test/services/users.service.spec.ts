@@ -1,11 +1,10 @@
 import {
   clearDB,
-  createUser,
   createNestAppInstance,
-  createApplication,
   createAppGroupPermission,
   createUserGroupPermissions,
   createGroupPermission,
+  setupOrganization,
 } from '../test.helper';
 import { UsersService } from '../../src/services/users.service';
 import { INestApplication } from '@nestjs/common';
@@ -281,29 +280,6 @@ describe('UsersService', () => {
       });
     });
   });
-
-  async function setupOrganization(nestApp) {
-    const adminUserData = await createUser(nestApp, {
-      email: 'admin@tooljet.io',
-      groups: ['all_users', 'admin'],
-    });
-    const adminUser = adminUserData.user;
-    const organization = adminUserData.organization;
-    const defaultUserData = await createUser(nestApp, {
-      email: 'developer@tooljet.io',
-      groups: ['all_users'],
-      organization,
-    });
-    const defaultUser = defaultUserData.user;
-
-    const app = await createApplication(nestApp, {
-      user: adminUser,
-      name: 'sample app',
-      isPublic: false,
-    });
-
-    return { adminUser, defaultUser, app };
-  }
 
   afterAll(async () => {
     await nestApp.close();
