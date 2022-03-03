@@ -619,7 +619,11 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
                         isLoading: false,
                       },
                       query.kind === 'restapi'
-                        ? { request: data.data.requestObject, response: data.data.responseObject }
+                        ? {
+                            request: data.data.requestObject,
+                            response: data.data.responseObject,
+                            responseHeaders: data.data.responseHeaders,
+                          }
                         : {}
                     ),
                   },
@@ -700,7 +704,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
                       data: finalData,
                       rawData,
                     },
-                    query.kind === 'restapi' ? { request: data.request, response: data.response } : {}
+                    query.kind === 'restapi'
+                      ? { request: data.request, response: data.response, responseHeaders: data.responseHeaders }
+                      : {}
                   ),
                 },
               },
