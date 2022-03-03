@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  NotAcceptableException,
+  HttpException,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { OrganizationsService } from './organizations.service';
 import { JwtService } from '@nestjs/jwt';
@@ -66,7 +72,16 @@ export class AuthService {
 
     const { email } = params;
     const organization = await this.organizationsService.create('Untitled organization');
-    const user = await this.usersService.create({ email }, organization, ['all_users', 'admin']);
+    let user;
+    try {
+      user = await this.usersService.create({ email }, organization, ['all_users', 'admin']);
+    } catch (e) {
+      console.log({ happy: e.driverError });
+      if (e?.code == '23505') {
+        throw new NotAcceptableException('Email already exists');
+      }
+      throw new HttpException(e, 500);
+    }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const organizationUser = await this.organizationUsersService.create(user, organization);
 
