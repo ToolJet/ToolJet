@@ -30,12 +30,14 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
       setState('initial');
       fireEvent('onCountDownFinish');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [time]);
 
   useEffect(() => {
     intervalId && clearInterval(intervalId);
     setState('initial');
     setTime(getTimeObj(getDefaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.type, getDefaultValue]);
 
   useEffect(() => {

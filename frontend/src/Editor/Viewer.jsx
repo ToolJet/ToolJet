@@ -124,6 +124,7 @@ class Viewer extends React.Component {
       this.setStateForApp(data);
       this.setStateForContainer(data);
       this.setState({ isLoading: false });
+      this.setWindowTitle(data.name);
     });
   };
 
@@ -154,6 +155,10 @@ class Viewer extends React.Component {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
     return canvasBoundingRect?.width;
   };
+
+  setWindowTitle(name) {
+    document.title = name ?? 'Untitled App';
+  }
 
   render() {
     const {
@@ -231,9 +236,9 @@ class Viewer extends React.Component {
                             });
                             onComponentClick(this, id, component, 'view');
                           }}
-                          onComponentOptionChanged={(component, optionName, value) =>
-                            onComponentOptionChanged(this, component, optionName, value)
-                          }
+                          onComponentOptionChanged={(component, optionName, value) => {
+                            return onComponentOptionChanged(this, component, optionName, value);
+                          }}
                           onComponentOptionsChanged={(component, options) =>
                             onComponentOptionsChanged(this, component, options)
                           }

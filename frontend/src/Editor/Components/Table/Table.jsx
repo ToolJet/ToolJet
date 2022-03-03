@@ -49,9 +49,11 @@ export function Table({
 
   const actions = component.definition.properties.actions || { value: [] };
   const serverSidePaginationProperty = component.definition.properties.serverSidePagination;
-  const serverSidePagination = serverSidePaginationProperty
+  let serverSidePagination = serverSidePaginationProperty
     ? resolveWidgetFieldValue(serverSidePaginationProperty.value, currentState)
     : false;
+
+  if (typeof serverSidePagination !== 'boolean') serverSidePagination = false;
 
   const serverSideSearchProperty = component.definition.properties.serverSideSearch;
   const serverSideSearch = serverSideSearchProperty
@@ -79,8 +81,10 @@ export function Table({
   const highlightSelectedRow = resolveWidgetFieldValue(highlightSelectedRowProperty, currentState) ?? false; // default is false for backward compatibility
 
   const clientSidePaginationProperty = component.definition.properties.clientSidePagination?.value;
-  const clientSidePagination =
+  let clientSidePagination =
     resolveWidgetFieldValue(clientSidePaginationProperty, currentState) ?? !serverSidePagination; // default is true for backward compatibility
+
+  if (typeof clientSidePagination !== 'boolean') clientSidePagination = true;
 
   const tableTypeProperty = component.definition.styles.tableType;
   let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
@@ -243,9 +247,19 @@ export function Table({
         return rows.filter((row) => row.values[columnIds[0]] === filterValue.value);
       }
 
+      if (filterValue.operation === 'ne') {
+        return rows.filter((row) => row.values[columnIds[0]] !== filterValue.value);
+      }
+
       if (filterValue.operation === 'matches') {
         return rows.filter((row) =>
           row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
+        );
+      }
+
+      if (filterValue.operation === 'nl') {
+        return rows.filter(
+          (row) => !row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
         );
       }
 
@@ -689,6 +703,7 @@ export function Table({
     () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [
       JSON.stringify(columnData),
+      JSON.stringify(actions),
       leftActionsCellData.length,
       rightActionsCellData.length,
       componentState.changeSet,
@@ -1051,7 +1066,9 @@ export function Table({
                     options={[
                       { name: 'contains', value: 'contains' },
                       { name: 'matches', value: 'matches' },
+                      { name: 'does not match', value: 'nl' },
                       { name: 'equals', value: 'equals' },
+                      { name: 'does not equal', value: 'ne' },
                       { name: 'greater than', value: 'gt' },
                       { name: 'less than', value: 'lt' },
                       { name: 'greater than or equals', value: 'gte' },

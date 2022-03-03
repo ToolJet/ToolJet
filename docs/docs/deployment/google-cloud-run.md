@@ -24,7 +24,7 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 
 2. Deploy new cloud run service
 
-:::note
+:::info
 This command takes the assumption that certain required environment has already been created in secrets. If you haven't created already then use the [secret manager](https://console.cloud.google.com/security/secret-manager).
 :::
 
@@ -89,7 +89,7 @@ The default username of the admin is `dev@tooljet.io` and the password is `passw
 
 2. Deploy new cloud run service
 
-:::note
+:::info
 This command takes the assumption that certain required environment has already been created in secrets. If you haven't created already then use the [secret manager](https://console.cloud.google.com/security/secret-manager).
 :::
 
@@ -123,7 +123,7 @@ If you are to use [Public IP](https://cloud.google.com/sql/docs/mysql/connect-ru
   If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. The certificate can be mount as a volume onto the container using secrets.
 :::
 
-3. Create default user (Optional)
+3. Create default user **(Optional)**
 
 Signing up requires [SMTP configuration](https://docs.tooljet.com/docs/deployment/env-vars#smtp-configuration--optional-) to be done, but if you want to start off with default user you can run the command by modifying the `args` flag for a one time usage.
 

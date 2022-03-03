@@ -364,9 +364,9 @@ export const SubContainer = ({
           [optionName]: value,
         },
       };
-      onComponentOptionChanged(parentComponent, 'data', newData);
+      return onComponentOptionChanged(parentComponent, 'data', newData);
     } else {
-      onComponentOptionChanged(component, optionName, value, extraProps);
+      return onComponentOptionChanged(component, optionName, value, extraProps);
     }
   }
 
@@ -390,7 +390,7 @@ export const SubContainer = ({
       id={`canvas-${parent}`}
       className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
     >
-      {Object.keys(childComponents).map((key, index) => (
+      {Object.keys(childComponents).map((key) => (
         <DraggableBox
           onComponentClick={onComponentClick}
           onEvent={onEvent}

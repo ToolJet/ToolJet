@@ -1,0 +1,65 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Snowflake datasource",
+  "description": "A schema defining Snowflake datasource",
+  "type": "database",
+  "source": {
+    "name": "Snowflake",
+    "kind": "snowflake",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "username": { "type": "string" },
+      "account": { "type": "string" },
+      "password": { "type": "string", "encrypted": true }
+    }
+  },
+  "properties": {
+    "username": {
+      "label": "Username",
+      "key": "username",
+      "type": "text",
+      "description": "Enter username"
+    },
+    "account": {
+      "label": "Account",
+      "key": "account",
+      "type": "text",
+      "description": "Enter account"
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "Enter password"
+    },
+    "database": {
+      "label": "Database",
+      "key": "database",
+      "type": "text",
+      "description": "Enter database"
+    },
+    "schema": {
+      "label": "Schema",
+      "key": "schema",
+      "type": "text",
+      "description": "Enter schema"
+    },
+    "warehouse": {
+      "label": "Warehouse",
+      "key": "warehouse",
+      "type": "text",
+      "description": "Enter warehouse"
+    },
+    "role": {
+      "label": "Role",
+      "key": "role",
+      "type": "text",
+      "description": "Enter role"
+    }
+  },
+  "required": ["account", "username", "password"]
+}
