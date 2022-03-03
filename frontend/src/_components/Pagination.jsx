@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-export function Pagination({ currentPage, count, pageChanged, itemsPerPage = 10, darkMode }) {
+export const Pagination = function Pagination({ currentPage, count, pageChanged, itemsPerPage = 10, darkMode }) {
   const totalPages = useMemo(() => {
     return Math.floor((count - 1) / itemsPerPage) + 1;
   }, [count, itemsPerPage]);
@@ -141,4 +141,4 @@ export function Pagination({ currentPage, count, pageChanged, itemsPerPage = 10,
       </ul>
     </div>
   );
-}
+};
