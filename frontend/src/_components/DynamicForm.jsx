@@ -102,6 +102,7 @@ const DynamicForm = ({
           value: options[key]?.value || options[key],
           onChange: (value) => optionchanged(key, value),
           width: width || '100%',
+          useMenuPortal: queryName ? true : false,
         };
       case 'react-component-headers':
         return {
