@@ -59,7 +59,6 @@ export class App extends BaseEntity {
   user: User;
 
   @OneToMany(() => AppVersion, (appVersion) => appVersion.app, {
-    eager: true,
     onDelete: 'CASCADE',
   })
   appVersions: AppVersion[];
