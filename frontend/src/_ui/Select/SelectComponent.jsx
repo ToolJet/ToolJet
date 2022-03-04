@@ -13,6 +13,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
     placeholder = 'Select..',
     customOption = undefined,
     defaultValue = null,
+    useMenuPortal = true,
   } = restProps;
 
   const useStyles = !_.isEmpty(styles) ? styles : defaultStyles(darkMode, width, height);
@@ -51,7 +52,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
         placeholder={placeholder}
         styles={useStyles}
         formatOptionLabel={(option) => renderCustomOption(option)}
-        menuPortalTarget={document.body}
+        menuPortalTarget={useMenuPortal ? document.body : null}
         menuPlacement="auto"
       />
     </React.Fragment>
