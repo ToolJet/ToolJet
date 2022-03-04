@@ -114,6 +114,7 @@
   "jest": {
     "transform": {
       "^.+\\.js?$": "babel-jest",
+      "^.+\\.jsx?$": "babel-jest",
       "^.+\\.svg$": "<rootDir>/__mocks__/svg.js"
     },
     "transformIgnorePatterns": [
