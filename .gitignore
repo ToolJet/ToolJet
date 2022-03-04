@@ -35,6 +35,4 @@
 /node_modules
 /frontend/cypress/videos
 
-# Ignore IDE config files
-.vscode/*
 .idea/*
