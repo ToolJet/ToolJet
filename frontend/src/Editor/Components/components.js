@@ -927,6 +927,7 @@ export const componentTypes = [
         borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        justifyContent: { value: 'left' },
       },
     },
   },
