@@ -900,6 +900,7 @@ export const componentTypes = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       selectedTextColor: { type: 'color', displayName: 'Selected Text Color' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
+      justifyContent: { type: 'alignButtons', displayName: 'Align Text' },
     },
     exposedVariables: {
       value: null,
