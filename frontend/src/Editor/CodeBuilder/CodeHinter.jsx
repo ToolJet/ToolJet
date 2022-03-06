@@ -190,13 +190,12 @@ export function CodeHinter({
 
   return (
     <>
-      <div
-        className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''}`}
-        style={{ width: width, display: codeShow ? 'flex' : 'none' }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div className={`mb-2 field ${options.className}`}>
           <ToolTip label={paramLabel} meta={fieldMeta} />
-          <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} pt-2`}>
+        </div>
+        <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} pt-2`}>
+          <div style={{ width: width, display: codeShow ? 'flex' : 'none' }}>
             <FxButton
               active={true}
               onPress={() => {
@@ -206,6 +205,11 @@ export function CodeHinter({
             />
           </div>
         </div>
+      </div>
+      <div
+        className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''}`}
+        style={{ width: width, display: codeShow ? 'flex' : 'none' }}
+      >
         <div className={`col`} style={{ marginBottom: '0.5rem' }}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
             <div
@@ -252,8 +256,6 @@ export function CodeHinter({
             {enablePreview && !isOpen && getPreview()}
           </div>
         </div>
-        {/* <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} pt-2`}>
-        </div> */}
       </div>
       {!codeShow && (
         <div style={{ display: !codeShow ? 'block' : 'none' }}>

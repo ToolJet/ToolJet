@@ -18,7 +18,7 @@ export const Toggle = ({ value, onChange, forceCodeBox }) => {
           </label>
         </div>
       </div>
-      <div className="col-auto pt-1">
+      <div className="col-auto pt-1" style={{ marginTop: '-1.8rem' }}>
         <FxButton active={false} onPress={forceCodeBox} />
       </div>
     </div>
