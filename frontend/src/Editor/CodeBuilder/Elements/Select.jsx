@@ -5,7 +5,7 @@ import FxButton from './FxButton';
 export const Select = ({ value, onChange, forceCodeBox, meta }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
-    <div className="row" style={{ position: 'relative' }}>
+    <div className="row fx-container">
       <div className="col">
         <div className="field mb-3">
           <SelectSearch
@@ -19,7 +19,7 @@ export const Select = ({ value, onChange, forceCodeBox, meta }) => {
           />
         </div>
       </div>
-      <div className="col-auto pt-2 style-fx" style={{ position: 'absolute', top: '-36px', right: '0px' }}>
+      <div className="col-auto pt-2 style-fx fx-common">
         <FxButton active={false} onPress={forceCodeBox} />
       </div>
     </div>

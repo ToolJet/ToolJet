@@ -1049,6 +1049,14 @@ button {
     }
   }
 }
+.fx-container{
+  position: relative;
+}
+.fx-common{
+  position: absolute;
+  top: -36px;
+  right: 0px;
+}
 
 .fx-button {
   font-weight: 400;
