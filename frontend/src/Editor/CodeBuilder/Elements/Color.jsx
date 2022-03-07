@@ -23,7 +23,7 @@ export const Color = ({ value, onChange, forceCodeBox }) => {
   };
 
   return (
-    <div className="row">
+    <div className="row" style={{ position: 'relative' }}>
       <div className="col">
         <div className="field mb-2">
           {showPicker && (
@@ -48,7 +48,7 @@ export const Color = ({ value, onChange, forceCodeBox }) => {
           </div>
         </div>
       </div>
-      <div className="col-auto pt-2">
+      <div className="col-auto pt-2" style={{ position: 'absolute', top: '-36px', right: '0px' }}>
         <FxButton active={false} onPress={forceCodeBox} />
       </div>
     </div>

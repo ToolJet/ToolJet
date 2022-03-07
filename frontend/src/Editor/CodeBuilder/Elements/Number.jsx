@@ -12,7 +12,7 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
   };
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ position: 'relative' }}>
         <div className="col">
           <div className="field form-control" style={{ padding: '0.225rem 0.35rem' }}>
             <input
@@ -26,7 +26,7 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
             />
           </div>
         </div>
-        <div className="col-auto pt-2">
+        <div className="col-auto pt-2" style={{ position: 'absolute', top: '-36px', right: '0px' }}>
           <FxButton active={false} onPress={forceCodeBox} />
         </div>
       </div>

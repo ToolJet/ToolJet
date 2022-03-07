@@ -4,7 +4,7 @@ import FxButton from './FxButton';
 
 export const Toggle = ({ value, onChange, forceCodeBox }) => {
   return (
-    <div className="row">
+    <div className="row" style={{ position: 'relative' }}>
       <div className="col">
         <div className="field mb-3">
           <label className="form-check form-switch my-1">
@@ -18,7 +18,7 @@ export const Toggle = ({ value, onChange, forceCodeBox }) => {
           </label>
         </div>
       </div>
-      <div className="col-auto pt-1" style={{ marginTop: '-1.8rem' }}>
+      <div className="col-auto pt-2" style={{ position: 'absolute', top: '-36px', right: '0px' }}>
         <FxButton active={false} onPress={forceCodeBox} />
       </div>
     </div>
