@@ -16,7 +16,7 @@ export const ToolTip = ({ label, meta, labelClass }) => {
     );
   }
 
-  if (meta.tip) {
+  if (meta?.tip) {
     return (
       <OverlayTrigger placement="left" delay={{ show: 250, hide: 400 }} overlay={renderTooltip}>
         <label style={tooltipStyle} className={labelClass || 'form-label'}>
