@@ -26,7 +26,7 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
             />
           </div>
         </div>
-        <div className="col-auto pt-2" style={{ position: 'absolute', top: '-36px', right: '0px' }}>
+        <div className="col-auto pt-2 style-fx" style={{ position: 'absolute', top: '-36px', right: '0px' }}>
           <FxButton active={false} onPress={forceCodeBox} />
         </div>
       </div>
