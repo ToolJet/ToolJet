@@ -5,13 +5,13 @@ import Select from 'react-select';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
-import ReactJson from 'react-json-view';
 import { previewQuery } from '@/_helpers/appUtils';
 import { allSvgs } from '@tooljet/plugins/client';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import RunjsIcon from '../Icons/runjs.svg';
+import { JSONTree } from 'react-json-tree';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -19,6 +19,27 @@ const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
 ];
+
+const theme = {
+  scheme: 'monokai',
+  author: 'wimer hazenberg (http://www.monokai.nl)',
+  base00: '#272822',
+  base01: '#383830',
+  base02: '#49483e',
+  base03: '#75715e',
+  base04: '#a59f85',
+  base05: '#f8f8f2',
+  base06: '#f5f4f1',
+  base07: '#f9f8f5',
+  base08: '#f92672',
+  base09: '#fd971f',
+  base0A: '#f4bf75',
+  base0B: '#a6e22e',
+  base0C: '#a1efe4',
+  base0D: '#66d9ef',
+  base0E: '#ae81ff',
+  base0F: '#cc6633',
+};
 
 let QueryManager = class QueryManager extends React.Component {
   constructor(props) {
@@ -497,19 +518,10 @@ let QueryManager = class QueryManager extends React.Component {
                       {previewLoading === false &&
                         (this.isJson(queryPreviewData) ? (
                           <div>
-                            <ReactJson
-                              name={false}
-                              style={{ fontSize: '0.7rem' }}
-                              enableClipboard={false}
-                              src={queryPreviewData}
-                              theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
-                              displayDataTypes={true}
-                              collapsed={true}
-                              collapseStringsAfterLength={20}
-                              displayObjectSize={true}
-                              quotesOnKeys={false}
-                              sortKeys={true}
-                              indentWidth={1}
+                            <JSONTree
+                              theme={!this.props.darkMode && theme}
+                              data={queryPreviewData}
+                              collectionLimit={100}
                             />
                           </div>
                         ) : (
