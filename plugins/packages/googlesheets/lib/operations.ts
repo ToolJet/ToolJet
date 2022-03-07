@@ -47,8 +47,8 @@ export async function batchUpdateToSheet(
   }
 
   const lookUpData = await lookUpSheetData(spreadSheetId,spreadsheetRange, sheet, authHeader);  
+  const body = await makeRequestBodyToBatchUpdate(requestBody, filterData, filterOperator, lookUpData);
 
-  const body = makeRequestBodyToBatchUpdate(requestBody, filterData, filterOperator, lookUpData)
 
   const _data = body.map((data) => {
     return {
