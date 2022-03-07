@@ -20,6 +20,8 @@ const Comments = ({ newThread = {}, appVersionsId, socket, canvasWidth }) => {
         id: u.id,
         display: `${capitalize(u.first_name)} ${capitalize(u.last_name)}`,
         email: u.email,
+        first_name: u.first_name,
+        last_name: u.last_name,
       }));
       setUsers(_users);
     });

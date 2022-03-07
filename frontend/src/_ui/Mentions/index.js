@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { MentionsInput, Mention } from 'react-mentions';
 
 const Mentions = ({ users, value, setValue, placeholder, darkMode }) => {
@@ -78,9 +77,10 @@ const Mentions = ({ users, value, setValue, placeholder, darkMode }) => {
                 marginRight: '12px',
                 alignItems: 'center',
                 color: 'white',
+                textTransform: 'uppercase',
               }}
             >
-              {suggestion.display.slice(0, 2)}
+              {suggestion.first_name.slice(0, 1) + suggestion.last_name.slice(0, 1)}
             </div>
             <div
               style={{
