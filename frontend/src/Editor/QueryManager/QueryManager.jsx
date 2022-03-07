@@ -20,27 +20,6 @@ const staticDataSources = [
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
 ];
 
-const theme = {
-  scheme: 'monokai',
-  author: 'wimer hazenberg (http://www.monokai.nl)',
-  base00: '#272822',
-  base01: '#383830',
-  base02: '#49483e',
-  base03: '#75715e',
-  base04: '#a59f85',
-  base05: '#f8f8f2',
-  base06: '#f5f4f1',
-  base07: '#f9f8f5',
-  base08: '#f92672',
-  base09: '#fd971f',
-  base0A: '#f4bf75',
-  base0B: '#a6e22e',
-  base0C: '#a1efe4',
-  base0D: '#66d9ef',
-  base0E: '#ae81ff',
-  base0F: '#cc6633',
-};
-
 let QueryManager = class QueryManager extends React.Component {
   constructor(props) {
     super(props);
@@ -51,6 +30,7 @@ let QueryManager = class QueryManager extends React.Component {
       selectedDataSource: null,
       dataSourceMeta: {},
       dataQueries: [],
+      theme: {},
     };
 
     this.previewPanelRef = React.createRef();
@@ -78,6 +58,26 @@ let QueryManager = class QueryManager extends React.Component {
         selectedSource: source,
         dataSourceMeta,
         selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
+        theme: {
+          scheme: 'bright',
+          author: 'chris kempson (http://chriskempson.com)',
+          base00: props.darkMode ? '#272822' : '#000000',
+          base01: '#303030',
+          base02: '#505050',
+          base03: '#b0b0b0',
+          base04: '#d0d0d0',
+          base05: '#e0e0e0',
+          base06: '#f5f5f5',
+          base07: '#ffffff',
+          base08: '#fb0120',
+          base09: '#fc6d24',
+          base0A: '#fda331',
+          base0B: '#a1c659',
+          base0C: '#76c7b7',
+          base0D: '#6fb3d2',
+          base0E: '#d381c3',
+          base0F: '#be643c',
+        },
       },
       () => {
         if (this.props.mode === 'edit') {
@@ -519,8 +519,9 @@ let QueryManager = class QueryManager extends React.Component {
                         (this.isJson(queryPreviewData) ? (
                           <div>
                             <JSONTree
-                              theme={!this.props.darkMode && theme}
+                              theme={this.state.theme}
                               data={queryPreviewData}
+                              invertTheme={!this.props.darkMode}
                               collectionLimit={100}
                             />
                           </div>
