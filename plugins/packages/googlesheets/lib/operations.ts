@@ -174,7 +174,7 @@ const getInputKeys = (inputBody, data) => {
   const keys = Object.keys(inputBody);
   const arr = [];
   keys.map((key) =>
-    data.filter((val, index) => {
+    data.forEach((val, index) => {
       if (val[0] === key) {
         let keyIndex = '';
         if(index >= 26) {
