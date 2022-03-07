@@ -200,7 +200,7 @@ const getInputKeys = (inputBody, data) => {
   data.filter((val, index) => {
     if (val[0] === key) {
         let keyIndex = '';
-        if(index > 26) {
+        if(index >= 26) {
           keyIndex = numberToLetters(index);
         } else {
           keyIndex = `${String.fromCharCode(65 + index)}`;
