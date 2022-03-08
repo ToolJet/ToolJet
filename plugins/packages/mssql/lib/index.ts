@@ -60,7 +60,7 @@ export default class MssqlQueryService implements QueryService {
         database: sourceOptions.database,
         port: +sourceOptions.port,
         options: {
-          encrypt: sourceOptions.azure
+          encrypt: sourceOptions.azure ?? false
         }
       }
     };
