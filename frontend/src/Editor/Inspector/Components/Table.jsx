@@ -2,7 +2,7 @@ import React from 'react';
 import Accordion from '@/_ui/Accordion';
 
 import { renderElement } from '../Utils';
-import { computeActionName, resolveReferences } from '@/_helpers/utils';
+import { computeActionName } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
 import SortableList, { SortableItem } from 'react-easy-sort';
 import arrayMove from 'array-move';
@@ -122,39 +122,7 @@ class Table extends React.Component {
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
   };
 
-  validateInputType(value, type) {
-    const [resolvedValue] = resolveReferences(value, this.state.currentState, null, {}, true);
-
-    if (type === 'array') {
-      return Array.isArray(resolvedValue);
-    }
-    return false;
-  }
-  onColumnItemChanged = (index, key, value, validateInputType, expectedInputType) => {
-    if (validateInputType) {
-      const isResolved = this.validateInputType(value, expectedInputType);
-      if (isResolved) {
-        this.onColumnItemChange(index, key, value);
-      }
-    }
-  };
-
   columnPopover = (column, index) => {
-    if (
-      column.columnType === 'dropdown' ||
-      column.columnType === 'multiselect' ||
-      column.columnType === 'badge' ||
-      column.columnType === 'badges' ||
-      column.columnType === 'radio'
-    ) {
-      if (!this.validateInputType(column.labels, 'array')) {
-        column.labels = '{{[]}}';
-      }
-      if (!this.validateInputType(column.values, 'array')) {
-        column.values = '{{[]}}';
-      }
-    }
-
     return (
       <Popover id="popover-basic-2" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
         <Popover.Content>
@@ -197,6 +165,26 @@ class Table extends React.Component {
               defaultValue={column.name}
             />
           </div>
+          {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
+            <div className="field mb-2">
+              <label className="form-label">Overflow</label>
+              <SelectSearch
+                options={[
+                  { name: 'Wrap', value: 'wrap' },
+                  { name: 'Scroll', value: 'scroll' },
+                  { name: 'Hide', value: 'hide' },
+                ]}
+                value={column.textWrap}
+                search={true}
+                closeOnSelect={true}
+                onChange={(value) => {
+                  this.onColumnItemChange(index, 'textWrap', value);
+                }}
+                filterOptions={fuzzySearch}
+                placeholder="Select.."
+              />
+            </div>
+          )}
           <div className="field mb-2">
             <label className="form-label">key</label>
             <CodeHinter
@@ -333,7 +321,7 @@ class Table extends React.Component {
                   mode="javascript"
                   lineNumbers={false}
                   placeholder={'{{[1, 2, 3]}}'}
-                  onChange={(value) => this.onColumnItemChanged(index, 'values', value, true, 'array')}
+                  onChange={(value) => this.onColumnItemChange(index, 'values', value)}
                   componentName={this.getPopoverFieldSource(column.columnType, 'values')}
                 />
               </div>
@@ -346,7 +334,7 @@ class Table extends React.Component {
                   mode="javascript"
                   lineNumbers={false}
                   placeholder={'{{["one", "two", "three"]}}'}
-                  onChange={(value) => this.onColumnItemChanged(index, 'labels', value, true, 'array')}
+                  onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
                   componentName={this.getPopoverFieldSource(column.columnType, 'labels')}
                 />
               </div>
@@ -577,10 +565,8 @@ class Table extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
-
     if (item === 'name') {
       const columnSizes = this.props.component.component.definition.properties.columnSizes;
-
       if (columnSizes) {
         const newColumnSizes = JSON.parse(JSON.stringify(columnSizes));
         if (newColumnSizes[column.name]) {
@@ -589,11 +575,9 @@ class Table extends React.Component {
         }
       }
     }
-
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
-
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
   };
 
@@ -609,6 +593,7 @@ class Table extends React.Component {
 
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
+
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
 
