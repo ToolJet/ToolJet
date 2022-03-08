@@ -2549,6 +2549,17 @@ hr {
     }
   }
 }
+.app-version-container {
+  min-height: 200px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.app-version-content{
+  flex: 1;
+  overflow: auto;
+  // background: pink;
+}
 
 .query-manager-header {
   .nav-item {
