@@ -72,13 +72,24 @@ export function getDataFromLocalStorage(key) {
 
 export function runTransformation(_ref, rawData, transformation, query) {
   const data = rawData;
-  const evalFunction = Function(['data', 'moment', '_', 'components', 'queries', 'globals'], transformation);
+  const evalFunction = Function(
+    ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+    transformation
+  );
   let result = [];
 
   const currentState = _ref.state.currentState || {};
 
   try {
-    result = evalFunction(data, moment, _, currentState.components, currentState.queries, currentState.globals);
+    result = evalFunction(
+      data,
+      moment,
+      _,
+      currentState.components,
+      currentState.queries,
+      currentState.globals,
+      currentState.variables
+    );
   } catch (err) {
     console.log('Transformation failed for query: ', query.name, err);
     result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
