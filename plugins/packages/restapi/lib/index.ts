@@ -11,6 +11,7 @@ function isEmpty(value: number | null | undefined | string) {
 interface RestAPIResult extends QueryResult {
   request?: Array<object> | object;
   response?: Array<object> | object;
+  responseHeaders?: Array<object> | object; 
 }
 
 export default class RestapiQueryService implements QueryService {
@@ -85,6 +86,7 @@ export default class RestapiQueryService implements QueryService {
     let result = {};
     let requestObject = {};
     let responseObject = {};
+    let responseHeaders = {};
 
     /* Prefixing the base url of datasouce if datasource exists */
     const url = hasDataSource ? `${sourceOptions.url}${queryOptions.url || ''}` : queryOptions.url;
@@ -103,6 +105,7 @@ export default class RestapiQueryService implements QueryService {
         },
         json,
       });
+
       result = JSON.parse(response.body);
       requestObject = {
         requestUrl: response.request.requestUrl,
@@ -110,10 +113,13 @@ export default class RestapiQueryService implements QueryService {
         headers: response.request.options.headers,
         params: urrl.parse(response.request.requestUrl, true).query,
       };
+
       responseObject = {
         body: response.body,
         statusCode: response.statusCode,
       };
+
+      responseHeaders = response.headers;
     } catch (error) {
       console.log(error);
 
@@ -128,6 +134,7 @@ export default class RestapiQueryService implements QueryService {
             statusCode: error.response.statusCode,
             responseBody: error.response.body,
           },
+          responseHeaders: error.response.headers
         };
       }
       throw new QueryError('Query could not be completed', error.message, result);
@@ -138,6 +145,7 @@ export default class RestapiQueryService implements QueryService {
       data: result,
       request: requestObject,
       response: responseObject,
+      responseHeaders,
     };
   }
 

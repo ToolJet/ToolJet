@@ -35,6 +35,7 @@ import { Tags } from './Components/Tags';
 import { Spinner } from './Components/Spinner';
 import { CircularProgressBar } from './Components/CirularProgressbar';
 import { renderTooltip } from '../_helpers/appUtils';
+import { RangeSlider } from './Components/RangeSlider';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { resolveProperties, resolveStyles } from './component-properties-resolution';
@@ -77,6 +78,7 @@ const AllComponents = {
   Tags,
   Spinner,
   CircularProgressBar,
+  RangeSlider,
 };
 
 export const Box = function Box({
