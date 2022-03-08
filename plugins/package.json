@@ -12,7 +12,8 @@
     "build": "npm run create:client && npm run create:server && npm run build:packages && npm run build:server",
     "prebuild:packages": "npm run clean:packages",
     "build:packages": "npx lerna run build --stream",
-    "clean:packages": "npx lerna run clean --parallel"
+    "clean:packages": "npx lerna run clean --parallel",
+    "test": "NODE_ENV=test jest"
   },
   "dependencies": {
     "@tooljet-plugins/airtable": "file:packages/airtable",
@@ -42,6 +43,7 @@
     "@tooljet-plugins/typesense": "file:packages/typesense"
   },
   "devDependencies": {
+    "@types/jest": "^27.4.1",
     "jest": "^27.4.5",
     "lerna": "^4.0.0",
     "rimraf": "^3.0.2",
