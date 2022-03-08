@@ -4,6 +4,7 @@ export type SourceOptions = {
   port: string;
   username: string;
   password: string;
+  azure: boolean;
 };
 export type QueryOptions = { 
   operation: string;
