@@ -900,6 +900,7 @@ export const componentTypes = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       selectedTextColor: { type: 'color', displayName: 'Selected Text Color' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
+      justifyContent: { type: 'alignButtons', displayName: 'Align Text' },
     },
     exposedVariables: {
       value: null,
@@ -926,6 +927,7 @@ export const componentTypes = [
         borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        justifyContent: { value: 'left' },
       },
     },
   },
@@ -1850,6 +1852,61 @@ export const componentTypes = [
         primaryTextColour: { value: '#000000' },
         secondaryLabelColour: { value: '#8092AB' },
         secondaryTextColour: { value: '#36AF8B' },
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'RangeSlider',
+    displayName: 'Range slider',
+    description: 'Can be used to show slider with a range',
+    component: 'RangeSlider',
+    defaultSize: {
+      width: 9,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      min: { type: 'number', displayName: 'Min' },
+      max: { type: 'number', displayName: 'Max' },
+      value: { type: 'code', displayName: 'Value' },
+      enableTwoHandle: { type: 'toggle', displayName: 'Two handles' },
+    },
+    events: {},
+    styles: {
+      lineColor: { type: 'color', displayName: 'Line color' },
+      handleColor: { type: 'color', displayName: 'Handle color' },
+      trackColor: { type: 'color', displayName: 'Track color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      value: null,
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        min: {
+          value: '{{0}}',
+        },
+        max: {
+          value: '{{100}}',
+        },
+        value: {
+          value: '{{50}}',
+        },
+        enableTwoHandle: { value: false },
+      },
+      events: [],
+      styles: {
+        lineColor: { value: '#E9E9E9' },
+        handleColor: { value: '#4D72FA' },
+        trackColor: { value: '#4D72FA' },
         visibility: { value: '{{true}}' },
       },
     },
