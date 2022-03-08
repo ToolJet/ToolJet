@@ -321,6 +321,8 @@ export function Table({
         columnOptions.selectOptions = labels.map((label, index) => {
           return { name: label, value: values[index] };
         });
+      } else {
+        columnOptions.selectOptions = [];
       }
     }
     if (columnType === 'datepicker') {
