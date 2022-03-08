@@ -8,9 +8,9 @@ List view widget allows to create a list of repeatable rows of data. Just like c
 
 </div>
 
-## Properties
+## Event
 
-### Event: Row clicked
+### Row clicked
 
 <div style={{textAlign: 'center'}}>
 
@@ -26,7 +26,7 @@ To add an event to a button, click on the widget handle to open the widget prope
 Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
 :::
 
-### Properties
+## Properties
 
 <div style={{textAlign: 'center'}}>
 
@@ -40,7 +40,7 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 | Row height | Enter a numerical value to set the row height accordingly. | Any number between `1` to `100` |
 | Show bottom border | This property allows you to show or hide the row botton border. | By deafult its `{{true}}`, set `{{false}}` to hide the border  |
 
-### Layout
+## Layout
 
 <div style={{textAlign: 'center'}}>
 
@@ -53,7 +53,7 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 | Show on desktop | Toggle on or off to display desktop view. | You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 | Show on mobile | Toggle on or off to display mobile view. | You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`   |
 
-### Styles
+## Styles
 
 <div style={{textAlign: 'center'}}>
 
