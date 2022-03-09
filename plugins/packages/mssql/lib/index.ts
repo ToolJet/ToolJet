@@ -59,7 +59,10 @@ export default class MssqlQueryService implements QueryService {
         password: sourceOptions.password,
         database: sourceOptions.database,
         port: +sourceOptions.port,
-      },
+        options: {
+          encrypt: sourceOptions.azure ?? false
+        }
+      }
     };
 
     return knex(config);
