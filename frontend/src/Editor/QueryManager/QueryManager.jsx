@@ -58,6 +58,7 @@ let QueryManager = class QueryManager extends React.Component {
         selectedSource: source,
         dataSourceMeta,
         selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
+        sourceSelected: false,
       },
       () => {
         if (this.props.mode === 'edit') {
@@ -107,8 +108,13 @@ let QueryManager = class QueryManager extends React.Component {
     return false;
   };
 
+  handleBackButton = () => {
+    this.setState({
+      sourceSelected: true,
+    });
+  };
+
   changeDataSource = (sourceId) => {
-    console.log('sourcexx', sourceId);
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
 
     const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
@@ -443,29 +449,28 @@ let QueryManager = class QueryManager extends React.Component {
               <div className="row row-deck px-2 mt-0 query-details">
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mt-1 mb-2">
-                    <label className="form-label col-md-2">Datasource</label>
-                    {/* <Select
-                      options={[
-                        ...dataSources.map((source) => {
-                          return { label: source.name, value: source.id, kind: source.kind };
-                        }),
-                        ...staticDataSources.map((source) => {
-                          return { label: source.name, value: source.id, kind: source.kind };
-                        }),
-                      ]}
-                      formatOptionLabel={this.renderDataSourceOption}
-                      onChange={(newValue) => {
-                        console.log('new value', newValue);
-                        this.changeDataSource(newValue.value);
-                      }}
-                      placeholder="Select a data source"
-                      styles={selectStyles}
-                    /> */}
-                    <DataSourceLister
-                      dataSources={dataSources}
-                      staticDataSources={staticDataSources}
-                      changeDataSource={this.changeDataSource}
-                    />
+                    <div className="datasource-heading">
+                      {this.state.sourceSelected && (
+                        <p
+                          onClick={() =>
+                            this.setState({
+                              sourceSelected: false,
+                            })
+                          }
+                        >
+                          &larr;
+                        </p>
+                      )}
+                      <label className="form-label col-md-2">Datasource</label>
+                    </div>
+                    {!this.state.sourceSelected && (
+                      <DataSourceLister
+                        dataSources={dataSources}
+                        staticDataSources={staticDataSources}
+                        changeDataSource={this.changeDataSource}
+                        handleBackButton={this.handleBackButton}
+                      />
+                    )}
                   </div>
                 )}
 
