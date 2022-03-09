@@ -36,11 +36,18 @@ export const SubContainer = ({
   onComponentHover,
   hoveredComponent,
 }) => {
-  const [_currentParentRef, setParentRef] = useState(parentRef);
+  // const [_currentParentRef, setParentRef] = useState(parentRef);
+
+  // useEffect(() => {
+  //   setParentRef(parentRef);
+  // }, [parentRef]);
+  const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
 
   useEffect(() => {
-    setParentRef(parentRef);
-  }, [parentRef]);
+    const canvasWidth = parentRef?.current ? getContainerCanvasWidth() : 0;
+    console.log('---SubContainer---', canvasWidth);
+    setContainerCanvasWidth(canvasWidth);
+  }, [parentRef.current]);
 
   zoomLevel = zoomLevel || 1;
 
@@ -416,7 +423,7 @@ export const SubContainer = ({
           deviceWindowWidth={deviceWindowWidth}
           isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
           removeComponent={customRemoveComponent}
-          canvasWidth={getContainerCanvasWidth()}
+          canvasWidth={_containerCanvasWidth}
           readOnly={readOnly}
           darkMode={darkMode}
           customResolvables={customResolvables}
