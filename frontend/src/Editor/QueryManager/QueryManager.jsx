@@ -5,11 +5,9 @@ import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
 import { previewQuery } from '@/_helpers/appUtils';
-import { allSvgs } from '@tooljet/plugins/client';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
-import RunjsIcon from '../Icons/runjs.svg';
 import DataSourceLister from './DataSourceLister';
 import { JSONTree } from 'react-json-tree';
 
