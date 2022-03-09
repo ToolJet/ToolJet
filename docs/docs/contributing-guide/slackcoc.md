@@ -5,7 +5,7 @@ sidebar_label: Slack Code of Conduct
 
 # Slack Code of Conduct
 
-This code of conduct governs ToolJet's Community events and discussions.
+This code of conduct governs ToolJet's Slack Community events and discussions.
 
 ---
 
