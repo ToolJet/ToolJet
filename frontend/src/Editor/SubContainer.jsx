@@ -36,17 +36,12 @@ export const SubContainer = ({
   onComponentHover,
   hoveredComponent,
 }) => {
-  // const [_currentParentRef, setParentRef] = useState(parentRef);
-
-  // useEffect(() => {
-  //   setParentRef(parentRef);
-  // }, [parentRef]);
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
 
   useEffect(() => {
     const canvasWidth = parentRef?.current ? getContainerCanvasWidth() : 0;
-    console.log('---SubContainer---', canvasWidth);
     setContainerCanvasWidth(canvasWidth);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parentRef.current]);
 
   zoomLevel = zoomLevel || 1;
