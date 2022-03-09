@@ -1,7 +1,6 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import Select from 'react-select';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
@@ -252,26 +251,6 @@ let QueryManager = class QueryManager extends React.Component {
     this.optionchanged(option, !currentValue);
   };
 
-  renderDataSourceOption = (props) => {
-    const Icon = allSvgs[props.kind];
-    return (
-      <div>
-        {props.kind === 'runjs' ? (
-          <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
-        ) : (
-          Icon && <Icon style={{ height: 25, width: 25 }} />
-        )}
-
-        <span
-          style={{ height: '25px', display: 'inline-block', marginTop: '3.5px' }}
-          className={`mx-2 ${this.props.darkMode ? 'text-white' : 'text-muted'}`}
-        >
-          {props.label}
-        </span>
-      </div>
-    );
-  };
-
   // Here we have mocked data query in format of a component to be usable by event manager
   // TODO: Refactor EventManager to be generic
   mockDataQueryAsComponent = () => {
@@ -321,62 +300,6 @@ let QueryManager = class QueryManager extends React.Component {
     let buttonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
-
-    const selectStyles = {
-      container: (provided) => ({
-        ...provided,
-        width: 224,
-        height: 32,
-      }),
-      control: (provided) => ({
-        ...provided,
-        borderColor: 'hsl(0, 0%, 80%)',
-        boxShadow: 'none',
-        '&:hover': {
-          borderColor: 'hsl(0, 0%, 80%)',
-        },
-        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
-        height: '32px!important',
-        minHeight: '32px!important',
-      }),
-      valueContainer: (provided, _state) => ({
-        ...provided,
-        height: 32,
-        marginBottom: '4px',
-      }),
-      indicatorsContainer: (provided, _state) => ({
-        ...provided,
-        height: 32,
-      }),
-      indicatorSeparator: (_state) => ({
-        display: 'none',
-      }),
-      input: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-      }),
-      menu: (provided) => ({
-        ...provided,
-        zIndex: 2,
-        backgroundColor: this.props.darkMode ? 'rgb(31,40,55)' : 'white',
-      }),
-      option: (provided) => ({
-        ...provided,
-        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-        ':hover': {
-          backgroundColor: this.props.darkMode ? '#323C4B' : '#d8dce9',
-        },
-      }),
-      placeholder: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#808080',
-      }),
-      singleValue: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-      }),
-    };
 
     return (
       <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
