@@ -13,7 +13,7 @@ export default ({
 }) => {
   return (
     <>
-      <GroupHeader addNewKeyValuePair={addNewKeyValuePair} tabType={'body'} descText={'Body Parameters'} />
+      <GroupHeader addNewKeyValuePair={addNewKeyValuePair} paramType={'body'} descText={'Body Parameters'} />
 
       <TabContent
         options={options}
