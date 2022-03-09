@@ -13,10 +13,10 @@ export default ({
 }) => {
   return (
     <>
-      <div className="row pb-3">
+      <div className="row">
         {options.map((option, index) => {
           return (
-            <div className="row input-group my-1" key={index}>
+            <div className="row input-group mt-1" key={index}>
               <div className="row">
                 <div className="col-6 field">
                   <CodeHinter

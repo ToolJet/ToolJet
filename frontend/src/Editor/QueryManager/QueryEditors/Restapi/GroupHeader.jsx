@@ -1,6 +1,6 @@
 import React from 'react';
 
-const GroupHeader = ({ darkMode, addNewKeyValuePair, paramType, descText }) => {
+const GroupHeader = ({ addNewKeyValuePair, paramType, descText }) => {
   return (
     <div className="row">
       <div className="col px-2 content-title">{descText}</div>

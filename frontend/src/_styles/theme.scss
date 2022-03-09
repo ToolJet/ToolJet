@@ -4176,14 +4176,8 @@ input[type="text"] {
 }
 
 .query-pane-restapi-tabs.dark {
-  background: $bg-dark !important;
-  border-color: $border-grey-dark !important;
-
   .list-group-item {
     color: $disabled !important;
-    &:hover {
-      background-color: #262b33 !important;
-    }
   }
   .list-group-item.active {
     color: $white !important;
@@ -4191,9 +4185,7 @@ input[type="text"] {
 }
 .query-pane-restapi-tabs {
   box-sizing: border-box;
-  margin: 0px;
   height: fit-content;
-  min-height: 160px;
   width: 100%;
   .row {
     height: inherit;
@@ -4206,7 +4198,6 @@ input[type="text"] {
       border-color: $border-grey-dark !important;
     }
     .rest-api-tab-content {
-      min-height: 160px;
 
       .rest-api-tabpanes {
         display: none;
