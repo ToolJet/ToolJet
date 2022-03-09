@@ -394,11 +394,19 @@ let QueryManager = class QueryManager extends React.Component {
                     <div className="datasource-heading">
                       {this.state.sourceSelected && (
                         <p
-                          onClick={() =>
+                          onClick={() => {
                             this.setState({
                               sourceSelected: false,
-                            })
-                          }
+                            });
+                            this.setState({
+                              options: {},
+                              selectedQuery: null,
+                              // selectedDataSource: null,
+                              dataSourceMeta: {},
+                              dataQueries: [],
+                              theme: {},
+                            });
+                          }}
                         >
                           &larr;
                         </p>
@@ -411,6 +419,7 @@ let QueryManager = class QueryManager extends React.Component {
                         staticDataSources={staticDataSources}
                         changeDataSource={this.changeDataSource}
                         handleBackButton={this.handleBackButton}
+                        darkMode={this.props.darkMode}
                       />
                     )}
                   </div>
