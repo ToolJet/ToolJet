@@ -12,6 +12,7 @@ import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import RunjsIcon from '../Icons/runjs.svg';
+import DataSourceLister from './DataSourceLister';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -107,6 +108,7 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   changeDataSource = (sourceId) => {
+    console.log('sourcexx', sourceId);
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
 
     const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
@@ -442,7 +444,7 @@ let QueryManager = class QueryManager extends React.Component {
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mt-1 mb-2">
                     <label className="form-label col-md-2">Datasource</label>
-                    <Select
+                    {/* <Select
                       options={[
                         ...dataSources.map((source) => {
                           return { label: source.name, value: source.id, kind: source.kind };
@@ -452,9 +454,17 @@ let QueryManager = class QueryManager extends React.Component {
                         }),
                       ]}
                       formatOptionLabel={this.renderDataSourceOption}
-                      onChange={(newValue) => this.changeDataSource(newValue.value)}
+                      onChange={(newValue) => {
+                        console.log('new value', newValue);
+                        this.changeDataSource(newValue.value);
+                      }}
                       placeholder="Select a data source"
                       styles={selectStyles}
+                    /> */}
+                    <DataSourceLister
+                      dataSources={dataSources}
+                      staticDataSources={staticDataSources}
+                      changeDataSource={this.changeDataSource}
                     />
                   </div>
                 )}
