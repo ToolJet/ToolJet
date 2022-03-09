@@ -53,7 +53,7 @@ Portions derived from the [Django Code of Conduct](https://www.djangoproject.com
 
 #### 2. Check off your resolved questions
 
-If you have received a useful reply to your question, please drop a ✅ reaction or a reply for confirmation.
+If you have received a useful reply to your question, please drop a ✅ reaction or a reply for affirmation.
 
 #### 3. Try not to repost question
 
