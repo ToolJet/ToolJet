@@ -133,6 +133,36 @@ button {
     outline-color: #ffda7e;
   }
 
+  // query data source card style start
+  .query-datasource-card-container{
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+  .query-datasource-card
+  {
+    position: relative;
+    display: flex;
+    // flex-direction: row;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgba(101, 109, 119, 0.16);
+    border-radius: 4px;
+    height: 46px;
+    width: 200px;
+    // justify-content: space-between;
+    
+    padding: 10px;
+    align-items: center;
+    cursor: pointer;
+    p{
+      margin: 0 8px 0 15px;
+    }
+  }
+  // end
+
   .query-manager {
     user-select: none;
 
