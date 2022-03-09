@@ -177,7 +177,7 @@ class Restapi extends React.Component {
           </div>
         </div>
 
-        <div className={`query-pane-restapi-tabs mt-3 px-2 ${this.props.darkMode ? 'dark' : ''}`}>
+        <div className={`query-pane-restapi-tabs mt-3 ${this.props.darkMode ? 'dark' : ''}`}>
           <Tabs
             theme={this.props.darkMode ? 'monokai' : 'default'}
             options={this.state.options}
