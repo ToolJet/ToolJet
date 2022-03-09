@@ -99,27 +99,31 @@ export const AppVersionsManager = function AppVersionsManager({
           <span className="px-1">{editingAppVersion.name}</span>
         </span>
         {showDropDown && (
-          <div className="dropdown-menu show">
-            {appVersions.map((version) =>
-              releasedVersionId == version.id ? (
-                <div className="row dropdown-item released" key={version.id} onClick={() => selectVersion(version)}>
-                  {version.name}
-                  <div className="released-subtext">
-                    <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
-                    <span className="px-1">Currently Released</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="dropdown-item" key={version.id} onClick={() => selectVersion(version)}>
-                  {version.name}
-                </div>
-              )
-            )}
-            <div className="dropdown-divider"></div>
-            <div className="dropdown-item" onClick={() => setShowModal(true)}>
-              <span className="color-primary create-link">Create Version</span>
+          <>
+            <div className="dropdown-menu app-version-container show">
+              <div className="app-version-content">
+                {appVersions.map((version) =>
+                  releasedVersionId == version.id ? (
+                    <div className="row dropdown-item released" key={version.id} onClick={() => selectVersion(version)}>
+                      {version.name}
+                      <div className="released-subtext">
+                        <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
+                        <span className="px-1">Currently Released</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="dropdown-item" key={version.id} onClick={() => selectVersion(version)}>
+                      {version.name}
+                    </div>
+                  )
+                )}
+                <div className="dropdown-divider"></div>
+              </div>
+              <div className="dropdown-item" onClick={() => setShowModal(true)}>
+                <span className="color-primary create-link">Create Version</span>
+              </div>
             </div>
-          </div>
+          </>
         )}
         <CreateVersionModal
           showModal={showModal}
