@@ -59,6 +59,7 @@
     "react-google-login": "^5.2.2",
     "react-hot-toast": "^2.1.1",
     "react-hotkeys-hook": "^3.4.4",
+    "react-json-tree": "^0.16.1",
     "react-json-view": "^1.21.3",
     "react-lazy-load-image-component": "^1.5.1",
     "react-lazyload": "^3.2.0",
