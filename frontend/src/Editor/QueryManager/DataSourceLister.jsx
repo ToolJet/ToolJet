@@ -11,10 +11,10 @@ function DataSourceLister({ dataSources, staticDataSources, changeDataSource, ha
   };
   return (
     <div className="query-datasource-card-container">
-      {allSources.map((item, index) => {
+      {allSources.map((item) => {
         const Icon = allSvgs[item.kind];
         return (
-          <div className="query-datasource-card" key={index} onClick={() => handleChangeDataSource(item)}>
+          <div className="query-datasource-card" key={item.id} onClick={() => handleChangeDataSource(item)}>
             {item.kind === 'runjs' ? (
               <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
             ) : (
