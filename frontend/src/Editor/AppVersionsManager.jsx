@@ -164,7 +164,7 @@ const CreateVersionModal = function CreateVersionModal({
     <Modal
       show={showModal || showCreateVersionModalPrompt}
       setShow={setShowModal}
-      title="Create sssVersion"
+      title="Create Version"
       autoFocus={false}
       closeModal={() => setShowModal(false)}
     >
