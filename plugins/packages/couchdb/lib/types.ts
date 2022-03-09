@@ -17,4 +17,6 @@ export type QueryOptions = {
   limit?:string;
   skip?:string;
   descending?:boolean;
+  include_docs?:boolean;
+
 };

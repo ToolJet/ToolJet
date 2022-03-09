@@ -42,6 +42,17 @@
       ]
     },
     "list_records": {
+      "include_docs": {
+        "label": "include_docs",
+        "key": "include_docs",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter true/false",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "false"
+      },
       "descending": {
         "label": "descending order",
         "key": "descending",

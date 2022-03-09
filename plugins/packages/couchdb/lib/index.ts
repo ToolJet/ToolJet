@@ -23,6 +23,7 @@ export default class Couchdb implements QueryService {
       end_key,
       skip,
       descending,
+      include_docs
     } = queryOptions;
     const { username, password, port, host, database, protocol } =
       sourceOptions;
@@ -46,6 +47,7 @@ export default class Couchdb implements QueryService {
                 ...(limit?.length > 0 && { limit }),
                 ...(skip?.length > 0 && { skip }),
                 ...(descending && { descending }),
+                ...(include_docs && { include_docs }),
               },
             }
           );
