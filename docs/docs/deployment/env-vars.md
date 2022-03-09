@@ -40,6 +40,10 @@ ToolJet server uses PostgreSQL as the database.
 | PG_USER  | username               |
 | PG_PASS  | password               |
 
+:::tip
+If you are using docker-compose setup, you can set PG_HOST as `postgres` which will be DNS resolved by docker
+:::
+
 #### Check for updates ( optional )
 
 Self-hosted version of ToolJet pings our server to fetch the latest product updates every 24 hours. You can disable this by setting the value of `CHECK_FOR_UPDATES` environment variable to `0`. This feature is enabled by default.

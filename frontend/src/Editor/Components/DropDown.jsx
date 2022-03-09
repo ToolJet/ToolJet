@@ -14,7 +14,7 @@ export const DropDown = function DropDown({
   component,
 }) {
   let { label, value, display_values, values } = properties;
-  const { selectedTextColor, borderRadius, visibility, disabledState } = styles;
+  const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
 
   if (!_.isArray(values)) {
@@ -81,6 +81,7 @@ export const DropDown = function DropDown({
       ...provided,
       height: height,
       padding: '0 6px',
+      justifyContent,
     }),
 
     singleValue: (provided, _state) => ({
@@ -117,6 +118,7 @@ export const DropDown = function DropDown({
           };
       return {
         ...provided,
+        justifyContent,
         height: 'auto',
         display: 'flex',
         flexDirection: 'rows',

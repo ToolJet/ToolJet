@@ -5,13 +5,13 @@ import Select from 'react-select';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
-import ReactJson from 'react-json-view';
 import { previewQuery } from '@/_helpers/appUtils';
 import { allSvgs } from '@tooljet/plugins/client';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import RunjsIcon from '../Icons/runjs.svg';
+import { JSONTree } from 'react-json-tree';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -30,6 +30,7 @@ let QueryManager = class QueryManager extends React.Component {
       selectedDataSource: null,
       dataSourceMeta: {},
       dataQueries: [],
+      theme: {},
     };
 
     this.previewPanelRef = React.createRef();
@@ -57,6 +58,26 @@ let QueryManager = class QueryManager extends React.Component {
         selectedSource: source,
         dataSourceMeta,
         selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
+        theme: {
+          scheme: 'bright',
+          author: 'chris kempson (http://chriskempson.com)',
+          base00: props.darkMode ? '#272822' : '#000000',
+          base01: '#303030',
+          base02: '#505050',
+          base03: '#b0b0b0',
+          base04: '#d0d0d0',
+          base05: '#e0e0e0',
+          base06: '#f5f5f5',
+          base07: '#ffffff',
+          base08: '#fb0120',
+          base09: '#fc6d24',
+          base0A: '#fda331',
+          base0B: '#a1c659',
+          base0C: '#76c7b7',
+          base0D: '#6fb3d2',
+          base0E: '#d381c3',
+          base0F: '#be643c',
+        },
       },
       () => {
         if (this.props.mode === 'edit') {
@@ -497,18 +518,11 @@ let QueryManager = class QueryManager extends React.Component {
                       {previewLoading === false &&
                         (this.isJson(queryPreviewData) ? (
                           <div>
-                            <ReactJson
-                              name={false}
-                              style={{ fontSize: '0.7rem' }}
-                              enableClipboard={false}
-                              src={queryPreviewData}
-                              theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
-                              displayDataTypes={true}
-                              collapsed={false}
-                              displayObjectSize={true}
-                              quotesOnKeys={false}
-                              sortKeys={true}
-                              indentWidth={1}
+                            <JSONTree
+                              theme={this.state.theme}
+                              data={queryPreviewData}
+                              invertTheme={!this.props.darkMode}
+                              collectionLimit={100}
                             />
                           </div>
                         ) : (

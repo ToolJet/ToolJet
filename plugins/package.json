@@ -14,7 +14,8 @@
     "build:packages": "npx lerna run build --stream",
     "clean:packages": "npx lerna run clean --parallel",
     "lint": "eslint .  '**/*.ts'",
-    "format": "eslint . --fix '**/*.ts'"
+    "format": "eslint . --fix '**/*.ts'",
+    "test": "NODE_ENV=test jest"
   },
   "dependencies": {
     "@tooljet-plugins/airtable": "file:packages/airtable",
@@ -44,6 +45,7 @@
     "@tooljet-plugins/typesense": "file:packages/typesense"
   },
   "devDependencies": {
+    "@types/jest": "^27.4.1",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "@typescript-eslint/parser": "^4.31.1",
     "eslint": "^7.32.0",
