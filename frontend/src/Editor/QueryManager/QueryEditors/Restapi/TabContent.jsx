@@ -42,11 +42,11 @@ export default ({
                   />
                 </div>
               </div>
-              {index > 0 && (
+              {index >= 0 && (
                 <span
                   className="btn-sm col mt-1 color-primary"
                   role="button"
-                  style={{ marginLeft: '-5px' }}
+                  style={{ marginLeft: '-4px' }}
                   onClick={() => {
                     removeKeyValuePair(paramType, index);
                   }}

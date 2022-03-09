@@ -9,7 +9,6 @@ export default ({
   removeKeyValuePair,
   addNewKeyValuePair,
   onChange,
-  darkMode,
   componentName,
 }) => {
   return (

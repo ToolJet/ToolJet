@@ -9,12 +9,11 @@ export default ({
   removeKeyValuePair,
   addNewKeyValuePair,
   onChange,
-  darkMode,
   componentName,
 }) => {
   return (
     <>
-      <GroupHeader addNewKeyValuePair={addNewKeyValuePair} paramType={'headers'} descText="Request Headers List" />
+      <GroupHeader addNewKeyValuePair={addNewKeyValuePair} paramType={'headers'} descText="Request Headers" />
       <TabContent
         options={options}
         currentState={currentState}

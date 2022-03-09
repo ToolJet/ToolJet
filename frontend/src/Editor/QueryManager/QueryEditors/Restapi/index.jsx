@@ -155,7 +155,7 @@ class Restapi extends React.Component {
             />
           </div>
 
-          <div className="col field mx-3 w-100" style={{ display: 'flex', maxWidth: '700px' }}>
+          <div className="col field w-100" style={{ display: 'flex', marginLeft: 16 }}>
             {dataSourceURL && (
               <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
             )}
