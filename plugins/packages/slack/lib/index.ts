@@ -1,6 +1,6 @@
-import { QueryError, QueryResult,  QueryService } from '@tooljet-plugins/common';
-import got, { Headers } from 'got'
-import { SourceOptions, QueryOptions } from './types'
+import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import got, { Headers } from 'got';
+import { SourceOptions, QueryOptions } from './types';
 
 export default class SlackQueryService implements QueryService {
   authUrl(): string {

@@ -35,8 +35,8 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
 
 export async function batchUpdateToSheet(
   spreadSheetId: string,
-  spreadsheetRange: string='A1:Z500',
-  sheet: string='',
+  spreadsheetRange = 'A1:Z500',
+  sheet = '',
   requestBody: any,
   filterData: any,
   filterOperator: string,
@@ -46,9 +46,9 @@ export async function batchUpdateToSheet(
     return new Error('filterOperator is required');
   }
 
-  const lookUpData = await lookUpSheetData(spreadSheetId,spreadsheetRange, sheet, authHeader);  
-  const body = await makeRequestBodyToBatchUpdate(requestBody, filterData, filterOperator, lookUpData);
+  const lookUpData = await lookUpSheetData(spreadSheetId, spreadsheetRange, sheet, authHeader);
 
+  const body = await makeRequestBodyToBatchUpdate(requestBody, filterData, filterOperator, lookUpData);
 
   const _data = body.map((data) => {
     return {
@@ -57,7 +57,6 @@ export async function batchUpdateToSheet(
       values: [[data.cellValue]],
     };
   });
-
 
   const reqBody = {
     data: _data,
@@ -161,7 +160,7 @@ export async function deleteData(
   return await deleteDataFromSheet(spreadSheetId, sheet, rowIndex, authHeader);
 }
 
-async function lookUpSheetData(spreadSheetId: string, spreadsheetRange:string, sheet:string, authHeader: any) {
+async function lookUpSheetData(spreadSheetId: string, spreadsheetRange: string, sheet: string, authHeader: any) {
   const range = `${sheet}!${spreadsheetRange}`;
   const responseLookUpCellValues = await makeRequestToLookUpCellValues(spreadSheetId, range, authHeader);
   const data = await responseLookUpCellValues['values'];
@@ -177,13 +176,13 @@ const getInputKeys = (inputBody, data) => {
     data.forEach((val, index) => {
       if (val[0] === key) {
         let keyIndex = '';
-        if(index >= 26) {
+        if (index >= 26) {
           keyIndex = numberToLetters(index);
         } else {
           keyIndex = `${String.fromCharCode(65 + index)}`;
         }
         arr.push({ col: val[0], colIndex: keyIndex });
-    }
+      }
     })
   );
   return arr;
@@ -221,13 +220,13 @@ const getRowsIndex = (inputFilter, filterOperator, response) => {
 };
 
 function numberToLetters(num) {
-  let letters = ''
+  let letters = '';
   while (num >= 0) {
-      letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[num % 26] + letters
-      num = Math.floor(num / 26) - 1
+    letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[num % 26] + letters;
+    num = Math.floor(num / 26) - 1;
   }
-  return letters
-} 
+  return letters;
+}
 
 export const makeRequestBodyToBatchUpdate = (requestBody, filterCondition, filterOperator, data) => {
   const rowsIndexes = getRowsIndex(filterCondition, filterOperator, data) as any[];
@@ -252,5 +251,5 @@ export const makeRequestBodyToBatchUpdate = (requestBody, filterCondition, filte
     });
   });
 
- return body
+  return body;
 };

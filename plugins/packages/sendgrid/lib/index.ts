@@ -1,6 +1,6 @@
-import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-import sgMail from "@sendgrid/mail"
-import { EmailOptions, SourceOptions, QueryOptions } from './types'
+import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import sgMail from '@sendgrid/mail';
+import { EmailOptions, SourceOptions, QueryOptions } from './types';
 
 export default class SendGridQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
