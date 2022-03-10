@@ -29,7 +29,7 @@ export const LeftSidebar = ({
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   return (
-    <div className="left-sidebar">
+    <div className="left-sidebar" style={{ marginTop: darkMode && '-1px' }}>
       <LeftSidebarInspector darkMode={darkMode} currentState={currentState} />
       <LeftSidebarDataSources
         darkMode={darkMode}
