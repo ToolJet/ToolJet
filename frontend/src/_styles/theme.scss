@@ -158,6 +158,8 @@ button {
     width: 140px;    
     padding: 6px;
     align-items: center;
+    text-transform: capitalize;
+    border-left: 3px solid #4d72fa;
     p{
       margin: 0 8px 0 12px;
     }
@@ -2212,6 +2214,8 @@ body {
   color: #5890ff;
 }
 
+
+
 .transformation-editor {
   .CodeMirror {
     min-height: 70px;
@@ -2372,6 +2376,11 @@ body {
   color: #3e525b;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
+}
+.transformation-popover{
+  padding: 14px;
+  font-weight: 500;
+  margin-bottom: 0px;
 }
 
 .transformation-editor {

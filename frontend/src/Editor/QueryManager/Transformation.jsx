@@ -6,7 +6,7 @@ import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
-import Help from '../../../assets/images/icons/circular-info.svg';
+import { Popover, OverlayTrigger } from 'react-bootstrap';
 
 export const Transformation = ({ changeOption, currentState, options, darkMode }) => {
   const defaultValue =
@@ -17,7 +17,6 @@ return data.filter(row => row.amount > 1000);`;
 
   const [value, setValue] = useState(defaultValue);
   const [enableTransformation, setEnableTransformation] = useState(() => options.enableTransformation);
-  const [transformStyle, setTransformStyle] = useState(false);
 
   // let suggestions = useMemo(() => getSuggestionKeys(currentState), [currentState.components, currentState.queries]);
   function codeChanged(value) {
@@ -30,6 +29,18 @@ return data.filter(row => row.amount > 1000);`;
     changeOption('enableTransformation', !enableTransformation);
   }
 
+  const popover = (
+    <Popover id="popover-basic">
+      <p className="transformation-popover">
+        Transformations can be used to transform the results of queries. All the app variables are accessible from
+        transformers and supports JS libraries such as Lodash & Moment.{' '}
+        <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
+          Read documentation
+        </a>
+        .
+      </p>
+    </Popover>
+  );
   return (
     <div className="field mb-2 transformation-editor">
       <div className="mb-2" style={{ display: 'flex' }}>
@@ -41,27 +52,15 @@ return data.filter(row => row.amount > 1000);`;
             checked={enableTransformation}
           />
         </div>
-        <span style={{ fontWeight: 600 }} className="form-check-label mx-1">
-          Transformations
-        </span>
-        <Help
-          style={{ marginLeft: '10px', cursor: 'pointer' }}
-          onClick={() => {
-            setTransformStyle(!transformStyle);
-          }}
-        ></Help>
+        <OverlayTrigger trigger="click" placement="right" overlay={popover} rootClose>
+          <span
+            style={{ fontWeight: 600, borderBottom: '1px dashed black', marginBottom: '3px' }}
+            className="form-check-label mx-1"
+          >
+            Transformations
+          </span>
+        </OverlayTrigger>
       </div>
-
-      {transformStyle && !enableTransformation && (
-        <p svg="circular-info" className="alert-component alert">
-          Transformations can be used to transform the results of queries. All the app variables are accessible from
-          transformers and supports JS libraries such as Lodash & Moment.{' '}
-          <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
-            Read documentation
-          </a>
-          .
-        </p>
-      )}
       <br></br>
       {enableTransformation && (
         <div>
