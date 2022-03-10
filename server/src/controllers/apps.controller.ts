@@ -300,6 +300,19 @@ export class AppsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Delete(':id/versions/:versionId')
+  async deleteVersion(@Request() req, @Param() params) {
+    const version = await this.appsService.findVersion(params.versionId);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
+
+    if (!version || !ability.can('deleteVersions', version.app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    return await this.appsService.deleteVersion(version.app, version);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Put(':id/icons')
   async updateIcon(@Request() req, @Param() params, @Body('icon') icon) {
     const app = await this.appsService.find(params.id);
