@@ -7,9 +7,8 @@ async function makeRequestToReadValues(spreadSheetId: string, sheet: string, ran
 }
 
 async function makeRequestToAppendValues(spreadSheetId: string, sheet: string, requestBody: any, authHeader: any) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${
-    sheet || ''
-  }!A:Z:append?valueInputOption=USER_ENTERED`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${sheet || ''
+    }!A:Z:append?valueInputOption=USER_ENTERED`;
 
   return await got.post(url, { headers: authHeader, json: requestBody }).json();
 }
@@ -35,8 +34,8 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
 
 export async function batchUpdateToSheet(
   spreadSheetId: string,
-  spreadsheetRange: string='A1:Z500',
-  sheet: string='',
+  spreadsheetRange: string = 'A1:Z500',
+  sheet: string = '',
   requestBody: any,
   filterData: any,
   filterOperator: string,
@@ -46,7 +45,7 @@ export async function batchUpdateToSheet(
     return new Error('filterOperator is required');
   }
 
-  const lookUpData = await lookUpSheetData(spreadSheetId,spreadsheetRange, sheet, authHeader);  
+  const lookUpData = await lookUpSheetData(spreadSheetId, spreadsheetRange, sheet, authHeader);
   const body = await makeRequestBodyToBatchUpdate(requestBody, filterData, filterOperator, lookUpData);
 
 
@@ -95,7 +94,7 @@ export async function readDataFromSheet(spreadSheetId: string, sheet: string, ra
 }
 
 async function appendDataToSheet(spreadSheetId: string, sheet: string, rows: any, authHeader: any) {
-  const parsedRows = JSON.parse(rows);
+  const parsedRows = typeof rows === 'string' ? JSON.parse(rows) : rows;
   const sheetData = await makeRequestToReadValues(spreadSheetId, sheet, 'A1:Z1', authHeader);
   const fullSheetHeaders = sheetData['values'][0];
   const rowsToAppend = parsedRows.map((row) => {
@@ -161,7 +160,7 @@ export async function deleteData(
   return await deleteDataFromSheet(spreadSheetId, sheet, rowIndex, authHeader);
 }
 
-async function lookUpSheetData(spreadSheetId: string, spreadsheetRange:string, sheet:string, authHeader: any) {
+async function lookUpSheetData(spreadSheetId: string, spreadsheetRange: string, sheet: string, authHeader: any) {
   const range = `${sheet}!${spreadsheetRange}`;
   const responseLookUpCellValues = await makeRequestToLookUpCellValues(spreadSheetId, range, authHeader);
   const data = await responseLookUpCellValues['values'];
@@ -177,13 +176,13 @@ const getInputKeys = (inputBody, data) => {
     data.forEach((val, index) => {
       if (val[0] === key) {
         let keyIndex = '';
-        if(index >= 26) {
+        if (index >= 26) {
           keyIndex = numberToLetters(index);
         } else {
           keyIndex = `${String.fromCharCode(65 + index)}`;
         }
         arr.push({ col: val[0], colIndex: keyIndex });
-    }
+      }
     })
   );
   return arr;
@@ -223,11 +222,11 @@ const getRowsIndex = (inputFilter, filterOperator, response) => {
 function numberToLetters(num) {
   let letters = ''
   while (num >= 0) {
-      letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[num % 26] + letters
-      num = Math.floor(num / 26) - 1
+    letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[num % 26] + letters
+    num = Math.floor(num / 26) - 1
   }
   return letters
-} 
+}
 
 export const makeRequestBodyToBatchUpdate = (requestBody, filterCondition, filterOperator, data) => {
   const rowsIndexes = getRowsIndex(filterCondition, filterOperator, data) as any[];
@@ -252,5 +251,5 @@ export const makeRequestBodyToBatchUpdate = (requestBody, filterCondition, filte
     });
   });
 
- return body
+  return body
 };
