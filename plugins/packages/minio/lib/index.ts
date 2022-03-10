@@ -1,7 +1,7 @@
-import { QueryError, QueryResult,  QueryService, ConnectionTestResult } from '@tooljet-plugins/common'
+import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { Client as MinioClient, ClientOptions } from 'minio';
 import { getObject, uploadObject, listBuckets, listObjects, signedUrlForGet, signedUrlForPut } from './operations';
-import { SourceOptions, QueryOptions } from './types'
+import { SourceOptions, QueryOptions } from './types';
 
 export default class MinioService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, _dataSourceId: string): Promise<QueryResult> {
