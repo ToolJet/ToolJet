@@ -403,6 +403,7 @@ let QueryManager = class QueryManager extends React.Component {
                               selectedDataSource: null,
                             });
                           }}
+                          style={{ marginTop: '-7px' }}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
