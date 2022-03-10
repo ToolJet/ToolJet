@@ -144,13 +144,18 @@ button {
   .header-query-datasource-card-container{
     margin-top: -10px;
   }
+  // #transformation-popover-container{
+  //   margin-left: 100px !important;
+  //   left: 100px !important;
+  //   background-color: #0565ff;
+  // }
 
   .header-query-datasource-card{
     position: relative;
     display: flex;
     min-width: 0;
     word-wrap: break-word;
-    background-color: #fff;
+    background-color:rgba(66, 153, 225, 0.1) !important;
     background-clip: border-box;
     border: 1px solid rgba(101, 109, 119, 0.16);
     border-radius: 4px;
@@ -159,7 +164,6 @@ button {
     padding: 6px;
     align-items: center;
     text-transform: capitalize;
-    border-left: 3px solid #4d72fa;
     p{
       margin: 0 8px 0 12px;
     }
