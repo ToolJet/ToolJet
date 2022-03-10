@@ -157,7 +157,30 @@ let QueryManager = class QueryManager extends React.Component {
       }),
     });
   };
-
+  handleClear = () => {
+    const source = [...this.state.dataSources, ...staticDataSources].find(
+      (datasource) => datasource.id === this.state.selectedDataSource.id
+    );
+    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
+    const schemaUnavailableOptions = {
+      restapi: {
+        method: 'post',
+        url: null,
+        url_params: [],
+        headers: [],
+        body: [],
+      },
+      stripe: {},
+      runjs: {},
+    };
+    this.setState({
+      queryName: this.computeQueryName(source.kind),
+      ...(isSchemaUnavailable && {
+        options: schemaUnavailableOptions[source.kind],
+        // selectedDataSource: null,
+      }),
+    });
+  };
   switchCurrentTab = (tab) => {
     this.setState({
       currentTab: tab,
@@ -397,8 +420,6 @@ let QueryManager = class QueryManager extends React.Component {
                           onClick={() => {
                             this.setState({
                               sourceSelected: false,
-                            });
-                            this.setState({
                               options: {},
                               selectedQuery: null,
                               // selectedDataSource: null,
@@ -406,6 +427,7 @@ let QueryManager = class QueryManager extends React.Component {
                               dataQueries: [],
                               theme: {},
                             });
+                            this.handleClear();
                           }}
                         >
                           &larr;
