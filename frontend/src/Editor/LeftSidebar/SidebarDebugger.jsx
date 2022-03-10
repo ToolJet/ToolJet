@@ -122,7 +122,9 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
       />
       <div
         {...content}
-        className={`card popover debugger-popover ${open || popoverPinned ? 'show' : 'hide'}`}
+        className={`card popover common-sidebar-popover-margin debugger-popover ${
+          open || popoverPinned ? 'show' : 'hide'
+        }`}
         style={{ minWidth: '350px', minHeight: '108px', resize: 'horizontal', maxWidth: '50%' }}
       >
         <div className="row-header">
