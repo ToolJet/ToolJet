@@ -31,6 +31,8 @@ Optional parameters:
 - Descending order
 - Limit
 - Skip 
+- Include docs 
+
 
 :::info
 descending (boolean) – Return the documents in descending order by key. Default is false.
@@ -38,6 +40,9 @@ descending (boolean) – Return the documents in descending order by key. Defaul
 limit (number) – Limit the number of the returned documents to the specified number.
 
 skip (number) – Skip this number of records before starting to return the results. Default is 0.
+
+include_docs (boolean) – include_docs key is set to false by default , if true it returns the document data along with the default fields.
+
 :::
 
 <img class="screenshot-full" src="/img/datasource-reference/couchdb/list.png" alt="ToolJet - CouchDb Delete Operarion" height="420" />
