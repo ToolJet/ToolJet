@@ -6,7 +6,7 @@ import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
-import { Alert } from '@/_ui/Alert';
+import Help from '../../../assets/images/icons/circular-info.svg';
 
 export const Transformation = ({ changeOption, currentState, options, darkMode }) => {
   const defaultValue =
@@ -17,6 +17,7 @@ return data.filter(row => row.amount > 1000);`;
 
   const [value, setValue] = useState(defaultValue);
   const [enableTransformation, setEnableTransformation] = useState(() => options.enableTransformation);
+  const [transformStyle, setTransformStyle] = useState(false);
 
   // let suggestions = useMemo(() => getSuggestionKeys(currentState), [currentState.components, currentState.queries]);
   function codeChanged(value) {
@@ -43,16 +44,23 @@ return data.filter(row => row.amount > 1000);`;
         <span style={{ fontWeight: 600 }} className="form-check-label mx-1">
           Transformations
         </span>
+        <Help
+          style={{ marginLeft: '10px', cursor: 'pointer' }}
+          onClick={() => {
+            setTransformStyle(!transformStyle);
+          }}
+        ></Help>
       </div>
-      {!enableTransformation && (
-        <Alert svg="circular-info">
+
+      {transformStyle && !enableTransformation && (
+        <p svg="circular-info" className="alert-component alert">
           Transformations can be used to transform the results of queries. All the app variables are accessible from
           transformers and supports JS libraries such as Lodash & Moment.{' '}
           <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
             Read documentation
           </a>
           .
-        </Alert>
+        </p>
       )}
       <br></br>
       {enableTransformation && (
