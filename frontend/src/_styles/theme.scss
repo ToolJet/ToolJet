@@ -4210,6 +4210,37 @@ input[type="text"] {
       .svg-plus {
         stroke: $primary;
       } 
+
+      .delete-btn-wrapper {
+        display: flex;
+        align-items: center;
+        padding-top: 2px;
+        padding-bottom: 2px;
+      }
+
+      .code-hinter-col {
+        margin-bottom: 0px !important;
+      }
+
+      .tab-content-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: '.5rem';
+      }
+
+      .row-container{
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .fields-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+      }
     }
   }
 }

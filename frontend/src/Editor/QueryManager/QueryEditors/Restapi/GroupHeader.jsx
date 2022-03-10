@@ -2,10 +2,10 @@ import React from 'react';
 
 const GroupHeader = ({ addNewKeyValuePair, paramType, descText }) => {
   return (
-    <div className="row">
-      <div className="col px-2 content-title">{descText}</div>
-      <div className="col-auto px-2">
-        <span onClick={() => addNewKeyValuePair(paramType)} className="mt-1" role="button">
+    <div className="" style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div className="content-title">{descText}</div>
+      <div className="">
+        <span onClick={() => addNewKeyValuePair(paramType)} role="button">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="icon icon-tabler icon-tabler-square-plus svg-plus"
