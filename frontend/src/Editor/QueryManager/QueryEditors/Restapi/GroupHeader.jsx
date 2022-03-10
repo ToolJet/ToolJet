@@ -2,9 +2,9 @@ import React from 'react';
 
 const GroupHeader = ({ addNewKeyValuePair, paramType, descText }) => {
   return (
-    <div className="" style={{ display: 'flex', justifyContent: 'space-between' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
       <div className="content-title">{descText}</div>
-      <div className="">
+      <div>
         <span onClick={() => addNewKeyValuePair(paramType)} role="button">
           <svg
             xmlns="http://www.w3.org/2000/svg"
