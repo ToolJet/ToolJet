@@ -176,10 +176,22 @@ button {
     width: 0;
     background: transparent;
   }
-
+.left-sidebar-layout{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  font-size: 11px;
+  padding: 16px;
+  align-items: center;
+  letter-spacing:.2px;
+  p{
+    margin-bottom: 0px;
+    margin-top: 8px;
+  }
+}
   .left-sidebar {
     height: 100%;
-    width: 50px;
+    width: 76px;
     position: fixed;
     z-index: 1;
     left: 0;
