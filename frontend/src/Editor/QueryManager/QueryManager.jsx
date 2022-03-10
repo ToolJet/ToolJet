@@ -10,6 +10,8 @@ import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import DataSourceLister from './DataSourceLister';
 import { JSONTree } from 'react-json-tree';
+import { allSvgs } from '@tooljet/plugins/client';
+import RunjsIcon from '../Icons/runjs.svg';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -157,30 +159,7 @@ let QueryManager = class QueryManager extends React.Component {
       }),
     });
   };
-  handleClear = () => {
-    const source = [...this.state.dataSources, ...staticDataSources].find(
-      (datasource) => datasource.id === this.state.selectedDataSource.id
-    );
-    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
-    const schemaUnavailableOptions = {
-      restapi: {
-        method: 'post',
-        url: null,
-        url_params: [],
-        headers: [],
-        body: [],
-      },
-      stripe: {},
-      runjs: {},
-    };
-    this.setState({
-      queryName: this.computeQueryName(source.kind),
-      ...(isSchemaUnavailable && {
-        options: schemaUnavailableOptions[source.kind],
-        // selectedDataSource: null,
-      }),
-    });
-  };
+
   switchCurrentTab = (tab) => {
     this.setState({
       currentTab: tab,
@@ -321,6 +300,7 @@ let QueryManager = class QueryManager extends React.Component {
     let buttonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
+    const Icon = allSvgs[this?.state?.selectedDataSource?.kind];
 
     return (
       <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
@@ -420,20 +400,43 @@ let QueryManager = class QueryManager extends React.Component {
                           onClick={() => {
                             this.setState({
                               sourceSelected: false,
-                              options: {},
-                              selectedQuery: null,
-                              // selectedDataSource: null,
-                              dataSourceMeta: {},
-                              dataQueries: [],
-                              theme: {},
+                              selectedDataSource: null,
                             });
-                            this.handleClear();
                           }}
                         >
-                          &larr;
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="icon icon-tabler icon-tabler-arrow-back-up"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            strokeWidth="2"
+                            stroke="currentColor"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M9 13l-4 -4l4 -4m-4 4h11a4 4 0 0 1 0 8h-1"></path>
+                          </svg>
                         </p>
                       )}
-                      <label className="form-label col-md-2">Datasource</label>
+                      {!this.state.sourceSelected && <label className="form-label col-md-2">Datasource</label>}{' '}
+                      {this?.state?.selectedDataSource?.kind && (
+                        <div className="header-query-datasource-card-container">
+                          <div className="header-query-datasource-card">
+                            {this.state?.selectedDataSource?.kind === 'runjs' ? (
+                              <RunjsIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
+                            ) : (
+                              Icon && <Icon style={{ height: 18, width: 18, marginLeft: 7 }} />
+                            )}
+                            <p className="header-query-datasource-name">
+                              {' '}
+                              {this.state?.selectedDataSource?.kind && this.state.selectedDataSource.kind}
+                            </p>
+                          </div>{' '}
+                        </div>
+                      )}
                     </div>
                     {!this.state.sourceSelected && (
                       <DataSourceLister

@@ -135,11 +135,36 @@ button {
 
   // query data source card style start
 
-  .query-datasource-card-container{
+  .query-datasource-card-container,.header-query-datasource-card-container{
     display: flex;
     flex-direction: row;
     gap: 10px;
     flex-wrap: wrap;
+  }
+  .header-query-datasource-card-container{
+    margin-top: -10px;
+  }
+
+  .header-query-datasource-card{
+    position: relative;
+    display: flex;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgba(101, 109, 119, 0.16);
+    border-radius: 4px;
+    height: 32px;
+    width: 140px;    
+    padding: 6px;
+    align-items: center;
+    p{
+      margin: 0 8px 0 12px;
+    }
+  }
+  .header-query-datasource-name{
+    font-size: .8rem !important;
+    padding-top: 0px !important;
   }
   .query-datasource-card
   {
@@ -170,7 +195,7 @@ button {
     align-items: center;
     p{
       font-size: 1.4rem;
-      padding-top: 10px;
+      padding-top: 0px; 
       cursor: pointer;
     }
   }
