@@ -305,7 +305,7 @@ export class AppsController {
     const version = await this.appsService.findVersion(params.versionId);
     const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
-    if (!ability.can('deleteVersions', version.app)) {
+    if (!version || !ability.can('deleteVersions', version.app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
