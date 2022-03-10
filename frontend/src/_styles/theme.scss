@@ -201,6 +201,7 @@ button {
     background-clip: border-box;
     border: solid rgba(0, 0, 0, 0.125);
     border-width: 0px 1px 3px 0px;
+    margin-top: -1px;
 
     .accordion-item {
       border: solid rgba(101, 109, 119, 0.16);
