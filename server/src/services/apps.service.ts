@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { createQueryBuilder, EntityManager, Brackets, getManager, Repository, DeleteResult } from 'typeorm';
@@ -311,6 +311,10 @@ export class AppsService {
   }
 
   async deleteVersion(app: App, version: AppVersion): Promise<DeleteResult> {
+    if (app.currentVersionId === version.id) {
+      throw new BadRequestException('You cannot delete a released version');
+    }
+
     let result: DeleteResult;
 
     await getManager().transaction(async (manager) => {

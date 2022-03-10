@@ -1105,6 +1105,26 @@ describe('apps controller', () => {
 
         expect(response.statusCode).toBe(403);
       });
+
+      it('should not be able to delete released app version', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const application = await createApplication(app, {
+          name: 'name',
+          user: adminUserData.user,
+        });
+        const version = await createApplicationVersion(app, application);
+        await getManager().update(App, { id: application.id }, { currentVersionId: version.id });
+
+        const response = await request(app.getHttpServer())
+          .delete(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('Authorization', authHeaderForUser(adminUserData.user));
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toBe('You cannot delete a released version');
+      });
     });
   });
 
