@@ -666,7 +666,7 @@ export const componentTypes = [
       borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
-      value: {},
+      value: "",
     },
     definition: {
       others: {
