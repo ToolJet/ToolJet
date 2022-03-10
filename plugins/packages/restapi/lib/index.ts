@@ -1,17 +1,23 @@
 const urrl = require('url');
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
-import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-import got, { Headers, HTTPError } from 'got'
+import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import got, { Headers, HTTPError } from 'got';
 
 function isEmpty(value: number | null | undefined | string) {
-  return value === undefined || value === null || value === NaN || (typeof value === 'object' && Object.keys(value).length === 0) || (typeof value === 'string' && value.trim().length === 0);
+  return (
+    value === undefined ||
+    value === null ||
+    !isNaN(value as number) ||
+    (typeof value === 'object' && Object.keys(value).length === 0) ||
+    (typeof value === 'string' && value.trim().length === 0)
+  );
 }
 
 interface RestAPIResult extends QueryResult {
   request?: Array<object> | object;
   response?: Array<object> | object;
-  responseHeaders?: Array<object> | object; 
+  responseHeaders?: Array<object> | object;
 }
 
 export default class RestapiQueryService implements QueryService {
@@ -134,7 +140,7 @@ export default class RestapiQueryService implements QueryService {
             statusCode: error.response.statusCode,
             responseBody: error.response.body,
           },
-          responseHeaders: error.response.headers
+          responseHeaders: error.response.headers,
         };
       }
       throw new QueryError('Query could not be completed', error.message, result);

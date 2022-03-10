@@ -1,37 +1,27 @@
-import {
-  QueryError,
-  QueryResult,
-  QueryService,
-  OAuthUnauthorizedClientError,
-} from "@tooljet-plugins/common";
-import {
-  readData,
-  appendData,
-  deleteData,
-  batchUpdateToSheet,
-} from "./operations";
-import got, { Headers } from "got";
-import { SourceOptions, QueryOptions } from "./types";
+import { QueryError, QueryResult, QueryService, OAuthUnauthorizedClientError } from '@tooljet-plugins/common';
+import { readData, appendData, deleteData, batchUpdateToSheet } from './operations';
+import got, { Headers } from 'got';
+import { SourceOptions, QueryOptions } from './types';
 
 export default class GooglesheetsQueryService implements QueryService {
   authUrl(): string {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const tooljetHost = process.env.TOOLJET_HOST;
     return (
-      "https://accounts.google.com/o/oauth2/v2/auth" +
+      'https://accounts.google.com/o/oauth2/v2/auth' +
       `?response_type=code&client_id=${clientId}` +
       `&redirect_uri=${tooljetHost}/oauth2/authorize`
     );
   }
 
   async accessDetailsFrom(authCode: string): Promise<object> {
-    const accessTokenUrl = "https://oauth2.googleapis.com/token";
+    const accessTokenUrl = 'https://oauth2.googleapis.com/token';
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const tooljetHost = process.env.TOOLJET_HOST;
     const redirectUri = `${tooljetHost}/oauth2/authorize`;
-    const grantType = "authorization_code";
-    const customParams = { prompt: "consent", access_type: "offline" };
+    const grantType = 'authorization_code';
+    const customParams = { prompt: 'consent', access_type: 'offline' };
 
     const data = {
       code: authCode,
@@ -46,27 +36,27 @@ export default class GooglesheetsQueryService implements QueryService {
 
     try {
       const response = await got(accessTokenUrl, {
-        method: "post",
+        method: 'post',
         json: data,
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
       });
 
       const result = JSON.parse(response.body);
 
       if (response.statusCode !== 200) {
-        throw Error("could not connect to Googlesheets");
+        throw Error('could not connect to Googlesheets');
       }
 
-      if (result["access_token"]) {
-        authDetails.push(["access_token", result["access_token"]]);
+      if (result['access_token']) {
+        authDetails.push(['access_token', result['access_token']]);
       }
 
-      if (result["refresh_token"]) {
-        authDetails.push(["refresh_token", result["refresh_token"]]);
+      if (result['refresh_token']) {
+        authDetails.push(['refresh_token', result['refresh_token']]);
       }
     } catch (error) {
       console.log(error.response.body);
-      throw Error("could not connect to Googlesheets");
+      throw Error('could not connect to Googlesheets');
     }
 
     return authDetails;
@@ -75,23 +65,17 @@ export default class GooglesheetsQueryService implements QueryService {
   authHeader(token: string): Headers {
     return {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     };
   }
 
-  async run(
-    sourceOptions: SourceOptions,
-    queryOptions: QueryOptions,
-    dataSourceId: string
-  ): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     let result = {};
     let response = null;
     const operation = queryOptions.operation;
     const spreadsheetId = queryOptions.spreadsheet_id;
-    const spreadsheetRange = queryOptions.spreadsheet_range
-      ? queryOptions.spreadsheet_range
-      : "A1:Z500";
-    const accessToken = sourceOptions["access_token"];
+    const spreadsheetRange = queryOptions.spreadsheet_range ? queryOptions.spreadsheet_range : 'A1:Z500';
+    const accessToken = sourceOptions['access_token'];
     const queryOptionFilter = {
       key: queryOptions.where_field,
       value: queryOptions.where_value,
@@ -99,37 +83,24 @@ export default class GooglesheetsQueryService implements QueryService {
 
     try {
       switch (operation) {
-        case "info":
-          response = await got(
-            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`,
-            {
-              method: "get",
-              headers: this.authHeader(accessToken),
-            }
-          );
+        case 'info':
+          response = await got(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`, {
+            method: 'get',
+            headers: this.authHeader(accessToken),
+          });
 
           result = JSON.parse(response.body);
           break;
 
-        case "read":
-          result = await readData(
-            spreadsheetId,
-            spreadsheetRange,
-            queryOptions.sheet,
-            this.authHeader(accessToken)
-          );
+        case 'read':
+          result = await readData(spreadsheetId, spreadsheetRange, queryOptions.sheet, this.authHeader(accessToken));
           break;
 
-        case "append":
-          result = await appendData(
-            spreadsheetId,
-            queryOptions.sheet,
-            queryOptions.rows,
-            this.authHeader(accessToken)
-          );
+        case 'append':
+          result = await appendData(spreadsheetId, queryOptions.sheet, queryOptions.rows, this.authHeader(accessToken));
           break;
 
-        case "update":
+        case 'update':
           result = await batchUpdateToSheet(
             spreadsheetId,
             spreadsheetRange,
@@ -141,7 +112,7 @@ export default class GooglesheetsQueryService implements QueryService {
           );
           break;
 
-        case "delete_row":
+        case 'delete_row':
           result = await deleteData(
             spreadsheetId,
             queryOptions.sheet,
@@ -154,65 +125,53 @@ export default class GooglesheetsQueryService implements QueryService {
       console.log(error.response);
 
       if (error.response.statusCode === 401) {
-        throw new OAuthUnauthorizedClientError(
-          "Query could not be completed",
-          error.message,
-          { ...error }
-        );
+        throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, { ...error });
       }
-      throw new QueryError("Query could not be completed", error.message, {});
+      throw new QueryError('Query could not be completed', error.message, {});
     }
 
     return {
-      status: "ok",
+      status: 'ok',
       data: result,
     };
   }
 
   async refreshToken(sourceOptions, error) {
-    if (!sourceOptions["refresh_token"]) {
-      throw new QueryError("Query could not be completed", error.response, {});
+    if (!sourceOptions['refresh_token']) {
+      throw new QueryError('Query could not be completed', error.response, {});
     }
-    const accessTokenUrl = "https://oauth2.googleapis.com/token";
+    const accessTokenUrl = 'https://oauth2.googleapis.com/token';
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const grantType = "refresh_token";
+    const grantType = 'refresh_token';
 
     const data = {
       client_id: clientId,
       client_secret: clientSecret,
       grant_type: grantType,
-      refresh_token: sourceOptions["refresh_token"],
+      refresh_token: sourceOptions['refresh_token'],
     };
 
     const accessTokenDetails = {};
 
     try {
       const response = await got(accessTokenUrl, {
-        method: "post",
+        method: 'post',
         json: data,
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
       });
       const result = JSON.parse(response.body);
 
       if (!(response.statusCode >= 200 || response.statusCode < 300)) {
-        throw new QueryError(
-          "could not connect to Googlesheets",
-          error.response,
-          {}
-        );
+        throw new QueryError('could not connect to Googlesheets', error.response, {});
       }
 
-      if (result["access_token"]) {
-        accessTokenDetails["access_token"] = result["access_token"];
+      if (result['access_token']) {
+        accessTokenDetails['access_token'] = result['access_token'];
       }
     } catch (error) {
       console.log(error.response.body);
-      throw new QueryError(
-        "could not connect to Googlesheets",
-        error.response,
-        {}
-      );
+      throw new QueryError('could not connect to Googlesheets', error.response, {});
     }
     return accessTokenDetails;
   }

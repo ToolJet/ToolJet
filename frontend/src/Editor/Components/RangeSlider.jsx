@@ -24,11 +24,13 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
   useEffect(() => {
     setSliderValue(singleHandleValue);
     setExposedVariable('value', singleHandleValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [singleHandleValue]);
 
   useEffect(() => {
     setRangeValue(twoHandlesArray);
     setExposedVariable('value', twoHandlesArray);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...twoHandlesArray]);
 
   useEffect(() => {

@@ -9,6 +9,9 @@
     ],
     "./server/{src,test,plugins,scripts,migrations}/**/*.ts": [
       "eslint --fix"
+    ],
+    "./plugins/{packages}/**/*.ts": [
+      "eslint --fix"
     ]
   },
   "devDependencies": {
