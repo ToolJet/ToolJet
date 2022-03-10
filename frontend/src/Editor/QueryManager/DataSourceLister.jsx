@@ -8,7 +8,7 @@ function DataSourceLister({ dataSources, staticDataSources, changeDataSource, ha
   const computedStyles = {
     background: darkMode ? '#2f3c4c' : 'white',
     color: darkMode ? 'white' : '#1f2936',
-    border: '1px solid #2f3c4c',
+    border: darkMode && '1px solid #2f3c4c',
   };
   const handleChangeDataSource = (item) => {
     changeDataSource(item.id);
