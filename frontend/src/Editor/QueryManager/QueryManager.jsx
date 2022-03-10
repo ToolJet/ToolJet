@@ -31,6 +31,7 @@ let QueryManager = class QueryManager extends React.Component {
       dataSourceMeta: {},
       dataQueries: [],
       theme: {},
+      sourceSelected: false,
     };
 
     this.previewPanelRef = React.createRef();
@@ -58,7 +59,6 @@ let QueryManager = class QueryManager extends React.Component {
         selectedSource: source,
         dataSourceMeta,
         selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
-        sourceSelected: false,
         theme: {
           scheme: 'bright',
           author: 'chris kempson (http://chriskempson.com)',
@@ -394,7 +394,7 @@ let QueryManager = class QueryManager extends React.Component {
               <div className="row row-deck px-2 mt-0 query-details">
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mt-1 mb-2">
-                    <div className="datasource-heading">
+                    <div className="datasource-heading ">
                       {this.state.sourceSelected && (
                         <p
                           onClick={() => {
@@ -427,10 +427,10 @@ let QueryManager = class QueryManager extends React.Component {
                       {this?.state?.selectedDataSource?.kind && (
                         <div className="header-query-datasource-card-container">
                           <div
-                            className="header-query-datasource-card"
+                            className="header-query-datasource-card badge "
                             style={{
                               background: this.props.darkMode ? '#2f3c4c' : 'white',
-                              color: this.props.darkMode ? 'white' : '#1f2936',
+                              color: this.props.darkMode ? 'white' : '#3e525b',
                               border: this.props.darkMode && '1px solid #2f3c4c',
                             }}
                           >
