@@ -30,7 +30,7 @@ return data.filter(row => row.amount > 1000);`;
   }
 
   const popover = (
-    <Popover id="popover-basic">
+    <Popover id="transformation-popover-container">
       <p className="transformation-popover">
         Transformations can be used to transform the results of queries. All the app variables are accessible from
         transformers and supports JS libraries such as Lodash & Moment.{' '}
@@ -43,7 +43,7 @@ return data.filter(row => row.amount > 1000);`;
   );
   return (
     <div className="field mb-2 transformation-editor">
-      <div className="mb-2" style={{ display: 'flex' }}>
+      <div className="mb-2" style={{ display: 'flex', position: 'relative' }}>
         <div className="form-check form-switch">
           <input
             className="form-check-input"
@@ -52,9 +52,15 @@ return data.filter(row => row.amount > 1000);`;
             checked={enableTransformation}
           />
         </div>
-        <OverlayTrigger trigger="click" placement="right" overlay={popover} rootClose>
+        <OverlayTrigger trigger="click" placement="top" overlay={popover} rootClose>
           <span
-            style={{ fontWeight: 600, borderBottom: '1px dashed black', marginBottom: '3px' }}
+            style={{
+              fontWeight: 600,
+              borderBottom: '1px dashed #3e525b',
+              position: 'absolute',
+              left: '50px',
+              top: '-3px',
+            }}
             className="form-check-label mx-1"
           >
             Transformations
