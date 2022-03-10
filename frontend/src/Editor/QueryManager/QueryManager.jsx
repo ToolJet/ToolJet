@@ -35,6 +35,11 @@ let QueryManager = class QueryManager extends React.Component {
 
     this.previewPanelRef = React.createRef();
   }
+  computedStyles = {
+    background: this.props.darkMode ? '#2f3c4c' : 'white',
+    color: this.props.darkMode ? 'white' : '#1f2936',
+    border: this.props.darkMode && '1px solid #2f3c4c',
+  };
 
   setStateFromProps = (props) => {
     const selectedQuery = props.selectedQuery;
@@ -424,7 +429,7 @@ let QueryManager = class QueryManager extends React.Component {
                       {!this.state.sourceSelected && <label className="form-label col-md-2">Datasource</label>}{' '}
                       {this?.state?.selectedDataSource?.kind && (
                         <div className="header-query-datasource-card-container">
-                          <div className="header-query-datasource-card">
+                          <div className="header-query-datasource-card" style={this.computedStyles}>
                             {this.state?.selectedDataSource?.kind === 'runjs' ? (
                               <RunjsIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
                             ) : (
