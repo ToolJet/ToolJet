@@ -31,7 +31,7 @@ let QueryManager = class QueryManager extends React.Component {
       dataSourceMeta: {},
       dataQueries: [],
       theme: {},
-      sourceSelected: false,
+      isSourceSelected: false,
     };
 
     this.previewPanelRef = React.createRef();
@@ -130,7 +130,7 @@ let QueryManager = class QueryManager extends React.Component {
 
   handleBackButton = () => {
     this.setState({
-      sourceSelected: true,
+      isSourceSelected: true,
     });
   };
 
@@ -395,11 +395,11 @@ let QueryManager = class QueryManager extends React.Component {
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mt-1 mb-2">
                     <div className="datasource-heading ">
-                      {this.state.sourceSelected && (
+                      {this.state.isSourceSelected && (
                         <p
                           onClick={() => {
                             this.setState({
-                              sourceSelected: false,
+                              isSourceSelected: false,
                               selectedDataSource: null,
                             });
                           }}
@@ -424,7 +424,7 @@ let QueryManager = class QueryManager extends React.Component {
                           </svg>
                         </p>
                       )}
-                      {!this.state.sourceSelected && <label className="form-label col-md-2">Datasource</label>}{' '}
+                      {!this.state.isSourceSelected && <label className="form-label col-md-2">Datasource</label>}{' '}
                       {this?.state?.selectedDataSource?.kind && (
                         <div className="header-query-datasource-card-container">
                           <div
@@ -447,7 +447,7 @@ let QueryManager = class QueryManager extends React.Component {
                         </div>
                       )}
                     </div>
-                    {!this.state.sourceSelected && (
+                    {!this.state.isSourceSelected && (
                       <DataSourceLister
                         dataSources={dataSources}
                         staticDataSources={staticDataSources}
