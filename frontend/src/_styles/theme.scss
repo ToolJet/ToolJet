@@ -146,7 +146,6 @@ button {
     margin-top: -10px;
   }
 
-
   .header-query-datasource-card {
     position: relative;
     display: flex;
@@ -165,10 +164,6 @@ button {
     p {
       margin: 0 8px 0 12px;
     }
-  }
-  .header-query-datasource-name {
-    font-size: 0.8rem !important;
-    padding-top: 0px !important;
   }
   .query-datasource-card {
     position: relative;
@@ -191,6 +186,10 @@ button {
   }
   // end :: data source card style
 
+  .header-query-datasource-name {
+    font-size: 0.8rem !important;
+    padding-top: 0px !important;
+  }
   .datasource-heading {
     display: flex;
     height: 40px !important;

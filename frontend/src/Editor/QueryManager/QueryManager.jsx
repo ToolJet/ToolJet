@@ -432,7 +432,6 @@ let QueryManager = class QueryManager extends React.Component {
                             style={{
                               background: this.props.darkMode ? '#2f3c4c' : 'white',
                               color: this.props.darkMode ? 'white' : '#3e525b',
-                              border: this.props.darkMode && '1px solid #2f3c4c',
                             }}
                           >
                             {this.state?.selectedDataSource?.kind === 'runjs' ? (
