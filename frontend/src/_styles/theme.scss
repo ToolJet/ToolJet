@@ -815,7 +815,7 @@ button {
     .app-card.highlight {
       background-color: #f8f8f8;
       box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-      border: 1px solid $primary;
+      border: 0.5px solid $primary;
 
       button.edit-button {
         background: #ffffff;
@@ -1603,7 +1603,16 @@ button {
   .has-actions {
     margin: 0;
   }
-
+  .wrap-wrapper{
+    white-space:normal !important;
+    word-break: break-all;
+  }
+  .scroll-wrapper{
+    overflow-x: auto;
+  }
+  .hide-wrapper{
+   overflow-x: hidden !important;
+  }
   td {
     .text-container:focus-visible,
     .text-container:focus,
@@ -1655,6 +1664,10 @@ button {
     background: transparent;
     height: 0;
     width: 0;
+  }
+  td:hover::-webkit-scrollbar {
+    height: 4px;
+    width:4px;
   }
   .th {
     white-space: normal;
@@ -2536,6 +2549,16 @@ hr {
     }
   }
 }
+.app-version-container {
+  min-height: 200px;
+  height: 100%;
+  display: flex !important;
+  flex-direction: column;
+}
+.app-version-content{
+  flex: 1;
+  overflow: auto;
+}
 
 .query-manager-header {
   .nav-item {
@@ -2833,7 +2856,7 @@ input:focus-visible {
   }
 
   .jet-container {
-    background-color: #1f2936 !important;
+    background-color: #1f2936;
   }
 
   .nav-tabs .nav-item.show .nav-link,
@@ -3189,6 +3212,12 @@ input[type="text"] {
     .select-search__option {
       height: auto;
       min-height: 30px;
+      border-radius: 0;
+    }
+
+    .select-search__option.is-selected {
+      background-color: #4D72FA;
+      color: white;
     }
   }
 }

@@ -183,6 +183,7 @@ export class DataQueriesService {
       }
       return object;
     } else if (typeof object === 'string') {
+      object = object.replace(/\n/g, ' ');
       if (object.startsWith('{{') && object.endsWith('}}') && (object.match(/{{/g) || []).length === 1) {
         object = options[object];
         return object;

@@ -96,7 +96,7 @@ export function CodeHinter({
 
   function valueChanged(editor, onChange, suggestions, ignoreBraces) {
     handleChange(editor, onChange, suggestions, ignoreBraces);
-    setCurrentValue(editor.getValue());
+    setCurrentValue(editor.getValue()?.trim());
   }
 
   const getPreviewContent = (content, type) => {

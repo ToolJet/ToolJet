@@ -1,7 +1,13 @@
-import { ConnectionTestResult, cacheConnection, getCachedConnection, QueryService, QueryResult } from '@tooljet-plugins/common'
+import {
+  ConnectionTestResult,
+  cacheConnection,
+  getCachedConnection,
+  QueryService,
+  QueryResult,
+} from '@tooljet-plugins/common';
 
 const { Pool } = require('pg');
-import { SourceOptions, QueryOptions } from './types'
+import { SourceOptions, QueryOptions } from './types';
 
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
@@ -10,7 +16,7 @@ export default class PostgresqlQueryService implements QueryService {
     if (PostgresqlQueryService._instance) {
       return PostgresqlQueryService._instance;
     }
-  
+
     PostgresqlQueryService._instance = this;
     return PostgresqlQueryService._instance;
   }
@@ -100,6 +106,8 @@ export default class PostgresqlQueryService implements QueryService {
     const records = queryOptions['records'];
 
     for (const record of records) {
+      const primaryKeyValue = typeof record[primaryKey] === 'string' ? `'${record[primaryKey]}'` : record[primaryKey];
+
       queryText = `${queryText} UPDATE ${tableName} SET`;
 
       for (const key of Object.keys(record)) {
@@ -109,7 +117,7 @@ export default class PostgresqlQueryService implements QueryService {
       }
 
       queryText = queryText.slice(0, -1);
-      queryText = `${queryText} WHERE ${primaryKey} = ${record[primaryKey]};`;
+      queryText = `${queryText} WHERE ${primaryKey} = ${primaryKeyValue};`;
     }
 
     return queryText.trim();

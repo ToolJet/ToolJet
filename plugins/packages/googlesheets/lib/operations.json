@@ -166,6 +166,17 @@
         "className": "codehinter-plugins",
         "placeholder": "Enter spreadsheet_id"
       },
+      "spreadsheet_range": {
+        "label": "Range",
+        "key": "spreadsheet_range",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "A1:Z500",
+        "description": "Enter range",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
       "sheet": {
         "label": "Sheet name",
         "key": "sheet",
