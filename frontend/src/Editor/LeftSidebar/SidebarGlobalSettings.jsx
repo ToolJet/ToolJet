@@ -21,9 +21,13 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
         tip="Global settings"
         {...trigger}
         icon="settings"
-        className={`left-sidebar-item ${open && 'active'}`}
+        className={`left-sidebar-item  left-sidebar-layout ${open && 'active'}`}
+        text={'Settings'}
       />
-      <div {...content} className={`card popover global-settings-popover ${open ? 'show' : 'hide'}`}>
+      <div
+        {...content}
+        className={`card popover global-settings-popover common-sidebar-popover-margin ${open ? 'show' : 'hide'}`}
+      >
         <div style={{ marginTop: '1rem' }} className="card-body">
           <div>
             <div className="d-flex mb-3">
