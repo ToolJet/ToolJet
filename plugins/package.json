@@ -28,6 +28,7 @@
     "@tooljet-plugins/gcs": "file:packages/gcs",
     "@tooljet-plugins/googlesheets": "file:packages/googlesheets",
     "@tooljet-plugins/graphql": "file:packages/graphql",
+    "@tooljet-plugins/mailgun": "file:packages/mailgun",
     "@tooljet-plugins/minio": "file:packages/minio",
     "@tooljet-plugins/mongodb": "file:packages/mongodb",
     "@tooljet-plugins/mssql": "file:packages/mssql",
