@@ -42,8 +42,8 @@ export function onComponentOptionsChanged(_ref, component, options) {
     componentData[option[0]] = option[1];
   }
 
-  return setStateAsync(_ref, {
-    currentState: { ..._ref.state.currentState, components: { ...components, [componentName]: componentData } },
+  return setCurrentStateAsync(_ref, {
+    components: { ...components, [componentName]: componentData },
   });
 }
 
