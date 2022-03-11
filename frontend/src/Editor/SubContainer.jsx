@@ -36,11 +36,13 @@ export const SubContainer = ({
   onComponentHover,
   hoveredComponent,
 }) => {
-  const [_currentParentRef, setParentRef] = useState(parentRef);
+  const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
 
   useEffect(() => {
-    setParentRef(parentRef);
-  }, [parentRef]);
+    const canvasWidth = parentRef?.current ? getContainerCanvasWidth() : 0;
+    setContainerCanvasWidth(canvasWidth);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [parentRef.current]);
 
   zoomLevel = zoomLevel || 1;
 
@@ -416,7 +418,7 @@ export const SubContainer = ({
           deviceWindowWidth={deviceWindowWidth}
           isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
           removeComponent={customRemoveComponent}
-          canvasWidth={getContainerCanvasWidth()}
+          canvasWidth={_containerCanvasWidth}
           readOnly={readOnly}
           darkMode={darkMode}
           customResolvables={customResolvables}
