@@ -32,7 +32,7 @@ export const LeftSidebarItem = ({
           )}
           {badge && <LeftSidebarItem.Badge count={count} />}
           {commentBadge && <LeftSidebarItem.CommentBadge />}
-          {text && text}
+          <p>{text && text}</p>
         </div>
       </div>
     </OverlayTrigger>

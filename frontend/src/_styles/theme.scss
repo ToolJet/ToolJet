@@ -167,6 +167,9 @@ button {
       font-weight: 600;
     }
   }
+  .common-sidebar-popover-margin{
+    margin-left: 33px;
+  }
 
   .left-sidebar {
     scrollbar-width: none;
@@ -176,10 +179,22 @@ button {
     width: 0;
     background: transparent;
   }
-
+.left-sidebar-layout{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  font-size: 11px;
+  padding: 16px;
+  align-items: center;
+  letter-spacing:.2px;
+  p{
+    margin-bottom: 0px;
+    margin-top: 8px;
+  }
+}
   .left-sidebar {
     height: 100%;
-    width: 3%;
+    width: 76px;
     position: fixed;
     z-index: 1;
     left: 0;
@@ -189,6 +204,7 @@ button {
     background-clip: border-box;
     border: solid rgba(0, 0, 0, 0.125);
     border-width: 0px 1px 3px 0px;
+    margin-top: 0px;
 
     .accordion-item {
       border: solid rgba(101, 109, 119, 0.16);
@@ -396,7 +412,7 @@ button {
       top: 45px;
       position: fixed;
       right: 300px;
-      left: 3%;
+      left: 76px;
       overflow-y: auto;
       overflow-x: scroll;
       -webkit-box-pack: center;
@@ -628,7 +644,7 @@ button {
       justify-content: center;
       -webkit-box-align: center;
       align-items: center;
-
+      
       .canvas-area {
         width: 1280px;
         min-height: 2400px;
