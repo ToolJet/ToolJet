@@ -1822,6 +1822,7 @@ export const componentTypes = [
     properties: {
       primaryValueLabel: { type: 'code', displayName: 'Primary value label' },
       primaryValue: { type: 'code', displayName: 'Primary value' },
+      hideSecondary: { type: 'toggle', displayName: 'Hide secondary value' },
       secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
       secondaryValue: { type: 'code', displayName: 'Secondary value' },
       secondarySignDisplay: { type: 'code', displayName: 'Secondary sign display' },

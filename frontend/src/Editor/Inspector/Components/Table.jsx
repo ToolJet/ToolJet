@@ -2,7 +2,7 @@ import React from 'react';
 import Accordion from '@/_ui/Accordion';
 
 import { renderElement } from '../Utils';
-import { computeActionName } from '@/_helpers/utils';
+import { computeActionName, resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
 import SortableList, { SortableItem } from 'react-easy-sort';
 import arrayMove from 'array-move';
@@ -600,7 +600,9 @@ class Table extends React.Component {
     if (!component.component.definition.properties.displaySearchBox)
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
-    const serverSidePagination = component.component.definition.properties.serverSidePagination?.value ?? false;
+    const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
+      ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
+      : false;
 
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
@@ -744,10 +746,11 @@ class Table extends React.Component {
 
     let renderOptions = [];
 
+    !serverSidePagination && options.splice(1, 0, 'clientSidePagination');
+
     options.map((option) => renderOptions.push(renderCustomElement(option)));
 
     const conditionalOptions = [
-      { name: 'clientSidePagination', condition: !serverSidePagination },
       { name: 'displaySearchBox', condition: displaySearchBox },
       { name: 'loadingState', condition: true },
     ];
