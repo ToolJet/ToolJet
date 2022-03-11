@@ -107,7 +107,7 @@ export default class OracledbQueryService implements QueryService {
         password: sourceOptions.password,
         connectString: `(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${sourceOptions.host})(PORT=${sourceOptions.port}))(CONNECT_DATA=(SERVER=DEDICATED)(${sourceOptions.database_type}=${sourceOptions.database})))`,
         multipleStatements: true,
-        ssl: sourceOptions.ssl_enabled ?? false, // Disabling by default for backward compatibility
+        ssl: sourceOptions.ssl_enabled, // Disabling by default for backward compatibility
       },
     };
 
