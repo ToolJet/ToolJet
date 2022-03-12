@@ -1171,7 +1171,7 @@ class Editor extends React.Component {
                 }}
               >
                 <div className="row main-row">
-                  <div className="col-3 data-pane">
+                  <div className="data-pane">
                     <div className="queries-container">
                       <div className="queries-header row">
                         {showQuerySearchField && (
@@ -1261,7 +1261,7 @@ class Editor extends React.Component {
                       )}
                     </div>
                   </div>
-                  <div className="col-9 query-definition-pane-wrapper">
+                  <div className="query-definition-pane-wrapper">
                     {!loadingDataSources && (
                       <div className="query-definition-pane">
                         <div>
