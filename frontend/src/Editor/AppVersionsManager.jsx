@@ -32,6 +32,11 @@ export const AppVersionsManager = function AppVersionsManager({
   }, []);
 
   useEffect(() => {
+    setEditingAppVersion(editingVersion);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingVersion]);
+
+  useEffect(() => {
     appVersions[appVersions.findIndex((appVersion) => appVersion.id === editingVersion.id)] = editingAppVersion;
     setCreateAppVersionFrom(editingAppVersion);
     // eslint-disable-next-line react-hooks/exhaustive-deps
