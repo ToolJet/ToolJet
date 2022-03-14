@@ -524,6 +524,7 @@ button {
       }
 
       .query-definition-pane-wrapper {
+        width: 72%;
         overflow-x: hidden;
         overflow-y: scroll;
         height: 100%;
@@ -557,6 +558,7 @@ button {
       }
 
       .data-pane {
+        width: 28%;
         border: solid rgba(0, 0, 0, 0.125);
         border-width: 0px 1px 0px 0px;
         overflow-x: hidden;
