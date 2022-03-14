@@ -194,8 +194,8 @@ export function CodeHinter({
         <div className={`mb-2 field ${options.className}`}>
           <ToolTip label={paramLabel} meta={fieldMeta} />
         </div>
-        <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} pt-2`}>
-          <div style={{ width: width, display: codeShow ? 'flex' : 'none' }}>
+        <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
+          <div style={{ width: width, display: codeShow ? 'flex' : 'none', marginTop: '-1px' }}>
             <FxButton
               active={true}
               onPress={() => {
