@@ -1,5 +1,5 @@
-import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
-import {SourceOptions, QueryOptions, EmailOptions} from "./types";
+import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { SourceOptions, QueryOptions, EmailOptions } from './types';
 import MailgunSdk from 'mailgun.js';
 import FormData from 'form-data';
 
@@ -10,7 +10,7 @@ export default class Mailgun implements QueryService {
     }
 
     const sdk = new MailgunSdk(FormData);
-    const mailgunOptions = {username: 'api', key: sourceOptions.api_key, url: null}
+    const mailgunOptions = { username: 'api', key: sourceOptions.api_key, url: null };
     if (sourceOptions.eu_hosted) {
       mailgunOptions.url = 'https://api.eu.mailgun.net';
     }
@@ -21,8 +21,8 @@ export default class Mailgun implements QueryService {
       to: queryOptions.send_mail_to,
       from: queryOptions.send_mail_from,
       subject: queryOptions.subject,
-      text: queryOptions.text
-    }
+      text: queryOptions.text,
+    };
 
     if (queryOptions.html && queryOptions.html.length > 0) {
       emailOptions.html = queryOptions.html;
