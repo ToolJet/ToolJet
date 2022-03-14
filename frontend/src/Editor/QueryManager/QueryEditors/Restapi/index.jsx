@@ -152,6 +152,7 @@ class Restapi extends React.Component {
               defaultValue={{ label: 'GET', value: 'get' }}
               placeholder="Method"
               styles={selectStyles}
+              isSearchable={false}
             />
           </div>
 
