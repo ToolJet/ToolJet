@@ -1,7 +1,7 @@
 'use strict';
 
-const mailgun = require('../lib');
+// const mailgun = require('../lib');
 
 describe('mailgun', () => {
-    it.todo('needs tests');
+  it.todo('needs tests');
 });
