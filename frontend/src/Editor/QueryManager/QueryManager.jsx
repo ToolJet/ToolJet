@@ -307,7 +307,7 @@ let QueryManager = class QueryManager extends React.Component {
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
         <div className="row header">
           <div className="col">
-            {(addingQuery || editingQuery) && (
+            {selectedDataSource && (addingQuery || editingQuery) && (
               <div className="nav-header">
                 <ul className="nav nav-tabs query-manager-header" data-bs-toggle="tabs">
                   <li className="nav-item">
@@ -342,7 +342,7 @@ let QueryManager = class QueryManager extends React.Component {
             </div>
           )}
           <div className="col-auto px-1 m-auto">
-            {(addingQuery || editingQuery) && (
+            {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={() => {
                   const _options = { ...options };
@@ -368,7 +368,7 @@ let QueryManager = class QueryManager extends React.Component {
                 Preview
               </button>
             )}
-            {(addingQuery || editingQuery) && (
+            {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled}
