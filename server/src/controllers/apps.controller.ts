@@ -19,6 +19,7 @@ import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
 import { FoldersService } from '@services/folders.service';
 import { App } from 'src/entities/app.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
+import { User } from 'src/decorators/user.decorator';
 
 @Controller('apps')
 export class AppsController {
@@ -182,7 +183,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async index(@Request() req, @Query() query) {
+  async index(@User() user, @Query() query) {
     const page = query.page;
     const folderId = query.folder;
     const searchKey = query.searchKey || '';
@@ -192,13 +193,13 @@ export class AppsController {
 
     if (folderId) {
       const folder = await this.foldersService.findOne(folderId);
-      apps = await this.foldersService.getAppsFor(req.user, folder, page, searchKey);
-      totalFolderCount = await this.foldersService.userAppCount(req.user, folder, searchKey);
+      apps = await this.foldersService.getAppsFor(user, folder, page, searchKey);
+      totalFolderCount = await this.foldersService.userAppCount(user, folder, searchKey);
     } else {
-      apps = await this.appsService.all(req.user, page, searchKey);
+      apps = await this.appsService.all(user, page, searchKey);
     }
 
-    const totalCount = await this.appsService.count(req.user, searchKey);
+    const totalCount = await this.appsService.count(user, searchKey);
 
     const totalPageCount = folderId ? totalFolderCount : totalCount;
 

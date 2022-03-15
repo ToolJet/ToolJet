@@ -9,6 +9,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
+import { cleanObject } from 'src/helpers/utils.helper';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -36,13 +37,14 @@ export class UsersService {
       });
     } else {
       return await createQueryBuilder(User, 'users')
-        .innerJoin(
+        .innerJoinAndSelect(
           'users.organizationUsers',
           'organization_users',
           'organization_users.organizationId = :organisationId',
           { organisationId }
         )
-        .where('LOWER(users.users) = :email', { email: email.toLowerCase() })
+        .where('organization_users.status = :active', { active: 'active' })
+        .andWhere('users.email = :email', { email })
         .getOne();
     }
   }
@@ -53,9 +55,8 @@ export class UsersService {
     });
   }
 
-  async create(userParams: any, organizationId?: string, groups?: string[]): Promise<User> {
+  async create(userParams: any, organizationId: string, groups?: string[]): Promise<User> {
     const password = uuid.v4();
-    const invitationToken = uuid.v4();
 
     const { email, firstName, lastName } = userParams;
     let user: User;
@@ -66,7 +67,6 @@ export class UsersService {
         firstName,
         lastName,
         password,
-        invitationToken,
         defaultOrganizationId: organizationId,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -105,7 +105,7 @@ export class UsersService {
     let user: User;
     let newUserCreated = false;
 
-    user = await this.findByEmail(userParams.email, organizationId);
+    user = await this.findByEmail(userParams.email);
 
     if (!user) {
       const groups = ['all_users'];
@@ -117,35 +117,63 @@ export class UsersService {
   }
 
   async setupAccountFromInvitationToken(params: any) {
-    const { organization, password, token, role } = params; // TODO: organization is the name of the organization, this should be changed
-    const firstName = params['first_name'];
-    const lastName = params['last_name'];
-    const newSignup = params['new_signup'];
+    const {
+      organization,
+      password,
+      token,
+      role,
+      first_name: firstName,
+      last_name: lastName,
+      new_signup: newSignup,
+    } = params;
 
-    const user = await this.usersRepository.findOne({ where: { invitationToken: token } });
+    let user: User;
+    let organizationUser: OrganizationUser;
 
-    if (user) {
-      // beforeUpdate hook will not trigger if using update method of repository
-      await this.usersRepository.save(
-        Object.assign(user, {
-          firstName,
-          lastName,
-          password,
-          role,
-          invitationToken: null,
-        })
-      );
+    if (newSignup) {
+      user = await this.usersRepository.findOne({ where: { invitationToken: token } });
 
-      const organizationUser = user.organizationUsers[0];
-      await this.organizationUsersRepository.update(organizationUser.id, {
-        status: 'active',
+      if (!(user && user.organizationUsers)) {
+        throw new BadRequestException('Invalid invitation link');
+      }
+      organizationUser = user.organizationUsers.find((ou) => ou.organizationId === user.defaultOrganizationId);
+
+      if (!organizationUser) {
+        throw new BadRequestException('Invalid invitation link');
+      }
+    } else {
+      organizationUser = await this.organizationUsersRepository.findOne({
+        where: { invitationToken: token },
+        relations: ['user'],
       });
 
-      if (newSignup) {
-        await this.organizationsRepository.update(user.organizationId, {
-          name: organization,
-        });
+      if (!(organizationUser && organizationUser.user)) {
+        throw new BadRequestException('Invalid invitation link');
       }
+      ({ user } = organizationUser);
+    }
+
+    await this.usersRepository.save(
+      Object.assign(user, {
+        firstName,
+        lastName,
+        password,
+        role,
+        invitationToken: null,
+      })
+    );
+
+    await this.organizationUsersRepository.save(
+      Object.assign(organizationUser, {
+        invitationToken: null,
+        status: 'active',
+      })
+    );
+
+    if (newSignup && organization) {
+      await this.organizationsRepository.update(user.organizationId, {
+        name: organization,
+      });
     }
   }
 
@@ -162,9 +190,7 @@ export class UsersService {
     };
 
     // removing keys with undefined values
-    Object.keys(updateableParams).forEach((key) =>
-      updateableParams[key] === undefined ? delete updateableParams[key] : {}
-    );
+    cleanObject(updateableParams);
 
     let user: User;
 
@@ -247,8 +273,6 @@ export class UsersService {
   }
 
   async hasGroup(user: User, group: string, organizationId?: string): Promise<boolean> {
-    // Currently user can be part of single organization and
-    // the organization id is present on the user itself
     const orgId = organizationId || user.organizationId;
 
     const result = await createQueryBuilder(GroupPermission, 'group_permissions')
@@ -371,8 +395,6 @@ export class UsersService {
   }
 
   async userGroupPermissions(user: User, organizationId?: string): Promise<UserGroupPermission[]> {
-    // Currently user can be part of single organization
-    // and hence we can use organization_id on user entity
     const orgId = organizationId || user.organizationId;
 
     return await createQueryBuilder(UserGroupPermission, 'user_group_permissions')

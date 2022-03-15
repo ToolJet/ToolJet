@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Organization } from './organization.entity';
 
 interface Google {
@@ -25,13 +33,13 @@ export class SSOConfigs {
   organizationId: string;
 
   @Column({ name: 'sso' })
-  sso: string;
+  sso: 'google' | 'git' | 'okta' | 'form';
 
   @Column({ type: 'json' })
   configs: Google | Git | Okta;
 
-  @Column({ type: 'enum', enumName: 'status', enum: ['enable', 'disable'] })
-  status: string;
+  @Column({ name: 'enabled' })
+  enabled: boolean;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
@@ -39,6 +47,7 @@ export class SSOConfigs {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => Organization, (organization) => organization.ssoConfigs)
+  @ManyToOne(() => Organization, (organization) => organization.id)
+  @JoinColumn({ name: 'organization_id' })
   organization: Organization;
 }

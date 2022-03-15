@@ -9,6 +9,8 @@ import { GoogleOAuthService } from './google_oauth.service';
 import { decamelizeKeys } from 'humps';
 import { GitOAuthService } from './git_oauth.service';
 import UserResponse from './models/user_response';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
+import { Organization } from 'src/entities/organization.entity';
 
 @Injectable()
 export class OauthService {
@@ -40,20 +42,15 @@ export class OauthService {
     return true;
   }
 
-  async #findOrCreateUser(
-    { userSSOId, firstName, lastName, email, sso }: UserResponse,
-    organizationId: string
-  ): Promise<User> {
+  async #findOrCreateUser({ firstName, lastName, email }: UserResponse, organization: Organization): Promise<User> {
     const { user, newUserCreated } = await this.usersService.findOrCreateByEmail(
-      { firstName, lastName, email, ssoId: userSSOId, sso },
-      organizationId
+      { firstName, lastName, email },
+      organization.id
     );
 
     if (newUserCreated) {
-      const organizationUser = await this.organizationUsersService.create(user, organizationId);
+      const organizationUser = await this.organizationUsersService.create(user, organization);
       await this.organizationUsersService.activate(organizationUser);
-    } else if (userSSOId) {
-      await this.usersService.updateSSODetails(user, { userSSOId, sso });
     }
     return user;
   }
@@ -63,17 +60,19 @@ export class OauthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const organizationUser: any = user.organizationUsers.find((ou) => ou.organizationId === organizationId);
+    const organizationUser: OrganizationUser = user.organizationUsers.find(
+      (ou) => ou.organizationId === organizationId
+    );
 
-    if (!(organizationUser && organizationUser.length > 0)) {
+    if (!organizationUser) {
       throw new UnauthorizedException('Organisation not found');
     }
-    if (organizationUser[0].status != 'active') await this.organizationUsersService.activate(organizationUser[0]);
+    if (organizationUser.status != 'active') await this.organizationUsersService.activate(organizationUser);
     return user;
   }
 
-  async #generateLoginResultPayload(user: User): Promise<any> {
-    const JWTPayload: JWTPayload = { username: user.id, sub: user.email, ssoId: user.ssoId, sso: user.sso };
+  async #generateLoginResultPayload(user: User, organizationId: string): Promise<any> {
+    const JWTPayload: JWTPayload = { username: user.id, sub: user.email, organizationId };
     return decamelizeKeys({
       id: user.id,
       auth_token: this.jwtService.sign(JWTPayload),
@@ -86,41 +85,39 @@ export class OauthService {
     });
   }
 
-  async signIn(ssoResponse: SSOResponse): Promise<any> {
-    const ssoSignUpDisabled =
-      this.configService.get<string>('SSO_DISABLE_SIGNUP') &&
-      this.configService.get<string>('SSO_DISABLE_SIGNUP') === 'true';
+  async signIn(ssoResponse: SSOResponse, organisation: Organization): Promise<any> {
+    // const ssoSignUpDisabled: boolean = organisation.enableSignUp;
 
-    const { token, origin } = ssoResponse;
+    // const { token, origin } = ssoResponse;
 
-    let userResponse: UserResponse;
-    switch (origin) {
-      case 'google':
-        userResponse = await this.googleOAuthService.signIn(token);
-        if (!this.#isValidDomain(userResponse.domain))
-          throw new UnauthorizedException(`You cannot sign in using a ${userResponse.domain} id`);
-        break;
+    // let userResponse: UserResponse;
+    // switch (origin) {
+    //   case 'google':
+    //     userResponse = await this.googleOAuthService.signIn(token);
+    //     if (!this.#isValidDomain(userResponse.domain))
+    //       throw new UnauthorizedException(`You cannot sign in using a ${userResponse.domain} id`);
+    //     break;
 
-      case 'git':
-        userResponse = await this.gitOAuthService.signIn(token);
-        break;
+    //   case 'git':
+    //     userResponse = await this.gitOAuthService.signIn(token);
+    //     break;
 
-      default:
-        break;
-    }
+    //   default:
+    //     break;
+    // }
 
-    if (!(userResponse.userSSOId && userResponse.email)) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    const user: User = await (ssoSignUpDisabled
-      ? this.#findAndActivateUser(userResponse.email)
-      : this.#findOrCreateUser(userResponse));
+    // if (!(userResponse.userSSOId && userResponse.email)) {
+    //   throw new UnauthorizedException('Invalid credentials');
+    // }
+    // const user: User = await (ssoSignUpDisabled
+    //   ? this.#findAndActivateUser(userResponse.email)
+    //   : this.#findOrCreateUser(userResponse));
 
-    if (!user) {
-      throw new UnauthorizedException(`Email id ${userResponse.email} is not registered`);
-    }
+    // if (!user) {
+    //   throw new UnauthorizedException(`Email id ${userResponse.email} is not registered`);
+    // }
 
-    return await this.#generateLoginResultPayload(user);
+    // return await this.#generateLoginResultPayload(user);
   }
 }
 
@@ -134,6 +131,5 @@ interface SSOResponse {
 interface JWTPayload {
   username: string;
   sub: string;
-  ssoId: string;
-  sso: string;
+  organizationId: string;
 }

@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableColumn, TableForeignKey } from 'typeorm';
 
-export class OrganisationConfigs1632468258786 implements MigrationInterface {
+export class OrganisationConfigs1646823984673 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumns('organizations', [
       new TableColumn({
@@ -11,7 +11,7 @@ export class OrganisationConfigs1632468258786 implements MigrationInterface {
       new TableColumn({
         name: 'enable_sign_up',
         type: 'boolean',
-        default: true,
+        default: false,
       }),
     ]);
 
@@ -42,10 +42,9 @@ export class OrganisationConfigs1632468258786 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'status',
-            type: 'varchar',
-            default: "'disable'",
-            isNullable: false,
+            name: 'enabled',
+            type: 'boolean',
+            default: true,
           },
           {
             name: 'created_at',

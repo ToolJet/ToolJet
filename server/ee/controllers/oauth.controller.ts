@@ -7,7 +7,7 @@ export class OauthController {
 
   @Post('sign-in')
   async create(@Request() req, @Body() body) {
-    const result = await this.oauthService.signIn(body);
-    return result;
+    // const result = await this.oauthService.signIn(body);
+    // return result;
   }
 }

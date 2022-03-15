@@ -15,6 +15,7 @@ import { UsersService } from './users.service';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
+import { cleanObject } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class AppsService {
@@ -147,13 +148,14 @@ export class AppsService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where(
+      .where('apps.organization_id = :organizationId', { organizationId: user.organizationId })
+      .andWhere(
         new Brackets((qb) => {
           qb.where('user_group_permissions.user_id = :userId', {
             userId: user.id,
           })
             .andWhere('app_group_permissions.read = :value', { value: true })
-            .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
+            .orWhere('apps.is_public = :value OR apps.user_id = :userId', {
               value: true,
               organizationId: user.organizationId,
               userId: user.id,
@@ -178,13 +180,14 @@ export class AppsService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where(
+      .where('apps.organization_id = :organizationId', { organizationId: user.organizationId })
+      .andWhere(
         new Brackets((qb) => {
           qb.where('user_group_permissions.user_id = :userId', {
             userId: user.id,
           })
             .andWhere('app_group_permissions.read = :value', { value: true })
-            .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
+            .orWhere('apps.is_public = :value OR apps.user_id = :userId', {
               value: true,
               organizationId: user.organizationId,
               userId: user.id,
@@ -222,9 +225,7 @@ export class AppsService {
     };
 
     // removing keys with undefined values
-    Object.keys(updateableParams).forEach((key) =>
-      updateableParams[key] === undefined ? delete updateableParams[key] : {}
-    );
+    cleanObject(updateableParams);
 
     return await this.appsRepository.update(appId, updateableParams);
   }

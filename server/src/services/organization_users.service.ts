@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { getManager, Repository } from 'typeorm';
+import { createQueryBuilder, getManager, Repository } from 'typeorm';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
+import { Organization } from 'src/entities/organization.entity';
+import { GroupPermission } from 'src/entities/group_permission.entity';
 const uuid = require('uuid');
 
 @Injectable()
@@ -28,29 +30,42 @@ export class OrganizationUsersService {
       email: params['email'],
     };
 
-    const existingUser = await this.usersService.findByEmail(userParams.email, currentUser.organizationId);
-    if (existingUser) {
+    let user = await this.usersService.findByEmail(userParams.email);
+
+    if (user && user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
       throw new BadRequestException('User with such email already exists.');
     }
-    const user = await this.usersService.create(userParams, currentUser.organizationId, ['all_users']);
-    const organizationUser = await this.create(user, currentUser.organizationId);
+
+    if (!user) {
+      // User Not Exist
+      user = await this.usersService.create(userParams, currentUser.organizationId, ['all_users']);
+    }
+
+    const currentOrganization: Organization = currentUser.organizationUsers.find(
+      (uo) => uo.organizationId === currentUser.organizationId
+    ).organization;
+
+    const organizationUser: OrganizationUser = await this.create(user, currentOrganization, true);
 
     await this.emailService.sendOrganizationUserWelcomeEmail(
       user.email,
       user.firstName,
       currentUser.firstName,
-      user.invitationToken
+      organizationUser.invitationToken,
+      currentOrganization.name
     );
 
     return organizationUser;
   }
 
-  async create(user: User, organizationId: string): Promise<OrganizationUser> {
+  async create(user: User, organization: Organization, isInvite?: boolean): Promise<OrganizationUser> {
     return await this.organizationUsersRepository.save(
       this.organizationUsersRepository.create({
         user,
-        organizationId,
-        role: 'all_users',
+        organization,
+        invitationToken: isInvite ? uuid.v4() : null,
+        status: isInvite ? 'invited' : 'active',
+        role: 'all-users',
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -58,7 +73,6 @@ export class OrganizationUsersService {
   }
 
   async changeRole(user: User, id: string, role: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const organizationUser = await this.organizationUsersRepository.findOne({ where: { id } });
     if (organizationUser.role == 'admin') {
       const lastActiveAdmin = await this.lastActiveAdmin(organizationUser.organizationId);
@@ -77,8 +91,7 @@ export class OrganizationUsersService {
 
       await this.usersService.throwErrorIfRemovingLastActiveAdmin(user);
 
-      await manager.update(User, user.id, { invitationToken: null });
-      await manager.update(OrganizationUser, id, { status: 'archived' });
+      await manager.update(OrganizationUser, id, { status: 'archived', invitationToken: null });
     });
 
     return true;
@@ -88,20 +101,28 @@ export class OrganizationUsersService {
     const organizationUser = await this.organizationUsersRepository.findOne({ where: { id } });
     if (organizationUser.status !== 'archived') return false;
 
+    const invitationToken = uuid.v4();
+
     await getManager().transaction(async (manager) => {
       await manager.update(OrganizationUser, organizationUser.id, {
         status: 'invited',
+        invitationToken,
       });
-      await manager.update(User, organizationUser.userId, { invitationToken: uuid.v4(), password: uuid.v4() });
+      await manager.update(User, organizationUser.userId, { password: uuid.v4() });
     });
 
     const updatedUser = await this.usersService.findOne(organizationUser.userId);
+
+    const currentOrganization: Organization = user.organizationUsers.filter(
+      (uo) => uo.organizationId === user.organizationId
+    )[0].organization;
 
     await this.emailService.sendOrganizationUserWelcomeEmail(
       updatedUser.email,
       updatedUser.firstName,
       user.firstName,
-      updatedUser.invitationToken
+      invitationToken,
+      currentOrganization.name
     );
 
     return true;
@@ -120,12 +141,10 @@ export class OrganizationUsersService {
   }
 
   async activeAdminCount(organizationId: string) {
-    return await this.organizationUsersRepository.count({
-      where: {
-        organizationId: organizationId,
-        role: 'admin',
-        status: 'active',
-      },
-    });
+    return await createQueryBuilder(GroupPermission, 'group_permissions')
+      .innerJoin('group_permissions.userGroupPermission', 'user_group_permission')
+      .where('group_permissions.group = :admin', { admin: 'admin' })
+      .andWhere('group_permissions.organization = :organizationId', { organizationId })
+      .getCount();
   }
 }

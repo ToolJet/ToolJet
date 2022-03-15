@@ -29,3 +29,13 @@ export async function getCachedConnection(dataSourceId, dataSourceUpdatedAt): Pr
     }
   }
 }
+
+export function cleanObject(obj: any): any {
+  // This will remove undefined properties, for self and its children
+  Object.keys(obj).forEach((key) => {
+    obj[key] === undefined && delete obj[key];
+    if (obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+      cleanObject(obj[key]);
+    }
+  });
+}

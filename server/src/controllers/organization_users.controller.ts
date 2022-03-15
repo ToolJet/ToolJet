@@ -36,6 +36,7 @@ export class OrganizationUsersController {
     return decamelizeKeys({ result });
   }
 
+  // Depricated
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('changeRole', User))
   @Post(':id/change_role')

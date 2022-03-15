@@ -5,7 +5,7 @@ import { UsersService } from '../../../src/services/users.service';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategyGetUser extends PassportStrategy(Strategy) {
   constructor(private usersService: UsersService, private configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -15,16 +15,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    console.log(payload);
+    if (!payload.organisationId) return {};
 
     const user = await this.usersService.findByEmail(payload.sub, payload.organisationId);
-    if (!(user && payload.organizationId)) return false;
+    if (!user) return {};
 
-    user.organizationId = payload.organizationId;
-
-    console.log(user);
-
-    if (user && (await this.usersService.status(user)) !== 'archived') return user;
-    else return false;
+    user.organizationId = payload.organisationId;
+    return user;
   }
 }

@@ -1,24 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { OrganizationUser } from '../entities/organization_user.entity';
-import { createQueryBuilder, Repository } from 'typeorm';
-import { Organization } from 'src/entities/organization.entity';
-import { UsersService } from './users.service';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+import { Organization } from 'src/entities/organization.entity';
+import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { User } from 'src/entities/user.entity';
+import { cleanObject } from 'src/helpers/utils.helper';
+import { createQueryBuilder, Repository } from 'typeorm';
+import { OrganizationUser } from '../entities/organization_user.entity';
+import { GroupPermissionsService } from './group_permissions.service';
+import { OrganizationUsersService } from './organization_users.service';
+import { UsersService } from './users.service';
 
 @Injectable()
 export class OrganizationsService {
   constructor(
     @InjectRepository(Organization)
     private organizationsRepository: Repository<Organization>,
+    @InjectRepository(SSOConfigs)
+    private ssoConfigRepository: Repository<SSOConfigs>,
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
     @InjectRepository(GroupPermission)
     private groupPermissionsRepository: Repository<GroupPermission>,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private organizationUserService: OrganizationUsersService,
+    private groupPermissionService: GroupPermissionsService
   ) {}
 
-  async create(name: string): Promise<Organization> {
+  async create(name: string, user?: User): Promise<Organization> {
     const organization = await this.organizationsRepository.save(
       this.organizationsRepository.create({
         name,
@@ -27,9 +36,21 @@ export class OrganizationsService {
       })
     );
 
-    await this.createDefaultGroupPermissionsForOrganization(organization);
+    const createdGroupPermissions = await this.createDefaultGroupPermissionsForOrganization(organization);
+
+    if (user) {
+      await this.organizationUserService.create(user, organization, false);
+
+      for (const groupPermission of createdGroupPermissions) {
+        await this.groupPermissionService.createUserGroupPermission(user.id, groupPermission.id);
+      }
+    }
 
     return organization;
+  }
+
+  async get(id: string): Promise<Organization> {
+    return await this.organizationsRepository.findOne({ where: { id } });
   }
 
   async createDefaultGroupPermissionsForOrganization(organization: Organization) {
@@ -80,11 +101,6 @@ export class OrganizationsService {
     return serializedUsers;
   }
 
-  async findFirst(): Promise<Organization> {
-    const organizations = await this.organizationsRepository.find();
-    return organizations[0];
-  }
-
   async fetchOrganisations(user: any): Promise<Organization[]> {
     return await createQueryBuilder(Organization, 'organization')
       .innerJoin(
@@ -92,7 +108,7 @@ export class OrganizationsService {
         'organisation_users',
         'organisation_users.status IN(:...statusList)',
         {
-          statusList: ['invited', 'active'],
+          statusList: ['active'],
         }
       )
       .andWhere('organisation_users.userId = :userId', {
@@ -102,20 +118,111 @@ export class OrganizationsService {
       .getMany();
   }
 
-  async updateOrganisation(user: any): Promise<Organization[]> {
+  async getSSOConfigs(organizationId: string, sso: string): Promise<Organization> {
     return await createQueryBuilder(Organization, 'organization')
-      .innerJoin(
-        'organization.organizationUsers',
-        'organisation_users',
-        'organisation_users.status IN(:...statusList)',
-        {
-          statusList: ['invited', 'active'],
-        }
-      )
-      .andWhere('organisation_users.userId = :userId', {
-        userId: user.id,
+      .innerJoin('organization.ssoConfigs', 'organisation_sso', 'organisation_sso.sso = :sso', {
+        sso,
       })
-      .orderBy('name', 'ASC')
-      .getMany();
+      .andWhere('organization.id = :orgamizationId', {
+        organizationId,
+      })
+      .getOne();
+  }
+
+  async fetchOrganisationDetails(organizationId: string): Promise<Organization> {
+    console.log(organizationId);
+
+    const result = await createQueryBuilder(Organization, 'organization')
+      .innerJoinAndSelect('organization.ssoConfigs', 'organisation_sso', 'organisation_sso.enabled = :enabled', {
+        enabled: true,
+      })
+      .andWhere('organization.id = :organizationId', {
+        organizationId,
+      })
+      .getOne();
+
+    console.log(result);
+
+    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.enableSignUp);
+  }
+
+  private hideSSOSensitiveData(ssoConfigs: SSOConfigs[], enableSignUp: boolean): any {
+    const configs = {};
+    if (ssoConfigs?.length > 0) {
+      for (const config of ssoConfigs) {
+        delete config.configs['clientSecret'];
+        delete config['id'];
+        delete config['organizationId'];
+        delete config['createdAt'];
+        delete config['updatedAt'];
+
+        switch (config.sso) {
+          case 'git':
+            configs['git'] = {
+              ...config,
+            };
+            break;
+          case 'google':
+            configs['google'] = {
+              ...config,
+            };
+            break;
+          case 'form':
+            configs['form'] = {
+              enableSignUp,
+              ...config,
+            };
+            break;
+          default:
+            break;
+        }
+      }
+    }
+    return configs;
+  }
+
+  async updateOrganization(organizationId: string, params) {
+    const { name, domain, autoAssign, enableSignUp } = params;
+
+    const updateableParams = {
+      name,
+      domain,
+      autoAssign,
+      enableSignUp,
+    };
+
+    // removing keys with undefined values
+    cleanObject(updateableParams);
+
+    return await this.organizationsRepository.update(organizationId, updateableParams);
+  }
+
+  async updateOrganizationConfigs(organizationId: string, params) {
+    const { type, configs, status } = params;
+
+    if (!(type && ['git', 'google', 'form'].includes(type))) {
+      throw new BadRequestException();
+    }
+    const organization: Organization = await this.getSSOConfigs(organizationId, type);
+    if (organization?.ssoConfigs?.length > 0) {
+      const ssoConfigs: SSOConfigs = organization.ssoConfigs[0];
+
+      const updateableParams = {
+        configs,
+        status,
+      };
+
+      // removing keys with undefined values
+      cleanObject(updateableParams);
+      return await this.ssoConfigRepository.update(ssoConfigs.id, updateableParams);
+    } else {
+      const newSSOConfigs = this.ssoConfigRepository.create({
+        organization,
+        sso: type,
+        configs,
+        enabled: true,
+      });
+      return await this.ssoConfigRepository.save(newSSOConfigs);
+    }
   }
 }

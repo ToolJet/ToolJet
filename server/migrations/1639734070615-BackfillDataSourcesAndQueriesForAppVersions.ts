@@ -12,7 +12,9 @@ import { Credential } from 'src/entities/credential.entity';
 export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
-    const organizations = await entityManager.find(Organization);
+    const organizations = await entityManager.find(Organization, {
+      select: ['id', 'name'],
+    });
     const nestApp = await NestFactory.createApplicationContext(AppModule);
     const dataSourcesService = nestApp.get(DataSourcesService);
 

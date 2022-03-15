@@ -34,8 +34,9 @@ export class SeedsService {
         lastName: 'Developer',
         email: 'dev@tooljet.io',
         password: 'password',
-        organizationId: organization.id,
+        defaultOrganizationId: organization.id,
       });
+      user.organizationId = organization.id;
 
       await manager.save(user);
 

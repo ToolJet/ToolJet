@@ -26,6 +26,8 @@ export default class MongodbService implements QueryService {
             .insertMany(this.parseEJSON(queryOptions.documents), this.parseEJSON(queryOptions.options));
           break;
         case 'find_one':
+          console.log(queryOptions.filter);
+          
           result = await db
             .collection(queryOptions.collection)
             .findOne(this.parseEJSON(queryOptions.filter), this.parseEJSON(queryOptions.options));
@@ -139,8 +141,11 @@ export default class MongodbService implements QueryService {
   }
 
   parseEJSON(maybeEJSON?: string): any {
+    console.log('--->>>', maybeEJSON);
     if (!maybeEJSON) return {};
 
+    console.log('--->>>', maybeEJSON);
+    
     return EJSON.parse(JSON.stringify(JSON5.parse(maybeEJSON)));
   }
 

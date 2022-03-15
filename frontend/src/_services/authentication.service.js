@@ -6,6 +6,7 @@ const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('
 
 export const authenticationService = {
   login,
+  getOrganizationConfigs,
   logout,
   signup,
   updateCurrentUserDetails,
@@ -27,18 +28,26 @@ function login(email, password) {
     .then(handleResponse)
     .then((user) => {
       // store user details and jwt token in local storage to keep user logged in between page refreshes
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      currentUserSubject.next(user);
-
+      updateUser(user);
       return user;
     });
+}
+
+function getOrganizationConfigs(organizationId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+
+  return fetch(`${config.apiUrl}/organizations/${organizationId}/public-configs`, requestOptions)
+    .then(handleResponse)
+    .then((configs) => configs?.sso_configs);
 }
 
 function updateCurrentUserDetails(details) {
   const currentUserDetails = JSON.parse(localStorage.getItem('currentUser'));
   const updatedUserDetails = Object.assign({}, currentUserDetails, details);
-  localStorage.setItem('currentUser', JSON.stringify(updatedUserDetails));
-  currentUserSubject.next(updatedUserDetails);
+  updateUser(updatedUserDetails);
 }
 
 function signup(email) {
@@ -72,9 +81,11 @@ function signInViaOAuth(ssoResponse) {
   return fetch(`${config.apiUrl}/oauth/sign-in`, requestOptions)
     .then(handleResponse)
     .then((user) => {
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      currentUserSubject.next(user);
-
+      updateUser(user);
       return user;
     });
+}
+function updateUser(user) {
+  localStorage.setItem('currentUser', JSON.stringify(user));
+  currentUserSubject.next(user);
 }

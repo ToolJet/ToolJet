@@ -10,19 +10,54 @@ import { validateEmail } from '../_helpers/utils';
 class LoginPage extends React.Component {
   constructor(props) {
     super(props);
-
     // redirect to home if already logged in
-    if (authenticationService.currentUserValue) {
-      this.props.history.push('/');
+    if (
+      (!this.props.match.params.organisationId && authenticationService.currentUserValue) ||
+      (this.props.match.params.organisationId &&
+        authenticationService?.currentUserValue?.organisationId === this.props.match.params.organisationId)
+    ) {
+      return this.props.history.push('/');
     }
 
     this.state = {
       isLoading: false,
       showPassword: false,
+      isGettingConfigs: true,
+      configs: {},
     };
   }
 
   componentDidMount() {
+    if (this.props.match.params.organisationId) {
+      authenticationService.getOrganizationConfigs(this.props.match.params.organisationId).then(
+        (configs) => {
+          if (!configs) {
+            return this.props.history.push('/');
+          }
+          this.setState({ isGettingConfigs: false, configs });
+        },
+        () => this.props.history.push({ pathname: '/', state: { errorMessage: 'Error while login, please try again' } })
+      );
+    } else {
+      this.setState({
+        isGettingConfigs: false,
+        configs: {
+          form: {
+            enable_sign_up: window.public_config?.DISABLE_SIGNUP !== 'true',
+            enabled: window.public_config?.DISABLE_PASSWORD_LOGIN !== 'true',
+          },
+          git: {
+            enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
+            client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
+          },
+          google: {
+            enabled: !!window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
+            client_id: window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
+          },
+        },
+      });
+    }
+
     this.props.location?.state?.errorMessage &&
       toast.error(this.props.location.state.errorMessage, {
         id: 'toast-login-auth-error',
@@ -78,8 +113,7 @@ class LoginPage extends React.Component {
   };
 
   render() {
-    const { isLoading } = this.state;
-    const passwordLoginDisabled = window.public_config?.DISABLE_PASSWORD_LOGIN === 'true';
+    const { isLoading, configs } = this.state;
     return (
       <div className="page page-center">
         <div className="container-tight py-2">
@@ -90,7 +124,7 @@ class LoginPage extends React.Component {
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
             <div className="card-body">
-              {!passwordLoginDisabled && (
+              {configs?.form?.enabled && (
                 <div>
                   <h2 className="card-title text-center mb-4">Login to your account</h2>
                   <div className="mb-3">
@@ -141,9 +175,9 @@ class LoginPage extends React.Component {
                 </div>
               )}
               <div
-                className={`form-footer d-flex flex-column align-items-center ${passwordLoginDisabled ? 'mt-0' : ''}`}
+                className={`form-footer d-flex flex-column align-items-center ${!configs?.form?.enabled ? 'mt-0' : ''}`}
               >
-                {!passwordLoginDisabled && (
+                {configs?.form?.enabled && (
                   <button
                     data-testid="loginButton"
                     className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
@@ -152,17 +186,17 @@ class LoginPage extends React.Component {
                     Sign in
                   </button>
                 )}
-                {window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID && (
+                {this.state.configs?.google?.enabled && (
                   <GoogleSSOLoginButton
                     authSuccessHandler={this.authSuccessHandler}
                     authFailureHandler={this.authFailureHandler}
                   />
                 )}
-                {window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID && <GitSSOLoginButton />}
+                {this.state.configs?.git?.enabled && <GitSSOLoginButton />}
               </div>
             </div>
           </form>
-          {!passwordLoginDisabled && (
+          {!this.props.match.params.organisationId && configs?.form?.enable && configs?.form?.enable_sign_up && (
             <div className="text-center text-secondary mt-3">
               Don&apos;t have account yet? &nbsp;
               <Link to={'/signup'} tabIndex="-1">

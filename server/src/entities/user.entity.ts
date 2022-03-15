@@ -10,11 +10,8 @@ import {
   BaseEntity,
   ManyToMany,
   JoinTable,
-  ManyToOne,
-  JoinColumn,
 } from 'typeorm';
 import { GroupPermission } from './group_permission.entity';
-import { Organization } from './organization.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
 import { UserGroupPermission } from './user_group_permission.entity';
@@ -64,10 +61,6 @@ export class User extends BaseEntity {
 
   @OneToMany(() => OrganizationUser, (organizationUser) => organizationUser.user, { eager: true })
   organizationUsers: OrganizationUser[];
-
-  @ManyToOne(() => Organization, (organization) => organization.id)
-  @JoinColumn({ name: 'organization_id' })
-  defaultOrganization: Organization;
 
   @ManyToMany(() => GroupPermission)
   @JoinTable({

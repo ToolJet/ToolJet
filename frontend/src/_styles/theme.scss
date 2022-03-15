@@ -1119,6 +1119,17 @@ button {
    }
     
   }
+  .organization-list {
+    margin-top: 5px;
+    .btn {
+      border: 0px;
+    }
+    .dropdown-toggle div {
+      max-width: 200px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+  }
 }
 
 .pagination {
@@ -3076,6 +3087,12 @@ input:focus-visible {
   .app-version-name.form-select {
     border-color: $border-grey-dark;
   }
+  .organization-list {
+    .btn {
+      background-color: #273342;
+      color: #656d77;
+    }
+  }
 }
 
 .main-wrapper {
@@ -4432,4 +4449,38 @@ div#driver-highlighted-element-stage, div#driver-page-overlay {
   float: left;
   font-size: 14px;
   color: $light-gray;
+}
+
+.organization-list {
+  margin-top: 5px;
+  .btn {
+    border: 0px;
+  }
+  .dropdown-toggle div {
+    max-width: 200px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  .org-dd-item {
+    padding: 0.5rem 0.75rem;
+  }
+  .org-name {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin-top: 10px;
+    padding-left: 10px;
+    white-space: nowrap;
+    width: 110px;
+  }
+  .org-actions {
+    padding: 0rem 0.75rem;
+  }
+  .org-actions div {
+    color: #0565ff;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .dropdown-menu-right {
+    right: 0px;
+  }
 }

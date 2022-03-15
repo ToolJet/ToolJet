@@ -1,5 +1,7 @@
-import { Controller, Get, Request, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Request, Post, UseGuards, Body, Param } from '@nestjs/common';
+import { User } from 'src/decorators/user.decorator';
 import { PasswordLoginDisabledGuard } from 'src/modules/auth/password-login-disabled.guard';
+import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AuthService } from '../services/auth.service';
 
 @Controller()
@@ -7,15 +9,21 @@ export class AppController {
   constructor(private authService: AuthService) {}
 
   @UseGuards(PasswordLoginDisabledGuard)
-  @Post('authenticate')
-  async login(@Request() req) {
-    return this.authService.login(req.body);
+  @Post(['authenticate', 'authenticate/:organisationId'])
+  async login(@Body() body, @Param('organisationId') organisationId) {
+    return this.authService.login({ ...body, organisationId });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('switch/:organisationId')
+  async switch(@Body('organizationId') organizationId, @User() user) {
+    //return this.authService.login(body);
   }
 
   @UseGuards(PasswordLoginDisabledGuard)
   @Post('signup')
-  async signup(@Request() req) {
-    return this.authService.signup(req.body);
+  async signup(@Body() body) {
+    return this.authService.signup(body);
   }
 
   @Post('/forgot_password')

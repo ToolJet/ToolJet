@@ -262,4 +262,13 @@ export class GroupPermissionsService {
       organizationId: user.organizationId,
     });
   }
+
+  async createUserGroupPermission(userId: string, groupPermissionId: string) {
+    await this.userGroupPermissionsRepository.save(
+      this.userGroupPermissionsRepository.create({
+        userId,
+        groupPermissionId,
+      })
+    );
+  }
 }

@@ -6,6 +6,7 @@ import { User } from '../entities/user.entity';
 import { OrganizationUsersService } from './organization_users.service';
 import { EmailService } from './email.service';
 import { decamelizeKeys } from 'humps';
+import { Organization } from 'src/entities/organization.entity';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -28,8 +29,9 @@ export class AuthService {
     }
   }
 
-  async validateUser(email: string, password: string): Promise<User> {
-    const user = await this.usersService.findByEmail(email);
+  private async validateUser(email: string, password: string, organisationId?: string): Promise<User> {
+    const user = await this.usersService.findByEmail(email, organisationId);
+
     if (!user) return null;
 
     const isVerified = await bcrypt.compare(password, user.password);
@@ -38,10 +40,17 @@ export class AuthService {
   }
 
   async login(params: any) {
-    const user = await this.validateUser(params.email, params.password);
+    const { email, password, organizationId } = params;
+    const user = await this.validateUser(email, password, organizationId);
+
+    // Need to get organisation with form login supported
 
     if (user && (await this.usersService.status(user)) !== 'archived') {
-      const payload = { username: user.id, sub: user.email };
+      user.organizationId = organizationId || user.defaultOrganizationId;
+
+      const organization: Organization = await this.organizationsService.get(user.organizationId);
+
+      const payload = { username: user.id, sub: user.email, organizationId: user.organizationId };
 
       return decamelizeKeys({
         id: user.id,
@@ -49,9 +58,42 @@ export class AuthService {
         email: user.email,
         first_name: user.firstName,
         last_name: user.lastName,
+        organizationId: user.organizationId,
+        organization: organization.name,
         admin: await this.usersService.hasGroup(user, 'admin'),
         group_permissions: await this.usersService.groupPermissions(user),
         app_group_permissions: await this.usersService.appGroupPermissions(user),
+      });
+    } else {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+  }
+
+  async switchOrganization(newOrganizationId: string, user: User) {
+    const newUser = await this.usersService.findByEmail(user.email, newOrganizationId);
+
+    console.log('--->>>', newUser, newOrganizationId);
+
+    // Validate if switch is possible
+
+    if (newUser && (await this.usersService.status(newUser)) !== 'archived') {
+      newUser.organizationId = newOrganizationId;
+
+      const organization: Organization = await this.organizationsService.get(newUser.organizationId);
+
+      const payload = { username: user.id, sub: user.email, organizationId: newUser.organizationId };
+
+      return decamelizeKeys({
+        id: newUser.id,
+        auth_token: this.jwtService.sign(payload),
+        email: newUser.email,
+        first_name: newUser.firstName,
+        last_name: newUser.lastName,
+        organizationId: newUser.organizationId,
+        organization: organization.name,
+        admin: await this.usersService.hasGroup(newUser, 'admin'),
+        group_permissions: await this.usersService.groupPermissions(newUser),
+        app_group_permissions: await this.usersService.appGroupPermissions(newUser),
       });
     } else {
       throw new UnauthorizedException('Invalid credentials');
@@ -67,7 +109,7 @@ export class AuthService {
     const { email } = params;
     const organization = await this.organizationsService.create('Untitled organization');
     const user = await this.usersService.create({ email }, organization.id, ['all_users', 'admin']);
-    await this.organizationUsersService.create(user, organization.id);
+    await this.organizationUsersService.create(user, organization);
 
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 
