@@ -115,13 +115,16 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
         tip="Debugger"
         {...trigger}
         icon="debugger"
-        className={`left-sidebar-item ${open && 'active'}`}
+        className={`left-sidebar-item  left-sidebar-layout ${open && 'active'}`}
         badge={true}
         count={unReadErrorCount.unread}
+        text={'Debugger'}
       />
       <div
         {...content}
-        className={`card popover debugger-popover ${open || popoverPinned ? 'show' : 'hide'}`}
+        className={`card popover common-sidebar-popover-margin debugger-popover ${
+          open || popoverPinned ? 'show' : 'hide'
+        }`}
         style={{ minWidth: '350px', minHeight: '108px', resize: 'horizontal', maxWidth: '50%' }}
       >
         <div className="row-header">

@@ -46,8 +46,8 @@ export async function batchUpdateToSheet(
   }
 
   const lookUpData = await lookUpSheetData(spreadSheetId, spreadsheetRange, sheet, authHeader);
-  const body = await makeRequestBodyToBatchUpdate(requestBody, filterData, filterOperator, lookUpData);
 
+  const body = await makeRequestBodyToBatchUpdate(requestBody, filterData, filterOperator, lookUpData);
 
   const _data = body.map((data) => {
     return {
@@ -56,7 +56,6 @@ export async function batchUpdateToSheet(
       values: [[data.cellValue]],
     };
   });
-
 
   const reqBody = {
     data: _data,
@@ -220,12 +219,12 @@ const getRowsIndex = (inputFilter, filterOperator, response) => {
 };
 
 function numberToLetters(num) {
-  let letters = ''
+  let letters = '';
   while (num >= 0) {
-    letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[num % 26] + letters
-    num = Math.floor(num / 26) - 1
+    letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[num % 26] + letters;
+    num = Math.floor(num / 26) - 1;
   }
-  return letters
+  return letters;
 }
 
 export const makeRequestBodyToBatchUpdate = (requestBody, filterCondition, filterOperator, data) => {
@@ -251,5 +250,5 @@ export const makeRequestBodyToBatchUpdate = (requestBody, filterCondition, filte
     });
   });
 
-  return body
+  return body;
 };

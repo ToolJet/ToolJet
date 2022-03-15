@@ -3,12 +3,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export const Multiselect = function Multiselect({
+  id,
+  component,
   height,
   properties,
   styles,
   exposedVariables,
   setExposedVariable,
   fireEvent,
+  onComponentClick,
 }) {
   const { label, value, values, display_values } = properties;
   const { borderRadius, visibility, disabledState } = styles;
@@ -87,6 +90,9 @@ export const Multiselect = function Multiselect({
           placeholder="Select.."
           ref={selectRef}
           closeOnSelect={false}
+          onFocus={(event) => {
+            onComponentClick(id, component, event);
+          }}
         />
       </div>
     </div>
