@@ -1180,7 +1180,7 @@ class Editor extends React.Component {
                 <div className="row main-row">
                   <div className="data-pane">
                     <div className="queries-container">
-                      <div className="queries-header row">
+                      <div className="queries-header row" style={{ marginLeft: '1.5px' }}>
                         {showQuerySearchField && (
                           <div className="col-12 p-1">
                             <div className="queries-search px-1">
@@ -1241,7 +1241,7 @@ class Editor extends React.Component {
                           </center>
                         </div>
                       ) : (
-                        <div className="query-list p-1 mt-1" style={{ marginLeft: '32px' }}>
+                        <div className="query-list p-1 mt-1" style={{ marginLeft: '3px' }}>
                           <div>{dataQueries.map((query) => this.renderDataQuery(query))}</div>
                           {dataQueries.length === 0 && (
                             <div className="mt-5">
