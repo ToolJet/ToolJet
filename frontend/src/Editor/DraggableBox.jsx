@@ -191,7 +191,7 @@ export const DraggableBox = function DraggableBox({
           className={cx(
             `draggable-box widget-${id}`,
             { [className]: !!className },
-            `${mode === 'edit' ? 'editor' : ''}`
+            `${mode === 'edit' ? 'draggable-box-in-editor' : ''}`
           )}
           onMouseEnter={(e) => {
             if (e.currentTarget.className.includes(`widget-${id}`)) {
