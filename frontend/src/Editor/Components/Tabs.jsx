@@ -3,7 +3,17 @@ import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
-export const Tabs = function Tabs({ id, component, width, height, containerProps, currentState, removeComponent }) {
+export const Tabs = function Tabs({
+  id,
+  component,
+  width,
+  height,
+  containerProps,
+  currentState,
+  removeComponent,
+  setExposedVariable,
+  properties,
+}) {
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
   const defaultTab = component.definition.properties.defaultTab.value;
@@ -48,6 +58,11 @@ export const Tabs = function Tabs({ id, component, width, height, containerProps
   useEffect(() => {
     setCurrentTab(parsedDefaultTab);
   }, [parsedDefaultTab]);
+
+  useEffect(() => {
+    setExposedVariable('defaultTab', currentTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.defaultTab]);
 
   return (
     <div data-disabled={parsedDisabledState} className="jet-tabs card" style={computedStyles}>
