@@ -62,7 +62,7 @@ export const Tabs = function Tabs({
   useEffect(() => {
     setExposedVariable('defaultTab', currentTab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.defaultTab]);
+  }, [currentTab]);
 
   return (
     <div data-disabled={parsedDisabledState} className="jet-tabs card" style={computedStyles}>
