@@ -307,7 +307,7 @@ let QueryManager = class QueryManager extends React.Component {
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
         <div className="row header">
           <div className="col">
-            {selectedDataSource && (addingQuery || editingQuery) && (
+            {(addingQuery || editingQuery) && selectedDataSource && (
               <div className="nav-header">
                 <ul className="nav nav-tabs query-manager-header" data-bs-toggle="tabs">
                   <li className="nav-item">
