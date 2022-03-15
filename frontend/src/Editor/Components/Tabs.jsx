@@ -12,7 +12,6 @@ export const Tabs = function Tabs({
   currentState,
   removeComponent,
   setExposedVariable,
-  properties,
 }) {
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
