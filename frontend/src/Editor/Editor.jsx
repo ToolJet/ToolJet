@@ -1,5 +1,7 @@
 /* eslint-disable import/no-named-as-default */
+import * as Y from 'yjs';
 import React, { createRef } from 'react';
+import { WebrtcProvider } from 'y-webrtc';
 import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -51,6 +53,9 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 setAutoFreeze(false);
 enablePatches();
+
+const ydoc = new Y.Doc();
+
 class Editor extends React.Component {
   constructor(props) {
     super(props);
@@ -128,10 +133,15 @@ class Editor extends React.Component {
       showCreateVersionModalPrompt: false,
     };
 
+    this.ymap = ydoc.getMap('appDef');
+
     this.autoSave = debounce(this.saveEditingVersion, 3000);
+    this.realtimeSave = debounce(this.appDefinitionChanged, 3000);
 
     // setup for closing versions dropdown on oustide click
     this.wrapperRef = React.createRef();
+
+    this.webrtcProvider = new WebrtcProvider(`tooljet-appid-${appId}`, ydoc);
   }
 
   setWindowTitle(name) {
@@ -142,12 +152,21 @@ class Editor extends React.Component {
     this.fetchApps(0);
     this.fetchApp();
     this.initComponentVersioning();
+    this.initRealtimeSave();
     this.initEventListeners();
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
     });
   }
+
+  initRealtimeSave = () => {
+    this.ymap.observe(() => {
+      if (isEqual(this.state.appDefinition, this.ymap.get('appDef'))) return;
+      console.log('this.ymap was modified', this.ymap.get('appDef'));
+      this.realtimeSave(this.ymap.get('appDef'), { skipAutoSave: true, skipYmapUpdate: true });
+    });
+  };
 
   isVersionReleased = (version = this.state.editingVersion) => {
     if (isEmpty(version)) {
@@ -426,6 +445,7 @@ class Editor extends React.Component {
   };
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
+    if (!opts.skipYmapUpdate) this.ymap.set('appDef', newDefinition);
     produce(
       this.state.appDefinition,
       (draft) => {
@@ -1298,8 +1318,8 @@ class Editor extends React.Component {
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
                   {selectedComponent &&
-                  !isEmpty(appDefinition.components) &&
-                  !isEmpty(appDefinition.components[selectedComponent.id]) ? (
+                    !isEmpty(appDefinition.components) &&
+                    !isEmpty(appDefinition.components[selectedComponent.id]) ? (
                     <Inspector
                       cloneComponent={this.cloneComponent}
                       componentDefinitionChanged={this.componentDefinitionChanged}
