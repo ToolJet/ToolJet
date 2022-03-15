@@ -457,6 +457,11 @@ button {
       width: 0;
       background: transparent;
     }
+    @media (min-width: 1441px) {
+      .query-pane {
+        left: 3% !important;
+      }
+    }
 
     .query-pane {
       height: 350px;
