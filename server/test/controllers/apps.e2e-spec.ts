@@ -768,7 +768,7 @@ describe('apps controller', () => {
           const application = await createApplication(app, {
             user: adminUserData.user,
           });
-
+          const version = await createApplicationVersion(app, application);
           // setup app permissions for developer
           const developerUserGroup = await getRepository(GroupPermission).findOne({
             where: {
@@ -787,6 +787,7 @@ describe('apps controller', () => {
               .set('Authorization', authHeaderForUser(userData.user))
               .send({
                 versionName: 'v1',
+                versionFromId: version.id,
               });
 
             expect(response.statusCode).toBe(201);
@@ -882,7 +883,7 @@ describe('apps controller', () => {
           const application = await createApplication(app, {
             user: adminUserData.user,
           });
-          let dataSource = await createDataSource(app, {
+          const dataSource = await createDataSource(app, {
             name: 'name',
             kind: 'postgres',
             application: application,
@@ -953,14 +954,14 @@ describe('apps controller', () => {
           expect(dataSources.map((s) => s.appVersionId).includes(response.body.id)).toBeTruthy();
           expect(dataQueries.map((q) => q.appVersionId).includes(response.body.id)).toBeTruthy();
 
-          // creating a new version from a non existing version id will only associate ds and dq without versions
-          dataSource = await createDataSource(app, {
+          // creating a new version from a non existing version id will throw error when more than 1 versions exist
+          await createDataSource(app, {
             name: 'name',
             kind: 'postgres',
             application: application,
             user: adminUserData.user,
           });
-          const dataQuery = await createDataQuery(app, {
+          await createDataQuery(app, {
             application,
             dataSource,
             kind: 'restapi',
@@ -975,21 +976,8 @@ describe('apps controller', () => {
               versionFromId: 'a77b051a-dd48-4633-a01f-089a845d5f88',
             });
 
-          await dataSource.reload();
-          await dataQuery.reload();
-
-          expect(dataSource.appVersionId).toBe(response.body.id);
-          expect(dataQuery.appVersionId).toBe(response.body.id);
-          expect(
-            await manager.find(DataSource, {
-              where: { appVersionId: response.body.id },
-            })
-          ).toHaveLength(1);
-          expect(
-            await manager.find(DataQuery, {
-              where: { appVersionId: response.body.id },
-            })
-          ).toHaveLength(1);
+          expect(response.statusCode).toBe(400);
+          expect(response.body.message).toBe('More than one version found. Version to create from not specified.');
         });
 
         it('creates new credentials and copies cipher text on data source', async () => {
@@ -1017,7 +1005,7 @@ describe('apps controller', () => {
             });
 
           expect(response.statusCode).toBe(400);
-          expect(response.body.message).toBe('More than one version found, version to create from not specified.');
+          expect(response.body.message).toBe('More than one version found. Version to create from not specified.');
 
           const initialVersion = await getManager().findOne(AppVersion, {
             where: { appId: application.id, name: 'v0' },

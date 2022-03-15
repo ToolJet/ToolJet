@@ -339,7 +339,7 @@ export class AppsService {
       });
 
       if (totalVersions > 1) {
-        throw new BadRequestException('More than one version found, version to create from not specified.');
+        throw new BadRequestException('More than one version found. Version to create from not specified.');
       }
       await this.associateExistingDataSourceAndQueriesToVersion(manager, appVersion);
     }
