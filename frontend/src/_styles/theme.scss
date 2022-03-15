@@ -2361,6 +2361,11 @@ hr {
   .CodeMirror {
     font-family: "Roboto", sans-serif;
   }
+  .CodeMirror-placeholder {
+    height: inherit !important;
+    position: absolute !important;
+    margin-top: 3px !important;
+  }
 }
 
 .codehinter-query-editor-input {
