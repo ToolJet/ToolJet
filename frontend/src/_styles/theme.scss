@@ -3921,6 +3921,9 @@ input[type="text"] {
     width: 200px;
     border-radius: 5px !important;
   }
+  input:focus {
+    width: 300px;
+  }
   .input-icon .input-icon-addon {
     display: flex;
   }
