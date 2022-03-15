@@ -44,7 +44,6 @@ let QueryManager = class QueryManager extends React.Component {
     let dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
     const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
-
     this.setState(
       {
         appId: props.appId,
@@ -58,6 +57,7 @@ let QueryManager = class QueryManager extends React.Component {
         currentState: props.currentState,
         selectedSource: source,
         dataSourceMeta,
+        isSourceSelected: props.isSourceSelected,
         selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
         theme: {
           scheme: 'bright',
@@ -395,7 +395,7 @@ let QueryManager = class QueryManager extends React.Component {
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mt-1 mb-2">
                     <div className="datasource-heading ">
-                      {this.state.isSourceSelected && (
+                      {this.state.selectedDataSource !== null && (
                         <p
                           onClick={() => {
                             this.setState({

@@ -126,6 +126,7 @@ class Editor extends React.Component {
       showSaveDetail: false,
       hasAppDefinitionChanged: false,
       showCreateVersionModalPrompt: false,
+      isSourceSelected: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -1214,6 +1215,7 @@ class Editor extends React.Component {
                                     selectedQuery: {},
                                     editingQuery: false,
                                     addingQuery: true,
+                                    isSourceSelected: false,
                                   })
                                 }
                               >
@@ -1279,6 +1281,7 @@ class Editor extends React.Component {
                             darkMode={this.props.darkMode}
                             apps={apps}
                             allComponents={appDefinition.components}
+                            isSourceSelected={this.state.isSourceSelected}
                           />
                         </div>
                       </div>
