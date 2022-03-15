@@ -74,7 +74,7 @@ export default class RestapiQueryService implements QueryService {
 
       if (!tokenData) {
         const tooljetHost = process.env.TOOLJET_HOST;
-        const authUrl = `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`;
+        const authUrl = `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}&access_type=offline`;
 
         return {
           status: 'needs_oauth',
@@ -188,5 +188,46 @@ export default class RestapiQueryService implements QueryService {
         certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
       },
     };
+  }
+
+  async refreshToken(sourceOptions, error) {
+    if (!sourceOptions['refresh_token']) {
+      throw new QueryError('Query could not be completed', error.response, {});
+    }
+    const accessTokenUrl = sourceOptions['access_token_url'];
+    const clientId = sourceOptions['client_id'];
+    const clientSecret = sourceOptions['client_secret'];
+    const grantType = 'refresh_token';
+    const refreshToken = sourceOptions['refresh_token'];
+
+    const data = {
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: grantType,
+      refresh_token: refreshToken,
+    };
+
+    const accessTokenDetails = {};
+
+    try {
+      const response = await got(accessTokenUrl, {
+        method: 'post',
+        json: data,
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const result = JSON.parse(response.body);
+
+      if (!(response.statusCode >= 200 || response.statusCode < 300)) {
+        throw new QueryError('could not connect to Oauth server', error.response, {});
+      }
+
+      if (result['access_token']) {
+        accessTokenDetails['access_token'] = result['access_token'];
+      }
+    } catch (error) {
+      console.log(error.response.body);
+      throw new QueryError('could not connect to Oauth server', error.response, {});
+    }
+    return accessTokenDetails;
   }
 }

@@ -136,7 +136,7 @@ export class DataQueriesService {
     });
 
     const result = JSON.parse(response.body);
-    return { access_token: result['access_token'] };
+    return { access_token: result['access_token'], refresh_token: result['refresh_token'] };
   }
 
   /* This function fetches access token from authorization code */
