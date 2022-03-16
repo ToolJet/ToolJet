@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React, { useState, useEffect, useRef } from 'react';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from 'react-select';
 
 export const Multiselect = function Multiselect({
   id,
@@ -12,10 +12,12 @@ export const Multiselect = function Multiselect({
   setExposedVariable,
   fireEvent,
   onComponentClick,
+  darkMode,
 }) {
   const { label, value, values, display_values } = properties;
   const { borderRadius, visibility, disabledState } = styles;
   const selectRef = useRef(null);
+  const [computedValues, setComputedValues] = useState();
 
   useEffect(() => {
     let newValues = [];
@@ -24,12 +26,13 @@ export const Multiselect = function Multiselect({
 
     setExposedVariable('values', newValues);
     setCurrentValue(newValues);
+    setComputedValues(computeSelectedValues(newValues));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
 
   useEffect(() => {
     setExposedVariable('values', value);
-    setCurrentValue(value);
+    setComputedValues(computeSelectedValues(value));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(value)]);
 
@@ -38,7 +41,7 @@ export const Multiselect = function Multiselect({
   try {
     selectOptions = [
       ...values.map((value, index) => {
-        return { name: display_values[index], value: value };
+        return { label: display_values[index], value: value };
       }),
     ];
   } catch (err) {
@@ -56,17 +59,70 @@ export const Multiselect = function Multiselect({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    selectRef.current.querySelector('.select-search__input').style.borderRadius = `${Number.parseFloat(
-      borderRadius
-    )}px`;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [borderRadius, selectRef.current]);
-
   const handleChange = (value) => {
-    // setCurrentValue(value);
+    setComputedValues(value);
     setExposedVariable('values', value).then(() => fireEvent('onSelect'));
   };
+
+  const customStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      background: darkMode ? 'rgb(31,40,55)' : 'white',
+      minHeight: height,
+      height: height,
+      boxShadow: state.isFocused ? null : null,
+      borderRadius: Number.parseFloat(borderRadius),
+    }),
+
+    valueContainer: (provided, _state) => ({
+      ...provided,
+      height: height,
+      padding: '0 6px',
+    }),
+
+    input: (provided, _state) => ({
+      ...provided,
+      color: darkMode ? 'white' : 'black',
+    }),
+    indicatorSeparator: (_state) => ({
+      display: 'none',
+    }),
+    indicatorsContainer: (provided, _state) => ({
+      ...provided,
+      height: height,
+    }),
+    option: (provided) => ({
+      ...provided,
+      height: 'auto',
+      display: 'flex',
+      flexDirection: 'rows',
+      alignItems: 'center',
+      color: darkMode ? 'white' : 'black',
+      backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
+      ':hover': {
+        backgroundColor: darkMode ? '#323C4B' : '#4D72FA',
+        color: 'white',
+      },
+    }),
+    menu: (provided, _state) => ({
+      ...provided,
+      backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
+    }),
+    multiValueRemove: (styles) => ({
+      ...styles,
+      color: 'black',
+    }),
+  };
+
+  function computeSelectedValues(selectedValues) {
+    const options = [];
+    selectedValues.map((value) => {
+      selectOptions.forEach((option) => {
+        option.value === value && options.push(option);
+      });
+    });
+    return options;
+  }
 
   return (
     <div className="multiselect-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
@@ -76,23 +132,24 @@ export const Multiselect = function Multiselect({
         </label>
       </div>
       <div className="col px-0 h-100">
-        <SelectSearch
-          disabled={disabledState}
+        <Select
+          isDisabled={disabledState}
           options={selectOptions}
-          value={currentValue}
-          search={true}
-          multiple={true}
-          printOptions="on-focus"
-          onChange={(newValues) => {
-            handleChange(newValues);
+          value={computedValues}
+          isSearchable={true}
+          isMulti={true}
+          onChange={(selectedOption, actionProps) => {
+            if (actionProps.action === 'select-option' || actionProps.action === 'remove-value') {
+              handleChange(selectedOption);
+            }
           }}
-          filterOptions={fuzzySearch}
           placeholder="Select.."
           ref={selectRef}
-          closeOnSelect={false}
+          closeMenuOnSelect={false}
           onFocus={(event) => {
             onComponentClick(id, component, event);
           }}
+          styles={customStyles}
         />
       </div>
     </div>
