@@ -1,14 +1,14 @@
 {
   "name": "@tooljet/cli",
   "description": "tooljet cli tool",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "bin": {
     "tooljet": "./bin/run"
   },
   "bugs": "https://github.com/tooljet/tooljet/issues",
   "dependencies": {
-    "@oclif/core": "^1",
-    "@oclif/plugin-help": "^5",
+    "@oclif/core": "^1.6.0",
+    "@oclif/plugin-help": "^5.1.12",
     "@oclif/plugin-plugins": "^2.1.0",
     "@types/inquirer": "^8.1.3",
     "hygen": "^6.1.0",
