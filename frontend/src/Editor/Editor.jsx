@@ -1,7 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import * as Y from 'yjs';
 import React, { createRef } from 'react';
-import { WebrtcProvider } from 'y-webrtc';
 import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -53,8 +51,6 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 setAutoFreeze(false);
 enablePatches();
-
-const ydoc = new Y.Doc();
 
 class Editor extends React.Component {
   constructor(props) {
@@ -133,15 +129,11 @@ class Editor extends React.Component {
       showCreateVersionModalPrompt: false,
     };
 
-    this.ymap = ydoc.getMap('appDef');
-
     this.autoSave = debounce(this.saveEditingVersion, 3000);
     this.realtimeSave = debounce(this.appDefinitionChanged, 500);
 
     // setup for closing versions dropdown on oustide click
     this.wrapperRef = React.createRef();
-
-    this.webrtcProvider = new WebrtcProvider(`tooljet-appid-${appId}`, ydoc);
   }
 
   setWindowTitle(name) {
@@ -161,9 +153,9 @@ class Editor extends React.Component {
   }
 
   initRealtimeSave = () => {
-    this.ymap.observe(() => {
-      if (isEqual(this.state.appDefinition, this.ymap.get('appDef'))) return;
-      this.realtimeSave(this.ymap.get('appDef'), { skipAutoSave: true, skipYmapUpdate: true });
+    this.props.ymap.observe(() => {
+      if (isEqual(this.state.appDefinition, this.props.ymap.get('appDef'))) return;
+      this.realtimeSave(this.props.ymap.get('appDef'), { skipAutoSave: true, skipYmapUpdate: true });
     });
   };
 
@@ -444,7 +436,7 @@ class Editor extends React.Component {
   };
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
-    if (!opts.skipYmapUpdate) this.ymap.set('appDef', newDefinition);
+    if (!opts.skipYmapUpdate) this.props.ymap.set('appDef', newDefinition);
     produce(
       this.state.appDefinition,
       (draft) => {
