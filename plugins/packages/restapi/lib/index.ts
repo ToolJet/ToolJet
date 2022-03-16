@@ -190,6 +190,12 @@ export default class RestapiQueryService implements QueryService {
     };
   }
 
+  checkIfContentTypeIsURLenc(headers: []) {
+    const objectHeaders = Object.fromEntries(headers);
+    const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
+    return contentType === 'application/x-www-form-urlencoded';
+  }
+
   async refreshToken(sourceOptions, error) {
     const refreshToken = sourceOptions['tokenData']['refresh_token'];
     if (!refreshToken) {
@@ -199,6 +205,7 @@ export default class RestapiQueryService implements QueryService {
     const clientId = sourceOptions['client_id'];
     const clientSecret = sourceOptions['client_secret'];
     const grantType = 'refresh_token';
+    const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['headers']);
 
     const data = {
       client_id: clientId,
@@ -212,8 +219,11 @@ export default class RestapiQueryService implements QueryService {
     try {
       const response = await got(accessTokenUrl, {
         method: 'post',
-        json: data,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
+        },
+        form: isUrlEncoded ? data : undefined,
+        json: !isUrlEncoded ? data : undefined,
       });
       const result = JSON.parse(response.body);
 

@@ -94,7 +94,10 @@ export class DataQueriesService {
       return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
     } catch (error) {
       const errorMessage = JSON.parse(error?.data.responseObject.responseBody)['error']['message'];
-      if (error.constructor.name === 'OAuthUnauthorizedClientError' || errorMessage === 'Invalid Credentials') {
+      if (
+        error.constructor.name === 'OAuthUnauthorizedClientError' ||
+        (errorMessage === 'Invalid Credentials' && sourceOptions['tokenData'])
+      ) {
         console.log('Access token expired. Attempting refresh token flow.');
 
         const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id);
