@@ -1,6 +1,7 @@
 apps:
   tooljet:
     service:
+      type: ClusterIP
       host: "http://localhost"
     deployment:
       resources:

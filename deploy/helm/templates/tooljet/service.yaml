@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: tooljet
 spec:
-  type: ClusterIP
+  type: {{ .Values.apps.tooljet.service.type }}
   ports:
   - port: 3000
     protocol: TCP
