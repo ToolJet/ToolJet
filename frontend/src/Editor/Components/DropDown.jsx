@@ -36,14 +36,6 @@ export const DropDown = function DropDown({
   const validationData = validate(value);
   const { isValid, validationError } = validationData;
 
-  React.useEffect(() => {
-    //* setCurrentStateAsync from utils.js gets called with a promise and it gets executed in the next render cycle and not in the initial cycle,
-    setTimeout(() => {
-      setExposedVariable('value', value);
-    }, 300);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -54,7 +46,10 @@ export const DropDown = function DropDown({
     if (values?.includes(value)) newValue = value;
 
     setCurrentValue(newValue);
-    setExposedVariable('value', newValue);
+    //* setCurrentStateAsync from utils.js gets called with a promise and it gets executed in the next render cycle and not in the initial cycle,
+    setTimeout(() => {
+      setExposedVariable('value', value);
+    }, 300);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
