@@ -2361,6 +2361,11 @@ hr {
   .CodeMirror {
     font-family: "Roboto", sans-serif;
   }
+  .CodeMirror-placeholder {
+    height: inherit !important;
+    position: absolute !important;
+    margin-top: 3px !important;
+  }
 }
 
 .codehinter-query-editor-input {
@@ -2424,7 +2429,7 @@ hr {
   }
 }
 
-.draggable-box:hover {
+.draggable-box-in-editor:hover {
   z-index: 3 !important;
 }
 
