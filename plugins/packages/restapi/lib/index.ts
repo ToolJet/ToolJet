@@ -191,14 +191,14 @@ export default class RestapiQueryService implements QueryService {
   }
 
   async refreshToken(sourceOptions, error) {
-    if (!sourceOptions['refresh_token']) {
+    const refreshToken = sourceOptions['tokenData']['refresh_token'];
+    if (!refreshToken) {
       throw new QueryError('Query could not be completed', error.response, {});
     }
     const accessTokenUrl = sourceOptions['access_token_url'];
     const clientId = sourceOptions['client_id'];
     const clientSecret = sourceOptions['client_secret'];
     const grantType = 'refresh_token';
-    const refreshToken = sourceOptions['refresh_token'];
 
     const data = {
       client_id: clientId,
@@ -223,6 +223,7 @@ export default class RestapiQueryService implements QueryService {
 
       if (result['access_token']) {
         accessTokenDetails['access_token'] = result['access_token'];
+        accessTokenDetails['refresh_token'] = refreshToken;
       }
     } catch (error) {
       console.log(error.response.body);
