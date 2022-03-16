@@ -122,6 +122,15 @@ let QueryManager = class QueryManager extends React.Component {
     this.setStateFromProps(this.props);
   }
 
+  // // Preventing unnecessary renders by only updating state when necessary
+  shouldComponentUpdate(nextProps, nextState) {
+    console.log('shouldComponentUpdate', JSON.stringify(nextProps));
+    // if (nextProps !== this.props) {
+    //   return true;
+    // }
+    return true;
+  }
+
   isJson = (maybeJson) => {
     if (typeof maybeJson === 'object') return true;
     return false;
@@ -302,7 +311,7 @@ let QueryManager = class QueryManager extends React.Component {
       queryPreviewData,
       dataSourceMeta,
     } = this.state;
-
+    console.log('QueryPane Render');
     let ElementToRender = '';
 
     if (selectedDataSource) {
