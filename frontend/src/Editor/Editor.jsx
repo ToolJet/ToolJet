@@ -1145,7 +1145,7 @@ class Editor extends React.Component {
                   alignItems: 'center',
                 }}
               >
-                <h5 className="mb-0 common-sidebar-popover-margin">QUERIES</h5>
+                <h5 className="mb-0">QUERIES</h5>
                 <span onClick={this.toggleQueryEditor} className="cursor-pointer m-1" data-tip="Show query editor">
                   <svg
                     style={{ transform: 'rotate(180deg)' }}
