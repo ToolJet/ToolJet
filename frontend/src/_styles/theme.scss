@@ -167,10 +167,6 @@ button {
       font-weight: 600;
     }
   }
-  .common-sidebar-popover-margin{
-    margin-left: 33px;
-  }
-
   .left-sidebar {
     scrollbar-width: none;
   }
@@ -457,11 +453,10 @@ button {
       width: 0;
       background: transparent;
     }
-
     .query-pane {
       height: 350px;
       position: fixed;
-      left: 3%;
+      left: 76px; //sidebar is 76px
       right: 300px;
       bottom: 0;
       overflow-x: hidden;
