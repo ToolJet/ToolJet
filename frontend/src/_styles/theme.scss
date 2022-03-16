@@ -457,16 +457,10 @@ button {
       width: 0;
       background: transparent;
     }
-    @media (min-width: 1441px) {
-      .query-pane {
-        left: 3% !important;
-      }
-    }
-
     .query-pane {
       height: 350px;
       position: fixed;
-      left: 5%;
+      left: 77px; //sidebar is 76px
       right: 300px;
       bottom: 0;
       overflow-x: hidden;
