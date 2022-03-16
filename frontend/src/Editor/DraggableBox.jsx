@@ -7,6 +7,7 @@ import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
 import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
+import ErrorBoundary from './ErrorBoundary';
 
 const resizerClasses = {
   topRight: 'top-right',
@@ -253,49 +254,53 @@ export const DraggableBox = function DraggableBox({
                   setSelectedComponent={(id, component) => setSelectedComponent(id, component)}
                 />
               )}
-              <Box
-                component={component}
-                id={id}
-                width={width}
-                height={currentLayoutOptions.height - 4}
-                mode={mode}
-                changeCanDrag={changeCanDrag}
-                inCanvas={inCanvas}
-                paramUpdated={paramUpdated}
-                onEvent={onEvent}
-                onComponentOptionChanged={onComponentOptionChanged}
-                onComponentOptionsChanged={onComponentOptionsChanged}
-                onComponentClick={onComponentClick}
-                currentState={currentState}
-                containerProps={containerProps}
-                darkMode={darkMode}
-                removeComponent={removeComponent}
-                canvasWidth={canvasWidth}
-                readOnly={readOnly}
-                customResolvables={customResolvables}
-                parentId={parentId}
-                allComponents={allComponents}
-                extraProps={extraProps}
-              />
+              <ErrorBoundary showFallback={mode === 'edit'}>
+                <Box
+                  component={component}
+                  id={id}
+                  width={width}
+                  height={currentLayoutOptions.height - 4}
+                  mode={mode}
+                  changeCanDrag={changeCanDrag}
+                  inCanvas={inCanvas}
+                  paramUpdated={paramUpdated}
+                  onEvent={onEvent}
+                  onComponentOptionChanged={onComponentOptionChanged}
+                  onComponentOptionsChanged={onComponentOptionsChanged}
+                  onComponentClick={onComponentClick}
+                  currentState={currentState}
+                  containerProps={containerProps}
+                  darkMode={darkMode}
+                  removeComponent={removeComponent}
+                  canvasWidth={canvasWidth}
+                  readOnly={readOnly}
+                  customResolvables={customResolvables}
+                  parentId={parentId}
+                  allComponents={allComponents}
+                  extraProps={extraProps}
+                />
+              </ErrorBoundary>
             </div>
           </Rnd>
         </div>
       ) : (
         <div ref={drag} role="DraggableBox" className="draggable-box" style={{ height: '100%' }}>
-          <Box
-            component={component}
-            id={id}
-            mode={mode}
-            inCanvas={inCanvas}
-            onEvent={onEvent}
-            paramUpdated={paramUpdated}
-            onComponentOptionChanged={onComponentOptionChanged}
-            onComponentOptionsChanged={onComponentOptionsChanged}
-            onComponentClick={onComponentClick}
-            currentState={currentState}
-            darkMode={darkMode}
-            removeComponent={removeComponent}
-          />
+          <ErrorBoundary showFallback={mode === 'edit'}>
+            <Box
+              component={component}
+              id={id}
+              mode={mode}
+              inCanvas={inCanvas}
+              onEvent={onEvent}
+              paramUpdated={paramUpdated}
+              onComponentOptionChanged={onComponentOptionChanged}
+              onComponentOptionsChanged={onComponentOptionsChanged}
+              onComponentClick={onComponentClick}
+              currentState={currentState}
+              darkMode={darkMode}
+              removeComponent={removeComponent}
+            />
+          </ErrorBoundary>
         </div>
       )}
     </div>

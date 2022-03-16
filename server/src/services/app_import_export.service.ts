@@ -22,19 +22,39 @@ export class AppImportExportService {
   async export(user: User, id: string): Promise<App> {
     // https://github.com/typeorm/typeorm/issues/3857
     // Making use of query builder
-    const appToExport = getManager()
+    const queryForappToExport = getManager()
       .createQueryBuilder(App, 'apps')
-      .leftJoinAndSelect('apps.dataQueries', 'data_queries')
-      .orderBy('data_queries.created_at', 'ASC')
-      .leftJoinAndSelect('apps.dataSources', 'data_sources')
-      .orderBy('data_sources.created_at', 'ASC')
-      .leftJoinAndSelect('apps.appVersions', 'app_versions')
-      .orderBy('app_versions.created_at', 'ASC')
       .where('apps.id = :id AND apps.organization_id = :organizationId', {
         id,
         organizationId: user.organizationId,
+      });
+    const appToExport = await queryForappToExport.getOne();
+
+    const dataQueries = await getManager()
+      .createQueryBuilder(DataQuery, 'data_queries')
+      .where('app_id = :appId', {
+        appId: appToExport.id,
       })
-      .getOne();
+      .orderBy('data_queries.created_at', 'ASC')
+      .getMany();
+    const dataSources = await getManager()
+      .createQueryBuilder(DataSource, 'data_sources')
+      .where('app_id = :appId', {
+        appId: appToExport.id,
+      })
+      .orderBy('data_sources.created_at', 'ASC')
+      .getMany();
+    const appVersions = await getManager()
+      .createQueryBuilder(AppVersion, 'app_versions')
+      .where('app_id = :appId', {
+        appId: appToExport.id,
+      })
+      .orderBy('app_versions.created_at', 'ASC')
+      .getMany();
+
+    appToExport['dataQueries'] = dataQueries;
+    appToExport['dataSources'] = dataSources;
+    appToExport['appVersions'] = appVersions;
 
     return appToExport;
   }
