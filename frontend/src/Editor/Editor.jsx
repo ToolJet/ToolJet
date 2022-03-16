@@ -1197,7 +1197,7 @@ class Editor extends React.Component {
                           <>
                             <div className="col">
                               <h5
-                                style={{ fontSize: '14px', marginLeft: ' 32px' }}
+                                style={{ fontSize: '14px', marginLeft: ' 6px' }}
                                 className="py-1 px-3 mt-2 text-muted"
                               >
                                 Queries
@@ -1241,7 +1241,7 @@ class Editor extends React.Component {
                           </center>
                         </div>
                       ) : (
-                        <div className="query-list p-1 mt-1" style={{ marginLeft: '3px' }}>
+                        <div className="query-list p-1 mt-1">
                           <div>{dataQueries.map((query) => this.renderDataQuery(query))}</div>
                           {dataQueries.length === 0 && (
                             <div className="mt-5">
