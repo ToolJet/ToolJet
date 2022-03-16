@@ -136,6 +136,7 @@ export const Box = function Box({
       if (timeDifference < 1000) {
         throw Error;
       }
+      setRenderStartTime(currentTime);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
