@@ -136,7 +136,7 @@ class Editor extends React.Component {
     this.ymap = ydoc.getMap('appDef');
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
-    this.realtimeSave = debounce(this.appDefinitionChanged, 3000);
+    this.realtimeSave = debounce(this.appDefinitionChanged, 500);
 
     // setup for closing versions dropdown on oustide click
     this.wrapperRef = React.createRef();
@@ -163,7 +163,6 @@ class Editor extends React.Component {
   initRealtimeSave = () => {
     this.ymap.observe(() => {
       if (isEqual(this.state.appDefinition, this.ymap.get('appDef'))) return;
-      console.log('this.ymap was modified', this.ymap.get('appDef'));
       this.realtimeSave(this.ymap.get('appDef'), { skipAutoSave: true, skipYmapUpdate: true });
     });
   };
