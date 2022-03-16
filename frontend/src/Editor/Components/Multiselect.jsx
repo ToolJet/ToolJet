@@ -151,6 +151,8 @@ export const Multiselect = function Multiselect({
       } else {
         handleChange(newValue);
       }
+    } else if (action === 'clear') {
+      handleChange([]);
     }
   };
 
