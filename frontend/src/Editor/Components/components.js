@@ -938,7 +938,7 @@ export const componentTypes = [
     description: 'Select multiple values from options',
     defaultSize: {
       width: 12,
-      height: 40,
+      height: 30,
     },
     component: 'Multiselect',
     others: {

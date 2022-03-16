@@ -108,6 +108,17 @@ export const Multiselect = function Multiselect({
       ...provided,
       backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
     }),
+    multiValue: (styles) => ({
+      ...styles,
+      height: height - 10,
+      display: 'flex',
+      flexDirection: 'rows',
+      alignItems: 'center',
+    }),
+    multiValueLabel: (styles) => ({
+      ...styles,
+      padding: 0,
+    }),
     multiValueRemove: (styles) => ({
       ...styles,
       color: 'black',
