@@ -1145,7 +1145,7 @@ class Editor extends React.Component {
                   alignItems: 'center',
                 }}
               >
-                <h5 className="mb-0 common-sidebar-popover-margin">QUERIES</h5>
+                <h5 className="mb-0">QUERIES</h5>
                 <span onClick={this.toggleQueryEditor} className="cursor-pointer m-1" data-tip="Show query editor">
                   <svg
                     style={{ transform: 'rotate(180deg)' }}
@@ -1180,7 +1180,7 @@ class Editor extends React.Component {
                 <div className="row main-row">
                   <div className="data-pane">
                     <div className="queries-container">
-                      <div className="queries-header row">
+                      <div className="queries-header row" style={{ marginLeft: '1.5px' }}>
                         {showQuerySearchField && (
                           <div className="col-12 p-1">
                             <div className="queries-search px-1">
@@ -1197,7 +1197,7 @@ class Editor extends React.Component {
                           <>
                             <div className="col">
                               <h5
-                                style={{ fontSize: '14px', marginLeft: ' 32px' }}
+                                style={{ fontSize: '14px', marginLeft: ' 6px' }}
                                 className="py-1 px-3 mt-2 text-muted"
                               >
                                 Queries
@@ -1241,7 +1241,7 @@ class Editor extends React.Component {
                           </center>
                         </div>
                       ) : (
-                        <div className="query-list p-1 mt-1" style={{ marginLeft: '32px' }}>
+                        <div className="query-list p-1 mt-1">
                           <div>{dataQueries.map((query) => this.renderDataQuery(query))}</div>
                           {dataQueries.length === 0 && (
                             <div className="mt-5">
