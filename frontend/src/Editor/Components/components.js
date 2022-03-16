@@ -950,6 +950,7 @@ export const componentTypes = [
       value: { type: 'code', displayName: 'Default value' },
       values: { type: 'code', displayName: 'Option values' },
       display_values: { type: 'code', displayName: 'Option labels' },
+      showAllOption: { type: 'toggle', displayName: 'Enable select All option' },
     },
     events: {
       onSelect: { displayName: 'On select' },

@@ -14,7 +14,7 @@ export const Multiselect = function Multiselect({
   onComponentClick,
   darkMode,
 }) {
-  const { label, value, values, display_values } = properties;
+  const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState } = styles;
   const selectRef = useRef(null);
   const [computedValues, setComputedValues] = useState();
@@ -44,6 +44,7 @@ export const Multiselect = function Multiselect({
         return { label: display_values[index], value: value };
       }),
     ];
+    showAllOption && selectOptions.splice(0, 0, { label: 'All', value: 'all' });
   } catch (err) {
     console.log(err);
   }
@@ -61,7 +62,12 @@ export const Multiselect = function Multiselect({
 
   const handleChange = (value) => {
     setComputedValues(value);
-    setExposedVariable('values', value).then(() => fireEvent('onSelect'));
+    setExposedVariable(
+      'values',
+      value.filter((option) => {
+        return option.value !== 'all';
+      })
+    ).then(() => fireEvent('onSelect'));
   };
 
   const customStyles = {
@@ -135,6 +141,19 @@ export const Multiselect = function Multiselect({
     return options;
   }
 
+  const onChange = (newValue, actionMeta) => {
+    const { action, option, removedValue } = actionMeta;
+    if (action === 'select-option' || action === 'remove-value') {
+      if (option && option.value === 'all') {
+        handleChange(selectOptions);
+      } else if (action === 'remove-value' && removedValue.value === 'all') {
+        handleChange([]);
+      } else {
+        handleChange(newValue);
+      }
+    }
+  };
+
   return (
     <div className="multiselect-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
       <div className="col-auto my-auto">
@@ -149,11 +168,7 @@ export const Multiselect = function Multiselect({
           value={computedValues}
           isSearchable={true}
           isMulti={true}
-          onChange={(selectedOption, actionProps) => {
-            if (actionProps.action === 'select-option' || actionProps.action === 'remove-value') {
-              handleChange(selectedOption);
-            }
-          }}
+          onChange={onChange}
           placeholder="Select.."
           ref={selectRef}
           closeMenuOnSelect={false}
