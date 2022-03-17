@@ -15,9 +15,190 @@
         {
           "value": "list_buckets",
           "name": "List buckets"
+        },
+        {
+          "value": "write",
+          "name": "Write"
+        },
+        {
+          "value": "abstract_syntax_tree",
+          "name": "Generate an Abstract Syntax Tree (AST) from a query "
+        },
+        {
+          "value": "query_suggestions_for_branching",
+          "name": "Retrieve query suggestions for a branching suggestion"
+        },
+        {
+          "value": "query_suggestions",
+          "name": "Retrieve query suggestions "
+        },
+        {
+          "value": "query_data",
+          "name": "Query data"
+        },
+        {
+          "value": "flux_query",
+          "name": "Analyze a Flux query"
+        },
+        {
+          "value": "create_bucket",
+          "name": "Create a bucket "
+        },
+        {
+          "value": "delete_bucket",
+          "name": "Delete a bucket"
+        },
+        {
+          "value": "retrieve_bucket",
+          "name": "Retrieve a bucket"
+        },
+        {
+          "value": "update_bucket",
+          "name": "Update a bucket"
         }
       ]
     },
-    "list_buckets": {}
+    "list_buckets": {},
+    "create_bucket": {
+      "body": {
+        "label": "query",
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px",
+        "placeholder": "Flux query script to be analyzed"
+      }
+    },
+    "delete_bucket": {
+      "bucket_id": {
+        "label": "bucketID",
+        "key": "bucketID",
+        "type": "codehinter",
+        "description": "Enter bucketID",
+        "height": "150px",
+        "placeholder": "bucketID"
+      }
+    },
+    "retrieve_bucket": {
+      "bucket_id": {
+        "label": "bucketID",
+        "key": "bucketID",
+        "type": "codehinter",
+        "description": "Enter bucketID",
+        "height": "150px",
+        "placeholder": "bucketID"
+      }
+    },
+    "update_bucket": {
+      "body": {
+        "label": "query",
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px",
+        "placeholder": "Flux query script to be analyzed"
+      },
+      "bucket_id": {
+        "label": "bucketID",
+        "key": "bucketID",
+        "type": "codehinter",
+        "description": "Enter bucketID",
+        "height": "150px",
+        "placeholder": "bucketID"
+      }
+    },
+    "write": {
+      "bucket": {
+        "label": "bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "bucket"
+      },
+      "org": {
+        "label": "organization name or ID",
+        "key": "organization",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter organization name or ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "organization name or ID"
+      },
+      "precision": {
+        "label": "precision",
+        "key": "precision",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter write precision",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      }
+    },
+    "abstract_syntax_tree": {
+      "body": {
+        "label": "query",
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px",
+        "placeholder": "Flux query script to be analyzed"
+      }
+    },
+
+    "query_suggestions_for_branching": {
+      "name": {
+        "label": "name",
+        "key": "name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "The name of the branching suggestion.",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "The name of the branching suggestion."
+      }
+    },
+    "query_suggestions": {},
+
+    "query_data": {
+      "org": {
+        "label": "organization name or ID",
+        "key": "organization",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter organization name or ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "organization name or ID"
+      },
+      "body": {
+        "label": "flux query",
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px",
+        "placeholder": "Flux query script to be analyzed"
+      }
+    },
+
+    "flux_query": {
+      "body": {
+        "label": "flux query",
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px",
+        "placeholder": "Flux query script to be analyzed"
+      }
+    }
   }
 }

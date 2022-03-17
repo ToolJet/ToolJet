@@ -7,4 +7,9 @@ export type SourceOptions = {
 };
 export type QueryOptions = {
   operation: string;
+  org: string;
+  bucket: string;
+  bucket_id: string;
+  precision: string;
+  name: string;
 };
