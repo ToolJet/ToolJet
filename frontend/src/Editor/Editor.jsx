@@ -996,7 +996,7 @@ class Editor extends React.Component {
                   </span>
                 </div>
               )}
-              <RealtimeAvatars />
+              <RealtimeAvatars self={this.props.self} />
               {editingVersion && (
                 <AppVersionsManager
                   appId={appId}
@@ -1291,8 +1291,8 @@ class Editor extends React.Component {
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
                   {selectedComponent &&
-                  !isEmpty(appDefinition.components) &&
-                  !isEmpty(appDefinition.components[selectedComponent.id]) ? (
+                    !isEmpty(appDefinition.components) &&
+                    !isEmpty(appDefinition.components[selectedComponent.id]) ? (
                     <Inspector
                       cloneComponent={this.cloneComponent}
                       componentDefinitionChanged={this.componentDefinitionChanged}
