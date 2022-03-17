@@ -42,7 +42,7 @@ export const SubContainer = ({
     const canvasWidth = parentRef?.current ? getContainerCanvasWidth() : 0;
     setContainerCanvasWidth(canvasWidth);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentRef.current]);
+  }, [getContainerCanvasWidth(), parentRef]);
 
   zoomLevel = zoomLevel || 1;
 
