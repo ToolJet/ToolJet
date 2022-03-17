@@ -27,7 +27,10 @@ function generateRandomHslColor() {
 }
 
 const RealtimeEditor = (props) => {
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
   const { updatePresence } = useSelf({
+    name: currentUser.first_name?.charAt(0) + currentUser.last_name?.charAt(0),
+    image: '', // todo: add image feature for a user avatar
     x: 0,
     y: 0,
     color: generateRandomHslColor(),

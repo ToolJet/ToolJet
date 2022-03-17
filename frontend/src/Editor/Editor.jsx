@@ -48,6 +48,7 @@ import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import RealtimeAvatars from './RealtimeAvatars';
 
 setAutoFreeze(false);
 enablePatches();
@@ -123,8 +124,6 @@ class Editor extends React.Component {
       showInitVersionCreateModal: false,
       isCreatingInitVersion: false,
       initVersionName: 'v1',
-      isSavingEditingVersion: false,
-      showSaveDetail: false,
       hasAppDefinitionChanged: false,
       showCreateVersionModalPrompt: false,
     };
@@ -836,10 +835,10 @@ class Editor extends React.Component {
     if (this.isVersionReleased()) {
       this.setState({ showCreateVersionModalPrompt: true });
     } else if (!isEmpty(this.state.editingVersion)) {
-      this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
-      appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
-        this.setState({ isSavingEditingVersion: false });
-        setTimeout(() => this.setState({ showSaveDetail: false }), 3000);
+      toast.promise(appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition), {
+        loading: 'Saving...',
+        success: 'Saved!',
+        error: 'App could not save.',
       });
     }
   };
@@ -947,8 +946,6 @@ class Editor extends React.Component {
       showComments,
       editingVersion,
       showInitVersionCreateModal,
-      isSavingEditingVersion,
-      showSaveDetail,
       showCreateVersionModalPrompt,
       hoveredComponent,
     } = this.state;
@@ -958,7 +955,6 @@ class Editor extends React.Component {
     return (
       <div className="editor wrapper">
         <ReactTooltip type="dark" effect="solid" eventOff="click" delayShow={250} />
-
         {/* This is for viewer to show query confirmations */}
         <Confirm
           show={showQueryConfirmation}
@@ -974,98 +970,84 @@ class Editor extends React.Component {
           onConfirm={() => this.executeDataQueryDeletion()}
           onCancel={() => this.cancelDeleteDataQuery()}
         />
-        <DndProvider backend={HTML5Backend}>
-          <div className="header">
-            <header className="navbar navbar-expand-md navbar-light d-print-none">
-              <div className="container-xl header-container">
-                <button
-                  className="navbar-toggler"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#navbar-menu"
-                >
-                  <span className="navbar-toggler-icon"></span>
-                </button>
-                <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                  <Link to={'/'}>
-                    <Logo />
-                  </Link>
-                </h1>
-
-                {this.state.app && (
-                  <div className={`app-name input-icon ${this.props.darkMode ? 'dark' : ''}`}>
-                    <input
-                      type="text"
-                      onFocus={(e) => this.setState({ oldName: e.target.value })}
-                      onChange={(e) => this.onNameChanged(e.target.value)}
-                      onBlur={(e) => this.saveAppName(this.state.app.id, e.target.value)}
-                      className="form-control-plaintext form-control-plaintext-sm"
-                      value={this.state.app.name}
-                    />
-                    <span className="input-icon-addon">
-                      <EditIcon />
-                    </span>
-                  </div>
-                )}
-                {showSaveDetail && (
-                  <div className="nav-auto-save">
-                    <img src={'/assets/images/icons/editor/auto-save.svg'} width="25" height="25" />
-                    <em className="small lh-base p-1">{isSavingEditingVersion ? 'Saving..' : 'Saved'}</em>
-                  </div>
-                )}
-
-                {editingVersion && (
-                  <AppVersionsManager
-                    appId={appId}
-                    editingVersion={editingVersion}
-                    releasedVersionId={app.current_version_id}
-                    setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
-                    showCreateVersionModalPrompt={showCreateVersionModalPrompt}
-                    closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
+        <div className="header">
+          <header className="navbar navbar-expand-md navbar-light d-print-none">
+            <div className="container-xl header-container">
+              <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+                <span className="navbar-toggler-icon"></span>
+              </button>
+              <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
+                <Link to={'/'}>
+                  <Logo />
+                </Link>
+              </h1>
+              {this.state.app && (
+                <div className={`app-name input-icon ${this.props.darkMode ? 'dark' : ''}`}>
+                  <input
+                    type="text"
+                    onFocus={(e) => this.setState({ oldName: e.target.value })}
+                    onChange={(e) => this.onNameChanged(e.target.value)}
+                    onBlur={(e) => this.saveAppName(this.state.app.id, e.target.value)}
+                    className="form-control-plaintext form-control-plaintext-sm"
+                    value={this.state.app.name}
                   />
-                )}
-
-                <div className="layout-buttons cursor-pointer">
-                  {this.renderLayoutIcon(currentLayout === 'desktop')}
+                  <span className="input-icon-addon">
+                    <EditIcon />
+                  </span>
                 </div>
-                <div className="navbar-nav flex-row order-md-last release-buttons">
-                  <div className="nav-item dropdown d-none d-md-flex me-2">
-                    <a
-                      href={appVersionPreviewLink}
-                      target="_blank"
-                      className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
-                      rel="noreferrer"
-                    >
-                      Preview
-                    </a>
-                  </div>
-                  <div className="nav-item dropdown d-none d-md-flex me-2">
-                    {app.id && (
-                      <ManageAppUsers
-                        app={app}
-                        slug={slug}
-                        darkMode={this.props.darkMode}
-                        handleSlugChange={this.handleSlugChange}
-                      />
-                    )}
-                  </div>
-                  <div className="nav-item dropdown me-2">
-                    {app.id && (
-                      <ReleaseVersionButton
-                        isVersionReleased={this.isVersionReleased()}
-                        appId={app.id}
-                        appName={app.name}
-                        onVersionRelease={this.onVersionRelease}
-                        editingVersion={editingVersion}
-                        fetchApp={this.fetchApp}
-                        saveEditingVersion={this.saveEditingVersion}
-                      />
-                    )}
-                  </div>
+              )}
+              <RealtimeAvatars />
+              {editingVersion && (
+                <AppVersionsManager
+                  appId={appId}
+                  editingVersion={editingVersion}
+                  releasedVersionId={app.current_version_id}
+                  setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                  showCreateVersionModalPrompt={showCreateVersionModalPrompt}
+                  closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
+                />
+              )}
+
+              <div className="layout-buttons cursor-pointer">{this.renderLayoutIcon(currentLayout === 'desktop')}</div>
+              <div className="navbar-nav flex-row order-md-last release-buttons">
+                <div className="nav-item dropdown d-none d-md-flex me-2">
+                  <a
+                    href={appVersionPreviewLink}
+                    target="_blank"
+                    className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
+                    rel="noreferrer"
+                  >
+                    Preview
+                  </a>
+                </div>
+                <div className="nav-item dropdown d-none d-md-flex me-2">
+                  {app.id && (
+                    <ManageAppUsers
+                      app={app}
+                      slug={slug}
+                      darkMode={this.props.darkMode}
+                      handleSlugChange={this.handleSlugChange}
+                    />
+                  )}
+                </div>
+                <div className="nav-item dropdown me-2">
+                  {app.id && (
+                    <ReleaseVersionButton
+                      isVersionReleased={this.isVersionReleased()}
+                      appId={app.id}
+                      appName={app.name}
+                      onVersionRelease={this.onVersionRelease}
+                      editingVersion={editingVersion}
+                      fetchApp={this.fetchApp}
+                      saveEditingVersion={this.saveEditingVersion}
+                    />
+                  )}
                 </div>
               </div>
-            </header>
-          </div>
+            </div>
+          </header>
+        </div>
+        <DndProvider backend={HTML5Backend}>
           <div className="sub-section">
             <LeftSidebar
               appVersionsId={this.state?.editingVersion?.id}
@@ -1309,8 +1291,8 @@ class Editor extends React.Component {
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
                   {selectedComponent &&
-                    !isEmpty(appDefinition.components) &&
-                    !isEmpty(appDefinition.components[selectedComponent.id]) ? (
+                  !isEmpty(appDefinition.components) &&
+                  !isEmpty(appDefinition.components[selectedComponent.id]) ? (
                     <Inspector
                       cloneComponent={this.cloneComponent}
                       componentDefinitionChanged={this.componentDefinitionChanged}
