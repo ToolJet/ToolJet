@@ -13,4 +13,5 @@ export type QueryOptions = {
   precision: string;
   name: string;
   body: string;
+  orgID: string;
 };
