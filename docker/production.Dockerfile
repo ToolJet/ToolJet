@@ -37,6 +37,21 @@ FROM node:14.17.3-alpine
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apk add postgresql-client freetds
+
+# Install Instantclient Basic Light Oracle and Dependencies
+RUN apk --no-cache add libaio libnsl libc6-compat curl && \
+    cd /tmp && \
+    curl -o instantclient-basiclite.zip https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip -SL && \
+    unzip instantclient-basiclite.zip && \
+    mv instantclient*/ /usr/lib/instantclient && \
+    rm instantclient-basiclite.zip && \
+    ln -s /usr/lib/instantclient/libclntsh.so.19.1 /usr/lib/libclntsh.so && \
+    ln -s /usr/lib/instantclient/libocci.so.19.1 /usr/lib/libocci.so && \
+    ln -s /lib/libc.so.6 /usr/lib/libresolv.so.2 && \
+    ln -s /lib64/ld-linux-x86-64.so.2 /usr/lib/ld-linux-x86-64.so.2
+
+ENV LD_LIBRARY_PATH /usr/lib/instantclient
+
 RUN mkdir -p /app
 
 # copy npm scripts

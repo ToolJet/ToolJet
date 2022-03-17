@@ -7,7 +7,7 @@ import { DataQuery } from '../../src/entities/data_query.entity';
 import { CredentialsService } from './credentials.service';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
-const got = require('got');
+import got from 'got';
 
 @Injectable()
 export class DataQueriesService {
@@ -115,24 +115,37 @@ export class DataQueriesService {
     return result;
   }
 
+  checkIfContentTypeIsURLenc(headers: []) {
+    const objectHeaders = Object.fromEntries(headers);
+    const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
+    return contentType === 'application/x-www-form-urlencoded';
+  }
+
   /* This function fetches the access token from the token url set in REST API (oauth) datasource */
   async fetchOAuthToken(sourceOptions: any, code: string): Promise<any> {
     const tooljetHost = process.env.TOOLJET_HOST;
+    const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['headers']);
     const accessTokenUrl = sourceOptions['access_token_url'];
 
     const customParams = Object.fromEntries(sourceOptions['custom_auth_params']);
     Object.keys(customParams).forEach((key) => (customParams[key] === '' ? delete customParams[key] : {}));
 
+    const bodyData = {
+      code,
+      client_id: sourceOptions['client_id'],
+      client_secret: sourceOptions['client_secret'],
+      grant_type: sourceOptions['grant_type'],
+      redirect_uri: `${tooljetHost}/oauth2/authorize`,
+      ...customParams,
+    };
+
     const response = await got(accessTokenUrl, {
       method: 'post',
-      json: {
-        code,
-        client_id: sourceOptions['client_id'],
-        client_secret: sourceOptions['client_secret'],
-        grant_type: sourceOptions['grant_type'],
-        redirect_uri: `${tooljetHost}/oauth2/authorize`,
-        ...customParams,
+      headers: isUrlEncoded && {
+        'content-type': 'application/x-www-form-urlencoded',
       },
+      form: isUrlEncoded ? bodyData : undefined,
+      json: !isUrlEncoded ? bodyData : undefined,
     });
 
     const result = JSON.parse(response.body);

@@ -167,10 +167,6 @@ button {
       font-weight: 600;
     }
   }
-  .common-sidebar-popover-margin{
-    margin-left: 33px;
-  }
-
   .left-sidebar {
     scrollbar-width: none;
   }
@@ -457,11 +453,10 @@ button {
       width: 0;
       background: transparent;
     }
-
     .query-pane {
       height: 350px;
       position: fixed;
-      left: 3%;
+      left: 76px; //sidebar is 76px
       right: 300px;
       bottom: 0;
       overflow-x: hidden;
@@ -524,6 +519,7 @@ button {
       }
 
       .query-definition-pane-wrapper {
+        width: 72%;
         overflow-x: hidden;
         overflow-y: scroll;
         height: 100%;
@@ -557,6 +553,7 @@ button {
       }
 
       .data-pane {
+        width: 28%;
         border: solid rgba(0, 0, 0, 0.125);
         border-width: 0px 1px 0px 0px;
         overflow-x: hidden;
@@ -2359,6 +2356,11 @@ hr {
   .CodeMirror {
     font-family: "Roboto", sans-serif;
   }
+  .CodeMirror-placeholder {
+    height: inherit !important;
+    position: absolute !important;
+    margin-top: 3px !important;
+  }
 }
 
 .codehinter-query-editor-input {
@@ -2422,7 +2424,7 @@ hr {
   }
 }
 
-.draggable-box:hover {
+.draggable-box-in-editor:hover {
   z-index: 3 !important;
 }
 
@@ -3918,6 +3920,9 @@ input[type="text"] {
   input {
     width: 200px;
     border-radius: 5px !important;
+  }
+  input:focus {
+    width: 300px;
   }
   .input-icon .input-icon-addon {
     display: flex;

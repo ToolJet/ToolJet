@@ -1,7 +1,7 @@
 'use strict';
 
-const couchdb = require('../lib');
+// const couchdb = require('../lib');
 
 describe('couchdb', () => {
-    it.todo('needs tests');
+  it.todo('needs tests');
 });
