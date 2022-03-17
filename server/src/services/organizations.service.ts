@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
@@ -24,12 +25,19 @@ export class OrganizationsService {
     private groupPermissionsRepository: Repository<GroupPermission>,
     private usersService: UsersService,
     private organizationUserService: OrganizationUsersService,
-    private groupPermissionService: GroupPermissionsService
+    private groupPermissionService: GroupPermissionsService,
+    private configService: ConfigService
   ) {}
 
   async create(name: string, user?: User): Promise<Organization> {
     const organization = await this.organizationsRepository.save(
       this.organizationsRepository.create({
+        ssoConfigs: [
+          {
+            sso: 'form',
+            enabled: this.configService.get<string>('DISABLE_PASSWORD_LOGIN') === 'true' ? false : true,
+          },
+        ],
         name,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -50,7 +58,7 @@ export class OrganizationsService {
   }
 
   async get(id: string): Promise<Organization> {
-    return await this.organizationsRepository.findOne({ where: { id } });
+    return await this.organizationsRepository.findOne({ where: { id }, relations: ['ssoConfigs'] });
   }
 
   async createDefaultGroupPermissionsForOrganization(organization: Organization) {
@@ -118,6 +126,29 @@ export class OrganizationsService {
       .getMany();
   }
 
+  async findOrganizationSupportsFormLogin(user: any): Promise<Organization[]> {
+    return await createQueryBuilder(Organization, 'organization')
+      .innerJoin('organization.ssoConfigs', 'organisation_sso', 'organisation_sso.sso = :form', {
+        form: 'form',
+      })
+      .innerJoin(
+        'organization.organizationUsers',
+        'organisation_users',
+        'organisation_users.status IN(:...statusList)',
+        {
+          statusList: ['active'],
+        }
+      )
+      .where('organisation_sso.enabled = :enabled', {
+        enabled: true,
+      })
+      .andWhere('organisation_users.userId = :userId', {
+        userId: user.id,
+      })
+      .orderBy('name', 'ASC')
+      .getMany();
+  }
+
   async getSSOConfigs(organizationId: string, sso: string): Promise<Organization> {
     return await createQueryBuilder(Organization, 'organization')
       .innerJoin('organization.ssoConfigs', 'organisation_sso', 'organisation_sso.sso = :sso', {
@@ -129,9 +160,7 @@ export class OrganizationsService {
       .getOne();
   }
 
-  async fetchOrganisationDetails(organizationId: string): Promise<Organization> {
-    console.log(organizationId);
-
+  async fetchOrganisationDetails(organizationId: string, isHideSensitiveData?: boolean): Promise<Organization> {
     const result = await createQueryBuilder(Organization, 'organization')
       .innerJoinAndSelect('organization.ssoConfigs', 'organisation_sso', 'organisation_sso.enabled = :enabled', {
         enabled: true,
@@ -141,8 +170,9 @@ export class OrganizationsService {
       })
       .getOne();
 
-    console.log(result);
-
+    if (!isHideSensitiveData) {
+      return result;
+    }
     return this.hideSSOSensitiveData(result?.ssoConfigs, result?.enableSignUp);
   }
 

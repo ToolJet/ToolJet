@@ -43,7 +43,7 @@ export class OrganizationsController {
 
   @Get('/:organizationId/public-configs')
   async getOrganizationDetails(@Param('organizationId') organizationId: string) {
-    const result = await this.organizationsService.fetchOrganisationDetails(organizationId);
+    const result = await this.organizationsService.fetchOrganisationDetails(organizationId, true);
     return decamelizeKeys({ ssoConfigs: result });
   }
 
@@ -52,14 +52,14 @@ export class OrganizationsController {
   @Patch('/configs')
   async updateConfigs(@Request() req) {
     const result = await this.organizationsService.fetchOrganisations(req.user);
-    return decamelizeKeys({ organisations: result });
+    return decamelizeKeys({ organizations: result });
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
   @Patch()
-  async update(@Request() req) {
-    const result = await this.organizationsService.fetchOrganisations(req.user);
-    return decamelizeKeys({ organisations: result });
+  async update(@Body() body, @User() user) {
+    await this.organizationsService.updateOrganization(user.organizationId, body);
+    return {};
   }
 }

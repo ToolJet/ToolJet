@@ -7,6 +7,8 @@ import { OrganizationUsersService } from './organization_users.service';
 import { EmailService } from './email.service';
 import { decamelizeKeys } from 'humps';
 import { Organization } from 'src/entities/organization.entity';
+import { ConfigService } from '@nestjs/config';
+import { SSOConfigs } from 'src/entities/sso_config.entity';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -17,8 +19,13 @@ export class AuthService {
     private jwtService: JwtService,
     private organizationsService: OrganizationsService,
     private organizationUsersService: OrganizationUsersService,
-    private emailService: EmailService
-  ) {}
+    private emailService: EmailService,
+    private configService: ConfigService
+  ) {
+    this.passwordLoginDisabled = this.configService.get<string>('DISABLE_PASSWORD_LOGIN');
+  }
+
+  private readonly passwordLoginDisabled: string;
 
   verifyToken(token: string) {
     try {
@@ -41,14 +48,47 @@ export class AuthService {
 
   async login(params: any) {
     const { email, password, organizationId } = params;
+    let organization: Organization;
+
+    if (!organizationId && this.passwordLoginDisabled === 'true') {
+      // Global login - checking instance configs
+      throw new UnauthorizedException('Invalid credentials');
+    }
     const user = await this.validateUser(email, password, organizationId);
 
-    // Need to get organisation with form login supported
-
     if (user && (await this.usersService.status(user)) !== 'archived') {
-      user.organizationId = organizationId || user.defaultOrganizationId;
+      if (!organizationId) {
+        // Global login
+        const organizationList: Organization[] = await this.organizationsService.findOrganizationSupportsFormLogin(
+          user
+        );
 
-      const organization: Organization = await this.organizationsService.get(user.organizationId);
+        const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
+
+        // Determine the organization to be loaded
+        if (defaultOrgDetails) {
+          // default organization form login enabled
+          organization = defaultOrgDetails;
+        } else if (organizationList?.length > 0) {
+          // default organization form login not enabled, picking first one from form enabled list
+          organization = organizationList[0];
+        } else {
+          // no form login enabled organization available for user - creating new one
+          organization = await this.organizationsService.create('Untitled organization', user);
+        }
+        user.organizationId = organization.id;
+      } else {
+        user.organizationId = organizationId;
+
+        const organization: Organization = await this.organizationsService.get(user.organizationId);
+
+        const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+
+        if (!formConfigs?.enabled) {
+          // no configurations in organization side or Form login disabled for the organization
+          throw new UnauthorizedException('Invalid credentials');
+        }
+      }
 
       const payload = { username: user.id, sub: user.email, organizationId: user.organizationId };
 
@@ -72,14 +112,21 @@ export class AuthService {
   async switchOrganization(newOrganizationId: string, user: User) {
     const newUser = await this.usersService.findByEmail(user.email, newOrganizationId);
 
-    console.log('--->>>', newUser, newOrganizationId);
-
-    // Validate if switch is possible
+    console.log('--->>>>111', newUser);
 
     if (newUser && (await this.usersService.status(newUser)) !== 'archived') {
       newUser.organizationId = newOrganizationId;
 
       const organization: Organization = await this.organizationsService.get(newUser.organizationId);
+
+      const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+
+      console.log('--->>>>111222', formConfigs);
+
+      if (!formConfigs?.enabled) {
+        // no configurations in organization side or Form login disabled for the organization
+        throw new UnauthorizedException('Invalid credentials');
+      }
 
       const payload = { username: user.id, sub: user.email, organizationId: newUser.organizationId };
 
@@ -102,14 +149,14 @@ export class AuthService {
 
   async signup(params: any) {
     // Check if the installation allows user signups
-    if (process.env.DISABLE_SIGNUPS === 'true') {
+    if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
       return {};
     }
 
     const { email } = params;
     const organization = await this.organizationsService.create('Untitled organization');
     const user = await this.usersService.create({ email }, organization.id, ['all_users', 'admin']);
-    await this.organizationUsersService.create(user, organization);
+    await this.organizationUsersService.create(user, organization, true);
 
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 

@@ -19,6 +19,7 @@ import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
+import { ManageSSO } from '@/ManageSSO';
 import { lt } from 'semver';
 import { Toaster } from 'react-hot-toast';
 
@@ -152,6 +153,13 @@ class App extends React.Component {
               exact
               path="/users"
               component={ManageOrgUsers}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/manage-sso"
+              component={ManageSSO}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />

@@ -43,7 +43,7 @@ class LoginPage extends React.Component {
         isGettingConfigs: false,
         configs: {
           form: {
-            enable_sign_up: window.public_config?.DISABLE_SIGNUP !== 'true',
+            enable_sign_up: window.public_config?.DISABLE_SIGNUPS !== 'true',
             enabled: window.public_config?.DISABLE_PASSWORD_LOGIN !== 'true',
           },
           git: {
@@ -202,6 +202,11 @@ class LoginPage extends React.Component {
               <Link to={'/signup'} tabIndex="-1">
                 Sign up
               </Link>
+            </div>
+          )}
+          {authenticationService?.currentUserValue?.organization && (
+            <div className="text-center mt-3">
+              back to <a href="/">{authenticationService?.currentUserValue?.organization}</a> organization
             </div>
           )}
         </div>

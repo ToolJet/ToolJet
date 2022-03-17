@@ -38,7 +38,7 @@ export class Organization {
   @JoinColumn({ name: 'organization_id' })
   groupPermissions: GroupPermission[];
 
-  @OneToMany(() => SSOConfigs, (ssoConfigs) => ssoConfigs.organization)
+  @OneToMany(() => SSOConfigs, (ssoConfigs) => ssoConfigs.organization, { cascade: ['insert'] })
   ssoConfigs: SSOConfigs[];
 
   @OneToMany(() => OrganizationUser, (organizationUser) => organizationUser.organization)

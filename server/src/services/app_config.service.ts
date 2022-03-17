@@ -25,6 +25,8 @@ export class AppConfigService {
       'SSO_GOOGLE_OAUTH2_CLIENT_ID',
       'SSO_GIT_OAUTH2_CLIENT_ID',
       'DISABLE_PASSWORD_LOGIN',
+      'DISABLE_SIGNUPS',
+      'SINGLE_ORGANIZATION',
     ];
   }
 

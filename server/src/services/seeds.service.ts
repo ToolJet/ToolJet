@@ -24,6 +24,12 @@ export class SeedsService {
       }
 
       const organization = manager.create(Organization, {
+        ssoConfigs: [
+          {
+            enabled: true,
+            sso: 'form',
+          },
+        ],
         name: 'My organization',
       });
 

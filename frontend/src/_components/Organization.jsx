@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { authenticationService, organizationService } from '@/_services';
 import Modal from '../HomePage/Modal';
 import { toast } from 'react-hot-toast';
+import { SearchBox } from './SearchBox';
 
 export const Organization = function Organization() {
-  const { organization, admin } = authenticationService.currentUserValue;
+  const isSingleOrganization = window.public_config?.SINGLE_ORGANIZATION === 'true';
+  const { admin, organization_id } = authenticationService.currentUserValue;
+  const [organization, setOrganization] = useState(authenticationService.currentUserValue?.organization);
   const [showCreateOrg, setShowCreateOrg] = useState(false);
+  const [showEditOrg, setShowEditOrg] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [organizationList, setOrganizationList] = useState([]);
+  const [getOrgStatus, setGetOrgStatus] = useState('loading');
+  const [isListOrganizations, setIsListOrganizations] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
 
-  const getAvatar = () => {
+  const getAvatar = (organization) => {
     if (!organization) return;
 
     const orgName = organization.split(' ');
@@ -19,6 +27,33 @@ export const Organization = function Organization() {
     } else {
       return `${organization[0]}${organization[1]}`;
     }
+  };
+
+  useEffect(() => {
+    getOrganizations();
+  }, []);
+
+  const getOrganizations = () => {
+    setGetOrgStatus('loading');
+    organizationService.getOrganizations().then(
+      (data) => {
+        setOrganizationList(data.organizations);
+        setGetOrgStatus('success');
+      },
+      () => {
+        setGetOrgStatus('failure');
+      }
+    );
+  };
+
+  const showEditModal = () => {
+    setNewOrgName(organization);
+    setShowEditOrg(true);
+  };
+
+  const showCreateModal = () => {
+    setNewOrgName('');
+    setShowCreateOrg(true);
   };
 
   const createOrganization = () => {
@@ -43,41 +78,208 @@ export const Organization = function Organization() {
     setIsCreating(false);
   };
 
+  const editOrganization = () => {
+    if (!(newOrgName && newOrgName.trim())) {
+      toast.error("organization name can't be empty.", {
+        position: 'top-center',
+      });
+      return;
+    }
+    setIsCreating(true);
+    organizationService.editOrganization(newOrgName).then(
+      () => {
+        authenticationService.updateCurrentUserDetails({ organization: newOrgName });
+        setOrganization(newOrgName);
+      },
+      () => {
+        toast.error('Error while editing organization', {
+          position: 'top-center',
+        });
+      }
+    );
+    setIsCreating(false);
+    setShowEditOrg(false);
+  };
+
+  const switchOrganization = (orgId) => {
+    organizationService.switchOrganization(orgId).then((response) => {
+      response.text().then((text) => {
+        if (!response.ok) {
+          return (window.location.href = `/login/${orgId}`);
+        }
+        const data = text && JSON.parse(text);
+        authenticationService.updateCurrentUserDetails(data);
+        window.location.href = '/';
+      });
+    });
+  };
+
+  const listOrganization = () => {
+    return (
+      organizationList &&
+      organizationList
+        .filter((org) => org.name.toLowerCase().includes(searchText ? searchText.toLowerCase() : ''))
+        .map((org) => {
+          return (
+            <div
+              key={org.id}
+              onClick={organization_id === org.id ? undefined : () => switchOrganization(org.id)}
+              className="dropdown-item org-list-item"
+            >
+              <div className="col-3">
+                <span className="avatar bg-secondary-lt">{getAvatar(org.name)}</span>
+              </div>
+              <div className="col-8">
+                <div className="org-name">{org.name}</div>
+              </div>
+              <div className="col-1">
+                {organization_id === org.id && (
+                  <div className="tick-ico">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="icon icon-tabler icon-tabler-check"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                      stroke="currentColor"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M5 12l5 5l10 -10"></path>
+                    </svg>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })
+    );
+  };
+
+  const searchOrganizations = (text) => {
+    setSearchText(text);
+  };
+
+  const getListOrganizations = () => {
+    return (
+      <div className="organization-switchlist">
+        <div className="dd-item-padding">
+          <div className="d-flex">
+            <div className="back-ico" onClick={() => setIsListOrganizations(false)}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="icon icon-tabler icon-tabler-chevron-left"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <polyline points="15 6 9 12 15 18"></polyline>
+              </svg>
+            </div>
+            <div className="back-btn" onClick={() => setIsListOrganizations(false)}>
+              Back
+            </div>
+          </div>
+          <div className="search-box">
+            <SearchBox onSubmit={searchOrganizations} debounceDelay={100} width="14rem" />
+          </div>
+        </div>
+        <div className="org-list">
+          {getOrgStatus === 'success' ? (
+            listOrganization()
+          ) : (
+            <div className="text-center">
+              <a
+                onClick={getOrganizations}
+                href="#"
+                className={`btn btn-light ${getOrgStatus === 'loading' ? 'btn-loading' : ''}`}
+              >
+                Load Organizations
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const getOrganizationMenu = () => {
+    return (
+      <div>
+        <div className="dropdown-item org-avatar">
+          <div className="row">
+            <div className="col-3">
+              <span className="avatar bg-secondary-lt">{getAvatar(organization)}</span>
+            </div>
+            <div className={`col-${isSingleOrganization ? '9' : '7'}`}>
+              <div className="org-name">{organization}</div>
+              <div className="org-edit">
+                <span onClick={showEditModal}>Edit</span>
+              </div>
+            </div>
+            {!isSingleOrganization && (
+              <div className="col-2">
+                <div className="arrow-container" onClick={() => setIsListOrganizations(true)}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="icon icon-tabler icon-tabler-chevron-right"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    stroke="currentColor"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <polyline points="9 6 15 12 9 18"></polyline>
+                  </svg>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        {!isSingleOrganization && (
+          <div className="dropdown-item org-actions">
+            <div onClick={showCreateModal}>Add Organizations</div>
+          </div>
+        )}
+        {admin && (
+          <>
+            <div className="dropdown-divider"></div>
+            <Link data-testid="settingsBtn" to="/users" className="dropdown-item">
+              Manage Users
+            </Link>
+            <Link data-tesid="settingsBtn" to="/groups" className="dropdown-item">
+              Manage Groups
+            </Link>
+            <Link data-tesid="settingsBtn" to="/manage-sso" className="dropdown-item">
+              Manage SSO
+            </Link>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div>
-      <div className="dropdown organization-list">
+      <div className="dropdown organization-list" onMouseEnter={() => setIsListOrganizations(false)}>
         <a href="#" className="btn dropdown-toggle">
           <div>{organization}</div>
         </a>
         <div className="dropdown-menu dropdown-menu-right">
-          <div className="org-dd-item">
-            <div className="row">
-              <div className="col-3">
-                <span className="avatar bg-secondary-lt">{getAvatar()}</span>
-              </div>
-              <div className="col-9">
-                <div className="org-name align-middle">{organization}</div>
-              </div>
-            </div>
-          </div>
-          <div className="d-flex justify-content-between org-actions">
-            <div>Switch</div>
-            <div onClick={() => setShowCreateOrg(true)}>Create</div>
-          </div>
-          {admin && (
-            <>
-              <div className="dropdown-divider"></div>
-              <Link data-testid="settingsBtn" to="/users" className="dropdown-item">
-                Manage Users
-              </Link>
-              <Link data-tesid="settingsBtn" to="/groups" className="dropdown-item">
-                Manage Groups
-              </Link>
-              <Link data-tesid="settingsBtn" to="/sso-configs" className="dropdown-item">
-                Manage SSO
-              </Link>
-            </>
-          )}
+          {isListOrganizations ? getListOrganizations() : getOrganizationMenu()}
         </div>
       </div>
       <Modal show={showCreateOrg} closeModal={() => setShowCreateOrg(false)} title="Create organization">
@@ -100,6 +302,31 @@ export const Organization = function Organization() {
             </button>
             <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={createOrganization}>
               Create organization
+            </button>
+          </div>
+        </div>
+      </Modal>
+      <Modal show={showEditOrg} closeModal={() => setShowEditOrg(false)} title="Edit organization">
+        <div className="row">
+          <div className="col modal-main">
+            <input
+              type="text"
+              onChange={(e) => setNewOrgName(e.target.value)}
+              className="form-control"
+              placeholder="organization name"
+              disabled={isCreating}
+              value={newOrgName}
+              maxLength={25}
+            />
+          </div>
+        </div>
+        <div className="row">
+          <div className="col d-flex modal-footer-btn">
+            <button className="btn btn-light" onClick={() => setShowEditOrg(false)}>
+              Cancel
+            </button>
+            <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={editOrganization}>
+              Edit organization
             </button>
           </div>
         </div>

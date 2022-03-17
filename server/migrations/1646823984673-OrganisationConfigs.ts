@@ -39,7 +39,7 @@ export class OrganisationConfigs1646823984673 implements MigrationInterface {
           {
             name: 'configs',
             type: 'json',
-            isNullable: false,
+            isNullable: true,
           },
           {
             name: 'enabled',

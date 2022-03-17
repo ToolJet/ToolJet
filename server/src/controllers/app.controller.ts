@@ -1,4 +1,4 @@
-import { Controller, Get, Request, Post, UseGuards, Body, Param } from '@nestjs/common';
+import { Controller, Get, Request, Post, UseGuards, Body, Param, BadRequestException } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { PasswordLoginDisabledGuard } from 'src/modules/auth/password-login-disabled.guard';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -15,9 +15,12 @@ export class AppController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('switch/:organisationId')
-  async switch(@Body('organizationId') organizationId, @User() user) {
-    //return this.authService.login(body);
+  @Get('switch/:organizationId')
+  async switch(@Param('organizationId') organizationId, @User() user) {
+    if (!organizationId) {
+      throw new BadRequestException();
+    }
+    return await this.authService.switchOrganization(organizationId, user);
   }
 
   @UseGuards(PasswordLoginDisabledGuard)
