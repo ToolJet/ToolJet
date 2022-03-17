@@ -61,12 +61,19 @@ export default class RestapiQueryService implements QueryService {
     return Object.fromEntries(urlParams);
   }
 
+  customParams(sourceOptions: any) {
+    const customParams = Object.fromEntries(sourceOptions['custom_auth_params']);
+    Object.keys(customParams).forEach((key) => (customParams[key] === '' ? delete customParams[key] : {}));
+    return customParams;
+  }
+
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
     const requiresOauth = sourceOptions['auth_type'] === 'oauth2';
 
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
+    const customParams = this.customParams(sourceOptions);
 
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
@@ -74,7 +81,11 @@ export default class RestapiQueryService implements QueryService {
 
       if (!tokenData) {
         const tooljetHost = process.env.TOOLJET_HOST;
-        const authUrl = `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}&access_type=offline`;
+        const authUrl = `${sourceOptions['auth_url']}?response_type=code&client_id=${
+          sourceOptions['client_id']
+        }&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}&access_type=offline${
+          customParams['prompt'] ? '&prompt=consent' : ''
+        }`;
 
         return {
           status: 'needs_oauth',
@@ -160,8 +171,7 @@ export default class RestapiQueryService implements QueryService {
     const tooljetHost = process.env.TOOLJET_HOST;
     const accessTokenUrl = sourceOptions['access_token_url'];
 
-    const customParams = Object.fromEntries(sourceOptions['custom_auth_params']);
-    Object.keys(customParams).forEach((key) => (customParams[key] === '' ? delete customParams[key] : {}));
+    const customParams = this.customParams(sourceOptions);
 
     const response = await got(accessTokenUrl, {
       method: 'post',
