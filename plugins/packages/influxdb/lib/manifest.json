@@ -9,19 +9,36 @@
     "exposedVariables": {
       "isLoading": false,
       "data": {},
-      "rawData": {}
+      "rawData": {},
+      "customTesting": false
     },
     "options": {
       "api_token": {
         "type": "string",
         "encrypted": true
+      },
+      "port": {
+        "type": "string"
+      },
+      "host": {
+        "type": "string"
+      },
+      "protocol": {
+        "type": "string"
       }
-    },
-    "customTesting": true
-  },
+    }  },
   "defaults": {
     "api_token": {
       "value": ""
+    },
+    "port": {
+      "value": "5984"
+    },
+    "host": {
+      "value": ""
+    },
+    "protocol": {
+      "type": "HTTP"
     }
   },
   "properties": {
@@ -31,9 +48,36 @@
       "type": "password",
       "description": "Api token for InfluxDB",
       "helpText": "For generating API token, visit: <a href='https://docs.influxdata.com/influxdb/cloud/security/tokens/create-token/' target='_blank' rel='noreferrer'>InfluxDB docs</a>"
+    },
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": ""
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "5984 ",
+      "helpText": ""
+    },
+    "protocol": {
+      "label": "Protocol",
+      "key": "protocol",
+      "type": "dropdown",
+      "list": [
+        {
+          "name": "HTTP",
+          "value": "http"
+        },
+        {
+          "name": "HTTPS",
+          "value": "https"
+        }
+      ],
+      "description": "Enter protocol"
     }
   },
-  "required": [
-    "api_token"
-  ]
+  "required": ["api_token","username", "password", "database", "port", "host", "protocol"]
 }
