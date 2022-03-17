@@ -46,6 +46,12 @@
   "buildpacks": [
     {
       "url": "heroku/nodejs"
+    },
+    {
+      "url": "heroku-community/apt"
+    },
+    {
+      "url": "https://github.com/featurist/oracle-client-buildpack.git"
     }
   ],
   "environments": {

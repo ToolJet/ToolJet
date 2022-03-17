@@ -167,10 +167,6 @@ button {
       font-weight: 600;
     }
   }
-  .common-sidebar-popover-margin{
-    margin-left: 33px;
-  }
-
   .left-sidebar {
     scrollbar-width: none;
   }
@@ -457,11 +453,10 @@ button {
       width: 0;
       background: transparent;
     }
-
     .query-pane {
       height: 350px;
       position: fixed;
-      left: 3%;
+      left: 76px; //sidebar is 76px
       right: 300px;
       bottom: 0;
       overflow-x: hidden;
@@ -524,6 +519,7 @@ button {
       }
 
       .query-definition-pane-wrapper {
+        width: 72%;
         overflow-x: hidden;
         overflow-y: scroll;
         height: 100%;
@@ -557,6 +553,7 @@ button {
       }
 
       .data-pane {
+        width: 28%;
         border: solid rgba(0, 0, 0, 0.125);
         border-width: 0px 1px 0px 0px;
         overflow-x: hidden;
@@ -2359,6 +2356,11 @@ hr {
   .CodeMirror {
     font-family: "Roboto", sans-serif;
   }
+  .CodeMirror-placeholder {
+    height: inherit !important;
+    position: absolute !important;
+    margin-top: 3px !important;
+  }
 }
 
 .codehinter-query-editor-input {
@@ -2422,7 +2424,7 @@ hr {
   }
 }
 
-.draggable-box:hover {
+.draggable-box-in-editor:hover {
   z-index: 3 !important;
 }
 
@@ -3919,6 +3921,9 @@ input[type="text"] {
     width: 200px;
     border-radius: 5px !important;
   }
+  input:focus {
+    width: 300px;
+  }
   .input-icon .input-icon-addon {
     display: flex;
   }
@@ -4202,13 +4207,11 @@ input[type="text"] {
 }
 
 .query-pane-restapi-tabs.dark {
-  background: $bg-dark !important;
-  border-color: $border-grey-dark !important;
-
   .list-group-item {
     color: $disabled !important;
+
     &:hover {
-      background-color: #262b33 !important;
+      color: #ffffff !important;
     }
   }
   .list-group-item.active {
@@ -4216,28 +4219,17 @@ input[type="text"] {
   }
 }
 .query-pane-restapi-tabs {
-  background: #f7f9fc;
-  border: 1px solid #d2ddec;
   box-sizing: border-box;
-  border-radius: 4px;
-  margin: 0px;
   height: fit-content;
-  min-height: 160px;
   width: 100%;
   .row {
     height: inherit;
 
     .keys {
-      border-right: 1px solid #d2ddec !important;
-      min-height: 90px;
+      min-height: 30px;
     }
 
-    .keys.dark {
-      border-color: $border-grey-dark !important;
-    }
     .rest-api-tab-content {
-      margin-top: 1rem;
-      min-height: 160px;
 
       .rest-api-tabpanes {
         display: none;
@@ -4246,40 +4238,92 @@ input[type="text"] {
       .rest-api-tabpanes.active {
         display: block;
       }
+
+      .svg-plus {
+        stroke: $primary;
+      } 
+
+      .delete-btn-wrapper {
+        display: flex;
+        align-items: center;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        height: 32px;
+      }
+
+      .code-hinter-col {
+        margin-bottom: 0px !important;
+      }
+
+      .tab-content-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: .3rem;
+      }
+
+      .row-container{
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .fields-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+      }
     }
   }
 }
 
 .query-pane-rest-api-keys-list-group {
-  margin-top: 1.25rem;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
   .list-group-item {
     border: none !important;
     cursor: pointer;
-    margin-bottom: 11px;
     font-weight: 600;
     font-size: 12px;
-    line-height: 17px;
-    padding: 3px !important;
+    padding: 0px !important;
+    margin-right: 20px;
     height: 22px;
-    width: 72px;
+    color: #737373;
 
     span {
       display: flex;
       justify-content: left;
-      margin-left: 7px;
     }
 
     &:hover {
-      border-radius: 4px !important;
-      background-color: $bg-light;
+      color: #000;
     }
   }
 
-  .list-group-item.active {
-    border-radius: 4px !important;
-    background-color: $primary !important;
-    z-index: inherit !important;
+  .list-group-item + .list-group-item.active {
+    margin-top: 0;
   }
+
+  .list-group-item.active {
+    background-color: transparent !important;
+    color: #000;
+    z-index: inherit !important;
+    border-bottom: 2px solid $primary !important;
+  }
+}
+
+.query-pane-rest-api-keys-list-group.dark + .list-group-item {
+  &:hover{
+    color: #ffffff;
+  }
+}
+
+.content-title {
+  font-size: 12px;
+  color: #a3a3a3;
+  font-weight: 600;
 }
 
 // ** Query Panel: REST API Tabs **
