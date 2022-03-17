@@ -1,0 +1,9 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "InfluxDB datasource",
+  "description": "A schema defining InfluxDB datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {}
+}

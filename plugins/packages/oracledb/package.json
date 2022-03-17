@@ -21,8 +21,5 @@
     "knex": "^0.95.14",
     "oracledb": "^5.3.0",
     "react": "^17.0.2"
-  },
-  "devDependencies": {
-    "@types/oracledb": "^5.2.2"
   }
 }
