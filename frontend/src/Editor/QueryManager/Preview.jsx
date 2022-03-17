@@ -58,7 +58,7 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
                 </div>
               </Tab.Pane>
               <Tab.Pane eventKey="raw" transition={false}>
-                <div className="mb-3 mt-2">{renderRawData()}</div>
+                <div className={`mb-3 mt-2 raw-container ${darkMode ? 'dark' : ''}`}>{renderRawData()}</div>
               </Tab.Pane>
             </Tab.Content>
           </div>
