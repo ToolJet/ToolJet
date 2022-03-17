@@ -189,7 +189,6 @@
         "placeholder": "Flux query script to be analyzed"
       }
     },
-
     "flux_query": {
       "body": {
         "label": "flux query",

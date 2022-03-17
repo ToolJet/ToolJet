@@ -12,4 +12,5 @@ export type QueryOptions = {
   bucket_id: string;
   precision: string;
   name: string;
+  body: string;
 };

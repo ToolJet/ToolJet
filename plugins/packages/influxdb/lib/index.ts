@@ -1,30 +1,73 @@
 import { ConnectionTestResult, QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import got, { Headers } from 'got';
+const JSON5 = require('json5');
 
 export default class influxdb implements QueryService {
-  authHeader(token: string): Headers {
-    return {
-      Authorization: `Token ${token}`,
-      'Content-Type': 'application/json',
-    };
-  }
-
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     let result = {};
     let response = null;
-    const operation = queryOptions.operation;
     const apiKey = sourceOptions.api_token;
+    const { port, host, protocol } = sourceOptions;
+    const { operation, bucket_id } = queryOptions;
+
+    const authHeader = (token: string): Headers => {
+      return {
+        Authorization: `Token ${token}`,
+        'Content-Type': 'application/json',
+      };
+    };
 
     try {
       switch (operation) {
         case 'list_buckets': {
-          response = await got(`http://localhost:8086/api/v2/buckets`, {
+          response = await got(`${protocol}://${host}:${port}/api/v2/buckets`, {
             method: 'get',
-            headers: this.authHeader(apiKey),
+            headers: authHeader(apiKey),
           });
 
           result = JSON.parse(response.body);
+          break;
+        }
+        case 'retrieve_bucket': {
+          response = await got(`${protocol}://${host}:${port}/api/v2/buckets/${bucket_id}`, {
+            headers: authHeader(apiKey),
+            method: 'get',
+          });
+          result = this.parseJSON(response.body);
+          break;
+        }
+
+        case 'create_bucket': {
+          response = await got(`${protocol}://${host}:${port}/api/v2/buckets`, {
+            method: 'post',
+            headers: authHeader(apiKey),
+            json: {
+              records: this.parseJSON(queryOptions.body),
+            },
+          });
+          result = this.parseJSON(response.body);
+          break;
+        }
+
+        case 'update_bucket': {
+          response = await got(`${protocol}://${host}:${port}/api/v2/buckets/${bucket_id}`, {
+            method: 'put',
+            headers: authHeader(apiKey),
+            json: {
+              records: this.parseJSON(queryOptions.body),
+            },
+          });
+          result = this.parseJSON(response.body);
+          break;
+        }
+
+        case 'delete_bucket': {
+          response = await got(`${protocol}://${host}:${port}/api/v2/buckets/${bucket_id}`, {
+            method: 'delete',
+            headers: authHeader(apiKey),
+          });
+          result = this.parseJSON(response.body);
           break;
         }
       }
@@ -51,5 +94,10 @@ export default class influxdb implements QueryService {
     return {
       status: 'ok',
     };
+  }
+  private parseJSON(json?: string): object {
+    if (!json) return {};
+
+    return JSON5.parse(json);
   }
 }
