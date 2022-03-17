@@ -4374,9 +4374,17 @@ input[type="text"] {
   }
 }
 
-.query-preview-list-group.dark + .list-group-item {
-  &:hover{
-    color: #ffffff;
+.query-preview-list-group.dark {
+  .list-group-item {
+    color: $disabled !important;
+
+    &:hover {
+      color: #ffffff !important;
+    }
+  }
+  .list-group-item.active {
+    color: $white !important;
+    background-color: #333c48 !important;
   }
 }
 
