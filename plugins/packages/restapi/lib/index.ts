@@ -81,15 +81,14 @@ export default class RestapiQueryService implements QueryService {
 
       if (!tokenData) {
         const tooljetHost = process.env.TOOLJET_HOST;
-        const authUrl = `${sourceOptions['auth_url']}?response_type=code&client_id=${
-          sourceOptions['client_id']
-        }&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}&access_type=offline${
-          customParams['prompt'] ? '&prompt=consent' : ''
-        }`;
+        const authUrl = new URL(
+          `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}&access_type=offline`
+        );
+        Object.entries(customParams).map(([key, value]) => authUrl.searchParams.append(key, value));
 
         return {
           status: 'needs_oauth',
-          data: { auth_url: authUrl },
+          data: { auth_url: authUrl.toString() },
         };
       } else {
         const accessToken = tokenData['access_token'];
@@ -209,7 +208,7 @@ export default class RestapiQueryService implements QueryService {
   async refreshToken(sourceOptions, error) {
     const refreshToken = sourceOptions['tokenData']['refresh_token'];
     if (!refreshToken) {
-      throw new QueryError('Query could not be completed', error.response, {});
+      throw new QueryError('Refresh token not found', error.response, {});
     }
     const accessTokenUrl = sourceOptions['access_token_url'];
     const clientId = sourceOptions['client_id'];
