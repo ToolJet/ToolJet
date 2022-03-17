@@ -121,7 +121,10 @@ describe('apps controller', () => {
         });
         const organization = adminUserData.organization;
         const allUserGroup = await getManager().findOne(GroupPermission, {
-          where: { group: 'all_users', organization: adminUserData.organization },
+          where: {
+            group: 'all_users',
+            organization: adminUserData.organization,
+          },
         });
         const developerUserData = await createUser(app, {
           email: 'developer@tooljet.io',
@@ -765,7 +768,7 @@ describe('apps controller', () => {
           const application = await createApplication(app, {
             user: adminUserData.user,
           });
-
+          const version = await createApplicationVersion(app, application);
           // setup app permissions for developer
           const developerUserGroup = await getRepository(GroupPermission).findOne({
             where: {
@@ -784,6 +787,7 @@ describe('apps controller', () => {
               .set('Authorization', authHeaderForUser(userData.user))
               .send({
                 versionName: 'v1',
+                versionFromId: version.id,
               });
 
             expect(response.statusCode).toBe(201);
@@ -812,7 +816,9 @@ describe('apps controller', () => {
 
           expect(response.statusCode).toBe(201);
 
-          const v2 = await getManager().findOne(AppVersion, { where: { name: 'v2' } });
+          const v2 = await getManager().findOne(AppVersion, {
+            where: { name: 'v2' },
+          });
           expect(v2.definition).toEqual(v1.definition);
         });
 
@@ -947,6 +953,31 @@ describe('apps controller', () => {
           expect(dataQueries).toHaveLength(3);
           expect(dataSources.map((s) => s.appVersionId).includes(response.body.id)).toBeTruthy();
           expect(dataQueries.map((q) => q.appVersionId).includes(response.body.id)).toBeTruthy();
+
+          // creating a new version from a non existing version id will throw error when more than 1 versions exist
+          await createDataSource(app, {
+            name: 'name',
+            kind: 'postgres',
+            application: application,
+            user: adminUserData.user,
+          });
+          await createDataQuery(app, {
+            application,
+            dataSource,
+            kind: 'restapi',
+            options: { method: 'get' },
+          });
+
+          response = await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: 'v3',
+              versionFromId: 'a77b051a-dd48-4633-a01f-089a845d5f88',
+            });
+
+          expect(response.statusCode).toBe(400);
+          expect(response.body.message).toBe('More than one version found. Version to create from not specified.');
         });
 
         it('creates new credentials and copies cipher text on data source', async () => {
@@ -954,33 +985,54 @@ describe('apps controller', () => {
             email: 'admin@tooljet.io',
           });
           const application = await importAppFromTemplates(app, adminUserData.user, 'customer-dashboard');
-          const dataSource = await getManager().findOne(DataSource, { where: { appId: application } });
+          const dataSource = await getManager().findOne(DataSource, {
+            where: { appId: application },
+          });
+
+          let dataSources = await getManager().find(DataSource);
+          let dataQueries = await getManager().find(DataQuery);
           const credential = await getManager().findOne(Credential, {
             where: { id: dataSource.options['password']['credential_id'] },
           });
           credential.valueCiphertext = 'strongPassword';
           await getManager().save(credential);
 
-          const response = await request(app.getHttpServer())
+          let response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v1',
             });
 
-          await request(app.getHttpServer())
+          expect(response.statusCode).toBe(400);
+          expect(response.body.message).toBe('More than one version found. Version to create from not specified.');
+
+          const initialVersion = await getManager().findOne(AppVersion, {
+            where: { appId: application.id, name: 'v0' },
+          });
+
+          response = await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: 'v1',
+              versionFromId: initialVersion.id,
+            });
+
+          expect(response.statusCode).toBe(201);
+
+          response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v2',
               versionFromId: response.body.id,
             });
+          dataSources = await getManager().find(DataSource);
+          dataQueries = await getManager().find(DataQuery);
 
-          const dataSources = await getManager().find(DataSource);
-          const dataQueries = await getManager().find(DataQuery);
-
-          expect(dataSources).toHaveLength(2);
-          expect(dataQueries).toHaveLength(4);
+          expect(dataSources).toHaveLength(3);
+          expect(dataQueries).toHaveLength(6);
 
           const credentials = await getManager().find(Credential);
           expect([...new Set(credentials.map((c) => c.valueCiphertext))]).toEqual(['strongPassword']);
