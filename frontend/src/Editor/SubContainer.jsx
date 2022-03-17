@@ -39,10 +39,12 @@ export const SubContainer = ({
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
 
   useEffect(() => {
-    const canvasWidth = parentRef?.current ? getContainerCanvasWidth() : 0;
-    setContainerCanvasWidth(canvasWidth);
+    if (parentRef.current) {
+      const canvasWidth = getContainerCanvasWidth();
+      setContainerCanvasWidth(canvasWidth);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentRef.current]);
+  }, [parentRef, getContainerCanvasWidth()]);
 
   zoomLevel = zoomLevel || 1;
 
