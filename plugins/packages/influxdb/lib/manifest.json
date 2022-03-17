@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "InfluxDB datasource",
@@ -12,9 +11,29 @@
       "data": {},
       "rawData": {}
     },
-    "options": {}
+    "options": {
+      "api_token": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": true
   },
-  "defaults": {},
-  "properties": {},
-  "required": []
+  "defaults": {
+    "api_token": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "api_key": {
+      "label": "API token",
+      "key": "api_token",
+      "type": "password",
+      "description": "Api token for InfluxDB",
+      "helpText": "For generating API token, visit: <a href='https://docs.influxdata.com/influxdb/cloud/security/tokens/create-token/' target='_blank' rel='noreferrer'>InfluxDB docs</a>"
+    }
+  },
+  "required": [
+    "api_token"
+  ]
 }

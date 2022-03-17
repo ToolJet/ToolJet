@@ -1,9 +1,23 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "InfluxDB datasource",
   "description": "A schema defining InfluxDB datasource",
   "type": "database",
+  "type": "api",
   "defaults": {},
-  "properties": {}
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "list_buckets",
+          "name": "List buckets"
+        }
+      ]
+    },
+    "list_buckets": {}
+  }
 }
