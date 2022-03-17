@@ -167,7 +167,6 @@ button {
       font-weight: 600;
     }
   }
-
   .left-sidebar {
     scrollbar-width: none;
   }
@@ -176,10 +175,22 @@ button {
     width: 0;
     background: transparent;
   }
-
+.left-sidebar-layout{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  font-size: 11px;
+  padding: 16px;
+  align-items: center;
+  letter-spacing:.2px;
+  p{
+    margin-bottom: 0px;
+    margin-top: 8px;
+  }
+}
   .left-sidebar {
     height: 100%;
-    width: 3%;
+    width: 76px;
     position: fixed;
     z-index: 1;
     left: 0;
@@ -189,6 +200,7 @@ button {
     background-clip: border-box;
     border: solid rgba(0, 0, 0, 0.125);
     border-width: 0px 1px 3px 0px;
+    margin-top: 0px;
 
     .accordion-item {
       border: solid rgba(101, 109, 119, 0.16);
@@ -396,7 +408,7 @@ button {
       top: 45px;
       position: fixed;
       right: 300px;
-      left: 3%;
+      left: 76px;
       overflow-y: auto;
       overflow-x: scroll;
       -webkit-box-pack: center;
@@ -441,12 +453,11 @@ button {
       width: 0;
       background: transparent;
     }
-
     .query-pane {
       height: 350px;
       position: fixed;
-      left: 3%;
-      right: 301px;
+      left: 76px; //sidebar is 76px
+      right: 300px;
       bottom: 0;
       overflow-x: hidden;
       flex: 1 1 auto;
@@ -508,6 +519,7 @@ button {
       }
 
       .query-definition-pane-wrapper {
+        width: 72%;
         overflow-x: hidden;
         overflow-y: scroll;
         height: 100%;
@@ -541,6 +553,7 @@ button {
       }
 
       .data-pane {
+        width: 28%;
         border: solid rgba(0, 0, 0, 0.125);
         border-width: 0px 1px 0px 0px;
         overflow-x: hidden;
@@ -628,7 +641,7 @@ button {
       justify-content: center;
       -webkit-box-align: center;
       align-items: center;
-
+      
       .canvas-area {
         width: 1280px;
         min-height: 2400px;
@@ -815,7 +828,7 @@ button {
     .app-card.highlight {
       background-color: #f8f8f8;
       box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-      border: 1px solid $primary;
+      border: 0.5px solid $primary;
 
       button.edit-button {
         background: #ffffff;
@@ -2343,6 +2356,11 @@ hr {
   .CodeMirror {
     font-family: "Roboto", sans-serif;
   }
+  .CodeMirror-placeholder {
+    height: inherit !important;
+    position: absolute !important;
+    margin-top: 3px !important;
+  }
 }
 
 .codehinter-query-editor-input {
@@ -2406,7 +2424,7 @@ hr {
   }
 }
 
-.draggable-box:hover {
+.draggable-box-in-editor:hover {
   z-index: 3 !important;
 }
 
@@ -2548,6 +2566,16 @@ hr {
       display: block;
     }
   }
+}
+.app-version-container {
+  min-height: 200px;
+  height: 100%;
+  display: flex !important;
+  flex-direction: column;
+}
+.app-version-content{
+  flex: 1;
+  overflow: auto;
 }
 
 .query-manager-header {
@@ -2846,7 +2874,7 @@ input:focus-visible {
   }
 
   .jet-container {
-    background-color: #1f2936 !important;
+    background-color: #1f2936;
   }
 
   .nav-tabs .nav-item.show .nav-link,
@@ -3893,6 +3921,9 @@ input[type="text"] {
     width: 200px;
     border-radius: 5px !important;
   }
+  input:focus {
+    width: 300px;
+  }
   .input-icon .input-icon-addon {
     display: flex;
   }
@@ -4176,13 +4207,11 @@ input[type="text"] {
 }
 
 .query-pane-restapi-tabs.dark {
-  background: $bg-dark !important;
-  border-color: $border-grey-dark !important;
-
   .list-group-item {
     color: $disabled !important;
+
     &:hover {
-      background-color: #262b33 !important;
+      color: #ffffff !important;
     }
   }
   .list-group-item.active {
@@ -4190,28 +4219,17 @@ input[type="text"] {
   }
 }
 .query-pane-restapi-tabs {
-  background: #f7f9fc;
-  border: 1px solid #d2ddec;
   box-sizing: border-box;
-  border-radius: 4px;
-  margin: 0px;
   height: fit-content;
-  min-height: 160px;
   width: 100%;
   .row {
     height: inherit;
 
     .keys {
-      border-right: 1px solid #d2ddec !important;
-      min-height: 90px;
+      min-height: 30px;
     }
 
-    .keys.dark {
-      border-color: $border-grey-dark !important;
-    }
     .rest-api-tab-content {
-      margin-top: 1rem;
-      min-height: 160px;
 
       .rest-api-tabpanes {
         display: none;
@@ -4220,40 +4238,92 @@ input[type="text"] {
       .rest-api-tabpanes.active {
         display: block;
       }
+
+      .svg-plus {
+        stroke: $primary;
+      } 
+
+      .delete-btn-wrapper {
+        display: flex;
+        align-items: center;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        height: 32px;
+      }
+
+      .code-hinter-col {
+        margin-bottom: 0px !important;
+      }
+
+      .tab-content-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: .3rem;
+      }
+
+      .row-container{
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .fields-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+      }
     }
   }
 }
 
 .query-pane-rest-api-keys-list-group {
-  margin-top: 1.25rem;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
   .list-group-item {
     border: none !important;
     cursor: pointer;
-    margin-bottom: 11px;
     font-weight: 600;
     font-size: 12px;
-    line-height: 17px;
-    padding: 3px !important;
+    padding: 0px !important;
+    margin-right: 20px;
     height: 22px;
-    width: 72px;
+    color: #737373;
 
     span {
       display: flex;
       justify-content: left;
-      margin-left: 7px;
     }
 
     &:hover {
-      border-radius: 4px !important;
-      background-color: $bg-light;
+      color: #000;
     }
   }
 
-  .list-group-item.active {
-    border-radius: 4px !important;
-    background-color: $primary !important;
-    z-index: inherit !important;
+  .list-group-item + .list-group-item.active {
+    margin-top: 0;
   }
+
+  .list-group-item.active {
+    background-color: transparent !important;
+    color: #000;
+    z-index: inherit !important;
+    border-bottom: 2px solid $primary !important;
+  }
+}
+
+.query-pane-rest-api-keys-list-group.dark + .list-group-item {
+  &:hover{
+    color: #ffffff;
+  }
+}
+
+.content-title {
+  font-size: 12px;
+  color: #a3a3a3;
+  font-weight: 600;
 }
 
 // ** Query Panel: REST API Tabs **

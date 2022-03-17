@@ -1,7 +1,7 @@
 'use strict';
 
-const stripe = require('../lib');
+// const stripe = require('../lib');
 
 describe('stripe', () => {
-    it.todo('needs tests');
+  it.todo('needs tests');
 });

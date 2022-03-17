@@ -352,12 +352,13 @@ export function Table({
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
+        const rowData = tableData[cell.row.index];
 
         switch (columnType) {
           case 'string':
           case undefined:
           case 'default': {
-            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue });
+            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
 
             const cellStyles = {
               color: textColor ?? '',

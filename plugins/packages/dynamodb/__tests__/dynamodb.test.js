@@ -1,7 +1,7 @@
 'use strict';
 
-const dynamodb = require('../lib');
+// const dynamodb = require('../lib');
 
 describe('dynamodb', () => {
-    it.todo('needs tests');
+  it.todo('needs tests');
 });

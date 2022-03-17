@@ -1,0 +1,107 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "CouchDB datasource",
+  "description": "A schema defining CouchDB datasource",
+  "type": "database",
+  "source": {
+    "name": "CouchDB",
+    "kind": "couchdb",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {},
+      "customTesting": false
+    },
+    "options": {
+      "password": {
+        "type": "string",
+        "encrypted": true
+      },
+      "database": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "host": {
+        "type": "string"
+      },
+      "protocol": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "database": {
+      "value": ""
+    },
+    "port": {
+      "value": "5984"
+    },
+    "host": {
+      "value": ""
+    },
+    "protocol": {
+      "type": "HTTP"
+    }
+  },
+  "properties": {
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": ""
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "5984 ",
+      "helpText": ""
+    },
+    "username": {
+      "label": "Username",
+      "key": "username",
+      "type": "text",
+      "description": "username for couchDB",
+      "helpText": ""
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "password for couchDB",
+      "helpText": ""
+    },
+    "database": {
+      "label": "Database Name",
+      "key": "database",
+      "type": "text",
+      "description": "database name",
+      "helpText": ""
+    },
+    "protocol": {
+      "label": "Protocol",
+      "key": "protocol",
+      "type": "dropdown",
+      "list": [
+        {
+          "name": "HTTP",
+          "value": "http"
+        },
+        {
+          "name": "HTTPS",
+          "value": "https"
+        }
+      ],
+      "description": "Enter protocol"
+    }
+  },
+  "required": ["username", "password", "database", "port", "host", "protocol"]
+}

@@ -827,7 +827,14 @@ class Editor extends React.Component {
     } else if (!isEmpty(this.state.editingVersion)) {
       this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
       appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
-        this.setState({ isSavingEditingVersion: false });
+        this.setState({
+          isSavingEditingVersion: false,
+          editingVersion: {
+            ...this.state.editingVersion,
+            ...{ definition: this.state.appDefinition },
+          },
+        });
+
         setTimeout(() => this.setState({ showSaveDetail: false }), 3000);
       });
     }
@@ -885,7 +892,7 @@ class Editor extends React.Component {
   };
 
   handleOnComponentOptionsChanged = (component, options) => {
-    onComponentOptionsChanged(this, component, options);
+    return onComponentOptionsChanged(this, component, options);
   };
 
   handleComponentClick = (id, component) => {
@@ -1171,9 +1178,9 @@ class Editor extends React.Component {
                 }}
               >
                 <div className="row main-row">
-                  <div className="col-3 data-pane">
+                  <div className="data-pane">
                     <div className="queries-container">
-                      <div className="queries-header row">
+                      <div className="queries-header row" style={{ marginLeft: '1.5px' }}>
                         {showQuerySearchField && (
                           <div className="col-12 p-1">
                             <div className="queries-search px-1">
@@ -1189,7 +1196,10 @@ class Editor extends React.Component {
                         {!showQuerySearchField && (
                           <>
                             <div className="col">
-                              <h5 style={{ fontSize: '14px' }} className="py-1 px-3 mt-2 text-muted">
+                              <h5
+                                style={{ fontSize: '14px', marginLeft: ' 6px' }}
+                                className="py-1 px-3 mt-2 text-muted"
+                              >
                                 Queries
                               </h5>
                             </div>
@@ -1258,7 +1268,7 @@ class Editor extends React.Component {
                       )}
                     </div>
                   </div>
-                  <div className="col-9 query-definition-pane-wrapper">
+                  <div className="query-definition-pane-wrapper">
                     {!loadingDataSources && (
                       <div className="query-definition-pane">
                         <div>

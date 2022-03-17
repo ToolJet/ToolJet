@@ -3,12 +3,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export const Multiselect = function Multiselect({
+  id,
+  component,
   height,
   properties,
   styles,
   exposedVariables,
   setExposedVariable,
   fireEvent,
+  onComponentClick,
 }) {
   const { label, value, values, display_values } = properties;
   const { borderRadius, visibility, disabledState } = styles;
@@ -51,7 +54,7 @@ export const Multiselect = function Multiselect({
       setCurrentValue(properties.value);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, []);
 
   useEffect(() => {
     selectRef.current.querySelector('.select-search__input').style.borderRadius = `${Number.parseFloat(
@@ -61,7 +64,7 @@ export const Multiselect = function Multiselect({
   }, [borderRadius, selectRef.current]);
 
   const handleChange = (value) => {
-    setCurrentValue(value);
+    // setCurrentValue(value);
     setExposedVariable('values', value).then(() => fireEvent('onSelect'));
   };
 
@@ -87,6 +90,9 @@ export const Multiselect = function Multiselect({
           placeholder="Select.."
           ref={selectRef}
           closeOnSelect={false}
+          onFocus={(event) => {
+            onComponentClick(id, component, event);
+          }}
         />
       </div>
     </div>
