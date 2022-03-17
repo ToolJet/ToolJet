@@ -9,7 +9,7 @@ export default class influxdb implements QueryService {
     let response = null;
     const apiKey = sourceOptions.api_token;
     const { port, host, protocol } = sourceOptions;
-    const { operation, bucket_id } = queryOptions;
+    const { operation, bucket_id, bucket, org, orgID, precision } = queryOptions;
 
     const authHeader = (token: string): Headers => {
       return {
@@ -66,6 +66,21 @@ export default class influxdb implements QueryService {
           response = await got(`${protocol}://${host}:${port}/api/v2/buckets/${bucket_id}`, {
             method: 'delete',
             headers: authHeader(apiKey),
+          });
+          result = this.parseJSON(response.body);
+          break;
+        }
+
+        case 'write': {
+          response = await got(`${protocol}://${host}:${port}/api/v2/write`, {
+            method: 'post',
+            headers: authHeader(apiKey),
+            searchParams: {
+              ...(bucket?.length > 0 && { bucket }),
+              ...(org?.length > 0 && { org }),
+              ...(orgID && { orgID }),
+              ...(precision && { precision }),
+            },
           });
           result = this.parseJSON(response.body);
           break;
