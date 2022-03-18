@@ -10,19 +10,29 @@ const RealtimeAvatars = ({ self }) => {
       <div className="col-auto ms-auto">
         <div className="avatar-list avatar-list-stacked">
           {self.presence && (
-            <span key={self.presence.id} className="avatar avatar-sm avatar-rounded">
+            <span
+              style={{ border: `1px solid ${self.presence.color}` }}
+              key={self.presence.id}
+              className="avatar avatar-sm avatar-rounded"
+            >
               {self.presence?.name}
             </span>
           )}
           {others.slice(0, MAX_DISPLAY_USERS).map(({ id, presence }) => {
             return (
-              <span key={id} className="avatar avatar-sm avatar-rounded">
+              <span
+                key={id}
+                style={{ border: `1px solid ${presence.color}` }}
+                className="avatar avatar-sm avatar-rounded"
+              >
                 {presence?.name}
               </span>
             );
           })}
           {others.length > MAX_DISPLAY_USERS && (
-            <span className="avatar avatar-sm avatar-rounded">+{others.length - MAX_DISPLAY_USERS}</span>
+            <span style={{ border: `1px solid` }} className="avatar avatar-sm avatar-rounded">
+              +{others.length - MAX_DISPLAY_USERS}
+            </span>
           )}
         </div>
       </div>
