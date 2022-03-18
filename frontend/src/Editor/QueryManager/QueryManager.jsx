@@ -1,17 +1,17 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import Select from 'react-select';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
 import { previewQuery } from '@/_helpers/appUtils';
-import { allSvgs } from '@tooljet/plugins/client';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
-import RunjsIcon from '../Icons/runjs.svg';
+import DataSourceLister from './DataSourceLister';
 import { JSONTree } from 'react-json-tree';
+import { allSvgs } from '@tooljet/plugins/client';
+import RunjsIcon from '../Icons/runjs.svg';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -31,6 +31,7 @@ let QueryManager = class QueryManager extends React.Component {
       dataSourceMeta: {},
       dataQueries: [],
       theme: {},
+      isSourceSelected: false,
     };
 
     this.previewPanelRef = React.createRef();
@@ -43,7 +44,6 @@ let QueryManager = class QueryManager extends React.Component {
     let dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
     const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
-
     this.setState(
       {
         appId: props.appId,
@@ -57,6 +57,7 @@ let QueryManager = class QueryManager extends React.Component {
         currentState: props.currentState,
         selectedSource: source,
         dataSourceMeta,
+        isSourceSelected: props.isSourceSelected,
         selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
         theme: {
           scheme: 'bright',
@@ -125,6 +126,12 @@ let QueryManager = class QueryManager extends React.Component {
   isJson = (maybeJson) => {
     if (typeof maybeJson === 'object') return true;
     return false;
+  };
+
+  handleBackButton = () => {
+    this.setState({
+      isSourceSelected: true,
+    });
   };
 
   changeDataSource = (sourceId) => {
@@ -244,26 +251,6 @@ let QueryManager = class QueryManager extends React.Component {
     this.optionchanged(option, !currentValue);
   };
 
-  renderDataSourceOption = (props) => {
-    const Icon = allSvgs[props.kind];
-    return (
-      <div>
-        {props.kind === 'runjs' ? (
-          <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
-        ) : (
-          Icon && <Icon style={{ height: 25, width: 25 }} />
-        )}
-
-        <span
-          style={{ height: '25px', display: 'inline-block', marginTop: '3.5px' }}
-          className={`mx-2 ${this.props.darkMode ? 'text-white' : 'text-muted'}`}
-        >
-          {props.label}
-        </span>
-      </div>
-    );
-  };
-
   // Here we have mocked data query in format of a component to be usable by event manager
   // TODO: Refactor EventManager to be generic
   mockDataQueryAsComponent = () => {
@@ -313,62 +300,7 @@ let QueryManager = class QueryManager extends React.Component {
     let buttonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
-
-    const selectStyles = {
-      container: (provided) => ({
-        ...provided,
-        width: 224,
-        height: 32,
-      }),
-      control: (provided) => ({
-        ...provided,
-        borderColor: 'hsl(0, 0%, 80%)',
-        boxShadow: 'none',
-        '&:hover': {
-          borderColor: 'hsl(0, 0%, 80%)',
-        },
-        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
-        height: '32px!important',
-        minHeight: '32px!important',
-      }),
-      valueContainer: (provided, _state) => ({
-        ...provided,
-        height: 32,
-        marginBottom: '4px',
-      }),
-      indicatorsContainer: (provided, _state) => ({
-        ...provided,
-        height: 32,
-      }),
-      indicatorSeparator: (_state) => ({
-        display: 'none',
-      }),
-      input: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-      }),
-      menu: (provided) => ({
-        ...provided,
-        zIndex: 2,
-        backgroundColor: this.props.darkMode ? 'rgb(31,40,55)' : 'white',
-      }),
-      option: (provided) => ({
-        ...provided,
-        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-        ':hover': {
-          backgroundColor: this.props.darkMode ? '#323C4B' : '#d8dce9',
-        },
-      }),
-      placeholder: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#808080',
-      }),
-      singleValue: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-      }),
-    };
+    const Icon = allSvgs[this?.state?.selectedDataSource?.kind];
 
     return (
       <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
@@ -410,7 +342,7 @@ let QueryManager = class QueryManager extends React.Component {
             </div>
           )}
           <div className="col-auto px-1 m-auto">
-            {(addingQuery || editingQuery) && (
+            {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={() => {
                   const _options = { ...options };
@@ -436,7 +368,7 @@ let QueryManager = class QueryManager extends React.Component {
                 Preview
               </button>
             )}
-            {(addingQuery || editingQuery) && (
+            {selectedDataSource && (addingQuery || editingQuery) && (
               <button
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled}
@@ -462,21 +394,68 @@ let QueryManager = class QueryManager extends React.Component {
               <div className="row row-deck px-2 mt-0 query-details">
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mt-1 mb-2">
-                    <label className="form-label col-md-2">Datasource</label>
-                    <Select
-                      options={[
-                        ...dataSources.map((source) => {
-                          return { label: source.name, value: source.id, kind: source.kind };
-                        }),
-                        ...staticDataSources.map((source) => {
-                          return { label: source.name, value: source.id, kind: source.kind };
-                        }),
-                      ]}
-                      formatOptionLabel={this.renderDataSourceOption}
-                      onChange={(newValue) => this.changeDataSource(newValue.value)}
-                      placeholder="Select a data source"
-                      styles={selectStyles}
-                    />
+                    <div className="datasource-heading ">
+                      {this.state.selectedDataSource !== null && (
+                        <p
+                          onClick={() => {
+                            this.setState({
+                              isSourceSelected: false,
+                              selectedDataSource: null,
+                            });
+                          }}
+                          style={{ marginTop: '-7px' }}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="icon icon-tabler icon-tabler-arrow-left"
+                            width="44"
+                            height="44"
+                            viewBox="0 0 24 24"
+                            strokeWidth="1.5"
+                            stroke="#9e9e9e"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <line x1="5" y1="12" x2="11" y2="18" />
+                            <line x1="5" y1="12" x2="11" y2="6" />
+                          </svg>
+                        </p>
+                      )}
+                      {!this.state.isSourceSelected && <label className="form-label col-md-2">Datasource</label>}{' '}
+                      {this?.state?.selectedDataSource?.kind && (
+                        <div className="header-query-datasource-card-container">
+                          <div
+                            className="header-query-datasource-card badge "
+                            style={{
+                              background: this.props.darkMode ? '#2f3c4c' : 'white',
+                              color: this.props.darkMode ? 'white' : '#3e525b',
+                            }}
+                          >
+                            {this.state?.selectedDataSource?.kind === 'runjs' ? (
+                              <RunjsIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
+                            ) : (
+                              Icon && <Icon style={{ height: 18, width: 18, marginLeft: 7 }} />
+                            )}
+                            <p className="header-query-datasource-name">
+                              {' '}
+                              {this.state?.selectedDataSource?.kind && this.state.selectedDataSource.kind}
+                            </p>
+                          </div>{' '}
+                        </div>
+                      )}
+                    </div>
+                    {!this.state.isSourceSelected && (
+                      <DataSourceLister
+                        dataSources={dataSources}
+                        staticDataSources={staticDataSources}
+                        changeDataSource={this.changeDataSource}
+                        handleBackButton={this.handleBackButton}
+                        darkMode={this.props.darkMode}
+                      />
+                    )}
                   </div>
                 )}
 

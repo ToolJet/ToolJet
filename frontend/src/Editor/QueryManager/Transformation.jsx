@@ -6,7 +6,7 @@ import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
-import { Alert } from '@/_ui/Alert';
+import { Popover, OverlayTrigger } from 'react-bootstrap';
 
 export const Transformation = ({ changeOption, currentState, options, darkMode }) => {
   const defaultValue =
@@ -29,9 +29,21 @@ return data.filter(row => row.amount > 1000);`;
     changeOption('enableTransformation', !enableTransformation);
   }
 
+  const popover = (
+    <Popover id="transformation-popover-container">
+      <p className="transformation-popover">
+        Transformations can be used to transform the results of queries. All the app variables are accessible from
+        transformers and supports JS libraries such as Lodash & Moment.{' '}
+        <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
+          Read documentation
+        </a>
+        .
+      </p>
+    </Popover>
+  );
   return (
     <div className="field mb-2 transformation-editor">
-      <div className="mb-2" style={{ display: 'flex' }}>
+      <div className="mb-2" style={{ display: 'flex', position: 'relative' }}>
         <div className="form-check form-switch">
           <input
             className="form-check-input"
@@ -40,20 +52,21 @@ return data.filter(row => row.amount > 1000);`;
             checked={enableTransformation}
           />
         </div>
-        <span style={{ fontWeight: 600 }} className="form-check-label mx-1">
-          Transformations
-        </span>
+        <OverlayTrigger trigger="click" placement="top" overlay={popover} rootClose>
+          <span
+            style={{
+              fontWeight: 600,
+              borderBottom: '1px dashed #3e525b',
+              position: 'absolute',
+              left: '50px',
+              top: '-3px',
+            }}
+            className="form-check-label mx-1"
+          >
+            Transformations
+          </span>
+        </OverlayTrigger>
       </div>
-      {!enableTransformation && (
-        <Alert svg="circular-info">
-          Transformations can be used to transform the results of queries. All the app variables are accessible from
-          transformers and supports JS libraries such as Lodash & Moment.{' '}
-          <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
-            Read documentation
-          </a>
-          .
-        </Alert>
-      )}
       <br></br>
       {enableTransformation && (
         <div>
