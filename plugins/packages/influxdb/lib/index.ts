@@ -9,7 +9,7 @@ export default class influxdb implements QueryService {
     let response = null;
     const apiKey = sourceOptions.api_token;
     const { port, host, protocol } = sourceOptions;
-    const { operation, bucket_id, bucket, org, orgID, precision } = queryOptions;
+    const { operation, bucket_id, bucket, org, orgID, precision, name } = queryOptions;
 
     const authHeader = (token: string): Headers => {
       return {
@@ -71,6 +71,59 @@ export default class influxdb implements QueryService {
           break;
         }
 
+        case 'query_suggestions_for_branching': {
+          response = await got(`${protocol}://${host}:${port}/api/v2/query/suggestions/${name}`, {
+            headers: authHeader(apiKey),
+            method: 'get',
+          });
+          result = this.parseJSON(response.body);
+          break;
+        }
+
+        case 'query_suggestions': {
+          response = await got(`${protocol}://${host}:${port}/api/v2/query/suggestions`, {
+            headers: authHeader(apiKey),
+            method: 'get',
+          });
+          result = this.parseJSON(response.body);
+          break;
+        }
+
+        case 'analyze_flux_query': {
+          response = await got(`${protocol}://${host}:${port}/api/v2/query/analyze`, {
+            method: 'post',
+            headers: authHeader(apiKey),
+            json: {
+              records: this.parseJSON(queryOptions.body),
+            },
+          });
+          result = this.parseJSON(response.body);
+          break;
+        }
+        case 'query_data': {
+          response = await got(`${protocol}://${host}:${port}/api/v2/query`, {
+            method: 'post',
+            headers: authHeader(apiKey),
+            searchParams: {
+              ...(org?.length > 0 && { org }),
+              ...(orgID?.length > 0 && { orgID }),
+            },
+          });
+          result = this.parseJSON(response.body);
+          break;
+        }
+
+        case 'abstract_syntax_tree': {
+          response = await got(`${protocol}://${host}:${port}/api/v2/query/ast`, {
+            method: 'post',
+            headers: authHeader(apiKey),
+            json: {
+              query: this.parseJSON(queryOptions.body),
+            },
+          });
+          result = this.parseJSON(response.body);
+          break;
+        }
         case 'write': {
           response = await got(`${protocol}://${host}:${port}/api/v2/write`, {
             method: 'post',

@@ -37,7 +37,7 @@
           "name": "Query data"
         },
         {
-          "value": "flux_query",
+          "value": "analyze_flux_query",
           "name": "Analyze a Flux query"
         },
         {
@@ -189,9 +189,9 @@
         "placeholder": "Flux query script to be analyzed"
       }
     },
-    "flux_query": {
+    "analyze_flux_query": {
       "body": {
-        "label": "flux query",
+        "label": "analyze flux query",
         "key": "query",
         "type": "codehinter",
         "description": "Enter query",
