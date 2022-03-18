@@ -13,40 +13,37 @@
       "description": "Single select dropdown for operation",
       "list": [
         {
-          "value": "list_buckets",
-          "name": "List buckets"
-        },
-        {
           "value": "write",
           "name": "Write"
-        },
-        {
-          "value": "abstract_syntax_tree",
-          "name": "Generate an Abstract Syntax Tree (AST) from a query "
-        },
-        {
-          "value": "query_suggestions_for_branching",
-          "name": "Retrieve query suggestions for a branching suggestion"
-        },
-        {
-          "value": "query_suggestions",
-          "name": "Retrieve query suggestions "
         },
         {
           "value": "query_data",
           "name": "Query data"
         },
         {
+          "value": "abstract_syntax_tree",
+          "name": "Generate an Abstract Syntax Tree (AST) from a query "
+        },
+        {
+          "value": "query_suggestions",
+          "name": "Retrieve query suggestions "
+        },
+        {
+          "value": "query_suggestions_for_branching",
+          "name": "Retrieve query suggestions for a branching suggestion"
+        },
+
+        {
           "value": "analyze_flux_query",
           "name": "Analyze a Flux query"
         },
         {
-          "value": "create_bucket",
-          "name": "Create a bucket "
+          "value": "list_buckets",
+          "name": "List buckets"
         },
         {
-          "value": "delete_bucket",
-          "name": "Delete a bucket"
+          "value": "create_bucket",
+          "name": "Create a bucket "
         },
         {
           "value": "retrieve_bucket",
@@ -55,6 +52,10 @@
         {
           "value": "update_bucket",
           "name": "Update a bucket"
+        },
+        {
+          "value": "delete_bucket",
+          "name": "Delete a bucket"
         }
       ]
     },
