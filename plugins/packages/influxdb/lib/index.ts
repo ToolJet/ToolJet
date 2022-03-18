@@ -9,7 +9,7 @@ export default class influxdb implements QueryService {
     let response = null;
     const apiKey = sourceOptions.api_token;
     const { port, host, protocol } = sourceOptions;
-    const { operation, bucket_id, bucket, org, orgID, precision, name } = queryOptions;
+    const { operation, bucket_id, bucket, org, precision, name } = queryOptions;
 
     const authHeader = (token: string): Headers => {
       return {
@@ -89,9 +89,7 @@ export default class influxdb implements QueryService {
           response = await got(`${protocol}://${host}:${port}/api/v2/query/analyze`, {
             method: 'post',
             headers: authHeader(apiKey),
-            json: {
-              records: this.parseJSON(queryOptions.body),
-            },
+            json: this.parseJSON(queryOptions.body),
           });
           result = this.parseJSON(response.body);
           break;
@@ -102,8 +100,8 @@ export default class influxdb implements QueryService {
             headers: authHeader(apiKey),
             searchParams: {
               ...(org?.length > 0 && { org }),
-              ...(orgID?.length > 0 && { orgID }),
             },
+            json: this.parseJSON(queryOptions.body),
           });
           result = this.parseJSON(response.body);
           break;
@@ -113,9 +111,7 @@ export default class influxdb implements QueryService {
           response = await got(`${protocol}://${host}:${port}/api/v2/query/ast`, {
             method: 'post',
             headers: authHeader(apiKey),
-            json: {
-              query: this.parseJSON(queryOptions.body),
-            },
+            json: this.parseJSON(queryOptions.body),
           });
           result = this.parseJSON(response.body);
           break;
@@ -127,7 +123,6 @@ export default class influxdb implements QueryService {
             searchParams: {
               ...(bucket?.length > 0 && { bucket }),
               ...(org?.length > 0 && { org }),
-              ...(orgID && { orgID }),
               ...(precision && { precision }),
             },
           });
@@ -146,8 +141,7 @@ export default class influxdb implements QueryService {
     };
   }
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { port, host, database, protocol, api_token } = sourceOptions;
+    const { port, host, protocol, api_token } = sourceOptions;
     const client = await got(`${protocol}://${host}:${port}/influxdb/cloud/api//ping`, {
       method: 'get',
       headers: { Authorization: `Token ${api_token}` },
