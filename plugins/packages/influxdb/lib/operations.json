@@ -62,7 +62,7 @@
     "create_bucket": {
       "body": {
         "label": "query",
-        "key": "query",
+        "key": "body",
         "type": "codehinter",
         "description": "Enter query",
         "height": "150px",
@@ -72,17 +72,20 @@
     "delete_bucket": {
       "bucket_id": {
         "label": "bucketID",
-        "key": "bucketID",
+        "key": "bucket_id",
         "type": "codehinter",
         "description": "Enter bucketID",
-        "height": "150px",
-        "placeholder": "bucketID"
+        "placeholder": "bucketID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
       }
     },
     "retrieve_bucket": {
       "bucket_id": {
         "label": "bucketID",
-        "key": "bucketID",
+        "key": "bucket_id",
         "type": "codehinter",
         "description": "Enter bucketID",
         "height": "150px",
@@ -92,7 +95,7 @@
     "update_bucket": {
       "body": {
         "label": "query",
-        "key": "query",
+        "key": "body",
         "type": "codehinter",
         "description": "Enter query",
         "height": "150px",
@@ -100,7 +103,7 @@
       },
       "bucket_id": {
         "label": "bucketID",
-        "key": "bucketID",
+        "key": "bucket_id",
         "type": "codehinter",
         "description": "Enter bucketID",
         "height": "150px",
@@ -121,7 +124,7 @@
       },
       "org": {
         "label": "organization name or ID",
-        "key": "organization",
+        "key": "org",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter organization name or ID",
@@ -145,7 +148,7 @@
     "abstract_syntax_tree": {
       "body": {
         "label": "query",
-        "key": "query",
+        "key": "body",
         "type": "codehinter",
         "description": "Enter query",
         "height": "150px",
@@ -171,7 +174,7 @@
     "query_data": {
       "org": {
         "label": "organization name or ID",
-        "key": "organization",
+        "key": "org",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter organization name or ID",
@@ -182,7 +185,7 @@
       },
       "body": {
         "label": "flux query",
-        "key": "query",
+        "key": "body",
         "type": "codehinter",
         "description": "Enter query",
         "height": "150px",
@@ -192,7 +195,7 @@
     "analyze_flux_query": {
       "body": {
         "label": "analyze flux query",
-        "key": "query",
+        "key": "body",
         "type": "codehinter",
         "description": "Enter query",
         "height": "150px",
