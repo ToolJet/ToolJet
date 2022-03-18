@@ -10,7 +10,7 @@ export type QueryOptions = {
   org: string;
   bucket: string;
   bucket_id: string;
-  precision: string;
+  precision?: string;
   name: string;
   body: string;
   orgID: string;
