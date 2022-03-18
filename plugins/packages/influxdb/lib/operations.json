@@ -96,6 +96,17 @@
       }
     },
     "update_bucket": {
+      "bucket_id": {
+        "label": "Bucket ID",
+        "key": "bucket_id",
+        "type": "codehinter",
+        "description": "Enter bucketID",
+        "placeholder": "bucketID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
       "body": {
         "label": "Query",
         "key": "body",
@@ -103,14 +114,6 @@
         "description": "Enter query",
         "height": "150px",
         "placeholder": "Flux query script to be analyzed"
-      },
-      "bucket_id": {
-        "label": "Bucket ID",
-        "key": "bucket_id",
-        "type": "codehinter",
-        "description": "Enter bucketID",
-        "height": "150px",
-        "placeholder": "bucketID"
       }
     },
     "write": {

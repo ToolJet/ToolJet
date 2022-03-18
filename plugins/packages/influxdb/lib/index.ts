@@ -42,9 +42,7 @@ export default class influxdb implements QueryService {
           response = await got(`${protocol}://${host}:${port}/api/v2/buckets`, {
             method: 'post',
             headers: authHeader(apiKey),
-            json: {
-              records: this.parseJSON(queryOptions.body),
-            },
+            json: this.parseJSON(queryOptions.body),
           });
           result = this.parseJSON(response.body);
           break;
@@ -52,11 +50,9 @@ export default class influxdb implements QueryService {
 
         case 'update_bucket': {
           response = await got(`${protocol}://${host}:${port}/api/v2/buckets/${bucket_id}`, {
-            method: 'put',
+            method: 'patch',
             headers: authHeader(apiKey),
-            json: {
-              records: this.parseJSON(queryOptions.body),
-            },
+            json: this.parseJSON(queryOptions.body),
           });
           result = this.parseJSON(response.body);
           break;
