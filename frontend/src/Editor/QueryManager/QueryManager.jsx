@@ -424,7 +424,7 @@ let QueryManager = class QueryManager extends React.Component {
                           </svg>
                         </p>
                       )}
-                      {!this.state.isSourceSelected && <label className="form-label col-md-2">Datasource</label>}{' '}
+                      {!this.state.isSourceSelected && <label className="form-label col-md-3">Select Datasource</label>}{' '}
                       {this?.state?.selectedDataSource?.kind && (
                         <div className="header-query-datasource-card-container">
                           <div
