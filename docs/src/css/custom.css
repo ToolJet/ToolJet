@@ -156,5 +156,5 @@ strong {
 }
 
 .menu:hover {
-  overflow-y: overlay;
+  overflow-y: auto;
 }

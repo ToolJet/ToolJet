@@ -666,7 +666,8 @@ export const componentTypes = [
       borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
-      value: {},
+      value:
+        'ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀',
     },
     definition: {
       others: {
@@ -1822,6 +1823,7 @@ export const componentTypes = [
     properties: {
       primaryValueLabel: { type: 'code', displayName: 'Primary value label' },
       primaryValue: { type: 'code', displayName: 'Primary value' },
+      hideSecondary: { type: 'toggle', displayName: 'Hide secondary value' },
       secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
       secondaryValue: { type: 'code', displayName: 'Secondary value' },
       secondarySignDisplay: { type: 'code', displayName: 'Secondary sign display' },
@@ -1852,6 +1854,61 @@ export const componentTypes = [
         primaryTextColour: { value: '#000000' },
         secondaryLabelColour: { value: '#8092AB' },
         secondaryTextColour: { value: '#36AF8B' },
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'RangeSlider',
+    displayName: 'Range slider',
+    description: 'Can be used to show slider with a range',
+    component: 'RangeSlider',
+    defaultSize: {
+      width: 9,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      min: { type: 'number', displayName: 'Min' },
+      max: { type: 'number', displayName: 'Max' },
+      value: { type: 'code', displayName: 'Value' },
+      enableTwoHandle: { type: 'toggle', displayName: 'Two handles' },
+    },
+    events: {},
+    styles: {
+      lineColor: { type: 'color', displayName: 'Line color' },
+      handleColor: { type: 'color', displayName: 'Handle color' },
+      trackColor: { type: 'color', displayName: 'Track color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      value: null,
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        min: {
+          value: '{{0}}',
+        },
+        max: {
+          value: '{{100}}',
+        },
+        value: {
+          value: '{{50}}',
+        },
+        enableTwoHandle: { value: false },
+      },
+      events: [],
+      styles: {
+        lineColor: { value: '#E9E9E9' },
+        handleColor: { value: '#4D72FA' },
+        trackColor: { value: '#4D72FA' },
         visibility: { value: '{{true}}' },
       },
     },

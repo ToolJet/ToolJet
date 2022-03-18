@@ -200,6 +200,8 @@ export class AppsController {
     } else {
       apps = await this.appsService.all(req.user, page, searchKey);
     }
+    //remove password from user info
+    apps.forEach((app) => (app.user.password = undefined));
 
     const totalCount = await this.appsService.count(req.user, searchKey);
 
@@ -295,6 +297,19 @@ export class AppsController {
 
     const appUser = await this.appsService.updateVersion(req.user, version, definition);
     return decamelizeKeys(appUser);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/versions/:versionId')
+  async deleteVersion(@Request() req, @Param() params) {
+    const version = await this.appsService.findVersion(params.versionId);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
+
+    if (!version || !ability.can('deleteVersions', version.app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    return await this.appsService.deleteVersion(version.app, version);
   }
 
   @UseGuards(JwtAuthGuard)
