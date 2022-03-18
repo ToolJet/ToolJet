@@ -29,10 +29,6 @@
           "name": "Update Document"
         },
         {
-          "value": "set_document",
-          "name": "Set Document"
-        },
-        {
           "value": "bulk_update",
           "name": "Bulk update using document id"
         },
@@ -42,56 +38,128 @@
         }
       ]
     },
-    "query_collection": {
-      "collection_id": {
-        "label": "Path",
-        "key": "path",
+    "get_document": {
+      "collectionId": {
+        "label": "Collection ID",
+        "key": "collectionId",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter path",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter path"
-      },
-      "order_field": {
-        "label": "Order",
-        "key": "order_field",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter order",
-        "width": "320px",
+        "description": "Enter collection id",
         "height": "36px",
         "className": "codehinter-plugins col-6",
-        "placeholder": "Enter order"
+        "placeholder": "Enter Collection ID"
       },
-      "order_type": {
-        "label": "Order type",
-        "key": "order_type",
-        "className": "col-6",
-        "type": "dropdown",
-        "description": "Single select dropdown for order type",
-        "list": [
-          {
-            "value": "asc",
-            "name": "Ascending"
-          },
-          {
-            "value": "desc",
-            "name": "Descending"
-          }
-        ]
-      },
-      "limit": {
-        "label": "Limit",
-        "key": "limit",
+      "documentId": {
+        "label": "Document ID",
+        "key": "documentId",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter limit",
+        "description": "Enter document id",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter Document ID"
+      }
+    },
+    "add_document": {
+      "collectionId": {
+        "label": "Collection ID",
+        "key": "collectionId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection id",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter Collection ID"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter document body",
+        "height": "150px"
+      }
+    },
+    "update_document": {
+      "collectionId": {
+        "label": "Collection ID",
+        "key": "collectionId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection id",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter Collection ID"
+      },
+      "documentId": {
+        "label": "Document ID",
+        "key": "documentId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter document id",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter Document ID"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter document body",
+        "height": "150px"
+      }
+    },
+    "delete_document": {
+      "collectionId": {
+        "label": "Collection ID",
+        "key": "collectionId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection id",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter Collection ID"
+      },
+      "documentId": {
+        "label": "Document ID",
+        "key": "documentId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter document id",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter Document ID"
+      }
+    },
+    "bulk_update": {
+      "collectionId": {
+        "label": "Collection ID",
+        "key": "collectionId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter collection id",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter limit"
+        "placeholder": "Enter Collection ID"
+      },
+      "document_id_key": {
+        "label": "Key for document Id",
+        "key": "document_id_key",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter key for document Id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter key for document Id"
+      },
+      "records": {
+        "label": "Records",
+        "key": "records",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter records",
+        "height": "150px"
       }
     }
   }

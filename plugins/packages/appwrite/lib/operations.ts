@@ -11,52 +11,37 @@ export async function queryCollection(
   return await db.listDocuments(collection, [], limitProvided ? limit : 25, 0, null, null, order_fields, order_types);
 }
 
-export async function getDocument(db, path: string): Promise<object> {
-  const docRef = db.doc(path);
-  const doc = await docRef.get();
-  // if (!doc.exists) {
-
-  return doc.data();
+export async function getDocument(db: Database, collectionId: string, documentId: string): Promise<object> {
+  return await db.getDocument(collectionId, documentId);
 }
 
-export async function setDocument(db, path: string, body: string): Promise<object> {
-  const docRef = db.doc(path);
-  const result = await docRef.set(JSON.parse(body));
-
-  return result;
+export async function createDocument(db: Database, collectionId: string, body: object): Promise<object> {
+  return await db.createDocument(collectionId, 'unique()', body);
 }
 
-export async function addDocument(db, path: string, body: string): Promise<object> {
-  const docRef = db.doc(path);
-  const result = await docRef.set(JSON.parse(body));
-
-  return result;
+export async function updateDocument(
+  db: Database,
+  collectionId: string,
+  documentId: string,
+  body: object
+): Promise<object> {
+  return await db.updateDocument(collectionId, documentId, body);
 }
 
-export async function updateDocument(db, path: string, body: string): Promise<object> {
-  const docRef = db.doc(path);
-  const result = await docRef.update(JSON.parse(body));
-
-  return result;
-}
-
-export async function deleteDocument(db, path: string): Promise<object> {
-  const docRef = db.doc(path);
-  const result = await docRef.delete();
-
-  return result;
+export async function deleteDocument(db: Database, collectionId: string, documentId: string): Promise<object> {
+  return await db.deleteDocument(collectionId, documentId);
 }
 
 export async function bulkUpdate(
-  db,
-  collection: string,
+  db: Database,
+  collectionId: string,
   records: Array<object>,
   documentIdKey: string
 ): Promise<object> {
   for (const record of records) {
-    const path = `${collection}/${record[documentIdKey]}`;
-    await updateDocument(db, path, JSON.stringify(record));
+    const documentId = record[documentIdKey];
+    await db.updateDocument(collectionId, documentId, record);
   }
 
-  return {};
+  return { message: 'Docs are being updated' };
 }

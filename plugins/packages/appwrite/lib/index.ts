@@ -1,7 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import sdk from 'node-appwrite';
-import { queryCollection } from './operations';
+import { bulkUpdate, createDocument, deleteDocument, getDocument, updateDocument } from './operations';
 
 export default class Appwrite implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -11,16 +11,35 @@ export default class Appwrite implements QueryService {
 
     try {
       switch (operation) {
-        case 'query_collection': {
-          result = await queryCollection(
+        case 'get_document':
+          result = await getDocument(database, queryOptions.collectionId, queryOptions.documentId);
+          break;
+        case 'add_document':
+          result = await createDocument(
             database,
-            queryOptions.path,
-            parseInt(queryOptions.limit),
-            queryOptions.order_field,
-            queryOptions.order_type
+            queryOptions.collectionId,
+            typeof queryOptions.body === 'string' ? JSON.parse(queryOptions.body) : queryOptions.body
           );
           break;
-        }
+        case 'update_document':
+          result = await updateDocument(
+            database,
+            queryOptions.collectionId,
+            queryOptions.documentId,
+            typeof queryOptions.body === 'string' ? JSON.parse(queryOptions.body) : queryOptions.body
+          );
+          break;
+        case 'delete_document':
+          result = await deleteDocument(database, queryOptions.collectionId, queryOptions.documentId);
+          break;
+        case 'bulk_update':
+          result = await bulkUpdate(
+            database,
+            queryOptions.collectionId,
+            typeof queryOptions.records === 'string' ? JSON.parse(queryOptions.records) : queryOptions.records,
+            queryOptions['document_id_key']
+          );
+          break;
       }
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
