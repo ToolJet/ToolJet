@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@tooljet-plugins/airtable": "file:packages/airtable",
+    "@tooljet-plugins/appwrite": "file:packages/appwrite",
     "@tooljet-plugins/bigquery": "file:packages/bigquery",
     "@tooljet-plugins/common": "file:packages/common",
     "@tooljet-plugins/couchdb": "file:packages/couchdb",
@@ -49,6 +50,8 @@
   },
   "devDependencies": {
     "@types/jest": "^27.4.1",
+    "@types/nodemailer": "^6.4.4",
+    "@types/oracledb": "^5.2.2",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "@typescript-eslint/parser": "^4.31.1",
     "eslint": "^7.32.0",

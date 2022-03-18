@@ -1,0 +1,98 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Appwrite datasource",
+  "description": "A schema defining Appwrite datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "get_document",
+          "name": "Get Document"
+        },
+        {
+          "value": "query_collection",
+          "name": "Query collection"
+        },
+        {
+          "value": "add_document",
+          "name": "Add Document to Collection"
+        },
+        {
+          "value": "update_document",
+          "name": "Update Document"
+        },
+        {
+          "value": "set_document",
+          "name": "Set Document"
+        },
+        {
+          "value": "bulk_update",
+          "name": "Bulk update using document id"
+        },
+        {
+          "value": "delete_document",
+          "name": "Delete Document"
+        }
+      ]
+    },
+    "query_collection": {
+      "collection_id": {
+        "label": "Path",
+        "key": "path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter path",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter path"
+      },
+      "order_field": {
+        "label": "Order",
+        "key": "order_field",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter order",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter order"
+      },
+      "order_type": {
+        "label": "Order type",
+        "key": "order_type",
+        "className": "col-6",
+        "type": "dropdown",
+        "description": "Single select dropdown for order type",
+        "list": [
+          {
+            "value": "asc",
+            "name": "Ascending"
+          },
+          {
+            "value": "desc",
+            "name": "Descending"
+          }
+        ]
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter limit",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter limit"
+      }
+    }
+  }
+}
