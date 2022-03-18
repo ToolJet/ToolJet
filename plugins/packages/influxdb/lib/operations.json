@@ -61,7 +61,7 @@
     "list_buckets": {},
     "create_bucket": {
       "body": {
-        "label": "query",
+        "label": "Query",
         "key": "body",
         "type": "codehinter",
         "description": "Enter query",
@@ -71,7 +71,7 @@
     },
     "delete_bucket": {
       "bucket_id": {
-        "label": "bucketID",
+        "label": "Bucket ID",
         "key": "bucket_id",
         "type": "codehinter",
         "description": "Enter bucketID",
@@ -84,17 +84,20 @@
     },
     "retrieve_bucket": {
       "bucket_id": {
-        "label": "bucketID",
+        "label": "Bucket ID",
         "key": "bucket_id",
         "type": "codehinter",
         "description": "Enter bucketID",
-        "height": "150px",
-        "placeholder": "bucketID"
+        "placeholder": "bucketID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
       }
     },
     "update_bucket": {
       "body": {
-        "label": "query",
+        "label": "Query",
         "key": "body",
         "type": "codehinter",
         "description": "Enter query",
@@ -102,7 +105,7 @@
         "placeholder": "Flux query script to be analyzed"
       },
       "bucket_id": {
-        "label": "bucketID",
+        "label": "Bucket ID",
         "key": "bucket_id",
         "type": "codehinter",
         "description": "Enter bucketID",
@@ -112,7 +115,7 @@
     },
     "write": {
       "bucket": {
-        "label": "bucket",
+        "label": "Bucket",
         "key": "bucket",
         "type": "codehinter",
         "lineNumbers": false,
@@ -123,7 +126,7 @@
         "placeholder": "bucket"
       },
       "org": {
-        "label": "organization name or ID",
+        "label": "Organization name or ID",
         "key": "org",
         "type": "codehinter",
         "lineNumbers": false,
@@ -134,7 +137,7 @@
         "placeholder": "organization name or ID"
       },
       "precision": {
-        "label": "precision",
+        "label": "Precision",
         "key": "precision",
         "type": "codehinter",
         "lineNumbers": false,
@@ -147,7 +150,7 @@
     },
     "abstract_syntax_tree": {
       "body": {
-        "label": "query",
+        "label": "Query",
         "key": "body",
         "type": "codehinter",
         "description": "Enter query",
@@ -158,7 +161,7 @@
 
     "query_suggestions_for_branching": {
       "name": {
-        "label": "name",
+        "label": "Name",
         "key": "name",
         "type": "codehinter",
         "lineNumbers": false,
@@ -173,7 +176,7 @@
 
     "query_data": {
       "org": {
-        "label": "organization name or ID",
+        "label": "Organization name or ID",
         "key": "org",
         "type": "codehinter",
         "lineNumbers": false,
@@ -184,7 +187,7 @@
         "placeholder": "organization name or ID"
       },
       "body": {
-        "label": "flux query",
+        "label": "Flux query",
         "key": "body",
         "type": "codehinter",
         "description": "Enter query",
@@ -194,7 +197,7 @@
     },
     "analyze_flux_query": {
       "body": {
-        "label": "analyze flux query",
+        "label": "Analyze flux query",
         "key": "body",
         "type": "codehinter",
         "description": "Enter query",
