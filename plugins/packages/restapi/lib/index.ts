@@ -62,7 +62,7 @@ export default class RestapiQueryService implements QueryService {
   }
 
   customParams(sourceOptions: any) {
-    const customParams = Object.fromEntries(sourceOptions['custom_auth_params']);
+    const customParams = Object.fromEntries(sourceOptions['custom_auth_params'] ?? []);
     Object.keys(customParams).forEach((key) => (customParams[key] === '' ? delete customParams[key] : {}));
     return customParams;
   }
