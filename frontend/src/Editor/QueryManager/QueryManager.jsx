@@ -57,7 +57,6 @@ let QueryManager = class QueryManager extends React.Component {
         currentState: props.currentState,
         selectedSource: source,
         dataSourceMeta,
-        isSourceSelected: props.isSourceSelected,
         selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
         theme: {
           scheme: 'bright',
@@ -102,6 +101,7 @@ let QueryManager = class QueryManager extends React.Component {
             selectedDataSource: source,
             selectedQuery,
             queryName: selectedQuery.name,
+            isSourceSelected: props.isSourceSelected,
           });
         }
         // } else {
@@ -121,6 +121,13 @@ let QueryManager = class QueryManager extends React.Component {
 
   componentDidMount() {
     this.setStateFromProps(this.props);
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.state.isSourceSelected && nextState.isSourceSelected) {
+      return false;
+    }
+    return true;
   }
 
   isJson = (maybeJson) => {
