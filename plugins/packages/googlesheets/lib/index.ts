@@ -10,7 +10,7 @@ export default class GooglesheetsQueryService implements QueryService {
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     
     if (!clientId || !clientSecret){
-      throw Error('You need to define Google OAuth environmnet varialbes');
+      throw Error('You need to define Google OAuth environment variables');
     }
     
     return (
