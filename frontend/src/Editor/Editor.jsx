@@ -427,6 +427,8 @@ class Editor extends React.Component {
   };
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
+    if (isEqual(this.state.appDefinition, newDefinition)) return;
+
     produce(
       this.state.appDefinition,
       (draft) => {
