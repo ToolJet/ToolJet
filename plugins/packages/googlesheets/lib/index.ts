@@ -5,8 +5,14 @@ import { SourceOptions, QueryOptions } from './types';
 
 export default class GooglesheetsQueryService implements QueryService {
   authUrl(): string {
-    const clientId = process.env.GOOGLE_CLIENT_ID;
     const tooljetHost = process.env.TOOLJET_HOST;
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    
+    if (!clientId || !clientSecret){
+      throw Error('You need to define Google OAuth environment variables');
+    }
+    
     return (
       'https://accounts.google.com/o/oauth2/v2/auth' +
       `?response_type=code&client_id=${clientId}` +
