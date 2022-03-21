@@ -17,8 +17,6 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@influxdata/influxdb-client": "^1.24.0",
-    "@influxdata/influxdb-client-apis": "^1.24.0",
     "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2"
   }

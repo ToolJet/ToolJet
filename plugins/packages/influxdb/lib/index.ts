@@ -2,7 +2,6 @@ import { ConnectionTestResult, QueryError, QueryResult, QueryService } from '@to
 import { SourceOptions, QueryOptions } from './types';
 import got, { Headers } from 'got';
 const JSON5 = require('json5');
-
 export default class influxdb implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     let result = {};
@@ -97,13 +96,16 @@ export default class influxdb implements QueryService {
         case 'query_data': {
           response = await got(`${protocol}://${host}:${port}/api/v2/query`, {
             method: 'post',
-            headers: authHeader(apiKey),
+            headers: {
+              Authorization: `Token ${apiKey}`,
+              'Content-Type': 'application/vnd.flux',
+            },
             searchParams: {
               ...(org?.length > 0 && { org }),
             },
-            json: this.parseJSON(queryOptions.body),
+            body: queryOptions.body,
           });
-          result = this.parseJSON(response.body);
+          result = response.body;
           break;
         }
 
