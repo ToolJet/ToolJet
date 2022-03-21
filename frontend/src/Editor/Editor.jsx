@@ -108,6 +108,7 @@ class Editor extends React.Component {
         components: {},
         globals: {
           currentUser: userVars,
+          mode: { value: props.darkMode ? 'dark' : 'light' },
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
         errors: {},
@@ -909,6 +910,21 @@ class Editor extends React.Component {
     });
   };
 
+  changeDarkMode = (newMode) => {
+    console.log('mode', newMode);
+    this.setState({
+      currentState: {
+        ...this.state.currentState,
+        globals: {
+          ...this.state.currentState.globals,
+          mode: { value: newMode ? 'dark' : 'light' },
+        },
+      },
+      showQuerySearchField: false,
+    });
+    this.props.switchDarkMode(newMode);
+  };
+
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
   render() {
@@ -1074,7 +1090,7 @@ class Editor extends React.Component {
               dataSourcesChanged={this.dataSourcesChanged}
               onZoomChanged={this.onZoomChanged}
               toggleComments={this.toggleComments}
-              switchDarkMode={this.props.switchDarkMode}
+              switchDarkMode={this.changeDarkMode}
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
