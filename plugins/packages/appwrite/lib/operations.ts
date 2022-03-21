@@ -1,14 +1,48 @@
-import { Database } from 'node-appwrite';
+import { Database, Query } from 'node-appwrite';
 
 export async function queryCollection(
   db: Database,
   collection: string,
   limit: number,
   order_fields: string[],
-  order_types: string[]
+  order_types: string[],
+  where_field: string,
+  where_operation: string,
+  where_value: string
 ): Promise<object> {
   const limitProvided = isNaN(limit) !== true;
-  return await db.listDocuments(collection, [], limitProvided ? limit : 25, 0, null, null, order_fields, order_types);
+  let queryString: string;
+  switch (where_operation) {
+    case '==':
+      queryString = Query.equal(where_field, where_value);
+      break;
+    case '!=':
+      queryString = Query.notEqual(where_field, where_value);
+      break;
+    case '<':
+      queryString = Query.lesser(where_field, where_value);
+      break;
+    case '>':
+      queryString = Query.greater(where_field, where_value);
+      break;
+    case '>=':
+      queryString = Query.greaterEqual(where_field, where_value);
+      break;
+    case '<=':
+      queryString = Query.lesserEqual(where_field, where_value);
+      break;
+  }
+
+  return await db.listDocuments(
+    collection,
+    queryString ? [queryString] : [],
+    limitProvided ? limit : 25,
+    0,
+    null,
+    null,
+    order_fields,
+    order_types
+  );
 }
 
 export async function getDocument(db: Database, collectionId: string, documentId: string): Promise<object> {

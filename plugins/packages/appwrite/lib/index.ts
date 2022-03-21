@@ -1,7 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import sdk from 'node-appwrite';
-import { bulkUpdate, createDocument, deleteDocument, getDocument, updateDocument } from './operations';
+import { bulkUpdate, createDocument, deleteDocument, getDocument, queryCollection, updateDocument } from './operations';
 
 export default class Appwrite implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -11,6 +11,18 @@ export default class Appwrite implements QueryService {
 
     try {
       switch (operation) {
+        case 'list_docs':
+          result = await queryCollection(
+            database,
+            queryOptions.collectionId,
+            queryOptions.limit,
+            queryOptions.order_fields,
+            queryOptions.order_types,
+            queryOptions.where_field,
+            queryOptions.where_operation,
+            queryOptions.where_value
+          );
+          break;
         case 'get_document':
           result = await getDocument(database, queryOptions.collectionId, queryOptions.documentId);
           break;
