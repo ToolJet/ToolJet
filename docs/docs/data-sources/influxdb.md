@@ -34,6 +34,7 @@ Supported queries:
 - Retrieve query suggestions for a branching suggestion
 
 <img class="screenshot-full" src="/img/datasource-reference/influxdb/operations.png" alt="ToolJet - Data source - influxDB" height="420" />
+
 ## Write data 
 
 This query writes data to a bucket.
@@ -75,7 +76,7 @@ This query retrieve query suggestions.
 This retrieve query suggestions for a branching suggestion.
 
 Required parameters:
-- bucketID
+- Name
 
 ## List buckets 
 
@@ -84,13 +85,13 @@ This query lists all the buckets in a database.
 
 Required parameters: 
 
-- name
-- orgID
-- retentionRules
+- query
+
 ## Update a bucket
 
 Required parameters:
 - bucketID
+- query
 
 ## Delete a bucket
 
