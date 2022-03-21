@@ -114,7 +114,7 @@ export const Inspector = ({
 
   const getDefaultValue = (val) => {
     if (componentMeta?.definition?.defaults) {
-      return componentMeta.definition.defaults.find((el) => el.type === val)?.value;
+      return componentMeta.definition.defaults.find((el) => el.type === val);
     }
     return null;
   };
@@ -131,7 +131,7 @@ export const Inspector = ({
       allParams[param.name][attr] = value;
       const defaultValue = getDefaultValue(value);
       if (param.type === 'select' && defaultValue) {
-        allParams['value']['value'] = defaultValue;
+        allParams[defaultValue.paramName]['value'] = defaultValue.value;
       }
     } else {
       allParams[param.name] = value;
