@@ -14,7 +14,6 @@
     },
     "options": {
       "api_token": {
-        "type": "string",
         "encrypted": true
       },
       "port": {

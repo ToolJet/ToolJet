@@ -25,7 +25,7 @@ export default class influxdb implements QueryService {
             headers: authHeader(apiKey),
           });
 
-          result = JSON.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
         case 'retrieve_bucket': {
