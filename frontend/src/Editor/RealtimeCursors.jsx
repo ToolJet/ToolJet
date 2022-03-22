@@ -31,6 +31,7 @@ const RealtimeEditor = (props) => {
   const { self, updatePresence } = useSelf({
     name: currentUser.first_name?.charAt(0) + currentUser.last_name?.charAt(0),
     image: '', // todo: add image feature for a user avatar
+    editingVersionId: '',
     x: 0,
     y: 0,
     color: generateRandomHslColor(),
@@ -50,11 +51,14 @@ const RealtimeEditor = (props) => {
   );
 
   const others = useOthers();
+  const othersOnSameEditingVersion = others.filter(
+    (other) => other?.presence?.editingVersionId === self?.presence.editingVersionId
+  );
 
   return (
     <div onPointerMove={handlePointerMove}>
-      <Editor {...props} self={self} ymap={props.ymap} />
-      {others.map(({ id, presence }) => {
+      <Editor {...props} self={self} updatePresence={updatePresence} ymap={props.ymap} />
+      {othersOnSameEditingVersion.map(({ id, presence }) => {
         if (!presence) return null;
         return (
           <Cursor

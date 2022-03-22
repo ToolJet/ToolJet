@@ -2,8 +2,16 @@ import React from 'react';
 import { useOthers } from 'y-presence';
 
 const MAX_DISPLAY_USERS = 5;
-const RealtimeAvatars = ({ self }) => {
+const RealtimeAvatars = ({ self, updatePresence, editingVersionId }) => {
   const others = useOthers();
+  const othersOnSameEditingVersion = others.filter((other) => other?.presence?.editingVersionId === editingVersionId);
+
+  React.useEffect(() => {
+    updatePresence({ editingVersionId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingVersionId]);
+
+  console.log('hello', self);
 
   return (
     <div className="row" style={{ position: 'absolute', left: '35%' }}>
@@ -18,7 +26,7 @@ const RealtimeAvatars = ({ self }) => {
               {self.presence?.name}
             </span>
           )}
-          {others.slice(0, MAX_DISPLAY_USERS).map(({ id, presence }) => {
+          {othersOnSameEditingVersion.slice(0, MAX_DISPLAY_USERS).map(({ id, presence }) => {
             return (
               <span
                 key={id}
@@ -29,9 +37,9 @@ const RealtimeAvatars = ({ self }) => {
               </span>
             );
           })}
-          {others.length > MAX_DISPLAY_USERS && (
+          {othersOnSameEditingVersion.length > MAX_DISPLAY_USERS && (
             <span style={{ border: `1px solid` }} className="avatar avatar-sm avatar-rounded">
-              +{others.length - MAX_DISPLAY_USERS}
+              +{othersOnSameEditingVersion.length - MAX_DISPLAY_USERS}
             </span>
           )}
         </div>

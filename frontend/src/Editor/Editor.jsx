@@ -153,8 +153,10 @@ class Editor extends React.Component {
 
   initRealtimeSave = () => {
     this.props.ymap.observe(() => {
-      if (isEqual(this.state.appDefinition, this.props.ymap.get('appDef'))) return;
-      this.realtimeSave(this.props.ymap.get('appDef'), { skipAutoSave: true, skipYmapUpdate: true });
+      if (!isEqual(this.state.editingVersion?.id, this.props.ymap.get('appDef').editingVersionId)) return;
+      if (isEqual(this.state.appDefinition, this.props.ymap.get('appDef').newDefinition)) return;
+
+      this.realtimeSave(this.props.ymap.get('appDef').newDefinition, { skipAutoSave: true, skipYmapUpdate: true });
     });
   };
 
@@ -344,7 +346,10 @@ class Editor extends React.Component {
   };
 
   setAppDefinitionFromVersion = (version) => {
-    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), { skipAutoSave: true });
+    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
+      skipAutoSave: true,
+      skipYmapUpdate: true,
+    });
     this.setState({
       editingVersion: version,
     });
@@ -435,7 +440,10 @@ class Editor extends React.Component {
   };
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
-    if (!opts.skipYmapUpdate) this.props.ymap.set('appDef', newDefinition);
+    if (!opts.skipYmapUpdate) {
+      this.props.ymap.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
+    }
+
     produce(
       this.state.appDefinition,
       (draft) => {
@@ -996,7 +1004,11 @@ class Editor extends React.Component {
                   </span>
                 </div>
               )}
-              <RealtimeAvatars self={this.props.self} />
+              <RealtimeAvatars
+                updatePresence={this.props.updatePresence}
+                editingVersionId={this.state?.editingVersion?.id}
+                self={this.props.self}
+              />
               {editingVersion && (
                 <AppVersionsManager
                   appId={appId}
@@ -1291,8 +1303,8 @@ class Editor extends React.Component {
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
                   {selectedComponent &&
-                    !isEmpty(appDefinition.components) &&
-                    !isEmpty(appDefinition.components[selectedComponent.id]) ? (
+                  !isEmpty(appDefinition.components) &&
+                  !isEmpty(appDefinition.components[selectedComponent.id]) ? (
                     <Inspector
                       cloneComponent={this.cloneComponent}
                       componentDefinitionChanged={this.componentDefinitionChanged}
