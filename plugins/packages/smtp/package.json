@@ -20,5 +20,8 @@
     "@tooljet-plugins/common": "file:../common",
     "nodemailer": "^6.7.2",
     "react": "^17.0.2"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^6.4.4"
   }
 }
