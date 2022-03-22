@@ -7,6 +7,8 @@ export const organizationService = {
   editOrganization,
   getOrganizations,
   switchOrganization,
+  getSSODetails,
+  editOrganizationConfigs,
 };
 
 function getUsers() {
@@ -19,9 +21,9 @@ function createOrganization(name) {
   return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse);
 }
 
-function editOrganization(name) {
-  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify({ name }) };
-  return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse);
+function editOrganization(params) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(params) };
+  return fetch(`${config.apiUrl}/organizations/`, requestOptions).then(handleResponse);
 }
 
 function getOrganizations() {
@@ -32,4 +34,14 @@ function getOrganizations() {
 function switchOrganization(organizationId) {
   const requestOptions = { method: 'GET', headers: authHeader() };
   return fetch(`${config.apiUrl}/switch/${organizationId}`, requestOptions);
+}
+
+function getSSODetails() {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/organizations/configs`, requestOptions).then(handleResponse);
+}
+
+function editOrganizationConfigs(params) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(params) };
+  return fetch(`${config.apiUrl}/organizations/configs`, requestOptions).then(handleResponse);
 }

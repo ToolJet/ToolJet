@@ -14,7 +14,7 @@ class LoginPage extends React.Component {
     if (
       (!this.props.match.params.organisationId && authenticationService.currentUserValue) ||
       (this.props.match.params.organisationId &&
-        authenticationService?.currentUserValue?.organisationId === this.props.match.params.organisationId)
+        authenticationService?.currentUserValue?.organization_id === this.props.match.params.organisationId)
     ) {
       return this.props.history.push('/');
     }
@@ -23,7 +23,7 @@ class LoginPage extends React.Component {
       isLoading: false,
       showPassword: false,
       isGettingConfigs: true,
-      configs: {},
+      configs: undefined,
     };
   }
 
@@ -116,100 +116,104 @@ class LoginPage extends React.Component {
     const { isLoading, configs } = this.state;
     return (
       <div className="page page-center">
-        <div className="container-tight py-2">
-          <div className="text-center mb-4">
-            <a href="." className="navbar-brand-autodark">
-              <img src="/assets/images/logo-color.svg" height="26" alt="" />
-            </a>
-          </div>
-          <form className="card card-md" action="." method="get" autoComplete="off">
-            <div className="card-body">
-              {configs?.form?.enabled && (
-                <div>
-                  <h2 className="card-title text-center mb-4">Login to your account</h2>
-                  <div className="mb-3">
-                    <label className="form-label">Email address</label>
-                    <input
-                      onChange={this.handleChange}
-                      name="email"
-                      type="email"
-                      className="form-control"
-                      placeholder="Email"
-                      data-testid="emailField"
-                    />
-                  </div>
-                  <div className="mb-2">
-                    <label className="form-label">
-                      Password
-                      <span className="form-label-description">
-                        <Link to={'/forgot-password'} tabIndex="-1">
-                          Forgot password
-                        </Link>
-                      </span>
-                    </label>
-                    <div className="input-group input-group-flat">
+        {!this.state.isGettingConfigs && (
+          <div className="container-tight py-2">
+            <div className="text-center mb-4">
+              <a href="." className="navbar-brand-autodark">
+                <img src="/assets/images/logo-color.svg" height="26" alt="" />
+              </a>
+            </div>
+            <form className="card card-md" action="." method="get" autoComplete="off">
+              <div className="card-body">
+                {configs?.form?.enabled && (
+                  <div>
+                    <h2 className="card-title text-center mb-4">Login to your account</h2>
+                    <div className="mb-3">
+                      <label className="form-label">Email address</label>
                       <input
                         onChange={this.handleChange}
-                        name="password"
-                        type={this.state.showPassword ? 'text' : 'password'}
+                        name="email"
+                        type="email"
                         className="form-control"
-                        placeholder="Password"
-                        autoComplete="off"
-                        data-testid="passwordField"
+                        placeholder="Email"
+                        data-testid="emailField"
                       />
-                      <span className="input-group-text"></span>
+                    </div>
+                    <div className="mb-2">
+                      <label className="form-label">
+                        Password
+                        <span className="form-label-description">
+                          <Link to={'/forgot-password'} tabIndex="-1">
+                            Forgot password
+                          </Link>
+                        </span>
+                      </label>
+                      <div className="input-group input-group-flat">
+                        <input
+                          onChange={this.handleChange}
+                          name="password"
+                          type={this.state.showPassword ? 'text' : 'password'}
+                          className="form-control"
+                          placeholder="Password"
+                          autoComplete="off"
+                          data-testid="passwordField"
+                        />
+                        <span className="input-group-text"></span>
+                      </div>
+                    </div>
+                    <div className="form-check">
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        id="check-input"
+                        name="check-input"
+                        onChange={this.handleOnCheck}
+                      />
+                      <label className="form-check-label" htmlFor="check-input">
+                        show password
+                      </label>
                     </div>
                   </div>
-                  <div className="form-check">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id="check-input"
-                      name="check-input"
-                      onChange={this.handleOnCheck}
+                )}
+                <div
+                  className={`form-footer d-flex flex-column align-items-center ${
+                    !configs?.form?.enabled ? 'mt-0' : ''
+                  }`}
+                >
+                  {configs?.form?.enabled && (
+                    <button
+                      data-testid="loginButton"
+                      className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
+                      onClick={this.authUser}
+                    >
+                      Sign in
+                    </button>
+                  )}
+                  {this.state.configs?.google?.enabled && (
+                    <GoogleSSOLoginButton
+                      authSuccessHandler={this.authSuccessHandler}
+                      authFailureHandler={this.authFailureHandler}
                     />
-                    <label className="form-check-label" htmlFor="check-input">
-                      show password
-                    </label>
-                  </div>
+                  )}
+                  {this.state.configs?.git?.enabled && <GitSSOLoginButton />}
                 </div>
-              )}
-              <div
-                className={`form-footer d-flex flex-column align-items-center ${!configs?.form?.enabled ? 'mt-0' : ''}`}
-              >
-                {configs?.form?.enabled && (
-                  <button
-                    data-testid="loginButton"
-                    className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
-                    onClick={this.authUser}
-                  >
-                    Sign in
-                  </button>
-                )}
-                {this.state.configs?.google?.enabled && (
-                  <GoogleSSOLoginButton
-                    authSuccessHandler={this.authSuccessHandler}
-                    authFailureHandler={this.authFailureHandler}
-                  />
-                )}
-                {this.state.configs?.git?.enabled && <GitSSOLoginButton />}
               </div>
-            </div>
-          </form>
-          {!this.props.match.params.organisationId && configs?.form?.enable && configs?.form?.enable_sign_up && (
-            <div className="text-center text-secondary mt-3">
-              Don&apos;t have account yet? &nbsp;
-              <Link to={'/signup'} tabIndex="-1">
-                Sign up
-              </Link>
-            </div>
-          )}
-          {authenticationService?.currentUserValue?.organization && (
-            <div className="text-center mt-3">
-              back to <a href="/">{authenticationService?.currentUserValue?.organization}</a> organization
-            </div>
-          )}
-        </div>
+            </form>
+            {!this.props.match.params.organisationId && configs?.form?.enable && configs?.form?.enable_sign_up && (
+              <div className="text-center text-secondary mt-3">
+                Don&apos;t have account yet? &nbsp;
+                <Link to={'/signup'} tabIndex="-1">
+                  Sign up
+                </Link>
+              </div>
+            )}
+            {authenticationService?.currentUserValue?.organization && (
+              <div className="text-center mt-3">
+                back to <a href="/">{authenticationService?.currentUserValue?.organization}</a> organization
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }

@@ -77,6 +77,11 @@ export class AuthService {
           organization = await this.organizationsService.create('Untitled organization', user);
         }
         user.organizationId = organization.id;
+
+        if (defaultOrgDetails?.id !== user.organizationId) {
+          // Updating default organization Id
+          await this.usersService.updateDefaultOrganization(user, organization.id);
+        }
       } else {
         user.organizationId = organizationId;
 

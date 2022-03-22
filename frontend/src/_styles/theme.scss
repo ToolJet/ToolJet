@@ -4551,3 +4551,58 @@ div#driver-highlighted-element-stage, div#driver-page-overlay {
     }
   }
 }
+
+// Left Menu
+.left-menu {
+  background-color: #e8ebf4;
+  padding: 1rem 0.5rem;
+  border-radius: 5px;
+  ul {
+    overflow: auto;
+    margin: 0px;
+    padding: 0px;
+    li {
+      float: left;
+      list-style: none;
+      width: 100%;
+      padding: 5px 10px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 3px 0px;
+    }
+    li.active {
+      background-color: $primary;
+      color: $white;
+    }
+    li:not(.active):hover {
+      background-color: #d2daf0;
+    }
+  }
+}
+.manage-sso {
+  .title-with-toggle {
+    width: 100%;
+    input[type=checkbox] {
+      /* Double-sized Checkboxes */
+      -ms-transform: scale(1.5); /* IE */
+      -moz-transform: scale(1.5); /* FF */
+      -webkit-transform: scale(1.5); /* Safari and Chrome */
+      -o-transform: scale(1.5); /* Opera */
+      transform: scale(1.5);
+      margin-top: 5px;
+    }
+  }
+}
+.help-text {
+  overflow: auto;
+  div {
+    margin: 0px 0px 5px 0px;
+    background-color: #eaeaea;
+    float: left;
+    padding: 2px 10px;
+    font-size: 11px;
+    border-radius: 5px;
+    border: 1px solid #e1e1e1;
+  }
+}

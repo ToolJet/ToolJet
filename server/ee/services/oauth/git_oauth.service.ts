@@ -5,12 +5,7 @@ import UserResponse from './models/user_response';
 
 @Injectable()
 export class GitOAuthService {
-  constructor(private readonly configService: ConfigService) {
-    this.clientId = this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID');
-    this.clientSecret = this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET');
-  }
-  private readonly clientId: string;
-  private readonly clientSecret: string;
+  constructor(private readonly configService: ConfigService) {}
   private readonly authUrl = 'https://github.com/login/oauth/access_token';
   private readonly getUserUrl = 'https://api.github.com/user';
 
@@ -28,11 +23,11 @@ export class GitOAuthService {
     return { userSSOId: access_token, firstName, lastName, email, sso: 'git' };
   }
 
-  async signIn(code: string): Promise<any> {
+  async signIn(code: string, configs: any): Promise<any> {
     const response: any = await got(this.authUrl, {
       method: 'post',
       headers: { Accept: 'application/json' },
-      json: { client_id: this.clientId, client_secret: this.clientSecret, code },
+      json: { client_id: configs.clientId, client_secret: configs.clientSecret, code },
     }).json();
     return await this.#getUserDetails(response);
   }

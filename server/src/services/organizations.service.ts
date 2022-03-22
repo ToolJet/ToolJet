@@ -61,6 +61,10 @@ export class OrganizationsService {
     return await this.organizationsRepository.findOne({ where: { id }, relations: ['ssoConfigs'] });
   }
 
+  async getSingleOrganization(): Promise<Organization> {
+    return await this.organizationsRepository.findOne();
+  }
+
   async createDefaultGroupPermissionsForOrganization(organization: Organization) {
     const defaultGroups = ['all_users', 'admin'];
     const createdGroupPermissions = [];
@@ -151,20 +155,29 @@ export class OrganizationsService {
 
   async getSSOConfigs(organizationId: string, sso: string): Promise<Organization> {
     return await createQueryBuilder(Organization, 'organization')
-      .innerJoin('organization.ssoConfigs', 'organisation_sso', 'organisation_sso.sso = :sso', {
+      .leftJoinAndSelect('organization.ssoConfigs', 'organisation_sso', 'organisation_sso.sso = :sso', {
         sso,
       })
-      .andWhere('organization.id = :orgamizationId', {
+      .andWhere('organization.id = :organizationId', {
         organizationId,
       })
       .getOne();
   }
 
-  async fetchOrganisationDetails(organizationId: string, isHideSensitiveData?: boolean): Promise<Organization> {
+  async fetchOrganisationDetails(
+    organizationId: string,
+    statusList?: Array<boolean>,
+    isHideSensitiveData?: boolean
+  ): Promise<Organization> {
     const result = await createQueryBuilder(Organization, 'organization')
-      .innerJoinAndSelect('organization.ssoConfigs', 'organisation_sso', 'organisation_sso.enabled = :enabled', {
-        enabled: true,
-      })
+      .innerJoinAndSelect(
+        'organization.ssoConfigs',
+        'organisation_sso',
+        'organisation_sso.enabled IN (:...statusList)',
+        {
+          statusList: statusList || [true, false], // Return enabled and disabled sso if status list not passed
+        }
+      )
       .andWhere('organization.id = :organizationId', {
         organizationId,
       })
@@ -173,10 +186,10 @@ export class OrganizationsService {
     if (!isHideSensitiveData) {
       return result;
     }
-    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.enableSignUp);
+    return this.hideSSOSensitiveData(result?.ssoConfigs);
   }
 
-  private hideSSOSensitiveData(ssoConfigs: SSOConfigs[], enableSignUp: boolean): any {
+  private hideSSOSensitiveData(ssoConfigs: SSOConfigs[]): any {
     const configs = {};
     if (ssoConfigs?.length > 0) {
       for (const config of ssoConfigs) {
@@ -199,7 +212,6 @@ export class OrganizationsService {
             break;
           case 'form':
             configs['form'] = {
-              enableSignUp,
               ...config,
             };
             break;
@@ -227,19 +239,20 @@ export class OrganizationsService {
     return await this.organizationsRepository.update(organizationId, updateableParams);
   }
 
-  async updateOrganizationConfigs(organizationId: string, params) {
-    const { type, configs, status } = params;
+  async updateOrganizationConfigs(organizationId: string, params: any) {
+    const { type, configs, enabled } = params;
 
     if (!(type && ['git', 'google', 'form'].includes(type))) {
       throw new BadRequestException();
     }
     const organization: Organization = await this.getSSOConfigs(organizationId, type);
+
     if (organization?.ssoConfigs?.length > 0) {
       const ssoConfigs: SSOConfigs = organization.ssoConfigs[0];
 
       const updateableParams = {
         configs,
-        status,
+        enabled,
       };
 
       // removing keys with undefined values
@@ -250,9 +263,13 @@ export class OrganizationsService {
         organization,
         sso: type,
         configs,
-        enabled: true,
+        enabled: !!enabled,
       });
       return await this.ssoConfigRepository.save(newSSOConfigs);
     }
+  }
+
+  async getConfigs(id: string): Promise<SSOConfigs> {
+    return await this.ssoConfigRepository.findOne({ where: { id, enabled: true }, relations: ['organization'] });
   }
 }

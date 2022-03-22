@@ -105,7 +105,7 @@ export class UsersService {
     let user: User;
     let newUserCreated = false;
 
-    user = await this.findByEmail(userParams.email);
+    user = await this.findByEmail(userParams.email, organizationId);
 
     if (!user) {
       const groups = ['all_users'];
@@ -175,6 +175,10 @@ export class UsersService {
         name: organization,
       });
     }
+  }
+
+  async updateDefaultOrganization(user: User, organizationId: string) {
+    await this.usersRepository.update(user.id, { defaultOrganizationId: organizationId });
   }
 
   async update(userId: string, params: any, manager?: EntityManager) {

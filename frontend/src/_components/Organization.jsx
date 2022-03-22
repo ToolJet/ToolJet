@@ -86,9 +86,12 @@ export const Organization = function Organization() {
       return;
     }
     setIsCreating(true);
-    organizationService.editOrganization(newOrgName).then(
+    organizationService.editOrganization({ name: newOrgName }).then(
       () => {
         authenticationService.updateCurrentUserDetails({ organization: newOrgName });
+        toast.success('Organization updated', {
+          position: 'top-center',
+        });
         setOrganization(newOrgName);
       },
       () => {
@@ -300,7 +303,11 @@ export const Organization = function Organization() {
             <button className="btn btn-light" onClick={() => setShowCreateOrg(false)}>
               Cancel
             </button>
-            <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={createOrganization}>
+            <button
+              disabled={isCreating}
+              className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`}
+              onClick={createOrganization}
+            >
               Create organization
             </button>
           </div>

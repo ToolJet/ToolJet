@@ -3,6 +3,5 @@ export default interface UserResponse {
   firstName?: string;
   lastName?: string;
   email: string;
-  domain?: string;
   sso: string;
 }

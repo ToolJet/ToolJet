@@ -1,16 +1,84 @@
-import React from 'react';
-import { authenticationService, organizationService, organizationUserService } from '@/_services';
-import { Header } from '@/_components';
-import { toast } from 'react-hot-toast';
-import { history } from '@/_helpers';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
+import React, { useState, useCallback, useEffect } from 'react';
+import { authenticationService, organizationService } from '@/_services';
+import { Header, Menu } from '@/_components';
 import ReactTooltip from 'react-tooltip';
+import { GeneralSettings } from './GenetalSettings';
+import { Google } from './Google';
+import { Loader } from './Loader';
+import { Git } from './Git';
+import { Form } from './Form';
 
-export function ManageSSO() {
-  const creatingUser = true;
+export function ManageSSO({ switchDarkMode, darkMode }) {
+  const menuItems = [
+    { id: 'general-settings', label: 'General Settings' },
+    { id: 'google', label: 'Google' },
+    { id: 'git', label: 'Git' },
+    { id: 'form', label: 'Form' },
+  ];
+  const changePage = useCallback(
+    (page) => {
+      setCurrentPage(page);
+    },
+    [setCurrentPage]
+  );
+  const [currentPage, setCurrentPage] = useState('');
+  const [isLoading, setIsloading] = useState(true);
+  const [ssoData, setSsoData] = useState({});
+
+  const showPage = () => {
+    switch (currentPage) {
+      case 'general-settings':
+        return <GeneralSettings updateData={updateData} settings={ssoData} />;
+      case 'google':
+        return <Google updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'google')} />;
+      case 'git':
+        return <Git updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'git')} />;
+      case 'form':
+        return <Form updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'form')} />;
+      default:
+        return <Loader />;
+    }
+  };
+
+  useEffect(() => {
+    organizationService.getSSODetails().then((data) => {
+      setSsoData(data.organization_details);
+      setIsloading(false);
+      setCurrentPage('general-settings');
+    });
+  }, []);
+
+  const updateData = useCallback(
+    (type, data) => {
+      const ssoData_tmp = ssoData;
+      let configs = ssoData_tmp.sso_configs.find((obj) => obj.sso === type);
+
+      switch (type) {
+        case 'general':
+          return setSsoData({ ...ssoData, ...data });
+        default:
+          if (!configs) {
+            ssoData_tmp.sso_configs.push({ ...data, sso: type });
+          } else {
+            if (data.id !== undefined) {
+              configs.id = data.id;
+            }
+            if (data.enabled !== undefined) {
+              configs.enabled = data.enabled;
+            }
+            if (data.configs !== undefined) {
+              configs.configs = data.configs;
+            }
+          }
+          return setSsoData(ssoData_tmp);
+      }
+    },
+    [ssoData]
+  );
+
   return (
-    <div className="wrapper org-users-page">
-      <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
+    <div className="wrapper manage-sso">
+      <Header switchDarkMode={switchDarkMode} darkMode={darkMode} />
       <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
       <div className="page-wrapper">
@@ -26,81 +94,30 @@ export function ManageSSO() {
         </div>
 
         <div className="page-body">
-          {true && (
-            <div className="container-xl">
-              <div className="card">
-                <div className="card-header">
-                  <h3 className="card-title">Add new user</h3>
-                </div>
-                <div className="card-body">
-                  <form onSubmit={this.createUser} noValidate>
-                    <div className="form-group mb-3 ">
+          <div className="container-xl">
+            <div className="row">
+              <div className="col-3">
+                <div>
+                  {isLoading ? (
+                    <div className="row">
                       <div className="row">
-                        <div className="col">
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Enter First Name"
-                            name="firstName"
-                            onChange={this.changeNewUserOption.bind(this, 'firstName')}
-                            value={this.state.fields['firstName']}
-                          />
-                          <span className="text-danger">{this.state.errors['firstName']}</span>
-                        </div>
-                        <div className="col">
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Enter Last Name"
-                            name="lastName"
-                            onChange={this.changeNewUserOption.bind(this, 'lastName')}
-                            value={this.state.fields['lastName']}
-                          />
-                          <span className="text-danger">{this.state.errors['lastName']}</span>
-                        </div>
+                        <div className="skeleton-line"></div>
+                      </div>
+                      <div className="row">
+                        <div className="skeleton-line"></div>
+                      </div>
+                      <div className="row">
+                        <div className="skeleton-line"></div>
                       </div>
                     </div>
-                    <div className="form-group mb-3 ">
-                      <label className="form-label">Email address</label>
-                      <div>
-                        <input
-                          type="text"
-                          className="form-control"
-                          aria-describedby="emailHelp"
-                          placeholder="Enter email"
-                          name="email"
-                          onChange={this.changeNewUserOption.bind(this, 'email')}
-                          value={this.state.fields['email']}
-                        />
-                        <span className="text-danger">{this.state.errors['email']}</span>
-                      </div>
-                    </div>
-                    <div className="form-footer">
-                      <button
-                        type="button"
-                        className="btn btn-light mr-2"
-                        onClick={() =>
-                          this.setState({
-                            showNewUserForm: false,
-                            newUser: {},
-                          })
-                        }
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
-                        disabled={true}
-                      >
-                        Create User
-                      </button>
-                    </div>
-                  </form>
+                  ) : (
+                    <Menu items={menuItems} onChange={changePage} selected={currentPage} />
+                  )}
                 </div>
               </div>
+              <div className="col-9">{showPage()}</div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
