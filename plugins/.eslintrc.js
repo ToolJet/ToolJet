@@ -7,7 +7,6 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
-    'plugin:cypress/recommended',
   ],
   ignorePatterns: ['.eslintrc.js'],
   parser: '@typescript-eslint/parser',

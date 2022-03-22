@@ -51,14 +51,14 @@ const RealtimeEditor = (props) => {
   );
 
   const others = useOthers();
-  const othersOnSameEditingVersion = others.filter(
+  const othersOnSameVersion = others.filter(
     (other) => other?.presence?.editingVersionId === self?.presence.editingVersionId
   );
 
   return (
     <div onPointerMove={handlePointerMove}>
       <Editor {...props} self={self} updatePresence={updatePresence} ymap={props.ymap} />
-      {othersOnSameEditingVersion.map(({ id, presence }) => {
+      {othersOnSameVersion.map(({ id, presence }) => {
         if (!presence) return null;
         return (
           <Cursor
