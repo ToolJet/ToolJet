@@ -39,7 +39,7 @@ class App extends React.Component {
       tooljetService.fetchMetaData().then((data) => {
         this.setState({ onboarded: data.onboarded });
 
-        if (lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
+        if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
       });
@@ -128,7 +128,10 @@ class App extends React.Component {
                 <Redirect
                   to={{
                     pathname: '/confirm',
-                    state: { token: props.match.params.token, search: props.location.search },
+                    state: {
+                      token: props.match.params.token,
+                      search: props.location.search,
+                    },
                   }}
                 />
               )}
