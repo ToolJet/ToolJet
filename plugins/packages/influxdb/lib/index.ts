@@ -121,14 +121,18 @@ export default class influxdb implements QueryService {
         case 'write': {
           response = await got(`${protocol}://${host}:${port}/api/v2/write`, {
             method: 'post',
-            headers: authHeader(apiKey),
+            headers: {
+              Authorization: `Token ${apiKey}`,
+              'Content-Type': 'text/plain',
+            },
             searchParams: {
               ...(bucket?.length > 0 && { bucket }),
               ...(org?.length > 0 && { org }),
               ...(precision && { precision }),
             },
+            body: queryOptions.body,
           });
-          result = this.parseJSON(response.body);
+          result = response.body;
           break;
         }
       }

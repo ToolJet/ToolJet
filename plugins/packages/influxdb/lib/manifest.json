@@ -15,17 +15,9 @@
     "options": {
       "api_token": {
         "encrypted": true
-      },
-      "port": {
-        "type": "string"
-      },
-      "host": {
-        "type": "string"
-      },
-      "protocol": {
-        "type": "string"
       }
-    }  },
+    }
+  },
   "defaults": {
     "api_token": {
       "value": ""
@@ -78,5 +70,13 @@
       "description": "Enter protocol"
     }
   },
-  "required": ["api_token","username", "password", "database", "port", "host", "protocol"]
+  "required": [
+    "api_token",
+    "username",
+    "password",
+    "database",
+    "port",
+    "host",
+    "protocol"
+  ]
 }

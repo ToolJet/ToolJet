@@ -150,6 +150,14 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": ""
+      },
+      "body": {
+        "label": "Data",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter data",
+        "height": "150px",
+        "placeholder": "Enter data"
       }
     },
     "abstract_syntax_tree": {
