@@ -14,6 +14,12 @@ function isEmpty(value: number | null | undefined | string) {
   );
 }
 
+function sanitizeCustomParams(customArray: any) {
+  const params = Object.fromEntries(customArray);
+  Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
+  return params;
+}
+
 interface RestAPIResult extends QueryResult {
   request?: Array<object> | object;
   response?: Array<object> | object;
@@ -67,10 +73,7 @@ export default class RestapiQueryService implements QueryService {
     const requiresOauth = sourceOptions['auth_type'] === 'oauth2';
 
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
-    const customQueryParams = Object.fromEntries(sourceOptions['custom_query_params']);
-    Object.keys(customQueryParams).forEach((key) =>
-      customQueryParams[key] === '' ? delete customQueryParams[key] : {}
-    );
+    const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
 
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
@@ -167,8 +170,7 @@ export default class RestapiQueryService implements QueryService {
     const tooljetHost = process.env.TOOLJET_HOST;
     const accessTokenUrl = sourceOptions['access_token_url'];
 
-    const customParams = Object.fromEntries(sourceOptions['custom_auth_params']);
-    Object.keys(customParams).forEach((key) => (customParams[key] === '' ? delete customParams[key] : {}));
+    const customParams = sanitizeCustomParams(sourceOptions['custom_auth_params']);
 
     const response = await got(accessTokenUrl, {
       method: 'post',
