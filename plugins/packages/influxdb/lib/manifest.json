@@ -50,7 +50,7 @@
       "label": "Port",
       "key": "port",
       "type": "text",
-      "description": "5984 ",
+      "description": "8086 ",
       "helpText": ""
     },
     "protocol": {
