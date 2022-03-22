@@ -37,7 +37,14 @@ export class MetadataService {
     });
   }
 
-  async finishInstallation(metadata: any, installedVersion: string, name: string, email: string, org: string) {
+  async finishInstallation(
+    metadata: any,
+    installedVersion: string,
+    name: string,
+    email: string,
+    org: string,
+    ip_address: string
+  ) {
     return await got('https://hub.tooljet.io/subscribe', {
       method: 'post',
       json: {
@@ -46,11 +53,12 @@ export class MetadataService {
         name,
         email,
         org,
+        ip_address,
       },
     });
   }
 
-  async sendTelemetryData(metadata: Metadata) {
+  async sendTelemetryData(metadata: Metadata, ip: string) {
     const totalUserCount = await getManager().count(User);
 
     return await got('https://hub.tooljet.io/telemetry', {
@@ -59,16 +67,16 @@ export class MetadataService {
         id: metadata.id,
         total_users: totalUserCount,
         tooljet_version: globalThis.TOOLJET_VERSION,
+        ip_address: ip,
       },
     });
   }
 
-  async checkForUpdates(installedVersion: string, ignoredVersion: string) {
-    const response = await got('https://hub.tooljet.io/updates', {
+  async checkForUpdates(metadata: Metadata) {
+    const installedVersion = globalThis.TOOLJET_VERSION;
+    const response = await got('https://hub.tooljet.io/us-central1/updates', {
       method: 'post',
-      json: { installed_version: installedVersion },
     });
-
     const data = JSON.parse(response.body);
     const latestVersion = data['latest_version'];
 
@@ -76,13 +84,12 @@ export class MetadataService {
       last_checked: new Date(),
     };
 
-    if (gt(latestVersion, installedVersion) && installedVersion !== ignoredVersion) {
+    if (gt(latestVersion, installedVersion) && installedVersion !== metadata.data['ignored_version']) {
       newOptions['latest_version'] = latestVersion;
       newOptions['version_ignored'] = false;
     }
 
     await this.updateMetaData(newOptions);
-
     return { latestVersion };
   }
 }
