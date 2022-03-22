@@ -52,7 +52,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins col-6",
-        "placeholder": "Enter Collection ID"
+        "placeholder": "Enter collection id"
       },
       "limit": {
         "label": "Limit",
@@ -152,7 +152,7 @@
         "description": "Enter collection id",
         "height": "36px",
         "className": "codehinter-plugins col-6",
-        "placeholder": "Enter Collection ID"
+        "placeholder": "Enter collection id"
       },
       "documentId": {
         "label": "Document ID",
@@ -162,7 +162,7 @@
         "description": "Enter document id",
         "height": "36px",
         "className": "codehinter-plugins col-6",
-        "placeholder": "Enter Document ID"
+        "placeholder": "Enter document id"
       }
     },
     "add_document": {
@@ -174,7 +174,7 @@
         "description": "Enter collection id",
         "height": "36px",
         "className": "codehinter-plugins col-6",
-        "placeholder": "Enter Collection ID"
+        "placeholder": "Enter collection id"
       },
       "body": {
         "label": "Body",
@@ -193,7 +193,7 @@
         "description": "Enter collection id",
         "height": "36px",
         "className": "codehinter-plugins col-6",
-        "placeholder": "Enter Collection ID"
+        "placeholder": "Enter collection id"
       },
       "documentId": {
         "label": "Document ID",
@@ -203,7 +203,7 @@
         "description": "Enter document id",
         "height": "36px",
         "className": "codehinter-plugins col-6",
-        "placeholder": "Enter Document ID"
+        "placeholder": "Enter document id"
       },
       "body": {
         "label": "Body",
@@ -222,7 +222,7 @@
         "description": "Enter collection id",
         "height": "36px",
         "className": "codehinter-plugins col-6",
-        "placeholder": "Enter Collection ID"
+        "placeholder": "Enter collection id"
       },
       "documentId": {
         "label": "Document ID",
@@ -232,7 +232,7 @@
         "description": "Enter document id",
         "height": "36px",
         "className": "codehinter-plugins col-6",
-        "placeholder": "Enter Document ID"
+        "placeholder": "Enter document id"
       }
     },
     "bulk_update": {
@@ -245,7 +245,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter Collection ID"
+        "placeholder": "Enter collection id"
       },
       "document_id_key": {
         "label": "Key for document Id",

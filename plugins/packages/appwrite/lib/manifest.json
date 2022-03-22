@@ -24,20 +24,20 @@
       "label": "Host",
       "key": "host",
       "type": "text",
-      "description": "Appwrite Database Host"
+      "description": "Appwrite database host/endpoint"
     },
     "project_id": {
       "label": "Project ID",
       "key": "project_id",
       "type": "text",
-      "description": "Appwrite Project ID"
+      "description": "Appwrite project id"
     },
     "secret_key": {
       "label": "Secret Key",
       "key": "secret_key",
       "type": "textarea",
       "encrypted": true,
-      "description": "Enter API Key secret for Appwrite account"
+      "description": "Enter api key secret for appwrite account"
     }
   },
   "required": ["host","secret_key","project_id"]
