@@ -213,6 +213,7 @@ button {
 
     .header {
       --tblr-gutter-x: 0rem;
+      position: sticky; top: 0;
     }
 
     .nav-header {
