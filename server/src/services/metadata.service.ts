@@ -74,7 +74,7 @@ export class MetadataService {
 
   async checkForUpdates(metadata: Metadata) {
     const installedVersion = globalThis.TOOLJET_VERSION;
-    const response = await got('https://hub.tooljet.io/us-central1/updates', {
+    const response = await got('https://hub.tooljet.io/updates', {
       method: 'post',
     });
     const data = JSON.parse(response.body);
