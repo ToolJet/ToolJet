@@ -67,6 +67,10 @@ export default class RestapiQueryService implements QueryService {
     const requiresOauth = sourceOptions['auth_type'] === 'oauth2';
 
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
+    const customQueryParams = Object.fromEntries(sourceOptions['custom_query_params']);
+    Object.keys(customQueryParams).forEach((key) =>
+      customQueryParams[key] === '' ? delete customQueryParams[key] : {}
+    );
 
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
@@ -74,7 +78,10 @@ export default class RestapiQueryService implements QueryService {
 
       if (!tokenData) {
         const tooljetHost = process.env.TOOLJET_HOST;
-        const authUrl = `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`;
+        const authUrl = new URL(
+          `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
+        );
+        Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
 
         return {
           status: 'needs_oauth',
