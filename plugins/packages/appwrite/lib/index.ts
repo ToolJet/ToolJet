@@ -2,6 +2,7 @@ import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@to
 import { SourceOptions, QueryOptions } from './types';
 import sdk from 'node-appwrite';
 import { bulkUpdate, createDocument, deleteDocument, getDocument, queryCollection, updateDocument } from './operations';
+const JSON5 = require('json5');
 
 export default class Appwrite implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -30,7 +31,7 @@ export default class Appwrite implements QueryService {
           result = await createDocument(
             database,
             queryOptions.collectionId,
-            typeof queryOptions.body === 'string' ? JSON.parse(queryOptions.body) : queryOptions.body
+            typeof queryOptions.body === 'string' ? JSON5.parse(queryOptions.body) : queryOptions.body
           );
           break;
         case 'update_document':
@@ -38,7 +39,7 @@ export default class Appwrite implements QueryService {
             database,
             queryOptions.collectionId,
             queryOptions.documentId,
-            typeof queryOptions.body === 'string' ? JSON.parse(queryOptions.body) : queryOptions.body
+            typeof queryOptions.body === 'string' ? JSON5.parse(queryOptions.body) : queryOptions.body
           );
           break;
         case 'delete_document':
@@ -48,7 +49,7 @@ export default class Appwrite implements QueryService {
           result = await bulkUpdate(
             database,
             queryOptions.collectionId,
-            typeof queryOptions.records === 'string' ? JSON.parse(queryOptions.records) : queryOptions.records,
+            typeof queryOptions.records === 'string' ? JSON5.parse(queryOptions.records) : queryOptions.records,
             queryOptions['document_id_key']
           );
           break;

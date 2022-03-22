@@ -21,10 +21,6 @@
           "name": "Get Document"
         },
         {
-          "value": "query_collection",
-          "name": "Query collection"
-        },
-        {
           "value": "add_document",
           "name": "Add Document to Collection"
         },
