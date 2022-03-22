@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
-import Datetime from 'react-datetime';
-import 'react-datetime/css/react-datetime.css';
+// import Datetime from 'react-datetime';
+import DatePickerComponent from 'react-datepicker';
+
+import 'react-datepicker/dist/react-datepicker.css';
+// import 'react-datetime/css/react-datetime.css';
 
 export const Datepicker = function Datepicker({
   height,
@@ -42,13 +45,14 @@ export const Datepicker = function Datepicker({
   }, [isValid]);
 
   const isDateFormat = enableDate === true ? format : enableDate;
+
   return (
     <div
       data-disabled={disabledState}
       className="datepicker-widget"
       style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
     >
-      <Datetime
+      {/* <Datetime
         onChange={onDateChange}
         timeFormat={enableTime}
         closeOnSelect={true}
@@ -68,7 +72,10 @@ export const Datepicker = function Datepicker({
             />
           );
         }}
-      />
+      /> */}
+
+      <DatePickerComponent selected={setExposedVariable.value} onChange={(date) => onDateChange(date)} />
+
       <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
     </div>
   );
