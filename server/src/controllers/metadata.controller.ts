@@ -13,7 +13,9 @@ export class MetadataController {
     const installedVersion = globalThis.TOOLJET_VERSION;
 
     const metadata = await this.metadataService.getMetaData();
-    await this.metadataService.finishInstallation(metadata, installedVersion, name, email, org, req.ip);
+    if (process.env.NODE_ENV == 'production') {
+      await this.metadataService.finishInstallation(metadata, installedVersion, name, email, org, req.ip);
+    }
 
     await this.metadataService.updateMetaData({
       onboarded: true,
