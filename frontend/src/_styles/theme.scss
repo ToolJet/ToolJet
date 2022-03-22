@@ -3868,12 +3868,14 @@ input[type="text"] {
 .tabs-inspector
 {
   z-index: 2;
-  background-color: white !important;
-
+  background: white;
+  &.dark {
+    @extend .bg-dark;
+  }
 }
 .close-icon {
   position: fixed;
-  top: 46px;
+  top: 45px;
   right: 0;
   width: 60px;
   height: 22;
