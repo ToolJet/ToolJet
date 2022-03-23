@@ -51,7 +51,6 @@ export const Tabs = function Tabs({
   };
 
   const parentRef = useRef(null);
-  console.log('parsed tab', parsedDefaultTab);
   const [currentTab, setCurrentTab] = useState(parsedDefaultTab);
 
   useEffect(() => {
@@ -59,7 +58,7 @@ export const Tabs = function Tabs({
   }, [parsedDefaultTab]);
 
   useEffect(() => {
-    setExposedVariable('defaultTab', currentTab);
+    setExposedVariable('currentTab', currentTab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab]);
 
