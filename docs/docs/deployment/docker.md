@@ -39,7 +39,7 @@ OR
 For PostgreSQL database setup with persistent volume:
 ```bash
 curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose-postgres.yaml
-mv docker-compose-postgres.yml docker-compose.yml
+mv docker-compose-postgres.yaml docker-compose.yaml
 mkdir postgres_data
 ```
 
