@@ -1,4 +1,5 @@
 import React from 'react';
+import Avatar from '@/_ui/Avatar';
 import { useOthers } from 'y-presence';
 
 const MAX_DISPLAY_USERS = 5;
@@ -12,33 +13,17 @@ const RealtimeAvatars = ({ self, updatePresence, editingVersionId }) => {
   }, [editingVersionId]);
 
   return (
-    <div className="row" style={{ position: 'absolute', left: '35%' }}>
+    <div className="row realtime-avatars">
       <div className="col-auto ms-auto">
         <div className="avatar-list avatar-list-stacked">
           {self.presence && (
-            <span
-              style={{ border: `1px solid ${self.presence.color}` }}
-              key={self.presence.id}
-              className="avatar avatar-sm avatar-rounded"
-            >
-              {self.presence?.name}
-            </span>
+            <Avatar key={self?.presence?.id} borderColor={self?.presence?.color} text={self?.presence?.name} />
           )}
           {othersOnSameVersion.slice(0, MAX_DISPLAY_USERS).map(({ id, presence }) => {
-            return (
-              <span
-                key={id}
-                style={{ border: `1px solid ${presence.color}` }}
-                className="avatar avatar-sm avatar-rounded"
-              >
-                {presence?.name}
-              </span>
-            );
+            return <Avatar key={id} borderColor={presence.color} text={presence?.name} />;
           })}
           {othersOnSameVersion.length > MAX_DISPLAY_USERS && (
-            <span style={{ border: `1px solid` }} className="avatar avatar-sm avatar-rounded">
-              +{othersOnSameVersion.length - MAX_DISPLAY_USERS}
-            </span>
+            <Avatar text={`+${othersOnSameVersion.length - MAX_DISPLAY_USERS}`} />
           )}
         </div>
       </div>
