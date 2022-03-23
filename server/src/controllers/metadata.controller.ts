@@ -14,7 +14,7 @@ export class MetadataController {
 
     const metadata = await this.metadataService.getMetaData();
     if (process.env.NODE_ENV == 'production') {
-      await this.metadataService.finishInstallation(metadata, installedVersion, name, email, org, req.ip);
+      await this.metadataService.finishInstallation(metadata, installedVersion, name, email, org);
     }
 
     await this.metadataService.updateMetaData({
@@ -59,7 +59,7 @@ export class MetadataController {
       }
 
       if (!process.env.DISABLE_TOOLJET_TELEMETRY) {
-        await this.metadataService.sendTelemetryData(metadata, req.ip);
+        await this.metadataService.sendTelemetryData(metadata);
       }
     }
 

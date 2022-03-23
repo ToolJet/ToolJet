@@ -37,14 +37,7 @@ export class MetadataService {
     });
   }
 
-  async finishInstallation(
-    metadata: any,
-    installedVersion: string,
-    name: string,
-    email: string,
-    org: string,
-    ip_address: string
-  ) {
+  async finishInstallation(metadata: any, installedVersion: string, name: string, email: string, org: string) {
     return await got('https://hub.tooljet.io/subscribe', {
       method: 'post',
       json: {
@@ -53,12 +46,11 @@ export class MetadataService {
         name,
         email,
         org,
-        ip_address,
       },
     });
   }
 
-  async sendTelemetryData(metadata: Metadata, ip: string) {
+  async sendTelemetryData(metadata: Metadata) {
     const totalUserCount = await getManager().count(User);
 
     return await got('https://hub.tooljet.io/telemetry', {
@@ -67,7 +59,6 @@ export class MetadataService {
         id: metadata.id,
         total_users: totalUserCount,
         tooljet_version: globalThis.TOOLJET_VERSION,
-        ip_address: ip,
       },
     });
   }
