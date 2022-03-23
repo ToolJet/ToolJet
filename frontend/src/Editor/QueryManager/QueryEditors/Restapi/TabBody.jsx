@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import GroupHeader from './GroupHeader';
 import TabContent from './TabContent';
+// import { Toggle } from './Toggle';
 
 export default ({
   options = [],
@@ -11,10 +12,18 @@ export default ({
   onChange,
   componentName,
 }) => {
+  const [bodyToggle, setBodyToggle] = useState(false);
+
   return (
     <>
-      <GroupHeader addNewKeyValuePair={addNewKeyValuePair} paramType={'body'} descText={'Body Parameters'} />
-
+      <div style={{ display: 'flex' }}></div>
+      <GroupHeader
+        addNewKeyValuePair={addNewKeyValuePair}
+        paramType={'body'}
+        descText={'Body Parameters'}
+        bodyToggle={bodyToggle}
+        setBodyToggle={setBodyToggle}
+      />
       <TabContent
         options={options}
         currentState={currentState}
@@ -24,6 +33,7 @@ export default ({
         componentName={componentName}
         tabType={'body'}
         paramType={'body'}
+        bodyToggle={bodyToggle}
       />
     </>
   );
