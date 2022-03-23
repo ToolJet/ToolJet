@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { authenticationService, organizationService } from '@/_services';
+import { organizationService } from '@/_services';
 import { Header, Menu } from '@/_components';
 import ReactTooltip from 'react-tooltip';
 import { GeneralSettings } from './GenetalSettings';
@@ -58,8 +58,10 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
           return setSsoData({ ...ssoData, ...data });
         default:
           if (!configs) {
+            // Enable/Disable
             ssoData_tmp.sso_configs.push({ ...data, sso: type });
           } else {
+            // Change configs
             if (data.id !== undefined) {
               configs.id = data.id;
             }

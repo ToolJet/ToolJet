@@ -7,18 +7,10 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 
+const single_organization = window.public_config?.SINGLE_ORGANIZATION === 'true';
 class LoginPage extends React.Component {
   constructor(props) {
     super(props);
-    // redirect to home if already logged in
-    if (
-      (!this.props.match.params.organisationId && authenticationService.currentUserValue) ||
-      (this.props.match.params.organisationId &&
-        authenticationService?.currentUserValue?.organization_id === this.props.match.params.organisationId)
-    ) {
-      return this.props.history.push('/');
-    }
-
     this.state = {
       isLoading: false,
       showPassword: false,
@@ -28,7 +20,15 @@ class LoginPage extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.match.params.organisationId) {
+    if (
+      (!this.props.match.params.organisationId && authenticationService.currentUserValue) ||
+      (this.props.match.params.organisationId &&
+        authenticationService?.currentUserValue?.organization_id === this.props.match.params.organisationId)
+    ) {
+      // redirect to home if already logged in
+      return this.props.history.push('/');
+    }
+    if (this.props.match.params.organisationId || single_organization) {
       authenticationService.getOrganizationConfigs(this.props.match.params.organisationId).then(
         (configs) => {
           if (!configs) {
@@ -39,20 +39,14 @@ class LoginPage extends React.Component {
         () => this.props.history.push({ pathname: '/', state: { errorMessage: 'Error while login, please try again' } })
       );
     } else {
+      // Not single organization login page and not an organization login page => Multi organization common login page
+      // Only form login is allowed
       this.setState({
         isGettingConfigs: false,
         configs: {
           form: {
             enable_sign_up: window.public_config?.DISABLE_SIGNUPS !== 'true',
-            enabled: window.public_config?.DISABLE_PASSWORD_LOGIN !== 'true',
-          },
-          git: {
-            enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-            client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-          },
-          google: {
-            enabled: !!window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
-            client_id: window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
+            enabled: true,
           },
         },
       });
@@ -112,22 +106,42 @@ class LoginPage extends React.Component {
     this.setState({ isLoading: false });
   };
 
+  showLoading = () => {
+    return (
+      <div className="card-body">
+        <div className="skeleton-heading"></div>
+        <div className="skeleton-line"></div>
+        <div className="skeleton-line"></div>
+        <div className="skeleton-line"></div>
+        <div className="mb-2"></div>
+        <div className="skeleton-heading"></div>
+        <div className="skeleton-line"></div>
+        <div className="skeleton-line"></div>
+        <div className="skeleton-line"></div>
+      </div>
+    );
+  };
+
   render() {
-    const { isLoading, configs } = this.state;
+    const { isLoading, configs, isGettingConfigs } = this.state;
     return (
       <div className="page page-center">
-        {!this.state.isGettingConfigs && (
-          <div className="container-tight py-2">
-            <div className="text-center mb-4">
-              <a href="." className="navbar-brand-autodark">
-                <img src="/assets/images/logo-color.svg" height="26" alt="" />
-              </a>
-            </div>
-            <form className="card card-md" action="." method="get" autoComplete="off">
+        <div className="container-tight py-2">
+          <div className="text-center mb-4">
+            <a href="." className="navbar-brand-autodark">
+              <img src="/assets/images/logo-color.svg" height="26" alt="" />
+            </a>
+          </div>
+          <form className="card card-md" action="." method="get" autoComplete="off">
+            {isGettingConfigs ? (
+              this.showLoading()
+            ) : (
               <div className="card-body">
                 {configs?.form?.enabled && (
                   <div>
-                    <h2 className="card-title text-center mb-4">Login to your account</h2>
+                    <h2 className="card-title text-center mb-4">
+                      Login to {single_organization ? 'your account' : configs?.name || 'your account'}
+                    </h2>
                     <div className="mb-3">
                       <label className="form-label">Email address</label>
                       <input
@@ -193,13 +207,19 @@ class LoginPage extends React.Component {
                     <GoogleSSOLoginButton
                       authSuccessHandler={this.authSuccessHandler}
                       authFailureHandler={this.authFailureHandler}
+                      configs={this.state.configs?.google?.configs}
                     />
                   )}
-                  {this.state.configs?.git?.enabled && <GitSSOLoginButton />}
+                  {this.state.configs?.git?.enabled && (
+                    <GitSSOLoginButton configs={this.state.configs?.google?.configs} />
+                  )}
                 </div>
               </div>
-            </form>
-            {!this.props.match.params.organisationId && configs?.form?.enable && configs?.form?.enable_sign_up && (
+            )}
+          </form>
+          {!this.props.match.params.organisationId &&
+            ((single_organization && configs?.form?.enable && configs?.form?.enable_sign_up) ||
+              (!single_organization && configs?.form?.enable_sign_up)) && (
               <div className="text-center text-secondary mt-3">
                 Don&apos;t have account yet? &nbsp;
                 <Link to={'/signup'} tabIndex="-1">
@@ -207,13 +227,12 @@ class LoginPage extends React.Component {
                 </Link>
               </div>
             )}
-            {authenticationService?.currentUserValue?.organization && (
-              <div className="text-center mt-3">
-                back to <a href="/">{authenticationService?.currentUserValue?.organization}</a> organization
-              </div>
-            )}
-          </div>
-        )}
+          {authenticationService?.currentUserValue?.organization && (
+            <div className="text-center mt-3">
+              back to <a href="/">{authenticationService?.currentUserValue?.organization}</a>
+            </div>
+          )}
+        </div>
       </div>
     );
   }

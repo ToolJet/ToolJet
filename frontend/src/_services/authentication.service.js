@@ -39,7 +39,10 @@ function getOrganizationConfigs(organizationId) {
     headers: { 'Content-Type': 'application/json' },
   };
 
-  return fetch(`${config.apiUrl}/organizations/${organizationId}/public-configs`, requestOptions)
+  return fetch(
+    `${config.apiUrl}/organizations/${organizationId ? `${organizationId}/` : ''}public-configs`,
+    requestOptions
+  )
     .then(handleResponse)
     .then((configs) => configs?.sso_configs);
 }
@@ -68,17 +71,17 @@ function logout() {
   // remove user from local storage to log user out
   localStorage.removeItem('currentUser');
   currentUserSubject.next(null);
-  history.push(`/login?redirectTo=${window.location.pathname}`);
+  history.push(`/login?redirectTo=${window.location.pathname?.startsWith('/sso/') ? '/' : 'props.location.pathname'}`);
 }
 
-function signInViaOAuth(ssoResponse) {
+function signInViaOAuth(configId, ssoResponse) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(ssoResponse),
   };
 
-  return fetch(`${config.apiUrl}/oauth/sign-in`, requestOptions)
+  return fetch(`${config.apiUrl}/oauth/sign-in/${configId}`, requestOptions)
     .then(handleResponse)
     .then((user) => {
       updateUser(user);

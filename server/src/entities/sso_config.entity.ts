@@ -24,6 +24,10 @@ interface Okta {
   authServer?: string;
 }
 
+interface Form {
+  enableSignUp?: boolean;
+}
+
 @Entity({ name: 'sso_configs' })
 export class SSOConfigs {
   @PrimaryGeneratedColumn('uuid')
@@ -36,7 +40,7 @@ export class SSOConfigs {
   sso: 'google' | 'git' | 'okta' | 'form';
 
   @Column({ type: 'json' })
-  configs: Google | Git | Okta;
+  configs: Google | Git | Okta | Form | any;
 
   @Column({ name: 'enabled' })
   enabled: boolean;

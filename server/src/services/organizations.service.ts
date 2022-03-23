@@ -35,7 +35,7 @@ export class OrganizationsService {
         ssoConfigs: [
           {
             sso: 'form',
-            enabled: this.configService.get<string>('DISABLE_PASSWORD_LOGIN') === 'true' ? false : true,
+            enabled: true,
           },
         ],
         name,
@@ -62,7 +62,7 @@ export class OrganizationsService {
   }
 
   async getSingleOrganization(): Promise<Organization> {
-    return await this.organizationsRepository.findOne();
+    return await this.organizationsRepository.findOne({ relations: ['ssoConfigs'] });
   }
 
   async createDefaultGroupPermissionsForOrganization(organization: Organization) {
@@ -186,14 +186,13 @@ export class OrganizationsService {
     if (!isHideSensitiveData) {
       return result;
     }
-    return this.hideSSOSensitiveData(result?.ssoConfigs);
+    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name);
   }
 
-  private hideSSOSensitiveData(ssoConfigs: SSOConfigs[]): any {
-    const configs = {};
+  private hideSSOSensitiveData(ssoConfigs: SSOConfigs[], organizationName): any {
+    const configs = { name: organizationName };
     if (ssoConfigs?.length > 0) {
       for (const config of ssoConfigs) {
-        delete config.configs['clientSecret'];
         delete config['id'];
         delete config['organizationId'];
         delete config['createdAt'];
@@ -203,6 +202,7 @@ export class OrganizationsService {
           case 'git':
             configs['git'] = {
               ...config,
+              clientSecret: '',
             };
             break;
           case 'google':

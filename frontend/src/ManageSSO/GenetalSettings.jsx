@@ -5,20 +5,18 @@ import { toast } from 'react-hot-toast';
 export function GeneralSettings({ settings, updateData }) {
   const [enableSignUp, setEnableSignUp] = useState(settings?.enable_sign_up || false);
   const [domain, setDomain] = useState(settings?.domain || '');
-  const [autoAssign, setAutoAssign] = useState(settings?.auto_assign || false);
   const [isSaving, setSaving] = useState(false);
 
   const reset = () => {
     setEnableSignUp(settings?.enable_sign_up || false);
-    setAutoAssign(settings?.auto_assign || false);
     setDomain(settings?.domain || '');
   };
 
   const saveSettings = () => {
     setSaving(true);
-    organizationService.editOrganization({ enableSignUp, autoAssign, domain }).then(
+    organizationService.editOrganization({ enableSignUp, domain }).then(
       () => {
-        updateData('general', { enable_sign_up: enableSignUp, auto_assign: autoAssign, domain });
+        updateData('general', { enable_sign_up: enableSignUp, domain });
         toast.success('updated sso configurations', {
           position: 'top-center',
         });
@@ -64,20 +62,6 @@ export function GeneralSettings({ settings, updateData }) {
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
               />
-            </div>
-          </div>
-          <div className="form-group mb-3">
-            <label className="form-check form-switch">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={autoAssign}
-                onChange={() => setAutoAssign((autoAssign) => !autoAssign)}
-              />
-              <span className="form-check-label">Auto assign</span>
-            </label>
-            <div className="help-text">
-              <div>Auto assign new users with configured domain to this organization</div>
             </div>
           </div>
           <div className="form-footer">

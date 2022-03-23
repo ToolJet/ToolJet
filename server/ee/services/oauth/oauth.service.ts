@@ -89,44 +89,16 @@ export class OauthService {
     });
   }
 
-  async signIn(ssoResponse: SSOResponse, configId?: string): Promise<any> {
-    let enableSignUp: boolean, domain: string, sso: string, configs: any, organization: Organization;
+  async signIn(ssoResponse: SSOResponse, configId: string): Promise<any> {
+    const ssoConfigs: SSOConfigs = await this.organizationService.getConfigs(configId);
 
-    if (configId) {
-      const ssoConfigs: SSOConfigs = await this.organizationService.getConfigs(configId);
-
-      if (!(ssoConfigs && ssoConfigs?.organization)) {
-        throw new UnauthorizedException();
-      }
-      organization = ssoConfigs.organization;
-
-      ({ enableSignUp, domain } = ssoConfigs.organization);
-      ({ sso, configs } = ssoConfigs);
-    } else if (this.configService.get<string>('SINGLE_ORGANIZATION')) {
-      organization = await this.organizationService.getSingleOrganization();
-
-      enableSignUp = this.configService.get<string>('SSO_DISABLE_SIGNUP') !== 'true';
-      domain = this.configService.get<string>('SSO_RESTRICTED_DOMAIN');
-      sso = ssoResponse.origin;
-
-      switch (sso) {
-        case 'google':
-          configs = {
-            clientId: this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
-          };
-          break;
-        case 'git':
-          configs = {
-            clientId: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
-            clientSecret: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET'),
-          };
-          break;
-        default:
-          break;
-      }
-    } else {
+    if (!(ssoConfigs && ssoConfigs?.organization)) {
       throw new UnauthorizedException();
     }
+    const organization = ssoConfigs.organization;
+
+    const { enableSignUp, domain } = ssoConfigs.organization;
+    const { sso, configs } = ssoConfigs;
     const { token } = ssoResponse;
 
     let userResponse: UserResponse;

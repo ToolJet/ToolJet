@@ -9,11 +9,9 @@ export function Loader() {
         </div>
       </div>
       <div className="card-body">
-        <div className="skeleton-header"></div>
         <div className="skeleton-line"></div>
-        <div className="skeleton-header"></div>
         <div className="skeleton-line"></div>
-        <div className="skeleton-header"></div>
+        <div className="skeleton-line"></div>
         <div className="skeleton-line"></div>
       </div>
     </div>

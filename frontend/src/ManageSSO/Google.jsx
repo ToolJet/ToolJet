@@ -84,7 +84,7 @@ export function Google({ settings, updateData }) {
           {configId && (
             <div className="form-group mb-3">
               <label className="form-label">Redirect URL</label>
-              <div>{`${window.location.protocol}//${window.location.host}/sso/${configId}`}</div>
+              <div>{`${window.location.protocol}//${window.location.host}/sso/google/${configId}`}</div>
             </div>
           )}
           <div className="form-footer">

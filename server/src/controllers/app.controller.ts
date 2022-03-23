@@ -1,6 +1,5 @@
 import { Controller, Get, Request, Post, UseGuards, Body, Param, BadRequestException } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
-import { PasswordLoginDisabledGuard } from 'src/modules/auth/password-login-disabled.guard';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AuthService } from '../services/auth.service';
 
@@ -8,7 +7,6 @@ import { AuthService } from '../services/auth.service';
 export class AppController {
   constructor(private authService: AuthService) {}
 
-  @UseGuards(PasswordLoginDisabledGuard)
   @Post(['authenticate', 'authenticate/:organisationId'])
   async login(@Body() body, @Param('organisationId') organisationId) {
     return this.authService.login({ ...body, organisationId });
@@ -23,7 +21,6 @@ export class AppController {
     return await this.authService.switchOrganization(organizationId, user);
   }
 
-  @UseGuards(PasswordLoginDisabledGuard)
   @Post('signup')
   async signup(@Body() body) {
     return this.authService.signup(body);

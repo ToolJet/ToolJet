@@ -14,7 +14,7 @@ export default function GoogleSSOLoginButton(props) {
   return (
     <div className="mt-2">
       <GoogleLogin
-        clientId={window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID}
+        clientId={props.configs?.client_id}
         buttonText="Login"
         onSuccess={googleSSOSuccessHandler}
         onFailure={props.authFailureHandler}

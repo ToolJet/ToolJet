@@ -21,11 +21,7 @@ export class AuthService {
     private organizationUsersService: OrganizationUsersService,
     private emailService: EmailService,
     private configService: ConfigService
-  ) {
-    this.passwordLoginDisabled = this.configService.get<string>('DISABLE_PASSWORD_LOGIN');
-  }
-
-  private readonly passwordLoginDisabled: string;
+  ) {}
 
   verifyToken(token: string) {
     try {
@@ -50,39 +46,43 @@ export class AuthService {
     const { email, password, organizationId } = params;
     let organization: Organization;
 
-    if (!organizationId && this.passwordLoginDisabled === 'true') {
-      // Global login - checking instance configs
-      throw new UnauthorizedException('Invalid credentials');
-    }
     const user = await this.validateUser(email, password, organizationId);
 
     if (user && (await this.usersService.status(user)) !== 'archived') {
       if (!organizationId) {
         // Global login
-        const organizationList: Organization[] = await this.organizationsService.findOrganizationSupportsFormLogin(
-          user
-        );
-
-        const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
-
         // Determine the organization to be loaded
-        if (defaultOrgDetails) {
-          // default organization form login enabled
-          organization = defaultOrgDetails;
-        } else if (organizationList?.length > 0) {
-          // default organization form login not enabled, picking first one from form enabled list
-          organization = organizationList[0];
+        if (this.configService.get<string>('SINGLE_ORGANIZATION') === 'true') {
+          // Single organization
+          organization = await this.organizationsService.getSingleOrganization();
+          if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
+            throw new UnauthorizedException();
+          }
         } else {
-          // no form login enabled organization available for user - creating new one
-          organization = await this.organizationsService.create('Untitled organization', user);
+          const organizationList: Organization[] = await this.organizationsService.findOrganizationSupportsFormLogin(
+            user
+          );
+
+          const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
+          // Multi organization
+          if (defaultOrgDetails) {
+            // default organization form login enabled
+            organization = defaultOrgDetails;
+          } else if (organizationList?.length > 0) {
+            // default organization form login not enabled, picking first one from form enabled list
+            organization = organizationList[0];
+          } else {
+            // no form login enabled organization available for user - creating new one
+            organization = await this.organizationsService.create('Untitled organization', user);
+          }
+          if (defaultOrgDetails?.id !== user.organizationId) {
+            // Updating default organization Id
+            await this.usersService.updateDefaultOrganization(user, organization.id);
+          }
         }
         user.organizationId = organization.id;
-
-        if (defaultOrgDetails?.id !== user.organizationId) {
-          // Updating default organization Id
-          await this.usersService.updateDefaultOrganization(user, organization.id);
-        }
       } else {
+        // organization specific login
         user.organizationId = organizationId;
 
         const organization: Organization = await this.organizationsService.get(user.organizationId);
@@ -115,9 +115,10 @@ export class AuthService {
   }
 
   async switchOrganization(newOrganizationId: string, user: User) {
+    if (this.configService.get<string>('SINGLE_ORGANIZATION') === 'true') {
+      throw new UnauthorizedException();
+    }
     const newUser = await this.usersService.findByEmail(user.email, newOrganizationId);
-
-    console.log('--->>>>111', newUser);
 
     if (newUser && (await this.usersService.status(newUser)) !== 'archived') {
       newUser.organizationId = newOrganizationId;
@@ -125,8 +126,6 @@ export class AuthService {
       const organization: Organization = await this.organizationsService.get(newUser.organizationId);
 
       const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
-
-      console.log('--->>>>111222', formConfigs);
 
       if (!formConfigs?.enabled) {
         // no configurations in organization side or Form login disabled for the organization
@@ -153,16 +152,25 @@ export class AuthService {
   }
 
   async signup(params: any) {
-    // Check if the installation allows user signups
-    if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
-      return {};
-    }
-
     const { email } = params;
-    const organization = await this.organizationsService.create('Untitled organization');
+    let organization: Organization;
+    // Check if the configs allows user signups
+    if (this.configService.get<string>('SINGLE_ORGANIZATION') === 'true') {
+      // Sibgle organization sso configs in DB
+      organization = await this.organizationsService.getSingleOrganization();
+      if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled && oc.configs?.enableSignUp)) {
+        throw new UnauthorizedException();
+      }
+    } else {
+      // Multi organization
+      if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
+        throw new UnauthorizedException();
+      }
+      // Create default organization
+      organization = await this.organizationsService.create('Untitled organization');
+    }
     const user = await this.usersService.create({ email }, organization.id, ['all_users', 'admin']);
     await this.organizationUsersService.create(user, organization, true);
-
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 
     return {};

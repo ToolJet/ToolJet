@@ -8,10 +8,15 @@ import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User as UserEntity } from 'src/entities/user.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('organizations')
 export class OrganizationsController {
-  constructor(private organizationsService: OrganizationsService, private authService: AuthService) {}
+  constructor(
+    private organizationsService: OrganizationsService,
+    private authService: AuthService,
+    private readonly configService: ConfigService
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('users')
@@ -41,8 +46,16 @@ export class OrganizationsController {
     return await this.authService.switchOrganization(result.id, user);
   }
 
-  @Get('/:organizationId/public-configs')
+  @Get(['/:organizationId/public-configs', '/public-configs'])
   async getOrganizationDetails(@Param('organizationId') organizationId: string) {
+    if (!organizationId && this.configService.get<string>('SINGLE_ORGANIZATION') === 'true') {
+      // Request from single organization login page - find one from organization and setting
+      organizationId = (await this.organizationsService.getSingleOrganization()).id;
+    }
+    if (!organizationId) {
+      throw new BadRequestException();
+    }
+
     const result = await this.organizationsService.fetchOrganisationDetails(organizationId, [true], true);
     return decamelizeKeys({ ssoConfigs: result });
   }
@@ -50,7 +63,7 @@ export class OrganizationsController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
   @Get('/configs')
-  async getConfigs(@User() user, @Param('organizationId') organizationId) {
+  async getConfigs(@User() user) {
     const result = await this.organizationsService.fetchOrganisationDetails(user.organizationId);
     return decamelizeKeys({ organizationDetails: result });
   }

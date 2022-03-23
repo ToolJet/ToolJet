@@ -5,6 +5,7 @@ import { Redirect } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 
 export function Authorize() {
+  authenticationService.logout();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const router = useRouter();
@@ -23,9 +24,8 @@ export function Authorize() {
     const configs = Configs[router.query.origin];
 
     authenticationService
-      .signInViaOAuth({
+      .signInViaOAuth(router.query.configId, {
         token: router.query[configs.params.token],
-        origin: router.query.origin,
         state: router.query[configs.params.state],
       })
       .then(() => setSuccess(true))

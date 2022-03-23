@@ -98,7 +98,7 @@ export function Git({ settings, updateData }) {
           {configId && (
             <div className="form-group mb-3">
               <label className="form-label">Redirect URL</label>
-              <div>{`${window.location.protocol}//${window.location.host}/sso/${configId}`}</div>
+              <div>{`${window.location.protocol}//${window.location.host}/sso/git/${configId}`}</div>
             </div>
           )}
           <div className="form-footer">

@@ -257,10 +257,15 @@ export class GroupPermissionsService {
       .getMany();
     const adminUserIds = adminUsers.map((u) => u.userId);
 
-    return await this.userRepository.find({
-      id: Not(In([...usersInGroupIds, ...adminUserIds])),
-      organizationId: user.organizationId,
-    });
+    return await createQueryBuilder(User, 'user')
+      .innerJoin(
+        'user.organizationUsers',
+        'organization_users',
+        'organization_users.organizationId = :organizationId',
+        { organizationId: user.organizationId }
+      )
+      .where('user.id IN (:...userList)', { userList: [...usersInGroupIds, ...adminUserIds] })
+      .getMany();
   }
 
   async createUserGroupPermission(userId: string, groupPermissionId: string) {

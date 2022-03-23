@@ -116,7 +116,7 @@ class App extends React.Component {
             />
             <Route path="/login/:organisationId" exact component={LoginPage} />
             <Route path="/login" exact component={LoginPage} />
-            <Route path="/sso/:origin" component={Oauth} />
+            <Route path="/sso/:origin/:configId" component={Oauth} />
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/reset-password" component={ResetPassword} />
