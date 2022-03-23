@@ -1,5 +1,10 @@
 import { Database, Query } from 'node-appwrite';
 
+function computeValue(value: string) {
+  const numConverted = Number.parseInt(value);
+  return isNaN(numConverted) ? value : numConverted;
+}
+
 export async function queryCollection(
   db: Database,
   collection: string,
@@ -8,10 +13,12 @@ export async function queryCollection(
   order_types: string[],
   where_field: string,
   where_operation: string,
-  where_value: string
+  where_value: any
 ): Promise<object> {
   const limitProvided = isNaN(limit) !== true;
   let queryString: string;
+  where_value = computeValue(where_value);
+
   switch (where_operation) {
     case '==':
       queryString = Query.equal(where_field, where_value);

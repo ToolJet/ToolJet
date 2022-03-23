@@ -8,6 +8,7 @@ export default class Appwrite implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const database = await this.getConnection(sourceOptions);
     const operation = queryOptions.operation;
+    const body = this.returnObject(queryOptions.body);
     let result = {};
 
     try {
@@ -28,19 +29,10 @@ export default class Appwrite implements QueryService {
           result = await getDocument(database, queryOptions.collectionId, queryOptions.documentId);
           break;
         case 'add_document':
-          result = await createDocument(
-            database,
-            queryOptions.collectionId,
-            typeof queryOptions.body === 'string' ? JSON5.parse(queryOptions.body) : queryOptions.body
-          );
+          result = await createDocument(database, queryOptions.collectionId, body);
           break;
         case 'update_document':
-          result = await updateDocument(
-            database,
-            queryOptions.collectionId,
-            queryOptions.documentId,
-            typeof queryOptions.body === 'string' ? JSON5.parse(queryOptions.body) : queryOptions.body
-          );
+          result = await updateDocument(database, queryOptions.collectionId, queryOptions.documentId, body);
           break;
         case 'delete_document':
           result = await deleteDocument(database, queryOptions.collectionId, queryOptions.documentId);
@@ -49,7 +41,7 @@ export default class Appwrite implements QueryService {
           result = await bulkUpdate(
             database,
             queryOptions.collectionId,
-            typeof queryOptions.records === 'string' ? JSON5.parse(queryOptions.records) : queryOptions.records,
+            this.returnObject(queryOptions.records),
             queryOptions['document_id_key']
           );
           break;
@@ -62,6 +54,13 @@ export default class Appwrite implements QueryService {
       status: 'ok',
       data: result,
     };
+  }
+
+  private returnObject(data: any) {
+    if (!data) {
+      return {};
+    }
+    return typeof data === 'string' ? JSON5.parse(data) : data;
   }
 
   async getConnection(sourceOptions: SourceOptions, _options?: object): Promise<sdk.Database> {
