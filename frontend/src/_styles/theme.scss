@@ -4448,11 +4448,7 @@ input[type="text"] {
   .popup-btn {
     margin-top: 0.65rem !important;
   }
-  .CodeMirror pre.CodeMirror-line {
-    height: 32px !important;
-    margin-bottom: 6px !important;
-  }
-  .CodeMirror-placeholder {
+  .CodeMirror-placeholder, .CodeMirror pre.CodeMirror-line {
     height: 21px !important;
     position: absolute !important;
     margin-top: 3px !important;
