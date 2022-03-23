@@ -358,7 +358,10 @@ export const Inspector = ({
         </Tabs>
       </div>
 
-      <div className="close-icon" style={{ height: darkMode ? tabHeight + 1 : tabHeight }}>
+      <div
+        className="close-icon"
+        style={{ backgroundColor: darkMode && '#232e3c', height: darkMode ? tabHeight + 1 : tabHeight }}
+      >
         <div className="svg-wrapper">
           <svg
             width="20"
