@@ -38,7 +38,7 @@ class Viewer extends React.Component {
         components: {},
         globals: {
           currentUser: {},
-          mode: props.darkMode ? 'dark' : 'light',
+          theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: {},
         },
       },
@@ -99,7 +99,7 @@ class Viewer extends React.Component {
           components: {},
           globals: {
             currentUser: userVars,
-            mode: this.props.darkMode ? 'dark' : 'light',
+            theme: { name: this.props.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
           },
         },
@@ -168,7 +168,7 @@ class Viewer extends React.Component {
         ...this.state.currentState,
         globals: {
           ...this.state.currentState.globals,
-          mode: newMode ? 'dark' : 'light',
+          theme: { name: newMode ? 'dark' : 'light' },
         },
       },
       showQuerySearchField: false,

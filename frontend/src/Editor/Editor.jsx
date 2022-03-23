@@ -108,7 +108,7 @@ class Editor extends React.Component {
         components: {},
         globals: {
           currentUser: userVars,
-          mode: props.darkMode ? 'dark' : 'light',
+          theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
         errors: {},
@@ -916,7 +916,7 @@ class Editor extends React.Component {
         ...this.state.currentState,
         globals: {
           ...this.state.currentState.globals,
-          mode: newMode ? 'dark' : 'light',
+          theme: { name: newMode ? 'dark' : 'light' },
         },
       },
       showQuerySearchField: false,
