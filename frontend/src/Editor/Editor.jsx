@@ -441,6 +441,7 @@ class Editor extends React.Component {
   };
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
+    console.log(opts);
     if (!opts.skipYmapUpdate) {
       this.props.ymap.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
     }
