@@ -1,9 +1,7 @@
-import React, { useEffect } from 'react';
-// import Datetime from 'react-datetime';
+import React, { useEffect, useState } from 'react';
 import DatePickerComponent from 'react-datepicker';
-
+import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
-// import 'react-datetime/css/react-datetime.css';
 
 export const Datepicker = function Datepicker({
   height,
@@ -19,19 +17,24 @@ export const Datepicker = function Datepicker({
   const { format, enableTime, enableDate, defaultValue } = properties;
   const { visibility, disabledState, borderRadius } = styles;
 
-  const onDateChange = (event) => {
+  const [date, setDate] = useState(new Date());
+  const selectedDateFormat = enableTime ? `${format} LT` : format;
+
+  const onDateChange = (date) => {
     if (enableDate) {
-      const selectedDateFormat = enableTime ? `${format} LT` : format;
-      const dateString = event.format(selectedDateFormat);
+      const dateString = moment(date).format(selectedDateFormat);
+      setDate(date);
       setExposedVariable('value', dateString);
     }
 
     if (!enableDate && enableTime) {
-      setExposedVariable('value', event.format('LT'));
+      setExposedVariable('value', moment(date).format('LT'));
     }
   };
 
   useEffect(() => {
+    const dateMomentInstance = moment(defaultValue, selectedDateFormat);
+    setDate(dateMomentInstance.toDate());
     setExposedVariable('value', defaultValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
@@ -44,37 +47,21 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
-  const isDateFormat = enableDate === true ? format : enableDate;
-
   return (
     <div
       data-disabled={disabledState}
       className="datepicker-widget"
       style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
     >
-      {/* <Datetime
-        onChange={onDateChange}
-        timeFormat={enableTime}
-        closeOnSelect={true}
-        dateFormat={isDateFormat}
-        placeholderText={defaultValue}
-        inputProps={{ placeholder: defaultValue, style: { height, borderRadius: `${borderRadius}px` } }}
-        onOpen={(event) => {
+      <DatePickerComponent
+        selected={date}
+        onChange={(date) => onDateChange(date)}
+        showTimeInput={enableTime ? true : false}
+        onFocus={(event) => {
           onComponentClick(id, component, event);
         }}
-        renderInput={(props) => {
-          return (
-            <input
-              readOnly
-              {...props}
-              value={exposedVariables.value}
-              className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2`}
-            />
-          );
-        }}
-      /> */}
-
-      <DatePickerComponent selected={setExposedVariable.value} onChange={(date) => onDateChange(date)} />
+        dateFormat={enableTime ? 'dd/MM/yyyy h:mm aa' : 'dd/MM/yyyy'}
+      />
 
       <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
     </div>
