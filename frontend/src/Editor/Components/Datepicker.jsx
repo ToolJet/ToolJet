@@ -60,7 +60,7 @@ export const Datepicker = function Datepicker({
         onFocus={(event) => {
           onComponentClick(id, component, event);
         }}
-        dateFormat={enableTime ? 'dd/MM/yyyy h:mm aa' : 'dd/MM/yyyy'}
+        dateFormat={enableDate ? 'dd/MM/yyyy' : enableDate}
       />
 
       <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
