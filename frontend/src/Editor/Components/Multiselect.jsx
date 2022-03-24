@@ -44,7 +44,9 @@ export const Multiselect = function Multiselect({
         return { label: display_values[index], value: value };
       }),
     ];
-    showAllOption && selectOptions.splice(0, 0, { label: 'All', value: 'all' });
+    showAllOption &&
+      selectOptions.length != computedValues.length &&
+      selectOptions.splice(0, 0, { label: 'All', value: 'all' });
   } catch (err) {
     console.log(err);
   }
@@ -61,11 +63,14 @@ export const Multiselect = function Multiselect({
   }, []);
 
   const handleChange = (value) => {
-    setComputedValues(value);
+    const filteredArray = value.filter((option) => {
+      return option.value !== 'all';
+    });
+    setComputedValues(filteredArray);
     setExposedVariable(
       'values',
-      value.map((option) => {
-        return option.value !== 'all' && option.value;
+      filteredArray.map((option) => {
+        return option.value;
       })
     ).then(() => fireEvent('onSelect'));
   };
