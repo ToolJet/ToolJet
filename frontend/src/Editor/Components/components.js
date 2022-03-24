@@ -703,6 +703,8 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+      defaultStartDate: { type: 'code', displayName: 'Default start date' },
+      defaultEndDate: { type: 'code', displayName: 'Default end date' },
       format: { type: 'code', displayName: 'Format' },
     },
     events: {},
@@ -721,6 +723,9 @@ export const componentTypes = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
+        defaultStartDate: { value: '01/04/2022' },
+        defaultEndDate: { value: '10/04/2022' },
+
         format: { value: 'DD/MM/YYYY' },
       },
       events: [],
@@ -741,6 +746,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+      defaultValue: { type: 'code', displayName: 'Default value' },
       text: { type: 'code', displayName: 'Text' },
       loadingState: { type: 'toggle', displayName: 'Show loading state' },
     },
