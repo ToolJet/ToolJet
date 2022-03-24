@@ -84,7 +84,7 @@ const DynamicForm = ({
           type,
           placeholder: description,
           className: 'form-control',
-          value: options[key]?.value,
+          value: options?.[key]?.value,
           ...(type === 'textarea' && { rows: rows }),
           ...(helpText && { helpText }),
           onChange: (e) => optionchanged(key, e.target.value),
