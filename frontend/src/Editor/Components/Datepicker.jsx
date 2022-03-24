@@ -13,6 +13,8 @@ export const Datepicker = function Datepicker({
   onComponentClick,
   component,
   id,
+  darkMode,
+  width,
 }) {
   const { format, enableTime, enableDate, defaultValue } = properties;
   const { visibility, disabledState, borderRadius } = styles;
@@ -47,11 +49,30 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
+  const ExampleCustomInput = (props) => {
+    console.log(props);
+    return (
+      <input
+        readOnly
+        {...props}
+        value={exposedVariables.value}
+        className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
+          darkMode ? 'bg-dark color-white' : 'bg-light'
+        }`}
+        style={{ height, width, borderRadius: `${borderRadius}px` }}
+      />
+    );
+  };
+
   return (
     <div
       data-disabled={disabledState}
       className="datepicker-widget"
-      style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
+      style={{
+        height,
+        display: visibility ? '' : 'none',
+        borderRadius: `${borderRadius}px`,
+      }}
     >
       <DatePickerComponent
         selected={date}
@@ -61,6 +82,7 @@ export const Datepicker = function Datepicker({
           onComponentClick(id, component, event);
         }}
         dateFormat={enableDate ? 'dd/MM/yyyy' : enableDate}
+        customInput={<ExampleCustomInput />}
       />
 
       <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
