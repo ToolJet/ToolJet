@@ -225,9 +225,11 @@ export const Organization = function Organization() {
             </div>
             <div className={`col-${isSingleOrganization ? '9' : '7'}`}>
               <div className="org-name">{organization}</div>
-              <div className="org-edit">
-                <span onClick={showEditModal}>Edit</span>
-              </div>
+              {admin && (
+                <div className="org-edit">
+                  <span onClick={showEditModal}>Edit</span>
+                </div>
+              )}
             </div>
             {!isSingleOrganization && (
               <div className="col-2">
