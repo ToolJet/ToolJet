@@ -40,7 +40,7 @@ export const DaterangePicker = function DaterangePicker({
     dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.height = `${height}px`;
     dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.width = `${width - 3}px`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateRangeRef.current, borderRadius, height, width, startDateProp]);
+  }, [dateRangeRef.current, borderRadius, height, width]);
 
   function onDateChange(dates) {
     const start = dates.startDate;
