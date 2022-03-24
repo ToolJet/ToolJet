@@ -28,7 +28,7 @@ FROM node:14.17.3-buster
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y postgresql-client freetds-dev
+RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
