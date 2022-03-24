@@ -213,6 +213,7 @@ button {
 
     .header {
       --tblr-gutter-x: 0rem;
+      position: sticky; top: 0;
     }
 
     .nav-header {
@@ -3839,6 +3840,7 @@ input[type="text"] {
   }
 }
 .tabs-inspector {
+  position: sticky; top: 0;
   .nav-item {
     width: 50%;
   }
@@ -3863,16 +3865,25 @@ input[type="text"] {
     border-bottom: 1px solid $primary !important;
   }
 }
-
+.tabs-inspector
+{
+  z-index: 2;
+  background: white;
+  &.dark {
+    @extend .bg-dark;
+  }
+}
 .close-icon {
-  position: absolute;
-  top: 0;
+  position: fixed;
+  top: 45px;
   right: 0;
-  width: 20%;
+  width: 60px;
   height: 22;
   border-bottom: 1px solid #e7eaef;
   display: flex;
   align-items: center;
+  background-color: white;
+  z-index: 2;
 
   .svg-wrapper {
     width: 100%;
@@ -4437,11 +4448,7 @@ input[type="text"] {
   .popup-btn {
     margin-top: 0.65rem !important;
   }
-  .CodeMirror pre.CodeMirror-line {
-    height: 32px !important;
-    margin-bottom: 6px !important;
-  }
-  .CodeMirror-placeholder {
+  .CodeMirror-placeholder, .CodeMirror pre.CodeMirror-line {
     height: 21px !important;
     position: absolute !important;
     margin-top: 3px !important;
@@ -4517,6 +4524,7 @@ input[type="text"] {
     background-color: transparent !important;
   }
 }
+
 .comment-card-wrapper {
   border-top: 0.5px solid #e1e1e1 !important;
   margin-top: -1px !important;
