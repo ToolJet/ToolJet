@@ -14,6 +14,12 @@ function isEmpty(value: number | null | undefined | string) {
   );
 }
 
+function sanitizeCustomParams(customArray: any) {
+  const params = Object.fromEntries(customArray);
+  Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
+  return params;
+}
+
 interface RestAPIResult extends QueryResult {
   request?: Array<object> | object;
   response?: Array<object> | object;
@@ -67,6 +73,7 @@ export default class RestapiQueryService implements QueryService {
     const requiresOauth = sourceOptions['auth_type'] === 'oauth2';
 
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
+    const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
 
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
@@ -74,7 +81,10 @@ export default class RestapiQueryService implements QueryService {
 
       if (!tokenData) {
         const tooljetHost = process.env.TOOLJET_HOST;
-        const authUrl = `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`;
+        const authUrl = new URL(
+          `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
+        );
+        Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
 
         return {
           status: 'needs_oauth',
@@ -160,8 +170,7 @@ export default class RestapiQueryService implements QueryService {
     const tooljetHost = process.env.TOOLJET_HOST;
     const accessTokenUrl = sourceOptions['access_token_url'];
 
-    const customParams = Object.fromEntries(sourceOptions['custom_auth_params']);
-    Object.keys(customParams).forEach((key) => (customParams[key] === '' ? delete customParams[key] : {}));
+    const customParams = sanitizeCustomParams(sourceOptions['custom_auth_params']);
 
     const response = await got(accessTokenUrl, {
       method: 'post',

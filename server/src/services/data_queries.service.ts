@@ -141,9 +141,7 @@ export class DataQueriesService {
 
     const response = await got(accessTokenUrl, {
       method: 'post',
-      headers: isUrlEncoded && {
-        'content-type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'content-type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json' },
       form: isUrlEncoded ? bodyData : undefined,
       json: !isUrlEncoded ? bodyData : undefined,
     });
