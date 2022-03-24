@@ -55,7 +55,7 @@ return data.filter(row => row.amount > 1000);`;
         <OverlayTrigger trigger="click" placement="top" overlay={popover} rootClose>
           <span
             style={{
-              fontWeight: 600,
+              fontWeight: 400,
               borderBottom: '1px dashed #3e525b',
               position: 'absolute',
               left: '50px',
