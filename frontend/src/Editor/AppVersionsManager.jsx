@@ -182,6 +182,7 @@ export const AppVersionsManager = function AppVersionsManager({
                             width="12"
                             height="12"
                             className="mx-1"
+                            style={{ paddingLeft: '0.6px' }}
                           />
                         </button>
                       </div>
