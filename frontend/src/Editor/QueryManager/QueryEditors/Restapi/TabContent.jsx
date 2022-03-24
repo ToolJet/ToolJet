@@ -85,7 +85,7 @@ export default ({
               height={'300px'}
               className="query-hinter"
               ignoreBraces={false}
-              // onChange={(value) => codeChanged(value)}
+              onChange={(value) => onChange(paramType, value)}
               componentName={`${componentName}/${tabType}`}
             />
           </div>

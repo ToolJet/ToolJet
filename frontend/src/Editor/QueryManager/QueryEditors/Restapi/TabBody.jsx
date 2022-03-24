@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import GroupHeader from './GroupHeader';
 import TabContent from './TabContent';
-// import { Toggle } from './Toggle';
 
 export default ({
   options = [],
