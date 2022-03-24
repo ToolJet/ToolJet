@@ -78,12 +78,14 @@ export const Multiselect = function Multiselect({
       height: height,
       boxShadow: state.isFocused ? null : null,
       borderRadius: Number.parseFloat(borderRadius),
+      alignItems: 'flex-start',
+      overflow: 'hidden',
     }),
 
     valueContainer: (provided, _state) => ({
       ...provided,
-      height: height,
-      padding: '0 6px',
+      height: 'auto',
+      padding: '3px 5px',
     }),
 
     input: (provided, _state) => ({
@@ -116,10 +118,11 @@ export const Multiselect = function Multiselect({
     }),
     multiValue: (styles) => ({
       ...styles,
-      height: height - 10,
+      height: 25,
       display: 'flex',
       flexDirection: 'rows',
       alignItems: 'center',
+      gap: 5,
     }),
     multiValueLabel: (styles) => ({
       ...styles,
@@ -127,6 +130,7 @@ export const Multiselect = function Multiselect({
     }),
     multiValueRemove: (styles) => ({
       ...styles,
+      height: '100%',
       color: 'black',
     }),
   };
