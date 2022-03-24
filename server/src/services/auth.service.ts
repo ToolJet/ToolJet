@@ -170,9 +170,9 @@ export class AuthService {
       if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
         throw new UnauthorizedException();
       }
-      // Create default organization
-      organization = await this.organizationsService.create('Untitled organization');
     }
+    // Create default organization
+    organization = await this.organizationsService.create('Untitled organization');
     const user = await this.usersService.create({ email }, organization.id, ['all_users', 'admin']);
     await this.organizationUsersService.create(user, organization, true);
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);

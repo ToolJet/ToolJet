@@ -8,6 +8,7 @@ export const authenticationService = {
   login,
   getOrganizationConfigs,
   logout,
+  clearUser,
   signup,
   updateCurrentUserDetails,
   currentUser: currentUserSubject.asObservable(),
@@ -68,10 +69,14 @@ function signup(email) {
 }
 
 function logout() {
+  clearUser();
+  history.push(`/login?redirectTo=${window.location.pathname?.startsWith('/sso/') ? '/' : window.location.pathname}`);
+}
+
+function clearUser() {
   // remove user from local storage to log user out
   localStorage.removeItem('currentUser');
   currentUserSubject.next(null);
-  history.push(`/login?redirectTo=${window.location.pathname?.startsWith('/sso/') ? '/' : 'props.location.pathname'}`);
 }
 
 function signInViaOAuth(configId, ssoResponse) {
@@ -82,7 +87,16 @@ function signInViaOAuth(configId, ssoResponse) {
   };
 
   return fetch(`${config.apiUrl}/oauth/sign-in/${configId}`, requestOptions)
-    .then(handleResponse)
+    .then((response) => {
+      return response.text().then((text) => {
+        const data = text && JSON.parse(text);
+        if (!response.ok) {
+          const error = (data && data.message) || response.statusText;
+          return Promise.reject({ error, data });
+        }
+        return data;
+      });
+    })
     .then((user) => {
       updateUser(user);
       return user;

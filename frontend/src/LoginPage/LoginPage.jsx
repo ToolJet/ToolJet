@@ -210,9 +210,7 @@ class LoginPage extends React.Component {
                       configs={this.state.configs?.google?.configs}
                     />
                   )}
-                  {this.state.configs?.git?.enabled && (
-                    <GitSSOLoginButton configs={this.state.configs?.google?.configs} />
-                  )}
+                  {this.state.configs?.git?.enabled && <GitSSOLoginButton configs={this.state.configs?.git?.configs} />}
                 </div>
               </div>
             )}
