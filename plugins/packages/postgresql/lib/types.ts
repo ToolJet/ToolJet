@@ -7,8 +7,8 @@ export type SourceOptions = {
   ssl_enabled: boolean;
   ssl_certificate: string;
   ca_cert: string;
-  server_cert: string;
-  server_key: string;
+  client_cert: string;
+  client_key: string;
   root_cert: string;
 };
 export type QueryOptions = {

@@ -61,8 +61,8 @@
       "description": "Single select dropdown for choosing certificates",
       "list": [
         {
-          "value": "single_cert",
-          "name": "Single certificate"
+          "value": "ca_certificate",
+          "name": "CA certificate"
         },
         {
           "value": "self_signed",
@@ -112,7 +112,7 @@
         }
       }
     },
-    "single_cert":{
+    "ca_certificate":{
       "ca_cert": {
         "label": "CA Cert",
         "key": "ca_cert",
