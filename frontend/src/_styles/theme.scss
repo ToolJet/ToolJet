@@ -3392,6 +3392,9 @@ input[type="text"] {
 
   .DateRangePickerInput {
     overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .DateInput_fang {
