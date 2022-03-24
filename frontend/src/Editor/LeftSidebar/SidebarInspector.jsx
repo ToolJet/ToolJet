@@ -18,7 +18,7 @@ export const LeftSidebarInspector = ({ darkMode, currentState }) => {
       />
       <div
         {...content}
-        className={`card popover common-sidebar-popover-margin ${open || popoverPinned ? 'show' : 'hide'}`}
+        className={`card popover ${open || popoverPinned ? 'show' : 'hide'}`}
         style={{ resize: 'horizontal', maxWidth: '50%' }}
       >
         <SidebarPinnedButton

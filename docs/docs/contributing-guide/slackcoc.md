@@ -35,6 +35,24 @@ This code of conduct governs ToolJet's Slack Community events and discussions.
 - Sustained disruptions.
 - Violence, threats of violence or violent language.
 
+## Where does the Code of Conduct apply?
+
+This Code of Conduct applies to all spaces managed by ToolJet. This includes:
+
+- Conferences (including social events and peripheral activities)
+- Unconferences and sprints
+- Meetups, including their discussion boards
+- Workshops
+- Presentation materials used in talks or sessions
+- Slack
+- GitHub
+- Twitter hashtag and mentions
+- Any forums created by the ToolJet which the community uses for communication.
+
+The Code of Conduct does not exclusively apply to slack or events on an official agenda. For example, if after a scheduled social event you go to a bar with a group of fellow participants, and someone harasses you there, we would still treat that as a CoC violation. Similarly, harassment in Twitter direct messages related to ToolJet can still be covered under this Code of Conduct.
+
+In addition, violations of this code outside our spaces may affect a person’s ability to participate in them.
+
 ## Enforcement
 
 - Understand that speech and actions have consequences, and unacceptable behavior will not be tolerated.
