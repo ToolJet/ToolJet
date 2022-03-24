@@ -64,8 +64,8 @@ export const Multiselect = function Multiselect({
     setComputedValues(value);
     setExposedVariable(
       'values',
-      value.filter((option) => {
-        return option.value !== 'all';
+      value.map((option) => {
+        return option.value !== 'all' && option.value;
       })
     ).then(() => fireEvent('onSelect'));
   };
