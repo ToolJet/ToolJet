@@ -71,7 +71,15 @@ export default class PostgresqlQueryService implements QueryService {
       connectionTimeoutMillis: 10000,
     };
 
-    if (sourceOptions.ssl_enabled) poolConfig['ssl'] = { rejectUnauthorized: false };
+    const sslObject = { rejectUnauthorized: false };
+    if (sourceOptions.ssl_certificate === 'single_cert') sslObject['ca'] = sourceOptions.ca_cert;
+    if (sourceOptions.ssl_certificate === 'self_signed') {
+      sslObject['ca'] = sourceOptions.root_cert;
+      sslObject['key'] = sourceOptions.server_key;
+      sslObject['cert'] = sourceOptions.server_cert;
+    }
+
+    if (sourceOptions.ssl_enabled) poolConfig['ssl'] = sslObject;
 
     return new Pool(poolConfig);
   }

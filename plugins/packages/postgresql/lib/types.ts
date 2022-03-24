@@ -5,6 +5,11 @@ export type SourceOptions = {
   username: string;
   password: string;
   ssl_enabled: boolean;
+  ssl_certificate: string;
+  ca_cert: string;
+  server_cert: string;
+  server_key: string;
+  root_cert: string;
 };
 export type QueryOptions = {
   operation: string;
