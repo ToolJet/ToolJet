@@ -19,7 +19,7 @@ export class OrganizationUsersService {
     private emailService: EmailService
   ) {}
 
-  async findOne(id: string): Promise<OrganizationUser> {
+  async findOrganization(id: string): Promise<OrganizationUser> {
     return await this.organizationUsersRepository.findOne({ where: { id } });
   }
 
@@ -41,9 +41,12 @@ export class OrganizationUsersService {
       user = await this.usersService.create(userParams, currentUser.organizationId, ['all_users']);
     }
 
-    const currentOrganization: Organization = currentUser.organizationUsers.find(
-      (uo) => uo.organizationId === currentUser.organizationId
-    ).organization;
+    const currentOrganization: Organization = (
+      await this.organizationUsersRepository.findOne({
+        where: { userId: currentUser.id, organizationId: currentUser.organizationId },
+        relations: ['organization'],
+      })
+    )?.organization;
 
     const organizationUser: OrganizationUser = await this.create(user, currentOrganization, true);
 
@@ -113,9 +116,12 @@ export class OrganizationUsersService {
 
     const updatedUser = await this.usersService.findOne(organizationUser.userId);
 
-    const currentOrganization: Organization = user.organizationUsers.filter(
-      (uo) => uo.organizationId === user.organizationId
-    )[0].organization;
+    const currentOrganization: Organization = (
+      await this.organizationUsersRepository.findOne({
+        where: { userId: user.id, organizationId: user.organizationId },
+        relations: ['organization'],
+      })
+    )?.organization;
 
     await this.emailService.sendOrganizationUserWelcomeEmail(
       updatedUser.email,

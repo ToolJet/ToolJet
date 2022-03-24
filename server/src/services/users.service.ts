@@ -133,7 +133,7 @@ export class UsersService {
     if (newSignup) {
       user = await this.usersRepository.findOne({ where: { invitationToken: token } });
 
-      if (!(user && user.organizationUsers)) {
+      if (!user?.organizationUsers) {
         throw new BadRequestException('Invalid invitation link');
       }
       organizationUser = user.organizationUsers.find((ou) => ou.organizationId === user.defaultOrganizationId);
@@ -141,27 +141,27 @@ export class UsersService {
       if (!organizationUser) {
         throw new BadRequestException('Invalid invitation link');
       }
+
+      await this.usersRepository.save(
+        Object.assign(user, {
+          firstName,
+          lastName,
+          password,
+          role,
+          invitationToken: null,
+        })
+      );
     } else {
       organizationUser = await this.organizationUsersRepository.findOne({
         where: { invitationToken: token },
         relations: ['user'],
       });
 
-      if (!(organizationUser && organizationUser.user)) {
+      if (!organizationUser?.user) {
         throw new BadRequestException('Invalid invitation link');
       }
       ({ user } = organizationUser);
     }
-
-    await this.usersRepository.save(
-      Object.assign(user, {
-        firstName,
-        lastName,
-        password,
-        role,
-        invitationToken: null,
-      })
-    );
 
     await this.organizationUsersRepository.save(
       Object.assign(organizationUser, {

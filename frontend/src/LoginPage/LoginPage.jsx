@@ -7,7 +7,7 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 
-const single_organization = window.public_config?.SINGLE_ORGANIZATION === 'true';
+const single_organization = window.public_config?.MULTI_ORGANIZATION !== 'true';
 class LoginPage extends React.Component {
   constructor(props) {
     super(props);

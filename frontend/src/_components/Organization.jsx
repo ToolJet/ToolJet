@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { SearchBox } from './SearchBox';
 
 export const Organization = function Organization() {
-  const isSingleOrganization = window.public_config?.SINGLE_ORGANIZATION === 'true';
+  const isSingleOrganization = window.public_config?.MULTI_ORGANIZATION !== 'true';
   const { admin, organization_id } = authenticationService.currentUserValue;
   const [organization, setOrganization] = useState(authenticationService.currentUserValue?.organization);
   const [showCreateOrg, setShowCreateOrg] = useState(false);

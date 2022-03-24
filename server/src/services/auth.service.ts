@@ -52,7 +52,7 @@ export class AuthService {
       if (!organizationId) {
         // Global login
         // Determine the organization to be loaded
-        if (this.configService.get<string>('SINGLE_ORGANIZATION') === 'true') {
+        if (this.configService.get<string>('MULTI_ORGANIZATION') !== 'true') {
           // Single organization
           organization = await this.organizationsService.getSingleOrganization();
           if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
@@ -95,7 +95,7 @@ export class AuthService {
         }
       }
 
-      const payload = { username: user.id, sub: user.email, organizationId: user.organizationId };
+      const payload = { username: user.id, sub: user.email, organizationId: user.organizationId, isFormLogin: true };
 
       return decamelizeKeys({
         id: user.id,
@@ -115,7 +115,10 @@ export class AuthService {
   }
 
   async switchOrganization(newOrganizationId: string, user: User) {
-    if (this.configService.get<string>('SINGLE_ORGANIZATION') === 'true') {
+    if (!user.isFormLogin) {
+      throw new UnauthorizedException();
+    }
+    if (this.configService.get<string>('MULTI_ORGANIZATION') !== 'true') {
       throw new UnauthorizedException();
     }
     const newUser = await this.usersService.findByEmail(user.email, newOrganizationId);
@@ -132,7 +135,7 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials');
       }
 
-      const payload = { username: user.id, sub: user.email, organizationId: newUser.organizationId };
+      const payload = { username: user.id, sub: user.email, organizationId: newUser.organizationId, isFormLogin: true };
 
       return decamelizeKeys({
         id: newUser.id,
@@ -155,11 +158,12 @@ export class AuthService {
     const { email } = params;
     let organization: Organization;
     // Check if the configs allows user signups
-    if (this.configService.get<string>('SINGLE_ORGANIZATION') === 'true') {
-      // Sibgle organization sso configs in DB
+    if (this.configService.get<string>('MULTI_ORGANIZATION') !== 'true') {
+      // Single organization checking if organization exist
       organization = await this.organizationsService.getSingleOrganization();
-      if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled && oc.configs?.enableSignUp)) {
-        throw new UnauthorizedException();
+
+      if (organization) {
+        throw new UnauthorizedException('Multi organization not supported - organization exist');
       }
     } else {
       // Multi organization

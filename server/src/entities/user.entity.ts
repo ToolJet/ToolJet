@@ -78,4 +78,5 @@ export class User extends BaseEntity {
   userGroupPermissions: UserGroupPermission[];
 
   organizationId: string;
+  isFormLogin: boolean;
 }

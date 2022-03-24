@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '../../../src/services/users.service';
 import { ConfigService } from '@nestjs/config';
+import { User } from 'src/entities/user.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -15,10 +16,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    const user = await this.usersService.findByEmail(payload.sub, payload.organisationId);
+    const user: User = await this.usersService.findByEmail(payload.sub, payload.organisationId);
     if (!(user && payload.organizationId)) return false;
 
     user.organizationId = payload.organizationId;
+    user.isFormLogin = payload.isFormLogin;
 
     if (user && (await this.usersService.status(user)) !== 'archived') return user;
     else return false;

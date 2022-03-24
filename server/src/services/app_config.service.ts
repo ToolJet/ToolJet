@@ -23,7 +23,7 @@ export class AppConfigService {
       'SENTRY_DNS',
       'SENTRY_DEBUG',
       'DISABLE_SIGNUPS',
-      'SINGLE_ORGANIZATION',
+      'MULTI_ORGANIZATION',
     ];
   }
 

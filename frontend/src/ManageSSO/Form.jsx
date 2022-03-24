@@ -6,7 +6,7 @@ export function Form({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
   const [enableSignUp, setEnableSignUp] = useState(settings?.configs?.enable_sign_up || false);
   const [isSaving, setSaving] = useState(false);
-  const single_organization = window.public_config?.SINGLE_ORGANIZATION === 'true';
+  const single_organization = window.public_config?.MULTI_ORGANIZATION !== 'true';
 
   const reset = () => {
     setEnableSignUp(settings?.configs?.enable_sign_up || false);
