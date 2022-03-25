@@ -178,7 +178,7 @@ export const Container = ({
           [left, top] = doSnapToGrid(canvasWidth, left, top);
         }
 
-        left = (left * 100) / canvasWidth;
+        left = Math.round((left * 100) / canvasWidth);
 
         if (item.currentLayout === 'mobile') {
           componentData.definition.others.showOnDesktop.value = false;
@@ -217,7 +217,7 @@ export const Container = ({
 
     // Computing the left offset
     const leftOffset = nodeBounds.x - canvasBounds.x;
-    const left = convertXToPercentage(leftOffset, canvasWidth);
+    const left = Math.round(convertXToPercentage(leftOffset, canvasWidth));
 
     // Computing the top offset
     const top = nodeBounds.y - canvasBounds.y;
@@ -262,7 +262,7 @@ export const Container = ({
     height = height + deltaHeight;
 
     top = y;
-    left = (x * 100) / canvasWidth;
+    left = Math.round((x * 100) / canvasWidth);
 
     let newBoxes = {
       ...boxes,

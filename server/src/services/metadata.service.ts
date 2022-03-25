@@ -63,12 +63,11 @@ export class MetadataService {
     });
   }
 
-  async checkForUpdates(installedVersion: string, ignoredVersion: string) {
+  async checkForUpdates(metadata: Metadata) {
+    const installedVersion = globalThis.TOOLJET_VERSION;
     const response = await got('https://hub.tooljet.io/updates', {
       method: 'post',
-      json: { installed_version: installedVersion },
     });
-
     const data = JSON.parse(response.body);
     const latestVersion = data['latest_version'];
 
@@ -76,13 +75,12 @@ export class MetadataService {
       last_checked: new Date(),
     };
 
-    if (gt(latestVersion, installedVersion) && installedVersion !== ignoredVersion) {
+    if (gt(latestVersion, installedVersion) && installedVersion !== metadata.data['ignored_version']) {
       newOptions['latest_version'] = latestVersion;
       newOptions['version_ignored'] = false;
     }
 
     await this.updateMetaData(newOptions);
-
     return { latestVersion };
   }
 }

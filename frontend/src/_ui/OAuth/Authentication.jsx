@@ -10,6 +10,7 @@ const Authentication = ({
   client_secret,
   client_auth,
   custom_auth_params,
+  custom_query_params,
   add_token_to,
   header_prefix,
   grant_type,
@@ -90,6 +91,13 @@ const Authentication = ({
           value={scopes}
         />
       </div>
+
+      <div className="row mt-3">
+        <div className="col">
+          <label className="form-label pt-2">Custom Query Parameters</label>
+        </div>
+      </div>
+      <Headers getter={'custom_query_params'} options={custom_query_params} optionchanged={optionchanged} />
 
       {grant_type === 'authorization_code' && (
         <div>
