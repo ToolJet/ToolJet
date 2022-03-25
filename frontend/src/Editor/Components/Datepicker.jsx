@@ -50,7 +50,6 @@ export const Datepicker = function Datepicker({
   }, [isValid]);
 
   const ExampleCustomInput = (props) => {
-    console.log(props);
     return (
       <input
         readOnly
@@ -78,9 +77,13 @@ export const Datepicker = function Datepicker({
         selected={date}
         onChange={(date) => onDateChange(date)}
         showTimeInput={enableTime ? true : false}
+        showTimeSelectOnly={enableDate ? false : true}
         onFocus={(event) => {
           onComponentClick(id, component, event);
         }}
+        showYearDropdown
+        showMonthDropdown
+        dropdownMode="select"
         dateFormat={enableDate ? 'dd/MM/yyyy' : enableDate}
         customInput={<ExampleCustomInput />}
       />
