@@ -83,7 +83,6 @@ export const Datepicker = function Datepicker({
         }}
         showYearDropdown
         showMonthDropdown
-        dropdownMode="select"
         dateFormat={enableDate ? 'dd/MM/yyyy' : enableDate}
         customInput={<ExampleCustomInput />}
       />
