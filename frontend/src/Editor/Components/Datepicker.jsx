@@ -82,8 +82,9 @@ export const Datepicker = function Datepicker({
         onFocus={(event) => {
           onComponentClick(id, component, event);
         }}
-        showYearDropdown
         showMonthDropdown
+        showYearDropdown
+        dropdownMode="select"
         customInput={<ExampleCustomInput />}
       />
 
