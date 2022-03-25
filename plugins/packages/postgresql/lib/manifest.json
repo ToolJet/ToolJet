@@ -121,23 +121,23 @@
       }
     },
     "self_signed":{
-      "root_cert": {
-        "label": "Root Cert",
-        "key": "root_cert",
+      "client_key": {
+        "label": "Client Key",
+        "key": "client_key",
         "type": "textarea",
-        "description": "Enter ca certificate"
+        "description": "Enter client key"
       },
       "client_cert": {
         "label": "Client Cert",
         "key": "client_cert",
         "type": "textarea",
-        "description": "Enter server certificate"
+        "description": "Enter client certificate"
       },
-      "client_key": {
-        "label": "Client Key",
-        "key": "client_key",
+      "root_cert": {
+        "label": "Root Cert",
+        "key": "root_cert",
         "type": "textarea",
-        "description": "Enter server key"
+        "description": "Enter root certificate"
       }
     }
   },
