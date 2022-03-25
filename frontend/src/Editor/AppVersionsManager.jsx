@@ -175,7 +175,6 @@ export const AppVersionsManager = function AppVersionsManager({
                           disabled={isDeletingVersion}
                           style={{
                             display: mouseHoveredOnVersion === version.id ? 'block' : 'none',
-                            marginTop: '3px',
                           }}
                         >
                           <img

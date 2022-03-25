@@ -6,7 +6,7 @@ const environment = process.env.NODE_ENV === 'production' ? 'production' : 'deve
 
 const API_URL = {
   production: process.env.TOOLJET_SERVER_URL || '',
-  development: 'http://localhost:3000',
+  development: `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
 };
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';

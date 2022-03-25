@@ -187,6 +187,15 @@ This is required when client is built separately.
 | TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
 
 
+#### Server Port ( optional)
+
+This could be used to for local development, it will set the server url like so: `http://localhost:<TOOLJET_SERVER_PORT>`
+
+| variable            | description                             |
+|---------------------|-----------------------------------------|
+| TOOLJET_SERVER_PORT | the port of ToolJet server ( eg: 3000 ) |
+
+
 #### Asset path ( optionally required )
 
 This is required when the assets for the client are to be loaded from elsewhere (eg: CDN).
