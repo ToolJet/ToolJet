@@ -4494,3 +4494,9 @@ div#driver-highlighted-element-stage, div#driver-page-overlay {
   font-size: 14px;
   color: $light-gray;
 }
+
+.multi-select {
+  div::-webkit-scrollbar {
+    display: none; /* for Chrome, Safari, and Opera */
+  }
+}

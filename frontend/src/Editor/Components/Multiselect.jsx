@@ -187,7 +187,7 @@ export const Multiselect = function Multiselect({
           {label}
         </label>
       </div>
-      <div className="col px-0 h-100">
+      <div className="col px-0 h-100 multi-select">
         <Select
           isDisabled={disabledState}
           options={selectOptions}
