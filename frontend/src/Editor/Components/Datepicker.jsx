@@ -48,7 +48,8 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
-  const ExampleCustomInput = (props) => {
+  const ExampleCustomInput = React.forwardRef((props, ref) => {
+    console.log(props, 'props');
     return (
       <input
         readOnly
@@ -58,9 +59,10 @@ export const Datepicker = function Datepicker({
           darkMode ? 'bg-dark color-white' : 'bg-light'
         }`}
         style={{ height, borderRadius: `${borderRadius}px` }}
+        ref={ref}
       />
     );
-  };
+  });
 
   return (
     <div
