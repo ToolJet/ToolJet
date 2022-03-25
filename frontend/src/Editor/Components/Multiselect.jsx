@@ -90,6 +90,7 @@ export const Multiselect = function Multiselect({
     valueContainer: (provided, _state) => ({
       ...provided,
       height: 'auto',
+      padding: '0px 5px',
     }),
 
     input: (provided, _state) => ({
@@ -129,6 +130,7 @@ export const Multiselect = function Multiselect({
       flexDirection: 'rows',
       alignItems: 'center',
       margin: 0,
+      marginTop: 3,
       marginRight: 5,
       gap: 5,
       maxWidth: 'auto',
