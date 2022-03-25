@@ -84,7 +84,7 @@ export const Multiselect = function Multiselect({
       boxShadow: state.isFocused ? null : null,
       borderRadius: Number.parseFloat(borderRadius),
       alignItems: 'flex-start',
-      overflow: 'hidden',
+      overflowY: 'auto',
     }),
 
     valueContainer: (provided, _state) => ({
@@ -101,7 +101,7 @@ export const Multiselect = function Multiselect({
     }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
-      height: height,
+      height: 'auto',
     }),
     option: (provided) => ({
       ...provided,
@@ -115,6 +115,8 @@ export const Multiselect = function Multiselect({
         backgroundColor: darkMode ? '#323C4B' : '#4D72FA',
         color: 'white',
       },
+      maxWidth: 'auto',
+      minWidth: 'max-content',
     }),
     menu: (provided, _state) => ({
       ...provided,
@@ -129,6 +131,8 @@ export const Multiselect = function Multiselect({
       margin: 0,
       marginRight: 5,
       gap: 5,
+      maxWidth: 'auto',
+      minWidth: 'max-content',
     }),
     multiValueLabel: (styles) => ({
       ...styles,
