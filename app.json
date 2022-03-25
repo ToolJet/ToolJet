@@ -33,16 +33,12 @@
       "description": "Node options configured to increase node memory to support app build",
       "value": "--max-old-space-size=4096"
     },
-    "SSO_GOOGLE_OAUTH2_CLIENT_ID": {
-      "description": "Google OAuth2 client id to enable single sign-on",
-      "value": ""
+    "DISABLE_SIGNUPS": {
+      "description": "Disable sign up in login page only applicable if MULTI_ORGANIZATION=true",
+      "value": "false"
     },
-    "SSO_DISABLE_SIGNUP": {
-      "description": "Disable sign-up via SSO",
-      "value": ""
-    },
-    "DISABLE_PASSWORD_LOGIN": {
-      "description": "Disable logging in with username and password. (Do not turn this on unless you've configured SSO and additional admins)",
+    "MULTI_ORGANIZATION": {
+      "description": "Enables multi organization feature",
       "value": "false"
     }
   },

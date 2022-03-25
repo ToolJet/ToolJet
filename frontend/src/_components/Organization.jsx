@@ -225,11 +225,9 @@ export const Organization = function Organization() {
             </div>
             <div className={`col-${isSingleOrganization ? '9' : '7'}`}>
               <div className="org-name">{organization}</div>
-              {admin && (
-                <div className="org-edit">
-                  <span onClick={showEditModal}>Edit</span>
-                </div>
-              )}
+              <div className="org-edit">
+                <span onClick={showEditModal}>Edit</span>
+              </div>
             </div>
             {!isSingleOrganization && (
               <div className="col-2">
@@ -259,20 +257,16 @@ export const Organization = function Organization() {
             <div onClick={showCreateModal}>Add Organizations</div>
           </div>
         )}
-        {admin && (
-          <>
-            <div className="dropdown-divider"></div>
-            <Link data-testid="settingsBtn" to="/users" className="dropdown-item">
-              Manage Users
-            </Link>
-            <Link data-tesid="settingsBtn" to="/groups" className="dropdown-item">
-              Manage Groups
-            </Link>
-            <Link data-tesid="settingsBtn" to="/manage-sso" className="dropdown-item">
-              Manage SSO
-            </Link>
-          </>
-        )}
+        <div className="dropdown-divider"></div>
+        <Link data-testid="settingsBtn" to="/users" className="dropdown-item">
+          Manage Users
+        </Link>
+        <Link data-tesid="settingsBtn" to="/groups" className="dropdown-item">
+          Manage Groups
+        </Link>
+        <Link data-tesid="settingsBtn" to="/manage-sso" className="dropdown-item">
+          Manage SSO
+        </Link>
       </div>
     );
   };
@@ -283,9 +277,11 @@ export const Organization = function Organization() {
         <a href="#" className="btn dropdown-toggle">
           <div>{organization}</div>
         </a>
-        <div className="dropdown-menu dropdown-menu-right">
-          {isListOrganizations ? getListOrganizations() : getOrganizationMenu()}
-        </div>
+        {admin && (
+          <div className="dropdown-menu dropdown-menu-right">
+            {isListOrganizations ? getListOrganizations() : getOrganizationMenu()}
+          </div>
+        )}
       </div>
       <Modal show={showCreateOrg} closeModal={() => setShowCreateOrg(false)} title="Create organization">
         <div className="row">
