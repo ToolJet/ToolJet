@@ -14,7 +14,6 @@ export const Datepicker = function Datepicker({
   component,
   id,
   darkMode,
-  width,
 }) {
   const { format, enableTime, enableDate, defaultValue } = properties;
   const { visibility, disabledState, borderRadius } = styles;
@@ -58,7 +57,7 @@ export const Datepicker = function Datepicker({
         className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
           darkMode ? 'bg-dark color-white' : 'bg-light'
         }`}
-        style={{ height, width, borderRadius: `${borderRadius}px` }}
+        style={{ height, borderRadius: `${borderRadius}px` }}
       />
     );
   };
@@ -83,7 +82,6 @@ export const Datepicker = function Datepicker({
         }}
         showYearDropdown
         showMonthDropdown
-        dateFormat={enableDate ? 'dd/MM/yyyy' : enableDate}
         customInput={<ExampleCustomInput />}
       />
 
