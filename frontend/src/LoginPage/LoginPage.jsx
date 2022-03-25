@@ -7,7 +7,6 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 
-const single_organization = window.public_config?.MULTI_ORGANIZATION !== 'true';
 class LoginPage extends React.Component {
   constructor(props) {
     super(props);
@@ -17,6 +16,7 @@ class LoginPage extends React.Component {
       isGettingConfigs: true,
       configs: undefined,
     };
+    this.single_organization = window.public_config?.MULTI_ORGANIZATION !== 'true';
   }
 
   componentDidMount() {
@@ -28,7 +28,7 @@ class LoginPage extends React.Component {
       // redirect to home if already logged in
       return this.props.history.push('/');
     }
-    if (this.props.match.params.organisationId || single_organization) {
+    if (this.props.match.params.organisationId || this.single_organization) {
       authenticationService.getOrganizationConfigs(this.props.match.params.organisationId).then(
         (configs) => {
           if (!configs) {
@@ -140,7 +140,7 @@ class LoginPage extends React.Component {
                 {configs?.form?.enabled && (
                   <div>
                     <h2 className="card-title text-center mb-4">
-                      Login to {single_organization ? 'your account' : configs?.name || 'your account'}
+                      Login to {this.single_organization ? 'your account' : configs?.name || 'your account'}
                     </h2>
                     <div className="mb-3">
                       <label className="form-label">Email address</label>
@@ -216,8 +216,8 @@ class LoginPage extends React.Component {
             )}
           </form>
           {!this.props.match.params.organisationId &&
-            ((single_organization && configs?.form?.enable && configs?.form?.enable_sign_up) ||
-              (!single_organization && configs?.form?.enable_sign_up)) && (
+            ((this.single_organization && configs?.form?.enable && configs?.form?.enable_sign_up) ||
+              (!this.single_organization && configs?.form?.enable_sign_up)) && (
               <div className="text-center text-secondary mt-3">
                 Don&apos;t have account yet? &nbsp;
                 <Link to={'/signup'} tabIndex="-1">
