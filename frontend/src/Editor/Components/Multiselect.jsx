@@ -110,7 +110,7 @@ export const Multiselect = function Multiselect({
     }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
-      height: 'auto',
+      height: height,
     }),
     option: (provided) => ({
       ...provided,
