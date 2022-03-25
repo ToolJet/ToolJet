@@ -358,14 +358,14 @@ export class UsersService {
     return permissionGrant;
   }
 
-  async isUserOwnerOfApp(user, appId): Promise<boolean> {
-    const app = await this.appsRepository.findOne({
+  async isUserOwnerOfApp(user: User, appId): Promise<boolean> {
+    const app: App = await this.appsRepository.findOne({
       where: {
         id: appId,
         userId: user.id,
       },
     });
-    return !!app;
+    return !!app && app.organizationId === user.organizationId;
   }
 
   canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[] | GroupPermission[]): boolean {
@@ -389,18 +389,22 @@ export class UsersService {
   async appGroupPermissions(user: User, appId?: string, organizationId?: string): Promise<AppGroupPermission[]> {
     const orgUserGroupPermissions = await this.userGroupPermissions(user, organizationId);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
-    const appGroupPermissionRepository = getRepository(AppGroupPermission);
+
+    const query = createQueryBuilder(AppGroupPermission, 'app_group_permissions')
+      .innerJoin(
+        'app_group_permissions.groupPermission',
+        'group_permissions',
+        'group_permissions.organization_id = :organizationId',
+        {
+          organizationId: user.organizationId,
+        }
+      )
+      .where('app_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
 
     if (appId) {
-      return await appGroupPermissionRepository.find({
-        groupPermissionId: In(groupIds),
-        appId: appId,
-      });
-    } else {
-      return await appGroupPermissionRepository.find({
-        groupPermissionId: In(groupIds),
-      });
+      query.andWhere('app_group_permissions.appId = :appId', { appId });
     }
+    return await query.getMany();
   }
 
   async userGroupPermissions(user: User, organizationId?: string): Promise<UserGroupPermission[]> {

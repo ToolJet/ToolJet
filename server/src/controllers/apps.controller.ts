@@ -10,6 +10,7 @@ import {
   Request,
   UseGuards,
   Body,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
@@ -54,7 +55,7 @@ export class AppsController {
     const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
     if (!ability.can('viewApp', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
+      throw new UnauthorizedException('You do not have permissions to perform this action');
     }
     const response = decamelizeKeys(app);
 
