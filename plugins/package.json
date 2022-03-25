@@ -28,6 +28,7 @@
     "@tooljet-plugins/gcs": "file:packages/gcs",
     "@tooljet-plugins/googlesheets": "file:packages/googlesheets",
     "@tooljet-plugins/graphql": "file:packages/graphql",
+    "@tooljet-plugins/influxdb": "file:packages/influxdb",
     "@tooljet-plugins/mailgun": "file:packages/mailgun",
     "@tooljet-plugins/minio": "file:packages/minio",
     "@tooljet-plugins/mongodb": "file:packages/mongodb",
@@ -49,6 +50,8 @@
   },
   "devDependencies": {
     "@types/jest": "^27.4.1",
+    "@types/nodemailer": "^6.4.4",
+    "@types/oracledb": "^5.2.2",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "@typescript-eslint/parser": "^4.31.1",
     "eslint": "^7.32.0",

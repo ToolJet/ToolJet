@@ -131,9 +131,6 @@ class Editor extends React.Component {
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
     this.realtimeSave = debounce(this.appDefinitionChanged, 500);
-
-    // setup for closing versions dropdown on oustide click
-    this.wrapperRef = React.createRef();
   }
 
   setWindowTitle(name) {
@@ -357,6 +354,7 @@ class Editor extends React.Component {
 
     this.fetchDataSources();
     this.fetchDataQueries();
+    this.initComponentVersioning();
   };
 
   dataSourcesChanged = () => {
@@ -441,7 +439,7 @@ class Editor extends React.Component {
   };
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
-    console.log(opts);
+    if (isEqual(this.state.appDefinition, newDefinition)) return;
     if (!opts.skipYmapUpdate) {
       this.props.ymap.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
     }
@@ -471,12 +469,6 @@ class Editor extends React.Component {
 
   handleSlugChange = (newSlug) => {
     this.setState({ slug: newSlug });
-  };
-
-  handleClickOutsideAppVersionsDropdown = (event) => {
-    if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
-      this.setState({ showAppVersionsDropdown: false });
-    }
   };
 
   removeComponent = (component) => {
