@@ -75,24 +75,24 @@ export class AuthService {
             // no form login enabled organization available for user - creating new one
             organization = await this.organizationsService.create('Untitled organization', user);
           }
-          if (defaultOrgDetails?.id !== user.organizationId) {
-            // Updating default organization Id
-            await this.usersService.updateDefaultOrganization(user, organization.id);
-          }
         }
         user.organizationId = organization.id;
       } else {
         // organization specific login
         user.organizationId = organizationId;
 
-        const organization: Organization = await this.organizationsService.get(user.organizationId);
-
+        organization = await this.organizationsService.get(user.organizationId);
         const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
 
         if (!formConfigs?.enabled) {
           // no configurations in organization side or Form login disabled for the organization
           throw new UnauthorizedException('Invalid credentials');
         }
+      }
+
+      if (user.defaultOrganizationId !== user.organizationId) {
+        // Updating default organization Id
+        await this.usersService.updateDefaultOrganization(user, organization.id);
       }
 
       const payload = { username: user.id, sub: user.email, organizationId: user.organizationId, isFormLogin: true };

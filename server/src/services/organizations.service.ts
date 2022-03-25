@@ -195,6 +195,7 @@ export class OrganizationsService {
     const configs = { name: organizationName };
     if (ssoConfigs?.length > 0) {
       for (const config of ssoConfigs) {
+        const configId = config['id'];
         delete config['id'];
         delete config['organizationId'];
         delete config['createdAt'];
@@ -210,6 +211,7 @@ export class OrganizationsService {
           case 'google':
             configs['google'] = {
               ...config,
+              configId,
             };
             break;
           case 'form':

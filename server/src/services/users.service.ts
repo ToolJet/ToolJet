@@ -55,23 +55,27 @@ export class UsersService {
     });
   }
 
-  async create(userParams: any, organizationId: string, groups?: string[]): Promise<User> {
+  async create(userParams: any, organizationId: string, groups?: string[], existingUser?: User): Promise<User> {
     const password = uuid.v4();
 
     const { email, firstName, lastName } = userParams;
     let user: User;
 
     await getManager().transaction(async (manager) => {
-      user = manager.create(User, {
-        email,
-        firstName,
-        lastName,
-        password,
-        defaultOrganizationId: organizationId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      await manager.save(user);
+      if (!existingUser) {
+        user = manager.create(User, {
+          email,
+          firstName,
+          lastName,
+          password,
+          defaultOrganizationId: organizationId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await manager.save(user);
+      } else {
+        user = existingUser;
+      }
 
       for (const group of groups) {
         const orgGroupPermission = await manager.findOne(GroupPermission, {
@@ -105,13 +109,16 @@ export class UsersService {
     let user: User;
     let newUserCreated = false;
 
-    user = await this.findByEmail(userParams.email, organizationId);
+    user = await this.findByEmail(userParams.email);
 
-    if (!user) {
-      const groups = ['all_users'];
-      user = await this.create({ ...userParams }, organizationId, groups);
-      newUserCreated = true;
+    if (user?.organizationUsers?.some((ou) => ou.organizationId === organizationId)) {
+      // User exist in current organization
+      return { user, newUserCreated };
     }
+
+    const groups = ['all_users'];
+    user = await this.create({ ...userParams }, organizationId, groups, user);
+    newUserCreated = true;
 
     return { user, newUserCreated };
   }
@@ -358,7 +365,7 @@ export class UsersService {
     return permissionGrant;
   }
 
-  async isUserOwnerOfApp(user: User, appId): Promise<boolean> {
+  async isUserOwnerOfApp(user: User, appId: string): Promise<boolean> {
     const app: App = await this.appsRepository.findOne({
       where: {
         id: appId,
@@ -372,8 +379,8 @@ export class UsersService {
     return permissions.some((p) => p[action]);
   }
 
-  async groupPermissions(user: User, organizationId?: string): Promise<GroupPermission[]> {
-    const orgUserGroupPermissions = await this.userGroupPermissions(user, organizationId);
+  async groupPermissions(user: User): Promise<GroupPermission[]> {
+    const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
     const groupPermissionRepository = getRepository(GroupPermission);
 
@@ -386,9 +393,13 @@ export class UsersService {
     return await groupPermissionRepository.find({ organizationId });
   }
 
-  async appGroupPermissions(user: User, appId?: string, organizationId?: string): Promise<AppGroupPermission[]> {
-    const orgUserGroupPermissions = await this.userGroupPermissions(user, organizationId);
+  async appGroupPermissions(user: User, appId?: string): Promise<AppGroupPermission[]> {
+    const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
+
+    if (!groupIds || groupIds.length === 0) {
+      return [];
+    }
 
     const query = createQueryBuilder(AppGroupPermission, 'app_group_permissions')
       .innerJoin(

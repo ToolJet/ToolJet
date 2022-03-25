@@ -20,16 +20,16 @@ class LoginPage extends React.Component {
   }
 
   componentDidMount() {
+    const organizationId = this.props.match.params.organisationId;
     if (
-      (!this.props.match.params.organisationId && authenticationService.currentUserValue) ||
-      (this.props.match.params.organisationId &&
-        authenticationService?.currentUserValue?.organization_id === this.props.match.params.organisationId)
+      (!organizationId && authenticationService.currentUserValue) ||
+      (organizationId && authenticationService?.currentUserValue?.organization_id === organizationId)
     ) {
       // redirect to home if already logged in
       return this.props.history.push('/');
     }
-    if (this.props.match.params.organisationId || this.single_organization) {
-      authenticationService.getOrganizationConfigs(this.props.match.params.organisationId).then(
+    if (organizationId || this.single_organization) {
+      authenticationService.getOrganizationConfigs(organizationId).then(
         (configs) => {
           if (!configs) {
             return this.props.history.push('/');
@@ -83,7 +83,9 @@ class LoginPage extends React.Component {
       return;
     }
 
-    authenticationService.login(email, password).then(this.authSuccessHandler, this.authFailureHandler);
+    authenticationService
+      .login(email, password, this.props.match.params.organisationId)
+      .then(this.authSuccessHandler, this.authFailureHandler);
   };
 
   authSuccessHandler = () => {
@@ -94,11 +96,7 @@ class LoginPage extends React.Component {
     this.setState({ isLoading: false });
   };
 
-  authFailureHandler = (error) => {
-    if (error?.error === 'idpiframe_initialization_failed') {
-      //Error thrown by google on load
-      return this.setState({ isLoading: false });
-    }
+  authFailureHandler = () => {
     toast.error('Invalid email or password', {
       id: 'toast-login-auth-error',
       position: 'top-center',
@@ -205,9 +203,8 @@ class LoginPage extends React.Component {
                   )}
                   {this.state.configs?.google?.enabled && (
                     <GoogleSSOLoginButton
-                      authSuccessHandler={this.authSuccessHandler}
-                      authFailureHandler={this.authFailureHandler}
                       configs={this.state.configs?.google?.configs}
+                      configId={this.state.configs?.google?.config_id}
                     />
                   )}
                   {this.state.configs?.git?.enabled && <GitSSOLoginButton configs={this.state.configs?.git?.configs} />}

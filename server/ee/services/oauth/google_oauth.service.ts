@@ -12,8 +12,12 @@ export class GoogleOAuthService {
     const userSSOId = payload.sub;
 
     const words = payload.name?.split(' ');
-    const firstName = words?.[0] || '';
+    let firstName = words?.[0] || '';
     const lastName = words?.length > 1 ? words[words.length - 1] : '';
+
+    if (!(firstName && lastName)) {
+      firstName = email?.split('@')?.[0];
+    }
     return { userSSOId, firstName, lastName, email, sso: 'google' };
   }
 

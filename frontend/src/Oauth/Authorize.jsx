@@ -22,12 +22,24 @@ export function Authorize() {
     }
 
     const configs = Configs[router.query.origin];
+    let authParams = {};
+
+    if (configs.responseType === 'hash') {
+      if (!window.location.hash) {
+        return setError('Login failed');
+      }
+      const params = new Proxy(new URLSearchParams(window.location.hash.substr(1)), {
+        get: (searchParams, prop) => searchParams.get(prop),
+      });
+      authParams.token = params[configs.params.token];
+      authParams.state = params[configs.params.state];
+    } else {
+      authParams.token = router.query[configs.params.token];
+      authParams.state = router.query[configs.params.state];
+    }
 
     authenticationService
-      .signInViaOAuth(router.query.configId, {
-        token: router.query[configs.params.token],
-        state: router.query[configs.params.state],
-      })
+      .signInViaOAuth(router.query.configId, authParams)
       .then(() => setSuccess(true))
       .catch((err) => setError(`${configs.name} login failed - ${err?.error ? err?.error : ''}`));
     // Disabled for useEffect not being called for updation

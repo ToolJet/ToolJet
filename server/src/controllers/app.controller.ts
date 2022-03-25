@@ -7,9 +7,9 @@ import { AuthService } from '../services/auth.service';
 export class AppController {
   constructor(private authService: AuthService) {}
 
-  @Post(['authenticate', 'authenticate/:organisationId'])
-  async login(@Body() body, @Param('organisationId') organisationId) {
-    return this.authService.login({ ...body, organisationId });
+  @Post(['authenticate', 'authenticate/:organizationId'])
+  async login(@Body() body, @Param('organizationId') organizationId) {
+    return this.authService.login({ ...body, organizationId });
   }
 
   @UseGuards(JwtAuthGuard)

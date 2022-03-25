@@ -32,14 +32,11 @@ export class OrganizationUsersService {
 
     let user = await this.usersService.findByEmail(userParams.email);
 
-    if (user && user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
+    if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
       throw new BadRequestException('User with such email already exists.');
     }
 
-    if (!user) {
-      // User Not Exist
-      user = await this.usersService.create(userParams, currentUser.organizationId, ['all_users']);
-    }
+    user = await this.usersService.create(userParams, currentUser.organizationId, ['all_users'], user);
 
     const currentOrganization: Organization = (
       await this.organizationUsersRepository.findOne({
