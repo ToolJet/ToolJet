@@ -15,7 +15,7 @@ function isEmpty(value: number | null | undefined | string) {
 }
 
 function sanitizeCustomParams(customArray: any) {
-  const params = Object.fromEntries(customArray);
+  const params = Object.fromEntries(customArray ?? []);
   Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
   return params;
 }
@@ -197,5 +197,57 @@ export default class RestapiQueryService implements QueryService {
         certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
       },
     };
+  }
+
+  checkIfContentTypeIsURLenc(headers: []) {
+    const objectHeaders = Object.fromEntries(headers);
+    const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
+    return contentType === 'application/x-www-form-urlencoded';
+  }
+
+  async refreshToken(sourceOptions, error) {
+    const refreshToken = sourceOptions['tokenData']['refresh_token'];
+    if (!refreshToken) {
+      throw new QueryError('Refresh token not found', error.response, {});
+    }
+    const accessTokenUrl = sourceOptions['access_token_url'];
+    const clientId = sourceOptions['client_id'];
+    const clientSecret = sourceOptions['client_secret'];
+    const grantType = 'refresh_token';
+    const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['headers']);
+
+    const data = {
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: grantType,
+      refresh_token: refreshToken,
+    };
+
+    const accessTokenDetails = {};
+
+    try {
+      const response = await got(accessTokenUrl, {
+        method: 'post',
+        headers: {
+          'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
+        },
+        form: isUrlEncoded ? data : undefined,
+        json: !isUrlEncoded ? data : undefined,
+      });
+      const result = JSON.parse(response.body);
+
+      if (!(response.statusCode >= 200 || response.statusCode < 300)) {
+        throw new QueryError('could not connect to Oauth server', error.response, {});
+      }
+
+      if (result['access_token']) {
+        accessTokenDetails['access_token'] = result['access_token'];
+        accessTokenDetails['refresh_token'] = refreshToken;
+      }
+    } catch (error) {
+      console.log(error.response.body);
+      throw new QueryError('could not connect to Oauth server', error.response, {});
+    }
+    return accessTokenDetails;
   }
 }
