@@ -181,7 +181,7 @@ export class UsersService {
     await this.usersRepository.update(user.id, { defaultOrganizationId: organizationId });
   }
 
-  async update(userId: string, params: any, manager?: EntityManager) {
+  async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
     const { forgotPasswordToken, password, firstName, lastName, addGroups, removeGroups } = params;
 
     const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
@@ -202,9 +202,9 @@ export class UsersService {
       await manager.update(User, userId, { ...updateableParams });
       user = await manager.findOne(User, { where: { id: userId } });
 
-      await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups);
+      await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups, organizationId);
 
-      await this.addUserGroupPermissions(manager, user, addGroups);
+      await this.addUserGroupPermissions(manager, user, addGroups, organizationId);
     };
 
     if (manager) {
@@ -218,9 +218,9 @@ export class UsersService {
     return user;
   }
 
-  async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[]) {
+  async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[], organizationId: string) {
     if (addGroups) {
-      const orgGroupPermissions = await this.groupPermissionsForOrganization(user.organizationId);
+      const orgGroupPermissions = await this.groupPermissionsForOrganization(organizationId);
 
       for (const group of addGroups) {
         const orgGroupPermission = orgGroupPermissions.find((permission) => permission.group == group);
@@ -238,7 +238,12 @@ export class UsersService {
     }
   }
 
-  async removeUserGroupPermissionsIfExists(manager: EntityManager, user: User, removeGroups: string[]) {
+  async removeUserGroupPermissionsIfExists(
+    manager: EntityManager,
+    user: User,
+    removeGroups: string[],
+    organizationId: string
+  ) {
     if (removeGroups) {
       await this.throwErrorIfRemovingLastActiveAdmin(user, removeGroups);
       if (removeGroups.includes('all_users')) {
@@ -247,7 +252,7 @@ export class UsersService {
 
       const groupPermissions = await manager.find(GroupPermission, {
         group: In(removeGroups),
-        organizationId: user.organizationId,
+        organizationId: organizationId,
       });
       const groupIdsToMaybeRemove = groupPermissions.map((permission) => permission.id);
 

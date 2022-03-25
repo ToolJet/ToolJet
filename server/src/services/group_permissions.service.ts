@@ -150,7 +150,7 @@ export class GroupPermissionsService {
           const params = {
             removeGroups: [groupPermission.group],
           };
-          await this.usersService.update(userId, params, manager);
+          await this.usersService.update(userId, params, manager, user.organizationId);
         }
       }
 
@@ -159,7 +159,7 @@ export class GroupPermissionsService {
           const params = {
             addGroups: [groupPermission.group],
           };
-          await this.usersService.update(userId, params, manager);
+          await this.usersService.update(userId, params, manager, user.organizationId);
         }
       }
     });
@@ -264,7 +264,7 @@ export class GroupPermissionsService {
         'organization_users.organizationId = :organizationId',
         { organizationId: user.organizationId }
       )
-      .where('user.id IN (:...userList)', { userList: [...usersInGroupIds, ...adminUserIds] })
+      .where('user.id NOT IN (:...userList)', { userList: [...usersInGroupIds, ...adminUserIds] })
       .getMany();
   }
 
