@@ -84,13 +84,21 @@ export const Multiselect = function Multiselect({
       boxShadow: state.isFocused ? null : null,
       borderRadius: Number.parseFloat(borderRadius),
       alignItems: 'flex-start',
-      overflowY: 'auto',
+      overflow: 'hidden',
     }),
 
     valueContainer: (provided, _state) => ({
       ...provided,
-      height: 'auto',
+      height: height,
+      overflowY: 'auto',
+      alignItems: 'flex-start',
       padding: '0px 5px',
+    }),
+
+    placeholder: (provided, _state) => ({
+      ...provided,
+      height: height,
+      paddingTop: 4,
     }),
 
     input: (provided, _state) => ({
