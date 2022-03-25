@@ -502,8 +502,9 @@ class Editor extends React.Component {
       },
       this.handleAddPatch
     );
-
-    return setStateAsync(_self, newDefinition);
+    setStateAsync(_self, newDefinition).then(() => {
+      this.autoSave();
+    });
   };
 
   cloneComponent = (newComponent) => {
