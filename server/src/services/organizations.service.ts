@@ -224,12 +224,11 @@ export class OrganizationsService {
   }
 
   async updateOrganization(organizationId: string, params) {
-    const { name, domain, autoAssign, enableSignUp } = params;
+    const { name, domain, enableSignUp } = params;
 
     const updateableParams = {
       name,
       domain,
-      autoAssign,
       enableSignUp,
     };
 

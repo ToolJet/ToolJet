@@ -4,11 +4,6 @@ export class OrganisationConfigs1646823984673 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumns('organizations', [
       new TableColumn({
-        name: 'auto_assign',
-        type: 'boolean',
-        default: false,
-      }),
-      new TableColumn({
         name: 'enable_sign_up',
         type: 'boolean',
         default: false,

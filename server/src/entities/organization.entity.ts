@@ -22,9 +22,6 @@ export class Organization {
   @Column({ name: 'domain' })
   domain: string;
 
-  @Column({ name: 'auto_assign' })
-  autoAssign: boolean;
-
   @Column({ name: 'enable_sign_up' })
   enableSignUp: boolean;
 

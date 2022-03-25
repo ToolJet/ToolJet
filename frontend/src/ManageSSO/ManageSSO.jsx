@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { organizationService } from '@/_services';
 import { Header, Menu } from '@/_components';
 import ReactTooltip from 'react-tooltip';
-import { GeneralSettings } from './GenetalSettings';
+import { GeneralSettings } from './GeneralSettings';
 import { Google } from './Google';
 import { Loader } from './Loader';
 import { Git } from './Git';
