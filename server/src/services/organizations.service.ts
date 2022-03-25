@@ -91,6 +91,8 @@ export class OrganizationsService {
       relations: ['user'],
     });
 
+    const isAdmin = await this.usersService.hasGroup(user, 'admin');
+
     // serialize
     const serializedUsers = [];
     for (const orgUser of organizationUsers) {
@@ -104,9 +106,9 @@ export class OrganizationsService {
         status: orgUser.status,
       };
 
-      if ((await this.usersService.hasGroup(user, 'admin')) && orgUser.user.invitationToken)
-        serializedUser['invitationToken'] = orgUser.user.invitationToken;
-
+      if (isAdmin && orgUser.invitationToken) {
+        serializedUser['invitationToken'] = orgUser.invitationToken;
+      }
       serializedUsers.push(serializedUser);
     }
 
