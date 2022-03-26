@@ -90,10 +90,10 @@ class ConfirmationPage extends React.Component {
     ));
 
     return (
-      <div className="page page-center" ref={this.formRef}>
+      <div className="page page-center" ref={this.formRef} style={{ overflowY: 'scroll' }}>
         <div
           className="container-tight py-2 invitation-page"
-          style={{ overflowY: 'scroll', maxHeight: this.formRef.current && this.calculateOffset() }}
+          style={{ maxHeight: this.formRef.current && this.calculateOffset() }}
         >
           <div className="text-center mb-4">
             <a href=".">
