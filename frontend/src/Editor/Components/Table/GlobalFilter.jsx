@@ -7,7 +7,6 @@ export const GlobalFilter = ({
   setGlobalFilter,
   onComponentOptionChanged,
   component,
-  serverSideSearch,
   onEvent,
 }) => {
   const count = preGlobalFilteredRows.length;
