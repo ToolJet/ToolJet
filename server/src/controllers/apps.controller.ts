@@ -72,7 +72,7 @@ export class AppsController {
     response['data_queries'] = seralizedQueries;
     response['definition'] = app.editingVersion?.definition;
 
-    //! if editing version exits, camalize the definition
+    //! if editing version exists, camelize the definition
     if (app.editingVersion && app.editingVersion.definition) {
       response['editing_version'] = {
         ...response['editing_version'],
