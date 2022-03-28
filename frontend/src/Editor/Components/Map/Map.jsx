@@ -27,10 +27,10 @@ export const Map = function Map({
   }
 
   const addNewMarkersProp = component.definition.properties.addNewMarkers;
-  const canAddNewMarkers = addNewMarkersProp ? addNewMarkersProp.value : false;
+  const canAddNewMarkers = addNewMarkersProp ? resolveReferences(addNewMarkersProp.value, currentState) : false;
 
   const canSearchProp = component.definition.properties.canSearch;
-  const canSearch = canSearchProp ? canSearchProp.value : false;
+  const canSearch = canSearchProp ? resolveReferences(canSearchProp.value, currentState) : false;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 

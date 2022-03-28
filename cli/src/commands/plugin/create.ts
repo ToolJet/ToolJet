@@ -5,7 +5,7 @@ const execa = require('execa');
 const path = require('path');
 const fs = require('fs');
 const { runner } = require('hygen');
-const Logger = require('hygen/lib/logger');
+const Logger = require('hygen/dist/logger').default;
 
 export default class Create extends Command {
   static flags = {

@@ -42,7 +42,6 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter spreadsheet_id",
-        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "Enter spreadsheet_id"
@@ -77,7 +76,6 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter spreadsheet_id",
-        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "Enter spreadsheet_id"
@@ -112,7 +110,6 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter spreadsheet_id",
-        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "Enter spreadsheet_id"
@@ -126,7 +123,6 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter spreadsheet_id",
-        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "Enter spreadsheet_id"
@@ -161,7 +157,6 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter spreadsheet_id",
-        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "Enter spreadsheet_id"

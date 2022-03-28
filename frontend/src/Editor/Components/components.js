@@ -666,7 +666,8 @@ export const componentTypes = [
       borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
-      value: {},
+      value:
+        'ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀',
     },
     definition: {
       others: {
@@ -1490,7 +1491,7 @@ export const componentTypes = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
-    exposedVariables: {},
+    exposedVariables: { currentTab: '' },
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },

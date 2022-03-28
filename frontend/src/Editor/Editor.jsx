@@ -108,6 +108,7 @@ class Editor extends React.Component {
         components: {},
         globals: {
           currentUser: userVars,
+          theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
         errors: {},
@@ -126,12 +127,10 @@ class Editor extends React.Component {
       showSaveDetail: false,
       hasAppDefinitionChanged: false,
       showCreateVersionModalPrompt: false,
+      isSourceSelected: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
-
-    // setup for closing versions dropdown on oustide click
-    this.wrapperRef = React.createRef();
   }
 
   setWindowTitle(name) {
@@ -342,6 +341,7 @@ class Editor extends React.Component {
 
     this.fetchDataSources();
     this.fetchDataQueries();
+    this.initComponentVersioning();
   };
 
   dataSourcesChanged = () => {
@@ -426,6 +426,8 @@ class Editor extends React.Component {
   };
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
+    if (isEqual(this.state.appDefinition, newDefinition)) return;
+
     produce(
       this.state.appDefinition,
       (draft) => {
@@ -451,12 +453,6 @@ class Editor extends React.Component {
 
   handleSlugChange = (newSlug) => {
     this.setState({ slug: newSlug });
-  };
-
-  handleClickOutsideAppVersionsDropdown = (event) => {
-    if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
-      this.setState({ showAppVersionsDropdown: false });
-    }
   };
 
   removeComponent = (component) => {
@@ -507,8 +503,9 @@ class Editor extends React.Component {
       },
       this.handleAddPatch
     );
-
-    return setStateAsync(_self, newDefinition);
+    setStateAsync(_self, newDefinition).then(() => {
+      this.autoSave();
+    });
   };
 
   cloneComponent = (newComponent) => {
@@ -827,7 +824,14 @@ class Editor extends React.Component {
     } else if (!isEmpty(this.state.editingVersion)) {
       this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
       appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
-        this.setState({ isSavingEditingVersion: false });
+        this.setState({
+          isSavingEditingVersion: false,
+          editingVersion: {
+            ...this.state.editingVersion,
+            ...{ definition: this.state.appDefinition },
+          },
+        });
+
         setTimeout(() => this.setState({ showSaveDetail: false }), 3000);
       });
     }
@@ -885,7 +889,7 @@ class Editor extends React.Component {
   };
 
   handleOnComponentOptionsChanged = (component, options) => {
-    onComponentOptionsChanged(this, component, options);
+    return onComponentOptionsChanged(this, component, options);
   };
 
   handleComponentClick = (id, component) => {
@@ -899,6 +903,20 @@ class Editor extends React.Component {
     this.setState({
       hoveredComponent: id,
     });
+  };
+
+  changeDarkMode = (newMode) => {
+    this.setState({
+      currentState: {
+        ...this.state.currentState,
+        globals: {
+          ...this.state.currentState.globals,
+          theme: { name: newMode ? 'dark' : 'light' },
+        },
+      },
+      showQuerySearchField: false,
+    });
+    this.props.switchDarkMode(newMode);
   };
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
@@ -1066,7 +1084,7 @@ class Editor extends React.Component {
               dataSourcesChanged={this.dataSourcesChanged}
               onZoomChanged={this.onZoomChanged}
               toggleComments={this.toggleComments}
-              switchDarkMode={this.props.switchDarkMode}
+              switchDarkMode={this.changeDarkMode}
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
@@ -1171,9 +1189,9 @@ class Editor extends React.Component {
                 }}
               >
                 <div className="row main-row">
-                  <div className="col-3 data-pane">
+                  <div className="data-pane">
                     <div className="queries-container">
-                      <div className="queries-header row">
+                      <div className="queries-header row" style={{ marginLeft: '1.5px' }}>
                         {showQuerySearchField && (
                           <div className="col-12 p-1">
                             <div className="queries-search px-1">
@@ -1189,7 +1207,10 @@ class Editor extends React.Component {
                         {!showQuerySearchField && (
                           <>
                             <div className="col">
-                              <h5 style={{ fontSize: '14px' }} className="py-1 px-3 mt-2 text-muted">
+                              <h5
+                                style={{ fontSize: '14px', marginLeft: ' 6px' }}
+                                className="py-1 px-3 mt-2 text-muted"
+                              >
                                 Queries
                               </h5>
                             </div>
@@ -1214,6 +1235,7 @@ class Editor extends React.Component {
                                     selectedQuery: {},
                                     editingQuery: false,
                                     addingQuery: true,
+                                    isSourceSelected: false,
                                   })
                                 }
                               >
@@ -1258,7 +1280,7 @@ class Editor extends React.Component {
                       )}
                     </div>
                   </div>
-                  <div className="col-9 query-definition-pane-wrapper">
+                  <div className="query-definition-pane-wrapper">
                     {!loadingDataSources && (
                       <div className="query-definition-pane">
                         <div>
@@ -1279,6 +1301,7 @@ class Editor extends React.Component {
                             darkMode={this.props.darkMode}
                             apps={apps}
                             allComponents={appDefinition.components}
+                            isSourceSelected={this.state.isSourceSelected}
                           />
                         </div>
                       </div>

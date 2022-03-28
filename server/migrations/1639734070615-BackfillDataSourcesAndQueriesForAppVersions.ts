@@ -8,6 +8,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 import { AppModule } from 'src/app.module';
 import { Credential } from 'src/entities/credential.entity';
+import { cloneDeep } from 'lodash';
 
 export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -88,10 +89,8 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
   ) {
     if (restAppVersions.length == 0) return;
 
-    const oldDataSourceToNewMapping = {};
-    const newDataQueries = [];
-
     for (const appVersion of restAppVersions) {
+      const oldDataSourceToNewMapping = {};
       for (const dataSource of dataSources) {
         const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSource.options);
         const newOptions = await dataSourcesService.parseOptionsForCreate(convertedOptions, entityManager);
@@ -110,21 +109,29 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
         oldDataSourceToNewMapping[dataSource.id] = newDataSource.id;
       }
 
+      const newDataQueries = [];
+      const dataQueryMapping = {};
       for (const dataQuery of dataQueries) {
         const dataQueryParams = {
           name: dataQuery.name,
           kind: dataQuery.kind,
-          options: dataQuery.options,
+          options: cloneDeep(dataQuery.options),
           dataSourceId: oldDataSourceToNewMapping[dataQuery.dataSourceId],
           appId: dataQuery.appId,
           appVersionId: appVersion.id,
         };
-        const newDataQuery = await entityManager.save(entityManager.create(DataQuery, dataQueryParams));
+        const newDataQuery = await entityManager.save(entityManager.create(DataQuery, { ...dataQueryParams }));
         newDataQueries.push(newDataQuery);
+        dataQueryMapping[dataQuery.id] = newDataQuery.id;
       }
+      for (const newQuery of newDataQueries) {
+        const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
+        newQuery.options = newOptions;
+        await entityManager.save(newQuery);
+      }
+      appVersion.definition = this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping);
+      await entityManager.save(appVersion);
     }
-    console.log(`New data sources created: ${Object.values(oldDataSourceToNewMapping)}`);
-    console.log(`New data queries created: ${newDataQueries.map((q) => q.id)}`);
   }
 
   convertToArrayOfKeyValuePairs(options): Array<object> {
@@ -136,6 +143,68 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
         credential_id: options[key]['credential_id'],
       };
     });
+  }
+
+  replaceDataQueryOptionsWithNewDataQueryIds(options, dataQueryMapping) {
+    if (options && options.events) {
+      const replacedEvents = options.events.map((event) => {
+        if (event.queryId) {
+          event.queryId = dataQueryMapping[event.queryId];
+        }
+        return event;
+      });
+      options.events = replacedEvents;
+    }
+    return options;
+  }
+
+  replaceDataQueryIdWithinDefinitions(definition, dataQueryMapping) {
+    if (definition?.components) {
+      for (const id of Object.keys(definition.components)) {
+        const component = definition.components[id].component;
+
+        if (component?.definition?.events) {
+          const replacedComponentEvents = component.definition.events.map((event) => {
+            if (event.queryId) {
+              event.queryId = dataQueryMapping[event.queryId];
+            }
+            return event;
+          });
+          component.definition.events = replacedComponentEvents;
+        }
+
+        if (component?.definition?.properties?.actions?.value) {
+          for (const value of component.definition.properties.actions.value) {
+            if (value?.events) {
+              const replacedComponentActionEvents = value.events.map((event) => {
+                if (event.queryId) {
+                  event.queryId = dataQueryMapping[event.queryId];
+                }
+                return event;
+              });
+              value.events = replacedComponentActionEvents;
+            }
+          }
+        }
+
+        if (component?.component === 'Table') {
+          for (const column of component?.definition?.properties?.columns?.value ?? []) {
+            if (column?.events) {
+              const replacedComponentActionEvents = column.events.map((event) => {
+                if (event.queryId) {
+                  event.queryId = dataQueryMapping[event.queryId];
+                }
+                return event;
+              });
+              column.events = replacedComponentActionEvents;
+            }
+          }
+        }
+
+        definition.components[id].component = component;
+      }
+    }
+    return definition;
   }
 
   async setNewCredentialValueFromOldValue(newOptions: any, oldOptions: any, entityManager: EntityManager) {

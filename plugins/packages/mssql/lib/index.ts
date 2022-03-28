@@ -1,13 +1,13 @@
 import { Knex, knex } from 'knex';
-import { 
+import {
   ConnectionTestResult,
   QueryError,
   QueryResult,
   QueryService,
   cacheConnection,
-  getCachedConnection 
+  getCachedConnection,
 } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types'
+import { SourceOptions, QueryOptions } from './types';
 
 export default class MssqlQueryService implements QueryService {
   private static _instance: MssqlQueryService;
@@ -59,6 +59,9 @@ export default class MssqlQueryService implements QueryService {
         password: sourceOptions.password,
         database: sourceOptions.database,
         port: +sourceOptions.port,
+        options: {
+          encrypt: sourceOptions.azure ?? false,
+        },
       },
     };
 

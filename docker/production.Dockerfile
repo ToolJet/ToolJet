@@ -1,4 +1,4 @@
-FROM node:14.17.3-alpine AS builder
+FROM node:14.17.3-buster AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -32,11 +32,20 @@ COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
-FROM node:14.17.3-alpine
+FROM node:14.17.3-buster
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apk add postgresql-client freetds
+RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget
+
+# Install Instantclient Basic Light Oracle and Dependencies
+WORKDIR /opt/oracle
+RUN wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip && \
+    unzip instantclient-basiclite-linuxx64.zip && rm -f instantclient-basiclite-linuxx64.zip && \
+    cd /opt/oracle/instantclient* && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
+    echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
+WORKDIR /
+
 RUN mkdir -p /app
 
 # copy npm scripts
