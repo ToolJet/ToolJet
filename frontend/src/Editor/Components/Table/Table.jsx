@@ -830,6 +830,8 @@ export function Table({
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
       ['currentData', currentData],
+      ['selectedRow', []],
+      ['selectedRowId', null],
     ]);
   }, [tableData.length, componentState.changeSet]);
 
