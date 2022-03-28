@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import React, { useState, useEffect, useRef } from 'react';
 import Select from 'react-select';
+import { MultiSelect } from 'react-multi-select-component';
 
 export const Multiselect = function Multiselect({
   id,
@@ -14,10 +15,11 @@ export const Multiselect = function Multiselect({
   onComponentClick,
   darkMode,
 }) {
-  const { label, value, values, display_values, showAllOption } = properties;
+  const { label, value, values, display_values, showAllOption, type } = properties;
   const { borderRadius, visibility, disabledState } = styles;
   const selectRef = useRef(null);
   const [computedValues, setComputedValues] = useState();
+  const [selected, setSelected] = useState([]);
 
   useEffect(() => {
     let newValues = [];
@@ -45,8 +47,9 @@ export const Multiselect = function Multiselect({
       }),
     ];
     showAllOption &&
+      type == 'normal' &&
       selectOptions.length != computedValues.length &&
-      selectOptions.splice(0, 0, { label: 'All', value: 'all' });
+      selectOptions.splice(0, 0, { label: 'Select All', value: 'all' });
   } catch (err) {
     console.log(err);
   }
@@ -188,21 +191,31 @@ export const Multiselect = function Multiselect({
         </label>
       </div>
       <div className="col px-0 h-100 multi-select">
-        <Select
-          isDisabled={disabledState}
-          options={selectOptions}
-          value={computedValues}
-          isSearchable={true}
-          isMulti={true}
-          onChange={onChange}
-          placeholder="Select.."
-          ref={selectRef}
-          closeMenuOnSelect={false}
-          onFocus={(event) => {
-            onComponentClick(id, component, event);
-          }}
-          styles={customStyles}
-        />
+        {type == 'normal' ? (
+          <Select
+            isDisabled={disabledState}
+            options={selectOptions}
+            value={computedValues}
+            isSearchable={true}
+            isMulti={true}
+            onChange={onChange}
+            placeholder="Select.."
+            ref={selectRef}
+            closeMenuOnSelect={false}
+            onFocus={(event) => {
+              onComponentClick(id, component, event);
+            }}
+            styles={customStyles}
+          />
+        ) : (
+          <MultiSelect
+            hasSelectAll={showAllOption && true}
+            options={selectOptions}
+            value={selected}
+            onChange={setSelected}
+            labelledBy={'Select'}
+          />
+        )}
       </div>
     </div>
   );
