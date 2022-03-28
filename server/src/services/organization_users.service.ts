@@ -36,6 +36,11 @@ export class OrganizationUsersService {
       throw new BadRequestException('User with such email already exists.');
     }
 
+    if (user?.invitationToken) {
+      // user sign up not completed, name will be empty - updating name
+      await this.usersService.update(user.id, { firstName: userParams.firstName, lastName: userParams.lastName });
+    }
+
     user = await this.usersService.create(userParams, currentUser.organizationId, ['all_users'], user);
 
     const currentOrganization: Organization = (

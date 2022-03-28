@@ -41,8 +41,8 @@ class SignupPage extends React.Component {
         };
         this.setState({ isLoading: false, signupSuccess: true });
       },
-      () => {
-        toast.error('Invalid email', {
+      (error) => {
+        toast.error(error?.error || 'Sign up failed', {
           position: 'top-center',
         });
         this.setState({ isLoading: false });

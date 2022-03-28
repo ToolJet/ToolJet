@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { OrganizationsService } from './organizations.service';
 import { JwtService } from '@nestjs/jwt';
@@ -159,6 +159,9 @@ export class AuthService {
 
   async signup(params: any) {
     const { email } = params;
+    if (await this.usersService.findByEmail(email)) {
+      throw new BadRequestException('Email already registered');
+    }
     let organization: Organization;
     // Check if the configs allows user signups
     if (this.configService.get<string>('MULTI_ORGANIZATION') !== 'true') {
@@ -176,7 +179,7 @@ export class AuthService {
     }
     // Create default organization
     organization = await this.organizationsService.create('Untitled organization');
-    const user = await this.usersService.create({ email }, organization.id, ['all_users', 'admin']);
+    const user = await this.usersService.create({ email }, organization.id, ['all_users', 'admin'], null, true);
     await this.organizationUsersService.create(user, organization, true);
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 

@@ -9,6 +9,7 @@ import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
+import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -32,7 +33,7 @@ export class OrganizationsController {
     return decamelizeKeys({ organizations: result });
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, MultiOrganizationGuard)
   @Post()
   async create(@Body('name') name, @User() user) {
     if (!name) {

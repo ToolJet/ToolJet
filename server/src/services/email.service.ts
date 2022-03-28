@@ -55,7 +55,7 @@ export class EmailService {
 
   async sendWelcomeEmail(to: string, name: string, invitationtoken: string) {
     const subject = 'Welcome to ToolJet';
-    const inviteUrl = `${this.TOOLJET_HOST}/invitations/${invitationtoken}?signup=true`;
+    const inviteUrl = `${this.TOOLJET_HOST}/invitations/${invitationtoken}`;
     const html = `
       <!DOCTYPE html>
       <html>
@@ -89,7 +89,7 @@ export class EmailService {
     organisationName: string
   ) {
     const subject = 'Welcome to ToolJet';
-    const inviteUrl = `${this.TOOLJET_HOST}/invitations/${invitationtoken}`;
+    const inviteUrl = `${this.TOOLJET_HOST}/organization-invitations/${invitationtoken}`;
     const html = `
       <!DOCTYPE html>
       <html>

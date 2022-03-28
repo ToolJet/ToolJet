@@ -6,7 +6,7 @@ import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
-import { InvitationPage } from '@/InvitationPage';
+import { InvitationPage, OrganizationInvitationPage } from '@/InvitationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Editor, Viewer } from '@/Editor';
@@ -121,6 +121,7 @@ class App extends React.Component {
             <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/reset-password" component={ResetPassword} />
             <Route path="/invitations/:token" component={InvitationPage} />
+            <Route path="/organization-invitations/:token" component={OrganizationInvitationPage} />
             <PrivateRoute
               exact
               path="/apps/:id"

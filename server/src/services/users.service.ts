@@ -55,7 +55,13 @@ export class UsersService {
     });
   }
 
-  async create(userParams: any, organizationId: string, groups?: string[], existingUser?: User): Promise<User> {
+  async create(
+    userParams: any,
+    organizationId: string,
+    groups?: string[],
+    existingUser?: User,
+    isInvite?: boolean
+  ): Promise<User> {
     const password = uuid.v4();
 
     const { email, firstName, lastName } = userParams;
@@ -68,6 +74,7 @@ export class UsersService {
           firstName,
           lastName,
           password,
+          invitationToken: isInvite ? uuid.v4() : null,
           defaultOrganizationId: organizationId,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -124,54 +131,70 @@ export class UsersService {
   }
 
   async setupAccountFromInvitationToken(params: any) {
-    const {
-      organization,
-      password,
-      token,
-      role,
-      first_name: firstName,
-      last_name: lastName,
-      new_signup: newSignup,
-    } = params;
+    const { organization, password, token, role, first_name: firstName, last_name: lastName } = params;
 
-    let user: User;
-    let organizationUser: OrganizationUser;
+    const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
 
-    if (newSignup) {
-      user = await this.usersRepository.findOne({ where: { invitationToken: token } });
+    if (!user?.organizationUsers) {
+      throw new BadRequestException('Invalid invitation link');
+    }
+    const organizationUser: OrganizationUser = user.organizationUsers.find(
+      (ou) => ou.organizationId === user.defaultOrganizationId
+    );
 
-      if (!user?.organizationUsers) {
-        throw new BadRequestException('Invalid invitation link');
-      }
-      organizationUser = user.organizationUsers.find((ou) => ou.organizationId === user.defaultOrganizationId);
+    if (!organizationUser) {
+      throw new BadRequestException('Invalid invitation link');
+    }
 
-      if (!organizationUser) {
-        throw new BadRequestException('Invalid invitation link');
-      }
+    await this.usersRepository.save(
+      Object.assign(user, {
+        firstName,
+        lastName,
+        password,
+        role,
+        invitationToken: null,
+      })
+    );
 
+    await this.organizationUsersRepository.save(
+      Object.assign(organizationUser, {
+        invitationToken: null,
+        status: 'active',
+      })
+    );
+
+    if (organization) {
+      await this.organizationsRepository.update(user.defaultOrganizationId, {
+        name: organization,
+      });
+    }
+  }
+
+  async acceptOrganizationInvite(params: any) {
+    const { password, token } = params;
+
+    const organizationUser = await this.organizationUsersRepository.findOne({
+      where: { invitationToken: token },
+      relations: ['user'],
+    });
+
+    if (!organizationUser?.user) {
+      throw new BadRequestException('Invalid invitation link');
+    }
+    const user: User = organizationUser.user;
+
+    if (password) {
+      // set new password if entered
       await this.usersRepository.save(
         Object.assign(user, {
-          firstName,
-          lastName,
           password,
-          role,
           invitationToken: null,
         })
       );
     } else {
-      organizationUser = await this.organizationUsersRepository.findOne({
-        where: { invitationToken: token },
-        relations: ['user'],
-      });
-
-      if (!organizationUser?.user) {
-        throw new BadRequestException('Invalid invitation link');
-      }
-      ({ user } = organizationUser);
-
       await this.usersRepository.save(
         Object.assign(user, {
-          password,
+          invitationToken: null,
         })
       );
     }
@@ -183,10 +206,20 @@ export class UsersService {
       })
     );
 
-    if (newSignup && organization) {
-      await this.organizationsRepository.update(user.organizationId, {
-        name: organization,
+    if (user.defaultOrganizationId) {
+      // User sign up link send - not activated account
+      const defaultOrganizationUser = await this.organizationUsersRepository.findOne({
+        where: { organizationId: user.defaultOrganizationId, status: 'invited' },
       });
+
+      if (defaultOrganizationUser) {
+        await this.organizationUsersRepository.save(
+          Object.assign(organizationUser, {
+            invitationToken: null,
+            status: 'active',
+          })
+        );
+      }
     }
   }
 
