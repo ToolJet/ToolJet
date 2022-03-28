@@ -501,6 +501,7 @@ class HomePage extends React.Component {
           confirmButtonLoading={isDeletingApp}
           onConfirm={() => this.executeAppDeletion()}
           onCancel={() => this.cancelDeleteAppDialog()}
+          darkMode={this.props.darkMode}
         />
 
         <ConfirmDialog
