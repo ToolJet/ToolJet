@@ -980,6 +980,7 @@ class Editor extends React.Component {
           confirmButtonLoading={isDeletingDataQuery}
           onConfirm={() => this.executeDataQueryDeletion()}
           onCancel={() => this.cancelDeleteDataQuery()}
+          darkMode={this.props.darkMode}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="header">

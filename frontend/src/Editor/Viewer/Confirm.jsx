@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 
-export function Confirm({ show, message, onConfirm, onCancel, queryConfirmationData }) {
+export function Confirm({ show, message, onConfirm, onCancel, queryConfirmationData, darkMode }) {
   const [showModal, setShow] = useState(show);
 
   useEffect(() => {
@@ -21,7 +21,13 @@ export function Confirm({ show, message, onConfirm, onCancel, queryConfirmationD
 
   return (
     <>
-      <Modal show={showModal} onHide={handleClose} size="sm" centered={true}>
+      <Modal
+        show={showModal}
+        onHide={handleClose}
+        size="sm"
+        centered={true}
+        contentClassName={darkMode ? 'theme-dark' : ''}
+      >
         <div className="modal-status bg-danger"></div>
         <Modal.Body>{message}</Modal.Body>
         <Modal.Footer>
