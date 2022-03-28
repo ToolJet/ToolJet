@@ -159,7 +159,10 @@ function showModal(_ref, modal, show) {
 
   return Promise.resolve();
 }
-
+function logoutAction(_ref) {
+  localStorage.clear();
+  return Promise.resolve();
+}
 function executeAction(_ref, event, mode, customVariables) {
   console.log('nopski', customVariables);
   if (event) {
@@ -186,6 +189,10 @@ function executeAction(_ref, event, mode, customVariables) {
       case 'run-query': {
         const { queryId, queryName } = event;
         return runQuery(_ref, queryId, queryName, true, mode);
+      }
+      case 'logout': {
+        // const { queryId, queryName } = event;
+        return logoutAction(_ref);
       }
 
       case 'open-webpage': {

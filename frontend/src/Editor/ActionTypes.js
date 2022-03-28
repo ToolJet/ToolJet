@@ -5,6 +5,11 @@ export const ActionTypes = [
     options: [{ name: 'message', type: 'text', default: 'Message !' }],
   },
   {
+    name: 'Logout',
+    id: 'logout',
+    options: [{ name: 'key', type: 'code', default: '' }],
+  },
+  {
     name: 'Run Query',
     id: 'run-query',
     options: [{ queryId: '' }],
