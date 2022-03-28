@@ -21,9 +21,7 @@ export const GlobalFilter = ({
     onChange(text);
 
     onComponentOptionChanged(component, 'searchText', text).then(() => {
-      if (serverSideSearch === true) {
-        onEvent('onSearch', { component, data: {} });
-      }
+      onEvent('onSearch', { component, data: {} });
     });
   };
 
