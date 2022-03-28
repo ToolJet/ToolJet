@@ -28,7 +28,7 @@ export function Form({ settings, updateData }) {
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
           <div className="card-title">
-            Form
+            Password Login
             <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`}>{enabled ? 'Enabled' : 'Disabled'}</span>
           </div>
           <div>

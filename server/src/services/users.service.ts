@@ -168,6 +168,12 @@ export class UsersService {
         throw new BadRequestException('Invalid invitation link');
       }
       ({ user } = organizationUser);
+
+      await this.usersRepository.save(
+        Object.assign(user, {
+          password,
+        })
+      );
     }
 
     await this.organizationUsersRepository.save(

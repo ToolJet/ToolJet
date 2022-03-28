@@ -213,8 +213,9 @@ class LoginPage extends React.Component {
             )}
           </form>
           {!this.props.match.params.organisationId &&
-            ((this.single_organization && configs?.form?.enable && configs?.form?.enable_sign_up) ||
-              (!this.single_organization && configs?.form?.enable_sign_up)) && (
+            !this.single_organization &&
+            configs?.form?.enable &&
+            configs?.form?.enable_sign_up && (
               <div className="text-center text-secondary mt-3">
                 Don&apos;t have account yet? &nbsp;
                 <Link to={'/signup'} tabIndex="-1">

@@ -135,6 +135,9 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials');
       }
 
+      // Updating default organization Id
+      await this.usersService.updateDefaultOrganization(newUser, newUser.organizationId);
+
       const payload = { username: user.id, sub: user.email, organizationId: newUser.organizationId, isFormLogin: true };
 
       return decamelizeKeys({

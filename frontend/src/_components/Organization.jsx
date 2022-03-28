@@ -30,8 +30,8 @@ export const Organization = function Organization() {
   };
 
   useEffect(() => {
-    getOrganizations();
-  }, []);
+    !isSingleOrganization && getOrganizations();
+  }, [isSingleOrganization]);
 
   const getOrganizations = () => {
     setGetOrgStatus('loading');
@@ -204,7 +204,7 @@ export const Organization = function Organization() {
               <a
                 onClick={getOrganizations}
                 href="#"
-                className={`btn btn-light ${getOrgStatus === 'loading' ? 'btn-loading' : ''}`}
+                className={`btn btn-primary mb-2 ${getOrgStatus === 'loading' ? 'btn-loading' : ''}`}
               >
                 Load Organizations
               </a>
@@ -224,10 +224,14 @@ export const Organization = function Organization() {
               <span className="avatar bg-secondary-lt">{getAvatar(organization)}</span>
             </div>
             <div className={`col-${isSingleOrganization ? '9' : '7'}`}>
-              <div className="org-name">{organization}</div>
-              <div className="org-edit">
-                <span onClick={showEditModal}>Edit</span>
+              <div className="org-name" style={{ padding: `${admin ? '0px' : '0.6rem'} 0px` }}>
+                {organization}
               </div>
+              {admin && (
+                <div className="org-edit">
+                  <span onClick={showEditModal}>Edit</span>
+                </div>
+              )}
             </div>
             {!isSingleOrganization && (
               <div className="col-2">
@@ -257,16 +261,20 @@ export const Organization = function Organization() {
             <div onClick={showCreateModal}>Add Organizations</div>
           </div>
         )}
-        <div className="dropdown-divider"></div>
-        <Link data-testid="settingsBtn" to="/users" className="dropdown-item">
-          Manage Users
-        </Link>
-        <Link data-tesid="settingsBtn" to="/groups" className="dropdown-item">
-          Manage Groups
-        </Link>
-        <Link data-tesid="settingsBtn" to="/manage-sso" className="dropdown-item">
-          Manage SSO
-        </Link>
+        {admin && (
+          <>
+            <div className="dropdown-divider"></div>
+            <Link data-testid="settingsBtn" to="/users" className="dropdown-item">
+              Manage Users
+            </Link>
+            <Link data-tesid="settingsBtn" to="/groups" className="dropdown-item">
+              Manage Groups
+            </Link>
+            <Link data-tesid="settingsBtn" to="/manage-sso" className="dropdown-item">
+              Manage SSO
+            </Link>
+          </>
+        )}
       </div>
     );
   };
@@ -274,10 +282,10 @@ export const Organization = function Organization() {
   return (
     <div>
       <div className="dropdown organization-list" onMouseEnter={() => setIsListOrganizations(false)}>
-        <a href="#" className="btn dropdown-toggle">
+        <a href="#" className={`btn ${!isSingleOrganization || admin ? 'dropdown-toggle' : ''}`}>
           <div>{organization}</div>
         </a>
-        {admin && (
+        {(!isSingleOrganization || admin) && (
           <div className="dropdown-menu dropdown-menu-right">
             {isListOrganizations ? getListOrganizations() : getOrganizationMenu()}
           </div>
@@ -331,7 +339,7 @@ export const Organization = function Organization() {
               Cancel
             </button>
             <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={editOrganization}>
-              Edit organization
+              Save
             </button>
           </div>
         </div>

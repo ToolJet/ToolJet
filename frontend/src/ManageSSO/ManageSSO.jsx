@@ -13,7 +13,7 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
     { id: 'general-settings', label: 'General Settings' },
     { id: 'google', label: 'Google' },
     { id: 'git', label: 'Git' },
-    { id: 'form', label: 'Form' },
+    { id: 'form', label: 'Password Login' },
   ];
   const changePage = useCallback(
     (page) => {
