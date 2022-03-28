@@ -32,13 +32,16 @@
       "value": "localhost"
     },
     "port": {
-      "value": 6379
+      "value": "28015"
     },
     "username": {
-      "value": ""
+      "value": "admin"
     },
     "password": {
       "value": ""
+    },
+    "database": {
+      "value": "test"
     }
   },
   "properties": {
@@ -67,10 +70,5 @@
       "description": "Enter password"
     }
   },
-  "required": [
-    "scheme",
-    "host",
-    "port",
-    "password"
-  ]
+  "required": ["scheme", "host", "port", "password"]
 }
