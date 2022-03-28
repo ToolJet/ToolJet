@@ -93,11 +93,16 @@ export class DataQueriesService {
     try {
       return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
     } catch (error) {
-      if (error.constructor.name === 'OAuthUnauthorizedClientError') {
+      const statusCode = error?.data?.responseObject.statusCode;
+
+      if (
+        error.constructor.name === 'OAuthUnauthorizedClientError' ||
+        (statusCode == 401 && sourceOptions['tokenData'])
+      ) {
         console.log('Access token expired. Attempting refresh token flow.');
 
         const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id);
-        await this.dataSourcesService.updateOAuthAccessToken(accessTokenDetails, dataSource.options);
+        await this.dataSourcesService.updateOAuthAccessToken(accessTokenDetails, dataSource.options, dataSource.id);
         await dataSource.reload();
 
         ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
@@ -141,15 +146,15 @@ export class DataQueriesService {
 
     const response = await got(accessTokenUrl, {
       method: 'post',
-      headers: isUrlEncoded && {
-        'content-type': 'application/x-www-form-urlencoded',
+      headers: {
+        'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
       },
       form: isUrlEncoded ? bodyData : undefined,
       json: !isUrlEncoded ? bodyData : undefined,
     });
 
     const result = JSON.parse(response.body);
-    return { access_token: result['access_token'] };
+    return { access_token: result['access_token'], refresh_token: result['refresh_token'] };
   }
 
   /* This function fetches access token from authorization code */

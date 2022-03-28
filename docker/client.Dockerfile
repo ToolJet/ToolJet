@@ -1,5 +1,5 @@
 # pull official base image
-FROM node:14.17.3-alpine AS builder
+FROM node:14.17.3-buster AS builder
 
 RUN npm i -g npm@7.20.0
 
