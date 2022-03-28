@@ -57,6 +57,12 @@
       "type": "text",
       "description": "Enter host"
     },
+    "instanceName": {
+      "label": "Instance",
+      "key": "instanceName",
+      "type": "text",
+      "description": "Enter the name of the database instance."
+    },
     "port": {
       "label": "Port",
       "key": "port",

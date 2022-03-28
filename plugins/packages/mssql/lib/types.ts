@@ -5,6 +5,7 @@ export type SourceOptions = {
   username: string;
   password: string;
   azure: boolean;
+  instanceName: string;
 };
 export type QueryOptions = {
   operation: string;

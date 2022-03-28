@@ -61,8 +61,9 @@ export default class MssqlQueryService implements QueryService {
         port: +sourceOptions.port,
         options: {
           encrypt: sourceOptions.azure ?? false,
+          instanceName:sourceOptions.instanceName,
         },
-      },
+      }, 
     };
 
     return knex(config);
@@ -76,16 +77,20 @@ export default class MssqlQueryService implements QueryService {
     dataSourceUpdatedAt?: string
   ): Promise<any> {
     if (checkCache) {
+      console.log("Step 1")
       let connection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
-
       if (connection) {
+        console.log("Step 2")
         return connection;
       } else {
+        console.log("Step 3")
+        console.log("sourrrrr", sourceOptions)
         connection = await this.buildConnection(sourceOptions);
         dataSourceId && cacheConnection(dataSourceId, connection);
         return connection;
       }
     } else {
+      console.log("Step 4")
       return await this.buildConnection(sourceOptions);
     }
   }
