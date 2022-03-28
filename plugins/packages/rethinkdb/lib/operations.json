@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "RethinkDB datasource",
+  "description": "A schema defining RethinkDB datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {
+    "label": "Operation",
+    "key": "operation",
+    "type": "dropdown-component-flip",
+    "description": "Single select dropdown for operation",
+    "list": [
+      {
+        "value": "get",
+        "name": "Get"
+      }
+    ]
+  }
+}
