@@ -47,7 +47,7 @@
       "key": "database",
       "type": "text",
       "description": "database name",
-      "helpText": "visit: <a href='https://rethinkdb.com/api/javascript/' target='_blank' rel='noreferrer'>InfluxDB docs</a>"
+      "helpText": "visit: <a href='https://rethinkdb.com/api/javascript/' target='_blank' rel='noreferrer'>rethinkDB docs</a>"
     },
     "host": {
       "label": "Host",
