@@ -57,7 +57,7 @@ const RealtimeEditor = (props) => {
 
   return (
     <div onPointerMove={handlePointerMove}>
-      <Editor {...props} self={self} updatePresence={updatePresence} ymap={props.ymap} />
+      <Editor {...props} socket={props.socket} self={self} updatePresence={updatePresence} ymap={props.ymap} />
       {othersOnSameVersion.map(({ id, presence }) => {
         if (!presence) return null;
         return (

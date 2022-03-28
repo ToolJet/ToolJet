@@ -1,9 +1,9 @@
 import React from 'react';
-import * as Y from 'yjs';
-import { WebrtcProvider } from 'y-webrtc';
 import { PresenceProvider } from 'y-presence';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import Spinner from '@/_ui/Spinner';
+const Y = require('yjs');
+const { WebsocketProvider } = require('y-websocket');
 
 const ydoc = new Y.Doc();
 
@@ -12,8 +12,7 @@ export const RealtimeEditor = (props) => {
   const [provider, setProvider] = React.useState();
 
   React.useEffect(() => {
-    setProvider(new WebrtcProvider(`tooljet-appId-${appId}`, ydoc));
-
+    setProvider(new WebsocketProvider('ws://localhost:3000/', '', ydoc));
     () => provider.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
@@ -22,7 +21,7 @@ export const RealtimeEditor = (props) => {
 
   return (
     <PresenceProvider awareness={provider.awareness}>
-      <RealtimeCursors ymap={ydoc.getMap('appDef')} {...props} />
+      <RealtimeCursors socket={provider.ws} ymap={ydoc.getMap('appDef')} {...props} />
     </PresenceProvider>
   );
 };

@@ -61,11 +61,7 @@ class Editor extends React.Component {
 
     const currentUser = authenticationService.currentUserValue;
 
-    const { socket } = createWebsocketConnection(appId);
-
     let userVars = {};
-
-    this.socket = socket;
 
     if (currentUser) {
       userVars = {
@@ -218,7 +214,7 @@ class Editor extends React.Component {
     document.removeEventListener('mousemove', this.onMouseMove);
     document.removeEventListener('mouseup', this.onMouseUp);
     document.title = 'Tooljet - Dashboard';
-    this.socket && this.socket?.close();
+    this.props.socket && this.props.socket?.close();
   }
 
   // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
@@ -1116,7 +1112,7 @@ class Editor extends React.Component {
                     <>
                       <Container
                         canvasWidth={this.getCanvasWidth()}
-                        socket={this.socket}
+                        socket={this.props.socket}
                         showComments={showComments}
                         appVersionsId={this.state?.editingVersion?.id}
                         appDefinition={appDefinition}
@@ -1355,7 +1351,7 @@ class Editor extends React.Component {
             </div>
             {config.COMMENT_FEATURE_ENABLE && showComments && (
               <CommentNotifications
-                socket={this.socket}
+                socket={this.props.socket}
                 appVersionsId={this.state?.editingVersion?.id}
                 toggleComments={this.toggleComments}
               />

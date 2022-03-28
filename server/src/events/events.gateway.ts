@@ -9,14 +9,21 @@ import {
 import { Server } from 'ws';
 import { AuthService } from 'src/services/auth.service';
 import { isEmpty } from 'lodash';
+import { setupWSConnection } from 'y-websocket/bin/utils';
 
+/**
+ * Cannot add a namespace if we are using the "ws" package adapter
+ * https://github.com/nestjs/nest/blob/master/packages/platform-ws/adapters/ws-adapter.ts#L53
+ */
 @WebSocketGateway()
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private authService: AuthService) {}
   @WebSocketServer()
   server: Server;
 
-  handleConnection(client: any): void {}
+  handleConnection(client: any): void {
+    this.server.on('connection', setupWSConnection);
+  }
 
   handleDisconnect(client: any): void {}
 
