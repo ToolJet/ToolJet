@@ -159,8 +159,13 @@ function showModal(_ref, modal, show) {
 
   return Promise.resolve();
 }
+
 function logoutAction(_ref) {
+  console.log('ref props', _ref);
   localStorage.clear();
+  _ref.props.history.push('/login');
+  window.location.href = '/login';
+
   return Promise.resolve();
 }
 function executeAction(_ref, event, mode, customVariables) {
@@ -191,7 +196,6 @@ function executeAction(_ref, event, mode, customVariables) {
         return runQuery(_ref, queryId, queryName, true, mode);
       }
       case 'logout': {
-        // const { queryId, queryName } = event;
         return logoutAction(_ref);
       }
 
