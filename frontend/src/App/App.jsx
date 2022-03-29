@@ -132,7 +132,6 @@ class App extends React.Component {
                     pathname: '/confirm',
                     state: {
                       token: props.match.params.token,
-                      search: props.location.search,
                     },
                   }}
                 />
@@ -141,14 +140,12 @@ class App extends React.Component {
             <Route path="/confirm" component={ConfirmationPage} />
             <Route
               path="/organization-invitations/:token"
-              component={OrganizationInvitationPage}
               render={(props) => (
                 <Redirect
                   to={{
                     pathname: '/confirm-invite',
                     state: {
                       token: props.match.params.token,
-                      search: props.location.search,
                     },
                   }}
                 />

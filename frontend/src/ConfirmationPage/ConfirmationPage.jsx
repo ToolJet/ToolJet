@@ -24,7 +24,7 @@ class ConfirmationPage extends React.Component {
   setPassword = (e) => {
     e.preventDefault();
 
-    const token = this.props.match.params.token;
+    const token = this.props.location.state.token;
     const { password, organization, role, firstName, lastName, password_confirmation } = this.state;
     this.setState({ isLoading: true });
 

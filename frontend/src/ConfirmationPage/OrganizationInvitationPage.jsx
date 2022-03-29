@@ -20,7 +20,7 @@ class OrganizationInvitationPage extends React.Component {
   acceptInvite = (e, isSetPassword) => {
     e.preventDefault();
 
-    const token = this.props.match.params.token;
+    const token = this.props.location.state.token;
     const { password, password_confirmation } = this.state;
     this.setState({ isLoading: true });
 
