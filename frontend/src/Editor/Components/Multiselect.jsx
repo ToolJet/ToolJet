@@ -1,6 +1,13 @@
 import _ from 'lodash';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MultiSelect } from 'react-multi-select-component';
+
+const ItemRenderer = ({ checked, option, onClick, disabled }) => (
+  <div className={`item-renderer ${disabled && 'disabled'}`}>
+    <input type="checkbox" onClick={onClick} checked={checked} tabIndex={-1} disabled={disabled} />
+    <span>{option.label}</span>
+  </div>
+);
 
 export const Multiselect = function Multiselect({
   id,
@@ -10,7 +17,6 @@ export const Multiselect = function Multiselect({
   styles,
   exposedVariables,
   setExposedVariable,
-  fireEvent,
   onComponentClick,
   darkMode,
 }) {
@@ -65,13 +71,19 @@ export const Multiselect = function Multiselect({
   }, [selected]);
 
   return (
-    <div className="multiselect-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
-      <div className="col-auto my-auto">
-        <label style={{ marginRight: label ? '1rem' : '' }} className="form-label py-1">
+    <div
+      className="multiselect-widget row g-0"
+      style={{ height, display: visibility ? '' : 'none' }}
+      onFocus={() => {
+        onComponentClick(this, id, component);
+      }}
+    >
+      <div className="col-auto my-auto d-flex align-items-center">
+        <label style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }} className="form-label py-1">
           {label}
         </label>
       </div>
-      <div className="col px-0 h-100" style={{ borderRadius }}>
+      <div className="col px-0 h-100" style={{ borderRadius: parseInt(borderRadius) }}>
         <MultiSelect
           hasSelectAll={showAllOption ?? false}
           options={selectOptions}
@@ -79,7 +91,8 @@ export const Multiselect = function Multiselect({
           onChange={setSelected}
           labelledBy={'Select'}
           disabled={disabledState}
-          className="multiselect-box"
+          className={`multiselect-box${darkMode ? ' dark' : ''}`}
+          ItemRenderer={ItemRenderer}
         />
       </div>
     </div>

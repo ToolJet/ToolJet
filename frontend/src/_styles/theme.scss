@@ -3281,10 +3281,11 @@ input[type="text"] {
   background-image: none !important;
 }
 
-.dropdown-widget,
 .multiselect-widget {
   label.select-item {
-    div.item-renderer {
+      width: max-content;
+      min-width: 100%;
+      div.item-renderer {
       align-items: center;
       line-height: 15px;
       input {
@@ -3298,12 +3299,22 @@ input[type="text"] {
     height: 100%;
     display: flex;
     align-items: center;
+    border-radius: inherit;
   }
 
   .rmsc {
     height: 100%;
     border-radius: inherit;
+  }
 
+  .rmsc.dark {
+    --rmsc-main: #4D72FA;
+    --rmsc-hover: #283647;
+    --rmsc-selected: #1F2936;
+    --rmsc-border: #333333;
+    --rmsc-gray: #555555;
+    --rmsc-bg: #1F2936;
+    color: #fff;
   }
 }
 
