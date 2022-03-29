@@ -14,6 +14,8 @@ function ControlledTabs({
   addNewKeyValuePair,
   darkMode,
   componentName,
+  setBodyToggle,
+  bodyToggle,
 }) {
   const [key, setKey] = React.useState('headers');
   const tabs = ['Headers', 'Params', 'Body'];
@@ -65,6 +67,8 @@ function ControlledTabs({
                 options={options['body']}
                 currentState={currentState}
                 theme={theme}
+                bodyToggle={bodyToggle}
+                setBodyToggle={setBodyToggle}
                 darkMode={darkMode}
                 componentName={componentName}
               />

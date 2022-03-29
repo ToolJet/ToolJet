@@ -12,7 +12,7 @@ import { BaseUrl } from './BaseUrl';
 class Restapi extends React.Component {
   constructor(props) {
     super(props);
-    const options = defaults({ ...props.options }, { headers: [], url_params: [], body: [] });
+    const options = defaults({ ...props.options }, { headers: [], url_params: [], body: [], bodyToggle: false });
     this.state = {
       options,
     };
@@ -37,6 +37,18 @@ class Restapi extends React.Component {
       console.log(error);
     }
   }
+
+  onBodyToggleChanged = (value) => {
+    this.setState({
+      bodyToggle: value,
+    });
+
+    const { options } = this.state;
+    options['bodyToggle'] = value;
+    this.setState({ options }, () => {
+      this.props.optionsChanged(options);
+    });
+  };
 
   addNewKeyValuePair = (option) => {
     const { options } = this.state;
@@ -198,6 +210,8 @@ class Restapi extends React.Component {
             addNewKeyValuePair={this.addNewKeyValuePair}
             darkMode={this.props.darkMode}
             componentName={queryName}
+            bodyToggle={this.state.options.bodyToggle}
+            setBodyToggle={this.onBodyToggleChanged}
           />
         </div>
       </div>

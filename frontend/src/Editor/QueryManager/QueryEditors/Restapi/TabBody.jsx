@@ -11,9 +11,9 @@ export default ({
   onChange,
   onJsonBodyChange,
   componentName,
+  bodyToggle,
+  setBodyToggle,
 }) => {
-  const [bodyToggle, setBodyToggle] = useState(false);
-
   return (
     <>
       <div style={{ display: 'flex' }}></div>
