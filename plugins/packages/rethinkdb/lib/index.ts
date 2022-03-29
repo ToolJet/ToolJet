@@ -43,4 +43,23 @@ export default class Rethinkdb implements QueryService {
       if (err) throw err;
     });
   };
+
+  insertDocuments = (conn, tableName, item) => {
+    r.table(tableName)
+      .insert({ name: item })
+      .run(conn, function (err, res) {
+        if (err) throw err;
+        console.log(res);
+      });
+  };
+
+  retreiveDocuments = (conn) => {
+    r.table('authors').run(conn, function (err, cursor) {
+      if (err) throw err;
+      cursor.toArray(function (err, result) {
+        if (err) throw err;
+        console.log(JSON.stringify(result, null, 2));
+      });
+    });
+  };
 }
