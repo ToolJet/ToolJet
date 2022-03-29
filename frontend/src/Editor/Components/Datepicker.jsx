@@ -48,8 +48,7 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
-  const ExampleCustomInput = React.forwardRef((props, ref) => {
-    console.log(props, 'props');
+  const CustomInputBox = React.forwardRef((props, ref) => {
     return (
       <input
         readOnly
@@ -85,7 +84,7 @@ export const Datepicker = function Datepicker({
         showMonthDropdown
         showYearDropdown
         dropdownMode="select"
-        customInput={<ExampleCustomInput />}
+        customInput={<CustomInputBox />}
       />
 
       <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
