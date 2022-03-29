@@ -71,7 +71,7 @@ export const Multiselect = function Multiselect({
           {label}
         </label>
       </div>
-      <div className="col px-0 h-100 multi-select">
+      <div className="col px-0 h-100" style={{ borderRadius }}>
         <MultiSelect
           hasSelectAll={showAllOption ?? false}
           options={selectOptions}
@@ -79,6 +79,7 @@ export const Multiselect = function Multiselect({
           onChange={setSelected}
           labelledBy={'Select'}
           disabled={disabledState}
+          className="multiselect-box"
         />
       </div>
     </div>

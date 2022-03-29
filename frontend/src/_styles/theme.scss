@@ -3293,6 +3293,18 @@ input[type="text"] {
       }
     }
   }
+
+  .rmsc .dropdown-container {
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .rmsc {
+    height: 100%;
+    border-radius: inherit;
+
+  }
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
