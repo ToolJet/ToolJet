@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
-import { decamelizeKeys } from 'humps';
+import { camelizeKeys, decamelizeKeys } from 'humps';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
 import { FoldersService } from '@services/folders.service';
@@ -72,6 +72,13 @@ export class AppsController {
     response['data_queries'] = seralizedQueries;
     response['definition'] = app.editingVersion?.definition;
 
+    //! if editing version exists, camelize the definition
+    if (app.editingVersion && app.editingVersion.definition) {
+      response['editing_version'] = {
+        ...response['editing_version'],
+        definition: camelizeKeys(app.editingVersion.definition),
+      };
+    }
     return response;
   }
 

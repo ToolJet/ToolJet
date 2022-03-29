@@ -32,8 +32,7 @@ export async function uploadFile(client, options) {
   const file = myBucket.file(options['file']);
   // Create a pass through stream from a string
   const passthroughStream = new stream.PassThrough();
-  passthroughStream.write(options['data']);
-  passthroughStream.end();
+  passthroughStream.end(Buffer.from(options['data'], options['encoding'] || 'utf8'));
   passthroughStream.pipe(
     file.createWriteStream({
       metadata: { contentType: options['contentType'] },

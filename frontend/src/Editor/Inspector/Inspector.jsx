@@ -162,30 +162,30 @@ export const Inspector = ({
         },
       };
 
-      componentDefinitionChanged(newComponent).then(() => {
-        //  Child componets should also have a mobile layout
-        const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
+      componentDefinitionChanged(newComponent);
 
-        childComponents.forEach((componentId) => {
-          let newChild = {
-            id: componentId,
-            ...allComponents[componentId],
-          };
+      //  Child componets should also have a mobile layout
+      const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
 
-          const { width, height } = newChild.layouts['desktop'];
+      childComponents.forEach((componentId) => {
+        let newChild = {
+          id: componentId,
+          ...allComponents[componentId],
+        };
 
-          newChild['layouts'] = {
-            ...newChild.layouts,
-            mobile: {
-              top: 100,
-              left: 0,
-              width: Math.min(width, 445),
-              height: height,
-            },
-          };
+        const { width, height } = newChild.layouts['desktop'];
 
-          componentDefinitionChanged(newChild);
-        });
+        newChild['layouts'] = {
+          ...newChild.layouts,
+          mobile: {
+            top: 100,
+            left: 0,
+            width: Math.min(width, 445),
+            height: height,
+          },
+        };
+
+        componentDefinitionChanged(newChild);
       });
     }
   }
@@ -358,7 +358,10 @@ export const Inspector = ({
         </Tabs>
       </div>
 
-      <div className="close-icon" style={{ height: darkMode ? tabHeight + 1 : tabHeight }}>
+      <div
+        className="close-icon"
+        style={{ backgroundColor: darkMode && '#232e3c', height: darkMode ? tabHeight + 1 : tabHeight }}
+      >
         <div className="svg-wrapper">
           <svg
             width="20"
