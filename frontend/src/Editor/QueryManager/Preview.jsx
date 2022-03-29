@@ -46,7 +46,7 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
               <div className="spinner-border text-azure mt-5" role="status"></div>
             </center>
           )}
-          <div className="col">
+          <div className="col" style={{ userSelect: 'text' }}>
             <Tab.Content>
               <Tab.Pane eventKey="json" transition={false}>
                 <div className="mb-3 mt-2">
