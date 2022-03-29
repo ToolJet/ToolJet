@@ -16,7 +16,7 @@ export default class Rethinkdb implements QueryService {
   ): Promise<QueryResult> {
     let result: any = {};
     let response = null;
-    const { port, host, protocol } = sourceOptions;
+    // const { port, host, protocol } = sourceOptions;
     const { operation } = queryOptions;
     // const client = await this.getConnection(sourceOptions);
 
