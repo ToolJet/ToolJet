@@ -9,6 +9,7 @@ function ControlledTabs({
   currentState,
   theme,
   onChange,
+  onJsonBodyChange,
   removeKeyValuePair,
   addNewKeyValuePair,
   darkMode,
@@ -60,6 +61,7 @@ function ControlledTabs({
                 removeKeyValuePair={removeKeyValuePair}
                 addNewKeyValuePair={addNewKeyValuePair}
                 onChange={onChange}
+                onJsonBodyChange={onJsonBodyChange}
                 options={options['body']}
                 currentState={currentState}
                 theme={theme}

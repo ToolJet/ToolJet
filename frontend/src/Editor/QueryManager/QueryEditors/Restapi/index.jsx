@@ -66,6 +66,15 @@ class Restapi extends React.Component {
     });
   };
 
+  handleJsonBodyChanged = (body) => {
+    const { options } = this.state;
+    options['body'] = body;
+
+    this.setState({ options }, () => {
+      this.props.optionsChanged(options);
+    });
+  };
+
   handleChange = (key, keyIndex, idx) => (value) => {
     if (this.state.options[key].length - 1 === idx) this.addNewKeyValuePair(key);
     this.keyValuePairValueChanged(value, keyIndex, key, idx);
@@ -184,6 +193,7 @@ class Restapi extends React.Component {
             options={this.state.options}
             currentState={this.props.currentState}
             onChange={this.handleChange}
+            onJsonBodyChange={this.handleJsonBodyChanged}
             removeKeyValuePair={this.removeKeyValuePair}
             addNewKeyValuePair={this.addNewKeyValuePair}
             darkMode={this.props.darkMode}

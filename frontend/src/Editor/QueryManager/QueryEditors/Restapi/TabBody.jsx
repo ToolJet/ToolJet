@@ -9,6 +9,7 @@ export default ({
   removeKeyValuePair,
   addNewKeyValuePair,
   onChange,
+  onJsonBodyChange,
   componentName,
 }) => {
   const [bodyToggle, setBodyToggle] = useState(false);
@@ -29,6 +30,7 @@ export default ({
         theme={theme}
         removeKeyValuePair={removeKeyValuePair}
         onChange={onChange}
+        onJsonBodyChange={onJsonBodyChange}
         componentName={componentName}
         tabType={'body'}
         paramType={'body'}

@@ -1,11 +1,14 @@
 import React from 'react';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
+import { isJson } from '@/_helpers/utils';
+import JSON5 from 'json5';
 
 export default ({
   options = [],
   currentState,
   theme,
   onChange,
+  onJsonBodyChange,
   componentName,
   removeKeyValuePair,
   paramType,
@@ -13,6 +16,18 @@ export default ({
   bodyToggle,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const computeJsonValue = (value) => {
+    if (isJson(value) || typeof value == 'object') {
+      const obj = typeof value == 'object' ? value : JSON5.parse(value);
+      const arrayOfObj = Object.entries(obj).length == 1 ? [Object.entries(obj)] : Object.entries(obj);
+      onJsonBodyChange(arrayOfObj);
+    }
+  };
+
+  const initialJsonBody = () => {
+    return options.length > 0 ? JSON.stringify(Object.fromEntries(options)) : '';
+  };
 
   return (
     <>
@@ -79,13 +94,13 @@ export default ({
           <div>
             <CodeHinter
               currentState={currentState}
-              // initialValue={value}
+              initialValue={initialJsonBody()}
               mode="javascript"
               theme={darkMode ? 'monokai' : 'base16-light'}
               height={'300px'}
               className="query-hinter"
               ignoreBraces={false}
-              onChange={(value) => onChange(paramType, value)}
+              onChange={(value) => computeJsonValue(value)}
               componentName={`${componentName}/${tabType}`}
             />
           </div>
