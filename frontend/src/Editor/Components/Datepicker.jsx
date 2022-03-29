@@ -21,16 +21,20 @@ export const Datepicker = function Datepicker({
   const [date, setDate] = useState(new Date());
   const selectedDateFormat = enableTime ? `${format} LT` : format;
 
-  const onDateChange = (date) => {
+  const computeDateString = (date) => {
     if (enableDate) {
-      const dateString = moment(date).format(selectedDateFormat);
-      setDate(date);
-      setExposedVariable('value', dateString);
+      return moment(date).format(selectedDateFormat);
     }
 
     if (!enableDate && enableTime) {
-      setExposedVariable('value', moment(date).format('LT'));
+      return moment(date).format('LT');
     }
+  };
+
+  const onDateChange = (date) => {
+    setDate(date);
+    const dateString = computeDateString(date);
+    setExposedVariable('value', dateString);
   };
 
   useEffect(() => {
@@ -53,7 +57,7 @@ export const Datepicker = function Datepicker({
       <input
         readOnly
         {...props}
-        value={exposedVariables.value}
+        value={computeDateString(date)}
         className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
           darkMode ? 'bg-dark color-white' : 'bg-light'
         }`}
