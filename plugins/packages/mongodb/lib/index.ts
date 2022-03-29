@@ -141,10 +141,7 @@ export default class MongodbService implements QueryService {
   }
 
   parseEJSON(maybeEJSON?: string): any {
-    console.log('--->>>', maybeEJSON);
     if (!maybeEJSON) return {};
-
-    console.log('--->>>', maybeEJSON);
 
     return EJSON.parse(JSON.stringify(JSON5.parse(maybeEJSON)));
   }
