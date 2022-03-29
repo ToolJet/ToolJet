@@ -7,7 +7,6 @@ export const ActionTypes = [
   {
     name: 'Logout',
     id: 'logout',
-    options: [{ name: 'key', type: 'code', default: '' }],
   },
   {
     name: 'Run Query',
