@@ -214,7 +214,7 @@ export class UsersService {
 
       if (defaultOrganizationUser) {
         await this.organizationUsersRepository.save(
-          Object.assign(organizationUser, {
+          Object.assign(defaultOrganizationUser, {
             invitationToken: null,
             status: 'active',
           })
