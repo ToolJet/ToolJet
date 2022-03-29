@@ -7,20 +7,27 @@ export class PopulateSSOConfigs1648589182504 implements MigrationInterface {
     const entityManager = queryRunner.manager;
     const OrganizationRepository = entityManager.getRepository(Organization);
 
-    const organizations: Organization[] = await OrganizationRepository.find();
+    const organizations: Organization[] = await OrganizationRepository.find({ relations: ['ssoConfigs'] });
 
     if (organizations && organizations.length > 0) {
       for (const organization of organizations) {
-        await entityManager
-          .createQueryBuilder()
-          .insert()
-          .into(SSOConfigs, ['organizationId', 'sso', 'enabled'])
-          .values({
-            organizationId: organization.id,
-            sso: 'form',
-            enabled: true,
+        // adding form configs for organizations which does not have any
+        if (
+          !organization.ssoConfigs?.some((og) => {
+            og?.sso === 'form';
           })
-          .execute();
+        ) {
+          await entityManager
+            .createQueryBuilder()
+            .insert()
+            .into(SSOConfigs, ['organizationId', 'sso', 'enabled'])
+            .values({
+              organizationId: organization.id,
+              sso: 'form',
+              enabled: true,
+            })
+            .execute();
+        }
       }
     }
   }
