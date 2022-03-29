@@ -951,14 +951,6 @@ export const componentTypes = [
       values: { type: 'code', displayName: 'Option values' },
       display_values: { type: 'code', displayName: 'Option labels' },
       showAllOption: { type: 'toggle', displayName: 'Enable select All option' },
-      type: {
-        type: 'select',
-        displayName: 'Type',
-        options: [
-          { name: 'Normal', value: 'normal' },
-          { name: 'Searchable', value: 'searchable' },
-        ],
-      },
     },
     events: {
       onSelect: { displayName: 'On select' },
@@ -982,7 +974,6 @@ export const componentTypes = [
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: '{{true}}' },
-        type: { value: 'normal' },
       },
       events: [],
       styles: {
