@@ -22,6 +22,18 @@
       "password": {
         "type": "string",
         "encrypted": true
+      },
+      "ca_cert": {
+        "encrypted": true
+      },
+      "client_key": {
+        "encrypted": true
+      },
+      "client_cert": {
+        "encrypted": true
+      },
+      "root_cert": {
+        "encrypted": true
       }
     },
     "exposedVariables": {
@@ -117,6 +129,7 @@
         "label": "CA Cert",
         "key": "ca_cert",
         "type": "textarea",
+        "encrypted": true,
         "description": "Enter ca certificate"
       }
     },
@@ -125,18 +138,21 @@
         "label": "Client Key",
         "key": "client_key",
         "type": "textarea",
+        "encrypted": true,
         "description": "Enter client key"
       },
       "client_cert": {
         "label": "Client Cert",
         "key": "client_cert",
         "type": "textarea",
+        "encrypted": true,
         "description": "Enter client certificate"
       },
       "root_cert": {
         "label": "Root Cert",
         "key": "root_cert",
         "type": "textarea",
+        "encrypted": true,
         "description": "Enter root certificate"
       }
     }
