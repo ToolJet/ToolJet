@@ -31,11 +31,13 @@ export class OauthService {
     }
     const domain = email.substring(email.lastIndexOf('@') + 1);
 
+    if (!restrictedDomain) {
+      return true;
+    }
     if (!domain) {
       return false;
     }
     if (
-      restrictedDomain &&
       !restrictedDomain
         .split(',')
         .filter((e) => !!e)

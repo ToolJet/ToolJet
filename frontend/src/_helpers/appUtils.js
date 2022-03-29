@@ -42,8 +42,8 @@ export function onComponentOptionsChanged(_ref, component, options) {
     componentData[option[0]] = option[1];
   }
 
-  return setStateAsync(_ref, {
-    currentState: { ..._ref.state.currentState, components: { ...components, [componentName]: componentData } },
+  return setCurrentStateAsync(_ref, {
+    components: { ...components, [componentName]: componentData },
   });
 }
 
@@ -72,13 +72,24 @@ export function getDataFromLocalStorage(key) {
 
 export function runTransformation(_ref, rawData, transformation, query) {
   const data = rawData;
-  const evalFunction = Function(['data', 'moment', '_', 'components', 'queries', 'globals'], transformation);
+  const evalFunction = Function(
+    ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+    transformation
+  );
   let result = [];
 
   const currentState = _ref.state.currentState || {};
 
   try {
-    result = evalFunction(data, moment, _, currentState.components, currentState.queries, currentState.globals);
+    result = evalFunction(
+      data,
+      moment,
+      _,
+      currentState.components,
+      currentState.queries,
+      currentState.globals,
+      currentState.variables
+    );
   } catch (err) {
     console.log('Transformation failed for query: ', query.name, err);
     result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
@@ -469,6 +480,7 @@ export function getQueryVariables(options, state) {
   const optionsType = typeof options;
   switch (optionsType) {
     case 'string': {
+      options = options.replace(/\n/g, ' ');
       const dynamicVariables = getDynamicVariables(options) || [];
       dynamicVariables.forEach((variable) => {
         queryVariables[variable] = resolveReferences(variable, state);
@@ -618,7 +630,11 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
                         isLoading: false,
                       },
                       query.kind === 'restapi'
-                        ? { request: data.data.requestObject, response: data.data.responseObject }
+                        ? {
+                            request: data.data.requestObject,
+                            response: data.data.responseObject,
+                            responseHeaders: data.data.responseHeaders,
+                          }
                         : {}
                     ),
                   },
@@ -699,7 +715,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
                       data: finalData,
                       rawData,
                     },
-                    query.kind === 'restapi' ? { request: data.request, response: data.response } : {}
+                    query.kind === 'restapi'
+                      ? { request: data.request, response: data.response, responseHeaders: data.responseHeaders }
+                      : {}
                   ),
                 },
               },

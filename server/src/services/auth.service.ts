@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { OrganizationsService } from './organizations.service';
 import { JwtService } from '@nestjs/jwt';
@@ -159,9 +159,12 @@ export class AuthService {
 
   async signup(params: any) {
     const { email } = params;
-    if (await this.usersService.findByEmail(email)) {
-      throw new BadRequestException('Email already registered');
+
+    const existingUser = await this.usersService.findByEmail(email);
+    if (existingUser) {
+      throw new NotAcceptableException('Email already exists');
     }
+
     let organization: Organization;
     // Check if the configs allows user signups
     if (this.configService.get<string>('MULTI_ORGANIZATION') !== 'true') {

@@ -1,8 +1,8 @@
-import { QueryResult, QueryService, QueryError, ConnectionTestResult } from '@tooljet-plugins/common'
+import { QueryResult, QueryService, QueryError, ConnectionTestResult } from '@tooljet-plugins/common';
 const { MongoClient } = require('mongodb');
 const JSON5 = require('json5');
 import { EJSON } from 'bson';
-import { SourceOptions, QueryOptions } from './types'
+import { SourceOptions, QueryOptions } from './types';
 
 export default class MongodbService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -27,7 +27,7 @@ export default class MongodbService implements QueryService {
           break;
         case 'find_one':
           console.log(queryOptions.filter);
-          
+
           result = await db
             .collection(queryOptions.collection)
             .findOne(this.parseEJSON(queryOptions.filter), this.parseEJSON(queryOptions.options));
@@ -145,7 +145,7 @@ export default class MongodbService implements QueryService {
     if (!maybeEJSON) return {};
 
     console.log('--->>>', maybeEJSON);
-    
+
     return EJSON.parse(JSON.stringify(JSON5.parse(maybeEJSON)));
   }
 

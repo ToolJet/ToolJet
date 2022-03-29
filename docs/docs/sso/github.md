@@ -1,32 +1,42 @@
 ---
 sidebar_position: 6
-sidebar_label: Github
+sidebar_label: GitHub
 ---
 
-# Github Single Sign-on
+# GitHub Single Sign-on
 
-Goto [Github Developer settings](https://github.com/settings/developers) and navigate to `OAuth Apps` and create a project. `Authorization callback URL` should be `<Your Domain>/sso/git`
+Goto [GitHub Developer settings](https://github.com/settings/developers) and navigate to `OAuth Apps` and create a project. `Authorization callback URL` should be `<Your Domain>/sso/git`
 
-<img class="screenshot-full" src="/img/sso/git/create-project.png" alt="ToolJet - Github create project" height="420"/>
-<br /><br /><br />
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Github create project](/img/sso/git/create-project.png)
+
+</div>
 
 Open the application details, and you can see the `Client ID`
 
-<img class="screenshot-full" src="/img/sso/git/client-id.png" alt="ToolJet - Git view client id" height="420"/>
-<br /><br /><br />
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Github view client id](/img/sso/git/client-id.png)
+
+</div>
 
 Then create `Client secrets` by clicking `Generate new client secret`
 
-<img class="screenshot-full" src="/img/sso/git/client-secret.png" alt="ToolJet - Git create client secret" height="420"/>
-<br /><br /><br />
+<div style={{textAlign: 'center'}}>
 
+![ToolJet - Github create client secret](/img/sso/git/client-secret.png)
+
+</div>
 
 Lastly, supply the environment variables `SSO_GIT_OAUTH2_CLIENT_ID` which is client id and `SSO_GIT_OAUTH2_CLIENT_SECRET` is client secret to your deployment.
 
 :::info
+
 ### Restrict signup via SSO
+
 Set the environment variable `SSO_DISABLE_SIGNUP` to `true` to ensure that users can only log in and not sign up via SSO. If this variable is set to `true`, only those users who have already signed up, or the ones that are invited, can access ToolJet via SSO.
 :::
 
 <br />
-The Git sign-in button will now be available in your ToolJet login screen.
+The GitHub sign-in button will now be available in your ToolJet login screen.

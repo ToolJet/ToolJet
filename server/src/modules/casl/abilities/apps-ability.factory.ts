@@ -13,6 +13,7 @@ type Actions =
   | 'createQuery'
   | 'createUsers'
   | 'createVersions'
+  | 'deleteVersions'
   | 'deleteApp'
   | 'deleteQuery'
   | 'fetchUsers'
@@ -68,6 +69,7 @@ export class AppsAbilityFactory {
     if (await this.usersService.userCan(user, 'update', 'App', params.id)) {
       can('updateParams', App, { organizationId: user.organizationId });
       can('createVersions', App, { organizationId: user.organizationId });
+      can('deleteVersions', App, { organizationId: user.organizationId });
       can('updateVersions', App, { organizationId: user.organizationId });
       can('updateIcon', App, { organizationId: user.organizationId });
 

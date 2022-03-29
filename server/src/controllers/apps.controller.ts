@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
-import { decamelizeKeys } from 'humps';
+import { camelizeKeys, decamelizeKeys } from 'humps';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
 import { FoldersService } from '@services/folders.service';
@@ -59,12 +59,12 @@ export class AppsController {
     const response = decamelizeKeys(app);
 
     const seralizedQueries = [];
-    const dataQueriesBelongingToEditingVersion = app.dataQueries.filter(
-      (query) => query.appVersionId === app.editingVersion.id
-    );
+    const dataQueriesForVersion = app.editingVersion
+      ? await this.appsService.findDataQueriesForVersion(app.editingVersion.id)
+      : [];
 
     // serialize queries
-    for (const query of dataQueriesBelongingToEditingVersion) {
+    for (const query of dataQueriesForVersion) {
       const decamelizedQuery = decamelizeKeys(query);
       decamelizedQuery['options'] = query.options;
       seralizedQueries.push(decamelizedQuery);
@@ -73,6 +73,13 @@ export class AppsController {
     response['data_queries'] = seralizedQueries;
     response['definition'] = app.editingVersion?.definition;
 
+    //! if editing version exists, camelize the definition
+    if (app.editingVersion && app.editingVersion.definition) {
+      response['editing_version'] = {
+        ...response['editing_version'],
+        definition: camelizeKeys(app.editingVersion.definition),
+      };
+    }
     return response;
   }
 
@@ -91,12 +98,15 @@ export class AppsController {
     }
 
     const app = await this.appsService.findBySlug(params.slug);
+    const versionToLoad = app.currentVersionId
+      ? await this.appsService.findVersion(app.currentVersionId)
+      : await this.appsService.findVersion(app.editingVersion?.id);
 
     // serialize
     return {
       current_version_id: app['currentVersionId'],
-      data_queries: app.dataQueries.filter((query) => query.appVersionId === app['currentVersionId']),
-      definition: app.editingVersion?.definition,
+      data_queries: versionToLoad?.dataQueries,
+      definition: versionToLoad?.definition,
       is_public: app.isPublic,
       name: app.name,
       slug: app.slug,
@@ -198,6 +208,8 @@ export class AppsController {
     } else {
       apps = await this.appsService.all(user, page, searchKey);
     }
+    //remove password from user info
+    apps.forEach((app) => (app.user.password = undefined));
 
     const totalCount = await this.appsService.count(user, searchKey);
 
@@ -296,6 +308,19 @@ export class AppsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Delete(':id/versions/:versionId')
+  async deleteVersion(@Request() req, @Param() params) {
+    const version = await this.appsService.findVersion(params.versionId);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
+
+    if (!version || !ability.can('deleteVersions', version.app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    return await this.appsService.deleteVersion(version.app, version);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Put(':id/icons')
   async updateIcon(@Request() req, @Param() params, @Body('icon') icon) {
     const app = await this.appsService.find(params.id);
@@ -305,7 +330,9 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const appUser = await this.appsService.update(req.user, params.id, { icon });
+    const appUser = await this.appsService.update(req.user, params.id, {
+      icon,
+    });
     return decamelizeKeys(appUser);
   }
 }

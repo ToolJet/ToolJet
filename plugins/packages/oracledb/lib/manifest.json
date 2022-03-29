@@ -1,0 +1,133 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Oracle DB datasource",
+  "description": "A schema defining Oracle DB datasource",
+  "type": "database",
+  "source": {
+    "name": "Oracle DB",
+    "kind": "oracledb",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "password": {
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 1521
+    },
+    "database": {
+      "value": ""
+    },
+    "database_type": {
+      "value": "SID"
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "ssl_enabled": {
+      "value": true
+    },
+    "client_path_type":{
+      "value": "default"
+    }
+  },
+  "properties": {
+    "client_path_type": {
+      "label": "Client Library Location",
+      "key": "client_path_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for client library",
+      "list": [
+        {
+          "value": "default",
+          "name": "Default"
+        },
+        {
+          "value": "custom",
+          "name": "Custom"
+        }
+      ],
+      "commonFields":{
+        "host": {
+          "label": "Host",
+          "key": "host",
+          "type": "text",
+          "description": "Enter host"
+        },
+        "port": {
+          "label": "Port",
+          "key": "port",
+          "type": "text",
+          "description": "Enter port"
+        },
+        "database_type": {
+          "label": "SID / Service Name",
+          "key": "database_type",
+          "type": "dropdown",
+          "description": "Type of the database",
+          "list": [
+            {
+              "name": "SID",
+              "value": "SID"
+            },
+            {
+              "name": "Service name",
+              "value": "SERVICE_NAME"
+            }
+          ]
+        },
+        "database": {
+          "label": "Database Name",
+          "key": "database",
+          "type": "text",
+          "description": "Name of the database"
+        },
+        "ssl_enabled": {
+          "label": "SSL",
+          "key": "ssl_enabled",
+          "type": "toggle",
+          "description": "Toggle for ssl_enabled"
+        },
+        "username": {
+          "label": "Username",
+          "key": "username",
+          "type": "text",
+          "description": "Enter username"
+        },
+        "password": {
+          "label": "Password",
+          "key": "password",
+          "type": "password",
+          "description": "Enter password"
+        }
+      }
+    },
+    "custom":{
+      "path": {
+        "label": "Path",
+        "key": "path",
+        "type": "text",
+        "description": "Enter path"
+      }
+    }
+  },
+  "required": [
+    "host",
+    "port",
+    "username",
+    "password"
+  ]
+}

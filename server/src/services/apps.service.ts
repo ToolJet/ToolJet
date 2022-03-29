@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { createQueryBuilder, EntityManager, Brackets, getManager, Repository } from 'typeorm';
+import { createQueryBuilder, EntityManager, Brackets, getManager, Repository, DeleteResult } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -52,7 +52,6 @@ export class AppsService {
   async find(id: string): Promise<App> {
     return this.appsRepository.findOne({
       where: { id },
-      relations: ['dataQueries'],
     });
   }
 
@@ -61,7 +60,6 @@ export class AppsService {
       where: {
         slug,
       },
-      relations: ['dataQueries'],
     });
   }
 
@@ -69,6 +67,12 @@ export class AppsService {
     return this.appVersionsRepository.findOne({
       where: { id },
       relations: ['app', 'dataQueries'],
+    });
+  }
+
+  async findDataQueriesForVersion(appVersionId: string): Promise<DataQuery[]> {
+    return this.dataQueriesRepository.find({
+      where: { appVersionId },
     });
   }
 
@@ -285,7 +289,7 @@ export class AppsService {
   }
 
   async createVersion(user: User, app: App, versionName: string, versionFromId: string): Promise<AppVersion> {
-    const lastVersion = await this.appVersionsRepository.findOne({
+    const versionFrom = await this.appVersionsRepository.findOne({
       where: { id: versionFromId },
     });
 
@@ -296,29 +300,55 @@ export class AppsService {
         manager.create(AppVersion, {
           name: versionName,
           app,
-          definition: lastVersion?.definition,
+          definition: versionFrom?.definition,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
       );
-      await this.setupDataSourcesAndQueriesForVersion(manager, appVersion, lastVersion);
+      await this.setupDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
     });
 
     return appVersion;
   }
 
-  async setupDataSourcesAndQueriesForVersion(manager: EntityManager, appVersion: AppVersion, lastVersion: AppVersion) {
-    if (lastVersion) {
-      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, lastVersion);
+  async deleteVersion(app: App, version: AppVersion): Promise<DeleteResult> {
+    if (app.currentVersionId === version.id) {
+      throw new BadRequestException('You cannot delete a released version');
+    }
+
+    let result: DeleteResult;
+
+    await getManager().transaction(async (manager) => {
+      await manager.delete(DataSource, { appVersionId: version.id });
+      await manager.delete(DataQuery, { appVersionId: version.id });
+      result = await manager.delete(AppVersion, {
+        id: version.id,
+        appId: app.id,
+      });
+    });
+
+    return result;
+  }
+
+  async setupDataSourcesAndQueriesForVersion(manager: EntityManager, appVersion: AppVersion, versionFrom: AppVersion) {
+    if (versionFrom) {
+      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom);
     } else {
       // TODO: Remove this when default version will be create when app creation is done
+      const totalVersions = await manager.count(AppVersion, {
+        where: { appId: appVersion.appId },
+      });
+
+      if (totalVersions > 1) {
+        throw new BadRequestException('More than one version found. Version to create from not specified.');
+      }
       await this.associateExistingDataSourceAndQueriesToVersion(manager, appVersion);
     }
   }
 
   async associateExistingDataSourceAndQueriesToVersion(manager: EntityManager, appVersion: AppVersion) {
     const dataSources = await manager.find(DataSource, {
-      where: { appId: appVersion.appId },
+      where: { appId: appVersion.appId, appVersionId: null },
     });
     for await (const dataSource of dataSources) {
       await manager.update(DataSource, dataSource.id, {
@@ -327,7 +357,7 @@ export class AppsService {
     }
 
     const dataQueries = await manager.find(DataQuery, {
-      where: { appId: appVersion.appId },
+      where: { appId: appVersion.appId, appVersionId: null },
     });
     for await (const dataQuery of dataQueries) {
       await manager.update(DataQuery, dataQuery.id, {
@@ -339,13 +369,13 @@ export class AppsService {
   async createNewDataSourcesAndQueriesForVersion(
     manager: EntityManager,
     appVersion: AppVersion,
-    lastVersion: AppVersion
+    versionFrom: AppVersion
   ) {
     const oldDataSourceToNewMapping = {};
     const oldDataQueryToNewMapping = {};
 
     const dataSources = await manager.find(DataSource, {
-      where: { appVersionId: lastVersion.id },
+      where: { appVersionId: versionFrom.id },
     });
 
     for await (const dataSource of dataSources) {
@@ -365,7 +395,7 @@ export class AppsService {
     }
 
     const dataQueries = await manager.find(DataQuery, {
-      where: { appVersionId: lastVersion.id },
+      where: { appVersionId: versionFrom.id },
     });
     const newDataQueries = [];
     for await (const dataQuery of dataQueries) {
@@ -445,8 +475,12 @@ export class AppsService {
 
     for await (const newOption of newOptionsWithCredentials) {
       const oldOption = oldOptions.find((oldOption) => oldOption['key'] == newOption['key']);
-      const oldCredential = await manager.findOne(Credential, { where: { id: oldOption.credential_id } });
-      const newCredential = await manager.findOne(Credential, { where: { id: newOption['credential_id'] } });
+      const oldCredential = await manager.findOne(Credential, {
+        where: { id: oldOption.credential_id },
+      });
+      const newCredential = await manager.findOne(Credential, {
+        where: { id: newOption['credential_id'] },
+      });
       newCredential.valueCiphertext = oldCredential.valueCiphertext;
 
       await manager.save(newCredential);

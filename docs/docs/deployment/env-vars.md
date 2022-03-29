@@ -40,6 +40,10 @@ ToolJet server uses PostgreSQL as the database.
 | PG_USER  | username               |
 | PG_PASS  | password               |
 
+:::tip
+If you are using docker-compose setup, you can set PG_HOST as `postgres` which will be DNS resolved by docker
+:::
+
 #### Check for updates ( optional )
 
 Self-hosted version of ToolJet pings our server to fetch the latest product updates every 24 hours. You can disable this by setting the value of `CHECK_FOR_UPDATES` environment variable to `0`. This feature is enabled by default.
@@ -181,6 +185,15 @@ This is required when client is built separately.
 | variable           | description                                                 |
 | ------------------ | ----------------------------------------------------------- |
 | TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
+
+
+#### Server Port ( optional)
+
+This could be used to for local development, it will set the server url like so: `http://localhost:<TOOLJET_SERVER_PORT>`
+
+| variable            | description                             |
+|---------------------|-----------------------------------------|
+| TOOLJET_SERVER_PORT | the port of ToolJet server ( eg: 3000 ) |
 
 
 #### Asset path ( optionally required )
