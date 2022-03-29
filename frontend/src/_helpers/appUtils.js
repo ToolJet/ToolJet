@@ -161,7 +161,6 @@ function showModal(_ref, modal, show) {
 }
 
 function logoutAction(_ref) {
-  console.log('ref props', _ref);
   localStorage.clear();
   _ref.props.history.push('/login');
   window.location.href = '/login';
