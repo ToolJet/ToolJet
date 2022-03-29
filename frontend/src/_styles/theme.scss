@@ -3283,34 +3283,14 @@ input[type="text"] {
 
 .dropdown-widget,
 .multiselect-widget {
-  .form-label {
-    margin-bottom: 0px;
-  }
-
-  .select-search__input {
-    height: 100%;
-  }
-
-  .select-search__value {
-    height: 100%;
-  }
-
-  .select-search {
-    height: 100%;
-  }
-
-  .select-search__options {
-    margin-bottom: 0 !important;
-
-    .select-search__option {
-      height: auto;
-      min-height: 30px;
-      border-radius: 0;
-    }
-
-    .select-search__option.is-selected {
-      background-color: #4d72fa;
-      color: white;
+  label.select-item {
+    div.item-renderer {
+      align-items: center;
+      line-height: 15px;
+      input {
+        height: 15px;
+        width: 15px;
+      }
     }
   }
 }
