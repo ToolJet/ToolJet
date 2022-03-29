@@ -973,6 +973,7 @@ class Editor extends React.Component {
           onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
           onCancel={() => onQueryCancel(this)}
           queryConfirmationData={this.state.queryConfirmationData}
+          darkMode={this.props.darkMode}
         />
         <Confirm
           show={showDataQueryDeletionConfirmation}
@@ -980,6 +981,7 @@ class Editor extends React.Component {
           confirmButtonLoading={isDeletingDataQuery}
           onConfirm={() => this.executeDataQueryDeletion()}
           onCancel={() => this.cancelDeleteDataQuery()}
+          darkMode={this.props.darkMode}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="header">
