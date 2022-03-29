@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
-import Datetime from 'react-datetime';
-import 'react-datetime/css/react-datetime.css';
+import React, { useEffect, useState } from 'react';
+import DatePickerComponent from 'react-datepicker';
+import moment from 'moment';
+import 'react-datepicker/dist/react-datepicker.css';
 
 export const Datepicker = function Datepicker({
   height,
@@ -12,23 +13,33 @@ export const Datepicker = function Datepicker({
   onComponentClick,
   component,
   id,
+  darkMode,
 }) {
   const { format, enableTime, enableDate, defaultValue } = properties;
   const { visibility, disabledState, borderRadius } = styles;
 
-  const onDateChange = (event) => {
+  const [date, setDate] = useState(new Date());
+  const selectedDateFormat = enableTime ? `${format} LT` : format;
+
+  const computeDateString = (date) => {
     if (enableDate) {
-      const selectedDateFormat = enableTime ? `${format} LT` : format;
-      const dateString = event.format(selectedDateFormat);
-      setExposedVariable('value', dateString);
+      return moment(date).format(selectedDateFormat);
     }
 
     if (!enableDate && enableTime) {
-      setExposedVariable('value', event.format('LT'));
+      return moment(date).format('LT');
     }
   };
 
+  const onDateChange = (date) => {
+    setDate(date);
+    const dateString = computeDateString(date);
+    setExposedVariable('value', dateString);
+  };
+
   useEffect(() => {
+    const dateMomentInstance = moment(defaultValue, selectedDateFormat);
+    setDate(dateMomentInstance.toDate());
     setExposedVariable('value', defaultValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
@@ -41,34 +52,45 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
-  const isDateFormat = enableDate === true ? format : enableDate;
+  const CustomInputBox = React.forwardRef((props, ref) => {
+    return (
+      <input
+        readOnly
+        {...props}
+        value={computeDateString(date)}
+        className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
+          darkMode ? 'bg-dark color-white' : 'bg-light'
+        }`}
+        style={{ height, borderRadius: `${borderRadius}px` }}
+        ref={ref}
+      />
+    );
+  });
+
   return (
     <div
       data-disabled={disabledState}
       className="datepicker-widget"
-      style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
+      style={{
+        height,
+        display: visibility ? '' : 'none',
+        borderRadius: `${borderRadius}px`,
+      }}
     >
-      <Datetime
-        onChange={onDateChange}
-        timeFormat={enableTime}
-        closeOnSelect={true}
-        dateFormat={isDateFormat}
-        placeholderText={defaultValue}
-        inputProps={{ placeholder: defaultValue, style: { height, borderRadius: `${borderRadius}px` } }}
-        onOpen={(event) => {
+      <DatePickerComponent
+        selected={date}
+        onChange={(date) => onDateChange(date)}
+        showTimeInput={enableTime ? true : false}
+        showTimeSelectOnly={enableDate ? false : true}
+        onFocus={(event) => {
           onComponentClick(id, component, event);
         }}
-        renderInput={(props) => {
-          return (
-            <input
-              readOnly
-              {...props}
-              value={exposedVariables.value}
-              className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2`}
-            />
-          );
-        }}
+        showMonthDropdown
+        showYearDropdown
+        dropdownMode="select"
+        customInput={<CustomInputBox />}
       />
+
       <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
     </div>
   );
