@@ -9,6 +9,11 @@ const API_URL = {
   development: `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
 };
 
+const WEBSOCKET_URL = {
+  production: `${process.env.TOOLJET_SERVER_URL}:${process.env.TOOLJET_WEBSOCKET_PORT}`,
+  development: `http://localhost:${process.env.TOOLJET_WEBSOCKET_PORT || 3001}`,
+};
+
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
 module.exports = {
@@ -108,6 +113,7 @@ module.exports = {
     // global app config object
     config: JSON.stringify({
       apiUrl: `${API_URL[environment] || ''}/api`,
+      websocketUrl: `${WEBSOCKET_URL[environment]}`,
       SERVER_IP: process.env.SERVER_IP,
       COMMENT_FEATURE_ENABLE: true,
     }),

@@ -26,6 +26,13 @@ class WebSocketConnection {
           data: currentUser.auth_token,
         })
       );
+
+      this.socket.send(
+        JSON.stringify({
+          event: 'subscribe',
+          data: appId,
+        })
+      );
     });
 
     // Connection closed

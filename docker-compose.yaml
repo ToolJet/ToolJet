@@ -44,6 +44,7 @@ services:
       - ./.env.test:/app/.env.test
     ports:
       - 3000:3000
+      - 3001:3001
     environment:
       - SERVE_CLIENT=false
       - FORCE_COLOR=1

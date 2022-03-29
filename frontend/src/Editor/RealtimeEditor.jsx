@@ -1,4 +1,5 @@
 import React from 'react';
+import config from 'config';
 import { PresenceProvider } from 'y-presence';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import Spinner from '@/_ui/Spinner';
@@ -7,12 +8,23 @@ const { WebsocketProvider } = require('y-websocket');
 
 const ydoc = new Y.Doc();
 
+const getWebsocketUrl = () => {
+  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  const re = /https?:\/\//g;
+  if (re.test(config.apiUrl)) return `${protocol}://${config.websocketUrl.replace(/(^\w+:|^)\/\//, '')}`;
+
+  return `${protocol}://${window.location.host}`;
+};
+
 export const RealtimeEditor = (props) => {
   const appId = props.match.params.id;
   const [provider, setProvider] = React.useState();
 
   React.useEffect(() => {
-    setProvider(new WebsocketProvider('ws://localhost:3000/', '', ydoc));
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    document.cookie = `auth_token=${currentUser?.auth_token}; path=/`;
+    setProvider(new WebsocketProvider(getWebsocketUrl(), '', ydoc));
+
     () => provider.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
@@ -21,7 +33,7 @@ export const RealtimeEditor = (props) => {
 
   return (
     <PresenceProvider awareness={provider.awareness}>
-      <RealtimeCursors socket={provider.ws} ymap={ydoc.getMap('appDef')} {...props} />
+      <RealtimeCursors ymap={ydoc.getMap('appDef')} {...props} />
     </PresenceProvider>
   );
 };

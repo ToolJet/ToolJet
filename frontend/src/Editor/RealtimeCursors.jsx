@@ -28,6 +28,7 @@ function generateRandomHslColor() {
 
 const RealtimeEditor = (props) => {
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
   const { self, updatePresence } = useSelf({
     name: currentUser.first_name?.charAt(0) + currentUser.last_name?.charAt(0),
     image: '', // todo: add image feature for a user avatar
@@ -57,7 +58,7 @@ const RealtimeEditor = (props) => {
 
   return (
     <div onPointerMove={handlePointerMove}>
-      <Editor {...props} socket={props.socket} self={self} updatePresence={updatePresence} ymap={props.ymap} />
+      <Editor {...props} self={self} updatePresence={updatePresence} ymap={props.ymap} />
       {othersOnSameVersion.map(({ id, presence }) => {
         if (!presence) return null;
         return (

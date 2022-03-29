@@ -9,7 +9,6 @@ import {
 import { Server } from 'ws';
 import { AuthService } from 'src/services/auth.service';
 import { isEmpty } from 'lodash';
-import { setupWSConnection } from 'y-websocket/bin/utils';
 
 /**
  * Cannot add a namespace if we are using the "ws" package adapter
@@ -21,9 +20,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  handleConnection(client: any): void {
-    this.server.on('connection', setupWSConnection);
-  }
+  handleConnection(client: any): void {}
 
   handleDisconnect(client: any): void {}
 
