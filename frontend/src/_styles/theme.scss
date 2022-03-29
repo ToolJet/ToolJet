@@ -3373,6 +3373,10 @@ input[type="text"] {
   td.rdtActive:hover {
     background-color: $primary;
   }
+
+  .react-datepicker__day--selected {
+    background-color: #4D72FA;
+  }
 }
 
 .daterange-picker-widget {
