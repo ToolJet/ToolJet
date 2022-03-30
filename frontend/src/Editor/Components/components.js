@@ -937,7 +937,7 @@ export const componentTypes = [
     displayName: 'Multiselect',
     description: 'Select multiple values from options',
     defaultSize: {
-      width: 8,
+      width: 12,
       height: 30,
     },
     component: 'Multiselect',
@@ -950,6 +950,7 @@ export const componentTypes = [
       value: { type: 'code', displayName: 'Default value' },
       values: { type: 'code', displayName: 'Option values' },
       display_values: { type: 'code', displayName: 'Option labels' },
+      showAllOption: { type: 'toggle', displayName: 'Enable select All option' },
     },
     events: {
       onSelect: { displayName: 'On select' },

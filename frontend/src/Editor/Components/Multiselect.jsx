@@ -1,6 +1,13 @@
 import _ from 'lodash';
-import React, { useState, useEffect, useRef } from 'react';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import React, { useState, useEffect } from 'react';
+import { MultiSelect } from 'react-multi-select-component';
+
+const ItemRenderer = ({ checked, option, onClick, disabled }) => (
+  <div className={`item-renderer ${disabled && 'disabled'}`}>
+    <input type="checkbox" onClick={onClick} checked={checked} tabIndex={-1} disabled={disabled} />
+    <span>{option.label}</span>
+  </div>
+);
 
 export const Multiselect = function Multiselect({
   id,
@@ -10,35 +17,18 @@ export const Multiselect = function Multiselect({
   styles,
   exposedVariables,
   setExposedVariable,
-  fireEvent,
   onComponentClick,
+  darkMode,
 }) {
-  const { label, value, values, display_values } = properties;
+  const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState } = styles;
-  const selectRef = useRef(null);
+  const [selected, setSelected] = useState([]);
 
-  useEffect(() => {
-    let newValues = [];
-
-    if (_.intersection(values, value)?.length === value?.length) newValues = value;
-
-    setExposedVariable('values', newValues);
-    setCurrentValue(newValues);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(values)]);
-
-  useEffect(() => {
-    setExposedVariable('values', value);
-    setCurrentValue(value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(value)]);
-
-  const [currentValue, setCurrentValue] = useState(() => value);
   let selectOptions = [];
   try {
     selectOptions = [
       ...values.map((value, index) => {
-        return { name: display_values[index], value: value };
+        return { label: display_values[index], value: value };
       }),
     ];
   } catch (err) {
@@ -46,53 +36,63 @@ export const Multiselect = function Multiselect({
   }
 
   useEffect(() => {
-    if (value && !currentValue) {
-      setCurrentValue(properties.value);
+    let newValues = [];
+
+    if (_.intersection(values, value)?.length === value?.length) newValues = value;
+
+    setExposedVariable('values', newValues);
+    setSelected(selectOptions.filter((option) => newValues.includes(option.value)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(values)]);
+
+  useEffect(() => {
+    setExposedVariable('values', value);
+    setSelected(selectOptions.filter((option) => value.includes(option.value)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(value)]);
+
+  useEffect(() => {
+    if (value && !selected) {
+      setSelected(selectOptions.filter((option) => properties.value.includes(option.value)));
     }
 
     if (JSON.stringify(exposedVariables.values) === '{}') {
-      setCurrentValue(properties.value);
+      setSelected(selectOptions.filter((option) => properties.value.includes(option.value)));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    selectRef.current.querySelector('.select-search__input').style.borderRadius = `${Number.parseFloat(
-      borderRadius
-    )}px`;
+    setExposedVariable(
+      'values',
+      selected.map((option) => option.value)
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [borderRadius, selectRef.current]);
-
-  const handleChange = (value) => {
-    // setCurrentValue(value);
-    setExposedVariable('values', value).then(() => fireEvent('onSelect'));
-  };
+  }, [selected]);
 
   return (
-    <div className="multiselect-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
-      <div className="col-auto my-auto">
-        <label style={{ marginRight: label ? '1rem' : '' }} className="form-label py-1">
+    <div
+      className="multiselect-widget row g-0"
+      style={{ height, display: visibility ? '' : 'none' }}
+      onFocus={() => {
+        onComponentClick(this, id, component);
+      }}
+    >
+      <div className="col-auto my-auto d-flex align-items-center">
+        <label style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }} className="form-label py-1">
           {label}
         </label>
       </div>
-      <div className="col px-0 h-100">
-        <SelectSearch
-          disabled={disabledState}
+      <div className="col px-0 h-100" style={{ borderRadius: parseInt(borderRadius) }}>
+        <MultiSelect
+          hasSelectAll={showAllOption ?? false}
           options={selectOptions}
-          value={currentValue}
-          search={true}
-          multiple={true}
-          printOptions="on-focus"
-          onChange={(newValues) => {
-            handleChange(newValues);
-          }}
-          filterOptions={fuzzySearch}
-          placeholder="Select.."
-          ref={selectRef}
-          closeOnSelect={false}
-          onFocus={(event) => {
-            onComponentClick(id, component, event);
-          }}
+          value={selected}
+          onChange={setSelected}
+          labelledBy={'Select'}
+          disabled={disabledState}
+          className={`multiselect-box${darkMode ? ' dark' : ''}`}
+          ItemRenderer={ItemRenderer}
         />
       </div>
     </div>
