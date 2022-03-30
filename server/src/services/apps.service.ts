@@ -468,7 +468,6 @@ export class AppsService {
           for (const column of component?.definition?.properties?.columns?.value ?? []) {
             if (column?.events) {
               const replacedComponentActionEvents = column.events.map((event) => {
-                console.log(event.queryId);
                 if (event.queryId) {
                   event.queryId = dataQueryMapping[event.queryId];
                 }
