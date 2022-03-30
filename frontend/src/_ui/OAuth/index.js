@@ -10,6 +10,7 @@ const OAuth = ({
   client_secret,
   client_auth,
   custom_auth_params,
+  custom_query_params,
   scopes,
   auth_url,
   header_prefix,
@@ -34,6 +35,7 @@ const OAuth = ({
         grant_type={grant_type}
         optionchanged={optionchanged}
         custom_auth_params={custom_auth_params}
+        custom_query_params={custom_query_params}
         client_id={client_id}
         client_secret={client_secret}
         client_auth={client_auth}
