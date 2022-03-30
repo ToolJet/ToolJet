@@ -3281,37 +3281,40 @@ input[type="text"] {
   background-image: none !important;
 }
 
-.dropdown-widget,
 .multiselect-widget {
-  .form-label {
-    margin-bottom: 0px;
-  }
-
-  .select-search__input {
-    height: 100%;
-  }
-
-  .select-search__value {
-    height: 100%;
-  }
-
-  .select-search {
-    height: 100%;
-  }
-
-  .select-search__options {
-    margin-bottom: 0 !important;
-
-    .select-search__option {
-      height: auto;
-      min-height: 30px;
-      border-radius: 0;
+  label.select-item {
+      width: max-content;
+      min-width: 100%;
+      div.item-renderer {
+      align-items: center;
+      line-height: 15px;
+      input {
+        height: 15px;
+        width: 15px;
+      }
     }
+  }
 
-    .select-search__option.is-selected {
-      background-color: #4d72fa;
-      color: white;
-    }
+  .rmsc .dropdown-container {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    border-radius: inherit;
+  }
+
+  .rmsc {
+    height: 100%;
+    border-radius: inherit;
+  }
+
+  .rmsc.dark {
+    --rmsc-main: #4D72FA;
+    --rmsc-hover: #283647;
+    --rmsc-selected: #1F2936;
+    --rmsc-border: #333333;
+    --rmsc-gray: #555555;
+    --rmsc-bg: #1F2936;
+    color: #fff;
   }
 }
 
@@ -3372,6 +3375,10 @@ input[type="text"] {
   td.rdtActive,
   td.rdtActive:hover {
     background-color: $primary;
+  }
+
+  .react-datepicker__day--selected {
+    background-color: #4D72FA;
   }
 }
 
@@ -4612,10 +4619,20 @@ div#driver-page-overlay {
   font-size: 14px;
   color: $light-gray;
 }
+
+.multi-select {
+  div::-webkit-scrollbar {
+    display: none; /* for Chrome, Safari, and Opera */
+  }
+}
+
 #transformation-popover-container {
   margin-left: 80px !important;
   margin-bottom: -2px !important;
   // top: -10px !important;
   // left: 100px !important;
   // background-color: #0565ff;
+}
+.rmsc .dropdown-heading {
+  height: 25px;
 }

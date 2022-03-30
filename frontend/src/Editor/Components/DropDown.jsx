@@ -108,6 +108,8 @@ export const DropDown = function DropDown({
             ':hover': {
               backgroundColor: state.value === currentValue ? '#1F2E64' : '#323C4B',
             },
+            maxWidth: 'auto',
+            minWidth: 'max-content',
           }
         : {
             backgroundColor: state.value === currentValue ? '#7A95FB' : 'white',
@@ -115,6 +117,8 @@ export const DropDown = function DropDown({
             ':hover': {
               backgroundColor: state.value === currentValue ? '#3650AF' : '#d8dce9',
             },
+            maxWidth: 'auto',
+            minWidth: 'max-content',
           };
       return {
         ...provided,
@@ -142,7 +146,7 @@ export const DropDown = function DropDown({
         }}
       >
         <div className="col-auto my-auto">
-          <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-1">
+          <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-0 my-0">
             {label}
           </label>
         </div>

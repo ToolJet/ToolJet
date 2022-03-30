@@ -187,9 +187,21 @@ export class DataSourcesService {
     return parsedOptions;
   }
 
-  async updateOAuthAccessToken(accessTokenDetails: object, dataSourceOptions: object) {
-    const existingCredentialId = dataSourceOptions['access_token']['credential_id'];
-    await this.credentialsService.update(existingCredentialId, accessTokenDetails['access_token']);
+  async updateOAuthAccessToken(accessTokenDetails: object, dataSourceOptions: object, dataSourceId: string) {
+    const existingCredentialId =
+      dataSourceOptions['access_token'] && dataSourceOptions['access_token']['credential_id'];
+    if (existingCredentialId) {
+      await this.credentialsService.update(existingCredentialId, accessTokenDetails['access_token']);
+    } else if (dataSourceId) {
+      const tokenOptions = [
+        {
+          key: 'tokenData',
+          value: accessTokenDetails,
+          encrypted: false,
+        },
+      ];
+      await this.updateOptions(dataSourceId, tokenOptions);
+    }
   }
 
   async getAuthUrl(provider): Promise<object> {
