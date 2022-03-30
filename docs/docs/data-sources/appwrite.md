@@ -1,40 +1,54 @@
 ---
-sidebar_position: 4
+sidebar_position: 2
+sidebar_label: Appwrite
 ---
 
 # Appwrite Database
 
-## Supported operations
-1.  List documents
-2.  Get document
-3.  Create document
-4.  Update document 
-5.  Delete document 
-6.  Bulk update using document id
+Now build applications on top of your Appwrite database.
 
 ## Connection 
+
 ToolJet connects to your Appwrite app using :
-- Host (API endpoint)
-- Project ID
-- Secret key
+- **Host (API endpoint)**
+- **Project ID**
+- **Secret key**
 
-To generate a new secret key and get another credentials, go to your perticular project settings page 
+You'll find the Secret key and other credentials on your project settings page. You may need to create a new key if you don't have one already.
 
-You should also set scopes for access perticular resources.
-[Read More about API keys and scopes](https://appwrite.io/docs/keys).
+:::info
+You should also set scope for access of particular resource. Learn more about the **API keys and scopes** [here](https://appwrite.io/docs/keys).
+:::
 
-Once the credentails are available, click on `+` button of data sources panel at the left-bottom corner of the app editor. Select Appwrite from the modal that pops up. Provide credentails. Click on 'Test connection' button to verify if the service account can access Appwrite from ToolJet server. Click on 'Save' button to save the datasource.
+To connect Appwrite datasource to your ToolJet application, go to the data source manager on the left-sidebar and click on the `+` button. Select Appwrite from the list of available datasources, provide the credentials and click **Save**. It is recommended to the check the connection by clicking on 'Test connection' button to verify if the service account can access Appwrite from ToolJet server.
 
-<img class="screenshot-full" src="/img/datasource-reference/appwrite/appwrite-init.gif" alt="ToolJet - Data source - Appwrite" height="420" />
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Appwrite](/img/datasource-reference/appwrite/appwrite-init.gif)
+
+</div>
+
+## Supported operations
+
+1.  **List documents**
+2.  **Get document**
+3.  **Create document**
+4.  **Update document** 
+5.  **Delete document**
+6.  **Bulk update using document id**
 
 ## Querying Appwrite 
 
-Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source.
+After setting up the Appwrite datasource, you can click on the `+` button of the query manager at the bottom panel of the editor and select the Appwrite data source that you added in the previous step.
 
-<img class="screenshot-full" src="/img/datasource-reference/appwrite/appwrite-query.gif" alt="ToolJet - Appwrite Query" height="420"/>
+<div style={{textAlign: 'center'}}>
 
-Select the operation that you want to perform on Appwrite database and click 'Save' to save the query. 
+![ToolJet - Data source - Appwrite](/img/datasource-reference/appwrite/appwrite-query.gif)
+
+</div>
+
+After selecting Appwrite datasource, select the operation that you want to perform on Appwrite database and click **Save** to save the query. 
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
+Query results can be transformed using Transformations. Read our **Transformation documentation** [here](/docs/tutorial/transformations)
 :::
