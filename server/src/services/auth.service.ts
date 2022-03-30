@@ -86,7 +86,7 @@ export class AuthService {
 
         if (!formConfigs?.enabled) {
           // no configurations in organization side or Form login disabled for the organization
-          throw new UnauthorizedException('Invalid credentials');
+          throw new UnauthorizedException('Password login is disabled for the organization');
         }
       }
 
@@ -132,7 +132,7 @@ export class AuthService {
 
       if (!formConfigs?.enabled) {
         // no configurations in organization side or Form login disabled for the organization
-        throw new UnauthorizedException('Invalid credentials');
+        throw new UnauthorizedException('Password login disabled for the organization');
       }
 
       // Updating default organization Id

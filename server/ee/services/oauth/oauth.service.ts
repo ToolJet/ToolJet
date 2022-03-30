@@ -64,12 +64,12 @@ export class OauthService {
   async #findAndActivateUser(email: string, organizationId: string): Promise<User> {
     const user = await this.usersService.findByEmail(email, organizationId);
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('User not exist in the organization');
     }
     const organizationUser: OrganizationUser = user.organizationUsers?.[0];
 
     if (!organizationUser) {
-      throw new UnauthorizedException('Organisation not found');
+      throw new UnauthorizedException('User not exist in the organization');
     }
     if (organizationUser.status != 'active') await this.organizationUsersService.activate(organizationUser);
     return user;
