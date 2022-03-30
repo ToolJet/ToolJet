@@ -4636,3 +4636,13 @@ div#driver-page-overlay {
 .rmsc .dropdown-heading {
   height: 25px;
 }
+
+// drodown widget 
+.dropdown-widget{
+  .py-1{
+    padding-bottom: 0 !important;
+  }
+  .form-label{
+    margin-bottom: 0 !important;
+  }
+}
