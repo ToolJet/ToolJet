@@ -11,16 +11,17 @@
       "data": {},
       "rawData": {}
     },
-    "options": {}
+    "options": {},
+    "customTesting": true
   },
   "defaults": {},
   "properties": {
-    "spec_definition":{
-      "label": "OpenApi Definition",
-      "key": "spec_definition",
+    "definition":{
+      "label": "OpenAPI Definition",
+      "key": "definition",
       "type": "textarea",
       "rows": 15,
-      "description": "OpenApi Definition Text"
+      "description": "OpenApi Definition [ JSON / YAML ]"
     }
   },
   "required": ["spec_definition"]
