@@ -107,6 +107,9 @@ button {
     font-size: 12px;
     color: #61656c;
   }
+  .style-fx{
+    margin-top: 3px !important;
+  }
 }
 .editor {
   .header-container {
@@ -1128,6 +1131,14 @@ button {
       }
     }
   }
+}
+.fx-container{
+  position: relative;
+}
+.fx-common{
+  position: absolute;
+  top: -45px;
+  right: 0px;
 }
 
 .fx-button {
