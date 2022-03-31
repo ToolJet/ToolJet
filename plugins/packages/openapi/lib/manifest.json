@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "OpenAPI datasource",
+  "description": "A schema defining OpenAPI datasource",
+  "type": "api",
+  "source": {
+    "name": "OpenAPI",
+    "kind": "openapi",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {
+    "spec_definition":{
+      "label": "OpenApi Definition",
+      "key": "spec_definition",
+      "type": "textarea",
+      "rows": 15,
+      "description": "OpenApi Definition Text"
+    }
+  },
+  "required": ["spec_definition"]
+}
