@@ -14,10 +14,30 @@
     "options": {},
     "customTesting": true
   },
-  "defaults": {},
+  "defaults": {
+    "format": {
+      "value": "json"
+    }
+  },
   "properties": {
+    "format": {
+      "label": "Format",
+      "key": "format",
+      "type": "dropdown",
+      "description": "Format of definition",
+      "list": [
+        {
+          "name": "JSON",
+          "value": "json"
+        },
+        {
+          "name": "YAML",
+          "value": "yaml"
+        }
+      ]
+    },
     "definition":{
-      "label": "OpenAPI Definition",
+      "label": "Definition",
       "key": "definition",
       "type": "textarea",
       "rows": 15,

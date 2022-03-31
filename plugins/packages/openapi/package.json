@@ -18,7 +18,6 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "react": "^17.0.2",
-    "swagger-parser": "^10.0.3"
+    "react": "^17.0.2"
   }
 }

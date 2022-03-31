@@ -1,9 +1,1 @@
-
-{
-  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
-  "title": "OpenAPI datasource",
-  "description": "A schema defining OpenAPI datasource",
-  "type": "api",
-  "defaults": {},
-  "properties": {}
-}
+{}
