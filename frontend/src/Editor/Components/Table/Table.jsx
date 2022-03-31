@@ -482,6 +482,7 @@ export function Table({
                   }}
                   filterOptions={fuzzySearch}
                   placeholder="Select.."
+                  disabled={!column.isEditable}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>
@@ -500,6 +501,7 @@ export function Table({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
+                  disabled={!column.isEditable}
                 />
               </div>
             );
