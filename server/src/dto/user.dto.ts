@@ -24,7 +24,7 @@ export class CreateUserDto {
   password: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   token: string;
 
   @IsString()

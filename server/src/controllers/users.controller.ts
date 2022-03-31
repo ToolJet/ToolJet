@@ -9,7 +9,7 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Post('set_password_from_token')
-  async create(@Request() req, @Body() userCreateDto: CreateUserDto) {
+  async create(@Body() userCreateDto: CreateUserDto) {
     const result = await this.usersService.setupAccountFromInvitationToken(userCreateDto);
     return result;
   }
