@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@tooljet-plugins/airtable": "file:packages/airtable",
+    "@tooljet-plugins/appwrite": "file:packages/appwrite",
     "@tooljet-plugins/bigquery": "file:packages/bigquery",
     "@tooljet-plugins/common": "file:packages/common",
     "@tooljet-plugins/couchdb": "file:packages/couchdb",

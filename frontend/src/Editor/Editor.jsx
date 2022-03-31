@@ -988,6 +988,7 @@ class Editor extends React.Component {
           onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
           onCancel={() => onQueryCancel(this)}
           queryConfirmationData={this.state.queryConfirmationData}
+          darkMode={this.props.darkMode}
         />
         <Confirm
           show={showDataQueryDeletionConfirmation}
@@ -995,6 +996,7 @@ class Editor extends React.Component {
           confirmButtonLoading={isDeletingDataQuery}
           onConfirm={() => this.executeDataQueryDeletion()}
           onCancel={() => this.cancelDeleteDataQuery()}
+          darkMode={this.props.darkMode}
         />
         <div className="header">
           <header className="navbar navbar-expand-md navbar-light d-print-none">
