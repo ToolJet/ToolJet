@@ -15,6 +15,7 @@ import { UsersService } from './users.service';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
+import { AppUpdateDto } from '@dto/app-update.dto';
 
 @Injectable()
 export class AppsService {
@@ -212,10 +213,10 @@ export class AppsService {
     return await viewableAppsQb.getMany();
   }
 
-  async update(user: User, appId: string, params: any) {
-    const currentVersionId = params['current_version_id'];
-    const isPublic = params['is_public'];
-    const { name, slug, icon } = params;
+  async update(user: User, appId: string, appUpdateDto: AppUpdateDto) {
+    const currentVersionId = appUpdateDto.current_version_id;
+    const isPublic = appUpdateDto.is_public;
+    const { name, slug, icon } = appUpdateDto;
 
     const updateableParams = {
       name,

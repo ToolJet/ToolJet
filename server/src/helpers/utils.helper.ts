@@ -31,7 +31,7 @@ export async function getCachedConnection(dataSourceId, dataSourceUpdatedAt): Pr
   }
 }
 
-export function sanitizeInput(value) {
+export function sanitizeInput(value: string) {
   return sanitizeHtml(value, {
     allowedTags: [],
     allowedAttributes: {},

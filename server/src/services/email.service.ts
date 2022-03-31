@@ -36,7 +36,7 @@ export class EmailService {
     };
 
     /* if development environment, log the content of email instead of sending actual emails */
-    if (this.NODE_ENV === 'development') {
+    if (this.NODE_ENV !== 'development') {
       console.log('Captured email');
       console.log('to: ', to);
       console.log('Subject: ', subject);
