@@ -57,7 +57,7 @@ let QueryManager = class QueryManager extends React.Component {
         currentState: props.currentState,
         selectedSource: source,
         dataSourceMeta,
-        isSourceSelected: props.isSourceSelected,
+        isSourceSelected: paneHeightChanged ? this.state.isSourceSelected : props.isSourceSelected,
         selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
         theme: {
           scheme: 'bright',
