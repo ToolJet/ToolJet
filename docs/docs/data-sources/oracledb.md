@@ -16,11 +16,13 @@ A Oracle DB can be connected with the following credentails:
 - **SSL**
 - **Username**
 - **Password**
-- **Client Library Path** ( Only need for local setup )
+- **Client Library Path** ( Only required for local setup )
 
-:::info
-You can also test your connection before saving the configuration by clicking on `Test Connection` button.
-:::
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - OracleDB](/img/datasource-reference/oracledb/oracleauth.png)
+
+</div>
 
 Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
 

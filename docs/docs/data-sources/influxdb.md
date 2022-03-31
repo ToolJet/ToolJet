@@ -4,110 +4,127 @@ sidebar_position: 10.1
 
 # InfluxDB
 
+ToolJet can connect to InfluxDB databases to read and write data. Use the Token authentication scheme to authenticate to the InfluxDB API. For more info visit [InfluxDB docs](https://docs.influxdata.com/).
 
-ToolJet can connect to InfluxDB databases to read and write data. Use the Token authentication scheme to authenticate to the InfluxDB API. For more info visit https://docs.influxdata.com/
+## Connection
 
-<img class="screenshot-full" src="/img/datasource-reference/influxdb/influxauth.png" alt="ToolJet - Data source - influxDB" height="420" />
+ToolJet connects to InfluxDB using :
 
-Supported queries: 
+- **API Token**
+- **Host**
+- **Port**
+- **Protocol** (HTTP/HTTPS)
 
-- List buckets
+:::info
+For generating API Token visit [InfluxDB docs](https://docs.influxdata.com/influxdb/cloud/security/tokens/create-token/).
+:::
 
-- Create a bucket
+<div style={{textAlign: 'center'}}>
 
-- Delete a bucket
+![ToolJet - Data source - influxDB](/img/datasource-reference/influxdb/influxauth.png)
 
-- Retrieve a bucket
+</div>
 
-- Update a bucket
+## Supported queries:
 
-- Query data
+- [Write data](#write-data)
 
-- Write data
+- [Query data](#query-data)
 
-- Analyze a Flux query
+- [Generate an Abstract Syntax Tree (AST) from a query](#generate-an-abstract-syntax-tree-ast-from-a-query)
 
-- Generate an Abstract Syntax Tree (AST) from a query
+- [Retrieve query suggestions](#retrieve-query-suggestions)
 
-- Retrieve query suggestions
+- [Retrieve query suggestions for a branching suggestion](#retrieve-query-suggestions-for-a-branching-suggestion)
 
-- Retrieve query suggestions for a branching suggestion
+- [Analyze a Flux query](#analyze-a-flux-query)
 
-<img class="screenshot-full" src="/img/datasource-reference/influxdb/operations.png" alt="ToolJet - Data source - influxDB" height="420" />
+- [List buckets](#list-buckets)
 
-## Write data 
+- [Create a bucket](#create-a-bucket)
 
-This query writes data to a bucket.
+- [Retrieve a bucket](#retrieve-a-bucket)
 
-Require parameters.
+- [Update a bucket](#update-a-bucket)
 
-- bucket
-- org
+- [Delete a bucket](#delete-a-bucket)
 
-Optional parameters: 
+<div style={{textAlign: 'center'}}>
 
-- precision
+![ToolJet - Data source - influxDB](/img/datasource-reference/influxdb/operations.png)
 
-## Analyze a Flux query 
+</div>
 
-This Analyzes a Flux query.
+### Write data 
 
+This operation writes data to a bucket.
 
-Required parameters:
+#### Required parameters:
 
-- query
+- **Bucket**
+- **Organization name or ID**
 
+#### Optional parameters: 
 
-## Generate an Abstract Syntax Tree (AST) from a query
+- **Precision**
 
-This query analyzes flux query and generates a query specification.
-
-
-Required parameters: 
-
-- query
-
-## Retrieve query suggestions 
-
-This query retrieve query suggestions.
-
-## Retrieve query suggestions for a branching suggestion 
-
-This retrieve query suggestions for a branching suggestion.
-
-Required parameters:
-- Name
-
-## List buckets 
-
-This query lists all the buckets in a database.
-## Create a bucket 
-
-Required parameters: 
-
-- query
-
-## Update a bucket
-
-Required parameters:
-- bucketID
-- query
-
-## Delete a bucket
-
-Required parameters:
-- bucketID
-
-## Retrieve a bucket 
-
-Required parameters:
-- bucketID
-
-## Query data
+### Query data
 
 Retrieves data from InfluxDB buckets.
 
-Required parameters:
-- org	
+#### Required parameters:
+- **Organization name or ID**
 
+### Generate an Abstract Syntax Tree (AST) from a query
 
+This operation analyzes flux query and generates a query specification.
+
+#### Required parameters: 
+
+- **Query**
+
+### Retrieve query suggestions 
+
+This query retrieve query suggestions.
+
+### Retrieve query suggestions for a branching suggestion 
+
+This operation retrieve query suggestions for a branching suggestion.
+
+#### Required parameters:
+- **Name**
+
+### Analyze a Flux query 
+
+This Analyzes a Flux query.
+
+#### Required parameters:
+
+- **Query**
+
+### List buckets 
+
+This operation lists all the buckets in a database.
+### Create a bucket 
+
+#### Required parameters: 
+
+- **Query**
+
+### Retrieve a bucket 
+
+This operation retrieve a bucket in a database.
+
+#### Required parameters:
+- **Bucket ID**
+
+### Update a bucket
+
+#### Required parameters:
+- **Bucket ID**
+- **Query**
+
+### Delete a bucket
+
+#### Required parameters:
+- **Bucket ID**
