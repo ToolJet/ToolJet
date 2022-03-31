@@ -6,6 +6,7 @@ export default function GitSSOLoginButton({ configs }) {
     e.preventDefault();
     window.location.href = buildURLWithQuery('https://github.com/login/oauth/authorize', {
       client_id: configs?.client_id,
+      scope: 'user:email',
     });
   };
   return (
