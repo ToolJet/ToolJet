@@ -8,10 +8,10 @@ import { previewQuery } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
-import DataSourceLister from './DataSourceLister';
-import { JSONTree } from 'react-json-tree';
-import { allSvgs } from '@tooljet/plugins/client';
 import RunjsIcon from '../Icons/runjs.svg';
+import Preview from './Preview';
+import DataSourceLister from './DataSourceLister';
+import { allSvgs } from '@tooljet/plugins/client';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -122,11 +122,6 @@ let QueryManager = class QueryManager extends React.Component {
   componentDidMount() {
     this.setStateFromProps(this.props);
   }
-
-  isJson = (maybeJson) => {
-    if (typeof maybeJson === 'object') return true;
-    return false;
-  };
 
   handleBackButton = () => {
     this.setState({
@@ -483,31 +478,13 @@ let QueryManager = class QueryManager extends React.Component {
                         </div>
                       </div>
                     )}
-                    <div className="row preview-header border-top" ref={this.previewPanelRef}>
-                      <div className="py-2" style={{ fontWeight: 600 }}>
-                        Preview
-                      </div>
-                    </div>
-                    <div className="mb-3 mt-2">
-                      {previewLoading && (
-                        <center>
-                          <div className="spinner-border text-azure mt-5" role="status"></div>
-                        </center>
-                      )}
-                      {previewLoading === false &&
-                        (this.isJson(queryPreviewData) ? (
-                          <div>
-                            <JSONTree
-                              theme={this.state.theme}
-                              data={queryPreviewData}
-                              invertTheme={!this.props.darkMode}
-                              collectionLimit={100}
-                            />
-                          </div>
-                        ) : (
-                          <div>{queryPreviewData}</div>
-                        ))}
-                    </div>
+                    <Preview
+                      previewPanelRef={this.previewPanelRef}
+                      previewLoading={previewLoading}
+                      queryPreviewData={queryPreviewData}
+                      theme={this.state.theme}
+                      darkMode={this.props.darkMode}
+                    />
                   </div>
                 )}
               </div>
