@@ -9,4 +9,9 @@ export type SourceOptions = {
 };
 export type QueryOptions = {
   operation: string;
+  tablename: string;
+  name: string;
+  data: string;
+  key: string;
+  body: string;
 };

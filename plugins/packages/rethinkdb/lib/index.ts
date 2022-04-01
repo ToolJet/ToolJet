@@ -1,88 +1,110 @@
-import {
-  ConnectionTestResult,
-  QueryError,
-  QueryResult,
-  QueryService,
-} from "@tooljet-plugins/common";
-import { SourceOptions, QueryOptions } from "./types";
-// import got, { Headers } from "got";
-const r = require("rethinkdb");
-const JSON5 = require("json5");
+import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
+import { SourceOptions, QueryOptions } from './types';
+const JSON5 = require('json5');
+const r = require('rethinkdb');
 
 export default class Rethinkdb implements QueryService {
-  async run(
-    sourceOptions: SourceOptions,
-    queryOptions: QueryOptions
-  ): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
+    const operation = queryOptions.operation;
+    const connection = await this.getConnection(sourceOptions);
     let result: any = {};
-    let response = null;
-    // const { port, host, protocol } = sourceOptions;
-    const { operation } = queryOptions;
-    // const client = await this.getConnection(sourceOptions);
+    const response = null;
+    const { tablename, name, key, body } = queryOptions;
+    const { database } = sourceOptions;
 
     try {
       switch (operation) {
-        case "db_list":
-          const r = require("rethinkdb");
-          r.connect({ host: "localhost", port: 28015 }, function (err, conn) {
-            if (err) throw err;
-            // r.db('test').tableCreate('authors').run(conn, function(err, result) {
-            r.dbList().run(conn, function (err, res) {
-              if (err) throw err;
-              console.log(
-                "************************",
-                JSON.stringify(res, null, 2)
-              );
-              result = res;
-            });
-          });
-
+        case 'db_create': {
+          result = await this.createDatabase(name, connection);
+          console.log('response >>>>>>>>', response);
           break;
-        case "create_table":
-          const connection = await this.getConnections();
-
-          response = await this.createTable(connection, "neweee");
-          result = this.parseJSON(response);
+        }
+        case 'db_drop': {
+          result = await this.dropDatabase(name, connection);
+          console.log('response >>>>>>>>', response);
           break;
-        // case 'get_file':
-        //   result = await getFile(client, queryOptions);
-        //   break;
-        // case 'upload_file':
-        //   result = await uploadFile(client, queryOptions);
-        //   break;
-        // case 'signed_url_for_get':
-        //   result = await signedUrlForGet(client, queryOptions);
-        //   break;
-        // case 'signed_url_for_put':
-        //   result = await signedUrlForPut(client, queryOptions);
-        //   break;
+        }
+        case 'create_table': {
+          result = await this.createTable(name, tablename, connection);
+          console.log('response >>>>>>>>', result);
+          break;
+        }
+        case 'drop_table': {
+          result = await this.dropTable(name, tablename, connection);
+          console.log('response >>>>>>>>', result);
+          break;
+        }
+        case 'db_list': {
+          result = await this.listAllDatabase(connection);
+          console.log('response >>>>>>>>', result);
+          break;
+        }
+        case 'list_table': {
+          result = await this.listAllTables(name, connection);
+          console.log('response >>>>>>>>', result);
+          break;
+        }
+        case 'list_documents': {
+          result = await this.listAllDocuments(name, tablename, connection);
+          console.log('response >>>>>>>>', result);
+          break;
+        }
+        case 'create_docs': {
+          result = await this.insertDocument(name, tablename, body, connection);
+          console.log('response >>>>>>>>', result);
+          break;
+        }
+        case 'retreive_docs': {
+          result = await this.getDocumentByID(name, tablename, key, connection);
+          console.log('response >>>>>>>>', result);
+          break;
+        }
+
+        case 'update_docs': {
+          result = await this.listAllTables(name, connection);
+          console.log('response >>>>>>>>', result);
+          break;
+        }
+        case 'delete_docs_by_id': {
+          result = await this.deleteDocumentByID(name, tablename, key, connection);
+          console.log('response >>>>>>>>', result);
+          break;
+        }
+        case 'delete_all_docs': {
+          result = await this.deleteAllDocument(name, tablename, connection);
+          console.log('response >>>>>>>>', result);
+          break;
+        }
+        case 'update_docs_by_id': {
+          result = await this.updateDocumentByID(database, tablename, key, body, connection);
+          console.log('response >>>>>>>>', result);
+          break;
+        }
+        case 'update_all_docs': {
+          result = await this.updateAllDocument(name, tablename, body, connection);
+          console.log('response >>>>>>>>', result);
+          break;
+        }
       }
     } catch (error) {
       console.log(error);
-      throw new QueryError("Query could not be completed", error.message, {});
+      throw new QueryError('Query could not be completed', error.message, {});
     }
 
     return {
-      status: "ok",
+      status: 'ok',
       data: result,
     };
   }
 
-  async testConnection(
-    sourceOptions: SourceOptions
-  ): Promise<ConnectionTestResult> {
-    this.getConnections();
-    return {
-      status: "ok",
-    };
-  }
-  async getConnections(): Promise<any> {
+  async getConnection(sourceOptions: any): Promise<any> {
+    const { port, host, database } = sourceOptions;
     let connection = null;
-    r.connect(
+    connection = r.connect(
       {
-        db: "test",
-        host: "localhost",
-        port: "28015",
+        db: { database },
+        host: { host },
+        port: { port },
       },
       (err, conn) => {
         if (err) throw err;
@@ -90,86 +112,189 @@ export default class Rethinkdb implements QueryService {
         return conn;
       }
     );
+    return connection;
   }
-  createTable = (conn, tableName) => {
-    const r = require("rethinkdb");
-    r.connect({ host: "localhost", port: 28015 }, function (err, conn) {
-      if (err) throw err;
-      // r.db('test').tableCreate('authors').run(conn, function(err, result) {
-      r.tableCreate(tableName).run(conn, (err, result) => {
-        if (err) throw err;
-        console.log(JSON.stringify(result, null, 2));
-        return result;
-      });
-    });
-    // r.tableCreate(tableName).run(conn, (err, result) => {
-    //   if (err) throw err;
-    //   console.log(JSON.stringify(result, null, 2));
-    //   return result
-    // });
-  };
 
-  insertDocuments = (conn, tableName, item) => {
-    r.table(tableName)
-      .insert({ item })
-      .run(conn, function (err, res) {
-        if (err) throw err;
-        console.log(res);
-      });
-  };
+  async testConnection(): Promise<ConnectionTestResult> {
+    const r = require('rethinkdb');
 
-  retreiveDocuments = (conn) => {
-    r.table("users").run(conn, function (err, cursor) {
-      if (err) throw err;
-      cursor.toArray(function (err, result) {
-        if (err) throw err;
-        console.log(JSON.stringify(result, null, 2));
-      });
-    });
-  };
-  deleteDocuments = (conn) => {
-    r.table("users")
-      .filter(r.row("posts").count().lt(3))
-      .delete()
-      .run(conn, function (err, result) {
-        if (err) throw err;
-        console.log(JSON.stringify(result, null, 2));
-      });
-  };
-  updateDocuments = (conn) => {
-    r.table("authors")
-      .update({ type: "fictional" })
-      .run(conn, function (err, result) {
-        if (err) throw err;
-        console.log(JSON.stringify(result, null, 2));
-      });
-  };
-  listDatabase = () => {
-    const r = require("rethinkdb");
-    r.connect({ host: "localhost", port: 28015 }, function (err, conn) {
-      if (err) throw err;
-      // r.db('test').tableCreate('authors').run(conn, function(err, result) {
-      r.dbList().run(conn, function (err, result) {
-        if (err) throw err;
-        console.log(
-          "************************",
-          JSON.stringify(result, null, 2)
-        );
-        return result;
-      });
-    });
-  };
-  listDocumentByIndex = (conn) => {
-    r.table("dc")
-      .getAll("superman")
-      .run(conn, function (err, result) {
-        if (err) throw err;
-        console.log(JSON.stringify(result, null, 2));
-      });
-  };
-  private parseJSON(json?: string): object {
+    const connection = r.expr(1);
+
+    if (!connection) {
+      throw new Error('Connection failed');
+    }
+    return {
+      status: 'ok',
+    };
+  }
+
+  parseJSON(json?: string): object {
     if (!json) return {};
-
-    return JSON5.stringify(json, null, 2);
+    return JSON5.parse(json);
   }
+  // tested
+  createDatabase = async (name, connection) => {
+    const response = r.connect(connection, function (err, conn) {
+      if (err) throw err;
+      r.dbCreate(name).run(conn, (err, result) => {
+        if (err) throw err;
+        console.log('*****', JSON.stringify(result, null, 2));
+        return result;
+      });
+    });
+    return response;
+  };
+
+  dropDatabase = async (name, connection) => {
+    const response = r.dbDrop(name).run(connection, (err, result) => {
+      if (err) throw err;
+      console.log('*****', JSON.stringify(result, null, 2));
+      return result;
+    });
+    return response;
+  };
+
+  // tested
+  createTable = async (name, tablename, connection) => {
+    const response = r.connect(
+      r
+        .db(name)
+        .tableCreate(tablename)
+        .run(connection, (err, result) => {
+          if (err) throw err;
+          console.log('*****', JSON.stringify(result, null, 2));
+          return result;
+        })
+    );
+    return response;
+  };
+
+  dropTable = async (name, tablename, connection) => {
+    const response = r
+      .db(name)
+      .tableDrop(tablename)
+      .run(connection, (err, result) => {
+        if (err) throw err;
+        console.log('*****', result);
+        return result;
+      });
+    return response;
+  };
+  // tested
+  listAllDatabase = async (connection) => {
+    const response = r.dbList().run(connection, (err, result) => {
+      if (err) throw err;
+      console.log('*****', JSON.stringify(result, null, 2));
+      return result;
+    });
+    return response;
+  };
+  // tested
+
+  listAllTables = async (database, connection) => {
+    const response = r
+      .db(database)
+      .tableList()
+      .run(connection, (err, result) => {
+        if (err) throw err;
+        console.log('*****', JSON.stringify(result, null, 2));
+        return result;
+      });
+    return response;
+  };
+
+  listAllDocuments = async (name, tablename, connection) => {
+    const response = r
+      .db(name)
+      .table(tablename)
+      .run(connection, (err, result) => {
+        if (err) throw err;
+        console.log('*****', JSON.stringify(result, null, 2));
+        result.toArray(function (err, results) {
+          if (err) throw err;
+          return results;
+        });
+      });
+
+    return response;
+  };
+
+  insertDocument = async (name, tablename, body, connection) => {
+    const response = r
+      .db(name)
+      .table(tablename)
+      .insert(body)
+      .run(connection, (err, result) => {
+        if (err) throw err;
+        console.log('*****', JSON.stringify(result, null, 2));
+        return result;
+      });
+    return response;
+  };
+
+  deleteAllDocument = async (name, tablename, connection) => {
+    const response = r
+      .db(name)
+      .table(tablename)
+      .delete()
+      .run(connection, (err, result) => {
+        if (err) throw err;
+        console.log('*****', JSON.stringify(result, null, 2));
+        return result;
+      });
+    return response;
+  };
+
+  deleteDocumentByID = async (name, tablename, key, connection) => {
+    const response = r
+      .db(name)
+      .table(tablename)
+      .get(key)
+      .delete()
+      .run(connection, (err, result) => {
+        if (err) throw err;
+        console.log('*****', JSON.stringify(result, null, 2));
+        return result;
+      });
+    return response;
+  };
+  updateAllDocument = async (name, tablename, data, connection) => {
+    const response = r
+      .db(name)
+      .table(tablename)
+      .update(data)
+      .run(connection, (err, result) => {
+        if (err) throw err;
+        console.log('*****', JSON.stringify(result, null, 2));
+        return result;
+      });
+    return response;
+  };
+  updateDocumentByID = async (name, tablename, data, key, connection) => {
+    const response = r
+      .db(name)
+      .table(tablename)
+      .get(key)
+      .update(data)
+      .run(connection, (err, result) => {
+        if (err) throw err;
+        console.log('*****', JSON.stringify(result, null, 2));
+        return result;
+      });
+    return response;
+  };
+  // tested
+
+  getDocumentByID = async (name, tablename, key, connection) => {
+    const response = r
+      .db(name)
+      .table(tablename)
+      .get(key)
+      .run(connection, (err, result) => {
+        if (err) throw err;
+        console.log('*****', JSON.stringify(result, null, 2));
+        return JSON.stringify(result, null, 2);
+      });
+    return response;
+  };
 }
