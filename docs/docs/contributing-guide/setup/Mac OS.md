@@ -13,13 +13,15 @@ Follow these steps to setup and run ToolJet on macOS for development purposes. O
     ```bash
     /bin/bash -c "(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     ```
-    1.2 Install Node.js ( version: v14.17.3 )
+    1.2 Install Node.js ( version: v14.17.3 ) and npm (version: v7.20.0)
     ```bash
     brew install nvm
     export NVM_DIR=~/.nvm
     source $(brew --prefix nvm)/nvm.sh
     nvm install 14.17.3
     nvm use 14.17.3
+    cd ~/.nvm/versions/node/v14.17.3/lib
+    npm install npm@7.20.0
     ```
 
     1.3 Install Postgres
