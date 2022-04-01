@@ -62,7 +62,7 @@ export class DataSourcesController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(@Request() req, @Param() params, updateDataSourceDto: UpdateDataSourceDto) {
+  async update(@Request() req, @Param() params, @Body() updateDataSourceDto: UpdateDataSourceDto) {
     const dataSourceId = params.id;
     const { name, options } = updateDataSourceDto;
 

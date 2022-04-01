@@ -12,7 +12,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const message = exception?.response?.message?.join(', ') || exception.message;
+    const message = exception?.response?.message || exception.message;
 
     if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
       this.logger.error(exception);
