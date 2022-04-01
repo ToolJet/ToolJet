@@ -471,6 +471,7 @@ export const componentTypes = [
       format: { type: 'code', displayName: 'Format' },
       enableTime: { type: 'code', displayName: 'Enable time selection?' },
       enableDate: { type: 'code', displayName: 'Enable date selection?' },
+      disabledDates: { type: 'code', displayName: 'Diasbled dates' },
     },
     events: {},
     styles: {
@@ -494,6 +495,7 @@ export const componentTypes = [
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
         enableDate: { value: '{{true}}' },
+        disabledDates: { value: ['01/04/2021'] },
       },
       events: [],
       styles: {
