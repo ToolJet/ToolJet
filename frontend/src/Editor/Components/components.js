@@ -472,7 +472,9 @@ export const componentTypes = [
       enableTime: { type: 'code', displayName: 'Enable time selection?' },
       enableDate: { type: 'code', displayName: 'Enable date selection?' },
     },
-    events: {},
+    events: {
+      onSelect: { displayName: 'On select' },
+    },
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
