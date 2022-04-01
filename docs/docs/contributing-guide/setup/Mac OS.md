@@ -31,6 +31,11 @@ Follow these steps to setup and run ToolJet on macOS for development purposes. O
     brew install postgresql
     ```
 
+    1.4 Clone the repository
+    ```bash
+    git clone https://github.com/tooljet/tooljet.git
+    ```
+
 2. Set up environment variables
 
     Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/deployment/env-vars)
