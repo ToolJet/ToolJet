@@ -1230,6 +1230,16 @@ button {
   }
 }
 
+.openapi-operation-options {
+  .select-search,
+  .select-search-dark,
+  .select-search__value input,
+  .select-search-dark input {
+    height: 32px !important;
+    border-radius: $border-radius !important;
+  }
+}
+
 .select-search {
   width: 100%;
   position: relative;
