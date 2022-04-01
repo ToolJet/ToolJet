@@ -98,13 +98,15 @@ export default class Rethinkdb implements QueryService {
   }
 
   async getConnection(sourceOptions: any): Promise<any> {
-    const { port, host, database } = sourceOptions;
+    const { port, host, database, username, password } = sourceOptions;
     let connection = null;
     connection = r.connect(
       {
         db: { database },
         host: { host },
         port: { port },
+        ...(username?.length > 0 && { username }),
+        ...(password?.length > 0 && { password }),
       },
       (err, conn) => {
         if (err) throw err;
@@ -115,12 +117,11 @@ export default class Rethinkdb implements QueryService {
     return connection;
   }
 
-  async testConnection(): Promise<ConnectionTestResult> {
-    const r = require('rethinkdb');
+  async testConnection(sourceOptions): Promise<ConnectionTestResult> {
+    const connection = await this.getConnection(sourceOptions);
+    const response = await this.listAllDatabase(connection);
 
-    const connection = r.expr(1);
-
-    if (!connection) {
+    if (!response) {
       throw new Error('Connection failed');
     }
     return {
