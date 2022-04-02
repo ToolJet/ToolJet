@@ -54,14 +54,22 @@ export const Datepicker = function Datepicker({
 
   useEffect(() => {
     const lastDate = disabledDates[disabledDates.length - 1];
-    const dateValidityCheck = moment(lastDate, format, true).isValid();
-    const datesCopy = [];
+    console.log('ex', disabledDates);
+
+    const dateValidityCheck = moment(lastDate, format).isValid();
+    console.log('ppp', dateValidityCheck);
+
     if (dateValidityCheck) {
+      console.log('ppp');
+
       disabledDates?.map((item) => {
-        datesCopy.push(moment(item, format).toDate());
+        console.log('ppp', item);
+
+        if (moment(item, format).isValid()) {
+          if (!excludedDates?.includes(item)) setExludedDates(...excludedDates, moment(item, format).toDate());
+        }
       });
     }
-    setExludedDates(datesCopy);
   }, [disabledDates, format]);
   useEffect(() => {
     console.log('ex', excludedDates);
