@@ -19,7 +19,7 @@ export const Datepicker = function Datepicker({
   const { visibility, disabledState, borderRadius } = styles;
 
   const [date, setDate] = useState(new Date());
-  const [exludedDates, setExludedDates] = useState([]);
+  const [excludedDates, setExludedDates] = useState([]);
 
   const selectedDateFormat = enableTime ? `${format} LT` : format;
 
@@ -39,17 +39,13 @@ export const Datepicker = function Datepicker({
     setExposedVariable('value', dateString);
   };
 
-  const dateParser = () => {
-    const datesCopy = [];
-    disabledDates?.map((item) => {
-      datesCopy.push(moment(item, format).toDate());
-    });
-    setExludedDates(datesCopy);
-  };
-
   useEffect(() => {
+    console.log('valieeeee');
+
     const dateMomentInstance = moment(defaultValue, selectedDateFormat);
     if (dateMomentInstance.isValid()) {
+      console.log('valie');
+
       setDate(dateMomentInstance.toDate());
       setExposedVariable('value', defaultValue);
     }
@@ -57,8 +53,19 @@ export const Datepicker = function Datepicker({
   }, [defaultValue]);
 
   useEffect(() => {
-    // dateParser();
-  }, [disabledDates]);
+    const lastDate = disabledDates[disabledDates.length - 1];
+    const dateValidityCheck = moment(lastDate, format, true).isValid();
+    const datesCopy = [];
+    if (dateValidityCheck) {
+      disabledDates?.map((item) => {
+        datesCopy.push(moment(item, format).toDate());
+      });
+    }
+    setExludedDates(datesCopy);
+  }, [disabledDates, format]);
+  useEffect(() => {
+    console.log('ex', excludedDates);
+  }, [excludedDates]);
 
   const validationData = validate(exposedVariables.value);
 
@@ -105,7 +112,7 @@ export const Datepicker = function Datepicker({
         showYearDropdown
         dropdownMode="select"
         customInput={<CustomInputBox />}
-        excludeDates={exludedDates}
+        excludeDates={excludedDates}
       />
 
       <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
