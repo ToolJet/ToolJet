@@ -69,6 +69,20 @@ class Openapi extends React.Component {
     );
   };
 
+  changeHost = (host) => {
+    this.setState(
+      {
+        options: {
+          ...this.state.options,
+          host,
+        },
+      },
+      () => {
+        this.props.optionsChanged(this.state.options);
+      }
+    );
+  };
+
   renderOperationOption = (props, option, snapshot, className) => {
     return (
       <button {...props} className={className} type="button">
@@ -85,16 +99,28 @@ class Openapi extends React.Component {
     );
   };
 
+  renderHostOptions = (props, option, snapshot, className) => {
+    return (
+      <button {...props} className={className} type="button">
+        <div className="row">
+          <span className="text-muted mx-2">{option.name}</span>
+        </div>
+      </button>
+    );
+  };
+
   computeOperationSelectionOptions = (paths) => {
     let options = [];
 
     for (const path of Object.keys(paths)) {
       for (const operation of Object.keys(paths[path])) {
-        options.push({
-          value: `${operation},${path}`,
-          name: path,
-          operation: operation,
-        });
+        if (['get', 'post', 'delete', 'put', 'patch'].includes(operation, 0)) {
+          options.push({
+            value: `${operation},${path}`,
+            name: path,
+            operation: operation,
+          });
+        }
       }
     }
 
@@ -121,19 +147,58 @@ class Openapi extends React.Component {
     this.props.optionsChanged(newOptions);
   };
 
+  computeHostOptions = (urlArray) => {
+    return urlArray.map((url) => {
+      return {
+        value: url,
+        name: url,
+      };
+    });
+  };
+
+  resolveHosts() {
+    const path = this.state.options.path;
+    const operation = this.state.selectedOperation;
+    if (operation?.servers && operation?.servers.length > 0) {
+      const servers = this.state.selectedOperation.servers;
+      return servers.map((url) => {
+        return url.url;
+      });
+    } else if (path && this.state.spec.paths[path]['servers'] && this.state.spec?.paths[path]['servers'].length > 0) {
+      const servers = this.state.spec.paths[path]['servers'];
+      return servers.map((url) => {
+        return url.url;
+      });
+    } else {
+      const servers = this.state.spec.servers ?? [];
+      return servers.map((url) => {
+        return url.url;
+      });
+    }
+  }
+
+  resolveParameters(paramType) {
+    const operation = this.state.selectedOperation;
+    const path = this.state.options.path;
+
+    if (operation.parameters) return operation.parameters.filter((param) => param.in === paramType);
+    else if (this.state.spec.paths[path]['parameters'])
+      return this.state.spec.paths[path]['parameters'].filter((param) => param.in === paramType);
+    else return [];
+  }
+
   render() {
     const { options, spec, loadingSpec, selectedOperation } = this.state;
+    let baseUrls = spec ? this.resolveHosts() : [];
     let pathParams = [];
     let headerParams = [];
     let queryParams = [];
     let requestBody = [];
 
     if (selectedOperation) {
-      if (selectedOperation.parameters) {
-        pathParams = selectedOperation.parameters.filter((param) => param.in === 'path');
-        queryParams = selectedOperation.parameters.filter((param) => param.in === 'query');
-        headerParams = selectedOperation.parameters.filter((param) => param.in === 'header');
-      }
+      pathParams = this.resolveParameters('path');
+      queryParams = this.resolveParameters('query');
+      headerParams = this.resolveParameters('header');
 
       if (selectedOperation.requestBody) {
         const requestType = Object.keys(selectedOperation.requestBody.content)[0];
@@ -152,6 +217,24 @@ class Openapi extends React.Component {
 
         {options && !loadingSpec && (
           <div className="mb-3 mt-2">
+            {baseUrls.length > 0 && (
+              <div className="row g-2">
+                <div className="col-12">
+                  <label className="form-label pt-2">Host</label>
+                </div>
+                <div className="col openapi-operation-options">
+                  <SelectSearch
+                    options={this.computeHostOptions(baseUrls)}
+                    search={true}
+                    value="sv"
+                    onChange={(value) => this.changeHost(value)}
+                    filterOptions={fuzzySearch}
+                    renderOption={this.renderHostOptions}
+                    placeholder="Select a host"
+                  />
+                </div>
+              </div>
+            )}
             <div className="row g-2">
               <div className="col-12">
                 <label className="form-label pt-2">Operation</label>
