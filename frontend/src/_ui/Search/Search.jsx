@@ -95,6 +95,7 @@ export const SearchBox = ({ onChange, ...restProps }) => {
           onChange={handleChange}
           className="form-control"
           placeholder={placeholder ?? 'Search'}
+          style={{transition: "width 0.2s ease-in-out"}}
         />
       </div>
     </div>
