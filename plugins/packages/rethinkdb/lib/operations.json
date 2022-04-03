@@ -245,38 +245,6 @@
         "lineNumbers": false
       }
     },
-    "update_docs": {
-      "name": {
-        "label": "Name",
-        "key": "name",
-        "type": "codehinter",
-        "description": "Enter database name",
-        "placeholder": "name",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "lineNumbers": false
-      },
-      "tablename": {
-        "label": "Tablename",
-        "key": "tablename",
-        "type": "codehinter",
-        "description": "Enter tablename",
-        "placeholder": "tablename",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "lineNumbers": false
-      },
-      "body": {
-        "label": "Data",
-        "key": "body",
-        "type": "codehinter",
-        "description": "Enter data to be inserted",
-        "height": "150px",
-        "placeholder": "Enter data to be inserted"
-      }
-    },
     "delete_docs_by_id": {
       "name": {
         "label": "Name",

@@ -13,5 +13,5 @@ export type QueryOptions = {
   name: string;
   data: string;
   key: string;
-  body: string;
+  body: object | Array<object>;
 };
