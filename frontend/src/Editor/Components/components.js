@@ -656,7 +656,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      value: { type: 'code', displayName: 'Default value' },
+      value: { type: 'code', displayName: 'Default value', validation: { type: 'string' } },
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},

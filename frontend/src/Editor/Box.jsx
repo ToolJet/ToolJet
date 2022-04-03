@@ -39,6 +39,7 @@ import { RangeSlider } from './Components/RangeSlider';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { resolveProperties, resolveStyles } from './component-properties-resolution';
+import { validateProperties } from './component-properties-validation';
 import { validateWidget, resolveReferences } from '@/_helpers/utils';
 
 const AllComponents = {
@@ -136,6 +137,7 @@ export const Box = function Box({
         throw Error;
       }
       setRenderStartTime(currentTime);
+      validateProperties(resolvedProperties, component.properties);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
