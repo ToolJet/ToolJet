@@ -32,16 +32,13 @@
       "value": "localhost"
     },
     "port": {
-      "value": "28015"
+      "value": 6379
     },
     "username": {
-      "value": "admin"
+      "value": ""
     },
     "password": {
       "value": ""
-    },
-    "database": {
-      "value": "test"
     }
   },
   "properties": {
