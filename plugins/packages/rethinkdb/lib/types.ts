@@ -4,7 +4,6 @@ export type SourceOptions = {
   port: string;
   host: string;
   protocol: string;
-  ssl: string;
   password: string;
 };
 export type QueryOptions = {

@@ -1,11 +1,40 @@
 
 # rethinkdb
 
-ToolJet can connect to RethinkDB databases to read and write data. 
+---
+sidebar_position: 26
+---
 
-- [Connection](#connection)
-- [Getting Started](#querying-rethinkdb)
+ToolJet can connect to rethinkdb databases to read and write data. For more info visit::https://rethinkdb.com/api/javascript/.com/
 
-## Connection
+<img class="screenshot-full" src="/img/datasource-reference/rethinkdb/rethink_auth.png" alt="ToolJet - Data source - rethinkDB" height="420" />
 
-## Querying RethinkDB
+Supported queries: 
+
+- Delete database
+
+- Delete Table
+
+- Create database
+
+- Create Table
+
+- List table
+
+- List database
+
+- Get all documents
+
+- Insert table data
+
+- Update all table data
+
+- Update by id
+
+- Delete table data by id
+
+- Delete all table data
+
+- Get document from primary key
+
+
