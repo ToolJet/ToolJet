@@ -38,3 +38,7 @@ div[data-disabled='true'] {
 .accepted-files  .file-list {
   margin-bottom: -0.25rem;
 }
+
+.animate-width-change {
+  transition: width 0.2s ease-in-out;
+}
