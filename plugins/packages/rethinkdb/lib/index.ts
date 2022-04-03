@@ -110,7 +110,6 @@ export default class Rethinkdb implements QueryService {
   async testConnection(sourceOptions): Promise<ConnectionTestResult> {
     const connection = await this.getConnection(sourceOptions);
     const response = await this.listAllDatabase(connection, sourceOptions.database);
-
     if (!response) {
       throw new Error('Connection failed');
     }
