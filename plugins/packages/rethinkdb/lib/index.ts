@@ -19,56 +19,56 @@ export default class Rethinkdb implements QueryService {
           break;
         }
         case 'db_drop': {
-          result = await this.dropDatabase(name, connection);
+          result = await this.dropDatabase(name, connection, database);
           break;
         }
         case 'create_table': {
-          result = await this.createTable(name, tablename, connection);
+          result = await this.createTable(name, tablename, connection, database);
           break;
         }
         case 'drop_table': {
-          result = await this.dropTable(name, tablename, connection);
+          result = await this.dropTable(name, tablename, connection, database);
           break;
         }
         case 'db_list': {
-          result = await this.listAllDatabase(connection);
+          result = await this.listAllDatabase(connection, database);
           break;
         }
         case 'list_table': {
-          result = await this.listAllTables(name, connection);
+          result = await this.listAllTables(name, connection, database);
           break;
         }
         case 'list_documents': {
-          result = await this.listAllDocuments(name, tablename, connection);
+          result = await this.listAllDocuments(name, tablename, connection, database);
           break;
         }
         case 'create_docs': {
-          result = await this.insertDocument(name, tablename, body, connection);
+          result = await this.insertDocument(name, tablename, body, connection, database);
           break;
         }
         case 'retreive_docs': {
-          result = await this.getDocumentByID(name, tablename, key, connection);
+          result = await this.getDocumentByID(name, tablename, key, connection, database);
           break;
         }
 
         case 'update_docs': {
-          result = await this.listAllTables(name, connection);
+          result = await this.listAllTables(name, connection, database);
           break;
         }
         case 'delete_docs_by_id': {
-          result = await this.deleteDocumentByID(name, tablename, key, connection);
+          result = await this.deleteDocumentByID(name, tablename, key, connection, database);
           break;
         }
         case 'delete_all_docs': {
-          result = await this.deleteAllDocument(name, tablename, connection);
+          result = await this.deleteAllDocument(name, tablename, connection, database);
           break;
         }
         case 'update_docs_by_id': {
-          result = await this.updateDocumentByID(database, tablename, key, body, connection);
+          result = await this.updateDocumentByID(database, tablename, key, body, connection, database);
           break;
         }
         case 'update_all_docs': {
-          result = await this.updateAllDocument(name, tablename, body, connection);
+          result = await this.updateAllDocument(name, tablename, body, connection, database);
           break;
         }
       }
@@ -105,7 +105,7 @@ export default class Rethinkdb implements QueryService {
 
   async testConnection(sourceOptions): Promise<ConnectionTestResult> {
     const connection = await this.getConnection(sourceOptions);
-    const response = await this.listAllDatabase(connection);
+    const response = await this.listAllDatabase(connection, sourceOptions.database);
 
     if (!response) {
       throw new Error('Connection failed');
@@ -121,17 +121,14 @@ export default class Rethinkdb implements QueryService {
   }
 
   createDatabase = async (name, connection) => {
-    const response = r.connect(connection, function (err, conn) {
+    const response = r.dbCreate(name).run(connection, (err, result) => {
       if (err) throw err;
-      r.dbCreate(name).run(conn, (err, result) => {
-        if (err) throw err;
-        return result;
-      });
+      return result;
     });
     return response;
   };
 
-  dropDatabase = async (name, connection) => {
+  dropDatabase = async (name, connection, database) => {
     const response = r.dbDrop(name).run(connection, (err, result) => {
       if (err) throw err;
       return result;
@@ -139,10 +136,10 @@ export default class Rethinkdb implements QueryService {
     return response;
   };
 
-  createTable = async (name, tablename, connection) => {
+  createTable = async (name, tablename, connection, database) => {
     const response = r.connect(
       r
-        .db(name)
+        .db(name ? name : database)
         .tableCreate(tablename)
         .run(connection, (err, result) => {
           if (err) throw err;
@@ -152,9 +149,9 @@ export default class Rethinkdb implements QueryService {
     return response;
   };
 
-  dropTable = async (name, tablename, connection) => {
+  dropTable = async (name, tablename, connection, database) => {
     const response = r
-      .db(name)
+      .db(name ? name : database)
       .tableDrop(tablename)
       .run(connection, (err, result) => {
         if (err) throw err;
@@ -163,7 +160,7 @@ export default class Rethinkdb implements QueryService {
     return response;
   };
 
-  listAllDatabase = async (connection) => {
+  listAllDatabase = async (connection, database) => {
     const response = r.dbList().run(connection, (err, result) => {
       if (err) throw err;
       return result;
@@ -171,9 +168,9 @@ export default class Rethinkdb implements QueryService {
     return response;
   };
 
-  listAllTables = async (database, connection) => {
+  listAllTables = async (name, connection, database) => {
     const response = r
-      .db(database)
+      .db(name ? name : database)
       .tableList()
       .run(connection, (err, result) => {
         if (err) throw err;
@@ -182,9 +179,9 @@ export default class Rethinkdb implements QueryService {
     return response;
   };
 
-  listAllDocuments = async (name, tablename, connection) => {
+  listAllDocuments = async (name, tablename, connection, database) => {
     const response = r
-      .db(name)
+      .db(name ? name : database)
       .table(tablename)
       .run(connection, (err, result) => {
         if (err) throw err;
@@ -197,9 +194,9 @@ export default class Rethinkdb implements QueryService {
     return response;
   };
 
-  insertDocument = async (name, tablename, body, connection) => {
+  insertDocument = async (name, tablename, body, connection, database) => {
     const response = r
-      .db(name)
+      .db(name ? name : database)
       .table(tablename)
       .insert(this.parseJSON(body))
       .run(connection, (err, result) => {
@@ -209,9 +206,9 @@ export default class Rethinkdb implements QueryService {
     return response;
   };
 
-  deleteAllDocument = async (name, tablename, connection) => {
+  deleteAllDocument = async (name, tablename, connection, database) => {
     const response = r
-      .db(name)
+      .db(name ? name : database)
       .table(tablename)
       .delete()
       .run(connection, (err, result) => {
@@ -221,9 +218,9 @@ export default class Rethinkdb implements QueryService {
     return response;
   };
 
-  deleteDocumentByID = async (name, tablename, key, connection) => {
+  deleteDocumentByID = async (name, tablename, key, connection, database) => {
     const response = r
-      .db(name)
+      .db(name ? name : database)
       .table(tablename)
       .get(key)
       .delete()
@@ -233,9 +230,9 @@ export default class Rethinkdb implements QueryService {
       });
     return response;
   };
-  updateAllDocument = async (name, tablename, data, connection) => {
+  updateAllDocument = async (name, tablename, data, connection, database) => {
     const response = r
-      .db(name)
+      .db(name ? name : database)
       .table(tablename)
       .update(this.parseJSON(data))
       .run(connection, (err, result) => {
@@ -244,9 +241,9 @@ export default class Rethinkdb implements QueryService {
       });
     return response;
   };
-  updateDocumentByID = async (name, tablename, data, key, connection) => {
+  updateDocumentByID = async (name, tablename, data, key, connection, database) => {
     const response = r
-      .db(name)
+      .db(name ? name : database)
       .table(tablename)
       .get(key)
       .update(this.parseJSON(data))
@@ -257,9 +254,9 @@ export default class Rethinkdb implements QueryService {
     return response;
   };
 
-  getDocumentByID = async (name, tablename, key, connection) => {
+  getDocumentByID = async (name, tablename, key, connection, database) => {
     const response = r
-      .db(name)
+      .db(name ? name : database)
       .table(tablename)
       .get(key)
       .run(connection, (err, result) => {
