@@ -20,7 +20,7 @@
   },
   "defaults": {
     "port": {
-      "value": "8080"
+      "value": "28015"
     },
     "host": {
       "value": ""
@@ -32,9 +32,6 @@
       "value": ""
     },
     "password": {
-      "value": ""
-    },
-    "ssl": {
       "value": ""
     },
     "protocol": {
@@ -55,7 +52,6 @@
       "type": "text",
       "description": ""
     },
-
     "username": {
       "label": "Username",
       "key": "username",
@@ -68,18 +64,11 @@
       "type": "text",
       "description": ""
     },
-
-    "ssl": {
-      "label": "SSL",
-      "key": "ssl",
-      "type": "text",
-      "description": ""
-    },
     "port": {
       "label": "Port",
       "key": "port",
       "type": "text",
-      "description": "8086 ",
+      "description": "28015",
       "helpText": ""
     },
     "protocol": {

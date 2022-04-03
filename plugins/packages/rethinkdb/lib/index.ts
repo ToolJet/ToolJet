@@ -224,7 +224,8 @@ export default class Rethinkdb implements QueryService {
     const response = r
       .db(name)
       .table(tablename)
-      .insert(body)
+      .insert({ body })
+      .coerceTo('object')
       .run(connection, (err, result) => {
         if (err) throw err;
         console.log('*****', JSON.stringify(result, null, 2));
