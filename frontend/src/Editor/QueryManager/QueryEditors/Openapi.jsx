@@ -129,6 +129,7 @@ class Openapi extends React.Component {
 
   changeParam = (paramType, paramName, value) => {
     const options = this.state.options;
+    console.log(paramType, paramName, value);
     const newOptions = {
       ...options,
       params: {
@@ -181,8 +182,17 @@ class Openapi extends React.Component {
     const operation = this.state.selectedOperation;
     const path = this.state.options.path;
 
-    if (operation.parameters) return operation.parameters.filter((param) => param.in === paramType);
-    else if (this.state.spec.paths[path]['parameters'])
+    if (operation.parameters) {
+      if (this.state.spec.paths[path]['parameters']) {
+        const generalParams = this.state.spec.paths[path]['parameters'].filter((param) => param.in === paramType);
+        const operationParams = operation.parameters.filter((param) => param.in === paramType);
+        const result = generalParams.concat(operationParams).filter(function (o) {
+          return this[o.name] ? false : (this[o.name] = true);
+        }, {});
+        return result;
+      }
+      return operation.parameters.filter((param) => param.in === paramType);
+    } else if (this.state.spec.paths[path]['parameters'])
       return this.state.spec.paths[path]['parameters'].filter((param) => param.in === paramType);
     else return [];
   }
@@ -203,6 +213,7 @@ class Openapi extends React.Component {
       if (selectedOperation.requestBody) {
         const requestType = Object.keys(selectedOperation.requestBody.content)[0];
         requestBody = selectedOperation.requestBody.content[requestType];
+        console.log(Object.keys(requestBody.schema.properties));
       }
     }
 
@@ -377,19 +388,19 @@ class Openapi extends React.Component {
               <div className="mt-2">
                 <h5 className="text-muted">REQUEST BODY</h5>
                 {Object.keys(requestBody.schema.properties).map((param) => (
-                  <div className="row input-group my-1" key={param.name}>
+                  <div className="row input-group my-1" key={param}>
                     <div className="col-4 field field-width-268">
                       <input type="text" value={param} className="form-control" placeholder="key" disabled />
                     </div>
                     <div className="col-6 field" style={{ width: '300px' }}>
                       <CodeHinter
                         currentState={this.props.currentState}
-                        initialValue={this.state.options.params.request[param.name]}
+                        initialValue={this.state.options.params.request[param]}
                         mode="text"
                         placeholder={'value'}
                         theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                         lineNumbers={false}
-                        onChange={(value) => this.changeParam('request', param.name, value)}
+                        onChange={(value) => this.changeParam('request', param, value)}
                         height={'36px'}
                         width="268px"
                       />
