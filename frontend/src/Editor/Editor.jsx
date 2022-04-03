@@ -862,6 +862,7 @@ class Editor extends React.Component {
                 defaultValue={this.state.initVersionName}
                 onChange={(e) => this.setState({ initVersionName: e.target.value })}
                 onKeyPress={(e) => this.handleKeyPress(e)}
+                autoFocus={true}
               />
             </div>
           </div>
