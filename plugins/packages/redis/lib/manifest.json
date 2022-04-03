@@ -67,5 +67,10 @@
       "description": "Enter password"
     }
   },
-  "required": ["scheme", "host", "port", "password"]
+  "required": [
+    "scheme",
+    "host",
+    "port",
+    "password"
+  ]
 }
