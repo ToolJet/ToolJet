@@ -8,7 +8,6 @@ export default class Rethinkdb implements QueryService {
     const operation = queryOptions.operation;
     const connection = await this.getConnection(sourceOptions);
     let result: any = {};
-    // const response = null;
     const { tablename, name, key, body } = queryOptions;
     const { database } = sourceOptions;
 
