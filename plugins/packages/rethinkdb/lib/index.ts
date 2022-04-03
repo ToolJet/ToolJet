@@ -39,7 +39,12 @@ export default class Rethinkdb implements QueryService {
           break;
         }
         case 'list_documents': {
-          result = await this.listAllDocuments(name, tablename, connection, database);
+          let res = null;
+          res = await this.listAllDocuments(name, tablename, connection, database);
+          result = await res.toArray(function (err, cursor) {
+            if (err) throw err;
+            return cursor;
+          });
           break;
         }
         case 'create_docs': {
@@ -183,12 +188,9 @@ export default class Rethinkdb implements QueryService {
     const response = r
       .db(name ? name : database)
       .table(tablename)
-      .run(connection, (err, result) => {
+      .run(connection, (err, cursor) => {
         if (err) throw err;
-        result.toArray(function (err, results) {
-          if (err) throw err;
-          return results;
-        });
+        return cursor;
       });
 
     return response;
@@ -261,7 +263,7 @@ export default class Rethinkdb implements QueryService {
       .get(key)
       .run(connection, (err, result) => {
         if (err) throw err;
-        return JSON.stringify(result, null, 2);
+        return result;
       });
     return response;
   };
