@@ -10,6 +10,7 @@ export default class Rethinkdb implements QueryService {
     let result: any = {};
     const { tablename, name, key, body } = queryOptions;
     const { database } = sourceOptions;
+    let response = null;
 
     try {
       switch (operation) {
@@ -38,9 +39,8 @@ export default class Rethinkdb implements QueryService {
           break;
         }
         case 'list_documents': {
-          let res = null;
-          res = await this.listAllDocuments(name, tablename, connection, database);
-          result = await res.toArray(function (err, cursor) {
+          response = await this.listAllDocuments(name, tablename, connection, database);
+          result = await response.toArray(function (err, cursor) {
             if (err) throw err;
             return cursor;
           });
