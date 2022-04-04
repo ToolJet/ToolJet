@@ -17,6 +17,12 @@ export class AppAuthenticationDto {
   token: string;
 }
 
+export class AppForgotPasswordDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+}
+
 export class AppPasswordResetDto {
   @IsString()
   @IsNotEmpty()

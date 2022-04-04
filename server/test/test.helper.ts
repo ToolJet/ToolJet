@@ -37,6 +37,7 @@ export async function createNestAppInstance(): Promise<INestApplication> {
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useWebSocketAdapter(new WsAdapter(app));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   await app.init();
 
   return app;

@@ -8,6 +8,7 @@ export class AppUpdateDto {
   current_version_id: string;
 
   @IsString()
+  @IsOptional()
   @IsBoolean()
   is_public: boolean;
 
