@@ -35,7 +35,7 @@
       "password": {
         "encrypted": true
       },
-      "access_token":{
+      "api_key":{
         "encrypted": true
       },
       "scopes": {

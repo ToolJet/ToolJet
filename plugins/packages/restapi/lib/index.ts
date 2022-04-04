@@ -79,7 +79,8 @@ export default class RestapiQueryService implements QueryService {
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
-    const requiresOauth = sourceOptions['auth_type'] === 'oauth2';
+    const authType = sourceOptions['auth_type'];
+    const requiresOauth = authType === 'oauth2';
 
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
     const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
@@ -119,10 +120,17 @@ export default class RestapiQueryService implements QueryService {
     const method = queryOptions['method'];
     const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
     const paramsFromUrl = urrl.parse(url, true).query;
+
+    if (authType === 'bearer') {
+      headers['Authorization'] = `Bearer ${sourceOptions.api_key}`;
+    }
+
     try {
       const response = await got(url, {
         method,
         headers,
+        username: authType === 'basic' ? sourceOptions.username : undefined,
+        password: authType === 'basic' ? sourceOptions.password : undefined,
         ...this.fetchHttpsCertsForCustomCA(),
         searchParams: {
           ...paramsFromUrl,
