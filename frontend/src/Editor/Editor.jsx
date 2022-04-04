@@ -862,6 +862,7 @@ class Editor extends React.Component {
                 defaultValue={this.state.initVersionName}
                 onChange={(e) => this.setState({ initVersionName: e.target.value })}
                 onKeyPress={(e) => this.handleKeyPress(e)}
+                autoFocus={true}
               />
             </div>
           </div>
@@ -973,6 +974,7 @@ class Editor extends React.Component {
           onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
           onCancel={() => onQueryCancel(this)}
           queryConfirmationData={this.state.queryConfirmationData}
+          darkMode={this.props.darkMode}
         />
         <Confirm
           show={showDataQueryDeletionConfirmation}
@@ -980,6 +982,7 @@ class Editor extends React.Component {
           confirmButtonLoading={isDeletingDataQuery}
           onConfirm={() => this.executeDataQueryDeletion()}
           onCancel={() => this.cancelDeleteDataQuery()}
+          darkMode={this.props.darkMode}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="header">

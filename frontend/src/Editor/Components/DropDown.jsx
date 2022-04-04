@@ -43,12 +43,17 @@ export const DropDown = function DropDown({
 
   useEffect(() => {
     let newValue = undefined;
-    if (values?.includes(value)) newValue = value;
-
+    if (values?.includes(value)) {
+      newValue = value;
+    }
     setCurrentValue(newValue);
-    setExposedVariable('value', newValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+
+  useEffect(() => {
+    setExposedVariable('value', currentValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentValue]);
 
   useEffect(() => {
     let newValue = undefined;
@@ -146,7 +151,7 @@ export const DropDown = function DropDown({
         }}
       >
         <div className="col-auto my-auto">
-          <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-1">
+          <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-0 my-0">
             {label}
           </label>
         </div>

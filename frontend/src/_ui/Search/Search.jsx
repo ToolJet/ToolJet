@@ -93,7 +93,7 @@ export const SearchBox = ({ onChange, ...restProps }) => {
           type="text"
           value={searchText}
           onChange={handleChange}
-          className="form-control"
+          className="form-control animate-width-change"
           placeholder={placeholder ?? 'Search'}
         />
       </div>

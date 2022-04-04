@@ -39,8 +39,10 @@ export const Datepicker = function Datepicker({
 
   useEffect(() => {
     const dateMomentInstance = moment(defaultValue, selectedDateFormat);
-    setDate(dateMomentInstance.toDate());
-    setExposedVariable('value', defaultValue);
+    if (dateMomentInstance.isValid()) {
+      setDate(dateMomentInstance.toDate());
+      setExposedVariable('value', defaultValue);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
 
