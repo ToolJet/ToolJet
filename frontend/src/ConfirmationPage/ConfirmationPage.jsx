@@ -14,7 +14,12 @@ class ConfirmationPage extends React.Component {
     };
     this.formRef = React.createRef(null);
   }
-
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize);
+  }
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
@@ -89,7 +94,6 @@ class ConfirmationPage extends React.Component {
       'Product Manager',
       'Other',
     ];
-    window.addEventListener('resize', this.handleResize);
 
     const roleOptions = roles.map((role, index) => (
       <option key={index} value={role}>
