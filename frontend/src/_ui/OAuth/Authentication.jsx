@@ -16,7 +16,7 @@ const Authentication = ({
   grant_type,
   scopes,
   username,
-  api_key,
+  bearer_token,
   password,
   auth_url,
   optionchanged,
@@ -160,12 +160,12 @@ const Authentication = ({
     return (
       <div>
         <div className="col-md-12">
-          <label className="form-label text-muted mt-3">API Key</label>
+          <label className="form-label text-muted mt-3">Token</label>
           <Input
             type="text"
             className="form-control"
-            onChange={(e) => optionchanged('api_key', e.target.value)}
-            value={api_key}
+            onChange={(e) => optionchanged('bearer_token', e.target.value)}
+            value={bearer_token}
           />
         </div>
       </div>

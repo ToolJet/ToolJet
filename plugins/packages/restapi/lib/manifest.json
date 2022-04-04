@@ -35,7 +35,7 @@
       "password": {
         "encrypted": true
       },
-      "api_key":{
+      "bearer_token":{
         "encrypted": true
       },
       "scopes": {
@@ -95,7 +95,7 @@
     "password": {
       "value": ""
     },
-    "access_token": {
+    "bearer_token": {
       "value": ""
     },
     "auth_url": {

@@ -122,7 +122,7 @@ export default class RestapiQueryService implements QueryService {
     const paramsFromUrl = urrl.parse(url, true).query;
 
     if (authType === 'bearer') {
-      headers['Authorization'] = `Bearer ${sourceOptions.api_key}`;
+      headers['Authorization'] = `Bearer ${sourceOptions.bearer_token}`;
     }
 
     try {

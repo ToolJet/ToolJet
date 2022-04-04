@@ -14,7 +14,7 @@ const OAuth = ({
   scopes,
   username,
   password,
-  api_key,
+  bearer_token,
   auth_url,
   header_prefix,
   add_token_to,
@@ -47,7 +47,7 @@ const OAuth = ({
         scopes={scopes}
         username={username}
         password={password}
-        api_key={api_key}
+        bearer_token={bearer_token}
         auth_url={auth_url}
       />
     </>

@@ -121,7 +121,7 @@ const DynamicForm = ({
           scopes: options.scopes?.value,
           username: options.username?.value,
           password: options.password?.value,
-          api_key: options.api_key?.value,
+          bearer_token: options.bearer_token?.value,
           auth_url: options.auth_url?.value,
           custom_auth_params: options.custom_auth_params?.value,
           custom_query_params: options.custom_query_params?.value,
