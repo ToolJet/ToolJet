@@ -3,6 +3,7 @@ import Modal from '../HomePage/Modal';
 import { toast } from 'react-hot-toast';
 import { appVersionService } from '@/_services';
 import { Confirm } from './Viewer/Confirm';
+import Select from 'react-select';
 
 export const AppVersionsManager = function AppVersionsManager({
   appId,
@@ -240,6 +241,11 @@ const CreateVersionModal = function CreateVersionModal({
       createVersion(versionName, createAppVersionFrom);
     }
   };
+
+  const options = appVersions.map((version) => {
+    return { ...version, label: version.name };
+  });
+
   return (
     <Modal
       show={showModal || showCreateVersionModalPrompt}
@@ -264,16 +270,15 @@ const CreateVersionModal = function CreateVersionModal({
         </div>
       </div>
 
-      <div className="mb-3">
+      <div className="mb-3" style={{ padding: '2rem 0' }}>
         <label className="form-label">Create version from</label>
         <div className="ts-control">
-          <select className="form-select">
-            {appVersions.map((version) => (
-              <option className="dropdown-item" key={version.id} onClick={() => setCreateAppVersionFrom(version)}>
-                {version.name}
-              </option>
-            ))}
-          </select>
+          <Select
+            options={options}
+            maxMenuHeight={100}
+            menuPlacement="auto"
+            onChange={(version) => setCreateAppVersionFrom(version)}
+          />
         </div>
       </div>
 
