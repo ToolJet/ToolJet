@@ -10,6 +10,7 @@ class ConfirmationPage extends React.Component {
     this.state = {
       isLoading: false,
       newSignup: queryString.parse(props.location.state.search).signup,
+      windowInnerHeight: window.innerHeight,
     };
     this.formRef = React.createRef(null);
   }
@@ -17,10 +18,16 @@ class ConfirmationPage extends React.Component {
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
+  handleResize = () => {
+    this.setState({
+      windowInnerHeight: window.innerHeight,
+    });
+  };
 
   calculateOffset() {
+    const { windowInnerHeight } = this.state;
     const elementHeight = this.formRef.current.getBoundingClientRect().top;
-    return window.innerHeight - elementHeight;
+    return windowInnerHeight - elementHeight;
   }
 
   setPassword = (e) => {
@@ -82,6 +89,7 @@ class ConfirmationPage extends React.Component {
       'Product Manager',
       'Other',
     ];
+    window.addEventListener('resize', this.handleResize);
 
     const roleOptions = roles.map((role, index) => (
       <option key={index} value={role}>
