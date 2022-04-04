@@ -107,6 +107,8 @@ describe('users controller', () => {
         first_name: 'Khal',
         last_name: 'Drogo',
         token: 'token',
+        organization: 'Dothraki Pvt Limited',
+        password: 'Khaleesi',
         new_signup: true,
       });
 
