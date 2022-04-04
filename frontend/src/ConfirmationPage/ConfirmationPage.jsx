@@ -10,16 +10,16 @@ class ConfirmationPage extends React.Component {
     this.state = {
       isLoading: false,
       newSignup: queryString.parse(props.location.state.search).signup,
-      windowInnerHeight: window.innerHeight,
+      // windowInnerHeight: window.innerHeight,
     };
     this.formRef = React.createRef(null);
   }
-  componentDidMount() {
-    window.addEventListener('resize', this.handleResize);
-  }
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.handleResize);
-  }
+  // componentDidMount() {
+  //   window.addEventListener('resize', this.handleResize);
+  // }
+  // componentWillUnmount() {
+  //   window.removeEventListener('resize', this.handleResize);
+  // }
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
@@ -32,7 +32,7 @@ class ConfirmationPage extends React.Component {
   calculateOffset() {
     const { windowInnerHeight } = this.state;
     const elementHeight = this.formRef.current.getBoundingClientRect().top;
-    return windowInnerHeight - elementHeight;
+    return window.innerHeight - elementHeight;
   }
 
   setPassword = (e) => {
