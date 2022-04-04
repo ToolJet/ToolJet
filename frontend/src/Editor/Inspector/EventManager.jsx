@@ -326,7 +326,7 @@ export const EventManager = ({
                         { name: 'CSV', value: 'csv' },
                         { name: 'Text', value: 'plaintext' },
                       ]}
-                      value={'csv'}
+                      value={event.fileType ?? 'csv'}
                       search={true}
                       onChange={(value) => {
                         handlerChanged(index, 'fileType', value);
