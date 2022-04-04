@@ -14,6 +14,7 @@ export const FilePicker = ({
   styles,
 }) => {
   //* properties definitions
+  const instructionText = component.definition.properties.instructionText.value ?? '';
   const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
@@ -255,7 +256,7 @@ export const FilePicker = ({
           <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
           <FilePicker.Signifiers
             signifier={!isDragAccept && !accepted & !isDragReject}
-            feedback={'Drag & drop some files here, or click to select files'}
+            feedback={instructionText}
             cls={`${darkMode ? 'text-secondary' : 'text-dark'} mt-3`}
           />
 

@@ -1242,6 +1242,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+      instructionText: { type: 'code', displayName: 'Instruction Text' },
       enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
       enablePicker: { type: 'code', displayName: 'Use File Picker' },
       enableMultiple: { type: 'code', displayName: 'Pick mulitple files' },
@@ -1275,6 +1276,7 @@ export const componentTypes = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
+        instructionText: { value: '' },
         enableDropzone: { value: '{{true}}' },
         enablePicker: { value: '{{true}}' },
         maxFileCount: { value: '{{2}}' },
