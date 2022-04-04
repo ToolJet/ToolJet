@@ -322,7 +322,10 @@ export const EventManager = ({
                   <div className="col-9">
                     <SelectSearch
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
-                      options={[{ name: 'CSV', value: 'csv' }]}
+                      options={[
+                        { name: 'CSV', value: 'csv' },
+                        { name: 'Text', value: 'plaintext' },
+                      ]}
                       value={'csv'}
                       search={true}
                       onChange={(value) => {
