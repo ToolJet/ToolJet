@@ -278,7 +278,6 @@ function executeAction(_ref, event, mode, customVariables) {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
         }[fileType](data);
-        console.log({ fileName, fileType, data, fileData });
         generateFile(fileName, fileData);
         return Promise.resolve();
       }
