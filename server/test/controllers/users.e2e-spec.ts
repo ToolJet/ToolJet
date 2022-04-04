@@ -56,12 +56,12 @@ describe('users controller', () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
       const { user } = userData;
 
-      const [firstName, lastName] = ['Daenerys', 'Targaryen', 'drogo666'];
+      const [firstName, lastName] = ['Daenerys', 'Targaryen'];
 
       const response = await request(app.getHttpServer())
         .patch('/api/users/update')
         .set('Authorization', authHeaderForUser(user))
-        .send({ firstName, lastName });
+        .send({ first_name: firstName, last_name: lastName });
 
       expect(response.statusCode).toBe(200);
 
