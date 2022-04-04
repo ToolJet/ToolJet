@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsUUID, IsString, IsObject, IsNotEmpty } from 'class-validator';
+import { IsUUID, IsString, IsNotEmpty, IsArray } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
 
@@ -12,6 +12,7 @@ export class CreateDataSourceDto {
 
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
+  @IsNotEmpty()
   kind: string;
 
   @IsString()
@@ -19,8 +20,8 @@ export class CreateDataSourceDto {
   @Transform(({ value }) => sanitizeInput(value))
   name: string;
 
-  @IsObject()
-  options: object[];
+  @IsArray()
+  options: [];
 }
 
 export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) {}

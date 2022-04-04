@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsUUID, IsString, IsOptional, IsObject } from 'class-validator';
+import { IsUUID, IsString, IsOptional, IsObject, IsNotEmpty } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
 
@@ -20,6 +20,7 @@ export class CreateDataQueryDto {
 
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
+  @IsNotEmpty()
   kind: string;
 
   @IsObject()
@@ -28,6 +29,7 @@ export class CreateDataQueryDto {
 
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
+  @IsNotEmpty()
   name: string;
 
   @IsObject()

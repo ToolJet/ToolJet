@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '../helpers/utils.helper';
 
@@ -14,6 +14,7 @@ export class AppUpdateDto {
   @IsString()
   @IsOptional()
   @Transform(({ value }) => sanitizeInput(value))
+  @IsNotEmpty()
   name: string;
 
   @IsString()
