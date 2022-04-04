@@ -13,6 +13,9 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     ```bash
     curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
     sudo apt-get install -y nodejs
+
+    # Ensure you have the correct version of npm, or it will cause an error about fsevents.
+    npm i -g npm@7.20.0
     ```
 
     1.2 Install Postgres

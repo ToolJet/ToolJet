@@ -176,7 +176,7 @@ export const AppVersionsManager = function AppVersionsManager({
                           }}
                           disabled={isDeletingVersion}
                           style={{
-                            display: mouseHoveredOnVersion === version.id ? 'block' : 'none',
+                            display: mouseHoveredOnVersion === version.id ? 'flex' : 'none',
                           }}
                         >
                           <img
@@ -184,6 +184,7 @@ export const AppVersionsManager = function AppVersionsManager({
                             width="12"
                             height="12"
                             className="mx-1"
+                            style={{ paddingLeft: '0.6px' }}
                           />
                         </button>
                       </div>
