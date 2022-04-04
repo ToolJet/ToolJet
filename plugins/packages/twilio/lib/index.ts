@@ -1,6 +1,6 @@
-import { QueryError, QueryResult,  QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import { Twilio } from 'twilio';
-import { SourceOptions, QueryOptions } from './types'
+import { SourceOptions, QueryOptions } from './types';
 
 export default class TwilioQueryService implements QueryService {
   getClient(accountSid: string, authToken: string): any {

@@ -1,10 +1,4 @@
-import {
-  ConnectionTestResult,
-  QueryError,
-  QueryResult,
-  QueryService,
-  parseJson
-} from '@tooljet-plugins/common'
+import { ConnectionTestResult, QueryError, QueryResult, QueryService, parseJson } from '@tooljet-plugins/common';
 
 import {
   addDocument,
@@ -16,7 +10,7 @@ import {
   deleteDocument,
 } from './operations';
 const { Firestore } = require('@google-cloud/firestore');
-import { SourceOptions, QueryOptions } from './types'
+import { SourceOptions, QueryOptions } from './types';
 
 export default class FirestoreQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {

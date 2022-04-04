@@ -1,6 +1,6 @@
-import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-import { SourceOptions, QueryOptions } from './types'
-import got, {Headers} from 'got'
+import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { SourceOptions, QueryOptions } from './types';
+import got, { Headers } from 'got';
 
 export default class AirtableQueryService implements QueryService {
   authHeader(token: string): Headers {

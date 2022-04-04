@@ -45,6 +45,9 @@
     },
     "password": {
       "value": ""
+    },
+    "azure": {
+      "value": false
     }
   },
   "properties": {

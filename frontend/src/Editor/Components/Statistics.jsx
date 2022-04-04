@@ -1,6 +1,7 @@
 import React from 'react';
 export const Statistics = function Statistics({ height, properties, styles, darkMode }) {
-  const { primaryValueLabel, primaryValue, secondaryValueLabel, secondaryValue, secondarySignDisplay } = properties;
+  const { primaryValueLabel, primaryValue, secondaryValueLabel, secondaryValue, secondarySignDisplay, hideSecondary } =
+    properties;
   const { primaryLabelColour, primaryTextColour, secondaryLabelColour, secondaryTextColour, visibility } = styles;
 
   const baseStyle = {
@@ -73,29 +74,36 @@ export const Statistics = function Statistics({ height, properties, styles, dark
         {primaryValueLabel}
       </p>
       <h2 style={primaryStyle}>{primaryValue}</h2>
-      <div>
-        <div className="d-flex flex-row justify-content-center align-items-baseline">
-          {secondarySignDisplay !== 'negative' ? (
-            <img src="/assets/images/icons/widgets/upstatistics.svg" style={{ ...marginStyle, marginRight: '6.5px' }} />
-          ) : (
-            <img
-              src="/assets/images/icons/widgets/downstatistics.svg"
-              style={{ ...marginStyle, marginRight: '6.5px' }}
-            />
-          )}
-          <p style={{ ...secondaryContainerStyle }}>{secondaryValue}</p>
+      {hideSecondary ? (
+        ''
+      ) : (
+        <div>
+          <div className="d-flex flex-row justify-content-center align-items-baseline">
+            {secondarySignDisplay !== 'negative' ? (
+              <img
+                src="/assets/images/icons/widgets/upstatistics.svg"
+                style={{ ...marginStyle, marginRight: '6.5px' }}
+              />
+            ) : (
+              <img
+                src="/assets/images/icons/widgets/downstatistics.svg"
+                style={{ ...marginStyle, marginRight: '6.5px' }}
+              />
+            )}
+            <p style={{ ...secondaryContainerStyle }}>{secondaryValue}</p>
+          </div>
+          <p
+            style={{
+              ...letterStyle,
+              color: secondaryLabelColour !== '#8092AB' ? secondaryLabelColour : darkMode && '#FFFFFC',
+              padding: '6px 20px 12px 20px ',
+              marginBottom: '0px',
+            }}
+          >
+            {secondaryValueLabel}
+          </p>
         </div>
-        <p
-          style={{
-            ...letterStyle,
-            color: secondaryLabelColour !== '#8092AB' ? secondaryLabelColour : darkMode && '#FFFFFC',
-            padding: '6px 20px 12px 20px ',
-            marginBottom: '0px',
-          }}
-        >
-          {secondaryValueLabel}
-        </p>
-      </div>
+      )}
     </div>
   );
 };

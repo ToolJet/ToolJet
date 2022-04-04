@@ -1,12 +1,12 @@
 import React from 'react';
-import { Router, Route } from 'react-router-dom';
+import { Router, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
-import { InvitationPage } from '@/InvitationPage';
+import { ConfirmationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Editor, Viewer } from '@/Editor';
@@ -34,9 +34,23 @@ class App extends React.Component {
     };
   }
 
+  fetchMetadata = () => {
+    if (this.state.currentUser) {
+      tooljetService.fetchMetaData().then((data) => {
+        this.setState({ onboarded: data.onboarded });
+
+        if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
+          this.setState({ updateAvailable: true });
+        }
+      });
+    }
+  };
+
   componentDidMount() {
     authenticationService.currentUser.subscribe((x) => {
       this.setState({ currentUser: x });
+      this.fetchMetadata();
+      setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     });
   }
 
@@ -51,7 +65,7 @@ class App extends React.Component {
   };
 
   render() {
-    const { currentUser, fetchedMetadata, updateAvailable, onboarded, darkMode } = this.state;
+    const { updateAvailable, onboarded, darkMode } = this.state;
     let toastOptions = {};
 
     if (darkMode) {
@@ -62,16 +76,6 @@ class App extends React.Component {
           color: '#fff',
         },
       };
-    }
-
-    if (currentUser && fetchedMetadata === false) {
-      tooljetService.fetchMetaData().then((data) => {
-        this.setState({ fetchedMetadata: true, onboarded: data.onboarded });
-
-        if (lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
-          this.setState({ updateAvailable: true });
-        }
-      });
     }
 
     return (
@@ -118,7 +122,21 @@ class App extends React.Component {
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/reset-password" component={ResetPassword} />
-            <Route path="/invitations/:token" component={InvitationPage} />
+            <Route
+              path="/invitations/:token"
+              render={(props) => (
+                <Redirect
+                  to={{
+                    pathname: '/confirm',
+                    state: {
+                      token: props.match.params.token,
+                      search: props.location.search,
+                    },
+                  }}
+                />
+              )}
+            />
+            <Route path="/confirm" component={ConfirmationPage} />
             <PrivateRoute
               exact
               path="/apps/:id"

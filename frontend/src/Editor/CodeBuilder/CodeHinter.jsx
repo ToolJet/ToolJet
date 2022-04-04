@@ -25,6 +25,7 @@ import { AlignButtons } from './Elements/AlignButtons';
 import { TypeMapping } from './TypeMapping';
 import { Number } from './Elements/Number';
 import FxButton from './Elements/FxButton';
+import { ToolTip } from '../Inspector/Elements/Components/ToolTip';
 
 const AllElements = {
   Color,
@@ -96,7 +97,7 @@ export function CodeHinter({
 
   function valueChanged(editor, onChange, suggestions, ignoreBraces) {
     handleChange(editor, onChange, suggestions, ignoreBraces);
-    setCurrentValue(editor.getValue());
+    setCurrentValue(editor.getValue()?.trim());
   }
 
   const getPreviewContent = (content, type) => {
@@ -189,11 +190,27 @@ export function CodeHinter({
 
   return (
     <>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div className={`mb-2 field ${options.className}`}>
+          <ToolTip label={paramLabel} meta={fieldMeta} />
+        </div>
+        <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
+          <div style={{ width: width, display: codeShow ? 'flex' : 'none', marginTop: '-1px' }}>
+            <FxButton
+              active={true}
+              onPress={() => {
+                setForceCodeBox(false);
+                onFxPress(false);
+              }}
+            />
+          </div>
+        </div>
+      </div>
       <div
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''}`}
         style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
-        <div className={`col`} style={{ marginBottom: '0.5rem' }}>
+        <div className={`col code-hinter-col`} style={{ marginBottom: '0.5rem' }}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
             <div
               className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
@@ -238,15 +255,6 @@ export function CodeHinter({
             </div>
             {enablePreview && !isOpen && getPreview()}
           </div>
-        </div>
-        <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} pt-2`}>
-          <FxButton
-            active={true}
-            onPress={() => {
-              setForceCodeBox(false);
-              onFxPress(false);
-            }}
-          />
         </div>
       </div>
       {!codeShow && (

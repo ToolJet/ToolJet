@@ -47,7 +47,8 @@ export const LeftSidebar = ({
         onClick={() => setShowLeaveDialog(true)}
         tip="Back to home"
         icon="back"
-        className="left-sidebar-item no-border"
+        className="left-sidebar-item no-border left-sidebar-layout"
+        text={'Back'}
       />
       <ConfirmDialog
         show={showLeaveDialog}

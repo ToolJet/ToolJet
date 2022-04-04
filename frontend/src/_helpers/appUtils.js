@@ -10,7 +10,7 @@ import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
-import { componentTypes } from '../Editor/Components/components';
+import { componentTypes } from '@/Editor/Components/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import { allSvgs } from '@tooljet/plugins/client';
@@ -42,8 +42,8 @@ export function onComponentOptionsChanged(_ref, component, options) {
     componentData[option[0]] = option[1];
   }
 
-  return setStateAsync(_ref, {
-    currentState: { ..._ref.state.currentState, components: { ...components, [componentName]: componentData } },
+  return setCurrentStateAsync(_ref, {
+    components: { ...components, [componentName]: componentData },
   });
 }
 
@@ -72,13 +72,24 @@ export function getDataFromLocalStorage(key) {
 
 export function runTransformation(_ref, rawData, transformation, query) {
   const data = rawData;
-  const evalFunction = Function(['data', 'moment', '_', 'components', 'queries', 'globals'], transformation);
+  const evalFunction = Function(
+    ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+    transformation
+  );
   let result = [];
 
   const currentState = _ref.state.currentState || {};
 
   try {
-    result = evalFunction(data, moment, _, currentState.components, currentState.queries, currentState.globals);
+    result = evalFunction(
+      data,
+      moment,
+      _,
+      currentState.components,
+      currentState.queries,
+      currentState.globals,
+      currentState.variables
+    );
   } catch (err) {
     console.log('Transformation failed for query: ', query.name, err);
     result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
@@ -149,6 +160,13 @@ function showModal(_ref, modal, show) {
   return Promise.resolve();
 }
 
+function logoutAction(_ref) {
+  localStorage.clear();
+  _ref.props.history.push('/login');
+  window.location.href = '/login';
+
+  return Promise.resolve();
+}
 function executeAction(_ref, event, mode, customVariables) {
   console.log('nopski', customVariables);
   if (event) {
@@ -175,6 +193,9 @@ function executeAction(_ref, event, mode, customVariables) {
       case 'run-query': {
         const { queryId, queryName } = event;
         return runQuery(_ref, queryId, queryName, true, mode);
+      }
+      case 'logout': {
+        return logoutAction(_ref);
       }
 
       case 'open-webpage': {
@@ -250,9 +271,14 @@ function executeAction(_ref, event, mode, customVariables) {
         const data = resolveReferences(event.data, _ref.state.currentState, undefined, customVariables) ?? [];
         const fileName =
           resolveReferences(event.fileName, _ref.state.currentState, undefined, customVariables) ?? 'data.txt';
+        const fileType =
+          resolveReferences(event.fileType, _ref.state.currentState, undefined, customVariables) ?? 'csv';
 
-        const csv = generateCSV(data);
-        generateFile(fileName, csv);
+        const fileData = {
+          csv: generateCSV,
+          plaintext: (plaintext) => plaintext,
+        }[fileType](data);
+        generateFile(fileName, fileData);
         return Promise.resolve();
       }
 
@@ -619,7 +645,11 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
                         isLoading: false,
                       },
                       query.kind === 'restapi'
-                        ? { request: data.data.requestObject, response: data.data.responseObject }
+                        ? {
+                            request: data.data.requestObject,
+                            response: data.data.responseObject,
+                            responseHeaders: data.data.responseHeaders,
+                          }
                         : {}
                     ),
                   },
@@ -700,7 +730,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
                       data: finalData,
                       rawData,
                     },
-                    query.kind === 'restapi' ? { request: data.request, response: data.response } : {}
+                    query.kind === 'restapi'
+                      ? { request: data.request, response: data.response, responseHeaders: data.responseHeaders }
+                      : {}
                   ),
                 },
               },

@@ -2,6 +2,30 @@
 
 Code Editor widget is a versatile text editor for editing code and supports several languages. 
 
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Widget Reference - Code editor](/img/widgets/code-editor/editor.png)
+
+</div>
+
+## Properties
+
+:::info
+Any property having `Fx` button next to its field can be **programmatically configured**.
+:::
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Widget Reference - Code editor](/img/widgets/code-editor/prop.png)
+
+</div>
+
+| properties      | description | Expected value |
+| ----------- | ----------- | ----------------- |
+| Placeholder |  It specifies a hint that describes the expected value.| This field requires a `String` value |
+| Mode |  It is used to specify the language to be used for the code-editor.| See `info` below for the list of all supported languages |
+| Show Line Number |  This property is used to show or hide line numbers to the left of the editor.| This fields expects a boolean value `{{true}}` or `{{false}}` |
+
 :::info
 <details>
 <summary>Supporting all commonly used languages.</summary>
@@ -140,11 +164,29 @@ Code Editor widget is a versatile text editor for editing code and supports seve
 </details>
 :::
 
-<img class="screenshot-full" src="/img/widgets/code-editor/code-editor.png" alt="ToolJet - Widget Reference - Code Editor" height="420"/>
+## Layout
 
+<div style={{textAlign: 'center'}}>
 
-| properties      | description |
+![ToolJet - Widget Reference - Code editor](/img/widgets/code-editor/layout.png)
+
+</div>
+
+| Layout  | description |
 | ----------- | ----------- |
-| Placeholder |  It specifies a hint that describes the expected value.|
-| Mode |  It is used to specify the language to be used for the code-editor.|
-| Show Line Number |  This property is used to show or hide line numbers to the left of the editor.|
+| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
+| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
+
+## Styles
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Widget Reference - Code editor](/img/widgets/code-editor/styles.png)
+
+</div>
+
+| Styles  | description | 
+| ----------- | ----------- |
+| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
+| Disable | This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| Border radius | Use this property to modify the border radius of the editor. The field expects only numerical value from `1` to `100`, default is `0`. |

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Modal from '../HomePage/Modal';
 import { toast } from 'react-hot-toast';
 import { appVersionService } from '@/_services';
+import { Confirm } from './Viewer/Confirm';
 
 export const AppVersionsManager = function AppVersionsManager({
   appId,
@@ -14,9 +15,13 @@ export const AppVersionsManager = function AppVersionsManager({
   const [showDropDown, setShowDropDown] = useState(false);
   const [showModal, setShowModal] = useState(showCreateVersionModalPrompt);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
+  const [deletingVersionId, setDeletingVersionId] = useState(null);
+  const [isDeletingVersion, setIsDeletingVersion] = useState(false);
   const [editingAppVersion, setEditingAppVersion] = useState(editingVersion);
   const [versionName, setVersionName] = useState('');
   const [appVersions, setAppVersions] = useState([]);
+  const [showVersionDeletionConfirmation, setShowVersionDeletionConfirmation] = useState(false);
+  const [mouseHoveredOnVersion, setMouseHoveredOnVersion] = useState(null);
   const [createAppVersionFrom, setCreateAppVersionFrom] = useState(editingAppVersion);
 
   useEffect(() => {
@@ -31,10 +36,21 @@ export const AppVersionsManager = function AppVersionsManager({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    setEditingAppVersion(editingVersion);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingVersion]);
+
+  useEffect(() => {
+    appVersions[appVersions.findIndex((appVersion) => appVersion.id === editingVersion.id)] = editingAppVersion;
+    setCreateAppVersionFrom(editingAppVersion);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingAppVersion]);
+
   const wrapperRef = useRef(null);
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+      if (!showVersionDeletionConfirmation && wrapperRef.current && !wrapperRef.current.contains(event.target)) {
         setShowDropDown(false);
       }
     };
@@ -43,7 +59,7 @@ export const AppVersionsManager = function AppVersionsManager({
       // Unbind the event listener on clean up
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [wrapperRef]);
+  }, [wrapperRef, showVersionDeletionConfirmation]);
 
   const closeModal = () => {
     setShowModal(false);
@@ -80,6 +96,33 @@ export const AppVersionsManager = function AppVersionsManager({
     }
   };
 
+  const deleteAppVersion = (versionId) => {
+    setIsDeletingVersion(true);
+    appVersionService
+      .del(appId, versionId)
+      .then(() => {
+        toast.success('Version Deleted');
+
+        appVersionService.getAll(appId).then((data) => {
+          setAppVersions(data.versions);
+
+          if (editingAppVersion.id === versionId) {
+            const latestVersion = data.versions.at(0);
+            setAppDefinitionFromVersion(latestVersion);
+            setEditingAppVersion(latestVersion);
+          }
+        });
+
+        setIsDeletingVersion(false);
+        setShowVersionDeletionConfirmation(false);
+      })
+      .catch((_error) => {
+        setIsDeletingVersion(false);
+        setShowVersionDeletionConfirmation(false);
+        toast.error('Oops, something went wrong');
+      });
+  };
+
   const selectVersion = (version) => {
     setEditingAppVersion(version);
     setAppDefinitionFromVersion(version);
@@ -99,27 +142,68 @@ export const AppVersionsManager = function AppVersionsManager({
           <span className="px-1">{editingAppVersion.name}</span>
         </span>
         {showDropDown && (
-          <div className="dropdown-menu show">
-            {appVersions.map((version) =>
-              releasedVersionId == version.id ? (
-                <div className="row dropdown-item released" key={version.id} onClick={() => selectVersion(version)}>
-                  {version.name}
-                  <div className="released-subtext">
-                    <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
-                    <span className="px-1">Currently Released</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="dropdown-item" key={version.id} onClick={() => selectVersion(version)}>
-                  {version.name}
-                </div>
-              )
-            )}
-            <div className="dropdown-divider"></div>
-            <div className="dropdown-item" onClick={() => setShowModal(true)}>
-              <span className="color-primary create-link">Create Version</span>
+          <>
+            <div className="dropdown-menu app-version-container show">
+              <div className="app-version-content">
+                {appVersions.map((version) =>
+                  releasedVersionId == version.id ? (
+                    <div className="row dropdown-item released" key={version.id} onClick={() => selectVersion(version)}>
+                      <div className="col-md-4">{version.name}</div>
+                      <div className="released-subtext">
+                        <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
+                        <span className="px-1">Currently Released</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="dropdown-item row"
+                      key={version.id}
+                      onClick={() => selectVersion(version)}
+                      onMouseEnter={() => setMouseHoveredOnVersion(version.id)}
+                      onMouseLeave={() => setMouseHoveredOnVersion(null)}
+                    >
+                      <div className="col-md-4">{version.name}</div>
+
+                      <div className="col-md-2 offset-md-6">
+                        <button
+                          className="btn badge bg-azure-lt"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingVersionId(version.id);
+                            setShowVersionDeletionConfirmation(true);
+                          }}
+                          disabled={isDeletingVersion}
+                          style={{
+                            display: mouseHoveredOnVersion === version.id ? 'flex' : 'none',
+                          }}
+                        >
+                          <img
+                            src="/assets/images/icons/query-trash-icon.svg"
+                            width="12"
+                            height="12"
+                            className="mx-1"
+                            style={{ paddingLeft: '0.6px' }}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                )}
+                <div className="dropdown-divider"></div>
+              </div>
+              <div className="dropdown-item" onClick={() => setShowModal(true)}>
+                <span className="color-primary create-link">Create Version</span>
+              </div>
+              <Confirm
+                show={showVersionDeletionConfirmation}
+                message={'Do you really want to delete this version?'}
+                confirmButtonLoading={isDeletingVersion}
+                onConfirm={(versionId) => deleteAppVersion(versionId)}
+                queryConfirmationData={deletingVersionId}
+                onCancel={() => setShowVersionDeletionConfirmation(false)}
+              />
             </div>
-          </div>
+          </>
         )}
         <CreateVersionModal
           showModal={showModal}

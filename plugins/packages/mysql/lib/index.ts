@@ -1,6 +1,12 @@
 import { Knex, knex } from 'knex';
-import { cacheConnection, getCachedConnection, ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugins/common'
-import { SourceOptions, QueryOptions } from './types'
+import {
+  cacheConnection,
+  getCachedConnection,
+  ConnectionTestResult,
+  QueryService,
+  QueryResult,
+} from '@tooljet-plugins/common';
+import { SourceOptions, QueryOptions } from './types';
 
 export default class MysqlQueryService implements QueryService {
   private static _instance: MysqlQueryService;
@@ -104,10 +110,7 @@ export default class MysqlQueryService implements QueryService {
     const records = queryOptions['records'];
 
     for (const record of records) {
-      const primaryKeyValue =
-        typeof record[primaryKey] === "string"
-          ? `'${record[primaryKey]}'`
-          : record[primaryKey];
+      const primaryKeyValue = typeof record[primaryKey] === 'string' ? `'${record[primaryKey]}'` : record[primaryKey];
 
       queryText = `${queryText} UPDATE ${tableName} SET`;
 

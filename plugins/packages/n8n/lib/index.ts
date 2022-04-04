@@ -1,19 +1,18 @@
-import { QueryError, QueryResult, QueryService, ConnectionTestResult, parseJson } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
-import got from 'got';
-import { HTTPError, OptionsOfTextResponseBody } from 'got';
+import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { QueryOptions, SourceOptions } from './types';
+import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 
-const constructHeaders = (sourceOptions: SourceOptions) =>{
-  let headers = {};
-  if(sourceOptions.auth_type === 'header'){
-    headers[sourceOptions.name] = sourceOptions.value
+const constructHeaders = (sourceOptions: SourceOptions) => {
+  const headers = {};
+  if (sourceOptions.auth_type === 'header') {
+    headers[sourceOptions.name] = sourceOptions.value;
   }
   return headers;
-}
+};
 
-const extractJsonData = (content:any)=>{
+const extractJsonData = (content: any) => {
   return typeof content === 'string' ? JSON.parse(content) : content;
-}
+};
 
 export default class N8n implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -31,9 +30,9 @@ export default class N8n implements QueryService {
     Object.keys(headers).forEach((key) => (headers[key] === '' ? delete headers[key] : {}));
 
     const paramsContent = url_params ? extractJsonData(url_params) : '';
-    const bodyContent =  body ?  extractJsonData(body) : '';
+    const bodyContent = body ? extractJsonData(body) : '';
 
-    const constructPayload = (method:string) : OptionsOfTextResponseBody => {
+    const constructPayload = (method: string): OptionsOfTextResponseBody => {
       return {
         method: method === 'post' ? 'POST' : 'GET',
         headers: headers,
@@ -41,26 +40,26 @@ export default class N8n implements QueryService {
         password: authType === 'basic' && sourceOptions.password,
         searchParams: paramsContent,
         json: method === 'post' ? bodyContent : undefined,
-      }
-    }
-    
+      };
+    };
+
     try {
-      switch(operation){
-        case 'post' : {
-          if(bodyContent === ''){
-            throw new Error("Please provide body content");
+      switch (operation) {
+        case 'post': {
+          if (bodyContent === '') {
+            throw new Error('Please provide body content');
           }
           const response = await got(url, constructPayload('post'));
           result = JSON.parse(response.body);
           break;
         }
         case 'get': {
-          const response = await got(url,constructPayload('get'));
+          const response = await got(url, constructPayload('get'));
           result = JSON.parse(response.body);
           break;
         }
-        default : {
-          throw new Error("Select a method");
+        default: {
+          throw new Error('Select a method');
         }
       }
     } catch (error) {

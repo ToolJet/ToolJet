@@ -25,6 +25,19 @@ sudo luarocks install lua-resty-auto-ssl
 sudo mkdir /etc/resty-auto-ssl /var/log/openresty /etc/fallback-certs
 sudo chown -R www-data:www-data /etc/resty-auto-ssl
 
+# Oracle db client library setup
+sudo apt install -y libaio1
+curl -o instantclient-basiclite.zip https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip -SL && \
+    unzip instantclient-basiclite.zip && \
+    sudo mv instantclient*/ /usr/lib/instantclient && \
+    rm instantclient-basiclite.zip && \
+    sudo ln -s /usr/lib/instantclient/libclntsh.so.19.1 /usr/lib/libclntsh.so && \
+    sudo ln -s /usr/lib/instantclient/libocci.so.19.1 /usr/lib/libocci.so && \
+    sudo ln -s /lib/libc.so.6 /usr/lib/libresolv.so.2 && \
+    sudo ln -s /lib64/ld-linux-x86-64.so.2 /usr/lib/ld-linux-x86-64.so.2
+export LD_LIBRARY_PATH="/usr/lib/instantclient"
+
+
 # Gen fallback certs
 sudo openssl rand -out /home/ubuntu/.rnd -hex 256
 sudo chown www-data:www-data /home/ubuntu/.rnd
@@ -52,6 +65,7 @@ mv /tmp/setup_app ~/app/setup_app
 sudo chmod +x ~/app/setup_app
 
 sudo npm install -g npm@7.20.0
+sudo chown -R 1000:1000 "/home/ubuntu/.npm"
 
 # Building ToolJet app
 sudo npm install -g @nestjs/cli

@@ -8,10 +8,11 @@ export const LeftSidebarComment = ({ toggleComments, appVersionsId }) => {
     <LeftSidebarItem
       tip={appVersionsId ? 'toggle comments' : 'Comments section will be available once you save this application'}
       icon={`comments`}
-      className={cx(`left-sidebar-item sidebar-zoom position-relative sidebar-comments`, {
+      className={cx(`left-sidebar-item sidebar-zoom left-sidebar-layout position-relative sidebar-comments`, {
         disabled: !appVersionsId,
         active: isActive,
       })}
+      text={'Comments'}
       onClick={() => {
         toggleActive(!isActive);
         toggleComments();

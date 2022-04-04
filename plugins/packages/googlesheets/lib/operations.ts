@@ -35,7 +35,8 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
 
 export async function batchUpdateToSheet(
   spreadSheetId: string,
-  sheet: string='',
+  spreadsheetRange = 'A1:Z500',
+  sheet = '',
   requestBody: any,
   filterData: any,
   filterOperator: string,
@@ -45,44 +46,20 @@ export async function batchUpdateToSheet(
     return new Error('filterOperator is required');
   }
 
-  const lookUpData = await lookUpSheetData(spreadSheetId, sheet, authHeader);  
+  const lookUpData = await lookUpSheetData(spreadSheetId, spreadsheetRange, sheet, authHeader);
 
-  const updateBody = (requestBody, filterCondition, filterOperator, data) => {
-    const rowsIndexes = getRowsIndex(filterCondition, filterOperator, data) as any[];
-    const colIndexes = getInputKeys(requestBody, data);
+  const body = await makeRequestBodyToBatchUpdate(requestBody, filterData, filterOperator, lookUpData);
 
-    const updateCellIndexes = [];
-    colIndexes.map((col) => {
-      rowsIndexes.map((rowIndex) =>
-        updateCellIndexes.push({
-          ...col,
-          cellIndex: `${col.colIndex}${rowIndex}`,
-        })
-      );
-    });
-
-    const body = [];
-    Object.entries(requestBody).map((item) => {
-      updateCellIndexes.map((cell) => {
-        if (item[0] === cell.col) {
-          body.push({ cellValue: item[1], cellIndex: cell.cellIndex });
-        }
-      });
-    });
-
-    const _data = body.map((data) => {
-      return {
-        majorDimension: 'ROWS',
-        range: `${sheet}!${data.cellIndex}`,
-        values: [[data.cellValue]],
-      };
-    });
-
-    return _data;
-  };
+  const _data = body.map((data) => {
+    return {
+      majorDimension: 'ROWS',
+      range: `${sheet}!${data.cellIndex}`,
+      values: [[data.cellValue]],
+    };
+  });
 
   const reqBody = {
-    data: updateBody(requestBody, filterData, filterOperator, lookUpData),
+    data: _data,
     valueInputOption: 'USER_ENTERED',
     includeValuesInResponse: true,
   };
@@ -183,8 +160,8 @@ export async function deleteData(
   return await deleteDataFromSheet(spreadSheetId, sheet, rowIndex, authHeader);
 }
 
-async function lookUpSheetData(spreadSheetId: string, sheet:string, authHeader: any) {
-  const range = `${sheet}!A1:Z500`;
+async function lookUpSheetData(spreadSheetId: string, spreadsheetRange: string, sheet: string, authHeader: any) {
+  const range = `${sheet}!${spreadsheetRange}`;
   const responseLookUpCellValues = await makeRequestToLookUpCellValues(spreadSheetId, range, authHeader);
   const data = await responseLookUpCellValues['values'];
 
@@ -196,10 +173,15 @@ const getInputKeys = (inputBody, data) => {
   const keys = Object.keys(inputBody);
   const arr = [];
   keys.map((key) =>
-    data.filter((val, index) => {
+    data.forEach((val, index) => {
       if (val[0] === key) {
-        const kIndex = `${String.fromCharCode(65 + index)}`;
-        arr.push({ col: val[0], colIndex: kIndex });
+        let keyIndex = '';
+        if (index >= 26) {
+          keyIndex = numberToLetters(index);
+        } else {
+          keyIndex = `${String.fromCharCode(65 + index)}`;
+        }
+        arr.push({ col: val[0], colIndex: keyIndex });
       }
     })
   );
@@ -235,4 +217,39 @@ const getRowsIndex = (inputFilter, filterOperator, response) => {
   }
 
   return rowIndex;
+};
+
+function numberToLetters(num) {
+  let letters = '';
+  while (num >= 0) {
+    letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[num % 26] + letters;
+    num = Math.floor(num / 26) - 1;
+  }
+  return letters;
+}
+
+export const makeRequestBodyToBatchUpdate = (requestBody, filterCondition, filterOperator, data) => {
+  const rowsIndexes = getRowsIndex(filterCondition, filterOperator, data) as any[];
+  const colIndexes = getInputKeys(requestBody, data);
+
+  const updateCellIndexes = [];
+  colIndexes.map((col) => {
+    rowsIndexes.map((rowIndex) =>
+      updateCellIndexes.push({
+        ...col,
+        cellIndex: `${col.colIndex}${rowIndex}`,
+      })
+    );
+  });
+
+  const body = [];
+  Object.entries(requestBody).map((item) => {
+    updateCellIndexes.map((cell) => {
+      if (item[0] === cell.col) {
+        body.push({ cellValue: item[1], cellIndex: cell.cellIndex });
+      }
+    });
+  });
+
+  return body;
 };

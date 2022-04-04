@@ -4,10 +4,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class SetImageBorderTypeToNone1641446596775 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
-    const queryBuilder = queryRunner.connection.createQueryBuilder();
-    const appVersionRepository = entityManager.getRepository(AppVersion);
-
-    const appVersions = await appVersionRepository.find();
+    const appVersions = await entityManager.find(AppVersion);
 
     for (const version of appVersions) {
       const definition = version['definition'];
@@ -35,7 +32,7 @@ export class SetImageBorderTypeToNone1641446596775 implements MigrationInterface
         definition['components'] = components;
         version.definition = definition;
 
-        await queryBuilder.update(AppVersion).set({ definition }).where('id = :id', { id: version.id }).execute();
+        await entityManager.update(AppVersion, { id: version.id }, { definition });
       }
     }
   }

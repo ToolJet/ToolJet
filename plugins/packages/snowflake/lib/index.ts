@@ -5,9 +5,9 @@ import {
   ConnectionTestResult,
   cacheConnection,
   getCachedConnection,
-} from "@tooljet-plugins/common";
-import { SourceOptions, QueryOptions } from "./types";
-import * as snowflake from "snowflake-sdk";
+} from '@tooljet-plugins/common';
+import { SourceOptions, QueryOptions } from './types';
+import * as snowflake from 'snowflake-sdk';
 
 export default class Snowflake implements QueryService {
   async connExecuteAsync(connection: snowflake.Connection, options: any) {
@@ -45,37 +45,35 @@ export default class Snowflake implements QueryService {
         sqlText,
       });
 
-      return { status: "ok", data: result.rows };
+      return { status: 'ok', data: result.rows };
     } catch (err) {
-      throw new QueryError("Query could not be completed", err.message, {});
+      throw new QueryError('Query could not be completed', err.message, {});
     }
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     await this.getConnection(sourceOptions, {}, false);
 
-    return { status: "ok" };
+    return { status: 'ok' };
   }
 
   async connAsync(connection: snowflake.Connection) {
     return new Promise((resolve, reject) => {
-      connection.connect(
-        function(err, conn) {
-          if (err) reject(err);
-          resolve(conn);
-        }
-      );
+      connection.connect(function (err, conn) {
+        if (err) reject(err);
+        resolve(conn);
+      });
     });
   }
 
   async buildConnection(sourceOptions: SourceOptions) {
-    let connection = snowflake.createConnection({
+    const connection = snowflake.createConnection({
       account: sourceOptions.account,
       username: sourceOptions.username,
       password: sourceOptions.password,
     });
 
-    return await this.connAsync(connection)
+    return await this.connAsync(connection);
   }
 
   async getConnection(
@@ -86,10 +84,7 @@ export default class Snowflake implements QueryService {
     dataSourceUpdatedAt?: string
   ): Promise<any> {
     if (checkCache) {
-      let connection = await getCachedConnection(
-        dataSourceId,
-        dataSourceUpdatedAt
-      );
+      let connection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
 
       if (connection) {
         return connection;

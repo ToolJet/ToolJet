@@ -668,7 +668,8 @@ export const componentTypes = [
       borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
-      value: {},
+      value:
+        'ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀',
     },
     definition: {
       others: {
@@ -704,6 +705,8 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+      defaultStartDate: { type: 'code', displayName: 'Default start date' },
+      defaultEndDate: { type: 'code', displayName: 'Default end date' },
       format: { type: 'code', displayName: 'Format' },
     },
     events: {},
@@ -722,6 +725,9 @@ export const componentTypes = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
+        defaultStartDate: { value: '01/04/2022' },
+        defaultEndDate: { value: '10/04/2022' },
+
         format: { value: 'DD/MM/YYYY' },
       },
       events: [],
@@ -742,6 +748,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+      defaultValue: { type: 'code', displayName: 'Default value' },
       text: { type: 'code', displayName: 'Text' },
       loadingState: { type: 'toggle', displayName: 'Show loading state' },
     },
@@ -902,6 +909,7 @@ export const componentTypes = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       selectedTextColor: { type: 'color', displayName: 'Selected Text Color' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
+      justifyContent: { type: 'alignButtons', displayName: 'Align Text' },
     },
     exposedVariables: {
       value: null,
@@ -928,6 +936,7 @@ export const componentTypes = [
         borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        justifyContent: { value: 'left' },
       },
     },
   },
@@ -936,7 +945,7 @@ export const componentTypes = [
     displayName: 'Multiselect',
     description: 'Select multiple values from options',
     defaultSize: {
-      width: 8,
+      width: 12,
       height: 30,
     },
     component: 'Multiselect',
@@ -949,6 +958,7 @@ export const componentTypes = [
       value: { type: 'code', displayName: 'Default value' },
       values: { type: 'code', displayName: 'Option values' },
       display_values: { type: 'code', displayName: 'Option labels' },
+      showAllOption: { type: 'toggle', displayName: 'Enable select All option' },
     },
     events: {
       onSelect: { displayName: 'On select' },
@@ -1490,7 +1500,7 @@ export const componentTypes = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
-    exposedVariables: {},
+    exposedVariables: { currentTab: '' },
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -1822,6 +1832,7 @@ export const componentTypes = [
     properties: {
       primaryValueLabel: { type: 'code', displayName: 'Primary value label' },
       primaryValue: { type: 'code', displayName: 'Primary value' },
+      hideSecondary: { type: 'toggle', displayName: 'Hide secondary value' },
       secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
       secondaryValue: { type: 'code', displayName: 'Secondary value' },
       secondarySignDisplay: { type: 'code', displayName: 'Secondary sign display' },
@@ -1852,6 +1863,61 @@ export const componentTypes = [
         primaryTextColour: { value: '#000000' },
         secondaryLabelColour: { value: '#8092AB' },
         secondaryTextColour: { value: '#36AF8B' },
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'RangeSlider',
+    displayName: 'Range slider',
+    description: 'Can be used to show slider with a range',
+    component: 'RangeSlider',
+    defaultSize: {
+      width: 9,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      min: { type: 'number', displayName: 'Min' },
+      max: { type: 'number', displayName: 'Max' },
+      value: { type: 'code', displayName: 'Value' },
+      enableTwoHandle: { type: 'toggle', displayName: 'Two handles' },
+    },
+    events: {},
+    styles: {
+      lineColor: { type: 'color', displayName: 'Line color' },
+      handleColor: { type: 'color', displayName: 'Handle color' },
+      trackColor: { type: 'color', displayName: 'Track color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      value: null,
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        min: {
+          value: '{{0}}',
+        },
+        max: {
+          value: '{{100}}',
+        },
+        value: {
+          value: '{{50}}',
+        },
+        enableTwoHandle: { value: false },
+      },
+      events: [],
+      styles: {
+        lineColor: { value: '#E9E9E9' },
+        handleColor: { value: '#4D72FA' },
+        trackColor: { value: '#4D72FA' },
         visibility: { value: '{{true}}' },
       },
     },

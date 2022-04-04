@@ -1,1 +1,1 @@
-export type SourceOptions = { api_key: string; };
+export type SourceOptions = { api_key: string };

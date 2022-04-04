@@ -274,10 +274,18 @@ export async function executeMultilineJS(currentState, code) {
 
   try {
     const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
-    var evalFn = new AsyncFunction('moment', '_', 'components', 'queries', 'globals', 'axios', code);
+    var evalFn = new AsyncFunction('moment', '_', 'components', 'queries', 'globals', 'axios', 'variables', code);
     result = {
       status: 'ok',
-      data: await evalFn(moment, _, currentState.components, currentState.queries, currentState.globals, axios),
+      data: await evalFn(
+        moment,
+        _,
+        currentState.components,
+        currentState.queries,
+        currentState.globals,
+        axios,
+        currentState.variables
+      ),
     };
   } catch (err) {
     console.log('JS execution failed: ', err);

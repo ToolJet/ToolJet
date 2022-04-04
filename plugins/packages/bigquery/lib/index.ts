@@ -11,19 +11,25 @@ export default class Bigquery implements QueryService {
 
     try {
       switch (operation) {
-        case 'list_datasets':
+        case 'list_datasets': {
           const [datasets] = await client.getDatasets(this.parseJSON(queryOptions.options));
           result = datasets;
           break;
-        case 'list_tables':
+        }
+        case 'list_tables': {
           const [tables] = await client.dataset(queryOptions.datasetId).getTables(this.parseJSON(queryOptions.options));
           result = tables;
           break;
-        case 'query':
-          const [job] = await client.createQueryJob({ ...this.parseJSON(queryOptions.queryOptions), query: queryOptions.query });
+        }
+        case 'query': {
+          const [job] = await client.createQueryJob({
+            ...this.parseJSON(queryOptions.queryOptions),
+            query: queryOptions.query,
+          });
           const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
           result = rows;
           break;
+        }
       }
     } catch (error) {
       console.log(error);
@@ -39,20 +45,18 @@ export default class Bigquery implements QueryService {
   async getConnection(sourceOptions: any, _options?: object): Promise<any> {
     const privateKey = this.getPrivateKey(sourceOptions?.private_key);
 
-    const client = new BigQuery({
+    return new BigQuery({
       projectId: privateKey?.project_id,
       credentials: {
         client_email: privateKey?.client_email,
         private_key: privateKey?.private_key,
       },
     });
-  
-    return client;
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const privateKey = this.getPrivateKey(sourceOptions?.private_key);
-  
+
     const client = new BigQuery({
       projectId: privateKey?.project_id,
       credentials: {

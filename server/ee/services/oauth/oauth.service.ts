@@ -25,11 +25,13 @@ export class OauthService {
   #isValidDomain(domain: string): boolean {
     const restrictedDomain = this.configService.get<string>('SSO_RESTRICTED_DOMAIN');
 
+    if (!restrictedDomain) {
+      return true;
+    }
     if (!domain) {
       return false;
     }
     if (
-      restrictedDomain &&
       !restrictedDomain
         .split(',')
         .filter((e) => !!e)
