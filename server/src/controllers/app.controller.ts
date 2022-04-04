@@ -1,4 +1,4 @@
-import { AppAuthenticationDto } from '@dto/app-authentication.dto';
+import { AppAuthenticationDto, AppPasswordResetDto } from '@dto/app-authentication.dto';
 import { Controller, Get, Request, Post, UseGuards, Body } from '@nestjs/common';
 import { PasswordLoginDisabledGuard } from 'src/modules/auth/password-login-disabled.guard';
 import { AuthService } from '../services/auth.service';
@@ -26,7 +26,7 @@ export class AppController {
   }
 
   @Post('/reset_password')
-  async resetPassword(@Body() appAuthDto: AppAuthenticationDto) {
+  async resetPassword(@Body() appAuthDto: AppPasswordResetDto) {
     const { token, password } = appAuthDto;
     await this.authService.resetPassword(token, password);
     return {};
