@@ -272,7 +272,7 @@ function executeAction(_ref, event, mode, customVariables) {
         const fileName =
           resolveReferences(event.fileName, _ref.state.currentState, undefined, customVariables) ?? 'data.txt';
         const fileType =
-          resolveReferences(event.fileType, _ref.state.currentState, undefined, customVariables) ?? 'plaintext';
+          resolveReferences(event.fileType, _ref.state.currentState, undefined, customVariables) ?? 'csv';
 
         const fileData = {
           csv: generateCSV,
