@@ -1,8 +1,12 @@
 import React from 'react';
 
-const Avatar = ({ text, borderColor = '' }) => {
+const Avatar = ({ text, title = '', borderColor = '' }) => {
   return (
-    <span style={{ border: `1px solid ${borderColor}` }} className="avatar avatar-sm avatar-rounded animation-fade">
+    <span
+      title={title}
+      style={{ border: `1px solid ${borderColor}` }}
+      className="avatar avatar-sm avatar-rounded animation-fade"
+    >
       {text}
     </span>
   );

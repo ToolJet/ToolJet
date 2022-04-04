@@ -1,41 +1,30 @@
 import React from 'react';
 import { useOthers, useSelf } from 'y-presence';
+import { xorWith, isEqual } from 'lodash';
 import { Cursor } from './Cursor';
 import { Editor } from '@/Editor';
-
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min)) + min;
-}
-
-function hslToHex(h, s, l) {
-  l /= 100;
-  const a = (s * Math.min(l, 1 - l)) / 100;
-  const f = (n) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color)
-      .toString(16)
-      .padStart(2, '0'); // convert to Hex and prefix "0" if needed
-  };
-  return `#${f(0)}${f(8)}${f(4)}`;
-}
-
-function generateRandomHslColor() {
-  const h = getRandomInt(1, 360);
-
-  return hslToHex(h, 100, 75);
-}
+import { USER_COLORS } from '@/_helpers/constants';
 
 const RealtimeEditor = (props) => {
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
+  const others = useOthers();
+
+  const othersOnSameVersion = others.filter(
+    (other) => other?.presence?.editingVersionId === self?.presence.editingVersionId
+  );
+
+  const unavailableColors = others.map((other) => other?.presence?.color);
+  const availableColors = xorWith(USER_COLORS, unavailableColors, isEqual);
+
   const { self, updatePresence } = useSelf({
-    name: currentUser.first_name?.charAt(0) + currentUser.last_name?.charAt(0),
+    firstName: currentUser.first_name,
+    lastName: currentUser.last_name,
     image: '', // todo: add image feature for a user avatar
     editingVersionId: '',
     x: 0,
     y: 0,
-    color: generateRandomHslColor(),
+    color: availableColors[Math.floor(Math.random() * availableColors.length)],
   });
 
   const handlePointerMove = React.useCallback(
@@ -49,11 +38,6 @@ const RealtimeEditor = (props) => {
       }
     },
     [updatePresence]
-  );
-
-  const others = useOthers();
-  const othersOnSameVersion = others.filter(
-    (other) => other?.presence?.editingVersionId === self?.presence.editingVersionId
   );
 
   return (
