@@ -65,7 +65,9 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                       className="canvas-background-picker"
                       onFocus={() => setShowPicker(true)}
                       color={canvasBackgroundColor}
-                      onChangeComplete={(color) => globalSettingsChanged('canvasBackgroundColor', color.hex)}
+                      onChangeComplete={(color) =>
+                        globalSettingsChanged('canvasBackgroundColor', [color.hex, color.rgb])
+                      }
                     />
                   </div>
                 )}
