@@ -522,6 +522,10 @@ class Editor extends React.Component {
     );
     setStateAsync(_self, newDefinition).then(() => {
       this.autoSave();
+      this.props.ymap.set('appDef', {
+        newDefinition: newDefinition.appDefinition,
+        editingVersionId: this.state.editingVersion?.id,
+      });
     });
   };
 
