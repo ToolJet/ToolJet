@@ -10,6 +10,7 @@ const operationColorMapping = {
   delete: 'red',
   put: 'yellow',
   patch: 'orange',
+  head: 'blue',
 };
 
 class Openapi extends React.Component {
@@ -115,7 +116,7 @@ class Openapi extends React.Component {
 
     for (const path of Object.keys(paths)) {
       for (const operation of Object.keys(paths[path])) {
-        if (['get', 'post', 'delete', 'put', 'patch'].includes(operation, 0)) {
+        if (['get', 'post', 'delete', 'put', 'patch', 'head'].includes(operation, 0)) {
           options.push({
             value: `${operation},${path}`,
             name: path,
