@@ -9,6 +9,7 @@ const operationColorMapping = {
   post: 'green',
   delete: 'red',
   put: 'yellow',
+  patch: 'orange',
 };
 
 class Openapi extends React.Component {
@@ -129,7 +130,6 @@ class Openapi extends React.Component {
 
   changeParam = (paramType, paramName, value) => {
     const options = this.state.options;
-    console.log(paramType, paramName, value);
     const newOptions = {
       ...options,
       params: {
@@ -213,7 +213,6 @@ class Openapi extends React.Component {
       if (selectedOperation.requestBody) {
         const requestType = Object.keys(selectedOperation.requestBody.content)[0];
         requestBody = selectedOperation.requestBody.content[requestType];
-        console.log(Object.keys(requestBody.schema.properties));
       }
     }
 
