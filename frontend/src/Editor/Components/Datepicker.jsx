@@ -20,6 +20,7 @@ export const Datepicker = function Datepicker({
 
   const [date, setDate] = useState(new Date());
   const [excludedDates, setExludedDates] = useState([]);
+  const [validityCheck, setValidityCheck] = useState();
 
   const selectedDateFormat = enableTime ? `${format} LT` : format;
 
@@ -40,12 +41,8 @@ export const Datepicker = function Datepicker({
   };
 
   useEffect(() => {
-    console.log('valieeeee');
-
     const dateMomentInstance = moment(defaultValue, selectedDateFormat);
     if (dateMomentInstance.isValid()) {
-      console.log('valie');
-
       setDate(dateMomentInstance.toDate());
       setExposedVariable('value', defaultValue);
     }
@@ -53,28 +50,31 @@ export const Datepicker = function Datepicker({
   }, [defaultValue]);
 
   useEffect(() => {
-    const lastDate = disabledDates[disabledDates.length - 1];
-    console.log('ex', disabledDates);
-
-    const dateValidityCheck = moment(lastDate, format).isValid();
-    console.log('ppp', dateValidityCheck);
-
-    if (dateValidityCheck) {
-      console.log('ppp');
-
+    setValidityCheck(true);
+    disabledDates &&
       disabledDates?.map((item) => {
-        console.log('ppp', item);
-
-        if (moment(item, format).isValid()) {
-          if (!excludedDates?.includes(item)) setExludedDates(...excludedDates, moment(item, format).toDate());
+        if (item.length > 5 && !moment(item, format).isValid()) {
+          setValidityCheck(false);
         }
       });
-    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledDates, format]);
-  useEffect(() => {
-    console.log('ex', excludedDates);
-  }, [excludedDates]);
 
+  useEffect(() => {
+    if (validityCheck) {
+      setExludedDates([]);
+      disabledDates &&
+        disabledDates?.map((item) => {
+          if (!excludedDates.includes(moment(item, format).toDate())) {
+            setExludedDates([...excludedDates, moment(item, format).toDate()]);
+          }
+        });
+    }
+  }, [disabledDates, format, validityCheck]);
+
+  useEffect(() => {
+    console.log('***', excludedDates, disabledDates);
+  }, [excludedDates]);
   const validationData = validate(exposedVariables.value);
 
   const { isValid, validationError } = validationData;

@@ -495,7 +495,7 @@ export const componentTypes = [
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
         enableDate: { value: '{{true}}' },
-        disabledDates: { value: ['01/04/2021'] },
+        disabledDates: { value: ['1/09/2021'] },
       },
       events: [],
       styles: {
