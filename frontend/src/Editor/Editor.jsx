@@ -520,9 +520,9 @@ class Editor extends React.Component {
 
   globalSettingsChanged = (key, value) => {
     const appDefinition = { ...this.state.appDefinition };
-    if (!value[1].a) appDefinition.globalSettings[key] = value;
+    if (!value?.[1]?.a) appDefinition.globalSettings[key] = value;
     else {
-      const hexCode = `${value[0]}${this.decimalToHex(value[1].a)}`;
+      const hexCode = `${value?.[0]}${this.decimalToHex(value?.[1]?.a)}`;
       appDefinition.globalSettings[key] = hexCode;
     }
     this.setState(
