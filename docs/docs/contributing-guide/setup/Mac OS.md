@@ -20,8 +20,7 @@ Follow these steps to setup and run ToolJet on macOS for development purposes. O
     source $(brew --prefix nvm)/nvm.sh
     nvm install 14.17.3
     nvm use 14.17.3
-    cd ~/.nvm/versions/node/v14.17.3/lib
-    npm install npm@7.20.0
+    npm install -g npm@7.20.0
     ```
 
     1.3 Install Postgres
