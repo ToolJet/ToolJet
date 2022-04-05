@@ -94,7 +94,17 @@ export const Folders = function Folders({
                 onClick={() => handleFolderChange(folder)}
               >
                 <span className="me-2">
-                  <img src="/assets/images/icons/folder.svg" alt="" width="14" height="14" className="folder-ico" />
+                  {darkMode ? (
+                    <img
+                      src="/assets/images/icons/folder-dark2.svg"
+                      alt=""
+                      width="14"
+                      height="14"
+                      className="folder-ico"
+                    />
+                  ) : (
+                    <img src="/assets/images/icons/folder.svg" alt="" width="14" height="14" className="folder-ico" />
+                  )}
                 </span>
                 {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
               </a>
