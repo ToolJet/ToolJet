@@ -49,8 +49,8 @@ export const Datepicker = function Datepicker({
   }, [defaultValue]);
 
   useEffect(() => {
-    const _exluded = [];
     if (Array.isArray(disabledDates) && disabledDates.length > 0) {
+      const _exluded = [];
       disabledDates?.map((item) => {
         if (moment(item, format).isValid()) {
           _exluded.push(moment(item, format).toDate());
