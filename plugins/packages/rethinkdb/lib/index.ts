@@ -55,10 +55,6 @@ export default class Rethinkdb implements QueryService {
           break;
         }
 
-        case 'update_docs': {
-          result = await this.listAllTables(name, connection, database);
-          break;
-        }
         case 'delete_docs_by_id': {
           result = await this.deleteDocumentByID(name, tablename, key, connection, database);
           break;
