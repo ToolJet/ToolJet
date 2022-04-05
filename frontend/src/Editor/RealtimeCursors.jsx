@@ -10,10 +10,6 @@ const RealtimeEditor = (props) => {
 
   const others = useOthers();
 
-  const othersOnSameVersion = others.filter(
-    (other) => other?.presence?.editingVersionId === self?.presence.editingVersionId
-  );
-
   const unavailableColors = others.map((other) => other?.presence?.color);
   const availableColors = xorWith(USER_COLORS, unavailableColors, isEqual);
 
@@ -26,6 +22,10 @@ const RealtimeEditor = (props) => {
     y: 0,
     color: availableColors[Math.floor(Math.random() * availableColors.length)],
   });
+
+  const othersOnSameVersion = others.filter(
+    (other) => other?.presence?.editingVersionId === self?.presence.editingVersionId
+  );
 
   const handlePointerMove = React.useCallback(
     (e) => {
