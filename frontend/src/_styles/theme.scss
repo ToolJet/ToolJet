@@ -1215,8 +1215,7 @@ button {
   }
   .layout-buttons {
     svg {
-      filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg)
-        brightness(99%) contrast(96%);
+      filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg) brightness(99%) contrast(96%);
     }
   }
 }
@@ -4681,6 +4680,11 @@ div#driver-page-overlay {
 }
 .tablr-gutter-x-0 {
   --tblr-gutter-x: 0 !important;
+}
+
+.btn-loading:after {
+  border: 1px solid var(--loader-color);
+  border-right-color: transparent;
 }
 
 .flip-dropdown-help-text {
