@@ -471,7 +471,7 @@ export const componentTypes = [
       format: { type: 'code', displayName: 'Format' },
       enableTime: { type: 'code', displayName: 'Enable time selection?' },
       enableDate: { type: 'code', displayName: 'Enable date selection?' },
-      disabledDates: { type: 'code', displayName: 'Diasbled dates' },
+      disabledDates: { type: 'code', displayName: 'Disabled dates' },
     },
     events: {},
     styles: {

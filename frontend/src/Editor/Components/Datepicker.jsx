@@ -19,7 +19,7 @@ export const Datepicker = function Datepicker({
   const { visibility, disabledState, borderRadius } = styles;
 
   const [date, setDate] = useState(new Date());
-  const [excludedDates, setExludedDates] = useState([]);
+  const [excludedDates, setExcludedDates] = useState([]);
 
   const selectedDateFormat = enableTime ? `${format} LT` : format;
 
@@ -56,7 +56,7 @@ export const Datepicker = function Datepicker({
           _exluded.push(moment(item, format).toDate());
         }
       });
-    setExludedDates(_exluded);
+    setExcludedDates(_exluded);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledDates, format]);
 
