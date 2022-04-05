@@ -192,7 +192,7 @@ export function CodeHinter({
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div className={`mb-2 field ${options.className}`}>
-          <ToolTip label={paramLabel} meta={fieldMeta} />
+          <ToolTip label={paramLabel} meta={fieldMeta} labelClass={'widget-style-field-header'} />
         </div>
         <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
           <div style={{ width: width, display: codeShow ? 'flex' : 'none', marginTop: '-1px' }}>
