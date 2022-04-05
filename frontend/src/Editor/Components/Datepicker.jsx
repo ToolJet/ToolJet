@@ -56,15 +56,14 @@ export const Datepicker = function Datepicker({
           _exluded.push(moment(item, format).toDate());
         }
       });
-
       setExcludedDates(_exluded);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledDates, format]);
 
   const validationData = validate(exposedVariables.value);
-
   const { isValid, validationError } = validationData;
+
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
