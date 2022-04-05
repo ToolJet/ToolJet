@@ -50,7 +50,7 @@ export const Inspector = ({
 
     let childComponents = [];
 
-    if (component.component.component === 'Tabs') {
+    if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
       childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent?.startsWith(component.id));
     } else {
       childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
@@ -60,7 +60,7 @@ export const Inspector = ({
       let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
       childComponent.id = uuidv4();
 
-      if (component.component.component === 'Tabs') {
+      if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
         const childTabId = childComponent.parent.split('-').at(-1);
         childComponent.parent = `${clonedComponent.id}-${childTabId}`;
       } else {
