@@ -17,32 +17,18 @@
   "defaults": {
     "format": {
       "value": "json"
+    },
+    "definition": {
+      "value": ""
     }
   },
   "properties": {
     "format": {
       "label": "Format",
       "key": "format",
-      "type": "dropdown",
-      "description": "Format of definition",
-      "list": [
-        {
-          "name": "JSON",
-          "value": "json"
-        },
-        {
-          "name": "YAML",
-          "value": "yaml"
-        }
-      ]
-    },
-    "definition":{
-      "label": "Definition",
-      "key": "definition",
-      "type": "textarea",
-      "rows": 15,
-      "description": "OpenApi Definition [ JSON / YAML ]"
+      "type": "react-component-openapi-validator",
+      "description": "Format of definition"
     }
   },
-  "required": ["spec_definition"]
+  "required": ["definition"]
 }

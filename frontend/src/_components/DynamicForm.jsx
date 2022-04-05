@@ -6,6 +6,7 @@ import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
+import OpenApi from '@/_ui/OpenAPI';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 
 import GoogleSheets from '@/_components/Googlesheets';
@@ -54,6 +55,8 @@ const DynamicForm = ({
         return Slack;
       case 'codehinter':
         return CodeHinter;
+      case 'react-component-openapi-validator':
+        return OpenApi;
       default:
         return <div>Type is invalid</div>;
     }
@@ -145,6 +148,12 @@ const DynamicForm = ({
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
           ignoreBraces,
+        };
+      case 'react-component-openapi-validator':
+        return {
+          format: options.format?.value,
+          definition: options.definition?.value,
+          optionchanged,
         };
       default:
         return {};
