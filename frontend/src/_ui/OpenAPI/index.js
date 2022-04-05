@@ -2,10 +2,12 @@ import React from 'react';
 import Select from '@/_ui/Select';
 import Textarea from '@/_ui/Textarea';
 import { openapiService } from '@/_services';
+import OpenapiAuth from './OpenapiAuth';
 
-const OpenApi = ({ optionchanged, format, definition, auth_type }) => {
+const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, username, password }) => {
   const [securities, setSecurities] = React.useState([]);
   const [loadingSpec, setLoadingSpec] = React.useState(false);
+  const [selectedAuth, setSelectedAuth] = React.useState();
 
   const validateDef = () => {
     if (definition) {
@@ -74,6 +76,17 @@ const OpenApi = ({ optionchanged, format, definition, auth_type }) => {
     return options;
   };
 
+  const getSelectedAuth = (auth_type) => {
+    securities.map((security) => {
+      if (Array.isArray(security)) {
+        if (security[0].type === auth_type || security[0].scheme === auth_type) setSelectedAuth(security);
+      } else {
+        if (security.type === auth_type || security.scheme === auth_type) setSelectedAuth(security);
+      }
+    });
+    optionchanged('auth_type', auth_type);
+  };
+
   return (
     <>
       <Select
@@ -108,14 +121,21 @@ const OpenApi = ({ optionchanged, format, definition, auth_type }) => {
       )}
 
       {!loadingSpec && securities.length > 0 && (
-        <div className="col-md-12">
-          <label className="form-label text-muted mt-3">Authentication</label>
-          <Select
-            options={computeAuthOptions()}
-            value={auth_type}
-            onChange={(value) => optionchanged('auth_type', value)}
+        <>
+          <div className="col-md-12">
+            <label className="form-label text-muted mt-3">Authentication</label>
+            <Select options={computeAuthOptions()} value={auth_type} onChange={(value) => getSelectedAuth(value)} />
+          </div>
+
+          <OpenapiAuth
+            auth_type={auth_type}
+            username={username}
+            password={password}
+            optionchanged={optionchanged}
+            bearer_token={bearer_token}
+            authObject={selectedAuth}
           />
-        </div>
+        </>
       )}
     </>
   );

@@ -153,6 +153,10 @@ const DynamicForm = ({
         return {
           format: options.format?.value,
           definition: options.definition?.value,
+          auth_type: options.auth_type?.value,
+          username: options.username?.value,
+          password: options.password?.value,
+          bearer_token: options.bearer_token?.value,
           optionchanged,
         };
       default:

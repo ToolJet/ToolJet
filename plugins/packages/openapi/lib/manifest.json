@@ -11,7 +11,14 @@
       "data": {},
       "rawData": {}
     },
-    "options": {},
+    "options": {
+      "password":{
+        "encrypted": true
+      },
+      "bearer_token": {
+        "encrypted": true
+      }
+    },
     "customTesting": true
   },
   "defaults": {
@@ -19,6 +26,15 @@
       "value": "json"
     },
     "definition": {
+      "value": ""
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "bearer_token": {
       "value": ""
     }
   },
