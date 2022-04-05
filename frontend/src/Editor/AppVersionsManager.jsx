@@ -277,11 +277,7 @@ const CreateVersionModal = function CreateVersionModal({
             options={options}
             maxMenuHeight={100}
             menuPlacement="auto"
-            defaultValue={
-              options.length >= 1
-                ? { label: options[options.length - 1].label, value: options[options.length - 1].value }
-                : null
-            }
+            defaultValue={options[options.length - 1]}
             onChange={(version) => setCreateAppVersionFrom(version)}
           />
         </div>
