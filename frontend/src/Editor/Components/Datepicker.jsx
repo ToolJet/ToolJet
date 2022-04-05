@@ -20,7 +20,6 @@ export const Datepicker = function Datepicker({
 
   const [date, setDate] = useState(new Date());
   const [excludedDates, setExludedDates] = useState([]);
-  const [validityCheck, setValidityCheck] = useState();
 
   const selectedDateFormat = enableTime ? `${format} LT` : format;
 
@@ -50,31 +49,17 @@ export const Datepicker = function Datepicker({
   }, [defaultValue]);
 
   useEffect(() => {
-    setValidityCheck(true);
+    const _exluded = [];
     disabledDates &&
       disabledDates?.map((item) => {
-        if (item.length > 5 && !moment(item, format).isValid()) {
-          setValidityCheck(false);
+        if (moment(item, format).isValid()) {
+          _exluded.push(moment(item, format).toDate());
         }
       });
+    setExludedDates(_exluded);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledDates, format]);
 
-  useEffect(() => {
-    if (validityCheck) {
-      setExludedDates([]);
-      disabledDates &&
-        disabledDates?.map((item) => {
-          if (!excludedDates.includes(moment(item, format).toDate())) {
-            setExludedDates([...excludedDates, moment(item, format).toDate()]);
-          }
-        });
-    }
-  }, [disabledDates, format, validityCheck]);
-
-  useEffect(() => {
-    console.log('***', excludedDates, disabledDates);
-  }, [excludedDates]);
   const validationData = validate(exposedVariables.value);
 
   const { isValid, validationError } = validationData;
