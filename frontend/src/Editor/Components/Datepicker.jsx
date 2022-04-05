@@ -50,13 +50,15 @@ export const Datepicker = function Datepicker({
 
   useEffect(() => {
     const _exluded = [];
-    disabledDates &&
+    if (Array.isArray(disabledDates) && disabledDates.length > 0) {
       disabledDates?.map((item) => {
         if (moment(item, format).isValid()) {
           _exluded.push(moment(item, format).toDate());
         }
       });
-    setExcludedDates(_exluded);
+
+      setExcludedDates(_exluded);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledDates, format]);
 
