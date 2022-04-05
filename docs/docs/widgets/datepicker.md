@@ -18,7 +18,6 @@ This value acts as placeholder for the date picker widget, if any value is not p
 
 We can give disabled dates property which will make specific dates disabled and cannot be selected. The default value needs to a an array of`Strings`.
 
-
 ### Format
 
 The format of the date selected by the date picker. Default date format is **DD/MM/YYYY**. Date format should be followed as ISO 8601 as mentioned in the [moment documentation](https://momentjs.com/docs/). This field requires a `String` input. Ex: `DD/MM`, `MM/YYYY`, `YY/MM`, `DD/MM/YYYY` etc.
