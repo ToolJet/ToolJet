@@ -10,6 +10,11 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
   const [selectedAuth, setSelectedAuth] = useState();
 
   useEffect(() => {
+    validateDef();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [definition, format]);
+
+  useEffect(() => {
     auth_type && getSelectedAuth(auth_type);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth_type, securities]);
@@ -20,6 +25,7 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
       openapiService
         .parseOpenapiSpec(definition, format)
         .then((result) => {
+          optionchanged('spec', result);
           setSecurities(resolveSecurities(result));
           setLoadingSpec(false);
         })
@@ -29,8 +35,21 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
     }
   };
 
+  const getCurrentKey = (key) => {
+    let currentValue;
+    if (!api_keys) return '';
+    Object.entries(api_keys).map((item) => {
+      if (item[1].key === key) {
+        currentValue = item[1].value;
+        return;
+      }
+    });
+    return currentValue;
+  };
+
   const resolveSecurities = (spec) => {
     const authArray = [];
+    const ApiKeys = {};
     const securities = spec['security'];
     if (securities) {
       const scheme = spec?.components?.securitySchemes;
@@ -43,18 +62,28 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
             if (auth) {
               auth['key'] = authName;
               authObject.push(auth);
+              if (auth.type === 'apiKey') {
+                const apiKeyObj = { ...auth, value: getCurrentKey(auth.key) };
+                ApiKeys[authName] = apiKeyObj;
+              }
             }
           });
           authArray.push(authObject);
         } else {
-          const auth = scheme[authNames[0]];
+          const authName = authNames[0];
+          const auth = scheme[authName];
           if (auth) {
-            auth['key'] = authNames[0];
+            auth['key'] = authName;
             authArray.push(auth);
+            if (auth.type === 'apiKey') {
+              const apiKeyObj = { ...auth, value: getCurrentKey(auth.key) };
+              ApiKeys[authName] = apiKeyObj;
+            }
           }
         }
       });
     }
+    optionchanged('api_keys', ApiKeys);
     return authArray;
   };
 
@@ -111,11 +140,11 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
           onChange={(e) => optionchanged('definition', e.target.value)}
         />
       </div>
-      <div className="col-auto text-right">
+      {/* <div className="col-auto text-right">
         <button type="button" className="mt-2 btn btn-success" onClick={() => validateDef()}>
           Validate
         </button>
-      </div>
+      </div> */}
 
       {loadingSpec && (
         <div className="p-3">
