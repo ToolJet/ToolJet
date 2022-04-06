@@ -1,5 +1,4 @@
 import React from 'react';
-import { openapiService } from '@/_services';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import DOMPurify from 'dompurify';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
@@ -236,7 +235,7 @@ class Openapi extends React.Component {
 
                 {selectedOperation && (
                   <small
-                    className="mt-4 mb-2"
+                    className="openapi-operations-desc"
                     dangerouslySetInnerHTML={{
                       __html: DOMPurify.sanitize(selectedOperation.description ?? selectedOperation.summary),
                     }}
