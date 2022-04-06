@@ -99,15 +99,17 @@ class Stripe extends React.Component {
   };
 
   removeParam = (paramType, paramName) => {
-    const options = this.state.options;
-    const newOptions = JSON.parse(JSON.stringify(options));
-    options[paramName] = undefined;
+    const newOptions = JSON.parse(JSON.stringify(this.state.options));
+    newOptions[paramName] = undefined;
 
-    this.setState({
-      options: newOptions,
-    });
-
-    this.props.optionsChanged(newOptions);
+    this.setState(
+      {
+        options: newOptions,
+      },
+      () => {
+        this.props.optionsChanged(newOptions);
+      }
+    );
   };
 
   renderOperationOption = (props) => {
