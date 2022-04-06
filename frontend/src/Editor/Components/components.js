@@ -1929,6 +1929,7 @@ export const componentTypes = [
     component: 'Timeline',
     properties: {
       data: { type: 'code', displayName: 'Timeline data' },
+      hideDate: { type: 'toggle', displayName: 'Hide Date' },
     },
     defaultSize: {
       width: 20,
@@ -1956,6 +1957,7 @@ export const componentTypes = [
           value:
             "{{ [ \n\t\t{ title: 'Product Launched', subTitle: 'First version of our product relased to public', date: '20/10/2021', iconBackgroundColor: '#4d72fa'},\n\t\t { title: 'First Signup', subTitle: 'Congratulations! We got our first signup', date: '22/10/2021', iconBackgroundColor: '#4d72fa'}, \n\t\t { title: 'First Payment', subTitle: 'Hurray! We got our first payment', date: '01/11/2021', iconBackgroundColor: '#4d72fa'} \n] }}",
         },
+        hideDate: { value: false },
       },
       events: [],
       styles: {
