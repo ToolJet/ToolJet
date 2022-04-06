@@ -115,9 +115,10 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
         tip="Debugger"
         {...trigger}
         icon="debugger"
-        className={`left-sidebar-item ${open && 'active'}`}
+        className={`left-sidebar-item  left-sidebar-layout ${open && 'active'}`}
         badge={true}
         count={unReadErrorCount.unread}
+        text={'Debugger'}
       />
       <div
         {...content}

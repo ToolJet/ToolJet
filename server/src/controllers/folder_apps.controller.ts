@@ -1,4 +1,4 @@
-import { Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Controller, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { FolderAppsService } from '../services/folder_apps.service';
@@ -13,7 +13,15 @@ export class FolderAppsController {
     const folderId = req.body.folder_id;
     const appId = req.body.app_id;
 
-    const folder = await this.folderAppsService.create(req.user, folderId, appId);
+    const folder = await this.folderAppsService.create(folderId, appId);
     return decamelizeKeys(folder);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/:folderId')
+  async remove(@Request() req, @Param('folderId') folderId: string) {
+    const appId = req.body.app_id;
+
+    await this.folderAppsService.remove(folderId, appId);
   }
 }

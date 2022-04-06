@@ -411,3 +411,26 @@ export async function createThread(_nestApp, { appId, x, y, userId, organization
     organizationId
   );
 }
+
+export async function setupOrganization(nestApp) {
+  const adminUserData = await createUser(nestApp, {
+    email: 'admin@tooljet.io',
+    groups: ['all_users', 'admin'],
+  });
+  const adminUser = adminUserData.user;
+  const organization = adminUserData.organization;
+  const defaultUserData = await createUser(nestApp, {
+    email: 'developer@tooljet.io',
+    groups: ['all_users'],
+    organization,
+  });
+  const defaultUser = defaultUserData.user;
+
+  const app = await createApplication(nestApp, {
+    user: adminUser,
+    name: 'sample app',
+    isPublic: false,
+  });
+
+  return { adminUser, defaultUser, app };
+}

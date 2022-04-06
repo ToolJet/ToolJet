@@ -1,0 +1,44 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Appwrite datasource",
+  "description": "A schema defining Appwrite datasource",
+  "type": "api",
+  "source": {
+    "name": "Appwrite",
+    "kind": "appwrite",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "secret_key":{
+        "encrypted":true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "Appwrite database host/endpoint"
+    },
+    "project_id": {
+      "label": "Project ID",
+      "key": "project_id",
+      "type": "text",
+      "description": "Appwrite project id"
+    },
+    "secret_key": {
+      "label": "Secret Key",
+      "key": "secret_key",
+      "type": "textarea",
+      "encrypted": true,
+      "description": "Enter api key secret for appwrite account"
+    }
+  },
+  "required": ["host","secret_key","project_id"]
+}

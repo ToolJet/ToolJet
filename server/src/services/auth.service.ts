@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, NotAcceptableException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { OrganizationsService } from './organizations.service';
 import { JwtService } from '@nestjs/jwt';
@@ -65,8 +65,13 @@ export class AuthService {
     }
 
     const { email } = params;
+    const existingUser = await this.usersService.findByEmail(email);
+    if (existingUser) {
+      throw new NotAcceptableException('Email already exists');
+    }
     const organization = await this.organizationsService.create('Untitled organization');
     const user = await this.usersService.create({ email }, organization, ['all_users', 'admin']);
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const organizationUser = await this.organizationUsersService.create(user, organization);
 

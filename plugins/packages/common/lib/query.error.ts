@@ -1,7 +1,7 @@
 export class QueryError extends Error {
-  data: {};
+  data: Record<string, unknown>;
   description: any;
-  constructor(message: string | undefined, description: any, data: {}) {
+  constructor(message: string | undefined, description: any, data: Record<string, unknown>) {
     super(message);
     this.name = this.constructor.name;
     this.data = data;
@@ -12,9 +12,9 @@ export class QueryError extends Error {
 }
 
 export class OAuthUnauthorizedClientError extends Error {
-  data: {};
+  data: Record<string, unknown>;
   description: any;
-  constructor(message: string | undefined, description: any, data: {}) {
+  constructor(message: string | undefined, description: any, data: Record<string, unknown>) {
     super(message);
     this.name = this.constructor.name;
     this.data = data;

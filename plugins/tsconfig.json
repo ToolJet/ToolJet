@@ -7,7 +7,6 @@
     "sourceMap": true,
 
     "strict": false,
-
     "skipLibCheck": true,
     "outDir": "./dist",
     "esModuleInterop": true,
@@ -18,5 +17,5 @@
     "composite": true,
     "resolveJsonModule": true
   },
-  "exclude": ["packages/*/lib/*.json", "packages/*/__tests__/*", "dist"]
+  "exclude": ["packages/*/lib/*.json", "<rootDir>/__tests__/*", "dist"]
 }

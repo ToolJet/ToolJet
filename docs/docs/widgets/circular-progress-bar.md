@@ -2,24 +2,60 @@
 
 Circular progress bar widget can be used to show progress in a progress circle.
 
-<img class="screenshot-full" src="/img/widgets/circular-progressbar/circular-progress.gif" alt="ToolJet - Widget Reference - Tags" height="420"/>
+<div style={{textAlign: 'center'}}>
 
-#### Properties
+![ToolJet - Widget Reference - Circular progress bar](/img/widgets/circular-progressbar/cpb.png)
 
-| properties      | description |
+</div>
+
+## Properties
+
+:::info
+Any property having `Fx` button next to its field can be **programmatically configured**.
+:::
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Widget Reference - Circular progress bar](/img/widgets/circular-progressbar/prop.png)
+
+</div>
+
+| properties  | description | Expected Value |
+| ----------- | ----------- | --------------- |
+| Text | We can set a text inside the progress circle.| It expects a `String`, you can also use js to dynamically update the text as the progress changes. |
+| Progress | It can be used to set the progress of the widget. | Progress should be an integer between 0 and 100.|
+
+## Layout
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Widget Reference - Circular progress bar](/img/widgets/circular-progressbar/layout.png)
+
+</div>
+
+| Layout  | description |
 | ----------- | ----------- |
-| Text | We can set a text inside the progress circle.|
-| Progress | It can be used to set the progress of the widget. Progress should be an integer between 0 and 100.|
+| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
+| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
 
-#### Styles
+## Styles
 
-| properties      | description |
-| ----------- | ----------- |
-| Color | To define stroke color.|
-| Stroke width | To define the width of stroke, value must between 0-100. ``Default: 8``.|
-| Counter Clockwise | Whether to rotate progress bar in counterclockwise direction. ``Default: false``.|
-| circleRatio | To define ratio of the full circle diameter the progressbar should use. ``Default: 1``.|
+<div style={{textAlign: 'center'}}>
 
-#### More info
+![ToolJet - Widget Reference - Circular progress bar](/img/widgets/circular-progressbar/styles.png)
 
+</div>
+
+| properties      | description | Expected Value |
+| ----------- | ----------- | ------------------- |
+| Color | To define stroke color.| `HEX color code` or choose color from color-picker. |
+| Text color | To define color of the text inside circular progress bar.| `HEX color code` or choose color from color-picker. |
+| Text size | To define the size of the text | Value must between 0-100. |
+| Stroke width | To define the width of stroke | Value must between 0-100.|
+| Counter Clockwise | Whether to rotate progress bar in counterclockwise direction. | It accepts `{{true}}` and `{{false}}`, Default value is `false`.|
+| Circle ratio | To define ratio of the full circle diameter the progressbar should use. | It accepts numerical value and the default is `1`. |
+| Visibility | Toggle on or off to control the visibility of the widget. | You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
+
+:::info
 Circular progress bar widget uses [react-circular-progress](https://github.com/kevinsqi/react-circular-progressbar) package. Check the repo for futher more details about properties and styles.
+:::

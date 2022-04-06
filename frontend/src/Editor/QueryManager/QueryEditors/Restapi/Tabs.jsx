@@ -19,7 +19,7 @@ function ControlledTabs({
   return (
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="headers">
       <Row>
-        <div className={`col-auto keys ${darkMode ? 'dark' : ''}`}>
+        <div className="keys">
           <ListGroup className="query-pane-rest-api-keys-list-group" variant="flush">
             {tabs.map((tab) => (
               <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>

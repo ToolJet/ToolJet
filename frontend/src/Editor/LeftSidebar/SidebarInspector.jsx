@@ -12,8 +12,9 @@ export const LeftSidebarInspector = ({ darkMode, currentState }) => {
       <LeftSidebarItem
         tip="Inspector"
         {...trigger}
-        icon="inspector"
-        className={`left-sidebar-item ${open && 'active'} left-sidebar-inspector`}
+        icon="inspect"
+        className={`left-sidebar-item left-sidebar-layout ${open && 'active'} left-sidebar-inspector`}
+        text={'Inspector'}
       />
       <div
         {...content}

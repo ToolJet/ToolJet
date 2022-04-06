@@ -30,6 +30,38 @@ describe('getQueryVariables method', () => {
 
     await expect(getQueryVariables(options)).toStrictEqual({});
   });
+  test('Tests when options is a multi-line string', async () => {
+    const state = {
+      components: {
+        dropdown1: {
+          value: 2,
+        },
+      },
+    };
+    const options = {
+      case1: `
+      {{1 == 1 ? 
+"select * from users;"
+: "select user from users"}}
+  `,
+      case2: `
+      {{1 == 1 ? 
+"select * from users;" : "select user from users"}}
+    `,
+      case3: `
+      {{components.dropdown1.value  ?? 
+1}}
+    `,
+    };
+
+    await expect(await getQueryVariables(options.case1, state)).toEqual({
+      '{{1 == 1 ?  "select * from users;" : "select user from users"}}': 'select * from users;',
+    });
+    await expect(await getQueryVariables(options.case2, state)).toEqual({
+      '{{1 == 1 ?  "select * from users;" : "select user from users"}}': 'select * from users;',
+    });
+    await expect(await getQueryVariables(options.case3, state)).toEqual({ '{{components.dropdown1.value  ??  1}}': 2 });
+  });
 });
 
 describe('runQuery method', () => {

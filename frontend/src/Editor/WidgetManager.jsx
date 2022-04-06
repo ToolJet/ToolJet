@@ -74,6 +74,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     const formSection = { title: 'forms', items: [] };
     const integrationSection = { title: 'integrations', items: [] };
     const otherSection = { title: 'others', items: [] };
+    const allWidgets = [];
 
     const commonItems = ['Table', 'Chart', 'Button', 'Text', 'Datepicker'];
     const formItems = [
@@ -96,6 +97,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     const layoutItems = ['Container', 'Listview', 'Tabs', 'Modal'];
 
     filteredComponents.forEach((f) => {
+      if (searchQuery) allWidgets.push(f);
       if (commonItems.includes(f.name)) commonSection.items.push(f);
       if (formItems.includes(f.name)) formSection.items.push(f);
       else if (integrationItems.includes(f.name)) integrationSection.items.push(f);
@@ -103,15 +105,19 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
       else otherSection.items.push(f);
     });
 
-    return (
-      <>
-        {renderList(commonSection.title, commonSection.items)}
-        {renderList(layoutsSection.title, layoutsSection.items)}
-        {renderList(formSection.title, formSection.items)}
-        {renderList(otherSection.title, otherSection.items)}
-        {renderList(integrationSection.title, integrationSection.items)}
-      </>
-    );
+    if (allWidgets.length > 0) {
+      return <>{renderList(undefined, allWidgets)}</>;
+    } else {
+      return (
+        <>
+          {renderList(commonSection.title, commonSection.items)}
+          {renderList(layoutsSection.title, layoutsSection.items)}
+          {renderList(formSection.title, formSection.items)}
+          {renderList(otherSection.title, otherSection.items)}
+          {renderList(integrationSection.title, integrationSection.items)}
+        </>
+      );
+    }
   }
 
   return (

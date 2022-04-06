@@ -149,7 +149,8 @@ export const FilePicker = ({
       name: file.name,
       type: file.type,
       content: readFileAsText,
-      dataURL: readFileAsDataURL,
+      dataURL: readFileAsDataURL, // TODO: Fix dataURL to have correct format
+      base64Data: readFileAsDataURL,
       parsedData: shouldProcessFileParsing ? await processFileContent(file.type, readFileAsText) : null,
     };
   };

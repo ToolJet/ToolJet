@@ -31,6 +31,9 @@ class ResetPassword extends React.Component {
         password_confirmation: '',
       });
     } else {
+      this.setState({
+        isLoading: true,
+      });
       fetch(`${config.apiUrl}/reset_password`, {
         method: 'POST',
         headers: {
@@ -41,13 +44,22 @@ class ResetPassword extends React.Component {
         .then((res) => res.json())
         .then((res) => {
           if (res.error) {
+            // update loading state here since user will still be on the page
+            this.setState({
+              isLoading: false,
+            });
             toast.error(res.message);
           } else {
             toast.success(res.message);
             this.props.history.push('/login');
           }
         })
-        .catch(console.log);
+        .catch((err) => {
+          this.setState({
+            isLoading: false,
+          });
+          console.log(err);
+        });
     }
   };
   render() {

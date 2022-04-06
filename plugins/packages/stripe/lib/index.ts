@@ -1,6 +1,6 @@
-import { QueryError, QueryResult,  QueryService } from '@tooljet-plugins/common';
-import got, { Headers } from 'got'
-import { SourceOptions } from './types'
+import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import got, { Headers } from 'got';
+import { SourceOptions } from './types';
 
 export default class StripeQueryService implements QueryService {
   authHeader(token: string): Headers {

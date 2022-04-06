@@ -6,8 +6,10 @@ const environment = process.env.NODE_ENV === 'production' ? 'production' : 'deve
 
 const API_URL = {
   production: process.env.TOOLJET_SERVER_URL || '',
-  development: 'http://localhost:3000',
+  development: `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
 };
+
+const ASSET_PATH = process.env.ASSET_PATH || '/';
 
 module.exports = {
   mode: environment,
@@ -87,12 +89,19 @@ module.exports = {
       template: './src/index.html',
     }),
     new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
+    new webpack.DefinePlugin({
+      'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
+    }),
   ],
   devServer: {
-    historyApiFallback: true,
+    historyApiFallback: { index: ASSET_PATH },
+    static: {
+      directory: path.resolve(__dirname, 'assets'),
+      publicPath: '/assets/',
+    },
   },
   output: {
-    publicPath: process.env.ASSET_PATH || '/',
+    publicPath: ASSET_PATH,
     path: path.resolve(__dirname, 'build'),
   },
   externals: {

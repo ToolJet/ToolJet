@@ -1,0 +1,71 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Mailgun datasource",
+  "description": "A schema defining Mailgun datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "mail_service",
+          "name": "Email service"
+        }
+      ]
+    },
+    "mail_service": {
+      "send_mail_to": {
+        "label": "Send mail to",
+        "key": "send_mail_to",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter email recipient(s)",
+        "placeholder": "{{['dev@tooljet.io']}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "send_mail_from": {
+        "label": "Send mail from",
+        "key": "send_mail_from",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter email Sender",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "subject": {
+        "label": "Subject",
+        "key": "subject",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter subject",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "text": {
+        "label": "Body as text",
+        "key": "text",
+        "type": "codehinter",
+        "description": "Enter text",
+        "height": "150px",
+        "mode": "text"
+      },
+      "html": {
+        "label": "Body as HTML",
+        "key": "html",
+        "type": "codehinter",
+        "description": "Enter html",
+        "height": "150px",
+        "mode": "handlebars",
+        "lineNumbers": true
+      }
+    }
+  }
+}
