@@ -8,6 +8,7 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
   const [securities, setSecurities] = useState([]);
   const [loadingSpec, setLoadingSpec] = useState(false);
   const [selectedAuth, setSelectedAuth] = useState();
+  const [validationError, setValidationError] = useState();
 
   useEffect(() => {
     validateDef();
@@ -22,6 +23,7 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
   const validateDef = () => {
     if (definition) {
       setLoadingSpec(true);
+      setValidationError(null);
       openapiService
         .parseOpenapiSpec(definition, format)
         .then((result) => {
@@ -30,6 +32,7 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
           setLoadingSpec(false);
         })
         .catch((err) => {
+          setValidationError(err?.message ?? 'Enter valid definition');
           console.log(err);
         });
     }
@@ -148,8 +151,14 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
 
       {loadingSpec && (
         <div className="p-3">
-          <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
-          Please wait while we are validating the OpenAPI specification.
+          {!validationError ? (
+            <>
+              <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
+              Please wait while we are validating the OpenAPI specification.
+            </>
+          ) : (
+            <span style={{ color: 'red' }}>{validationError}</span>
+          )}
         </div>
       )}
 
