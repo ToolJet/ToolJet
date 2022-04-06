@@ -121,9 +121,6 @@ class Editor extends React.Component {
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
       showInitVersionCreateModal: false,
-      isSavingEditingVersion: false,
-      showSaveDetail: false,
-      hasAppDefinitionChanged: false,
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
     };
@@ -899,9 +896,6 @@ class Editor extends React.Component {
       defaultComponentStateComputed,
       showComments,
       editingVersion,
-      showInitVersionCreateModal,
-      isSavingEditingVersion,
-      showSaveDetail,
       showCreateVersionModalPrompt,
       hoveredComponent,
     } = this.state;
