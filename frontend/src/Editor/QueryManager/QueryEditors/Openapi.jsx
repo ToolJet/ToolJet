@@ -16,8 +16,8 @@ const operationColorMapping = {
 class Openapi extends React.Component {
   constructor(props) {
     super(props);
+    const { selectedDataSource } = props;
     this.state = {
-      loadingSpec: true,
       options: {
         params: {
           path: {},
@@ -26,31 +26,9 @@ class Openapi extends React.Component {
           header: {},
         },
       },
+      spec: selectedDataSource.options?.spec?.value,
     };
   }
-
-  componentDidMount() {
-    this.fetchOpenApiSpec();
-  }
-
-  fetchOpenApiSpec = () => {
-    this.setState({ loadingSpec: true });
-    const definition = this.props.selectedDataSource?.options?.definition?.value;
-    const format = this.props.selectedDataSource?.options?.format?.value;
-    if (definition) {
-      openapiService
-        .parseOpenapiSpec(definition, format)
-        .then((result) => {
-          this.setState({
-            loadingSpec: false,
-            spec: result,
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    }
-  };
 
   changeOperation = (value) => {
     const operation = value.split(',')[0];
@@ -199,7 +177,7 @@ class Openapi extends React.Component {
   }
 
   render() {
-    const { options, spec, loadingSpec, selectedOperation } = this.state;
+    const { options, spec, selectedOperation } = this.state;
     let baseUrls = spec ? this.resolveHosts() : [];
     let pathParams = [];
     let headerParams = [];
@@ -219,14 +197,9 @@ class Openapi extends React.Component {
 
     return (
       <div>
-        {loadingSpec && (
-          <div className="p-3">
-            <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
-            Please wait while we load the OpenAPI specification.
-          </div>
-        )}
+        {!spec && <div className="p-3">Valid OpenAPI Spec is not available!.</div>}
 
-        {options && !loadingSpec && (
+        {options && spec && (
           <div className="mb-3 mt-2">
             {baseUrls.length > 0 && (
               <div className="row g-2">
