@@ -67,12 +67,17 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
   return { app, mockConfig: moduleRef.get(ConfigService) };
 }
 
-export function authHeaderForUser(user: any): string {
+export function authHeaderForUser(user: User, organizationId?: string, formLogin = true): string {
   const configService = new ConfigService();
   const jwtService = new JwtService({
     secret: configService.get<string>('SECRET_KEY_BASE'),
   });
-  const authPayload = { username: user.id, sub: user.email };
+  const authPayload = {
+    username: user.id,
+    sub: user.email,
+    organizationId: organizationId || user.defaultOrganizationId,
+    isFormLogin: formLogin,
+  };
   const authToken = jwtService.sign(authPayload);
   return `Bearer ${authToken}`;
 }
@@ -97,7 +102,7 @@ export async function createApplication(nestApp, { name, user, isPublic, slug }:
       user,
       slug,
       isPublic: isPublic || false,
-      organizationId: user.organization.id,
+      organizationId: user.organizationId,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -130,7 +135,20 @@ export async function createApplicationVersion(nestApp, application, { name = 'v
 
 export async function createUser(
   nestApp,
-  { firstName, lastName, email, groups, organization, ssoId, status, invitationToken }: any
+  {
+    firstName,
+    lastName,
+    email,
+    groups,
+    organization,
+    status,
+    invitationToken,
+    formLoginStatus = true,
+    organizationName = 'Test Organization',
+    ssoConfigs = [],
+    enableSignUp = false,
+  }: any,
+  existingUser?: User
 ) {
   let userRepository: Repository<User>;
   let organizationRepository: Repository<Organization>;
@@ -144,25 +162,39 @@ export async function createUser(
     organization ||
     (await organizationRepository.save(
       organizationRepository.create({
-        name: 'Test Organization',
+        name: organizationName,
+        enableSignUp,
         createdAt: new Date(),
         updatedAt: new Date(),
+        ssoConfigs: [
+          {
+            sso: 'form',
+            enabled: formLoginStatus,
+          },
+          ...ssoConfigs,
+        ],
       })
     ));
 
-  const user = await userRepository.save(
-    userRepository.create({
-      firstName: firstName || 'test',
-      lastName: lastName || 'test',
-      email: email || 'dev@tooljet.io',
-      password: 'password',
-      invitationToken,
-      organization,
-      ssoId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-  );
+  let user: User;
+
+  if (!existingUser) {
+    user = await userRepository.save(
+      userRepository.create({
+        firstName: firstName || 'test',
+        lastName: lastName || 'test',
+        email: email || 'dev@tooljet.io',
+        password: 'password',
+        invitationToken,
+        defaultOrganizationId: organization.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+    );
+  } else {
+    user = existingUser;
+  }
+  user.organizationId = organization.id;
 
   const orgUser = await organizationUsersRepository.save(
     organizationUsersRepository.create({

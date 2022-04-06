@@ -42,8 +42,7 @@ export class AuthService {
     return isVerified ? user : null;
   }
 
-  async login(params: any) {
-    const { email, password, organizationId } = params;
+  async login(email: string, password: string, organizationId?: string) {
     let organization: Organization;
 
     const user = await this.validateUser(email, password, organizationId);
@@ -157,11 +156,9 @@ export class AuthService {
     }
   }
 
-  async signup(params: any) {
-    const { email } = params;
-
+  async signup(email: string) {
     const existingUser = await this.usersService.findByEmail(email);
-    if (existingUser) {
+    if (existingUser?.invitationToken || existingUser?.organizationUsers?.some((ou) => ou.status === 'active')) {
       throw new NotAcceptableException('Email already exists');
     }
 
@@ -182,7 +179,7 @@ export class AuthService {
     }
     // Create default organization
     organization = await this.organizationsService.create('Untitled organization');
-    const user = await this.usersService.create({ email }, organization.id, ['all_users', 'admin'], null, true);
+    const user = await this.usersService.create({ email }, organization.id, ['all_users', 'admin'], existingUser, true);
     await this.organizationUsersService.create(user, organization, true);
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 

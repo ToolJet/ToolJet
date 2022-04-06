@@ -1,23 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import UserResponse from './models/user_response';
 
 @Injectable()
 export class GoogleOAuthService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor() {}
 
   #extractDetailsFromPayload(payload: TokenPayload): UserResponse {
     const email = payload.email;
     const userSSOId = payload.sub;
 
     const words = payload.name?.split(' ');
-    let firstName = words?.[0] || '';
+    const firstName = words?.[0] || '';
     const lastName = words?.length > 1 ? words[words.length - 1] : '';
 
-    if (!(firstName && lastName)) {
-      firstName = email?.split('@')?.[0];
-    }
     return { userSSOId, firstName, lastName, email, sso: 'google' };
   }
 

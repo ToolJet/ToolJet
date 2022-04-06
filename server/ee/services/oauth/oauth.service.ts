@@ -1,6 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { User } from 'src/entities/user.entity';
 import { OrganizationsService } from '@services/organizations.service';
 import { OrganizationUsersService } from '@services/organization_users.service';
@@ -21,8 +20,7 @@ export class OauthService {
     private readonly jwtService: JwtService,
     private readonly organizationUsersService: OrganizationUsersService,
     private readonly googleOAuthService: GoogleOAuthService,
-    private readonly gitOAuthService: GitOAuthService,
-    private readonly configService: ConfigService
+    private readonly gitOAuthService: GitOAuthService
   ) {}
 
   #isValidDomain(email: string, restrictedDomain: string): boolean {
@@ -123,6 +121,11 @@ export class OauthService {
     if (!this.#isValidDomain(userResponse.email, domain)) {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
     }
+
+    // If name not found
+    if (!(userResponse.firstName && userResponse.lastName)) {
+      userResponse.firstName = userResponse.email?.split('@')?.[0];
+    }
     const user: User = await (!enableSignUp
       ? this.#findAndActivateUser(userResponse.email, organization.id)
       : this.#findOrCreateUser(userResponse, organization));
@@ -137,9 +140,7 @@ export class OauthService {
 
 interface SSOResponse {
   token: string;
-  origin: 'google' | 'git';
   state?: string;
-  redirectUri?: string;
 }
 
 interface JWTPayload {

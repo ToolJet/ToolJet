@@ -16,6 +16,7 @@ import { CreateThreadDTO } from '../dto/create-thread.dto';
 import { Thread } from '../entities/thread.entity';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { ThreadsAbilityFactory } from 'src/modules/casl/abilities/threads-ability.factory';
+import { User } from 'src/decorators/user.decorator';
 
 @Controller('threads')
 export class ThreadController {
@@ -23,25 +24,25 @@ export class ThreadController {
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
-  public async createThread(@Request() req, @Body() createThreadDto: CreateThreadDTO): Promise<Thread> {
-    const ability = await this.threadsAbilityFactory.appsActions(req.user, { id: createThreadDto.appId });
+  public async createThread(@User() user, @Body() createThreadDto: CreateThreadDTO): Promise<Thread> {
+    const ability = await this.threadsAbilityFactory.appsActions(user, { id: createThreadDto.appId });
 
     if (!ability.can('createThread', Thread)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const thread = await this.threadService.createThread(createThreadDto, req.user.id, req.user.organization.id);
+    const thread = await this.threadService.createThread(createThreadDto, user.id, user.organizationId);
     return thread;
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/:appId/all')
-  public async getThreads(@Request() req, @Param('appId') appId: string, @Query() query): Promise<Thread[]> {
-    const ability = await this.threadsAbilityFactory.appsActions(req.user, { id: appId });
+  public async getThreads(@User() user, @Param('appId') appId: string, @Query() query): Promise<Thread[]> {
+    const ability = await this.threadsAbilityFactory.appsActions(user, { id: appId });
 
     if (!ability.can('fetchThreads', Thread)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const threads = await this.threadService.getThreads(appId, req.user.organization.id, query.appVersionsId);
+    const threads = await this.threadService.getThreads(appId, user.organizationId, query.appVersionsId);
     return threads;
   }
 

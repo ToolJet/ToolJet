@@ -17,6 +17,7 @@ import { Comment } from '../entities/comment.entity';
 import { Thread } from '../entities/thread.entity';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { CommentsAbilityFactory } from 'src/modules/casl/abilities/comments-ability.factory';
+import { User } from 'src/decorators/user.decorator';
 
 @Controller('comments')
 export class CommentController {
@@ -24,17 +25,17 @@ export class CommentController {
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
-  public async createComment(@Request() req, @Body() createCommentDto: CreateCommentDTO): Promise<Comment> {
+  public async createComment(@User() user, @Body() createCommentDto: CreateCommentDTO): Promise<Comment> {
     const _response = await Thread.findOne({
       where: { id: createCommentDto.threadId },
     });
-    const ability = await this.commentsAbilityFactory.appsActions(req.user, { id: _response.appId });
+    const ability = await this.commentsAbilityFactory.appsActions(user, { id: _response.appId });
 
     if (!ability.can('createComment', Comment)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const comment = await this.commentService.createComment(createCommentDto, req.user.id, req.user.organization.id);
+    const comment = await this.commentService.createComment(createCommentDto, user.id, user.organizationId);
     return comment;
   }
 

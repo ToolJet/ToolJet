@@ -42,7 +42,7 @@ describe('comment controller', () => {
       x: 100,
       y: 200,
       userId: userData.user.id,
-      organizationId: user.organization.id,
+      organizationId: user.organizationId,
       appVersionsId: version.id,
     });
 

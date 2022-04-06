@@ -8,8 +8,8 @@ export class AppController {
   constructor(private authService: AuthService) {}
 
   @Post(['authenticate', 'authenticate/:organizationId'])
-  async login(@Body() body, @Param('organizationId') organizationId) {
-    return this.authService.login({ ...body, organizationId });
+  async login(@Body('email') email, @Body('password') password, @Param('organizationId') organizationId) {
+    return this.authService.login(email, password, organizationId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -22,19 +22,18 @@ export class AppController {
   }
 
   @Post('signup')
-  async signup(@Body() body) {
-    return this.authService.signup(body);
+  async signup(@Body('email') email) {
+    return this.authService.signup(email);
   }
 
   @Post('/forgot_password')
-  async forgotPassword(@Request() req) {
-    await this.authService.forgotPassword(req.body.email);
+  async forgotPassword(@Body('email') email) {
+    await this.authService.forgotPassword(email);
     return {};
   }
 
   @Post('/reset_password')
-  async resetPassword(@Request() req) {
-    const { token, password } = req.body;
+  async resetPassword(@Body('token') token, @Body('password') password) {
     await this.authService.resetPassword(token, password);
     return {};
   }

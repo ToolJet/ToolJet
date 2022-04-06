@@ -81,6 +81,10 @@ export class UsersService {
         });
         await manager.save(user);
       } else {
+        if (isInvite) {
+          existingUser.invitationToken = uuid.v4();
+          await manager.save(existingUser);
+        }
         user = existingUser;
       }
 
