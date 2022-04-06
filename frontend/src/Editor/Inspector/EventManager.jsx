@@ -322,8 +322,11 @@ export const EventManager = ({
                   <div className="col-9">
                     <SelectSearch
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
-                      options={[{ name: 'CSV', value: 'csv' }]}
-                      value={'csv'}
+                      options={[
+                        { name: 'CSV', value: 'csv' },
+                        { name: 'Text', value: 'plaintext' },
+                      ]}
+                      value={event.fileType ?? 'csv'}
                       search={true}
                       onChange={(value) => {
                         handlerChanged(index, 'fileType', value);
