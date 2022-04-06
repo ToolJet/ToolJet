@@ -2,6 +2,7 @@ import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import got, { HTTPError } from 'got';
 import urrl from 'url';
+const { CookieJar } = require('tough-cookie');
 
 interface RestAPIResult extends QueryResult {
   request?: Array<object> | object;
@@ -28,8 +29,9 @@ export default class Openapi implements QueryService {
     const { header, query, request } = params;
     const pathParams = params.path;
     const authType = sourceOptions['auth_type'];
+    const cookieJar = new CookieJar();
 
-    const url = host + this.resolvePathParams(pathParams, path);
+    const url = new URL(host + this.resolvePathParams(pathParams, path));
     const json = operation !== 'get' ? this.sanitizeObject(request) : undefined;
 
     let result = {};
@@ -39,6 +41,26 @@ export default class Openapi implements QueryService {
 
     if (authType === 'bearer') {
       header['Authorization'] = `Bearer ${sourceOptions.bearer_token}`;
+    }
+
+    const resolveApiKeyParams = () => {
+      const apiKeys = sourceOptions.api_keys;
+      Object.keys(apiKeys).map((key) => {
+        const keyObj = apiKeys[key];
+        const { value, name } = keyObj;
+        const type = keyObj.in;
+        if (type === 'header') {
+          header[name] = value;
+        } else if (type === 'query') {
+          url.searchParams.append(name, value);
+        } else if (type === 'cookie') {
+          cookieJar.setCookie(`${name}=${value}`, url);
+        }
+      });
+    };
+
+    if (authType === 'apiKey') {
+      resolveApiKeyParams();
     }
 
     try {
@@ -51,6 +73,7 @@ export default class Openapi implements QueryService {
           ...query,
         },
         json,
+        cookieJar,
       });
 
       result = JSON.parse(response.body);
