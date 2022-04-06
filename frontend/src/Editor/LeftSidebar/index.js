@@ -42,7 +42,11 @@ export const LeftSidebar = ({
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
       )}
-      <LeftSidebarGlobalSettings globalSettingsChanged={globalSettingsChanged} globalSettings={globalSettings} />
+      <LeftSidebarGlobalSettings
+        currentState={currentState}
+        globalSettingsChanged={globalSettingsChanged}
+        globalSettings={globalSettings}
+      />
       <LeftSidebarItem
         onClick={() => setShowLeaveDialog(true)}
         tip="Back to home"

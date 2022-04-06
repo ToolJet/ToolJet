@@ -3,11 +3,18 @@ import usePopover from '@/_hooks/use-popover';
 import { SketchPicker } from 'react-color';
 
 import { LeftSidebarItem } from './SidebarItem';
+import FxButton from '../CodeBuilder/Elements/FxButton';
+import { Code } from '../Inspector/Elements/Code';
+import { CodeHinter } from '../CodeBuilder/CodeHinter';
 
-export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChanged }) => {
+export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChanged, currentState }) => {
   const [open, trigger, content] = usePopover(false);
   const { hideHeader, canvasMaxWidth, canvasBackgroundColor } = globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
+  const [forceCodeBox, setForceCodeBox] = React.useState(true);
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   const coverStyles = {
     position: 'fixed',
     top: '0px',
@@ -71,7 +78,6 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                     />
                   </div>
                 )}
-
                 <div
                   className="row mx-0 form-control form-control-sm canvas-background-holder"
                   onClick={() => setShowPicker(true)}
@@ -89,6 +95,20 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                     }}
                   ></div>
                   <div className="col">{canvasBackgroundColor}</div>
+                </div>
+                <div className="col-auto pt-2 style-fx fx-common">
+                  <CodeHinter
+                    currentState={currentState}
+                    initialValue={canvasBackgroundColor ?? {}}
+                    theme={darkMode ? 'monokai' : 'duotone-light'}
+                    mode="javascript"
+                    lineNumbers={false}
+                    className="chart-input pr-2"
+                    onChange={(color) => globalSettingsChanged('canvasBackgroundColor', color)}
+                    // onChange={(value) => this.props.paramUpdated({ name: 'jsonDescription' }, 'value', value, 'properties')}
+                    // componentName={`widget/${this.props.component.component.name}::${chartType}`}
+                  />
+                  <FxButton active={true} onPress={forceCodeBox} />
                 </div>
               </div>
             </div>
