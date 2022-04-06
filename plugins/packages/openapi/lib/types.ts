@@ -3,6 +3,7 @@ export type SourceOptions = {
   bearer_token: string;
   username: string;
   password: string;
+  api_keys: any;
 };
 export type QueryOptions = {
   host: string;

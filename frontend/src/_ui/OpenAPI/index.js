@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Select from '@/_ui/Select';
 import Textarea from '@/_ui/Textarea';
 import { openapiService } from '@/_services';
 import OpenapiAuth from './OpenapiAuth';
 
-const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, username, password }) => {
-  const [securities, setSecurities] = React.useState([]);
-  const [loadingSpec, setLoadingSpec] = React.useState(false);
-  const [selectedAuth, setSelectedAuth] = React.useState();
+const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, username, password, api_keys }) => {
+  const [securities, setSecurities] = useState([]);
+  const [loadingSpec, setLoadingSpec] = useState(false);
+  const [selectedAuth, setSelectedAuth] = useState();
+
+  useEffect(() => {
+    auth_type && getSelectedAuth(auth_type);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth_type, securities]);
 
   const validateDef = () => {
     if (definition) {
@@ -84,7 +89,6 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
         if (security.type === auth_type || security.scheme === auth_type) setSelectedAuth(security);
       }
     });
-    optionchanged('auth_type', auth_type);
   };
 
   return (
@@ -124,7 +128,11 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
         <>
           <div className="col-md-12">
             <label className="form-label text-muted mt-3">Authentication</label>
-            <Select options={computeAuthOptions()} value={auth_type} onChange={(value) => getSelectedAuth(value)} />
+            <Select
+              options={computeAuthOptions()}
+              value={auth_type}
+              onChange={(value) => optionchanged('auth_type', value)}
+            />
           </div>
 
           <OpenapiAuth
@@ -134,6 +142,7 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
             optionchanged={optionchanged}
             bearer_token={bearer_token}
             authObject={selectedAuth}
+            api_keys={api_keys}
           />
         </>
       )}

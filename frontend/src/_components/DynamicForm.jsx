@@ -157,6 +157,7 @@ const DynamicForm = ({
           username: options.username?.value,
           password: options.password?.value,
           bearer_token: options.bearer_token?.value,
+          api_keys: options.api_keys?.value,
           optionchanged,
         };
       default:
