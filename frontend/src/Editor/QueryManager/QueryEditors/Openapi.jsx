@@ -23,7 +23,7 @@ class Openapi extends React.Component {
           path: {},
           query: {},
           request: {},
-          headers: {},
+          header: {},
         },
       },
     };

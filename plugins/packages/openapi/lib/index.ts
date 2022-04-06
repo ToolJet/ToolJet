@@ -27,6 +27,7 @@ export default class Openapi implements QueryService {
     const { host, path, operation, params } = queryOptions;
     const { header, query, request } = params;
     const pathParams = params.path;
+    const authType = sourceOptions['auth_type'];
 
     const url = host + this.resolvePathParams(pathParams, path);
     const json = operation !== 'get' ? this.sanitizeObject(request) : undefined;
@@ -36,10 +37,16 @@ export default class Openapi implements QueryService {
     let responseObject = {};
     let responseHeaders = {};
 
+    if (authType === 'bearer') {
+      header['Authorization'] = `Bearer ${sourceOptions.bearer_token}`;
+    }
+
     try {
       const response = await got(url, {
         method: operation,
         headers: header,
+        username: authType === 'basic' ? sourceOptions.username : undefined,
+        password: authType === 'basic' ? sourceOptions.password : undefined,
         searchParams: {
           ...query,
         },

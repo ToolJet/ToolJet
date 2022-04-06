@@ -4,7 +4,7 @@ import Input from '@/_ui/Input';
 const OpenapiAuth = ({ auth_type, username, password, bearer_token, optionchanged, authObject }) => {
   const apiKeyChanges = (value, auth) => {
     auth['value'] = value;
-    optionchanged('password', authObject);
+    optionchanged(auth.key, authObject);
   };
 
   const renderApiKeyField = (auth) => {
@@ -24,7 +24,6 @@ const OpenapiAuth = ({ auth_type, username, password, bearer_token, optionchange
   if (auth_type === 'basic') {
     return (
       <div>
-        <hr></hr>
         <div className="col-md-12">
           <label className="form-label text-muted mt-3">Username</label>
           <Input
