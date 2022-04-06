@@ -323,10 +323,11 @@ export function Table({
       columnType === 'badges' ||
       columnType === 'radio'
     ) {
-      const values = resolveReferences(column.values, currentState) || [];
-      const labels = resolveReferences(column.labels, currentState, []) || [];
+      columnOptions.selectOptions = [];
+      const values = resolveReferences(column.values, currentState, []);
+      const labels = resolveReferences(column.labels, currentState, []);
 
-      if (Array.isArray(labels)) {
+      if (Array.isArray(labels) && Array.isArray(values)) {
         columnOptions.selectOptions = labels.map((label, index) => {
           return { name: label, value: values[index] };
         });
