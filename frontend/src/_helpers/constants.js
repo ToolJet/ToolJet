@@ -11,7 +11,6 @@ export const USER_COLORS = [
   '#3b5dc9',
   '#41a6f6',
   '#73eff7',
-  '#f4f4f4',
   '#94b0c2',
   '#566c86',
   '#333c57',

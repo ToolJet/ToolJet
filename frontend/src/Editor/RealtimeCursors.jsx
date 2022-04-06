@@ -31,6 +31,7 @@ const RealtimeCursors = (props) => {
     (e) => {
       const element = document.getElementById('real-canvas');
       if (element?.parentNode?.matches(':hover')) {
+        console.log((e.pageX / document.documentElement.clientWidth) * 100);
         updatePresence({
           x: e.pageX / document.documentElement.clientWidth,
           y: e.pageY / document.documentElement.clientHeight,

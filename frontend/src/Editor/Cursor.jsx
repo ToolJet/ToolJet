@@ -1,16 +1,21 @@
 import * as React from 'react';
+var tinycolor = require('tinycolor2');
 
 /**
  * Cursor component: Thanks to https://codesandbox.io/s/u85tu?file=/src/components/Cursor.tsx
  */
 export const Cursor = React.memo(({ x, y, color, name }) => {
   const rCursor = React.useRef(null);
-  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
   // Update the point whenever the component updates
   if (rCursor.current) {
     rCursor.current.style.setProperty('transform', `translate(${x}px, ${y}px)`);
   }
+
+  const getColor = () => {
+    if (tinycolor(color).getBrightness() > 128) return '#000';
+    return '#fff';
+  };
 
   return (
     <div ref={rCursor}>
@@ -35,7 +40,7 @@ export const Cursor = React.memo(({ x, y, color, name }) => {
           d="M11.13 4.92a1.75 1.75 0 00-2.2 2.21l3.74 11.26a1.75 1.75 0 003.32 0l1.56-4.68a.25.25 0 01.16-.16L22.4 12a1.75 1.75 0 000-3.32L11.13 4.92z"
         />
       </svg>
-      <span>{name}</span>
+      <span style={{ padding: 5, backgroundColor: color, fontWeight: 'bold', color: getColor() }}>{name}</span>
     </div>
   );
 });
