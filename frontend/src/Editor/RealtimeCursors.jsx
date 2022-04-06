@@ -5,7 +5,7 @@ import { Cursor } from './Cursor';
 import { Editor } from '@/Editor';
 import { USER_COLORS } from '@/_helpers/constants';
 
-const RealtimeEditor = (props) => {
+const RealtimeCursors = (props) => {
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
   const others = useOthers();
@@ -48,6 +48,7 @@ const RealtimeEditor = (props) => {
         return (
           <Cursor
             key={id}
+            name={presence.firstName}
             color={presence.color}
             x={presence.x * document.documentElement.clientWidth}
             y={presence.y * document.documentElement.clientHeight}
@@ -58,4 +59,4 @@ const RealtimeEditor = (props) => {
   );
 };
 
-export default RealtimeEditor;
+export default RealtimeCursors;

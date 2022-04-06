@@ -3,7 +3,7 @@ import * as React from 'react';
 /**
  * Cursor component: Thanks to https://codesandbox.io/s/u85tu?file=/src/components/Cursor.tsx
  */
-export const Cursor = React.memo(({ x, y, color }) => {
+export const Cursor = React.memo(({ x, y, color, name }) => {
   const rCursor = React.useRef(null);
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
@@ -15,28 +15,27 @@ export const Cursor = React.memo(({ x, y, color }) => {
   return (
     <div ref={rCursor}>
       <svg
-        className="cursor"
-        xmlns="http://www.w3.org/2000/svg"
         height="35"
         width="35"
         viewBox="0 0 35 35"
-        fill="none"
-        fillRule="evenodd"
+        shapeRendering="geometricPrecision"
+        xmlns="http://www.w3.org/2000/svg"
+        fill={color}
       >
-        <g fill="rgba(0,0,0,.2)" transform="translate(1,1)">
-          <path d="m12 24.4219v-16.015l11.591 11.619h-6.781l-.411.124z" />
-          <path d="m21.0845 25.0962-3.605 1.535-4.682-11.089 3.686-1.553z" />
-        </g>
-        <g fill="white">
-          <path d="m12 24.4219v-16.015l11.591 11.619h-6.781l-.411.124z" />
-          <path d="m21.0845 25.0962-3.605 1.535-4.682-11.089 3.686-1.553z" />
-        </g>
-        <g fill={color}>
-          <path d="m19.751 24.4155-1.844.774-3.1-7.374 1.841-.775z" />
-          <path d="m13 10.814v11.188l2.969-2.866.428-.139h4.768z" />
-        </g>
+        <path
+          height="35"
+          width="35"
+          viewBox="0 0 35 35"
+          fill="#666"
+          d="M9.63 6.9a1 1 0 011.27-1.27l11.25 3.75a1 1 0 010 1.9l-4.68 1.56a1 1 0 00-.63.63l-1.56 4.68a1 1 0 01-1.9 0L9.63 6.9z"
+        />
+        <path
+          stroke="#fff"
+          strokeWidth="1.5"
+          d="M11.13 4.92a1.75 1.75 0 00-2.2 2.21l3.74 11.26a1.75 1.75 0 003.32 0l1.56-4.68a.25.25 0 01.16-.16L22.4 12a1.75 1.75 0 000-3.32L11.13 4.92z"
+        />
       </svg>
-      <span>{currentUser.first_name}</span>
+      <span>{name}</span>
     </div>
   );
 });
