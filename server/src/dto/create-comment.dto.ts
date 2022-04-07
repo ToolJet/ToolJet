@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsUUID, IsString, IsNotEmpty } from 'class-validator';
+import { IsUUID, IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 
 export class CreateCommentDTO {
@@ -12,9 +12,11 @@ export class CreateCommentDTO {
   threadId: string;
 
   @IsUUID()
+  @IsOptional()
   userId: string;
 
   @IsUUID()
+  @IsOptional()
   organizationId: string;
 
   @IsString()
