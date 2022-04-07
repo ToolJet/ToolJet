@@ -138,12 +138,6 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toStrictEqual([
-        'first_name should not be empty',
-        'first_name must be a string',
-        'last_name should not be empty',
-        'last_name must be a string',
-        'organization should not be empty',
-        'organization must be a string',
         'password should not be empty',
         'password must be a string',
         'token should not be empty',
