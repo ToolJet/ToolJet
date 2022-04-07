@@ -2871,7 +2871,29 @@ input:focus-visible {
   .DateRangePickerInput__withBorder {
     border: 1px solid #1f2936;
   }
+  .fx-canvas{
+    background: #1c252f;
+    padding: 2px;
+    width: 35px;
+    display: flex;
+    border: solid 1px rgba(255, 255, 255, 0.09) !important;
+    justify-content: center;
+    div{
+      background: #1c252f !important;
+    }
+  }
 
+  .hinter-canvas-input{
+    max-width: 120px;
+    height: auto;
+    padding: 4px; 
+    .CodeMirror-sizer{
+      border-right-width: 0px !important;
+    }
+    .cm-propert{
+      color: #ffffff !important;
+    }
+  }
   .main .canvas-container .canvas-area {
     background: #2f3c4c;
   }

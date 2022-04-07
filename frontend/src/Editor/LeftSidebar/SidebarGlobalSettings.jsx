@@ -78,37 +78,47 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                     />
                   </div>
                 )}
-                <div
-                  className="row mx-0 form-control form-control-sm canvas-background-holder"
-                  onClick={() => setShowPicker(true)}
-                >
+                {!forceCodeBox && (
                   <div
-                    className="col-auto"
-                    style={{
-                      float: 'right',
-                      width: '20px',
-                      height: '20px',
-                      backgroundColor: canvasBackgroundColor,
-                      border: `0.25px solid ${
-                        ['#ffffff', '#fff', '#1f2936'].includes(canvasBackgroundColor) && '#c5c8c9'
-                      }`,
-                    }}
-                  ></div>
-                  <div className="col">{canvasBackgroundColor}</div>
-                </div>
-                <div className="col-auto pt-2 style-fx fx-common">
+                    className="row mx-0 form-control form-control-sm canvas-background-holder"
+                    onClick={() => setShowPicker(true)}
+                  >
+                    <div
+                      className="col-auto"
+                      style={{
+                        float: 'right',
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: canvasBackgroundColor,
+                        border: `0.25px solid ${
+                          ['#ffffff', '#fff', '#1f2936'].includes(canvasBackgroundColor) && '#c5c8c9'
+                        }`,
+                      }}
+                    ></div>
+                    <div className="col">{canvasBackgroundColor}</div>
+                  </div>
+                )}
+                {forceCodeBox && (
                   <CodeHinter
                     currentState={currentState}
                     initialValue={canvasBackgroundColor ?? {}}
                     theme={darkMode ? 'monokai' : 'duotone-light'}
                     mode="javascript"
                     lineNumbers={false}
-                    className="chart-input pr-2"
+                    className="hinter-canvas-input"
                     onChange={(color) => globalSettingsChanged('canvasBackgroundColor', color)}
                     // onChange={(value) => this.props.paramUpdated({ name: 'jsonDescription' }, 'value', value, 'properties')}
                     // componentName={`widget/${this.props.component.component.name}::${chartType}`}
                   />
-                  <FxButton active={true} onPress={forceCodeBox} />
+                )}
+                <div className="col-auto fx-canvas">
+                  <FxButton
+                    active={forceCodeBox ? true : false}
+                    onPress={() => {
+                      setForceCodeBox(!forceCodeBox);
+                      // setShowPicker(!showPicker);
+                    }}
+                  />
                 </div>
               </div>
             </div>
