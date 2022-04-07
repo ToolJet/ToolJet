@@ -112,18 +112,27 @@ export const Inspector = ({
     }
   }
 
+  const getDefaultValue = (val) => {
+    if (componentMeta?.definition?.defaults) {
+      return componentMeta.definition.defaults.find((el) => el.type === val);
+    }
+    return null;
+  };
+
   function paramUpdated(param, attr, value, paramType) {
     let newDefinition = { ...component.component.definition };
-
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
-
     if (!paramObject) {
       allParams[param.name] = {};
     }
 
     if (attr) {
       allParams[param.name][attr] = value;
+      const defaultValue = getDefaultValue(value);
+      if (param.type === 'select' && defaultValue) {
+        allParams[defaultValue.paramName]['value'] = defaultValue.value;
+      }
     } else {
       allParams[param.name] = value;
     }
