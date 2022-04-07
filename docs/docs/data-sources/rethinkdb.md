@@ -37,4 +37,6 @@ Supported queries:
 
 - Get document from primary key
 
-
+:::info
+NOTE: Name field in all opertion is database name if not given will take the default database used for connection.
+:::
