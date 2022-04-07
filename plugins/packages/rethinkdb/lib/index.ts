@@ -136,15 +136,13 @@ export default class Rethinkdb implements QueryService {
   };
 
   createTable = async (name, tablename, connection, database) => {
-    const response = r.connect(
-      r
-        .db(name ? name : database)
-        .tableCreate(tablename)
-        .run(connection, (err, result) => {
-          if (err) throw err;
-          return result;
-        })
-    );
+    const response = r
+      .db(name ? name : database)
+      .tableCreate(tablename)
+      .run(connection, (err, result) => {
+        if (err) throw err;
+        return result;
+      });
     return response;
   };
 
