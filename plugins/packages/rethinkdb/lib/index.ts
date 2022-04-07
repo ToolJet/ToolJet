@@ -64,7 +64,7 @@ export default class Rethinkdb implements QueryService {
           break;
         }
         case 'update_docs_by_id': {
-          result = await this.updateDocumentByID(database, tablename, key, body, connection, database);
+          result = await this.updateDocumentByID(name, tablename, key, body, connection, database);
           break;
         }
         case 'update_all_docs': {
@@ -237,7 +237,7 @@ export default class Rethinkdb implements QueryService {
       });
     return response;
   };
-  updateDocumentByID = async (name, tablename, data, key, connection, database) => {
+  updateDocumentByID = async (name, tablename, key, data, connection, database) => {
     const response = r
       .db(name ? name : database)
       .table(tablename)
