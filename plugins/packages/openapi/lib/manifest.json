@@ -55,6 +55,12 @@
     "client_secret": {
       "value": ""
     },
+    "auth_url": {
+      "value": ""
+    },
+    "access_token_url": {
+      "value": ""
+    },
     "headers": {
       "value": [
         [

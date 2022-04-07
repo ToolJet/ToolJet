@@ -23,8 +23,10 @@ const Oauth = ({
       const { flows, general_scopes } = authObject;
       const { authorizationUrl, tokenUrl } = flows['authorizationCode'];
       optionchanged('access_token_url', tokenUrl);
-      optionchanged('auth_url', authorizationUrl);
-      optionchanged('scopes', convertScopesToString(general_scopes));
+      setTimeout(() => {
+        optionchanged('auth_url', authorizationUrl);
+        optionchanged('scopes', convertScopesToString(general_scopes));
+      }, 500);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authObject, grant_type]);
