@@ -4,7 +4,27 @@ import Textarea from '@/_ui/Textarea';
 import { openapiService } from '@/_services';
 import OpenapiAuth from './OpenapiAuth';
 
-const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, username, password, api_keys }) => {
+const OpenApi = ({
+  optionchanged,
+  format,
+  definition,
+  auth_type,
+  bearer_token,
+  username,
+  password,
+  api_keys,
+  access_token_url,
+  client_id,
+  client_secret,
+  client_auth,
+  custom_auth_params,
+  custom_query_params,
+  add_token_to,
+  header_prefix,
+  grant_type,
+  scopes,
+  auth_url,
+}) => {
   const [securities, setSecurities] = useState([]);
   const [loadingSpec, setLoadingSpec] = useState(false);
   const [selectedAuth, setSelectedAuth] = useState();
@@ -77,11 +97,14 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
           const auth = scheme[authName];
           if (auth) {
             auth['key'] = authName;
-            authArray.push(auth);
             if (auth.type === 'apiKey') {
               const apiKeyObj = { ...auth, value: getCurrentKey(auth.key) };
               ApiKeys[authName] = apiKeyObj;
+            } else if (auth.type === 'oauth2') {
+              const scopes = security[authName];
+              auth['general_scopes'] = scopes;
             }
+            authArray.push(auth);
           }
         }
       });
@@ -181,6 +204,17 @@ const OpenApi = ({ optionchanged, format, definition, auth_type, bearer_token, u
             bearer_token={bearer_token}
             authObject={selectedAuth}
             api_keys={api_keys}
+            add_token_to={add_token_to}
+            header_prefix={header_prefix}
+            access_token_url={access_token_url}
+            grant_type={grant_type}
+            custom_auth_params={custom_auth_params}
+            custom_query_params={custom_query_params}
+            client_id={client_id}
+            client_secret={client_secret}
+            client_auth={client_auth}
+            scopes={scopes}
+            auth_url={auth_url}
           />
         </>
       )}

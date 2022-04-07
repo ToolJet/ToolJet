@@ -1,7 +1,27 @@
 import React from 'react';
 import Input from '@/_ui/Input';
+import Oauth from './Oauth';
 
-const OpenapiAuth = ({ auth_type, username, password, bearer_token, optionchanged, authObject, api_keys }) => {
+const OpenapiAuth = ({
+  auth_type,
+  username,
+  password,
+  bearer_token,
+  optionchanged,
+  authObject,
+  api_keys,
+  access_token_url,
+  client_id,
+  client_secret,
+  client_auth,
+  custom_auth_params,
+  custom_query_params,
+  add_token_to,
+  header_prefix,
+  grant_type,
+  scopes,
+  auth_url,
+}) => {
   const apiKeyChanges = (key, value) => {
     const obj = api_keys ?? {};
     obj[key].value = value;
@@ -74,6 +94,24 @@ const OpenapiAuth = ({ auth_type, username, password, bearer_token, optionchange
     } else {
       return renderApiKeyField(authObject);
     }
+  } else if (auth_type === 'oauth2') {
+    return (
+      <Oauth
+        add_token_to={add_token_to}
+        header_prefix={header_prefix}
+        access_token_url={access_token_url}
+        grant_type={grant_type}
+        optionchanged={optionchanged}
+        custom_auth_params={custom_auth_params}
+        custom_query_params={custom_query_params}
+        client_id={client_id}
+        client_secret={client_secret}
+        client_auth={client_auth}
+        scopes={scopes}
+        auth_url={auth_url}
+        authObject={authObject}
+      />
+    );
   } else {
     return null;
   }

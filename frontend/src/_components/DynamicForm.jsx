@@ -159,6 +159,17 @@ const DynamicForm = ({
           bearer_token: options.bearer_token?.value,
           api_keys: options.api_keys?.value,
           optionchanged,
+          grant_type: options.grant_type?.value,
+          add_token_to: options.add_token_to?.value,
+          header_prefix: options.header_prefix?.value,
+          access_token_url: options.access_token_url?.value,
+          client_id: options.client_id?.value,
+          client_secret: options.client_secret?.value,
+          client_auth: options.client_auth?.value,
+          scopes: options.scopes?.value,
+          auth_url: options.auth_url?.value,
+          custom_auth_params: options.custom_auth_params?.value,
+          custom_query_params: options.custom_query_params?.value,
         };
       default:
         return {};

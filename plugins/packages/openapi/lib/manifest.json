@@ -17,6 +17,9 @@
       },
       "bearer_token": {
         "encrypted": true
+      },
+      "client_secret": {
+        "encrypted": true
       }
     },
     "customTesting": true
@@ -36,6 +39,48 @@
     },
     "bearer_token": {
       "value": ""
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "add_token_to": {
+      "value": "header"
+    },
+    "header_prefix": {
+      "value": "Bearer "
+    },
+    "client_id": {
+      "value": ""
+    },
+    "client_secret": {
+      "value": ""
+    },
+    "headers": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
+    },
+    "custom_query_params": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
+    },
+    "custom_auth_params": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
+    },
+    "client_auth": {
+      "value": "header"
     }
   },
   "properties": {
