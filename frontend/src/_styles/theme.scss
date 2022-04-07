@@ -524,6 +524,7 @@ button {
       background: transparent;
     }
     .query-pane {
+      z-index: 1;
       height: 350px;
       position: fixed;
       left: 76px; //sidebar is 76px

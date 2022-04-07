@@ -23,7 +23,7 @@ export const RealtimeEditor = (props) => {
   React.useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     document.cookie = `auth_token=${currentUser?.auth_token}; path=/`;
-    setProvider(new WebsocketProvider(getWebsocketUrl(), '', ydoc));
+    setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
 
     () => provider.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
