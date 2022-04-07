@@ -1574,6 +1574,18 @@ export const componentTypes = [
           value: 'countUp',
         },
       },
+      defaults: [
+        {
+          type: 'countUp',
+          value: '00:00:00:000',
+          paramName: 'value',
+        },
+        {
+          type: 'countDown',
+          value: '00:00:10:000',
+          paramName: 'value',
+        },
+      ],
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
