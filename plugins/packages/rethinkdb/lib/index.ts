@@ -88,9 +88,9 @@ export default class Rethinkdb implements QueryService {
     let connection = null;
     connection = r.connect(
       {
-        db: { database },
-        host: { host },
-        port: { port },
+        db: database,
+        host: host,
+        port: port,
         ...(username?.length > 0 && { username }),
         ...(password?.length > 0 && { password }),
       },
