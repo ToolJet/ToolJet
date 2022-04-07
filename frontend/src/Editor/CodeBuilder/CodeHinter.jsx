@@ -195,13 +195,7 @@ export function CodeHinter({
           <ToolTip label={paramLabel} meta={fieldMeta} />
         </div>
         <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
-          <div
-            style={{
-              width: width,
-              display: codeShow ? 'flex' : 'none',
-              marginTop: '-1px',
-            }}
-          >
+          <div style={{ width: width, display: codeShow ? 'flex' : 'none', marginTop: '-1px' }}>
             <FxButton
               active={true}
               onPress={() => {
