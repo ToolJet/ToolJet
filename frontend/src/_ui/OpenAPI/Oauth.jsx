@@ -5,6 +5,7 @@ import Headers from '@/_ui/HttpHeaders';
 
 const Oauth = ({
   access_token_url,
+  auth_url,
   client_id,
   client_secret,
   client_auth,
@@ -14,10 +15,20 @@ const Oauth = ({
   header_prefix,
   grant_type,
   scopes,
-  auth_url,
   authObject,
   optionchanged,
 }) => {
+  useEffect(() => {
+    if (authObject && authObject.flows['authorizationCode']) {
+      const { flows, general_scopes } = authObject;
+      const { authorizationUrl, tokenUrl } = flows['authorizationCode'];
+      optionchanged('access_token_url', tokenUrl);
+      optionchanged('auth_url', authorizationUrl);
+      optionchanged('scopes', convertScopesToString(general_scopes));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authObject, grant_type]);
+
   const convertScopesToString = (scopes) => {
     let scopes_str = '';
     scopes.map((scope) => {
@@ -25,18 +36,6 @@ const Oauth = ({
     });
     return scopes_str;
   };
-
-  useEffect(() => {
-    if (authObject && authObject.flows['authorizationCode']) {
-      const { flows, general_scopes } = authObject;
-      const { authorizationUrl, tokenUrl } = flows['authorizationCode'];
-      !grant_type && optionchanged('grant_type', 'authorization_code');
-      !auth_url && optionchanged('auth_url', authorizationUrl);
-      !access_token_url && optionchanged('access_token_url', tokenUrl);
-      !scopes && optionchanged('scopes', convertScopesToString(general_scopes));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authObject, grant_type]);
 
   if (authObject && !authObject.flows['authorizationCode']) return null;
 
@@ -76,7 +75,7 @@ const Oauth = ({
           placeholder="https://api.example.com/oauth/token"
           className="form-control"
           onChange={(e) => optionchanged('access_token_url', e.target.value)}
-          value={access_token_url ?? authObject?.flows['authorizationCode']?.tokenUrl}
+          value={access_token_url}
         />
       </div>
 
@@ -126,7 +125,7 @@ const Oauth = ({
               placeholder="https://api.example.com/oauth/authorize"
               className="form-control"
               onChange={(e) => optionchanged('auth_url', e.target.value)}
-              value={auth_url ?? authObject?.flows['authorizationCode']?.authorizationUrl}
+              value={auth_url}
             />
           </div>
 
