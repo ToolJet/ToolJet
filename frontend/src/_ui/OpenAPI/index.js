@@ -9,6 +9,7 @@ const OpenApi = ({
   format,
   definition,
   auth_type,
+  auth_key,
   bearer_token,
   username,
   password,
@@ -36,9 +37,9 @@ const OpenApi = ({
   }, [definition, format]);
 
   useEffect(() => {
-    auth_type && getSelectedAuth(auth_type);
+    auth_key && getSelectedAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth_type, securities]);
+  }, [auth_key, securities]);
 
   const validateDef = () => {
     if (definition) {
@@ -116,11 +117,14 @@ const OpenApi = ({
   const resolveAuthTypes = (auth) => {
     switch (auth.type) {
       case 'http':
-        return { name: auth.scheme.charAt(0).toUpperCase() + auth.scheme.slice(1), value: auth.scheme, key: auth.key };
+        return {
+          name: `${auth.key} (${auth.scheme.charAt(0).toUpperCase() + auth.scheme.slice(1)})`,
+          value: auth.key,
+        };
       case 'apiKey':
-        return { name: 'API Key', value: auth.type, key: auth.key };
+        return { name: `${auth.key} (API Key)`, value: auth.key };
       case 'oauth2':
-        return { name: 'Ouath2', value: auth.type, key: auth.key };
+        return { name: `${auth.key} (Ouath2)`, value: auth.key };
     }
   };
 
@@ -136,12 +140,18 @@ const OpenApi = ({
     return options;
   };
 
-  const getSelectedAuth = (auth_type) => {
+  const getSelectedAuth = () => {
     securities.map((security) => {
       if (Array.isArray(security)) {
-        if (security[0].type === auth_type || security[0].scheme === auth_type) setSelectedAuth(security);
+        if (security[0].key === auth_key || security[0].key === auth_key) {
+          optionchanged('auth_type', security[0].scheme ?? security[0].type);
+          setSelectedAuth(security);
+        }
       } else {
-        if (security.type === auth_type || security.scheme === auth_type) setSelectedAuth(security);
+        if (security.key === auth_key || security.key === auth_key) {
+          setSelectedAuth(security);
+          optionchanged('auth_type', security.scheme ?? security.type);
+        }
       }
     });
   };
@@ -191,13 +201,12 @@ const OpenApi = ({
             <label className="form-label text-muted mt-3">Authentication</label>
             <Select
               options={computeAuthOptions()}
-              value={auth_type}
-              onChange={(value) => optionchanged('auth_type', value)}
+              value={auth_key}
+              onChange={(value) => optionchanged('auth_key', value)}
             />
           </div>
 
           <OpenapiAuth
-            auth_type={auth_type}
             username={username}
             password={password}
             optionchanged={optionchanged}
@@ -215,6 +224,7 @@ const OpenApi = ({
             client_auth={client_auth}
             scopes={scopes}
             auth_url={auth_url}
+            auth_type={auth_type}
           />
         </>
       )}

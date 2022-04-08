@@ -3,7 +3,6 @@ import Input from '@/_ui/Input';
 import Oauth from './Oauth';
 
 const OpenapiAuth = ({
-  auth_type,
   username,
   password,
   bearer_token,
@@ -21,6 +20,7 @@ const OpenapiAuth = ({
   grant_type,
   scopes,
   auth_url,
+  auth_type,
 }) => {
   const apiKeyChanges = (key, value) => {
     const obj = api_keys ?? {};
