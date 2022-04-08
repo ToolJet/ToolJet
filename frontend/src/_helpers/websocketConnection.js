@@ -14,7 +14,7 @@ class WebSocketConnection {
     return window.location.host;
   }
 
-  addListeners(appId) {
+  addListeners() {
     // Connection opened
     this.socket.addEventListener('open', (event) => {
       console.log('connection established', event);
