@@ -70,7 +70,7 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
             </div>
             <div className="d-flex">
               <span className="w-full m-auto">Background color of canvas</span>
-              <div>
+              <div className="canvas-codehinter-container">
                 {showPicker && (
                   <div>
                     <div style={coverStyles} onClick={() => setShowPicker(false)} />
@@ -105,28 +105,30 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                     <div className="col">{canvasBackgroundColor}</div>
                   </div>
                 )}
-                {!forceCodeBox && (
-                  <CodeHinter
-                    currentState={currentState}
-                    initialValue={localCanvasValue}
-                    value={resolveReferences(localCanvasValue, currentState)}
-                    theme={darkMode ? 'monokai' : 'duotone-light'}
-                    mode="javascript"
-                    lineNumbers={false}
-                    className="hinter-canvas-input"
-                    onChange={(color) => {
-                      globalSettingsChanged('canvasBackgroundColor', resolveReferences(color, currentState));
-                      setLocalCanvasValue(color);
-                    }}
-                  />
-                )}
-                <div className="col-auto fx-canvas">
-                  <FxButton
-                    active={forceCodeBox ? true : false}
-                    onPress={() => {
-                      setForceCodeBox(!forceCodeBox);
-                    }}
-                  />
+                <div className="canvas-codehinter-container">
+                  {!forceCodeBox && (
+                    <CodeHinter
+                      currentState={currentState}
+                      initialValue={localCanvasValue}
+                      value={resolveReferences(localCanvasValue, currentState)}
+                      theme={darkMode ? 'monokai' : 'duotone-light'}
+                      mode="javascript"
+                      lineNumbers={false}
+                      className="hinter-canvas-input"
+                      onChange={(color) => {
+                        globalSettingsChanged('canvasBackgroundColor', resolveReferences(color, currentState));
+                        setLocalCanvasValue(color);
+                      }}
+                    />
+                  )}
+                  <div className="col-auto fx-canvas">
+                    <FxButton
+                      active={forceCodeBox ? true : false}
+                      onPress={() => {
+                        setForceCodeBox(!forceCodeBox);
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
