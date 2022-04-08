@@ -24,6 +24,10 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
     left: '0px',
   };
 
+  React.useEffect(() => {
+    setLocalCanvasValue(canvasBackgroundColor);
+  }, [canvasBackgroundColor]);
+
   return (
     <>
       <LeftSidebarItem
@@ -98,7 +102,7 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                         }`,
                       }}
                     ></div>
-                    <div className="col">pp{canvasBackgroundColor}</div>
+                    <div className="col">{canvasBackgroundColor}</div>
                   </div>
                 )}
                 {!forceCodeBox && (
