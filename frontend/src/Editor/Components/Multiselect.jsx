@@ -19,6 +19,7 @@ export const Multiselect = function Multiselect({
   setExposedVariable,
   onComponentClick,
   darkMode,
+  fireEvent,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState } = styles;
@@ -62,13 +63,13 @@ export const Multiselect = function Multiselect({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
+  const onChangeHandler = (items) => {
+    setSelected(items);
     setExposedVariable(
       'values',
-      selected.map((option) => option.value)
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
+      items.map((item) => item.value)
+    ).then(() => fireEvent('onSelect'));
+  };
 
   return (
     <div
@@ -88,7 +89,7 @@ export const Multiselect = function Multiselect({
           hasSelectAll={showAllOption ?? false}
           options={selectOptions}
           value={selected}
-          onChange={setSelected}
+          onChange={onChangeHandler}
           labelledBy={'Select'}
           disabled={disabledState}
           className={`multiselect-box${darkMode ? ' dark' : ''}`}
