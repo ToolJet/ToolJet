@@ -4,14 +4,15 @@ import { SketchPicker } from 'react-color';
 
 import { LeftSidebarItem } from './SidebarItem';
 import FxButton from '../CodeBuilder/Elements/FxButton';
-import { Code } from '../Inspector/Elements/Code';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChanged, currentState }) => {
   const [open, trigger, content] = usePopover(false);
   const { hideHeader, canvasMaxWidth, canvasBackgroundColor } = globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
+  const [localCanvasValue, setLocalCanvasValue] = React.useState(canvasBackgroundColor);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -22,6 +23,7 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
     bottom: '0px',
     left: '0px',
   };
+
   return (
     <>
       <LeftSidebarItem
@@ -72,13 +74,14 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                       className="canvas-background-picker"
                       onFocus={() => setShowPicker(true)}
                       color={canvasBackgroundColor}
-                      onChangeComplete={(color) =>
-                        globalSettingsChanged('canvasBackgroundColor', [color.hex, color.rgb])
-                      }
+                      onChangeComplete={(color) => {
+                        globalSettingsChanged('canvasBackgroundColor', [color.hex, color.rgb]);
+                        setLocalCanvasValue(color.hex);
+                      }}
                     />
                   </div>
                 )}
-                {!forceCodeBox && (
+                {forceCodeBox && (
                   <div
                     className="row mx-0 form-control form-control-sm canvas-background-holder"
                     onClick={() => setShowPicker(true)}
@@ -95,20 +98,22 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                         }`,
                       }}
                     ></div>
-                    <div className="col">{canvasBackgroundColor}</div>
+                    <div className="col">pp{canvasBackgroundColor}</div>
                   </div>
                 )}
-                {forceCodeBox && (
+                {!forceCodeBox && (
                   <CodeHinter
                     currentState={currentState}
-                    initialValue={canvasBackgroundColor ?? {}}
+                    initialValue={localCanvasValue}
+                    value={resolveReferences(localCanvasValue, currentState)}
                     theme={darkMode ? 'monokai' : 'duotone-light'}
                     mode="javascript"
                     lineNumbers={false}
                     className="hinter-canvas-input"
-                    onChange={(color) => globalSettingsChanged('canvasBackgroundColor', color)}
-                    // onChange={(value) => this.props.paramUpdated({ name: 'jsonDescription' }, 'value', value, 'properties')}
-                    // componentName={`widget/${this.props.component.component.name}::${chartType}`}
+                    onChange={(color) => {
+                      globalSettingsChanged('canvasBackgroundColor', resolveReferences(color, currentState));
+                      setLocalCanvasValue(color);
+                    }}
                   />
                 )}
                 <div className="col-auto fx-canvas">
@@ -116,7 +121,6 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                     active={forceCodeBox ? true : false}
                     onPress={() => {
                       setForceCodeBox(!forceCodeBox);
-                      // setShowPicker(!showPicker);
                     }}
                   />
                 </div>

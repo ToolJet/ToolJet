@@ -2874,17 +2874,17 @@ input:focus-visible {
   .fx-canvas{
     background: #1c252f;
     padding: 2px;
-    width: 35px;
     display: flex;
     border: solid 1px rgba(255, 255, 255, 0.09) !important;
     justify-content: center;
     div{
       background: #1c252f !important;
+      width: 35px !important;
     }
   }
 
   .hinter-canvas-input{
-    max-width: 120px;
+    width: 120px !important;
     height: auto;
     padding: 4px; 
     .CodeMirror-sizer{
@@ -4718,4 +4718,7 @@ div#driver-page-overlay {
   // top: -10px !important;
   // left: 100px !important;
   // background-color: #0565ff;
+}
+.canvas-hinter-container{
+  display: flex;
 }
