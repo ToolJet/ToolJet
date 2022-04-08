@@ -295,7 +295,7 @@ export class UsersService {
     organizationId: string
   ) {
     if (removeGroups) {
-      await this.throwErrorIfRemovingLastActiveAdmin(user, removeGroups);
+      await this.throwErrorIfRemovingLastActiveAdmin(user, removeGroups, organizationId);
       if (removeGroups.includes('all_users')) {
         throw new BadRequestException('Cannot remove user from default group.');
       }
@@ -313,7 +313,7 @@ export class UsersService {
     }
   }
 
-  async throwErrorIfRemovingLastActiveAdmin(user: User, removeGroups: string[] = ['admin']) {
+  async throwErrorIfRemovingLastActiveAdmin(user: User, removeGroups: string[] = ['admin'], organizationId: string) {
     const removingAdmin = removeGroups.includes('admin');
     if (!removingAdmin) return;
 
@@ -324,7 +324,7 @@ export class UsersService {
       .andWhere('organization_users.status = :status', { status: 'active' })
       .andWhere('group_permissions.group = :group', { group: 'admin' })
       .andWhere('group_permissions.organization_id = :organizationId', {
-        organizationId: user.organizationId,
+        organizationId,
       })
       .getCount();
 
@@ -359,7 +359,7 @@ export class UsersService {
         return await this.canUserPerformActionOnApp(user, 'update', resourceId);
 
       case 'Folder':
-        return await this.canUserPerformActionOnFolder(user, action, resourceId);
+        return await this.canUserPerformActionOnFolder(user, action);
 
       default:
         return false;
@@ -393,7 +393,7 @@ export class UsersService {
     return permissionGrant;
   }
 
-  async canUserPerformActionOnFolder(user: User, action: string, folderId?: string): Promise<boolean> {
+  async canUserPerformActionOnFolder(user: User, action: string): Promise<boolean> {
     let permissionGrant: boolean;
 
     switch (action) {

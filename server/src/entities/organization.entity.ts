@@ -6,13 +6,14 @@ import {
   UpdateDateColumn,
   OneToMany,
   JoinColumn,
+  BaseEntity,
 } from 'typeorm';
 import { GroupPermission } from './group_permission.entity';
 import { SSOConfigs } from './sso_config.entity';
 import { OrganizationUser } from './organization_user.entity';
 
 @Entity({ name: 'organizations' })
-export class Organization {
+export class Organization extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

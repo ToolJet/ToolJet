@@ -37,7 +37,7 @@ describe('Authentication', () => {
   });
 
   describe('Single organization', () => {
-    it('should create new users and organization id', async () => {
+    it('should create new users and organization', async () => {
       const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
       expect(response.statusCode).toBe(201);
 
@@ -49,7 +49,7 @@ describe('Authentication', () => {
       const organization = await orgRepository.findOne({ where: { id: user?.organizationUsers?.[0]?.organizationId } });
 
       expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
-      expect(organization?.name).toBe('Test Organization');
+      expect(organization?.name).toBe('Untitled organization');
 
       const groupPermissions = await user.groupPermissions;
       const groupNames = groupPermissions.map((x) => x.group);
@@ -128,7 +128,12 @@ describe('Authentication', () => {
 
   describe('Multi organization', () => {
     beforeEach(async () => {
-      const { organization, user } = await createUser(app, { email: 'admin@tooljet.io', status: 'active' });
+      const { organization, user } = await createUser(app, {
+        email: 'admin@tooljet.io',
+        firstName: 'user',
+        lastName: 'name',
+        status: 'active',
+      });
       current_organization = organization;
       current_user = user;
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
@@ -157,7 +162,7 @@ describe('Authentication', () => {
       });
       it('should not create new users', async () => {
         const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
-        expect(response.statusCode).toBe(401);
+        expect(response.statusCode).toBe(406);
       });
     });
     describe('sign up enabled', () => {
@@ -263,32 +268,127 @@ describe('Authentication', () => {
         expect(response.body.organization).toBe('Untitled organization');
       });
       it('should be able to switch between organizations with admin privilage', async () => {
-        const { organization } = await createUser(app, { organizationName: 'New Organization' }, current_user);
-        const response = await request(app.getHttpServer())
-          .get('/api/switch/' + organization.id)
-          .set('Authorization', authHeaderForUser(current_user));
-        expect(response.statusCode).toBe(200);
-        expect(response.body.organization_id).toBe(organization.id);
-        expect(response.body.organization).toBe('New Organization');
-        expect(response.body.admin).toBeTruthy();
-        const checkUser: User = await userRepository.findOne({ where: { id: current_user.id } });
-        expect(checkUser.defaultOrganizationId).toBe(organization.id);
-      });
-      it('should be able to switch between organizations with user privilage', async () => {
-        const { organization } = await createUser(
+        const { organization: invited_organization } = await createUser(
           app,
-          { groups: ['all_users'], organizationName: 'New Organization' },
+          { organizationName: 'New Organization', status: 'active' },
           current_user
         );
         const response = await request(app.getHttpServer())
-          .get('/api/switch/' + organization.id)
+          .get('/api/switch/' + invited_organization.id)
           .set('Authorization', authHeaderForUser(current_user));
+
         expect(response.statusCode).toBe(200);
-        expect(response.body.organization_id).toBe(organization.id);
-        expect(response.body.organization).toBe('New Organization');
-        expect(response.body.admin).toBeFalsy();
+        expect(Object.keys(response.body).sort()).toEqual(
+          [
+            'id',
+            'email',
+            'first_name',
+            'last_name',
+            'auth_token',
+            'admin',
+            'organization_id',
+            'organization',
+            'group_permissions',
+            'app_group_permissions',
+          ].sort()
+        );
+
+        const {
+          email,
+          first_name,
+          last_name,
+          admin,
+          group_permissions,
+          app_group_permissions,
+          organization_id,
+          organization,
+        } = response.body;
+
+        expect(email).toEqual(current_user.email);
+        expect(first_name).toEqual(current_user.firstName);
+        expect(last_name).toEqual(current_user.lastName);
+        expect(admin).toBeTruthy();
+        expect(organization_id).toBe(invited_organization.id);
+        expect(organization).toBe(invited_organization.name);
+        expect(group_permissions).toHaveLength(2);
+        expect(group_permissions[0].group).toEqual('all_users');
+        expect(group_permissions[1].group).toEqual('admin');
+        expect(Object.keys(group_permissions[0]).sort()).toEqual(
+          [
+            'id',
+            'organization_id',
+            'group',
+            'app_create',
+            'app_delete',
+            'updated_at',
+            'created_at',
+            'folder_create',
+          ].sort()
+        );
+        expect(app_group_permissions).toHaveLength(0);
         await current_user.reload();
-        expect(current_user.defaultOrganizationId).toBe(organization.id);
+        expect(current_user.defaultOrganizationId).toBe(invited_organization.id);
+      });
+      it('should be able to switch between organizations with user privilage', async () => {
+        const { organization: invited_organization } = await createUser(
+          app,
+          { groups: ['all_users'], organizationName: 'New Organization', status: 'active' },
+          current_user
+        );
+        const response = await request(app.getHttpServer())
+          .get('/api/switch/' + invited_organization.id)
+          .set('Authorization', authHeaderForUser(current_user));
+
+        expect(response.statusCode).toBe(200);
+        expect(Object.keys(response.body).sort()).toEqual(
+          [
+            'id',
+            'email',
+            'first_name',
+            'last_name',
+            'auth_token',
+            'admin',
+            'organization_id',
+            'organization',
+            'group_permissions',
+            'app_group_permissions',
+          ].sort()
+        );
+
+        const {
+          email,
+          first_name,
+          last_name,
+          admin,
+          group_permissions,
+          app_group_permissions,
+          organization_id,
+          organization,
+        } = response.body;
+
+        expect(email).toEqual(current_user.email);
+        expect(first_name).toEqual(current_user.firstName);
+        expect(last_name).toEqual(current_user.lastName);
+        expect(admin).toBeFalsy();
+        expect(organization_id).toBe(invited_organization.id);
+        expect(organization).toBe(invited_organization.name);
+        expect(group_permissions).toHaveLength(1);
+        expect(group_permissions[0].group).toEqual('all_users');
+        expect(Object.keys(group_permissions[0]).sort()).toEqual(
+          [
+            'id',
+            'organization_id',
+            'group',
+            'app_create',
+            'app_delete',
+            'updated_at',
+            'created_at',
+            'folder_create',
+          ].sort()
+        );
+        expect(app_group_permissions).toHaveLength(0);
+        await current_user.reload();
+        expect(current_user.defaultOrganizationId).toBe(invited_organization.id);
       });
     });
   });

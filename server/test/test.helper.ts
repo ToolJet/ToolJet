@@ -200,7 +200,7 @@ export async function createUser(
     organizationUsersRepository.create({
       user: user,
       organization,
-      status: status || 'invited',
+      status: status || 'active',
       role: 'all_users',
       createdAt: new Date(),
       updatedAt: new Date(),

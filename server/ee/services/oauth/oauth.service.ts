@@ -75,6 +75,8 @@ export class OauthService {
 
   async #generateLoginResultPayload(user: User, organization: Organization): Promise<any> {
     const JWTPayload: JWTPayload = { username: user.id, sub: user.email, organizationId: organization.id };
+    user.organizationId = organization.id;
+
     return decamelizeKeys({
       id: user.id,
       auth_token: this.jwtService.sign(JWTPayload),

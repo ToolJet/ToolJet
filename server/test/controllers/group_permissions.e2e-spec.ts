@@ -252,22 +252,23 @@ describe('group permissions controller', () => {
     });
 
     it('should not allow to remove users from admin group permission without any atleast one active admin', async () => {
-      const {
-        organization: { adminUser, defaultUser },
-      } = await setupOrganizations(nestApp);
+      const { user, organization } = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        role: 'admin',
+      });
 
       const manager = getManager();
       const adminGroupPermission = await manager.findOne(GroupPermission, {
         where: {
           group: 'admin',
-          organizationId: adminUser.organizationId,
+          organizationId: organization.id,
         },
       });
 
       const response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${adminGroupPermission.id}`)
-        .set('Authorization', authHeaderForUser(adminUser))
-        .send({ remove_users: [defaultUser.id] });
+        .set('Authorization', authHeaderForUser(user))
+        .send({ remove_users: [user.id] });
 
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toBe('Atleast one active admin is required.');
@@ -486,10 +487,11 @@ describe('group permissions controller', () => {
       expect(response.statusCode).toBe(200);
 
       const users = response.body.users;
+
       const user = users[0];
 
       expect(users).toHaveLength(1);
-      expect(user.organization_id).toBe(organization.id);
+      expect(user.default_organization_id).toBe(organization.id);
       expect(user.email).toBe('admin@tooljet.io');
     });
   });
@@ -507,21 +509,24 @@ describe('group permissions controller', () => {
     });
 
     it('should allow admin to list users not in group permission', async () => {
-      const {
-        organization: { adminUser, organization },
-      } = await setupOrganizations(nestApp);
+      const adminUser = await createUser(nestApp, { email: 'admin@tooljet.io' });
+      const userone = await createUser(nestApp, {
+        email: 'userone@tooljet.io',
+        groups: ['all_users'],
+        organization: adminUser.organization,
+      });
 
       const manager = getManager();
       const adminGroupPermission = await manager.findOne(GroupPermission, {
         where: {
           group: 'admin',
-          organizationId: organization.id,
+          organizationId: adminUser.organization.id,
         },
       });
       const groupPermissionId = adminGroupPermission.id;
       const response = await request(nestApp.getHttpServer())
         .get(`/api/group_permissions/${groupPermissionId}/addable_users`)
-        .set('Authorization', authHeaderForUser(adminUser));
+        .set('Authorization', authHeaderForUser(adminUser.user));
 
       expect(response.statusCode).toBe(200);
 
@@ -529,8 +534,8 @@ describe('group permissions controller', () => {
       const user = users[0];
 
       expect(users).toHaveLength(1);
-      expect(user.organization_id).toBe(organization.id);
-      expect(user.email).toBe('developer@tooljet.io');
+      expect(user.default_organization_id).toBe(userone.organization.id);
+      expect(user.email).toBe('userone@tooljet.io');
     });
   });
 

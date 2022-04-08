@@ -94,7 +94,7 @@ export class OrganizationUsersService {
       const organizationUser = await manager.findOne(OrganizationUser, { where: { id } });
       const user = await manager.findOne(User, { where: { id: organizationUser.userId } });
 
-      await this.usersService.throwErrorIfRemovingLastActiveAdmin(user);
+      await this.usersService.throwErrorIfRemovingLastActiveAdmin(user, undefined, organizationUser.organizationId);
 
       await manager.update(OrganizationUser, id, { status: 'archived', invitationToken: null });
     });

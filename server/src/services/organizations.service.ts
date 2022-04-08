@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
@@ -8,6 +7,7 @@ import { User } from 'src/entities/user.entity';
 import { cleanObject } from 'src/helpers/utils.helper';
 import { createQueryBuilder, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
+import { EncryptionService } from './encryption.service';
 import { GroupPermissionsService } from './group_permissions.service';
 import { OrganizationUsersService } from './organization_users.service';
 import { UsersService } from './users.service';
@@ -26,7 +26,7 @@ export class OrganizationsService {
     private usersService: UsersService,
     private organizationUserService: OrganizationUsersService,
     private groupPermissionService: GroupPermissionsService,
-    private configService: ConfigService
+    private encryptionService: EncryptionService
   ) {}
 
   async create(name: string, user?: User): Promise<Organization> {
@@ -185,6 +185,10 @@ export class OrganizationsService {
       })
       .getOne();
 
+    for (const sso of result?.ssoConfigs) {
+      await this.decryptSecret(sso?.configs);
+    }
+
     if (!isHideSensitiveData) {
       return result;
     }
@@ -201,30 +205,48 @@ export class OrganizationsService {
         delete config['createdAt'];
         delete config['updatedAt'];
 
-        switch (config.sso) {
-          case 'git':
-            configs['git'] = {
-              ...config,
-              clientSecret: '',
-            };
-            break;
-          case 'google':
-            configs['google'] = {
-              ...config,
-              configId,
-            };
-            break;
-          case 'form':
-            configs['form'] = {
-              ...config,
-            };
-            break;
-          default:
-            break;
-        }
+        configs[config.sso] = this.buildConfigs(config, configId);
       }
     }
     return configs;
+  }
+
+  private buildConfigs(config: any, configId: string) {
+    if (!config) return config;
+    return {
+      ...config,
+      configs: {
+        ...(config?.configs || {}),
+        ...(config?.configs ? { clientSecret: '' } : {}),
+      },
+      configId,
+    };
+  }
+
+  private async encryptSecret(configs) {
+    if (!configs || typeof configs !== 'object') return configs;
+    await Promise.all(
+      Object.keys(configs).map(async (key) => {
+        if (key.toLowerCase().includes('secret')) {
+          if (configs[key]) {
+            configs[key] = await this.encryptionService.encryptColumnValue('ssoConfigs', key, configs[key]);
+          }
+        }
+      })
+    );
+  }
+
+  private async decryptSecret(configs) {
+    if (!configs || typeof configs !== 'object') return configs;
+    await Promise.all(
+      Object.keys(configs).map(async (key) => {
+        if (key.toLowerCase().includes('secret')) {
+          if (configs[key]) {
+            configs[key] = await this.encryptionService.decryptColumnValue('ssoConfigs', key, configs[key]);
+          }
+        }
+      })
+    );
   }
 
   async updateOrganization(organizationId: string, params) {
@@ -248,6 +270,8 @@ export class OrganizationsService {
     if (!(type && ['git', 'google', 'form'].includes(type))) {
       throw new BadRequestException();
     }
+
+    await this.encryptSecret(configs);
     const organization: Organization = await this.getSSOConfigs(organizationId, type);
 
     if (organization?.ssoConfigs?.length > 0) {
@@ -273,6 +297,11 @@ export class OrganizationsService {
   }
 
   async getConfigs(id: string): Promise<SSOConfigs> {
-    return await this.ssoConfigRepository.findOne({ where: { id, enabled: true }, relations: ['organization'] });
+    const result: SSOConfigs = await this.ssoConfigRepository.findOne({
+      where: { id, enabled: true },
+      relations: ['organization'],
+    });
+    await this.decryptSecret(result?.configs);
+    return result;
   }
 }

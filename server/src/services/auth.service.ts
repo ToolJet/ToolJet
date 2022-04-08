@@ -169,12 +169,12 @@ export class AuthService {
       organization = await this.organizationsService.getSingleOrganization();
 
       if (organization) {
-        throw new UnauthorizedException('Multi organization not supported - organization exist');
+        throw new NotAcceptableException('Multi organization not supported - organization exist');
       }
     } else {
       // Multi organization
       if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
-        throw new UnauthorizedException();
+        throw new NotAcceptableException();
       }
     }
     // Create default organization
