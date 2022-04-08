@@ -4,6 +4,7 @@ import { DateRangePicker } from 'react-dates';
 import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
 import { isEmpty } from 'lodash';
+import moment from 'moment';
 
 export const DaterangePicker = function DaterangePicker({
   height,
@@ -11,25 +12,35 @@ export const DaterangePicker = function DaterangePicker({
   styles,
   exposedVariables,
   setExposedVariable,
+  width,
 }) {
   const { borderRadius, visibility, disabledState } = styles;
-
-  const startDateProp = isEmpty(exposedVariables.startDate) ? null : exposedVariables.startDate;
-  const endDateProp = isEmpty(exposedVariables.endDate) ? null : exposedVariables.endDate;
+  const { defaultStartDate, defaultEndDate } = properties;
   const formatProp = properties.format;
+  const startDateProp = isEmpty(exposedVariables.startDate)
+    ? moment(defaultStartDate, formatProp)
+    : exposedVariables.startDate;
+  const endDateProp = isEmpty(exposedVariables.endDate) ? moment(defaultEndDate, formatProp) : exposedVariables.endDate;
 
   const [focusedInput, setFocusedInput] = useState(null);
-  const [startDate, setStartDate] = useState(startDateProp);
+  const [startDate, setStartDate] = useState(moment(defaultStartDate, formatProp));
   const [endDate, setEndDate] = useState(endDateProp);
 
   const dateRangeRef = useRef(null);
 
   useEffect(() => {
+    setStartDate(moment(defaultStartDate, formatProp));
+    setEndDate(moment(defaultEndDate, formatProp));
+  }, [defaultEndDate, defaultStartDate, formatProp]);
+
+  useEffect(() => {
     dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.borderRadius = `${Number.parseFloat(
       borderRadius
     )}px`;
+    dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.height = `${height}px`;
+    dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.width = `${width - 3}px`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateRangeRef.current, borderRadius]);
+  }, [dateRangeRef.current, borderRadius, height, width]);
 
   function onDateChange(dates) {
     const start = dates.startDate;

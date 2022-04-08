@@ -61,7 +61,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
                 </span>
               </div>
             </a>
-            <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+            <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow end-0">
               <Link data-testid="settingsBtn" to="#" onClick={openSettings} className="dropdown-item">
                 Profile
               </Link>

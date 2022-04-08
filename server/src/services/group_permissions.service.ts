@@ -30,6 +30,9 @@ export class GroupPermissionsService {
   ) {}
 
   async create(user: User, group: string): Promise<GroupPermission> {
+    if (!group || group === '') {
+      throw new BadRequestException('Cannot create group without name');
+    }
     return this.groupPermissionsRepository.save(
       this.groupPermissionsRepository.create({
         organizationId: user.organizationId,

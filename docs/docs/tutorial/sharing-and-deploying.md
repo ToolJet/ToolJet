@@ -6,7 +6,7 @@ sidebar_position: 10
 
 ## Preview
 
-Clicking on `Preview` will open up the released version of the app in the new tab. This is useful if you want to immediately check the app in production.
+Clicking on `Preview` will open up the currently opened version of the app in the new tab. This is useful if you want to immediately check the app in production.
 
 <div style={{textAlign: 'center'}}>
 
