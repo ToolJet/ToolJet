@@ -84,7 +84,7 @@ const DynamicForm = ({
           type,
           placeholder: description,
           className: 'form-control',
-          value: options[key]?.value,
+          value: options?.[key]?.value,
           ...(type === 'textarea' && { rows: rows }),
           ...(helpText && { helpText }),
           onChange: (e) => optionchanged(key, e.target.value),
@@ -121,6 +121,7 @@ const DynamicForm = ({
           scopes: options.scopes?.value,
           auth_url: options.auth_url?.value,
           custom_auth_params: options.custom_auth_params?.value,
+          custom_query_params: options.custom_query_params?.value,
           optionchanged,
         };
       case 'react-component-google-sheets':

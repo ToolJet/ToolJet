@@ -55,6 +55,7 @@ export const Datepicker = function Datepicker({
         onChange={dateChange}
         closeOnSelect={true}
         onClose={onDatepickerClose}
+        disabled={readOnly}
       />
     </>
   );

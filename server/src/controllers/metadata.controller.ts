@@ -47,20 +47,13 @@ export class MetadataController {
   async getMetadata(@Request() req) {
     const metadata = await this.metadataService.getMetaData();
     const data = metadata.data;
-
     let latestVersion = data['latest_version'];
     let versionIgnored = data['version_ignored'] || false;
-    const installedVersion = globalThis.TOOLJET_VERSION;
     const onboarded = data['onboarded'];
-    const ignoredVersion = data['ignored_version'];
-    const now = new Date();
 
-    const updateLastCheckedAt = new Date(data['last_checked'] || null);
-    const diffTime = (now.getTime() - updateLastCheckedAt.getTime()) / 1000;
-
-    if (diffTime > 86400 && process.env.NODE_ENV == 'production') {
+    if (process.env.NODE_ENV == 'production') {
       if (process.env.CHECK_FOR_UPDATES) {
-        const result = await this.metadataService.checkForUpdates(installedVersion, ignoredVersion);
+        const result = await this.metadataService.checkForUpdates(metadata);
         latestVersion = result.latestVersion;
         versionIgnored = false;
       }
@@ -71,7 +64,7 @@ export class MetadataController {
     }
 
     return {
-      installed_version: installedVersion,
+      installed_version: globalThis.TOOLJET_VERSION,
       latest_version: latestVersion,
       onboarded: onboarded,
       version_ignored: versionIgnored,

@@ -112,18 +112,27 @@ export const Inspector = ({
     }
   }
 
+  const getDefaultValue = (val) => {
+    if (componentMeta?.definition?.defaults) {
+      return componentMeta.definition.defaults.find((el) => el.type === val);
+    }
+    return null;
+  };
+
   function paramUpdated(param, attr, value, paramType) {
     let newDefinition = { ...component.component.definition };
-
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
-
     if (!paramObject) {
       allParams[param.name] = {};
     }
 
     if (attr) {
       allParams[param.name][attr] = value;
+      const defaultValue = getDefaultValue(value);
+      if (param.type === 'select' && defaultValue) {
+        allParams[defaultValue.paramName]['value'] = defaultValue.value;
+      }
     } else {
       allParams[param.name] = value;
     }
@@ -162,30 +171,30 @@ export const Inspector = ({
         },
       };
 
-      componentDefinitionChanged(newComponent).then(() => {
-        //  Child componets should also have a mobile layout
-        const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
+      componentDefinitionChanged(newComponent);
 
-        childComponents.forEach((componentId) => {
-          let newChild = {
-            id: componentId,
-            ...allComponents[componentId],
-          };
+      //  Child componets should also have a mobile layout
+      const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
 
-          const { width, height } = newChild.layouts['desktop'];
+      childComponents.forEach((componentId) => {
+        let newChild = {
+          id: componentId,
+          ...allComponents[componentId],
+        };
 
-          newChild['layouts'] = {
-            ...newChild.layouts,
-            mobile: {
-              top: 100,
-              left: 0,
-              width: Math.min(width, 445),
-              height: height,
-            },
-          };
+        const { width, height } = newChild.layouts['desktop'];
 
-          componentDefinitionChanged(newChild);
-        });
+        newChild['layouts'] = {
+          ...newChild.layouts,
+          mobile: {
+            top: 100,
+            left: 0,
+            width: Math.min(width, 445),
+            height: height,
+          },
+        };
+
+        componentDefinitionChanged(newChild);
       });
     }
   }
