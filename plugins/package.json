@@ -40,6 +40,7 @@
     "@tooljet-plugins/postgresql": "file:packages/postgresql",
     "@tooljet-plugins/redis": "file:packages/redis",
     "@tooljet-plugins/restapi": "file:packages/restapi",
+    "@tooljet-plugins/rethinkdb": "file:packages/rethinkdb",
     "@tooljet-plugins/s3": "file:packages/s3",
     "@tooljet-plugins/sendgrid": "file:packages/sendgrid",
     "@tooljet-plugins/slack": "file:packages/slack",
