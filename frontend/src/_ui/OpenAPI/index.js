@@ -103,7 +103,7 @@ const OpenApi = ({
               }
             }
           });
-          authArray.push(authObject);
+          authObject.length > 0 && authArray.push(authObject);
         } else {
           const authName = authNames[0];
           const auth = scheme[authName];

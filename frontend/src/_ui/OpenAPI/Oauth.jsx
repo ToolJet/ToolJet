@@ -19,7 +19,7 @@ const Oauth = ({
   optionchanged,
 }) => {
   useEffect(() => {
-    if (authObject && authObject.flows['authorizationCode']) {
+    if (authObject && authObject?.flows['authorizationCode']) {
       const { flows, general_scopes } = authObject;
       const { authorizationUrl, tokenUrl } = flows['authorizationCode'];
       optionchanged('access_token_url', tokenUrl);
@@ -39,7 +39,7 @@ const Oauth = ({
     return scopes_str;
   };
 
-  if (authObject && !authObject.flows['authorizationCode']) return null;
+  if (authObject && !authObject?.flows['authorizationCode']) return null;
 
   return (
     <div>
