@@ -59,12 +59,22 @@ const OpenApi = ({
     }
   };
 
-  const getCurrentKey = (key) => {
+  const getCurrentKey = (key, parentKey) => {
     let currentValue;
     if (!api_keys) return '';
-    Object.entries(api_keys).map((item) => {
-      if (item[1].key === key) {
-        currentValue = item[1].value;
+    api_keys.map((item) => {
+      const itemKey = item['parent_key'] ?? item.parentKey;
+      if (parentKey && itemKey === parentKey) {
+        item.fields.map((field) => {
+          if (field.key === key) {
+            currentValue = field.value;
+            return;
+          }
+        });
+        if (currentValue) return;
+      }
+      if (item.key === key) {
+        currentValue = item.value;
         return;
       }
     });
@@ -73,7 +83,7 @@ const OpenApi = ({
 
   const resolveSecurities = (spec) => {
     const authArray = [];
-    const ApiKeys = {};
+    const ApiKeys = [];
     const securities = spec['security'];
     if (securities) {
       const scheme = spec?.components?.securitySchemes;
@@ -81,14 +91,15 @@ const OpenApi = ({
         const authNames = Object.keys(security);
         if (authNames.length > 1) {
           const authObject = [];
-          authNames.map((authName) => {
+          const multipleKeys = { parentKey: authNames[0], fields: [] };
+          authNames.map((authName, index) => {
             const auth = scheme[authName];
             if (auth) {
               auth['key'] = authName;
               authObject.push(auth);
               if (auth.type === 'apiKey') {
-                const apiKeyObj = { ...auth, value: getCurrentKey(auth.key) };
-                ApiKeys[authName] = apiKeyObj;
+                multipleKeys.fields.push({ ...auth, value: getCurrentKey(auth.key, authNames[0]) });
+                if (authNames.length == index + 1) ApiKeys.push(multipleKeys);
               }
             }
           });
@@ -100,7 +111,7 @@ const OpenApi = ({
             auth['key'] = authName;
             if (auth.type === 'apiKey') {
               const apiKeyObj = { ...auth, value: getCurrentKey(auth.key) };
-              ApiKeys[authName] = apiKeyObj;
+              ApiKeys.push(apiKeyObj);
             } else if (auth.type === 'oauth2') {
               const scopes = security[authName];
               auth['general_scopes'] = scopes;

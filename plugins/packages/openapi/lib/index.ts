@@ -55,16 +55,27 @@ export default class Openapi implements QueryService {
 
     const resolveApiKeyParams = () => {
       const apiKeys = sourceOptions.api_keys;
-      Object.keys(apiKeys).map((key) => {
-        const keyObj = apiKeys[key];
-        const { value, name } = keyObj;
-        const type = keyObj.in;
+      const auth_key = sourceOptions.auth_key;
+      const processKey = (type: string, name: string, value: string) => {
         if (type === 'header') {
           header[name] = value;
         } else if (type === 'query') {
           url.searchParams.append(name, value);
         } else if (type === 'cookie') {
           cookieJar.setCookie(`${name}=${value}`, url);
+        }
+      };
+      apiKeys.map((key: any) => {
+        if (key.parentKey && key.parentKey === auth_key) {
+          //process multiple keys
+          key.fields.map((field: any) => {
+            processKey(field.in, field.name, field.value);
+          });
+        } else {
+          if (auth_key === key.key) {
+            processKey(key.in, key.name, key.value);
+            return;
+          }
         }
       });
     };

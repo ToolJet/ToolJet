@@ -4,6 +4,7 @@ export type SourceOptions = {
   username: string;
   password: string;
   api_keys: any;
+  auth_key: string;
   spec: any;
 };
 export type QueryOptions = {

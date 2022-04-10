@@ -23,16 +23,53 @@ const OpenapiAuth = ({
   auth_type,
 }) => {
   const apiKeyChanges = (key, value) => {
-    const obj = api_keys ?? {};
-    obj[key].value = value;
-    optionchanged('api_keys', obj);
+    const apiKeys = api_keys ?? [];
+    const updatedKeys = apiKeys.map((item) => {
+      if (Array.isArray(authObject)) {
+        if (item.parentKey === authObject[0].key) {
+          item.fields.map((field) => {
+            if (field.key === key) {
+              field.value = value;
+            }
+            return field;
+          });
+        }
+      } else {
+        if (item.key === key) {
+          item.value = value;
+        }
+      }
+      return item;
+    });
+    optionchanged('api_keys', updatedKeys);
   };
 
-  const renderApiKeyField = (auth) => {
+  const getCurrentKey = (key) => {
+    let currentValue;
+    if (!api_keys) return '';
+    api_keys.map((item) => {
+      if (Array.isArray(authObject) && item.parentKey === authObject[0].key) {
+        item.fields.map((field) => {
+          if (field.key === key) {
+            currentValue = field.value;
+            return;
+          }
+        });
+        if (currentValue) return;
+      }
+      if (item.key === key) {
+        currentValue = item.value;
+        return;
+      }
+    });
+    return currentValue;
+  };
+
+  const renderApiKeyField = (auth, index) => {
     if (auth) {
-      const value = api_keys[auth.key]?.value ?? '';
+      const value = getCurrentKey(auth.key);
       return (
-        <div className="col-md-12">
+        <div className="col-md-12" key={index ?? auth.key}>
           <label className="form-label text-muted mt-3">{auth.key}</label>
           <Input
             type="text"
@@ -86,8 +123,8 @@ const OpenapiAuth = ({
     if (Array.isArray(authObject)) {
       return (
         <div>
-          {authObject.map((auth) => {
-            return renderApiKeyField(auth);
+          {authObject.map((auth, index) => {
+            return renderApiKeyField(auth, index);
           })}
         </div>
       );
