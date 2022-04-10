@@ -129,7 +129,7 @@ const OpenApi = ({
     switch (auth.type) {
       case 'http':
         return {
-          name: `${auth.key} (${auth.scheme.charAt(0).toUpperCase() + auth.scheme.slice(1)})`,
+          name: `${auth.key} (${auth?.scheme?.charAt(0).toUpperCase() + auth?.scheme?.slice(1)})`,
           value: auth.key,
         };
       case 'apiKey':
@@ -143,9 +143,11 @@ const OpenApi = ({
     const options = [];
     securities.map((auth) => {
       if (Array.isArray(auth)) {
-        options.push(resolveAuthTypes(auth[0]));
+        const resolved = resolveAuthTypes(auth[0]);
+        resolved && options.push(resolved);
       } else {
-        options.push(resolveAuthTypes(auth));
+        const resolved = resolveAuthTypes(auth);
+        resolved && options.push(resolved);
       }
     });
     return options;
