@@ -240,6 +240,86 @@ describe('data sources controller', () => {
     expect(response.statusCode).toBe(403);
   });
 
+  it('should be able to delete data sources of an app only if admin/developer of same organization', async () => {
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      groups: ['all_users', 'admin'],
+    });
+    const developerUserData = await createUser(app, {
+      email: 'developer@tooljet.io',
+      groups: ['all_users', 'developer'],
+      organization: adminUserData.organization,
+    });
+    const viewerUserData = await createUser(app, {
+      email: 'viewer@tooljet.io',
+      groups: ['all_users', 'viewer'],
+      organization: adminUserData.organization,
+    });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      groups: ['all_users', 'admin'],
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
+
+    // setup app permissions for developer
+    const developerUserGroup = await getRepository(GroupPermission).findOne({
+      where: {
+        group: 'developer',
+      },
+    });
+    await createAppGroupPermission(app, application, developerUserGroup.id, {
+      read: true,
+      update: true,
+      delete: false,
+    });
+
+    for (const userData of [adminUserData, developerUserData]) {
+      const dataSource = await createDataSource(app, {
+        name: 'name',
+        options: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
+        kind: 'postgres',
+        application: application,
+        user: adminUserData.user,
+      });
+      const newOptions = { method: userData.user.email };
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/data_sources/${dataSource.id}`)
+        .set('Authorization', authHeaderForUser(userData.user))
+        .send({
+          options: newOptions,
+        });
+
+      expect(response.statusCode).toBe(200);
+    }
+
+    // Should not delete if viewer or if user of another org
+    for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
+      const dataSource = await createDataSource(app, {
+        name: 'name',
+        options: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
+        kind: 'postgres',
+        application: application,
+        user: adminUserData.user,
+      });
+      const oldOptions = dataSource.options;
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/data_sources/${dataSource.id}`)
+        .set('Authorization', authHeaderForUser(userData.user))
+        .send({
+          options: { method: '' },
+        });
+
+      expect(response.statusCode).toBe(403);
+      await dataSource.reload();
+      expect(dataSource.options.method).toBe(oldOptions.method);
+    }
+  });
+
   it('should be able to search data sources with application version id', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
