@@ -1,21 +1,19 @@
 import React from 'react';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import SelectComponent from '@/_ui/Select';
 import FxButton from './FxButton';
 
 export const Select = ({ value, onChange, forceCodeBox, meta }) => {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <div className="row fx-container">
       <div className="col">
         <div className="field mb-3">
-          <SelectSearch
+          <SelectComponent
             options={meta.options}
             value={value}
-            search={true}
+            hasSearch={true}
             onChange={onChange}
-            filterOptions={fuzzySearch}
-            placeholder="Select.."
-            className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+            width={224}
+            height={32}
           />
         </div>
       </div>

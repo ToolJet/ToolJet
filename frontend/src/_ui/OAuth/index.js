@@ -26,6 +26,8 @@ const OAuth = ({
         ]}
         value={auth_type}
         onChange={(value) => optionchanged('auth_type', value)}
+        width={'100%'}
+        useMenuPortal={false}
       />
       <Authentication
         add_token_to={add_token_to}
