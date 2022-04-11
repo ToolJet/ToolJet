@@ -20,7 +20,7 @@ export default ({
       <GroupHeader
         addNewKeyValuePair={addNewKeyValuePair}
         paramType={'body'}
-        descText={'Body Parameters'}
+        descText={'Raw JSON'}
         bodyToggle={bodyToggle}
         setBodyToggle={setBodyToggle}
       />
