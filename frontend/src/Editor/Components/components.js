@@ -1493,6 +1493,7 @@ export const componentTypes = [
     properties: {
       tabs: { type: 'code', displayName: 'Tabs' },
       defaultTab: { type: 'code', displayName: 'Default tab' },
+      hideTabs: { type: 'toggle', displayName: 'Hide Tabs' },
     },
     events: {},
     styles: {
@@ -1512,6 +1513,7 @@ export const componentTypes = [
             "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
         },
         defaultTab: { value: '0' },
+        hideTabs: { value: false },
       },
       events: [],
       styles: {
