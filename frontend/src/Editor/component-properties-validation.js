@@ -1,4 +1,4 @@
-import { object, number, string, array, any, optional, assert } from 'superstruct';
+const { object, number, string, array, any, optional, assert } = require('superstruct');
 import _ from 'lodash';
 
 const generateSchemaFromValidationDefinition = (definition) => {

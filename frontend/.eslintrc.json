@@ -52,15 +52,7 @@
       "react": {
         "version": "detect"
       },
-      "import/resolver": {
-        "node": {
-          "extensions": [".js", ".ts"],
-          "paths": ["node_modules/", "node_modules/@types"]
-        },
-        "webpack": {
-          "config": "./webpack.config.js"
-        }
-      }
+      "import/resolver": "webpack"
     },
     "globals": {
       "fetch": true,
