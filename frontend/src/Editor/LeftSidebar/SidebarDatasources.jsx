@@ -148,13 +148,13 @@ const LeftSidebarDataSourcesContainer = ({ renderDataSource, dataSources = [], t
             </OverlayTrigger>
           </div>
         </div>
-        <div className="d-flex">
+        <div className="d-flex w-100">
           {dataSources.length === 0 ? (
             <center onClick={() => toggleDataSourceManagerModal(true)} className="p-2 color-primary cursor-pointer">
               + add data source
             </center>
           ) : (
-            <div className="mt-2">{dataSources?.map((source, idx) => renderDataSource(source, idx))}</div>
+            <div className="mt-2 w-100">{dataSources?.map((source, idx) => renderDataSource(source, idx))}</div>
           )}
         </div>
       </div>
