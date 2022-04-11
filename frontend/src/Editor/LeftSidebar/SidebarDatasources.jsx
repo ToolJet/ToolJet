@@ -38,17 +38,20 @@ export const LeftSidebarDataSources = ({
       .then(() => {
         toast.success('Data Source Deleted');
         setDeletingDatasource(false);
+        setSelectedDataSource(null);
         dataSourcesChanged();
         dataQueriesChanged();
       })
       .catch(({ error }) => {
         setDeletingDatasource(false);
+        setSelectedDataSource(null);
         toast.error(error);
       });
   };
 
   const cancelDeleteDataSource = () => {
     setDeleteModalVisibility(false);
+    setSelectedDataSource(null);
   };
 
   const renderDataSource = (dataSource, idx) => {
