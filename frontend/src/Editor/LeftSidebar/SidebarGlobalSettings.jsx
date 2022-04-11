@@ -13,6 +13,7 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
   const [showPicker, setShowPicker] = React.useState(false);
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
   const [localCanvasValue, setLocalCanvasValue] = React.useState(canvasBackgroundColor);
+  const [realState, setRealState] = React.useState(currentState);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -27,6 +28,11 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
   React.useEffect(() => {
     setLocalCanvasValue(canvasBackgroundColor);
   }, [canvasBackgroundColor]);
+
+  React.useEffect(() => {
+    setRealState(currentState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentState.components]);
 
   return (
     <>
@@ -108,7 +114,7 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                 <div className="canvas-codehinter-container">
                   {!forceCodeBox && (
                     <CodeHinter
-                      currentState={currentState}
+                      currentState={realState}
                       initialValue={localCanvasValue}
                       value={resolveReferences(localCanvasValue, currentState)}
                       theme={darkMode ? 'monokai' : 'duotone-light'}
@@ -116,14 +122,14 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                       lineNumbers={false}
                       className="hinter-canvas-input"
                       onChange={(color) => {
-                        globalSettingsChanged('canvasBackgroundColor', resolveReferences(color, currentState));
+                        globalSettingsChanged('canvasBackgroundColor', resolveReferences(color, realState));
                         setLocalCanvasValue(color);
                       }}
                     />
                   )}
                   <div className="col-auto fx-canvas">
                     <FxButton
-                      active={forceCodeBox ? true : false}
+                      active={!forceCodeBox ? true : false}
                       onPress={() => {
                         setForceCodeBox(!forceCodeBox);
                       }}

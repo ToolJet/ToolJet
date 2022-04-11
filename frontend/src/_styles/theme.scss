@@ -2871,36 +2871,7 @@ input:focus-visible {
   .DateRangePickerInput__withBorder {
     border: 1px solid #1f2936;
   }
-  .fx-canvas{
-    background: #1c252f;
-    padding: 2px;
-    display: flex;
-    height: 41px;
-    border: solid 1px rgba(255, 255, 255, 0.09) !important;
-    border-radius: 4px;
-    justify-content: center;
-    font-weight: 400;
-    div{
-      background: #1c252f !important;
-      width: 35px !important;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 36px;
-    }
-  }
-
-  .hinter-canvas-input{
-    width: 120px !important;
-    padding: 4px; 
-    height: 40.5px !important;
-    .CodeMirror-sizer{
-      border-right-width: 0px !important;
-    }
-    .cm-propert{
-      color: #ffffff !important;
-    }
-  }
+  
   .main .canvas-container .canvas-area {
     background: #2f3c4c;
   }
@@ -4729,4 +4700,34 @@ div#driver-page-overlay {
 .canvas-codehinter-container{
   display: flex;
   flex-direction: row;
+}
+.hinter-canvas-input{
+  width: 120px !important;
+  padding: 4px; 
+  height: 39.8px !important;
+  margin-top: 1px;
+  .CodeMirror-sizer{
+    border-right-width: 1px !important;
+  }
+  .cm-propert{
+    color: #ffffff !important;
+  }
+}
+.fx-canvas{
+  background: #1c252f;
+  padding: 2px;
+  display: flex;
+  height: 41px;
+  border: solid 1px rgba(255, 255, 255, 0.09) !important;
+  border-radius: 4px;
+  justify-content: center;
+  font-weight: 400;
+  div{
+    background: #1c252f !important;
+    width: 35px !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 36px;
+  }
 }
