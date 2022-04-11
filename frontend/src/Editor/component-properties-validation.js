@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import { object, number, string, array, any, optional, assert } from 'superstruct';
 import _ from 'lodash';
 
