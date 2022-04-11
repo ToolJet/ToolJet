@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -34,7 +34,7 @@ import { Pagination } from './Components/Pagination';
 import { Tags } from './Components/Tags';
 import { Spinner } from './Components/Spinner';
 import { CircularProgressBar } from './Components/CirularProgressbar';
-import { renderTooltip } from '@/_helpers/appUtils';
+import { renderTooltip, getComponentName } from '@/_helpers/appUtils';
 import { RangeSlider } from './Components/RangeSlider';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
@@ -105,6 +105,7 @@ export const Box = function Box({
   parentId,
   allComponents,
   extraProps,
+  sideBarDebugger,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -123,7 +124,24 @@ export const Box = function Box({
   const [renderCount, setRenderCount] = useState(0);
   const [renderStartTime, setRenderStartTime] = useState(new Date());
 
-  const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
+  const properties = resolveProperties(component, currentState, null, customResolvables);
+  const [resolvedProperties, propertyErrors] = validateProperties(properties, component.properties);
+
+  useEffect(() => {
+    propertyErrors.forEach((propertyError) => {
+      sideBarDebugger?.error({
+        [getComponentName(currentState, id)]: {
+          type: 'component',
+          kind: 'component',
+          data: { message: `${propertyError.property}: ${propertyError.message}`, status: true },
+          resolvedProperties: properties,
+          effectiveProperties: resolvedProperties,
+        },
+      });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(propertyErrors)]);
+
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
   resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
 
@@ -137,8 +155,8 @@ export const Box = function Box({
         throw Error;
       }
       setRenderStartTime(currentTime);
-      validateProperties(resolvedProperties, component.properties);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
 

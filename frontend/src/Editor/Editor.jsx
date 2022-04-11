@@ -25,6 +25,7 @@ import {
   setStateAsync,
   computeComponentState,
   getSvgIcon,
+  debuggerActions,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -906,6 +907,12 @@ class Editor extends React.Component {
     });
   };
 
+  sideBarDebugger = {
+    error: (data) => {
+      debuggerActions.error(this, data);
+    },
+  };
+
   changeDarkMode = (newMode) => {
     this.setState({
       currentState: {
@@ -1138,6 +1145,7 @@ class Editor extends React.Component {
                         onComponentClick={this.handleComponentClick}
                         onComponentHover={this.handleComponentHover}
                         hoveredComponent={hoveredComponent}
+                        sideBarDebugger={this.sideBarDebugger}
                       />
                       <CustomDragLayer
                         snapToGrid={true}
