@@ -30,12 +30,16 @@ const Authentication = ({
           options={[{ name: 'Authorization Code', value: 'authorization_code' }]}
           value={grant_type}
           onChange={(value) => optionchanged('grant_type', value)}
+          width={'100%'}
+          useMenuPortal={false}
         />
         <label className="form-label text-muted mt-3">Add Access Token To</label>
         <Select
           options={[{ name: 'Request Header', value: 'header' }]}
           value={add_token_to}
           onChange={(value) => optionchanged('add_token_to', value)}
+          width={'100%'}
+          useMenuPortal={false}
         />
 
         {add_token_to === 'header' && (
@@ -126,6 +130,8 @@ const Authentication = ({
             ]}
             value={client_auth}
             onChange={(value) => optionchanged('client_auth', value)}
+            width={'100%'}
+            useMenuPortal={false}
           />
         </div>
       )}

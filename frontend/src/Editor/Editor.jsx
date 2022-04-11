@@ -40,14 +40,12 @@ import RunjsIcon from './Icons/runjs.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
-import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
 import { AppVersionsManager } from './AppVersionsManager';
 import { SearchBoxComponent } from '@/_ui/Search';
-import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import InitVersionCreateModal from './InitVersionCreateModal';
 
 setAutoFreeze(false);
 enablePatches();
@@ -121,8 +119,6 @@ class Editor extends React.Component {
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
       showInitVersionCreateModal: false,
-      isCreatingInitVersion: false,
-      initVersionName: 'v1',
       isSavingEditingVersion: false,
       showSaveDetail: false,
       hasAppDefinitionChanged: false,
@@ -786,38 +782,6 @@ class Editor extends React.Component {
     );
   };
 
-  handleKeyPress = (event) => {
-    if (event.key === 'Enter') {
-      // eslint-disable-next-line no-undef
-      this.createInitVersion();
-    }
-  };
-
-  createInitVersion = () => {
-    const newVersionName = this.state.initVersionName;
-    const appId = this.state.appId;
-
-    if (!isEmpty(newVersionName?.trim())) {
-      this.setState({ isCreatingInitVersion: true });
-      appVersionService.create(appId, newVersionName).then(() => {
-        this.setState(
-          {
-            showInitVersionCreateModal: false,
-            isCreatingInitVersion: false,
-          },
-          () => {
-            initEditorWalkThrough();
-          }
-        );
-        toast.success('Version Created');
-        this.fetchApp();
-      });
-    } else {
-      toast.error('The name of version should not be empty');
-      this.setState({ isCreatingInitVersion: false });
-    }
-  };
-
   saveEditingVersion = () => {
     if (this.isVersionReleased()) {
       this.setState({ showCreateVersionModalPrompt: true });
@@ -835,54 +799,6 @@ class Editor extends React.Component {
         setTimeout(() => this.setState({ showSaveDetail: false }), 3000);
       });
     }
-  };
-
-  renderInitVersionCreateModal = (showModal) => {
-    return (
-      <Modal
-        contentClassName={this.props.darkMode ? 'theme-dark' : ''}
-        show={showModal}
-        size="md"
-        backdrop="static"
-        keyboard={true}
-        enforceFocus={false}
-        animation={false}
-        centered={true}
-      >
-        <Modal.Header>
-          <Modal.Title>Create Version</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="row m-2">
-            <div className="col">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="version name"
-                defaultValue={this.state.initVersionName}
-                onChange={(e) => this.setState({ initVersionName: e.target.value })}
-                onKeyPress={(e) => this.handleKeyPress(e)}
-                autoFocus={true}
-              />
-            </div>
-          </div>
-
-          <div className="row m-2">
-            <div className="col">
-              <small className="muted">Create a version to start building your app</small>
-            </div>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            className={`${this.state.isCreatingInitVersion ? 'btn-loading' : ''}`}
-            onClick={() => this.createInitVersion()}
-          >
-            Create
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    );
   };
 
   handleOnComponentOptionChanged = (component, optionName, value) => {
@@ -939,7 +855,6 @@ class Editor extends React.Component {
       app,
       showQueryConfirmation,
       queryPaneHeight,
-      // showQueryEditor,
       showLeftSidebar,
       currentState,
       isLoading,
@@ -954,7 +869,6 @@ class Editor extends React.Component {
       defaultComponentStateComputed,
       showComments,
       editingVersion,
-      showInitVersionCreateModal,
       isSavingEditingVersion,
       showSaveDetail,
       showCreateVersionModalPrompt,
@@ -1359,7 +1273,13 @@ class Editor extends React.Component {
               />
             )}
           </div>
-          {this.renderInitVersionCreateModal(showInitVersionCreateModal)}
+          <InitVersionCreateModal
+            showModal={this.state.showInitVersionCreateModal}
+            hideModal={() => this.setState({ showInitVersionCreateModal: false })}
+            fetchApp={this.fetchApp}
+            darkMode={this.props.darkMode}
+            appId={this.state.appId}
+          />
         </DndProvider>
       </div>
     );
