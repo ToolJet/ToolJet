@@ -139,7 +139,7 @@ export const componentTypes = [
       loaderColor: { type: 'color', displayName: 'Loader color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'number', displayName: 'Border radius' },
+      borderRadius: { type: 'number', displayName: 'Border radius', validation: { type: 'number' } },
     },
     exposedVariables: {},
     definition: {

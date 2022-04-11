@@ -42,6 +42,7 @@ import '@/_styles/custom.scss';
 import { resolveProperties, resolveStyles } from './component-properties-resolution';
 import { validateProperties } from './component-properties-validation';
 import { validateWidget, resolveReferences } from '@/_helpers/utils';
+import _ from 'lodash';
 
 const AllComponents = {
   Button,
@@ -129,23 +130,28 @@ export const Box = function Box({
   const properties = resolveProperties(component, currentState, null, customResolvables);
   const [resolvedProperties, propertyErrors] = validateProperties(properties, component.properties);
 
+  const componentStyles = resolveStyles(component, currentState, null, customResolvables);
+  componentStyles.visibility = componentStyles.visibility !== false ? true : false;
+  const [resolvedStyles, styleErrors] = validateProperties(componentStyles, component.styles);
+
   useEffect(() => {
-    propertyErrors.forEach((propertyError) => {
-      sideBarDebugger?.error({
-        [getComponentName(currentState, id)]: {
+    const componentName = getComponentName(currentState, id);
+    const errorLog = Object.fromEntries(
+      [...propertyErrors, ...styleErrors].map((error) => [
+        componentName,
+        {
           type: 'component',
           kind: 'component',
-          data: { message: `${propertyError.property}: ${propertyError.message}`, status: true },
+          data: { message: `${error.property}: ${error.message}`, status: true },
           resolvedProperties: properties,
           effectiveProperties: resolvedProperties,
         },
-      });
-    });
+      ])
+    );
+    if (!_.isEmpty(errorLog)) console.log({ errorLog });
+    sideBarDebugger?.error(errorLog);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(propertyErrors)]);
-
-  const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
-  resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
+  }, [JSON.stringify({ propertyErrors, styleErrors })]);
 
   useEffect(() => {
     setRenderCount(renderCount + 1);

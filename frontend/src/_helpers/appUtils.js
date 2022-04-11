@@ -832,18 +832,24 @@ export const getSvgIcon = (key, height = 50, width = 50) => {
 
 export const debuggerActions = {
   error: (_self, error) => {
-    _self.setState({
+    _self.setState((prevState) => ({
+      ...prevState,
       currentState: {
-        ..._self.state.currentState,
+        ...prevState.currentState,
         errors: {
-          // ..._self.state.currentState.errors,
+          ...prevState.currentState.errors,
           ...error,
         },
       },
-    });
+    }));
   },
 };
 
 export const getComponentName = (currentState, id) => {
-  return Object.entries(currentState?.components).filter(([_, component]) => component.id === id)[0][0];
+  try {
+    const name = Object.entries(currentState?.components).filter(([_, component]) => component.id === id)[0][0];
+    return name;
+  } catch {
+    return '';
+  }
 };
