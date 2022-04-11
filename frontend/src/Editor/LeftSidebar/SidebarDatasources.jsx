@@ -91,7 +91,7 @@ export const LeftSidebarDataSources = ({
     <>
       <Confirm
         show={isDeleteModalVisible}
-        message={'You will also lose the queries related to this data source. Do you really want to delete?'}
+        message={'You will lose all the queries created from this data source. Do you really want to delete?'}
         confirmButtonLoading={isDeletingDatasource}
         onConfirm={() => executeDataSourceDeletion()}
         onCancel={() => cancelDeleteDataSource()}
