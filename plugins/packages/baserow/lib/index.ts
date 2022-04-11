@@ -1,10 +1,16 @@
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import got, { Headers } from 'got';
+const JSON5 = require('json5');
 
 export default class Baserow implements QueryService {
-  authHeader(token: string): Headers {
+  private authHeader(token: string): Headers {
     return { Authorization: `Token ${token}`, 'Content-Type': 'application/json' };
+  }
+
+  private parseJSON(json?: string): object {
+    if (!json) return {};
+    return JSON5.parse(json);
   }
 
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -21,7 +27,7 @@ export default class Baserow implements QueryService {
             headers: this.authHeader(apiToken),
           });
 
-          result = JSON.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
 
@@ -31,7 +37,7 @@ export default class Baserow implements QueryService {
             headers: this.authHeader(apiToken),
           });
 
-          result = JSON.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
 
@@ -45,7 +51,7 @@ export default class Baserow implements QueryService {
             }
           );
 
-          result = JSON.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
 
@@ -53,10 +59,10 @@ export default class Baserow implements QueryService {
           response = await got(`https://api.baserow.io/api/database/rows/table/${tableId}/?user_field_names=true`, {
             method: 'post',
             headers: this.authHeader(apiToken),
-            json: JSON.parse(queryOptions.body),
+            json: this.parseJSON(queryOptions.body),
           });
 
-          result = JSON.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
 
@@ -67,11 +73,11 @@ export default class Baserow implements QueryService {
             {
               method: 'patch',
               headers: this.authHeader(apiToken),
-              json: JSON.parse(queryOptions.body),
+              json: this.parseJSON(queryOptions.body),
             }
           );
 
-          result = JSON.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
 
@@ -86,7 +92,7 @@ export default class Baserow implements QueryService {
             }
           );
 
-          result = JSON.parse(response.body);
+          result = this.parseJSON(response.body);
           break;
         }
 

@@ -110,7 +110,7 @@
         "type": "codehinter",
         "description": "Enter list of records",
         "height": "150px",
-        "placeholder": "{ \"fieldName\": Value }"
+        "placeholder": "{ fieldName: 'Value' }"
       }
     },
     "update_row": {
@@ -142,7 +142,7 @@
         "type": "codehinter",
         "description": "Enter list of records",
         "height": "150px",
-        "placeholder": "{ \"fieldName\": Value }"
+        "placeholder": "{ fieldName: 'Value' }"
       }
     },
     "move_row": {
