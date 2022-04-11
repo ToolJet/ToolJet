@@ -4,7 +4,7 @@ var tinycolor = require('tinycolor2');
 
 export const Button = function Button({ height, properties, styles, fireEvent }) {
   const { loadingState, text } = properties;
-  const { backgroundColor, textColor, borderRadius, visibility, disabledState } = styles;
+  const { backgroundColor, textColor, borderRadius, visibility, disabledState, loaderColor } = styles;
 
   const computedStyles = {
     backgroundColor,
@@ -14,6 +14,7 @@ export const Button = function Button({ height, properties, styles, fireEvent })
     height,
     display: visibility ? '' : 'none',
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),
+    '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
   };
 
   return (

@@ -97,7 +97,7 @@ export class DataQueriesService {
     try {
       result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
     } catch (error) {
-      const statusCode = error?.data?.responseObject.statusCode;
+      const statusCode = error?.data?.responseObject?.statusCode;
 
       if (
         error.constructor.name === 'OAuthUnauthorizedClientError' ||

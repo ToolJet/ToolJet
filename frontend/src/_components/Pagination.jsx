@@ -59,7 +59,7 @@ export const Pagination = function Pagination({
   }
 
   return (
-    <div className="card-footer d-flex align-items-center px-1">
+    <div className={`card-footer d-flex align-items-center px-1 ${darkMode ? ' bg-transparent' : ''}`}>
       <p className={`m-0 ${darkMode ? 'text-white-50' : 'text-muted'}`}>
         Showing <span>{startingCount()}</span> to <span>{endingCount()}</span> of <span>{count}</span>
       </p>

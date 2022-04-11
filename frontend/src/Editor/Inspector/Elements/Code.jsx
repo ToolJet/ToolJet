@@ -30,7 +30,6 @@ export const Code = ({
 
   return (
     <div className={`mb-2 field ${options.className}`}>
-      <ToolTip label={displayName} meta={paramMeta} />
       <CodeHinter
         enablePreview={true}
         currentState={currentState}

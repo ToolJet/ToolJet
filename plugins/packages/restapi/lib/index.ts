@@ -67,6 +67,15 @@ export default class RestapiQueryService implements QueryService {
     return Object.fromEntries(urlParams);
   }
 
+  isJson(str: string) {
+    try {
+      JSON.parse(str);
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
+
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
@@ -121,8 +130,7 @@ export default class RestapiQueryService implements QueryService {
         },
         json,
       });
-
-      result = JSON.parse(response.body);
+      result = this.isJson(response.body) ? JSON.parse(response.body) : response.body;
       requestObject = {
         requestUrl: response.request.requestUrl,
         method: response.request.options.method,
