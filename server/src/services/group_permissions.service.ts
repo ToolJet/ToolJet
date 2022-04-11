@@ -33,7 +33,10 @@ export class GroupPermissionsService {
     private auditLoggerService: AuditLoggerService
   ) {}
 
-  async create(request: any, user: User, group: string): Promise<GroupPermission> {
+  async create(request: Request, user: User, group: string): Promise<GroupPermission> {
+    if (!group || group === '') {
+      throw new BadRequestException('Cannot create group without name');
+    }
     const groupPermission = await this.groupPermissionsRepository.save(
       this.groupPermissionsRepository.create({
         organizationId: user.organizationId,

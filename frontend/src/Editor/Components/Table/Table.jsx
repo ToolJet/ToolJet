@@ -323,10 +323,11 @@ export function Table({
       columnType === 'badges' ||
       columnType === 'radio'
     ) {
-      const values = resolveReferences(column.values, currentState) || [];
-      const labels = resolveReferences(column.labels, currentState, []) || [];
+      columnOptions.selectOptions = [];
+      const values = resolveReferences(column.values, currentState, []);
+      const labels = resolveReferences(column.labels, currentState, []);
 
-      if (Array.isArray(labels)) {
+      if (Array.isArray(labels) && Array.isArray(values)) {
         columnOptions.selectOptions = labels.map((label, index) => {
           return { name: label, value: values[index] };
         });
@@ -482,6 +483,7 @@ export function Table({
                   }}
                   filterOptions={fuzzySearch}
                   placeholder="Select.."
+                  disabled={!column.isEditable}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>
@@ -500,6 +502,7 @@ export function Table({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
+                  disabled={!column.isEditable}
                 />
               </div>
             );
@@ -830,6 +833,8 @@ export function Table({
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
       ['currentData', currentData],
+      ['selectedRow', []],
+      ['selectedRowId', null],
     ]);
   }, [tableData.length, componentState.changeSet]);
 

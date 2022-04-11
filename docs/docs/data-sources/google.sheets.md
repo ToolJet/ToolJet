@@ -6,6 +6,16 @@ sidebar_position: 9
 
 ToolJet can connect to Google Sheet using OAuth 2.0, which helps us to limit an application's access to a user's account.
 
+## Self-Hosted Configuration
+
+If you are self-hosting the application, you will need to perform some additional steps.
+
+  1. Follow the [Google OAuth 2.0 setup steps outlined here](/docs/deployment/env-vars#google-oauth--optional-)
+  2. Set the following environment variables with the values from the previous step:
+     * `GOOGLE_CLIENT_ID`
+     * `GOOGLE_CLIENT_SECRET`
+     * `TOOLJET_HOST`
+
 ## Authorization Scopes 
 
 You can create a Google Sheets data source with one of either of the two permission scopes :
