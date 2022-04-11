@@ -463,6 +463,21 @@ export class AppsService {
             }
           }
         }
+
+        if (component?.component === 'Table') {
+          for (const column of component?.definition?.properties?.columns?.value ?? []) {
+            if (column?.events) {
+              const replacedComponentActionEvents = column.events.map((event) => {
+                if (event.queryId) {
+                  event.queryId = dataQueryMapping[event.queryId];
+                }
+                return event;
+              });
+              column.events = replacedComponentActionEvents;
+            }
+          }
+        }
+
         definition.components[id].component = component;
       }
     }

@@ -35,9 +35,9 @@ export const SubContainer = ({
   listViewItemOptions,
   onComponentHover,
   hoveredComponent,
+  sideBarDebugger,
 }) => {
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
-
   useEffect(() => {
     if (parentRef.current) {
       const canvasWidth = getContainerCanvasWidth();
@@ -427,6 +427,7 @@ export const SubContainer = ({
           onComponentHover={onComponentHover}
           hoveredComponent={hoveredComponent}
           parentId={parentComponent?.name}
+          sideBarDebugger={sideBarDebugger}
           containerProps={{
             mode,
             snapToGrid,
@@ -448,6 +449,7 @@ export const SubContainer = ({
             readOnly,
             onComponentHover,
             hoveredComponent,
+            sideBarDebugger,
           }}
         />
       ))}

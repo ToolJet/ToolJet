@@ -14,6 +14,12 @@ function isEmpty(value: number | null | undefined | string) {
   );
 }
 
+function sanitizeCustomParams(customArray: any) {
+  const params = Object.fromEntries(customArray ?? []);
+  Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
+  return params;
+}
+
 interface RestAPIResult extends QueryResult {
   request?: Array<object> | object;
   response?: Array<object> | object;
@@ -61,12 +67,22 @@ export default class RestapiQueryService implements QueryService {
     return Object.fromEntries(urlParams);
   }
 
+  isJson(str: string) {
+    try {
+      JSON.parse(str);
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
+
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
     const requiresOauth = sourceOptions['auth_type'] === 'oauth2';
 
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
+    const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
 
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
@@ -74,7 +90,10 @@ export default class RestapiQueryService implements QueryService {
 
       if (!tokenData) {
         const tooljetHost = process.env.TOOLJET_HOST;
-        const authUrl = `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`;
+        const authUrl = new URL(
+          `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
+        );
+        Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
 
         return {
           status: 'needs_oauth',
@@ -111,8 +130,7 @@ export default class RestapiQueryService implements QueryService {
         },
         json,
       });
-
-      result = JSON.parse(response.body);
+      result = this.isJson(response.body) ? JSON.parse(response.body) : response.body;
       requestObject = {
         requestUrl: response.request.requestUrl,
         method: response.request.options.method,
@@ -160,8 +178,7 @@ export default class RestapiQueryService implements QueryService {
     const tooljetHost = process.env.TOOLJET_HOST;
     const accessTokenUrl = sourceOptions['access_token_url'];
 
-    const customParams = Object.fromEntries(sourceOptions['custom_auth_params']);
-    Object.keys(customParams).forEach((key) => (customParams[key] === '' ? delete customParams[key] : {}));
+    const customParams = sanitizeCustomParams(sourceOptions['custom_auth_params']);
 
     const response = await got(accessTokenUrl, {
       method: 'post',
@@ -188,5 +205,57 @@ export default class RestapiQueryService implements QueryService {
         certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
       },
     };
+  }
+
+  checkIfContentTypeIsURLenc(headers: []) {
+    const objectHeaders = Object.fromEntries(headers);
+    const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
+    return contentType === 'application/x-www-form-urlencoded';
+  }
+
+  async refreshToken(sourceOptions, error) {
+    const refreshToken = sourceOptions['tokenData']['refresh_token'];
+    if (!refreshToken) {
+      throw new QueryError('Refresh token not found', error.response, {});
+    }
+    const accessTokenUrl = sourceOptions['access_token_url'];
+    const clientId = sourceOptions['client_id'];
+    const clientSecret = sourceOptions['client_secret'];
+    const grantType = 'refresh_token';
+    const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['headers']);
+
+    const data = {
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: grantType,
+      refresh_token: refreshToken,
+    };
+
+    const accessTokenDetails = {};
+
+    try {
+      const response = await got(accessTokenUrl, {
+        method: 'post',
+        headers: {
+          'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
+        },
+        form: isUrlEncoded ? data : undefined,
+        json: !isUrlEncoded ? data : undefined,
+      });
+      const result = JSON.parse(response.body);
+
+      if (!(response.statusCode >= 200 || response.statusCode < 300)) {
+        throw new QueryError('could not connect to Oauth server', error.response, {});
+      }
+
+      if (result['access_token']) {
+        accessTokenDetails['access_token'] = result['access_token'];
+        accessTokenDetails['refresh_token'] = refreshToken;
+      }
+    } catch (error) {
+      console.log(error.response.body);
+      throw new QueryError('could not connect to Oauth server', error.response, {});
+    }
+    return accessTokenDetails;
   }
 }

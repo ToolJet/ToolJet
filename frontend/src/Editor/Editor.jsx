@@ -25,6 +25,7 @@ import {
   setStateAsync,
   computeComponentState,
   getSvgIcon,
+  debuggerActions,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -108,6 +109,7 @@ class Editor extends React.Component {
         components: {},
         globals: {
           currentUser: userVars,
+          theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
         errors: {},
@@ -130,9 +132,6 @@ class Editor extends React.Component {
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
-
-    // setup for closing versions dropdown on oustide click
-    this.wrapperRef = React.createRef();
   }
 
   setWindowTitle(name) {
@@ -343,6 +342,7 @@ class Editor extends React.Component {
 
     this.fetchDataSources();
     this.fetchDataQueries();
+    this.initComponentVersioning();
   };
 
   dataSourcesChanged = () => {
@@ -427,6 +427,8 @@ class Editor extends React.Component {
   };
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
+    if (isEqual(this.state.appDefinition, newDefinition)) return;
+
     produce(
       this.state.appDefinition,
       (draft) => {
@@ -452,12 +454,6 @@ class Editor extends React.Component {
 
   handleSlugChange = (newSlug) => {
     this.setState({ slug: newSlug });
-  };
-
-  handleClickOutsideAppVersionsDropdown = (event) => {
-    if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
-      this.setState({ showAppVersionsDropdown: false });
-    }
   };
 
   removeComponent = (component) => {
@@ -508,8 +504,9 @@ class Editor extends React.Component {
       },
       this.handleAddPatch
     );
-
-    return setStateAsync(_self, newDefinition);
+    setStateAsync(_self, newDefinition).then(() => {
+      this.autoSave();
+    });
   };
 
   cloneComponent = (newComponent) => {
@@ -866,6 +863,7 @@ class Editor extends React.Component {
                 defaultValue={this.state.initVersionName}
                 onChange={(e) => this.setState({ initVersionName: e.target.value })}
                 onKeyPress={(e) => this.handleKeyPress(e)}
+                autoFocus={true}
               />
             </div>
           </div>
@@ -907,6 +905,26 @@ class Editor extends React.Component {
     this.setState({
       hoveredComponent: id,
     });
+  };
+
+  sideBarDebugger = {
+    error: (data) => {
+      debuggerActions.error(this, data);
+    },
+  };
+
+  changeDarkMode = (newMode) => {
+    this.setState({
+      currentState: {
+        ...this.state.currentState,
+        globals: {
+          ...this.state.currentState.globals,
+          theme: { name: newMode ? 'dark' : 'light' },
+        },
+      },
+      showQuerySearchField: false,
+    });
+    this.props.switchDarkMode(newMode);
   };
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
@@ -963,6 +981,7 @@ class Editor extends React.Component {
           onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
           onCancel={() => onQueryCancel(this)}
           queryConfirmationData={this.state.queryConfirmationData}
+          darkMode={this.props.darkMode}
         />
         <Confirm
           show={showDataQueryDeletionConfirmation}
@@ -970,6 +989,7 @@ class Editor extends React.Component {
           confirmButtonLoading={isDeletingDataQuery}
           onConfirm={() => this.executeDataQueryDeletion()}
           onCancel={() => this.cancelDeleteDataQuery()}
+          darkMode={this.props.darkMode}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="header">
@@ -1074,7 +1094,7 @@ class Editor extends React.Component {
               dataSourcesChanged={this.dataSourcesChanged}
               onZoomChanged={this.onZoomChanged}
               toggleComments={this.toggleComments}
-              switchDarkMode={this.props.switchDarkMode}
+              switchDarkMode={this.changeDarkMode}
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
@@ -1125,6 +1145,7 @@ class Editor extends React.Component {
                         onComponentClick={this.handleComponentClick}
                         onComponentHover={this.handleComponentHover}
                         hoveredComponent={hoveredComponent}
+                        sideBarDebugger={this.sideBarDebugger}
                       />
                       <CustomDragLayer
                         snapToGrid={true}

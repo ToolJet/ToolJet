@@ -53,7 +53,7 @@ It is mandatory to set a Data Range in `From` and `To` to filter audit logs.
 
 ### Understanding information from logs
 
-<img class="screenshot-full" src="/img/Enterprise/audit_logs/reading_logs.png" alt="ToolJet - Enterprise - Reading logs" />
+<img class="screenshot-full" src="/img/enterprise/audit_logs/reading_logs.png" alt="ToolJet - Enterprise - Reading logs" />
 
 | Property  | description |
 | ----------- | ----------- |

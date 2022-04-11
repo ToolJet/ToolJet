@@ -10,7 +10,7 @@ import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
-import { componentTypes } from '../Editor/Components/components';
+import { componentTypes } from '@/Editor/Components/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import { allSvgs } from '@tooljet/plugins/client';
@@ -160,8 +160,14 @@ function showModal(_ref, modal, show) {
   return Promise.resolve();
 }
 
+function logoutAction(_ref) {
+  localStorage.clear();
+  _ref.props.history.push('/login');
+  window.location.href = '/login';
+
+  return Promise.resolve();
+}
 function executeAction(_ref, event, mode, customVariables) {
-  console.log('nopski', customVariables);
   if (event) {
     switch (event.actionId) {
       case 'show-alert': {
@@ -186,6 +192,9 @@ function executeAction(_ref, event, mode, customVariables) {
       case 'run-query': {
         const { queryId, queryName } = event;
         return runQuery(_ref, queryId, queryName, true, mode);
+      }
+      case 'logout': {
+        return logoutAction(_ref);
       }
 
       case 'open-webpage': {
@@ -813,4 +822,22 @@ export const getSvgIcon = (key, height = 50, width = 50) => {
   const Icon = allSvgs[key];
 
   return <Icon style={{ height, width }} />;
+};
+
+export const debuggerActions = {
+  error: (_self, error) => {
+    _self.setState({
+      currentState: {
+        ..._self.state.currentState,
+        errors: {
+          // ..._self.state.currentState.errors,
+          ...error,
+        },
+      },
+    });
+  },
+};
+
+export const getComponentName = (currentState, id) => {
+  return Object.entries(currentState?.components).filter(([_, component]) => component.id === id)[0][0];
 };
