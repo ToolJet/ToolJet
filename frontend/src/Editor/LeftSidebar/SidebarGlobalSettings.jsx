@@ -120,14 +120,14 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                       theme={darkMode ? 'monokai' : 'duotone-light'}
                       mode="javascript"
                       lineNumbers={false}
-                      className="hinter-canvas-input"
+                      className={`hinter-canvas-input ${!darkMode && 'hinter-canvas-input-light'} `}
                       onChange={(color) => {
                         globalSettingsChanged('canvasBackgroundColor', resolveReferences(color, realState));
                         setLocalCanvasValue(color);
                       }}
                     />
                   )}
-                  <div className="col-auto fx-canvas">
+                  <div className={`col-auto fx-canvas ${!darkMode && 'fx-canvas-light'} `}>
                     <FxButton
                       active={!forceCodeBox ? true : false}
                       onPress={() => {
