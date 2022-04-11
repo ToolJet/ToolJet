@@ -665,7 +665,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      value: { type: 'code', displayName: 'Default value', validation: { type: 'string', default: 'something' } },
+      value: { type: 'code', displayName: 'Default value' },
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
@@ -1321,13 +1321,6 @@ export const componentTypes = [
       events: {
         type: 'code',
         displayName: 'Events',
-        validation: {
-          type: 'array',
-          element: {
-            type: 'object',
-            object: { id: { type: 'string' }, age: { type: 'number' } },
-          },
-        },
       },
       resources: { type: 'code', displayName: 'Resources' },
       defaultView: { type: 'code', displayName: 'Default view' },
