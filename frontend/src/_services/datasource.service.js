@@ -4,6 +4,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const datasourceService = {
   create,
   getAll,
+  deleteDataSource,
   test,
   setOauth2Token,
   save,
@@ -40,6 +41,11 @@ function save(id, app_id, name, options) {
   };
 
   const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/data_sources/${id}`, requestOptions).then(handleResponse);
+}
+
+function deleteDataSource(id) {
+  const requestOptions = { method: 'DELETE', headers: authHeader() };
   return fetch(`${config.apiUrl}/data_sources/${id}`, requestOptions).then(handleResponse);
 }
 

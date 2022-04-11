@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import React from 'react';
 import usePopover from '../../_hooks/use-popover';
 import { LeftSidebarItem } from './SidebarItem';
@@ -6,11 +7,41 @@ import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
 import Tooltip from 'react-bootstrap/esm/Tooltip';
 import { getSvgIcon } from '@/_helpers/appUtils';
+import { Confirm } from '.././Viewer/Confirm';
+import { datasourceService } from '@/_services';
+import toast from 'react-hot-toast';
 
 export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, dataSources = [], dataSourcesChanged }) => {
   const [open, trigger, content] = usePopover(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
+  const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
+  const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
+
+  const deleteDataSource = (selectedSource) => {
+    setSelectedDataSource(selectedSource);
+    setDeleteModalVisibility(true);
+  };
+
+  const executeDataSourceDeletion = () => {
+    setDeleteModalVisibility(false);
+    setDeletingDatasource(true);
+    datasourceService
+      .deleteDataSource(selectedDataSource.id)
+      .then(() => {
+        toast.success('Data Source Deleted');
+        setDeletingDatasource(false);
+        dataSourcesChanged();
+      })
+      .catch(({ error }) => {
+        setDeletingDatasource(false);
+        toast.error(error);
+      });
+  };
+
+  const cancelDeleteDataSource = () => {
+    setDeleteModalVisibility(false);
+  };
 
   const renderDataSource = (dataSource, idx) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
@@ -25,7 +56,24 @@ export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, data
           className="col"
         >
           {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)}
-          <span className="p-2 font-500">{dataSource.name}</span>
+          <span className="font-500" style={{ paddingLeft: 5 }}>
+            {dataSource.name}
+          </span>
+        </div>
+        <div className="col-auto">
+          <button
+            className="btn btn-sm ds-delete-btn"
+            onClick={() => deleteDataSource(dataSource)}
+            style={
+              {
+                // display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
+              }
+            }
+          >
+            <div>
+              <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" />
+            </div>
+          </button>
         </div>
       </div>
     );
@@ -33,6 +81,14 @@ export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, data
 
   return (
     <>
+      <Confirm
+        show={isDeleteModalVisible}
+        message={'Do you really want to delete this data source?'}
+        confirmButtonLoading={isDeletingDatasource}
+        onConfirm={() => executeDataSourceDeletion()}
+        onCancel={() => cancelDeleteDataSource()}
+        darkMode={darkMode}
+      />
       <LeftSidebarItem
         tip="Add or edit datasources"
         {...trigger}
