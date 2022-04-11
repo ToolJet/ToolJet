@@ -11,7 +11,14 @@ import { Confirm } from '.././Viewer/Confirm';
 import { datasourceService } from '@/_services';
 import toast from 'react-hot-toast';
 
-export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, dataSources = [], dataSourcesChanged }) => {
+export const LeftSidebarDataSources = ({
+  appId,
+  editingVersionId,
+  darkMode,
+  dataSources = [],
+  dataSourcesChanged,
+  dataQueriesChanged,
+}) => {
   const [open, trigger, content] = usePopover(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
@@ -32,6 +39,7 @@ export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, data
         toast.success('Data Source Deleted');
         setDeletingDatasource(false);
         dataSourcesChanged();
+        dataQueriesChanged();
       })
       .catch(({ error }) => {
         setDeletingDatasource(false);
@@ -83,7 +91,7 @@ export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, data
     <>
       <Confirm
         show={isDeleteModalVisible}
-        message={'Do you really want to delete this data source?'}
+        message={'You will also lose the queries related to this data source. Do you really want to delete?'}
         confirmButtonLoading={isDeletingDatasource}
         onConfirm={() => executeDataSourceDeletion()}
         onCancel={() => cancelDeleteDataSource()}
