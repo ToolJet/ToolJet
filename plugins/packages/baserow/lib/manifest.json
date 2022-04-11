@@ -1,0 +1,38 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Baserow datasource",
+  "description": "A schema defining Baserow datasource",
+  "type": "api",
+  "source": {
+    "name": "Baserow",
+    "kind": "baserow",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_token": {
+        "encrypted": true
+      } 
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "api_token": {
+      "value": ""
+   }
+  },
+  "properties": {
+    "api_token": {
+      "label": "API token",
+      "key": "api_token",
+      "type": "password",
+      "description": "API token for baserow"
+    }
+  },
+  "required": [
+    "api_token"
+  ]
+}
