@@ -31,9 +31,9 @@ const RealtimeCursors = (props) => {
     (e) => {
       const element = document.getElementById('real-canvas');
       if (element?.parentNode?.matches(':hover')) {
-        const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-        const offsetFromLeftOfCanvas = canvasBoundingRect.left;
-        const offsetFromTopOfCanvas = canvasBoundingRect.top;
+        const { left: offsetFromLeftOfCanvas, top: offsetFromTopOfCanvas } = document
+          .getElementsByClassName('real-canvas')[0]
+          .getBoundingClientRect();
         const x = Math.round(e.pageX - offsetFromLeftOfCanvas);
         const y = Math.round(e.pageY - offsetFromTopOfCanvas);
 
