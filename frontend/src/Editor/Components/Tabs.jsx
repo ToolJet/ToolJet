@@ -21,6 +21,7 @@ export const Tabs = function Tabs({
   const tabs = component.definition.properties?.tabs?.value ?? [];
   let parsedTabs = tabs;
   parsedTabs = resolveWidgetFieldValue(parsedTabs, currentState);
+  const hideTabs = component.definition.properties?.hideTabs?.value ?? false;
 
   // set index as id if id is not provided
   parsedTabs = parsedTabs.map((parsedTab, index) => ({ ...parsedTab, id: parsedTab.id ? parsedTab.id : index }));
@@ -36,6 +37,8 @@ export const Tabs = function Tabs({
 
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+
+  const parsedHideTabs = typeof hideTabs !== 'boolean' ? resolveWidgetFieldValue(hideTabs, currentState) : hideTabs;
 
   let parsedWidgetVisibility = widgetVisibility;
 
@@ -64,7 +67,7 @@ export const Tabs = function Tabs({
 
   return (
     <div data-disabled={parsedDisabledState} className="jet-tabs card" style={computedStyles}>
-      <ul className="nav nav-tabs" data-bs-toggle="tabs">
+      <ul className="nav nav-tabs" data-bs-toggle="tabs" style={{ display: parsedHideTabs && 'none' }}>
         {parsedTabs.map((tab) => (
           <li className="nav-item" onClick={() => setCurrentTab(tab.id)} key={tab.id}>
             <a
