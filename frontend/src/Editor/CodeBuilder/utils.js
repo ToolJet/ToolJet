@@ -78,6 +78,19 @@ export function onBeforeChange(editor, change, ignoreBraces = false) {
   return change;
 }
 
+function keystrokeChecker(editor) {
+  const keyPromise = new Promise((resolve, reject) => {
+    editor.on('keyup', function (editor, event) {
+      console.log('event', event);
+      if (event.key == 'Enter' || event.key == 'Backspace') {
+        resolve(true);
+      }
+      reject(false);
+    });
+  });
+  return keyPromise;
+}
+
 export function canShowHint(editor, ignoreBraces = false) {
   if (!editor.hasFocus()) return false;
 
@@ -111,6 +124,18 @@ export function handleChange(editor, onChange, suggestions, ignoreBraces = false
     },
   };
   if (canShowHint(editor, ignoreBraces)) {
-    editor.showHint(options);
+    const keystrokeValue = keystrokeChecker(editor)
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        return err;
+      });
+
+    const keystrokeCaller = async () => {
+      const returnValue = await keystrokeValue;
+      if (!returnValue) editor.showHint(options);
+    };
+    keystrokeCaller();
   }
 }
