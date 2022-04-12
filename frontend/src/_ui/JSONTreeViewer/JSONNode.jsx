@@ -1,8 +1,8 @@
 import React from 'react';
 import _ from 'lodash';
 
-export const JSONNode = ({ data, shouldExpandNode, currentNode, getCurrentPath, ...restProps }) => {
-  const { path } = restProps;
+export const JSONNode = ({ data, ...restProps }) => {
+  const { path, shouldExpandNode, currentNode, getCurrentPath, getCurrentNodeType } = restProps;
 
   const [expandable, set] = React.useState(() =>
     typeof shouldExpandNode === 'function' ? shouldExpandNode(path, data) : shouldExpandNode
@@ -15,12 +15,12 @@ export const JSONNode = ({ data, shouldExpandNode, currentNode, getCurrentPath, 
 
   let $VALUE = null;
   let $NODEType = null;
-  const typeofCurrentNode = typeof data;
+  const typeofCurrentNode = getCurrentNodeType(data);
 
   switch (typeofCurrentNode) {
-    case 'string':
-      $VALUE = <JSONTreeStringNode data={data} />;
-      $NODEType = 'string';
+    case 'String':
+      $VALUE = <JSONNode.StringNode data={data} />;
+      $NODEType = 'String';
 
       break;
     default:

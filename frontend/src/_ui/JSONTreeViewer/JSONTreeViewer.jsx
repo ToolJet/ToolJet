@@ -16,7 +16,6 @@ import { JSONNode } from './JSONNode';
  */
 
 export class JSONTreeViewer extends React.Component {
-  //Common Methods for all the NODE TYPES
   constructor(props) {
     super(props);
   }
@@ -27,12 +26,21 @@ export class JSONTreeViewer extends React.Component {
 
   getCurrentNodePath(path, node) {
     let currentPath = path ?? [];
-
     if (node) {
       currentPath.push(node);
     }
-
     return currentPath;
+  }
+
+  getCurrentNodeType(node) {
+    const typeofCurrentNode = Object.prototype.toString.call(node).slice(8, -1);
+    //Todo: Handle more types (Custom type or Iterable type)
+
+    if (node instanceof Object) {
+      return 'Object';
+    }
+    console.log('typeofCurrentNode [[JSONNodeTree]] ', typeofCurrentNode);
+    return typeofCurrentNode;
   }
 
   render() {
@@ -44,6 +52,7 @@ export class JSONTreeViewer extends React.Component {
             shouldExpandNode={false}
             currentNode={'Root'}
             getCurrentPath={this.getCurrentNodePath}
+            getCurrentNodeType={this.getCurrentNodeType}
           />
         </div>
       </div>
