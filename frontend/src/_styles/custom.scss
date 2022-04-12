@@ -1,11 +1,11 @@
 // overwrites the styles of datepicker [cell-type]
 .cell-type-datepicker {
-  z-index: 1;
   margin-top: 2px;
   margin-right: 5px;
 
   .rdtPicker {
-    position: relative;
+    position: absolute;
+    z-index: 1;
 
     thead {
       display: table-header-group;
