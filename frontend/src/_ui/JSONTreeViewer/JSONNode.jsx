@@ -2,7 +2,8 @@ import React from 'react';
 import _ from 'lodash';
 
 export const JSONNode = ({ data, ...restProps }) => {
-  const { path, shouldExpandNode, currentNode, getCurrentPath, getCurrentNodeType } = restProps;
+  const { path, shouldExpandNode, currentNode, getCurrentPath, getCurrentNodeType, toUseNodeIcons, renderNodeIcons } =
+    restProps;
 
   const [expandable, set] = React.useState(() =>
     typeof shouldExpandNode === 'function' ? shouldExpandNode(path, data) : shouldExpandNode
@@ -13,11 +14,15 @@ export const JSONNode = ({ data, ...restProps }) => {
   const currentNodePath = getCurrentPath(path, currentNode);
   // if data is an array or an object and is not empty and is expandable then show the node
   const toExpandNode = (data instanceof Array || data instanceof Object) && !_.isEmpty(data);
-  //   const toExpandNode = _.isArray(data) || _.isObject(data)
 
   let $VALUE = null;
   let $NODEType = null;
+  let $NODEIcon = null;
   const typeofCurrentNode = getCurrentNodeType(data);
+
+  if (toUseNodeIcons && currentNode) {
+    $NODEIcon = renderNodeIcons(currentNode);
+  }
 
   switch (typeofCurrentNode) {
     case 'String':
@@ -50,6 +55,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   return (
     <div className="row">
+      <div className="col-md-1">{$NODEIcon}</div>
       <div className="col-md-1">
         <JSONNode.NodeIndicator
           toExpand={expandable}

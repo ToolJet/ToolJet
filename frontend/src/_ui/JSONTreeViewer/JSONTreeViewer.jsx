@@ -27,7 +27,17 @@ export class JSONTreeViewer extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log('componentWillReceiveProps || JSONNodeTree', nextProps);
+    this.setState({
+      data: nextProps.data,
+      shouldExpandNode: nextProps.shouldExpandNode,
+      ...nextProps,
+    });
+  }
+
+  componentDidMount() {
+    this.setState({
+      data: this.props.data,
+    });
   }
 
   getCurrentNodePath(path, node) {
@@ -49,15 +59,25 @@ export class JSONTreeViewer extends React.Component {
     return typeofCurrentNode;
   }
 
+  renderNodeIcons = (node) => {
+    const icon = this.props.iconsList.filter((icon) => icon.iconName === node)[0];
+
+    if (icon) {
+      return <img style={{ maxWidth: 'none' }} className="json-tree-svg-icon" src={icon.iconPath} />;
+    }
+  };
+
   render() {
     return (
       <div className="json-tree-wrapper">
         <div className="json-tree-container">
           <JSONNode
-            data={this.props.data}
+            data={this.state.data}
             shouldExpandNode={false}
             getCurrentPath={this.getCurrentNodePath}
             getCurrentNodeType={this.getCurrentNodeType}
+            toUseNodeIcons={this.props.useIcons ?? false}
+            renderNodeIcons={this.renderNodeIcons}
           />
         </div>
       </div>

@@ -3,12 +3,20 @@ import usePinnedPopover from '@/_hooks/usePinnedPopover';
 import { LeftSidebarItem } from './SidebarItem';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
+import _ from 'lodash';
 
 export const LeftSidebarInspector = ({ darkMode, currentState }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
   const jsontreeData = { ...currentState };
   delete jsontreeData.errors;
+
+  const iconsList = [
+    { iconName: 'queries', iconPath: '/assets/images/icons/editor/left-sidebar/queries.svg' },
+    { iconName: 'components', iconPath: '/assets/images/icons/editor/left-sidebar/components.svg' },
+    { iconName: 'globals', iconPath: '/assets/images/icons/editor/left-sidebar/globals.svg' },
+    { iconName: 'variables', iconPath: '/assets/images/icons/editor/left-sidebar/variables.svg' },
+  ];
 
   return (
     <>
@@ -31,7 +39,7 @@ export const LeftSidebarInspector = ({ darkMode, currentState }) => {
           updateState={updatePopoverPinnedState}
         />
         <div style={{ marginTop: '1rem' }} className="card-body">
-          <JSONTreeViewer data={jsontreeData} />
+          <JSONTreeViewer data={jsontreeData} useIcons={true} iconsList={iconsList} />
         </div>
       </div>
     </>
