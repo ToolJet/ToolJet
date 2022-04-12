@@ -1493,6 +1493,7 @@ export const componentTypes = [
     properties: {
       tabs: { type: 'code', displayName: 'Tabs' },
       defaultTab: { type: 'code', displayName: 'Default tab' },
+      hideTabs: { type: 'toggle', displayName: 'Hide Tabs' },
     },
     events: {},
     styles: {
@@ -1512,6 +1513,7 @@ export const componentTypes = [
             "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
         },
         defaultTab: { value: '0' },
+        hideTabs: { value: false },
       },
       events: [],
       styles: {
@@ -1967,7 +1969,7 @@ export const componentTypes = [
         visible: { value: '{{true}}' },
         data: {
           value:
-            "{{ [ \n\t\t{ title: 'Product Launched', subTitle: 'First version of our product relased to public', date: '20/10/2021', iconBackgroundColor: '#4d72fa'},\n\t\t { title: 'First Signup', subTitle: 'Congratulations! We got our first signup', date: '22/10/2021', iconBackgroundColor: '#4d72fa'}, \n\t\t { title: 'First Payment', subTitle: 'Hurray! We got our first payment', date: '01/11/2021', iconBackgroundColor: '#4d72fa'} \n] }}",
+            "{{ [ \n\t\t{ title: 'Product Launched', subTitle: 'First version of our product released to public', date: '20/10/2021', iconBackgroundColor: '#4d72fa'},\n\t\t { title: 'First Signup', subTitle: 'Congratulations! We got our first signup', date: '22/10/2021', iconBackgroundColor: '#4d72fa'}, \n\t\t { title: 'First Payment', subTitle: 'Hurray! We got our first payment', date: '01/11/2021', iconBackgroundColor: '#4d72fa'} \n] }}",
         },
         hideDate: { value: false },
       },
