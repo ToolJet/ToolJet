@@ -4,8 +4,7 @@
   margin-right: 5px;
 
   .rdtPicker {
-    position: absolute;
-    z-index: 1;
+    position: fixed;
 
     thead {
       display: table-header-group;
