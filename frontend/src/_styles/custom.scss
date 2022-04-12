@@ -17,6 +17,9 @@
     tr {
       display: table-row;
     }
+    td {
+      display: table-cell !important;
+    }
   }
 }
 
