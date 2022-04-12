@@ -268,9 +268,10 @@ export class UsersService {
     return user;
   }
 
-  async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[], organizationId: string) {
+  async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[], organizationId?: string) {
+    const orgId = organizationId || user.defaultOrganizationId;
     if (addGroups) {
-      const orgGroupPermissions = await this.groupPermissionsForOrganization(organizationId);
+      const orgGroupPermissions = await this.groupPermissionsForOrganization(orgId);
 
       for (const group of addGroups) {
         const orgGroupPermission = orgGroupPermissions.find((permission) => permission.group == group);
@@ -292,17 +293,18 @@ export class UsersService {
     manager: EntityManager,
     user: User,
     removeGroups: string[],
-    organizationId: string
+    organizationId?: string
   ) {
+    const orgId = organizationId || user.defaultOrganizationId;
     if (removeGroups) {
-      await this.throwErrorIfRemovingLastActiveAdmin(user, removeGroups, organizationId);
+      await this.throwErrorIfRemovingLastActiveAdmin(user, removeGroups, orgId);
       if (removeGroups.includes('all_users')) {
         throw new BadRequestException('Cannot remove user from default group.');
       }
 
       const groupPermissions = await manager.find(GroupPermission, {
         group: In(removeGroups),
-        organizationId: organizationId,
+        organizationId: orgId,
       });
       const groupIdsToMaybeRemove = groupPermissions.map((permission) => permission.id);
 
