@@ -81,7 +81,6 @@ export function onBeforeChange(editor, change, ignoreBraces = false) {
 function keystrokeChecker(editor) {
   const keyPromise = new Promise((resolve, reject) => {
     editor.on('keyup', function (editor, event) {
-      console.log('event', event);
       if (event.key == 'Enter' || event.key == 'Backspace') {
         resolve(true);
       }
