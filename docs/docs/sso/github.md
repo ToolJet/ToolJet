@@ -5,7 +5,31 @@ sidebar_label: GitHub
 
 # GitHub Single Sign-on
 
-Goto [GitHub Developer settings](https://github.com/settings/developers) and navigate to `OAuth Apps` and create a project. `Authorization callback URL` should be `<Your Domain>/sso/git`
+Select `Manage SSO` from organization options
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - SSO configs](/img/password-login/organization-menu.png)
+
+</div>
+
+Select `Git`, Git login will be disabled by default
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - SSO configs](/img/sso/git/manage-sso-1.png)
+
+</div>
+
+Enable Git. You can see `Redirect URL` generated
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - SSO configs](/img/sso/git/manage-sso-2.png)
+
+</div>
+
+Goto [GitHub Developer settings](https://github.com/settings/developers) and navigate to `OAuth Apps` and create a project. `Authorization callback URL` should be the generated `Redirect URL` in Git manage SSO page
 
 <div style={{textAlign: 'center'}}>
 
@@ -29,14 +53,6 @@ Then create `Client secrets` by clicking `Generate new client secret`
 
 </div>
 
-Lastly, supply the environment variables `SSO_GIT_OAUTH2_CLIENT_ID` which is client id and `SSO_GIT_OAUTH2_CLIENT_SECRET` is client secret to your deployment.
+Lastly, Enter `Client Id` and `Client Secret` in Git manage sso page and save.
 
-:::info
-
-### Restrict signup via SSO
-
-Set the environment variable `SSO_DISABLE_SIGNUP` to `true` to ensure that users can only log in and not sign up via SSO. If this variable is set to `true`, only those users who have already signed up, or the ones that are invited, can access ToolJet via SSO.
-:::
-
-<br />
-The GitHub sign-in button will now be available in your ToolJet login screen.
+The GitHub sign-in button will now be available in your ToolJet login screen if you are not enabled multiple organization.

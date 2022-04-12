@@ -136,7 +136,7 @@ export class UsersService {
 
   async setupAccountFromInvitationToken(params: any) {
     const { organization, password, token, role, first_name: firstName, last_name: lastName } = params;
-    
+
     if (!token) {
       throw new BadRequestException('Invalid token');
     }
