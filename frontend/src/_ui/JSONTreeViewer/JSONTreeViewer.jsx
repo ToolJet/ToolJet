@@ -18,6 +18,12 @@ import { JSONNode } from './JSONNode';
 export class JSONTreeViewer extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      data: {},
+      shouldExpandNode: false,
+      currentNode: 'Root',
+      darkTheme: false,
+    };
   }
 
   componentWillReceiveProps(nextProps) {
@@ -48,9 +54,8 @@ export class JSONTreeViewer extends React.Component {
       <div className="json-tree-wrapper">
         <div className="json-tree-container">
           <JSONNode
-            data={this.props.name}
+            data={this.props.data}
             shouldExpandNode={false}
-            currentNode={'Root'}
             getCurrentPath={this.getCurrentNodePath}
             getCurrentNodeType={this.getCurrentNodeType}
           />

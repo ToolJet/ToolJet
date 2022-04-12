@@ -2,12 +2,14 @@ import React from 'react';
 import usePinnedPopover from '@/_hooks/usePinnedPopover';
 import { LeftSidebarItem } from './SidebarItem';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
-import ReactJson from 'react-json-view';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 
 export const LeftSidebarInspector = ({ darkMode, currentState }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
-  const jsonData = Object.entries(currentState).filter(([key]) => key !== 'errors');
+
+  const jsontreeData = { ...currentState };
+  delete jsontreeData.errors;
+
   return (
     <>
       <LeftSidebarItem
@@ -29,22 +31,7 @@ export const LeftSidebarInspector = ({ darkMode, currentState }) => {
           updateState={updatePopoverPinnedState}
         />
         <div style={{ marginTop: '1rem' }} className="card-body">
-          {jsonData.map((data) => (
-            <JSONTreeViewer
-              key={data[0]}
-              data={data[1]}
-              theme={darkMode ? 'shapeshifter' : 'rjv-default'}
-              name={data[0]}
-              style={{ fontSize: '0.7rem' }}
-              enableClipboard={false}
-              displayDataTypes={false}
-              collapsed={true}
-              displayObjectSize={false}
-              quotesOnKeys={false}
-              sortKeys={true}
-              collapseStringsAfterLength={1000}
-            />
-          ))}
+          <JSONTreeViewer data={jsontreeData} />
         </div>
       </div>
     </>

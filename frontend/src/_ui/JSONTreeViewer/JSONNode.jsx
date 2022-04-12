@@ -23,26 +23,36 @@ export const JSONNode = ({ data, ...restProps }) => {
       $NODEType = 'String';
 
       break;
+
+    case 'Object':
+      $VALUE = <JSONNode.ObjectNode data={data} path={currentNodePath} {...restProps} />;
+      $NODEType = <span>{`Object { } ${Object.keys(data).length} keys`}</span>;
+      break;
+
+    case 'Array':
+      $VALUE = <JSONNode.ArrayNode data={data} path={currentNodePath} {...restProps} />;
+      $NODEType = <span>{`Array [ ] ${data.length} items`}</span>;
+
+      break;
+
     default:
-      $VALUE = 'Default';
-      $NODEType = 'Default';
+      $VALUE = <span>{String(data)}</span>;
+      $NODEType = typeofCurrentNode;
+  }
+
+  let $key = <span>{String(currentNode)}</span>;
+
+  if (!currentNode) {
+    return $VALUE;
   }
 
   return (
     <div className="row">
       <div className="col-md-1">
-        <JSONNode.NodeIndicator
-          toExpand={expandable}
-          toShowJSONNOde={toExpandNode}
-          handleToggle={toggleExpandNode}
-          {...restProps}
-        />
+        <JSONNode.NodeIndicator toExpand={expandable} toShowJSONNOde={toExpandNode} handleToggle={toggleExpandNode} />
       </div>
       <div className="col">
-        <div className="row">
-          <div className="json-tree-node-label col">{$NODEType}</div>
-          <div className="json-tree-node-value col">{$VALUE}</div>
-        </div>
+        {$key} {$NODEType} {toExpandNode && !expandable ? null : $VALUE}
       </div>
     </div>
   );
@@ -69,7 +79,7 @@ const JSONTreeNodeIndicator = ({ toExpand, toShowJSONNOde, handleToggle, ...rest
     </svg>
   );
 
-  //   if (!toShowJSONNOde) return <DefaultIndicator />;
+  if (!toShowJSONNOde) return renderDefaultIndicator();
 
   return (
     <React.Fragment>
@@ -84,5 +94,37 @@ const JSONTreeStringNode = ({ data, ...restProps }) => {
   return <span className="json-tree-node-string">{String(data)}</span>;
 };
 
+const JSONTreeObjectNode = ({ data, path, ...restProps }) => {
+  const nodeKeys = Object.keys(data);
+
+  return nodeKeys.map((key, index) => {
+    const currentPath = [...path, key];
+    const _currentNode = key;
+    const props = { ...restProps };
+    props.currentNode = _currentNode;
+
+    return <JSONNode key={`obj-${key}/${index}`} data={data[key]} path={currentPath} {...props} />;
+  });
+};
+
+const JSONTreeArrayNode = ({ data, path, ...restProps }) => {
+  const keys = [];
+
+  for (let i = 0; i < data.length; i++) {
+    keys.push(i);
+  }
+
+  return keys.map((key, index) => {
+    const currentPath = [...path, key];
+    const _currentNode = key;
+    const props = { ...restProps };
+    props.currentNode = _currentNode;
+
+    return <JSONNode key={`arr-${key}/${index}`} data={data[key]} path={currentPath} {...props} />;
+  });
+};
+
 JSONNode.NodeIndicator = JSONTreeNodeIndicator;
 JSONNode.StringNode = JSONTreeStringNode;
+JSONNode.ObjectNode = JSONTreeObjectNode;
+JSONNode.ArrayNode = JSONTreeArrayNode;
