@@ -179,7 +179,7 @@ export class UsersService {
     const lastName = params['last_name'];
     const newSignup = params['new_signup'];
 
-    if (token) {
+    if (!token) {
       throw new BadRequestException('Invalid token');
     }
 
