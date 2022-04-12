@@ -11,7 +11,9 @@ export const JSONNode = ({ data, ...restProps }) => {
   const toggleExpandNode = () => set((prev) => !prev);
 
   const currentNodePath = getCurrentPath(path, currentNode);
-  const toExpandNode = _.isArray(data) || _.isObject(data);
+  // if data is an array or an object and is not empty and is expandable then show the node
+  const toExpandNode = (data instanceof Array || data instanceof Object) && !_.isEmpty(data);
+  //   const toExpandNode = _.isArray(data) || _.isObject(data)
 
   let $VALUE = null;
   let $NODEType = null;
@@ -49,7 +51,12 @@ export const JSONNode = ({ data, ...restProps }) => {
   return (
     <div className="row">
       <div className="col-md-1">
-        <JSONNode.NodeIndicator toExpand={expandable} toShowJSONNOde={toExpandNode} handleToggle={toggleExpandNode} />
+        <JSONNode.NodeIndicator
+          toExpand={expandable}
+          toShowJSONNOde={toExpandNode}
+          handleToggle={toggleExpandNode}
+          typeofCurrentNode={typeofCurrentNode}
+        />
       </div>
       <div className="col">
         {$key} {$NODEType} {toExpandNode && !expandable ? null : $VALUE}
@@ -59,7 +66,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 };
 
 const JSONTreeNodeIndicator = ({ toExpand, toShowJSONNOde, handleToggle, ...restProps }) => {
-  const { renderCustomIndicator } = restProps;
+  const { renderCustomIndicator, typeofCurrentNode } = restProps;
 
   const defaultStyles = {
     transform: toExpand ? 'rotate(90deg)' : 'rotate(0deg)',
@@ -79,6 +86,7 @@ const JSONTreeNodeIndicator = ({ toExpand, toShowJSONNOde, handleToggle, ...rest
     </svg>
   );
 
+  if (!toShowJSONNOde && (typeofCurrentNode !== 'Object' || typeofCurrentNode !== 'Array')) return null;
   if (!toShowJSONNOde) return renderDefaultIndicator();
 
   return (
