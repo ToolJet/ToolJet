@@ -1979,4 +1979,43 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'SvgViewer',
+    displayName: 'Svg Viewer',
+    description: 'Svg viewer',
+    component: 'SvgViewer',
+    properties: {
+      data: { type: 'code', displayName: 'SvgViewer data' },
+    },
+    defaultSize: {
+      width: 10,
+      height: 100,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      value: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        data: {
+          value: '',
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
 ];
