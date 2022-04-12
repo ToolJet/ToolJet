@@ -1,4 +1,5 @@
 import React from 'react';
+import { JSONNode } from './JSONNode';
 
 /**
  * @Props {
@@ -37,7 +38,14 @@ export class JSONTreeViewer extends React.Component {
   render() {
     return (
       <div className="json-tree-wrapper">
-        <div className="json-tree-container">{this.props.name}</div>
+        <div className="json-tree-container">
+          <JSONNode
+            data={this.props.name}
+            shouldExpandNode={false}
+            currentNode={'Root'}
+            getCurrentPath={this.getCurrentNodePath}
+          />
+        </div>
       </div>
     );
   }
