@@ -31,10 +31,15 @@ const RealtimeCursors = (props) => {
     (e) => {
       const element = document.getElementById('real-canvas');
       if (element?.parentNode?.matches(':hover')) {
-        console.log((e.pageX / document.documentElement.clientWidth) * 100);
+        const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+        const offsetFromLeftOfCanvas = canvasBoundingRect.left;
+        const offsetFromTopOfCanvas = canvasBoundingRect.top;
+        const x = Math.round(e.pageX - offsetFromLeftOfCanvas);
+        const y = Math.round(e.pageY - offsetFromTopOfCanvas);
+
         updatePresence({
-          x: e.pageX / document.documentElement.clientWidth,
-          y: e.pageY / document.documentElement.clientHeight,
+          x,
+          y,
         });
       }
     },
@@ -46,15 +51,7 @@ const RealtimeCursors = (props) => {
       <Editor {...props} self={self} updatePresence={updatePresence} ymap={props.ymap} />
       {othersOnSameVersion.map(({ id, presence }) => {
         if (!presence) return null;
-        return (
-          <Cursor
-            key={id}
-            name={presence.firstName}
-            color={presence.color}
-            x={presence.x * document.documentElement.clientWidth}
-            y={presence.y * document.documentElement.clientHeight}
-          />
-        );
+        return <Cursor key={id} name={presence.firstName} color={presence.color} x={presence.x} y={presence.y} />;
       })}
     </div>
   );

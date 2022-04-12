@@ -24,10 +24,18 @@ export const RealtimeEditor = (props) => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     document.cookie = `auth_token=${currentUser?.auth_token}; path=/`;
     setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
+  }, [appId]);
+
+  React.useEffect(() => {
+    const ERROR_CODE_WEBSOCKET_AUTH_FAILED = 4000;
+    if (provider) {
+      provider?.on('connection-close', (e) => {
+        if (e.code === ERROR_CODE_WEBSOCKET_AUTH_FAILED) provider.disconnect();
+      });
+    }
 
     () => provider.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appId]);
+  }, [provider]);
 
   if (!provider) return <Spinner />;
 
