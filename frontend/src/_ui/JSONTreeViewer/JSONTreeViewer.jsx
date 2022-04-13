@@ -62,8 +62,11 @@ export class JSONTreeViewer extends React.Component {
   renderNodeIcons = (node) => {
     const icon = this.props.iconsList.filter((icon) => icon.iconName === node)[0];
 
-    if (icon) {
+    if (icon && icon.iconPath) {
       return <img style={{ maxWidth: 'none' }} className="json-tree-svg-icon" src={icon.iconPath} />;
+    }
+    if (icon && icon.jsx) {
+      return icon.jsx();
     }
   };
 

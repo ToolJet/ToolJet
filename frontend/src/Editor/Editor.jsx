@@ -254,6 +254,7 @@ class Editor extends React.Component {
               data.data_queries.forEach((query) => {
                 queryState[query.name] = {
                   ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+                  kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
                   ...this.state.currentState.queries[query.name],
                 };
               });
