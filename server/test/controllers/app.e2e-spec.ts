@@ -311,8 +311,8 @@ describe('Authentication', () => {
         expect(organization_id).toBe(invited_organization.id);
         expect(organization).toBe(invited_organization.name);
         expect(group_permissions).toHaveLength(2);
-        expect(group_permissions[0].group).toEqual('all_users');
-        expect(group_permissions[1].group).toEqual('admin');
+        expect(group_permissions.some((gp) => gp.group === 'all_users')).toBeTruthy();
+        expect(group_permissions.some((gp) => gp.group === 'admin')).toBeTruthy();
         expect(Object.keys(group_permissions[0]).sort()).toEqual(
           [
             'id',
