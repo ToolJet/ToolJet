@@ -164,6 +164,9 @@ const JSONTreeArrayNode = ({ data, path, ...restProps }) => {
 };
 
 const DisplayNodeType = ({ type = '', children }) => {
+  if (type === 'Null' || type === 'Undefined') {
+    return null;
+  }
   return (
     <React.Fragment>
       <span className="mx-1 fs-9 node-type ">{type}</span>
