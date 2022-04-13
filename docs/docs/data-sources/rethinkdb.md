@@ -1,9 +1,7 @@
-
 ---
 sidebar_position: 26
 ---
-# rethinkdb
-
+# Rethinkdb
 
 ToolJet can connect to rethinkdb databases to read and write data. For more info visit::https://rethinkdb.com/api/javascript/.com/
 
