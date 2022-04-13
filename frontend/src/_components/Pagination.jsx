@@ -52,7 +52,7 @@ export const Pagination = function Pagination({ currentPage, count, pageChanged,
   }
 
   return (
-    <div className="card-footer d-flex align-items-center px-1">
+    <div className={`card-footer d-flex align-items-center px-1 ${darkMode ? ' bg-transparent' : ''}`}>
       <p className={`m-0 ${darkMode ? 'text-white-50' : 'text-muted'}`}>
         Showing <span>{startingAppCount()}</span> to <span>{endingAppCount()}</span> of <span>{count}</span>
       </p>

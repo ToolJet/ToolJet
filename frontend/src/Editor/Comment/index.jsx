@@ -9,6 +9,7 @@ import CommentFooter from '@/Editor/Comment/CommentFooter';
 import usePopover from '@/_hooks/use-popover';
 import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
+import DOMPurify from 'dompurify';
 
 const Comment = ({
   socket,
@@ -78,7 +79,7 @@ const Comment = ({
   const handleSubmit = async (comment) => {
     await commentsService.createComment({
       threadId,
-      comment,
+      comment: DOMPurify.sanitize(comment),
       appVersionsId,
     });
     socket.send(
@@ -97,7 +98,7 @@ const Comment = ({
   };
 
   const handleEdit = async (comment, cid) => {
-    await commentsService.updateComment(cid, { comment });
+    await commentsService.updateComment(cid, { comment: DOMPurify.sanitize(comment) });
     fetchData();
     socket.send(
       JSON.stringify({
