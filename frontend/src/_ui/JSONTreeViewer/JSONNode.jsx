@@ -35,12 +35,14 @@ export const JSONNode = ({ data, ...restProps }) => {
 
     case 'Object':
       $VALUE = <JSONNode.ObjectNode data={data} path={currentNodePath} {...restProps} />;
-      $NODEType = <span>{`Object { } ${numberOfEntries} ${numberOfEntries > 1 ? 'entries' : 'entry'}`}</span>;
+      $NODEType = (
+        <span className="mx-1">{`Object   ${numberOfEntries} ${numberOfEntries > 1 ? 'entries' : 'entry'}`}</span>
+      );
       break;
 
     case 'Array':
       $VALUE = <JSONNode.ArrayNode data={data} path={currentNodePath} {...restProps} />;
-      $NODEType = <span>{`Array [ ] ${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}</span>;
+      $NODEType = <span>{`Array   ${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}</span>;
 
       break;
 

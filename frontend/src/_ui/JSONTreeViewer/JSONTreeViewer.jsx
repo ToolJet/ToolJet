@@ -52,10 +52,10 @@ export class JSONTreeViewer extends React.Component {
     const typeofCurrentNode = Object.prototype.toString.call(node).slice(8, -1);
     //Todo: Handle more types (Custom type or Iterable type)
 
-    if (node instanceof Object) {
-      return 'Object';
-    }
-    console.log('typeofCurrentNode [[JSONNodeTree]] ', typeofCurrentNode);
+    // console.log('typeofCurrentNode [[JSONNodeTree]] ', typeofCurrentNode, node);
+    // if (node instanceof Object) {
+    //   return 'Object';
+    // }
     return typeofCurrentNode;
   }
 
