@@ -27,6 +27,7 @@
     "emoji-mart": "^3.0.1",
     "focus-trap-react": "^10.0.0",
     "fuse.js": "^6.4.6",
+    "highlight-words-core": "^1.2.2",
     "history": "^4.9.0",
     "html-loader": "^3.1.0",
     "html-webpack-plugin": "^5.3.2",

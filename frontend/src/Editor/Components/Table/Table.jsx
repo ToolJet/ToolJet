@@ -20,6 +20,7 @@ import Papa from 'papaparse';
 import { Pagination } from './Pagination';
 import { Filter } from './Filter';
 import { GlobalFilter } from './GlobalFilter';
+import { HighlightedColumn } from './HighlightedColumn';
 var _ = require('lodash');
 import loadPropertiesAndStyles from './load-properties-and-styles';
 import { reducer, reducerActions, initialState } from './reducer';
@@ -863,6 +864,7 @@ export function Table({
                           <div
                             className={`td-container ${cell.column.columnType === 'image' && 'jet-table-image-column'}`}
                           >
+                            <HighlightedColumn value={cell.value} term={state.globalFilter}></HighlightedColumn>
                             {cell.render('Cell')}
                           </div>
                         </td>
