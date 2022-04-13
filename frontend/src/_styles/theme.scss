@@ -4714,18 +4714,22 @@ div#driver-page-overlay {
   .node-length-color {
     color: #3650AF;
   }
+  .json-tree-node-value {
+    font-size: 11px;
+  }
   .json-tree-node-string {
     color: #F6820C;
-    font-size: 11px;
   }
   .json-tree-node-boolean {
     color: #3EB25F;
-    font-size: 11px;
   }
   .json-tree-node-number {
     color: #F4B2B0;
-    font-size: 11px;
   }
+  .json-tree-node-null {
+    color: red;
+  }
+  
 }
 
 // Font sizes 

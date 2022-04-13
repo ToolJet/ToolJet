@@ -30,6 +30,8 @@ export const JSONNode = ({ data, ...restProps }) => {
     case 'String':
     case 'Boolean':
     case 'Number':
+    case 'Null':
+    case 'Undefined':
       $VALUE = <JSONNode.ValueNode data={data} type={typeofCurrentNode} />;
       $NODEType = <JSONNode.DisplayNodeType type={typeofCurrentNode} />;
       break;
@@ -121,7 +123,14 @@ const JSONTreeNodeIndicator = ({ toExpand, toShowJSONNOde, handleToggle, ...rest
 
 const JSONTreeValueNode = ({ data, type }) => {
   const value = type === 'String' ? `"${data}"` : String(data);
-  return <span className={`json-tree-node-${String(type).toLowerCase()} text-break`}>{value}</span>;
+  const clsForUndefinedOrNull = (type === 'Undefined' || type === 'Null') && 'badge badge-secondary';
+  return (
+    <span
+      className={`json-tree-value json-tree-node-${String(type).toLowerCase()} text-break ${clsForUndefinedOrNull}`}
+    >
+      {value}
+    </span>
+  );
 };
 
 const JSONTreeObjectNode = ({ data, path, ...restProps }) => {
