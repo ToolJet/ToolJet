@@ -75,7 +75,7 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
               </div>
             </div>
             <div className="d-flex">
-              <span className="w-full m-auto">Background color of canvas</span>
+              <span className="w-full">Background color of canvas</span>
               <div className="canvas-codehinter-container">
                 {showPicker && (
                   <div>
