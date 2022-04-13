@@ -4708,4 +4708,31 @@ div#driver-page-overlay {
   .json-tree-icon-container {
     max-width: 20px;
   }
+  .node-type {
+    color: #A6B6CC;
+  }
+  .node-length-color {
+    color: #3650AF;
+  }
+  .json-tree-node-string {
+    color: #F6820C;
+    font-size: 11px;
+  }
+  .json-tree-node-boolean {
+    color: #3EB25F;
+    font-size: 11px;
+  }
+  .json-tree-node-number {
+    color: #F4B2B0;
+    font-size: 11px;
+  }
+}
+
+// Font sizes 
+.fs-9 {
+  font-size: 9px !important;
+}
+
+.fs-12 {
+  font-size: 12px !important;
 }

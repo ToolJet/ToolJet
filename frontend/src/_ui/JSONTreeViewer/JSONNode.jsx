@@ -28,21 +28,32 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   switch (typeofCurrentNode) {
     case 'String':
-      $VALUE = <JSONNode.StringNode data={data} />;
-      $NODEType = 'String';
-
+    case 'Boolean':
+    case 'Number':
+      $VALUE = <JSONNode.ValueNode data={data} type={typeofCurrentNode} />;
+      $NODEType = <JSONNode.DisplayNodeType type={typeofCurrentNode} />;
       break;
 
     case 'Object':
       $VALUE = <JSONNode.ObjectNode data={data} path={currentNodePath} {...restProps} />;
       $NODEType = (
-        <span className="mx-1">{`Object   ${numberOfEntries} ${numberOfEntries > 1 ? 'entries' : 'entry'}`}</span>
+        <JSONNode.DisplayNodeType type={'Object'}>
+          <span className="mx-1 fs-9 node-length-color">
+            {`${numberOfEntries} ${numberOfEntries > 1 ? 'entries' : 'entry'}`}{' '}
+          </span>
+        </JSONNode.DisplayNodeType>
       );
       break;
 
     case 'Array':
       $VALUE = <JSONNode.ArrayNode data={data} path={currentNodePath} {...restProps} />;
-      $NODEType = <span>{`Array   ${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}</span>;
+      $NODEType = (
+        <JSONNode.DisplayNodeType type={'Array'}>
+          <span className="mx-1 fs-9 node-length-color">
+            {`${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}{' '}
+          </span>
+        </JSONNode.DisplayNodeType>
+      );
 
       break;
 
@@ -51,14 +62,14 @@ export const JSONNode = ({ data, ...restProps }) => {
       $NODEType = typeofCurrentNode;
   }
 
-  let $key = <span>{String(currentNode)}</span>;
+  let $key = <span className="fs-12 fw-bold">{String(currentNode)}</span>;
 
   if (!currentNode) {
     return $VALUE;
   }
 
   return (
-    <div className="row">
+    <div className="row mt-1 font-monospace">
       <div className="col-md-1 json-tree-icon-container">
         <JSONNode.NodeIndicator
           toExpand={expandable}
@@ -108,8 +119,9 @@ const JSONTreeNodeIndicator = ({ toExpand, toShowJSONNOde, handleToggle, ...rest
   );
 };
 
-const JSONTreeStringNode = ({ data, ...restProps }) => {
-  return <span className="json-tree-node-string">{String(data)}</span>;
+const JSONTreeValueNode = ({ data, type }) => {
+  const value = type === 'String' ? `"${data}"` : String(data);
+  return <span className={`json-tree-node-${String(type).toLowerCase()} text-break`}>{value}</span>;
 };
 
 const JSONTreeObjectNode = ({ data, path, ...restProps }) => {
@@ -142,7 +154,17 @@ const JSONTreeArrayNode = ({ data, path, ...restProps }) => {
   });
 };
 
+const DisplayNodeType = ({ type = '', children }) => {
+  return (
+    <React.Fragment>
+      <span className="mx-1 fs-9 node-type ">{type}</span>
+      {children}
+    </React.Fragment>
+  );
+};
+
 JSONNode.NodeIndicator = JSONTreeNodeIndicator;
-JSONNode.StringNode = JSONTreeStringNode;
+JSONNode.ValueNode = JSONTreeValueNode;
 JSONNode.ObjectNode = JSONTreeObjectNode;
 JSONNode.ArrayNode = JSONTreeArrayNode;
+JSONNode.DisplayNodeType = DisplayNodeType;
