@@ -72,15 +72,19 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   return (
     <div className="row mt-1 font-monospace">
-      <div className="col-md-1 json-tree-icon-container">
-        <JSONNode.NodeIndicator
-          toExpand={expandable}
-          toShowJSONNOde={toExpandNode}
-          handleToggle={toggleExpandNode}
-          typeofCurrentNode={typeofCurrentNode}
-        />
-      </div>
-      <div className="col-md-1 json-tree-icon-container">{$NODEIcon}</div>
+      {numberOfEntries > 0 ? (
+        <React.Fragment>
+          <div className="col-md-1 json-tree-icon-container">
+            <JSONNode.NodeIndicator
+              toExpand={expandable}
+              toShowJSONNOde={toExpandNode}
+              handleToggle={toggleExpandNode}
+              typeofCurrentNode={typeofCurrentNode}
+            />
+          </div>
+          {$NODEIcon && <div className="col-md-1 json-tree-icon-container">{$NODEIcon}</div>}
+        </React.Fragment>
+      ) : null}
       <div className="col">
         {$key} {$NODEType} {toExpandNode && !expandable ? null : $VALUE}
       </div>
