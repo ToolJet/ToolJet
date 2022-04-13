@@ -19,6 +19,8 @@ export const JSONNode = ({ data, ...restProps }) => {
   let $NODEType = null;
   let $NODEIcon = null;
   const typeofCurrentNode = getCurrentNodeType(data);
+  const numberOfEntries =
+    (typeofCurrentNode === 'Array' && data.length) || (typeofCurrentNode === 'Object' && Object.keys(data).length);
 
   if (toUseNodeIcons && currentNode) {
     $NODEIcon = renderNodeIcons(currentNode);
@@ -33,12 +35,12 @@ export const JSONNode = ({ data, ...restProps }) => {
 
     case 'Object':
       $VALUE = <JSONNode.ObjectNode data={data} path={currentNodePath} {...restProps} />;
-      $NODEType = <span>{`Object { } ${Object.keys(data).length} keys`}</span>;
+      $NODEType = <span>{`Object { } ${numberOfEntries} ${numberOfEntries > 1 ? 'entries' : 'entry'}`}</span>;
       break;
 
     case 'Array':
       $VALUE = <JSONNode.ArrayNode data={data} path={currentNodePath} {...restProps} />;
-      $NODEType = <span>{`Array [ ] ${data.length} items`}</span>;
+      $NODEType = <span>{`Array [ ] ${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}</span>;
 
       break;
 
