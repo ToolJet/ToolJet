@@ -40,8 +40,6 @@ export const LeftSidebarInspector = ({ darkMode, currentState, appDefinition }) 
     ...componentIcons,
   ];
 
-  console.log('currentState [[LeftSidebarInspector]]', componentIcons);
-
   return (
     <>
       <LeftSidebarItem
@@ -54,7 +52,7 @@ export const LeftSidebarInspector = ({ darkMode, currentState, appDefinition }) 
       <div
         {...content}
         className={`card popover ${open || popoverPinned ? 'show' : 'hide'}`}
-        style={{ resize: 'horizontal', maxWidth: '50%' }}
+        style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '312px' }}
       >
         <SidebarPinnedButton
           darkMode={darkMode}

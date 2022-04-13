@@ -4699,7 +4699,13 @@ div#driver-page-overlay {
   // background-color: #0565ff;
 }
 
-.json-tree-svg-icon.component-icon {
-  height: 16px;
-  width: 16px;
+
+.json-tree-container {
+  .json-tree-svg-icon.component-icon {
+    height: 16px;
+    width: 16px;
+  }
+  .json-tree-icon-container {
+    max-width: 20px;
+  }
 }

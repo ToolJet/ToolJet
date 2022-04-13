@@ -55,8 +55,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   return (
     <div className="row">
-      <div className="col-md-1">{$NODEIcon}</div>
-      <div className="col-md-1">
+      <div className="col-md-1 json-tree-icon-container">
         <JSONNode.NodeIndicator
           toExpand={expandable}
           toShowJSONNOde={toExpandNode}
@@ -64,6 +63,7 @@ export const JSONNode = ({ data, ...restProps }) => {
           typeofCurrentNode={typeofCurrentNode}
         />
       </div>
+      <div className="col-md-1 json-tree-icon-container">{$NODEIcon}</div>
       <div className="col">
         {$key} {$NODEType} {toExpandNode && !expandable ? null : $VALUE}
       </div>
