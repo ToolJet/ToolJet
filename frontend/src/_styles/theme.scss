@@ -230,9 +230,7 @@ button {
       margin-top: 25px;
     }
 
-    .advanced-options-container {
-      // margin-top: 42px !important;
-    }
+    
 
     .query-name-field input {
       max-width: 180px;
@@ -1215,8 +1213,7 @@ button {
   }
   .layout-buttons {
     svg {
-      filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg)
-        brightness(99%) contrast(96%);
+      filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg) brightness(99%) contrast(96%);
     }
   }
 }
@@ -2117,7 +2114,6 @@ tr:focus {
 
 body {
   color: #3e525b;
-  overflow-y: hidden;
 }
 
 .RichEditor-root {
@@ -4681,6 +4677,11 @@ div#driver-page-overlay {
 }
 .tablr-gutter-x-0 {
   --tblr-gutter-x: 0 !important;
+}
+
+.btn-loading:after {
+  border: 1px solid var(--loader-color);
+  border-right-color: transparent;
 }
 
 .flip-dropdown-help-text {
