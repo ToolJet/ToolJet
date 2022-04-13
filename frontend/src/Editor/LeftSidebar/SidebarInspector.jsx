@@ -6,15 +6,29 @@ import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import { allSvgs } from '@tooljet/plugins/client';
 
-export const LeftSidebarInspector = ({ darkMode, currentState }) => {
+export const LeftSidebarInspector = ({ darkMode, currentState, appDefinition }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
   const jsontreeData = { ...currentState };
   delete jsontreeData.errors;
 
+  const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
+
   const queryIcons = Object.entries(currentState['queries']).map(([key, value]) => {
     const Icon = allSvgs[value.kind];
     return { iconName: key, jsx: () => <Icon style={{ height: 16, width: 16, marginRight: 12 }} /> };
+  });
+
+  const componentIcons = Object.entries(currentState['components']).map(([key, value]) => {
+    const component = componentDefinitions[value.id]['component'];
+
+    if (component.name === key) {
+      return {
+        iconName: key,
+        iconPath: `/assets/images/icons/widgets/${component.displayName.toLowerCase()}.svg`,
+        className: 'component-icon',
+      };
+    }
   });
 
   const iconsList = [
@@ -23,7 +37,10 @@ export const LeftSidebarInspector = ({ darkMode, currentState }) => {
     { iconName: 'globals', iconPath: '/assets/images/icons/editor/left-sidebar/globals.svg' },
     { iconName: 'variables', iconPath: '/assets/images/icons/editor/left-sidebar/variables.svg' },
     ...queryIcons,
+    ...componentIcons,
   ];
+
+  console.log('currentState [[LeftSidebarInspector]]', componentIcons);
 
   return (
     <>

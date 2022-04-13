@@ -1006,6 +1006,7 @@ class Editor extends React.Component {
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
+              appDefinition={{ components: appDefinition.components, queries: dataQueries }}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
