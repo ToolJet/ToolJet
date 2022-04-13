@@ -24,6 +24,7 @@ import { Radio } from './Radio';
 import { Toggle } from './Toggle';
 import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
+import { HighlightedColumn } from './HighlightedColumn';
 var _ = require('lodash');
 export function Table({
   id,
@@ -965,7 +966,9 @@ export function Table({
                           })}
                           {...cellProps}
                         >
-                          <div className="td-container">{cell.render('Cell')}</div>
+                          <div className="td-container">
+                            <HighlightedColumn value={cell.value} term={state.globalFilter}></HighlightedColumn>
+                          </div>
                         </td>
                       );
                     })}
