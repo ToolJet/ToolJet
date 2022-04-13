@@ -18,7 +18,7 @@ ToolJet connects to InfluxDB using :
 - **Password** 
 
 
-Supported queries: 
+## Supported queries:
 
 - Delete database
 
