@@ -2,8 +2,16 @@ import React from 'react';
 import _ from 'lodash';
 
 export const JSONNode = ({ data, ...restProps }) => {
-  const { path, shouldExpandNode, currentNode, getCurrentPath, getCurrentNodeType, toUseNodeIcons, renderNodeIcons } =
-    restProps;
+  const {
+    path,
+    shouldExpandNode,
+    currentNode,
+    getCurrentPath,
+    getCurrentNodeType,
+    toUseNodeIcons,
+    renderNodeIcons,
+    useIndentedBlock,
+  } = restProps;
 
   const [expandable, set] = React.useState(() =>
     typeof shouldExpandNode === 'function' ? shouldExpandNode(path, data) : shouldExpandNode
@@ -33,28 +41,28 @@ export const JSONNode = ({ data, ...restProps }) => {
     case 'Null':
     case 'Undefined':
       $VALUE = <JSONNode.ValueNode data={data} type={typeofCurrentNode} />;
-      $NODEType = <JSONNode.DisplayNodeType type={typeofCurrentNode} />;
+      $NODEType = <JSONNode.DisplayNodeLabel type={typeofCurrentNode} />;
       break;
 
     case 'Object':
       $VALUE = <JSONNode.ObjectNode data={data} path={currentNodePath} {...restProps} />;
       $NODEType = (
-        <JSONNode.DisplayNodeType type={'Object'}>
+        <JSONNode.DisplayNodeLabel type={'Object'}>
           <span className="mx-1 fs-9 node-length-color">
             {`${numberOfEntries} ${numberOfEntries > 1 ? 'entries' : 'entry'}`}{' '}
           </span>
-        </JSONNode.DisplayNodeType>
+        </JSONNode.DisplayNodeLabel>
       );
       break;
 
     case 'Array':
       $VALUE = <JSONNode.ArrayNode data={data} path={currentNodePath} {...restProps} />;
       $NODEType = (
-        <JSONNode.DisplayNodeType type={'Array'}>
+        <JSONNode.DisplayNodeLabel type={'Array'}>
           <span className="mx-1 fs-9 node-length-color">
             {`${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}{' '}
           </span>
-        </JSONNode.DisplayNodeType>
+        </JSONNode.DisplayNodeLabel>
       );
 
       break;
@@ -70,6 +78,9 @@ export const JSONNode = ({ data, ...restProps }) => {
     return $VALUE;
   }
 
+  const shouldDisplayIntendedBlock =
+    useIndentedBlock && expandable && (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array');
+
   return (
     <div className="row mt-1 font-monospace">
       {numberOfEntries > 0 ? (
@@ -82,11 +93,15 @@ export const JSONNode = ({ data, ...restProps }) => {
               typeofCurrentNode={typeofCurrentNode}
             />
           </div>
-          {$NODEIcon && <div className="col-md-1 json-tree-icon-container">{$NODEIcon}</div>}
         </React.Fragment>
       ) : null}
-      <div className="col">
-        {$key} {$NODEType} {toExpandNode && !expandable ? null : $VALUE}
+      <div className={`col ${shouldDisplayIntendedBlock && 'group-border'}`}>
+        <div className={`row ${shouldDisplayIntendedBlock && 'group-object-container'}`}>
+          {$NODEIcon && <div className="col-md-1 json-tree-icon-container">{$NODEIcon}</div>}
+          <div className="col">
+            {$key} {$NODEType} {toExpandNode && !expandable ? null : $VALUE}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -167,7 +182,7 @@ const JSONTreeArrayNode = ({ data, path, ...restProps }) => {
   });
 };
 
-const DisplayNodeType = ({ type = '', children }) => {
+const DisplayNodeLabel = ({ type = '', children }) => {
   if (type === 'Null' || type === 'Undefined') {
     return null;
   }
@@ -183,4 +198,4 @@ JSONNode.NodeIndicator = JSONTreeNodeIndicator;
 JSONNode.ValueNode = JSONTreeValueNode;
 JSONNode.ObjectNode = JSONTreeObjectNode;
 JSONNode.ArrayNode = JSONTreeArrayNode;
-JSONNode.DisplayNodeType = DisplayNodeType;
+JSONNode.DisplayNodeLabel = DisplayNodeLabel;

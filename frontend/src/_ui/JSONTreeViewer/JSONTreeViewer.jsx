@@ -82,6 +82,7 @@ export class JSONTreeViewer extends React.Component {
           getCurrentNodeType={this.getCurrentNodeType}
           toUseNodeIcons={this.props.useIcons ?? false}
           renderNodeIcons={this.renderNodeIcons}
+          useIndentedBlock={this.props.useIndentedBlock ?? false}
         />
       </div>
     );

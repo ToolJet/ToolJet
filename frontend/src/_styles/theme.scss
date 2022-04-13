@@ -4729,6 +4729,17 @@ div#driver-page-overlay {
   .json-tree-node-null {
     color: red;
   }
+
+  .group-border {
+    border-left: 0.5px solid #dadcde;
+    margin-top: 16px;
+    margin-left: -10px;
+  }
+
+  .group-object-container {
+    margin-left: 2px;
+    margin-top: -16px;
+  }
   
 }
 

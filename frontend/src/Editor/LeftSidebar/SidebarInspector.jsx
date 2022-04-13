@@ -61,7 +61,7 @@ export const LeftSidebarInspector = ({ darkMode, currentState, appDefinition }) 
           updateState={updatePopoverPinnedState}
         />
         <div style={{ marginTop: '1rem' }} className="card-body">
-          <JSONTreeViewer data={jsontreeData} useIcons={true} iconsList={iconsList} />
+          <JSONTreeViewer data={jsontreeData} useIcons={true} iconsList={iconsList} useIndentedBlock={true} />
         </div>
       </div>
     </>
