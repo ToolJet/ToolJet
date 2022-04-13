@@ -290,6 +290,26 @@ class Editor extends React.Component {
     });
   };
 
+  toggleAppMaintenance = () => {
+    const newState = !this.state.app.is_maintenance_on;
+
+    // eslint-disable-next-line no-unused-vars
+    appService.setMaintenance(this.state.app.id, newState).then((data) => {
+      this.setState({
+        app: {
+          ...this.state.app,
+          is_maintenance_on: newState,
+        },
+      });
+
+      if (newState) {
+        toast.success('Application is on maintenance.');
+      } else {
+        toast.success('Application maintenance is completed');
+      }
+    });
+  };
+
   fetchApps = (page) => {
     appService.getAll(page).then((data) =>
       this.setState({
@@ -1006,6 +1026,8 @@ class Editor extends React.Component {
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
+              toggleAppMaintenance={this.toggleAppMaintenance}
+              is_maintenance_on={this.state.app.is_maintenance_on}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div

@@ -25,6 +25,8 @@ export const LeftSidebar = ({
   globalSettingsChanged,
   globalSettings,
   currentState,
+  toggleAppMaintenance,
+  is_maintenance_on,
 }) => {
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -46,6 +48,8 @@ export const LeftSidebar = ({
         globalSettingsChanged={globalSettingsChanged}
         globalSettings={globalSettings}
         darkMode={darkMode}
+        toggleAppMaintenance={toggleAppMaintenance}
+        is_maintenance_on={is_maintenance_on}
       />
       <LeftSidebarItem
         onClick={() => setShowLeaveDialog(true)}

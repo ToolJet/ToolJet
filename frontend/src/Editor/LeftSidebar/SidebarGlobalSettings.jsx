@@ -5,9 +5,15 @@ import { Confirm } from '../Viewer/Confirm';
 
 import { LeftSidebarItem } from './SidebarItem';
 
-export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChanged, darkMode }) => {
+export const LeftSidebarGlobalSettings = ({
+  globalSettings,
+  globalSettingsChanged,
+  darkMode,
+  toggleAppMaintenance,
+  is_maintenance_on,
+}) => {
   const [open, trigger, content] = usePopover(false);
-  const { hideHeader, appInMaintenance, canvasMaxWidth, canvasBackgroundColor } = globalSettings;
+  const { hideHeader, canvasMaxWidth, canvasBackgroundColor } = globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
   const [showConfirmation, setConfirmationShow] = React.useState(false);
   const coverStyles = {
@@ -21,8 +27,8 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
     <>
       <Confirm
         show={showConfirmation}
-        message={`Do you want to ${appInMaintenance ? 'disable' : 'enable'} maintenance ?`}
-        onConfirm={() => globalSettingsChanged('appInMaintenance', !appInMaintenance)}
+        message={`Do you want to ${is_maintenance_on ? 'disable' : 'enable'} maintenance ?`}
+        onConfirm={() => toggleAppMaintenance()}
         onCancel={() => setConfirmationShow(false)}
         darkMode={darkMode}
       />
@@ -53,7 +59,7 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                 <input
                   className="form-check-input"
                   type="checkbox"
-                  checked={appInMaintenance}
+                  checked={is_maintenance_on}
                   onChange={() => setConfirmationShow(true)}
                 />
               </div>
