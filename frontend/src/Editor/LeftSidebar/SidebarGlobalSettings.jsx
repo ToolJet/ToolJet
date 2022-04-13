@@ -1,13 +1,15 @@
 import React from 'react';
 import usePopover from '@/_hooks/use-popover';
 import { SketchPicker } from 'react-color';
+import { Confirm } from '../Viewer/Confirm';
 
 import { LeftSidebarItem } from './SidebarItem';
 
-export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChanged }) => {
+export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChanged, darkMode }) => {
   const [open, trigger, content] = usePopover(false);
-  const { hideHeader, canvasMaxWidth, canvasBackgroundColor } = globalSettings;
+  const { hideHeader, appInMaintenance, canvasMaxWidth, canvasBackgroundColor } = globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
+  const [showConfirmation, setConfirmationShow] = React.useState(false);
   const coverStyles = {
     position: 'fixed',
     top: '0px',
@@ -17,6 +19,13 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
   };
   return (
     <>
+      <Confirm
+        show={showConfirmation}
+        message={`Do you want to ${appInMaintenance ? 'disable' : 'enable'} maintenance ?`}
+        onConfirm={() => globalSettingsChanged('appInMaintenance', !appInMaintenance)}
+        onCancel={() => setConfirmationShow(false)}
+        darkMode={darkMode}
+      />
       <LeftSidebarItem
         tip="Global settings"
         {...trigger}
@@ -35,6 +44,17 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                   type="checkbox"
                   checked={hideHeader}
                   onChange={(e) => globalSettingsChanged('hideHeader', e.target.checked)}
+                />
+              </div>
+            </div>
+            <div className="d-flex mb-3">
+              <span>App in maintenance</span>
+              <div className="ms-auto form-check form-switch position-relative">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={appInMaintenance}
+                  onChange={() => setConfirmationShow(true)}
                 />
               </div>
             </div>
