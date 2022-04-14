@@ -18,7 +18,7 @@ export const Cursor = React.memo(({ x, y, color, name }) => {
   };
 
   return (
-    <div style={{ zIndex: 0 }} ref={rCursor}>
+    <div style={{ zIndex: 0, position: 'fixed', left: 0 }} ref={rCursor}>
       <svg
         height="35"
         width="35"
@@ -45,7 +45,6 @@ export const Cursor = React.memo(({ x, y, color, name }) => {
           padding: 5,
           borderRadius: 4,
           fontSize: 12,
-          fontWeight: 'bold',
           backgroundColor: color,
           color: getColor(),
         }}

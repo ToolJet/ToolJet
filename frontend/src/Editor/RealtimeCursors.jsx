@@ -1,7 +1,6 @@
 import React from 'react';
 import { useOthers, useSelf } from 'y-presence';
 import { xorWith, isEqual } from 'lodash';
-import { Cursor } from './Cursor';
 import { Editor } from '@/Editor';
 import { USER_COLORS } from '@/_helpers/constants';
 
@@ -48,11 +47,13 @@ const RealtimeCursors = (props) => {
 
   return (
     <div onPointerMove={handlePointerMove}>
-      <Editor {...props} self={self} updatePresence={updatePresence} ymap={props.ymap} />
-      {othersOnSameVersion.map(({ id, presence }) => {
-        if (!presence) return null;
-        return <Cursor key={id} name={presence.firstName} color={presence.color} x={presence.x} y={presence.y} />;
-      })}
+      <Editor
+        {...props}
+        othersOnSameVersion={othersOnSameVersion}
+        self={self}
+        updatePresence={updatePresence}
+        ymap={props.ymap}
+      />
     </div>
   );
 };

@@ -43,6 +43,7 @@ import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 import { AppVersionsManager } from './AppVersionsManager';
 import { SearchBoxComponent } from '@/_ui/Search';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
+import { Cursor } from './Cursor';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import RealtimeAvatars from './RealtimeAvatars';
@@ -1038,6 +1039,12 @@ class Editor extends React.Component {
                     backgroundColor: this.state.appDefinition.globalSettings.canvasBackgroundColor,
                   }}
                 >
+                  {this.props.othersOnSameVersion.map(({ id, presence }) => {
+                    if (!presence) return null;
+                    return (
+                      <Cursor key={id} name={presence.firstName} color={presence.color} x={presence.x} y={presence.y} />
+                    );
+                  })}
                   {defaultComponentStateComputed && (
                     <>
                       <Container
