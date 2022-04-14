@@ -75,7 +75,13 @@ const Authentication = ({
         </div>
 
         <div className="col-md-12">
-          <label className="form-label text-muted mt-3">Client Secret</label>
+          <label className="form-label text-muted mt-3">
+            Client Secret
+            <small className="text-green mx-2">
+              <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+              Encrypted
+            </small>
+          </label>
           <Input
             type="text"
             className="form-control"
@@ -146,7 +152,13 @@ const Authentication = ({
           />
         </div>
         <div className="col-md-12">
-          <label className="form-label text-muted mt-3">Password</label>
+          <label className="form-label text-muted mt-3">
+            Password
+            <small className="text-green mx-2">
+              <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+              Encrypted
+            </small>
+          </label>
           <Input
             type="text"
             className="form-control"
@@ -160,7 +172,13 @@ const Authentication = ({
     return (
       <div>
         <div className="col-md-12">
-          <label className="form-label text-muted mt-3">Token</label>
+          <label className="form-label text-muted mt-3">
+            Token
+            <small className="text-green mx-2">
+              <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+              Encrypted
+            </small>
+          </label>
           <Input
             type="text"
             className="form-control"
