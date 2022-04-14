@@ -1,7 +1,7 @@
 import React from 'react';
 import 'codemirror/theme/duotone-light.css';
 import DOMPurify from 'dompurify';
-import Select from 'react-select';
+import Select from '@/_ui/Select';
 import { openapiService } from '@/_services';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
@@ -60,8 +60,8 @@ class Stripe extends React.Component {
   }
 
   changeOperation = (value) => {
-    const { name, operation } = value;
-    const path = name;
+    const operation = value.split(',')[0];
+    const path = value.split(',')[1];
 
     this.setState(
       {
@@ -100,7 +100,7 @@ class Stripe extends React.Component {
 
   removeParam = (paramType, paramName) => {
     const newOptions = JSON.parse(JSON.stringify(this.state.options));
-    newOptions[paramName] = undefined;
+    newOptions['params'][paramType][paramName] = undefined;
 
     this.setState(
       {
@@ -113,8 +113,8 @@ class Stripe extends React.Component {
   };
 
   renderOperationOption = (props) => {
-    const path = props.name || props.path;
-    const operation = props.operation;
+    const path = props.value;
+    const operation = props.label;
     if (path && operation) {
       return (
         <div className="row">
@@ -132,16 +132,19 @@ class Stripe extends React.Component {
     }
   };
 
-  computeOperationSelectionOptions = (paths) => {
+  computeOperationSelectionOptions = (operationOptions) => {
     let options = [];
+    const paths = operationOptions?.paths;
 
-    for (const path of Object.keys(paths)) {
-      for (const operation of Object.keys(paths[path])) {
-        options.push({
-          value: `${operation},${path}`,
-          name: path,
-          operation: operation,
-        });
+    if (paths) {
+      for (const path of Object.keys(paths)) {
+        for (const operation of Object.keys(paths[path])) {
+          options.push({
+            value: `${operation},${path}`,
+            name: path,
+            operation: operation,
+          });
+        }
       }
     }
 
@@ -168,62 +171,7 @@ class Stripe extends React.Component {
       }
     }
 
-    const selectStyles = {
-      container: (provided) => ({
-        ...provided,
-        width: '50%',
-        height: 32,
-      }),
-      control: (provided) => ({
-        ...provided,
-        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
-        height: '32px!important',
-        minHeight: '32px!important',
-      }),
-      valueContainer: (provided, _state) => ({
-        ...provided,
-        height: 32,
-        marginBottom: '4px',
-      }),
-      indicatorsContainer: (provided, _state) => ({
-        ...provided,
-        height: 32,
-      }),
-      indicatorSeparator: (_state) => ({
-        display: 'none',
-      }),
-      input: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-      }),
-      menu: (provided) => ({
-        ...provided,
-        zIndex: 2,
-        backgroundColor: this.props.darkMode ? 'rgb(31,40,55)' : 'white',
-      }),
-      option: (provided) => ({
-        ...provided,
-        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-        ':hover': {
-          backgroundColor: this.props.darkMode ? '#323C4B' : '#d8dce9',
-        },
-      }),
-      placeholder: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#808080',
-      }),
-      singleValue: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-      }),
-    };
-
-    const currentValue = {
-      value: `${this.state.options?.operation},${this.props.options?.path}` ?? null,
-      name: this.props.options?.path,
-      operation: this.props.options?.operation,
-    };
+    const currentValue = this.state.options?.operation + ',' + this.props.options?.path ?? null;
 
     return (
       <div>
@@ -242,13 +190,12 @@ class Stripe extends React.Component {
               </div>
               <div className="col stripe-operation-options" style={{ width: '90px', marginTop: 0 }}>
                 <Select
-                  className="stripe-operation-select mb-2"
-                  options={this.computeOperationSelectionOptions(specJson.paths)}
-                  formatOptionLabel={this.renderOperationOption}
-                  onChange={(value) => this.changeOperation(value)}
-                  placeholder="Select an operation"
-                  styles={selectStyles}
+                  options={this.computeOperationSelectionOptions(specJson)}
                   value={currentValue}
+                  onChange={(value) => this.changeOperation(value)}
+                  width={'100%'}
+                  useMenuPortal={true}
+                  customOption={this.renderOperationOption}
                 />
 
                 {selectedOperation && (
