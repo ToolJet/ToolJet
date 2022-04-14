@@ -144,6 +144,12 @@ class Editor extends React.Component {
     });
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.appDefinition !== this.state.appDefinition) {
+      computeComponentState(this, this.state.appDefinition.components);
+    }
+  }
+
   isVersionReleased = (version = this.state.editingVersion) => {
     if (isEmpty(version)) {
       return false;
@@ -876,6 +882,9 @@ class Editor extends React.Component {
     } = this.state;
 
     const appVersionPreviewLink = editingVersion ? `/applications/${app.id}/versions/${editingVersion.id}` : '';
+
+    console.log('Render App:: EDITOR ==> currentState', JSON.stringify(this.state.currentState));
+    console.log('Render App:: EDITOR ==> Full State', JSON.stringify(this.state));
 
     return (
       <div className="editor wrapper">
