@@ -1,5 +1,6 @@
 ---
 sidebar_position: 3
+sidebar_label: Baserow
 ---
 
 # Baserow
@@ -8,31 +9,39 @@ sidebar_position: 3
 
 ToolJet can connect to your Baserow account to read and write data. Baserow API token is required to create an Baserow data source on ToolJet. You can follow the steps to create API token from [this link](https://baserow.io/api-docs).
 
-<img class="screenshot-full" src="/img/datasource-reference/baserow/baserow-intro.gif" alt="ToolJet - Data source - Baserow" height="420" />
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-intro.gif)
+
+</div>
 
 :::tip
 This guide assumes that you have already gone through [Adding a data source](/docs/tutorial/adding-a-datasource) tutorial.
 :::
 
-Supported queries:
+## Supported queries
 
-- List fields
-- List rows
-- Get row
-- Create row
-- Update row
-- Move row
-- Delete row
+- [List fields](#list-fields)
+- [List rows](#list-rows)
+- [Get row](#get-row)
+- [Create row](#create-row)
+- [Update row](#update-row)
+- [Move row](#move-row)
+- [Delete row](#delete-row)
 
-## List fields
+### List fields
 
 This query lists all the fields in a table.
 
-Required parameters:
+#### Required parameters:
 
-- Table ID
+- **Table ID**
 
-<img class="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-fields.png" alt="ToolJet - Baserow List Fields Operarion" height="420" />
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-list-fields.png)
+
+</div>
 
 Example response from Baserow:
 
@@ -75,15 +84,19 @@ Example response from Baserow:
 ]
 ```
 
-## List rows
+### List rows
 
 This query lists all the rows in a table.
 
-Required parameters:
+#### Required parameters:
 
-- Table ID
+- **Table ID**
 
-<img class="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-rows.png" alt="ToolJet - Baserow List Rows Operarion" height="420" />
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-list-rows.png)
+
+</div>
 
 Example response from Baserow:
 
@@ -121,14 +134,18 @@ Example response from Baserow:
 }
 ```
 
-## Get row
+### Get row
 
-Required parameters:
+#### Required parameters:
 
-- Table ID
-- Row ID
+- **Table ID**
+- **Row ID**
 
-<img class="screenshot-full" src="/img/datasource-reference/baserow/baserow-get-row.png" alt="ToolJet - Baserow Row List Row Operarion" height="420" />
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-get-row.png)
+
+</div>
 
 Example response from Baserow:
 
@@ -143,50 +160,18 @@ Example response from Baserow:
 }
 ```
 
-## Create row
+### Create row
 
-Required parameters:
+#### Required parameters:
 
-- Table ID
+- **Table ID**
+- **Records**
 
-Optional parameters:
+<div style={{textAlign: 'center'}}>
 
-- Before ID (The created row will be placed before the entered ID)
+![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-create-row.png)
 
-<img class="screenshot-full" src="/img/datasource-reference/baserow/baserow-create-row.png" alt="ToolJet - Baserow Create Row Operarion" height="420" />
-
-#### Example Records:
-
-```json
-{
-  "Name": "Test",
-  "Last name": "Test Name",
-  "Notes": "Test Note",
-  "Active": true
-}
-```
-
-Example response from Baserow:
-
-```json
-{
-  "id": 19,
-  "order": "0.99999999999999999996",
-  "Name": "Test",
-  "Last name": "Test Name",
-  "Notes": "Test Note",
-  "Active": true
-}
-```
-
-## Update row
-
-Required parameters:
-
-- Table ID
-- Row ID
-
-<img class="screenshot-full" src="/img/datasource-reference/baserow/baserow-update-row.png" alt="ToolJet - Baserow Update Row Operarion" height="420" />
+</div>
 
 #### Example Records:
 
@@ -212,18 +197,60 @@ Example response from Baserow:
 }
 ```
 
-## Move row
+### Update row
 
-Required parameters:
+#### Required parameters:
 
-- Table ID
-- Row ID
+- **Table ID**
+- **Row ID**
+- **Records**
 
-Optional parameters:
+<div style={{textAlign: 'center'}}>
 
-- Before ID (The row will be moved before the entered ID. If not provided, then the row will be moved to the end )
+![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-update-row.png)
 
-<img class="screenshot-full" src="/img/datasource-reference/baserow/baserow-move-row.png" alt="ToolJet - Baserow Move Row Operarion" height="420" />
+</div>
+
+#### Example Records:
+
+```json
+{
+  "Name": "Test",
+  "Last name": "Test Name",
+  "Notes": "Test Note",
+  "Active": true
+}
+```
+
+Example response from Baserow:
+
+```json
+{
+  "id": 19,
+  "order": "0.99999999999999999996",
+  "Name": "Test",
+  "Last name": "Test Name",
+  "Notes": "Test Note",
+  "Active": true
+}
+```
+
+### Move row
+
+#### Required parameters:
+
+- **Table ID**
+- **Row ID**
+
+#### Optional parameters:
+
+- **Before ID** (The row will be moved before the entered ID. If not provided, then the row will be moved to the end )
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-move-row.png)
+
+</div>
 
 Example response from Baserow:
 
@@ -238,13 +265,17 @@ Example response from Baserow:
 }
 ```
 
-## Delete row
+### Delete row
 
-Required parameters:
+#### Required parameters:
 
-- Table ID
-- Row ID
+- **Table ID**
+- **Row ID**
 
-<img class="screenshot-full" src="/img/datasource-reference/baserow/baserow-delete-row.png" alt="ToolJet - Baserow Delete List Row Operarion" height="420" />
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-delete-row.png)
+
+</div>
 
 While deleting a row, the response will be either success or failure from Baserow
