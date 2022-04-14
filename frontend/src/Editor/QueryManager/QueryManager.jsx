@@ -450,7 +450,7 @@ let QueryManager = class QueryManager extends React.Component {
                 {selectedDataSource && (
                   <div>
                     <ElementToRender
-                      selectedDataSource={this.state.selectedSource}
+                      selectedDataSource={selectedDataSource}
                       options={this.state.options}
                       optionsChanged={this.optionsChanged}
                       optionchanged={this.optionchanged}
