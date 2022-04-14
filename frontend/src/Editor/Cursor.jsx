@@ -40,7 +40,18 @@ export const Cursor = React.memo(({ x, y, color, name }) => {
           d="M11.13 4.92a1.75 1.75 0 00-2.2 2.21l3.74 11.26a1.75 1.75 0 003.32 0l1.56-4.68a.25.25 0 01.16-.16L22.4 12a1.75 1.75 0 000-3.32L11.13 4.92z"
         />
       </svg>
-      <span style={{ padding: 5, backgroundColor: color, fontWeight: 'bold', color: getColor() }}>{name}</span>
+      <span
+        style={{
+          padding: 5,
+          borderRadius: 4,
+          fontSize: 12,
+          fontWeight: 'bold',
+          backgroundColor: color,
+          color: getColor(),
+        }}
+      >
+        {name}
+      </span>
     </div>
   );
 });
