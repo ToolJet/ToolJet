@@ -104,13 +104,6 @@ let QueryManager = class QueryManager extends React.Component {
             queryName: selectedQuery.name,
           });
         }
-        // } else {
-        // this.setState({
-        //   options: {},
-        //   selectedQuery: null,
-        //   selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
-        // });
-        // }
       }
     );
   };

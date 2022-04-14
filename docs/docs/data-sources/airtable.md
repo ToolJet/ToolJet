@@ -5,41 +5,49 @@ sidebar_position: 1
 # Airtable
 
 
-ToolJet can connect to your Airtable account to read and write data. Airtable API key is required to create an Airtable data source on ToolJet. You can generate API key by visiting [Airtable account page](https://airtable.com/account). 
+ToolJet can connect to your Airtable account to read and write data. **Airtable API key** is required to create an Airtable data source on ToolJet. You can generate API key by visiting [Airtable account page](https://airtable.com/account). 
 
-<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-intro.gif" alt="ToolJet - Data source - Airtable" height="420" />
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtableds.gif)
+
+</div>
 
 :::info
-Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here [Airtable API]( https://airtable.com/api ).
+Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here **[Airtable API]( https://airtable.com/api )**.
 :::
 
 :::tip
 This guide assumes that you have already gone through [Adding a data source](/docs/tutorial/adding-a-datasource) tutorial.
 :::
 
-Supported queries: 
+## Supported queries
 
-- Listing records 
-- Retrieving a record
-- Creating a record
-- Updating a record
-- Deleting a record
+- **[Listing records](#listing-records)**
+- **[Retrieving a record](#retrieving-a-record)**
+- **[Creating a record](#creating-a-record)**
+- **[Updating a record](#updating-a-record)**
+- **[Deleting a record](#deleting-a-record)**
 
-## Listing records 
+### Listing records
 
 This query lists all the records in a table. The results are paginated and each page can have upto 100 records. 
 
-Required parameters: 
+#### Required parameters: 
 
-- Base ID
-- Table name 
+- **Base ID:** To find the Base ID, first visit **airtable.com/api**. Select from the list of bases the base whose ID you'd like to find out. Example Base ID: `appDT3UCPffPiSmFd`
+- **Table name:** Enter the table name whose data you want to fetch.
 
-<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-list.png" alt="ToolJet - Airtable Delete Operarion" height="420" />
+#### Optional parameters: 
 
-Optional parameters: 
+- **Page size:** The number of records returned in each request. Must be less than or equal to 100. Default is 100.
+- **offset:** If there are more records, the response will contain an offset. To fetch the next page of records, include offset in the next request's parameters.
 
-- Page size - The number of records returned in each request. Must be less than or equal to 100. Default is 100.
-- offset - If there are more records, the response will contain an offset. To fetch the next page of records, include offset in the next request's parameters.
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtable_list.png)
+
+</div>
 
 Example response from Airtable: 
 
@@ -75,15 +83,19 @@ Example response from Airtable:
 }
 ```
 
-## Retrieving a record 
+### Retrieving a record
 
-Required parameters: 
+#### Required parameters: 
 
-- Base ID
-- Table name 
-- Record ID
+- **Base ID**
+- **Table name** 
+- **Record ID**
 
-<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-retrive-record.png" alt="ToolJet - Data source - Airtable Retrieve Operation" height="420" />
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtable_retrieve.png)
+
+</div>
 
 Example response from Airtable: 
 
@@ -98,14 +110,18 @@ Example response from Airtable:
 }
 ```
 
-## Creating a record
+### Creating a record
 
-Required parameters:
-- Base ID
-- Table name
-- Records
+#### Required parameters:
+- **Base ID**
+- **Table name**
+- **Records**
 
-<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-create.png" alt="ToolJet - Data source - Airtable Create Operarion" height="420"/>
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtable_create.png)
+
+</div>
 
 #### Example Records:
 
@@ -159,19 +175,26 @@ Example response from Airtable:
 }
 ```
 
-## Updating a record
+### Updating a record
 
-Required parameters:
-- Base ID
-- Table name
-- Record ID
+#### Required parameters:
+- **Base ID**
+- **Table name**
+- **Record ID**
 
-<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-update.png" alt="ToolJet - Data source - Airtable Update Operarion" height="420"/>
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtable_update.png)
+
+</div>
 
 #### Example body:
 
-<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-update-example-body.png" alt="ToolJet - Data source - Airtable Update Operarion Body" height="200" width="650" />
+<div style={{textAlign: 'center'}}>
 
+![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtable-update-example-body.png)
+
+</div>
 
 Click on the `run` button to run the query.
 
@@ -191,14 +214,18 @@ Example response from Airtable:
 }
 ```
 
-## Deleting a record
+### Deleting a record
 
-Required parameters:
-- Base ID
-- Table name
-- Record ID
+#### Required parameters:
+- **Base ID**
+- **Table name**
+- **Record ID**
 
-<img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-delete.png" alt="ToolJet - Airtable Delete Operarion" height="420" />
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtable_delete.png)
+
+</div>
 
 
 Click on the `run` button to run the query.

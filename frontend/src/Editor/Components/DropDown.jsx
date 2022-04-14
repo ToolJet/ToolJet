@@ -175,7 +175,7 @@ export const DropDown = function DropDown({
           />
         </div>
       </div>
-      <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
+      <div className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}>{validationError}</div>
     </>
   );
 };
