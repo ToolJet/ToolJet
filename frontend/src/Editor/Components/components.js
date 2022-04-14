@@ -1276,7 +1276,7 @@ export const componentTypes = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        instructionText: { value: '' },
+        instructionText: { value: 'Drag and Drop some files here, or click to select files' },
         enableDropzone: { value: '{{true}}' },
         enablePicker: { value: '{{true}}' },
         maxFileCount: { value: '{{2}}' },
