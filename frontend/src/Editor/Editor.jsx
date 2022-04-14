@@ -506,6 +506,7 @@ class Editor extends React.Component {
       this.handleAddPatch
     );
     setStateAsync(_self, newDefinition).then(() => {
+      computeComponentState(_self, _self.state.appDefinition.components);
       this.autoSave();
     });
   };
@@ -882,9 +883,6 @@ class Editor extends React.Component {
     } = this.state;
 
     const appVersionPreviewLink = editingVersion ? `/applications/${app.id}/versions/${editingVersion.id}` : '';
-
-    console.log('Render App:: EDITOR ==> currentState', JSON.stringify(this.state.currentState));
-    console.log('Render App:: EDITOR ==> Full State', JSON.stringify(this.state));
 
     return (
       <div className="editor wrapper">
