@@ -54,7 +54,7 @@ export const LeftSidebarGlobalSettings = ({
               </div>
             </div>
             <div className="d-flex mb-3">
-              <span>App in maintenance</span>
+              <span>Maintenance mode</span>
               <div className="ms-auto form-check form-switch position-relative">
                 <input
                   className="form-check-input"
