@@ -1,0 +1,20 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Notion datasource",
+  "description": "A schema defining Notion datasource",
+  "type": "api",
+  "source": {
+    "name": "Notion",
+    "kind": "notion",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {},
+  "required": []
+}
