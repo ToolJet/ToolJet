@@ -4681,7 +4681,7 @@ div#driver-page-overlay {
   --tblr-gutter-x: 0 !important;
 }
 
-.btn-loading:after {
+.widget-button >.btn-loading:after {
   border: 1px solid var(--loader-color);
   border-right-color: transparent;
 }
