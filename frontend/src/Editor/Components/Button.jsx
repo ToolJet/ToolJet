@@ -18,18 +18,20 @@ export const Button = function Button({ height, properties, styles, fireEvent })
   };
 
   return (
-    <button
-      disabled={disabledState}
-      className={cx('jet-button btn btn-primary p-1 overflow-hidden', {
-        'btn-loading': loadingState,
-      })}
-      style={computedStyles}
-      onClick={(event) => {
-        event.stopPropagation();
-        fireEvent('onClick');
-      }}
-    >
-      {text}
-    </button>
+    <div className="widget-button">
+      <button
+        disabled={disabledState}
+        className={cx('jet-button btn btn-primary p-1 overflow-hidden', {
+          'btn-loading': loadingState,
+        })}
+        style={computedStyles}
+        onClick={(event) => {
+          event.stopPropagation();
+          fireEvent('onClick');
+        }}
+      >
+        {text}
+      </button>
+    </div>
   );
 };
