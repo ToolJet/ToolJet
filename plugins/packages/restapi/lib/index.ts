@@ -129,8 +129,8 @@ export default class RestapiQueryService implements QueryService {
       const response = await got(url, {
         method,
         headers,
-        username: authType === 'basic' ? sourceOptions.username : undefined,
-        password: authType === 'basic' ? sourceOptions.password : undefined,
+        username: authType === 'basic' && sourceOptions.username,
+        password: authType === 'basic' && sourceOptions.password,
         ...this.fetchHttpsCertsForCustomCA(),
         searchParams: {
           ...paramsFromUrl,
