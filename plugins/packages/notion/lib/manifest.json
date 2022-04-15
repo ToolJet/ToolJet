@@ -12,9 +12,25 @@
       "data": {},
       "rawData": {}
     },
-    "options": {}
+    "options": {
+      "token":{
+        "encrypted": true
+      }
+    }
   },
-  "defaults": {},
-  "properties": {},
+  "defaults": {
+    "token":{
+      "value": ""
+    }
+  },
+  "properties": {
+    "token": {
+      "label": "Token",
+      "key": "token",
+      "type": "text",
+      "description": "Enter token here",
+      "encrypted": true
+    }
+  },
   "required": []
 }
