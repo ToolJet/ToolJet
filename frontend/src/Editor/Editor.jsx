@@ -144,6 +144,12 @@ class Editor extends React.Component {
     });
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.appDefinition !== this.state.appDefinition) {
+      computeComponentState(this, this.state.appDefinition.components);
+    }
+  }
+
   isVersionReleased = (version = this.state.editingVersion) => {
     if (isEmpty(version)) {
       return false;
@@ -500,6 +506,7 @@ class Editor extends React.Component {
       this.handleAddPatch
     );
     setStateAsync(_self, newDefinition).then(() => {
+      computeComponentState(_self, _self.state.appDefinition.components);
       this.autoSave();
     });
   };
