@@ -43,7 +43,7 @@ export class JSONTreeViewer extends React.Component {
   getCurrentNodePath(path, node) {
     let currentPath = path ?? [];
     if (node) {
-      currentPath.push(node);
+      currentPath = [...currentPath, node];
     }
     return currentPath;
   }

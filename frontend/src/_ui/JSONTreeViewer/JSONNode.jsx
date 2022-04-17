@@ -169,7 +169,7 @@ const JSONTreeArrayNode = ({ data, path, ...restProps }) => {
   const keys = [];
 
   for (let i = 0; i < data.length; i++) {
-    keys.push(i);
+    keys.push(String(i));
   }
 
   return keys.map((key, index) => {
@@ -178,7 +178,7 @@ const JSONTreeArrayNode = ({ data, path, ...restProps }) => {
     const props = { ...restProps };
     props.currentNode = _currentNode;
 
-    return <JSONNode key={`arr-${key}/${index}`} data={data[key]} path={currentPath} {...props} />;
+    return <JSONNode key={`arr-${key}/${index}`} data={data[Number(key)]} path={currentPath} {...props} />;
   });
 };
 
