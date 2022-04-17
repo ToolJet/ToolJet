@@ -7,7 +7,7 @@ import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
-import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
+import { validateQueryName } from '@/_helpers/utils';
 import { ConfirmDialog } from '@/_components';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
@@ -395,7 +395,7 @@ export const Inspector = ({
 
       <div className="widget-documentation-link p-2">
         <a
-          href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
+          href={`https://docs.tooljet.io/docs/widgets/${(componentMeta?.name ?? '').toLowerCase()}`}
           target="_blank"
           rel="noreferrer"
         >
