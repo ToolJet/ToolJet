@@ -15,7 +15,11 @@ export const Timeline = function Timeline({ height, darkMode, properties, styles
             <li key={index}>
               <div className="list-timeline-icon" style={{ backgroundColor: item.iconBackgroundColor }}></div>
               <div className="list-timeline-content">
-                {!hideDate && <div className={`list-timeline-time ${darkModeStyle}`}>{item.date}</div>}
+                {!hideDate && (
+                  <div className={`list-timeline-time ${darkModeStyle}`} style={{ top: 'auto' }}>
+                    {item.date}
+                  </div>
+                )}
                 <p className="list-timeline-title">{item.title}</p>
                 <p className={`${darkModeStyle || 'text-muted'}`}>{item.subTitle}</p>
               </div>
