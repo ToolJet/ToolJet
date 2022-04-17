@@ -37,7 +37,7 @@ import { CircularProgressBar } from './Components/CirularProgressbar';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { RangeSlider } from './Components/RangeSlider';
 import { Timeline } from './Components/Timeline';
-import { SvgViewer } from './Components/SvgViewer';
+import { SvgImage } from './Components/SvgImage';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { resolveProperties, resolveStyles } from './component-properties-resolution';
@@ -81,7 +81,7 @@ const AllComponents = {
   CircularProgressBar,
   RangeSlider,
   Timeline,
-  SvgViewer,
+  SvgImage,
 };
 
 export const Box = function Box({

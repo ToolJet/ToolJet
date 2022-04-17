@@ -1980,10 +1980,10 @@ export const componentTypes = [
     },
   },
   {
-    name: 'SvgViewer',
+    name: 'SvgImage',
     displayName: 'Svg Image',
     description: 'Svg image',
-    component: 'SvgViewer',
+    component: 'SvgImage',
     properties: {
       data: { type: 'code', displayName: 'Svg  data' },
     },
