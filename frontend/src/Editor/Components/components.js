@@ -1981,11 +1981,11 @@ export const componentTypes = [
   },
   {
     name: 'SvgViewer',
-    displayName: 'Svg Viewer',
-    description: 'Svg viewer',
+    displayName: 'Svg Image',
+    description: 'Svg image',
     component: 'SvgViewer',
     properties: {
-      data: { type: 'code', displayName: 'SvgViewer data' },
+      data: { type: 'code', displayName: 'Svg  data' },
     },
     defaultSize: {
       width: 10,
