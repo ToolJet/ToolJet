@@ -74,7 +74,7 @@ export default class Snowflake implements QueryService {
       warehouse: sourceOptions.warehouse,
       database: sourceOptions.database,
       schema: sourceOptions.schema,
-      role: sourceOptions.role
+      role: sourceOptions.role,
     });
 
     return await this.connAsync(connection);
