@@ -40,6 +40,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     case 'Number':
     case 'Null':
     case 'Undefined':
+    case 'Function':
       $VALUE = <JSONNode.ValueNode data={data} type={typeofCurrentNode} />;
       $NODEType = <JSONNode.DisplayNodeLabel type={typeofCurrentNode} />;
       break;
@@ -141,6 +142,20 @@ const JSONTreeNodeIndicator = ({ toExpand, toShowJSONNOde, handleToggle, ...rest
 };
 
 const JSONTreeValueNode = ({ data, type }) => {
+  if (type === 'Function') {
+    const functionString = `${data.toString().split('{')[0].trim()}{...}`;
+    return (
+      <React.Fragment>
+        <span
+          className="badge bg-light text-dark"
+          style={{ fontSize: '10px', fontFamily: 'monospace', textTransform: 'none' }}
+        >
+          {functionString}
+        </span>
+      </React.Fragment>
+    );
+  }
+
   const value = type === 'String' ? `"${data}"` : String(data);
   const clsForUndefinedOrNull = (type === 'Undefined' || type === 'Null') && 'badge badge-secondary';
   return (
