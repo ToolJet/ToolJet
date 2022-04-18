@@ -59,6 +59,17 @@ export class JSONTreeViewer extends React.Component {
     return typeofCurrentNode;
   }
 
+  getLength(type, collection) {
+    if (!collection) return 0;
+    if (type === 'Object') {
+      return Object.keys(collection).length;
+    } else if (type === 'Array') {
+      return collection.length;
+    }
+
+    return Infinity;
+  }
+
   renderNodeIcons = (node) => {
     const icon = this.props.iconsList.filter((icon) => icon?.iconName === node)[0];
 
@@ -81,6 +92,7 @@ export class JSONTreeViewer extends React.Component {
           getCurrentPath={this.getCurrentNodePath}
           getCurrentNodeType={this.getCurrentNodeType}
           toUseNodeIcons={this.props.useIcons ?? false}
+          getLength={this.getLength}
           renderNodeIcons={this.renderNodeIcons}
           useIndentedBlock={this.props.useIndentedBlock ?? false}
         />

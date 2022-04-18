@@ -8,6 +8,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     currentNode,
     getCurrentPath,
     getCurrentNodeType,
+    getLength,
     toUseNodeIcons,
     renderNodeIcons,
     useIndentedBlock,
@@ -27,8 +28,7 @@ export const JSONNode = ({ data, ...restProps }) => {
   let $NODEType = null;
   let $NODEIcon = null;
   const typeofCurrentNode = getCurrentNodeType(data);
-  const numberOfEntries =
-    (typeofCurrentNode === 'Array' && data.length) || (typeofCurrentNode === 'Object' && Object.keys(data).length);
+  const numberOfEntries = getLength(typeofCurrentNode, data);
 
   if (toUseNodeIcons && currentNode) {
     $NODEIcon = renderNodeIcons(currentNode);
