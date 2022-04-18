@@ -126,7 +126,7 @@ class LoginPage extends React.Component {
       <div className="page page-center">
         <div className="container-tight py-2">
           <div className="text-center mb-4">
-            <a href="." className="navbar-brand-autodark">
+            <a href="." className="navbar-brand-autodark" data-cy="login-page-logo">
               <img src="/assets/images/logo-color.svg" height="26" alt="" />
             </a>
           </div>
@@ -137,11 +137,13 @@ class LoginPage extends React.Component {
               <div className="card-body">
                 {configs?.form?.enabled && (
                   <div>
-                    <h2 className="card-title text-center mb-4">
+                    <h2 className="card-title text-center mb-4" data-cy="login-page-header">
                       Login to {this.single_organization ? 'your account' : configs?.name || 'your account'}
                     </h2>
                     <div className="mb-3">
-                      <label className="form-label">Email address</label>
+                      <label className="form-label" data-cy="email-label">
+                        Email address
+                      </label>
                       <input
                         onChange={this.handleChange}
                         name="email"
@@ -149,13 +151,14 @@ class LoginPage extends React.Component {
                         className="form-control"
                         placeholder="Email"
                         data-testid="emailField"
+                        data-cy="email-text-field"
                       />
                     </div>
                     <div className="mb-2">
-                      <label className="form-label">
+                      <label className="form-label" data-cy="password-label">
                         Password
                         <span className="form-label-description">
-                          <Link to={'/forgot-password'} tabIndex="-1">
+                          <Link to={'/forgot-password'} tabIndex="-1" data-cy="forgot-password-link">
                             Forgot password
                           </Link>
                         </span>
@@ -169,6 +172,7 @@ class LoginPage extends React.Component {
                           placeholder="Password"
                           autoComplete="off"
                           data-testid="passwordField"
+                          data-cy="password-text-field"
                         />
                         <span className="input-group-text"></span>
                       </div>
@@ -180,8 +184,9 @@ class LoginPage extends React.Component {
                         id="check-input"
                         name="check-input"
                         onChange={this.handleOnCheck}
+                        data-cy="checkbox-input"
                       />
-                      <label className="form-check-label" htmlFor="check-input">
+                      <label className="form-check-label" htmlFor="check-input" data-cy="show-password-label">
                         show password
                       </label>
                     </div>
@@ -197,6 +202,7 @@ class LoginPage extends React.Component {
                       data-testid="loginButton"
                       className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
                       onClick={this.authUser}
+                      data-cy="login-button"
                     >
                       Sign in
                     </button>
@@ -216,9 +222,9 @@ class LoginPage extends React.Component {
             !this.single_organization &&
             configs?.form?.enabled &&
             configs?.form?.enable_sign_up && (
-              <div className="text-center text-secondary mt-3">
+              <div className="text-center text-secondary mt-3" data-cy="sign-up-message">
                 Don&apos;t have account yet? &nbsp;
-                <Link to={'/signup'} tabIndex="-1">
+                <Link to={'/signup'} tabIndex="-1" data-cy="sign-up-link">
                   Sign up
                 </Link>
               </div>
