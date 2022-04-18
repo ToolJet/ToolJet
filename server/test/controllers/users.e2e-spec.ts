@@ -42,7 +42,7 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(200);
 
-      const updatedUser = await getManager().findOne(User, { where: { email: user.email } });
+      const updatedUser = await getManager().findOneOrFail(User, { where: { email: user.email } });
       expect(updatedUser.password).not.toEqual(oldPassword);
     });
 
@@ -59,7 +59,7 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(403);
 
-      const updatedUser = await getManager().findOne(User, { where: { email: user.email } });
+      const updatedUser = await getManager().findOneOrFail(User, { where: { email: user.email } });
       expect(updatedUser.password).toEqual(oldPassword);
     });
   });
@@ -78,7 +78,7 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(200);
 
-      const updatedUser = await getManager().findOne(User, { where: { email: user.email } });
+      const updatedUser = await getManager().findOneOrFail(User, { where: { email: user.email } });
       expect(updatedUser.firstName).toEqual(firstName);
       expect(updatedUser.lastName).toEqual(lastName);
     });
@@ -115,11 +115,11 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(201);
 
-      const updatedUser = await getManager().findOne(User, { where: { email: user.email } });
+      const updatedUser = await getManager().findOneOrFail(User, { where: { email: user.email } });
       expect(updatedUser.firstName).toEqual('signupuser');
       expect(updatedUser.lastName).toEqual('user');
       expect(updatedUser.defaultOrganizationId).toEqual(organization.id);
-      const organizationUser = await getManager().findOne(OrganizationUser, { where: { userId: user.id } });
+      const organizationUser = await getManager().findOneOrFail(OrganizationUser, { where: { userId: user.id } });
       expect(organizationUser.status).toEqual('active');
     });
 
@@ -200,7 +200,7 @@ describe('users controller', () => {
 
       expect(signUpResponse.statusCode).toBe(201);
 
-      const invitedUserDetails = await getManager().findOne(User, { where: { email: invitedUser.user.email } });
+      const invitedUserDetails = await getManager().findOneOrFail(User, { where: { email: invitedUser.user.email } });
 
       expect(invitedUserDetails.defaultOrganizationId).not.toBe(org.id);
 
@@ -214,14 +214,14 @@ describe('users controller', () => {
       });
 
       expect(response.statusCode).toBe(201);
-      const updatedUser = await getManager().findOne(User, { where: { email: invitedUser.user.email } });
+      const updatedUser = await getManager().findOneOrFail(User, { where: { email: invitedUser.user.email } });
       expect(updatedUser.firstName).toEqual('signupuser');
       expect(updatedUser.lastName).toEqual('user');
       expect(updatedUser.defaultOrganizationId).not.toBe(org.id);
-      const organizationUser = await getManager().findOne(OrganizationUser, {
+      const organizationUser = await getManager().findOneOrFail(OrganizationUser, {
         where: { userId: invitedUser.user.id, organizationId: org.id },
       });
-      const defaultOrganizationUser = await getManager().findOne(OrganizationUser, {
+      const defaultOrganizationUser = await getManager().findOneOrFail(OrganizationUser, {
         where: { userId: invitedUser.user.id, organizationId: invitedUserDetails.defaultOrganizationId },
       });
       expect(organizationUser.status).toEqual('invited');

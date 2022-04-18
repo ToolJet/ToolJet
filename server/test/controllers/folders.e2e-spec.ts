@@ -226,7 +226,7 @@ describe('folders controller', () => {
       folderCreate: false,
       organization: newUserData.organization,
     });
-    const group = await getManager().findOne(GroupPermission, {
+    const group = await getManager().findOneOrFail(GroupPermission, {
       where: { group: 'folder-handler' },
     });
     await createAppGroupPermission(nestApp, appInFolder, group.id, {

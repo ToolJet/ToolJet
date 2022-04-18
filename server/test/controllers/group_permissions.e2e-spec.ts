@@ -257,7 +257,7 @@ describe('group permissions controller', () => {
       });
 
       const manager = getManager();
-      const adminGroupPermission = await manager.findOne(GroupPermission, {
+      const adminGroupPermission = await manager.findOneOrFail(GroupPermission, {
         where: {
           group: 'admin',
           organizationId: organization.id,
@@ -279,7 +279,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
 
       const manager = getManager();
-      const adminGroupPermission = await manager.findOne(GroupPermission, {
+      const adminGroupPermission = await manager.findOneOrFail(GroupPermission, {
         where: {
           group: 'all_users',
           organizationId: adminUser.organizationId,
@@ -364,7 +364,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
 
       const manager = getManager();
-      const adminGroupPermission = await manager.findOne(GroupPermission, {
+      const adminGroupPermission = await manager.findOneOrFail(GroupPermission, {
         where: {
           group: 'admin',
           organizationId: organization.id,
@@ -472,7 +472,7 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
 
       const manager = getManager();
-      const adminGroupPermission = await manager.findOne(GroupPermission, {
+      const adminGroupPermission = await manager.findOneOrFail(GroupPermission, {
         where: {
           group: 'admin',
           organizationId: organization.id,
@@ -516,7 +516,7 @@ describe('group permissions controller', () => {
       });
 
       const manager = getManager();
-      const adminGroupPermission = await manager.findOne(GroupPermission, {
+      const adminGroupPermission = await manager.findOneOrFail(GroupPermission, {
         where: {
           group: 'admin',
           organizationId: adminUser.organization.id,
@@ -557,14 +557,14 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
 
       const manager = getManager();
-      const groupPermission = await manager.findOne(GroupPermission, {
+      const groupPermission = await manager.findOneOrFail(GroupPermission, {
         where: {
           organizationId: organization.id,
           group: 'all_users',
         },
       });
       const groupPermissionId = groupPermission.id;
-      const appGroupPermission = await manager.findOne(AppGroupPermission, {
+      const appGroupPermission = await manager.findOneOrFail(AppGroupPermission, {
         where: {
           groupPermissionId,
         },
@@ -594,14 +594,14 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
 
       const manager = getManager();
-      const groupPermission = await manager.findOne(GroupPermission, {
+      const groupPermission = await manager.findOneOrFail(GroupPermission, {
         where: {
           organizationId: organization.id,
           group: 'all_users',
         },
       });
       const groupPermissionId = groupPermission.id;
-      const appGroupPermission = await manager.findOne(AppGroupPermission, {
+      const appGroupPermission = await manager.findOneOrFail(AppGroupPermission, {
         where: {
           groupPermissionId,
         },

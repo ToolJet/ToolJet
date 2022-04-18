@@ -196,7 +196,6 @@ export class UsersService {
     }
     const user: User = organizationUser.user;
 
-    console.log(user.invitationToken);
     if (user.invitationToken) {
       // User sign up link send - not activated account
       const defaultOrganizationUser = await this.organizationUsersRepository.findOne({

@@ -389,7 +389,7 @@ export async function addAllUsersGroupToUser(nestApp, user) {
   const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
   const userGroupPermissionRepository: Repository<UserGroupPermission> = nestApp.get('UserGroupPermissionRepository');
 
-  const orgDefaultGroupPermissions = await groupPermissionRepository.findOne({
+  const orgDefaultGroupPermissions = await groupPermissionRepository.findOneOrFail({
     where: {
       organizationId: user.organizationId,
       group: 'all_users',

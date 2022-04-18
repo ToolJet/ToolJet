@@ -157,7 +157,7 @@ describe('organizations controller', () => {
           .set('Authorization', authHeaderForUser(user));
 
         expect(response.statusCode).toBe(200);
-        const ssoConfigs = await ssoConfigsRepository.findOne({ where: { id: response.body.id } });
+        const ssoConfigs = await ssoConfigsRepository.findOneOrFail({ where: { id: response.body.id } });
         expect(ssoConfigs.sso).toBe('git');
         expect(ssoConfigs.enabled).toBeTruthy();
         expect(ssoConfigs.configs.clientId).toBe('client-id');

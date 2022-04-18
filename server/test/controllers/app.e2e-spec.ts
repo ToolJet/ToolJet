@@ -41,15 +41,17 @@ describe('Authentication', () => {
       const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
       expect(response.statusCode).toBe(201);
 
-      const user = await userRepository.findOne({
+      const user = await userRepository.findOneOrFail({
         where: { email: 'test@tooljet.io' },
         relations: ['organizationUsers'],
       });
 
-      const organization = await orgRepository.findOne({ where: { id: user?.organizationUsers?.[0]?.organizationId } });
+      const organization = await orgRepository.findOneOrFail({
+        where: { id: user?.organizationUsers?.[0]?.organizationId },
+      });
 
       expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
-      expect(organization?.name).toBe('Untitled organization');
+      expect(organization.name).toBe('Untitled organization');
 
       const groupPermissions = await user.groupPermissions;
       const groupNames = groupPermissions.map((x) => x.group);
@@ -100,7 +102,7 @@ describe('Authentication', () => {
           .send({ email: 'user@tooljet.io', password: 'password' })
           .expect(401);
 
-        const adminUser = await userRepository.findOne({
+        const adminUser = await userRepository.findOneOrFail({
           email: 'admin@tooljet.io',
         });
         await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
@@ -170,12 +172,12 @@ describe('Authentication', () => {
         const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
         expect(response.statusCode).toBe(201);
 
-        const user = await userRepository.findOne({
+        const user = await userRepository.findOneOrFail({
           where: { email: 'test@tooljet.io' },
           relations: ['organizationUsers'],
         });
 
-        const organization = await orgRepository.findOne({
+        const organization = await orgRepository.findOneOrFail({
           where: { id: user?.organizationUsers?.[0]?.organizationId },
         });
 
@@ -223,7 +225,7 @@ describe('Authentication', () => {
           .send({ email: 'user@tooljet.io', password: 'password' })
           .expect(401);
 
-        const adminUser = await userRepository.findOne({
+        const adminUser = await userRepository.findOneOrFail({
           email: 'admin@tooljet.io',
         });
         await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
