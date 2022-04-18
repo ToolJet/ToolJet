@@ -71,6 +71,10 @@ export default class Snowflake implements QueryService {
       account: sourceOptions.account,
       username: sourceOptions.username,
       password: sourceOptions.password,
+      warehouse: sourceOptions.warehouse,
+      database: sourceOptions.database,
+      schema: sourceOptions.schema,
+      role: sourceOptions.role,
     });
 
     return await this.connAsync(connection);
