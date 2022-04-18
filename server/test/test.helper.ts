@@ -24,6 +24,7 @@ import { WsAdapter } from '@nestjs/platform-ws';
 import { AppsModule } from 'src/modules/apps/apps.module';
 import { LibraryAppCreationService } from '@services/library_app_creation.service';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -147,7 +148,19 @@ export async function createUser(
     organizationName = 'Test Organization',
     ssoConfigs = [],
     enableSignUp = false,
-  }: any,
+  }: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    groups?: Array<string>;
+    organization?: Organization;
+    status?: string;
+    invitationToken?: string;
+    formLoginStatus?: boolean;
+    organizationName?: string;
+    ssoConfigs?: Array<any>;
+    enableSignUp?: boolean;
+  },
   existingUser?: User
 ) {
   let userRepository: Repository<User>;
@@ -200,6 +213,7 @@ export async function createUser(
     organizationUsersRepository.create({
       user: user,
       organization,
+      invitationToken: status === 'invited' ? uuidv4() : null,
       status: status || 'active',
       role: 'all_users',
       createdAt: new Date(),

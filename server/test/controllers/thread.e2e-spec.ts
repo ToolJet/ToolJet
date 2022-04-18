@@ -28,7 +28,6 @@ describe('thread controller', () => {
   it('should list all threads in an application', async () => {
     const userData = await createUser(app, {
       email: 'admin@tooljet.io',
-      role: 'admin',
     });
     const application = await createApplication(app, {
       name: 'App',

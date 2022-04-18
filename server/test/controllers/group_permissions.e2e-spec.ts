@@ -254,7 +254,6 @@ describe('group permissions controller', () => {
     it('should not allow to remove users from admin group permission without any atleast one active admin', async () => {
       const { user, organization } = await createUser(nestApp, {
         email: 'admin@tooljet.io',
-        role: 'admin',
       });
 
       const manager = getManager();
@@ -650,7 +649,7 @@ describe('group permissions controller', () => {
     const anotherDefaultUserData = await createUser(nestApp, {
       email: 'another_developer@tooljet.io',
       groups: ['all_users'],
-      anotherOrganization,
+      organization: anotherOrganization,
     });
     const anotherDefaultUser = anotherDefaultUserData.user;
 

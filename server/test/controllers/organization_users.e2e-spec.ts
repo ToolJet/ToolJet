@@ -156,7 +156,6 @@ describe('organization users controller', () => {
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
         status: 'archived',
-        password: 'old-password',
         groups: ['viewer', 'all_users'],
         organization,
       });

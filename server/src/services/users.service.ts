@@ -82,8 +82,13 @@ export class UsersService {
         await manager.save(user);
       } else {
         if (isInvite) {
-          existingUser.invitationToken = uuid.v4();
-          await manager.save(existingUser);
+          // user already invited to an organization, but not active - user tries to sign up
+          await manager.save(
+            Object.assign(existingUser, {
+              invitationToken: uuid.v4(),
+              defaultOrganizationId: organizationId,
+            })
+          );
         }
         user = existingUser;
       }
@@ -191,30 +196,8 @@ export class UsersService {
     }
     const user: User = organizationUser.user;
 
-    if (password) {
-      // set new password if entered
-      await this.usersRepository.save(
-        Object.assign(user, {
-          password,
-          invitationToken: null,
-        })
-      );
-    } else {
-      await this.usersRepository.save(
-        Object.assign(user, {
-          invitationToken: null,
-        })
-      );
-    }
-
-    await this.organizationUsersRepository.save(
-      Object.assign(organizationUser, {
-        invitationToken: null,
-        status: 'active',
-      })
-    );
-
-    if (user.defaultOrganizationId) {
+    console.log(user.invitationToken);
+    if (user.invitationToken) {
       // User sign up link send - not activated account
       const defaultOrganizationUser = await this.organizationUsersRepository.findOne({
         where: { organizationId: user.defaultOrganizationId, status: 'invited' },
@@ -229,6 +212,21 @@ export class UsersService {
         );
       }
     }
+
+    // set new password if entered
+    await this.usersRepository.save(
+      Object.assign(user, {
+        ...(password ? { password } : {}),
+        invitationToken: null,
+      })
+    );
+
+    await this.organizationUsersRepository.save(
+      Object.assign(organizationUser, {
+        invitationToken: null,
+        status: 'active',
+      })
+    );
   }
 
   async updateDefaultOrganization(user: User, organizationId: string) {

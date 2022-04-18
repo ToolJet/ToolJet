@@ -4,12 +4,13 @@ import { PasswordRevalidateGuard } from 'src/modules/auth/password-revalidate.gu
 import { UsersService } from 'src/services/users.service';
 import { User } from 'src/decorators/user.decorator';
 import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
+import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @UseGuards(MultiOrganizationGuard)
+  @UseGuards(MultiOrganizationGuard, SignupDisableGuard)
   @Post('set_password_from_token')
   async create(@Body() body) {
     await this.usersService.setupAccountFromInvitationToken(body);

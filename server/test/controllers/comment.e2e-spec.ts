@@ -26,7 +26,7 @@ describe('comment controller', () => {
   });
 
   it('should list all comments in a thread', async () => {
-    const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const userData = await createUser(app, { email: 'admin@tooljet.io' });
 
     const { user } = userData;
 

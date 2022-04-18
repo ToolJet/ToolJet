@@ -44,7 +44,6 @@ describe('oauth controller', () => {
     beforeEach(async () => {
       const { organization } = await createUser(app, {
         email: 'anotherUser@tooljet.io',
-        role: 'admin',
         ssoConfigs: [
           { sso: 'google', enabled: true, configs: { clientId: 'client-id' } },
           {

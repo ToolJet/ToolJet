@@ -68,7 +68,7 @@ describe('Authentication', () => {
     });
     describe('Single organization operations', () => {
       beforeEach(async () => {
-        current_organization = (await createUser(app, { email: 'admin@tooljet.io', status: 'active' })).organization;
+        current_organization = (await createUser(app, { email: 'admin@tooljet.io' })).organization;
       });
       it('should not create new users since organization already exist', async () => {
         const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
@@ -165,19 +165,7 @@ describe('Authentication', () => {
         expect(response.statusCode).toBe(406);
       });
     });
-    describe('sign up enabled', () => {
-      beforeEach(async () => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-          switch (key) {
-            case 'DISABLE_SIGNUPS':
-              return 'false';
-            case 'MULTI_ORGANIZATION':
-              return 'true';
-            default:
-              return process.env[key];
-          }
-        });
-      });
+    describe('sign up enabled and authorization', () => {
       it('should create new users', async () => {
         const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
         expect(response.statusCode).toBe(201);

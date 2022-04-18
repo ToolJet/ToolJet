@@ -37,7 +37,7 @@ describe('organizations controller', () => {
     });
 
     it('should list organization users', async () => {
-      const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+      const userData = await createUser(app, { email: 'admin@tooljet.io' });
       const { user, orgUser } = userData;
 
       const response = await request(app.getHttpServer())
@@ -75,7 +75,6 @@ describe('organizations controller', () => {
         });
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
-          role: 'admin',
         });
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
@@ -97,7 +96,7 @@ describe('organizations controller', () => {
               return process.env[key];
           }
         });
-        const { user } = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+        const { user } = await createUser(app, { email: 'admin@tooljet.io' });
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
           .send({ name: '' })
@@ -107,7 +106,7 @@ describe('organizations controller', () => {
       });
 
       it('should not create new organization if multi organization not supported', async () => {
-        const { user } = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+        const { user } = await createUser(app, { email: 'admin@tooljet.io' });
         await request(app.getHttpServer())
           .post('/api/organizations')
           .send({ name: 'My organization' })
@@ -119,7 +118,6 @@ describe('organizations controller', () => {
       it('should change organization params if changes are done by admin', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
-          role: 'admin',
         });
         const response = await request(app.getHttpServer())
           .patch('/api/organizations')
@@ -134,7 +132,7 @@ describe('organizations controller', () => {
       });
 
       it('should not change organization params if changes are not done by admin', async () => {
-        const { organization } = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+        const { organization } = await createUser(app, { email: 'admin@tooljet.io' });
         const developerUserData = await createUser(app, {
           email: 'developer@tooljet.io',
           groups: ['all_users'],
@@ -152,7 +150,6 @@ describe('organizations controller', () => {
       it('should change organization configs if changes are done by admin', async () => {
         const { user } = await createUser(app, {
           email: 'admin@tooljet.io',
-          role: 'admin',
         });
         const response = await request(app.getHttpServer())
           .patch('/api/organizations/configs')
@@ -170,7 +167,6 @@ describe('organizations controller', () => {
       it('should not change organization configs if changes are not done by admin', async () => {
         const { user } = await createUser(app, {
           email: 'admin@tooljet.io',
-          role: 'admin',
           groups: ['all_users'],
         });
         const response = await request(app.getHttpServer())
@@ -185,7 +181,6 @@ describe('organizations controller', () => {
       it('should get organization details if requested by admin', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
-          role: 'admin',
         });
         const response = await request(app.getHttpServer())
           .patch('/api/organizations/configs')
@@ -216,7 +211,6 @@ describe('organizations controller', () => {
       it('should not get organization configs if request not done by admin', async () => {
         const { user } = await createUser(app, {
           email: 'admin@tooljet.io',
-          role: 'admin',
           groups: ['all_users'],
         });
         const response = await request(app.getHttpServer())
@@ -231,7 +225,6 @@ describe('organizations controller', () => {
       it('should get organization details for all users for single organization', async () => {
         const { user } = await createUser(app, {
           email: 'admin@tooljet.io',
-          role: 'admin',
         });
         const response = await request(app.getHttpServer())
           .patch('/api/organizations/configs')
@@ -279,7 +272,6 @@ describe('organizations controller', () => {
         });
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
-          role: 'admin',
         });
         const response = await request(app.getHttpServer())
           .patch('/api/organizations/configs')
