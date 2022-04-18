@@ -177,6 +177,7 @@ class ManageGroupPermissions extends React.Component {
                             this.setState({
                               showNewGroupForm: false,
                               newGroup: null,
+                              newGroupName: null,
                             })
                           }
                           disabled={creatingGroup}

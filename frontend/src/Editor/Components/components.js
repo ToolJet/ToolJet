@@ -1597,7 +1597,7 @@ export const componentTypes = [
   },
   {
     name: 'Listview',
-    displayName: 'List view',
+    displayName: 'List View',
     description: 'Wrapper for multiple components',
     defaultSize: {
       width: 5,
@@ -1883,7 +1883,7 @@ export const componentTypes = [
   },
   {
     name: 'RangeSlider',
-    displayName: 'Range slider',
+    displayName: 'Range Slider',
     description: 'Can be used to show slider with a range',
     component: 'RangeSlider',
     defaultSize: {
