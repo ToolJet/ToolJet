@@ -2,7 +2,7 @@ import React from 'react';
 import Avatar from '@/_ui/Avatar';
 import { useOthers } from 'y-presence';
 
-const MAX_DISPLAY_USERS = 5;
+const MAX_DISPLAY_USERS = 3;
 const RealtimeAvatars = ({ self, updatePresence, editingVersionId }) => {
   const others = useOthers();
   const othersOnSameVersion = others.filter((other) => other?.presence?.editingVersionId === editingVersionId);
