@@ -16,7 +16,7 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
 
 2. Create a Kubernetes secret with name `server`. For the minimal setup, ToolJet requires `pg_host`, `pg_db`, `pg_user`, `pg_password`, `secret_key_base` & `lockbox_key` keys in the secret.
 
-   Read **[environment variables reference](/docs/deployment/env-vars)**
+   Read **[environment variables reference](/docs/setup/env-vars)**
 
 3. Create a Kubernetes deployment
 
@@ -45,5 +45,5 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
    - [GKE Ingress for HTTP(S) Load Balancing](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress)
 
 :::tip
-If you want to serve ToolJet client from services such as Firebase or Netlify, please read the client deployment documentation **[here](/docs/deployment/client)**.
+If you want to serve ToolJet client from services such as Firebase or Netlify, please read the client Setup documentation **[here](/docs/setup/client)**.
 :::
