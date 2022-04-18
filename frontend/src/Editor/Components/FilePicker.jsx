@@ -14,7 +14,7 @@ export const FilePicker = ({
   styles,
 }) => {
   //* properties definitions
-  const instructionText = component.definition.properties.instructionText.value ?? '';
+  const instructionText = component.definition.properties.instructionText?.value ?? '';
   const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
