@@ -5,5 +5,162 @@
   "description": "A schema defining Notion datasource",
   "type": "api",
   "defaults": {},
-  "properties": {}
+  "properties": {
+    "resource": {
+      "label": "Resource",
+      "key": "resource",
+      "className":"col-md-4",
+      "type": "dropdown-component-flip",
+      "description": "Resource select",
+      "list": [
+        {
+          "value": "database",
+          "name": "Database"
+        },
+        {
+          "value": "page",
+          "name": "Page"
+        },
+        {
+          "value": "block",
+          "name": "Block"
+        },
+        {
+          "value": "user",
+          "name": "User"
+        }
+      ]
+    },
+    "database":{
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "className":"col-md-4",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_database",
+            "name": "Retrieve a database"
+          },
+          {
+            "value": "query_database",
+            "name": "Query a database"
+          },
+          {
+            "value": "create_database",
+            "name": "Create a Database"
+          },
+          {
+            "value": "update_database",
+            "name": "Update a database"
+          }
+        ]
+      },
+      "get_database":{
+        "database_id":{
+          "label": "Database ID",
+          "key": "database_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter database id here"
+        }
+      },
+      "query_database":{
+        "database_id":{
+          "label": "Database ID",
+          "key": "database_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter database id here"
+        },
+        "filter": {
+          "label": "Filter",
+          "key": "filter",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{or: [{ property: 'In stock', checkbox: { equals: true, } },...]}",
+          "description": "Enter filter object",
+          "height": "150px"
+        },
+        "sorts":{
+          "label": "Sort",
+          "key": "sorts",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "[{\"property\": \"Name\",\"direction\": \"ascending\"}]",
+          "description": "Enter the sort array",
+          "height": "150px",
+          "width":"400px"
+        },
+        "limit":{
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter limit here"
+        }
+      }
+    },
+    "page":{
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "className":"col-md-4",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_page",
+            "name": "Retrieve a page"
+          },
+          {
+            "value": "query_database",
+            "name": "Query a database"
+          },
+          {
+            "value": "create_database",
+            "name": "Create a Database"
+          },
+          {
+            "value": "update_database",
+            "name": "Update a database"
+          }
+        ]
+      },
+      "get_page":{
+        "page_id":{
+          "label": "Page ID",
+          "key": "page_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter page id here"
+        }
+      },
+      "query_page":{
+        "page_id":{
+          "label": "Page ID",
+          "key": "page_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter page id here"
+        }
+      }
+    }
+  }
 }
