@@ -473,6 +473,7 @@ export const componentTypes = [
       format: { type: 'code', displayName: 'Format' },
       enableTime: { type: 'code', displayName: 'Enable time selection?' },
       enableDate: { type: 'code', displayName: 'Enable date selection?' },
+      disabledDates: { type: 'code', displayName: 'Disabled dates' },
     },
     events: {},
     styles: {
@@ -492,10 +493,11 @@ export const componentTypes = [
         customRule: { value: null },
       },
       properties: {
-        defaultValue: { value: '01/04/2021' },
+        defaultValue: { value: '{{[]}}' },
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
         enableDate: { value: '{{true}}' },
+        disabledDates: { value: ['1/09/2021'] },
       },
       events: [],
       styles: {
