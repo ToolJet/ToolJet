@@ -2,7 +2,7 @@ const urrl = require('url');
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
-import got, { Headers, HTTPError } from 'got';
+import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
 
 function isEmpty(value: number | null | undefined | string) {
   return (
@@ -125,19 +125,24 @@ export default class RestapiQueryService implements QueryService {
       headers['Authorization'] = `Bearer ${sourceOptions.bearer_token}`;
     }
 
+    const requestOptions: OptionsOfTextResponseBody = {
+      method,
+      headers,
+      ...this.fetchHttpsCertsForCustomCA(),
+      searchParams: {
+        ...paramsFromUrl,
+        ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
+      },
+      json,
+    };
+
+    if (authType === 'basic') {
+      requestOptions.username = sourceOptions.username;
+      requestOptions.password = sourceOptions.password;
+    }
+
     try {
-      const response = await got(url, {
-        method,
-        headers,
-        username: authType === 'basic' && sourceOptions.username,
-        password: authType === 'basic' && sourceOptions.password,
-        ...this.fetchHttpsCertsForCustomCA(),
-        searchParams: {
-          ...paramsFromUrl,
-          ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
-        },
-        json,
-      });
+      const response = await got(url, requestOptions);
       result = this.isJson(response.body) ? JSON.parse(response.body) : response.body;
       requestObject = {
         requestUrl: response.request.requestUrl,
