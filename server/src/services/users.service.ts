@@ -131,6 +131,10 @@ export class UsersService {
     const lastName = userCreateDto.last_name;
     const newSignup = userCreateDto.new_signup;
 
+    if (!token) {
+      throw new BadRequestException('Invalid token');
+    }
+
     const user = await this.usersRepository.findOne({ where: { invitationToken: token } });
 
     if (user) {

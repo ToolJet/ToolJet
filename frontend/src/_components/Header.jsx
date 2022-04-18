@@ -32,7 +32,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
           {/* <span className="navbar-toggler-icon"></span> */}
         </button>
-        <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
+        <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0" data-cy="home-page-logo">
           <Link to={'/'}>
             <LogoIcon />
           </Link>
@@ -57,7 +57,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
                 </span>
               </div>
             </a>
-            <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+            <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow end-0">
               {admin && (
                 <Link data-testid="settingsBtn" to="/users" className="dropdown-item">
                   Manage Users

@@ -132,6 +132,7 @@ export const componentTypes = [
     styles: {
       backgroundColor: { type: 'color', displayName: 'Background color' },
       textColor: { type: 'color', displayName: 'Text color' },
+      loaderColor: { type: 'color', displayName: 'Loader color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
       borderRadius: { type: 'number', displayName: 'Border radius' },
@@ -151,6 +152,7 @@ export const componentTypes = [
       styles: {
         backgroundColor: { value: '#375FCF' },
         textColor: { value: '#fff' },
+        loaderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
         disabledState: { value: '{{false}}' },
@@ -1491,6 +1493,7 @@ export const componentTypes = [
     properties: {
       tabs: { type: 'code', displayName: 'Tabs' },
       defaultTab: { type: 'code', displayName: 'Default tab' },
+      hideTabs: { type: 'toggle', displayName: 'Hide Tabs' },
     },
     events: {},
     styles: {
@@ -1510,6 +1513,7 @@ export const componentTypes = [
             "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
         },
         defaultTab: { value: '0' },
+        hideTabs: { value: false },
       },
       events: [],
       styles: {
@@ -1572,6 +1576,18 @@ export const componentTypes = [
           value: 'countUp',
         },
       },
+      defaults: [
+        {
+          type: 'countUp',
+          value: '00:00:00:000',
+          paramName: 'value',
+        },
+        {
+          type: 'countDown',
+          value: '00:00:10:000',
+          paramName: 'value',
+        },
+      ],
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
@@ -1581,7 +1597,7 @@ export const componentTypes = [
   },
   {
     name: 'Listview',
-    displayName: 'List view',
+    displayName: 'List View',
     description: 'Wrapper for multiple components',
     defaultSize: {
       width: 5,
@@ -1867,7 +1883,7 @@ export const componentTypes = [
   },
   {
     name: 'RangeSlider',
-    displayName: 'Range slider',
+    displayName: 'Range Slider',
     description: 'Can be used to show slider with a range',
     component: 'RangeSlider',
     defaultSize: {
@@ -1916,6 +1932,49 @@ export const componentTypes = [
         lineColor: { value: '#E9E9E9' },
         handleColor: { value: '#4D72FA' },
         trackColor: { value: '#4D72FA' },
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'Timeline',
+    displayName: 'Timeline',
+    description: 'Visual representation of a sequence of events',
+    component: 'Timeline',
+    properties: {
+      data: { type: 'code', displayName: 'Timeline data' },
+      hideDate: { type: 'toggle', displayName: 'Hide Date' },
+    },
+    defaultSize: {
+      width: 20,
+      height: 270,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      value: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        visible: { value: '{{true}}' },
+        data: {
+          value:
+            "{{ [ \n\t\t{ title: 'Product Launched', subTitle: 'First version of our product released to public', date: '20/10/2021', iconBackgroundColor: '#4d72fa'},\n\t\t { title: 'First Signup', subTitle: 'Congratulations! We got our first signup', date: '22/10/2021', iconBackgroundColor: '#4d72fa'}, \n\t\t { title: 'First Payment', subTitle: 'Hurray! We got our first payment', date: '01/11/2021', iconBackgroundColor: '#4d72fa'} \n] }}",
+        },
+        hideDate: { value: false },
+      },
+      events: [],
+      styles: {
         visibility: { value: '{{true}}' },
       },
     },
