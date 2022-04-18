@@ -29,6 +29,7 @@ export const JSONNode = ({ data, ...restProps }) => {
   let $NODEIcon = null;
   const typeofCurrentNode = getCurrentNodeType(data);
   const numberOfEntries = getLength(typeofCurrentNode, data);
+  const toRenderSelector = (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array') && numberOfEntries > 0;
 
   if (toUseNodeIcons && currentNode) {
     $NODEIcon = renderNodeIcons(currentNode);
@@ -84,7 +85,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   return (
     <div className="row mt-1 font-monospace">
-      {numberOfEntries > 0 ? (
+      {toRenderSelector ? (
         <React.Fragment>
           <div className="col-md-1 json-tree-icon-container">
             <JSONNode.NodeIndicator
