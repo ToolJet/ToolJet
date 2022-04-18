@@ -52,7 +52,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 - *Desktop & mobile*: ;layout widths can be customised to support different screens. 
 - *Self-host:* (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
 - *Collaborate:* add comments anywhere on the canvas and tag your team members.
-- *Extend with plugins:*: use our [commandline tool](https://www.npmjs.com/package/tooljet) to easily boostrap new connectors.
+- *Extend with plugins:*: use our [commandline tool](https://www.npmjs.com/package/@tooljet/cli) to easily boostrap new connectors.
 - *Version control:* every application have different versions with proper release cycle.
 - *Run JS code:* ability custom JavaScript snippets
 - *Granular access control* on organization-level and app-level.
