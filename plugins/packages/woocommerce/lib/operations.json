@@ -95,12 +95,13 @@
         "label": "Customer ID",
         "key": "customer_id",
         "type": "codehinter",
-
         "description": "Enter customer ID",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": ""
+        "placeholder": "",
+        "lineNumbers": false
+
       },
       "body": {
         "label": "Data",
@@ -122,7 +123,8 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": ""
+        "placeholder": "",
+        "lineNumbers": false
       }
     },
     "batch_update_customer": {
@@ -130,7 +132,6 @@
         "label": "Data",
         "key": "body",
         "type": "codehinter",
-
         "description": "Enter data",
         "height": "150px",
         "placeholder": ""
@@ -151,12 +152,13 @@
         "label": "Customer ID",
         "key": "customer_id",
         "type": "codehinter",
-
         "description": "Enter customer ID",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": ""
+        "placeholder": "",
+        "lineNumbers": false
+
       }
     },
     "list_order": {},
@@ -169,7 +171,8 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": ""
+        "placeholder": "",
+        "lineNumbers": false
       },
       "body": {
         "label": "Data",
@@ -189,7 +192,8 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": ""
+        "placeholder": "",
+        "lineNumbers": false
       }
     },
     "batch_update_order": {
@@ -199,7 +203,7 @@
         "type": "codehinter",
         "description": "Enter data",
         "height": "150px",
-        "placeholder": ""
+        "placeholder": "",
       }
     },
     "create_order": {
@@ -221,7 +225,8 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": ""
+        "placeholder": "",
+        "lineNumbers": false
       }
     },
     "list_product": {},
@@ -234,7 +239,8 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": ""
+        "placeholder": "",
+        "lineNumbers": false
       },
       "body": {
         "label": "Data",
@@ -254,7 +260,8 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": ""
+        "placeholder": "",
+        "lineNumbers": false
       }
     },
     "batch_update_product": {
@@ -286,7 +293,8 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": ""
+        "placeholder": "",
+        "lineNumbers": false
       }
     },
     "list_coupon": {}
