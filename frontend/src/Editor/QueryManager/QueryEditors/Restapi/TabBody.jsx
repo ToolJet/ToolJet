@@ -17,7 +17,6 @@ export default ({
 }) => {
   return (
     <>
-      <div style={{ display: 'flex' }}></div>
       <GroupHeader
         addNewKeyValuePair={addNewKeyValuePair}
         paramType={'body'}
