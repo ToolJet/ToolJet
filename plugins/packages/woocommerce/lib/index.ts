@@ -19,7 +19,6 @@ export default class Woocommerce implements QueryService {
             .catch((error) => {
               return error.response.data;
             });
-
           break;
         }
         case 'update_customer': {
@@ -31,7 +30,6 @@ export default class Woocommerce implements QueryService {
             .catch((error) => {
               return error.response.data;
             });
-
           break;
         }
         case 'delete_customer': {
@@ -54,7 +52,6 @@ export default class Woocommerce implements QueryService {
             .catch((error) => {
               return error.response.data;
             });
-
           break;
         }
         case 'create_customer': {
@@ -67,7 +64,6 @@ export default class Woocommerce implements QueryService {
             });
           console.log('return data', returned);
           result = returned;
-
           break;
         }
         case 'retreive_customer': {
@@ -80,7 +76,6 @@ export default class Woocommerce implements QueryService {
             .catch((error) => {
               return error.response.data;
             });
-
           break;
         }
 
@@ -94,7 +89,6 @@ export default class Woocommerce implements QueryService {
             .catch((error) => {
               return error.response.data;
             });
-
           break;
         }
         case 'update_product': {
@@ -233,7 +227,6 @@ export default class Woocommerce implements QueryService {
             .catch((error) => {
               return error.response.data;
             });
-
           break;
         }
       }
