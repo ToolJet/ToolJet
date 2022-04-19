@@ -15,10 +15,12 @@ export const Datepicker = function Datepicker({
   id,
   darkMode,
 }) {
-  const { format, enableTime, enableDate, defaultValue } = properties;
+  const { format, enableTime, enableDate, defaultValue, disabledDates } = properties;
   const { visibility, disabledState, borderRadius } = styles;
 
   const [date, setDate] = useState(new Date());
+  const [excludedDates, setExcludedDates] = useState([]);
+
   const selectedDateFormat = enableTime ? `${format} LT` : format;
 
   const computeDateString = (date) => {
@@ -46,9 +48,22 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
 
-  const validationData = validate(exposedVariables.value);
+  useEffect(() => {
+    if (Array.isArray(disabledDates) && disabledDates.length > 0) {
+      const _exluded = [];
+      disabledDates?.map((item) => {
+        if (moment(item, format).isValid()) {
+          _exluded.push(moment(item, format).toDate());
+        }
+      });
+      setExcludedDates(_exluded);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledDates, format]);
 
+  const validationData = validate(exposedVariables.value);
   const { isValid, validationError } = validationData;
+
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,6 +106,7 @@ export const Datepicker = function Datepicker({
         showYearDropdown
         dropdownMode="select"
         customInput={<CustomInputBox />}
+        excludeDates={excludedDates}
       />
 
       <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>

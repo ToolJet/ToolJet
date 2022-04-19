@@ -38,8 +38,8 @@
     "@nestjs/serve-static": "^2.2.2",
     "@nestjs/typeorm": "^8.0.0",
     "@nestjs/websockets": "^8.0.10",
-    "@sentry/node": "^6.17.6",
-    "@sentry/tracing": "^6.17.6",
+    "@sentry/node": "6.17.6",
+    "@sentry/tracing": "6.17.6",
     "@tooljet/plugins": "../plugins",
     "@types/got": "^9.6.12",
     "@types/humps": "^2.0.1",
@@ -71,7 +71,8 @@
     "tsconfig-paths": "^3.10.1",
     "typeorm": "^0.2.38",
     "typescript": "^4.3.5",
-    "ws": "^7.5.5"
+    "ws": "^7.5.5",
+    "y-websocket": "^1.4.0"
   },
   "devDependencies": {
     "@golevelup/ts-jest": "^0.3.2",
