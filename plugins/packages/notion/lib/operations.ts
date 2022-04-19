@@ -71,8 +71,8 @@ export async function pageOperations(notion: Client, queryOptions: QueryOptions,
       return await notion.pages.create({
         parent: {
           type: parent_type,
-          database_id: parent_type === 'database' ? database_id : undefined,
-          page_id: parent_type === 'page' ? page_id : undefined,
+          database_id: parent_type === 'database_id' ? database_id : undefined,
+          page_id: parent_type === 'page_id' ? page_id : undefined,
         },
         properties: returnObject(properties),
         children: returnObject(children),

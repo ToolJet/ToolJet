@@ -141,7 +141,7 @@
           "key": "icon_obj",
           "type": "codehinter",
           "mode": "javascript",
-          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "placeholder": "{\ntype: \"emoji\",emoji: \"🔥\"\n}",
           "description": "Enter icon object",
           "height": "150px",
           "width":"400px"
@@ -151,7 +151,7 @@
           "key": "cover_obj",
           "type": "codehinter",
           "mode": "javascript",
-          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "placeholder": "{\ntype: \"external\",\nexternal: {\nurl: \"https://upload.wikimedia.org/wikipedia/commons/6/62/Tuscankale.jpg\"\n}\n}",
           "description": "Enter cover object",
           "height": "150px",
           "width":"400px"
@@ -192,7 +192,7 @@
           "key": "icon_obj",
           "type": "codehinter",
           "mode": "javascript",
-          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "placeholder": "{\ntype: \"emoji\",emoji: \"🔥\"\n}",
           "description": "Enter icon object",
           "height": "150px",
           "width":"400px"
@@ -202,7 +202,7 @@
           "key": "cover_obj",
           "type": "codehinter",
           "mode": "javascript",
-          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "placeholder": "{\ntype: \"external\",\nexternal: {\nurl: \"https://upload.wikimedia.org/wikipedia/commons/6/62/Tuscankale.jpg\"\n}\n}",
           "description": "Enter cover object",
           "height": "150px",
           "width":"400px"
@@ -303,7 +303,7 @@
             "key": "icon_obj",
             "type": "codehinter",
             "mode": "javascript",
-            "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+            "placeholder": "{\ntype: \"emoji\",emoji: \"🔥\"\n}",
             "description": "Enter icon object",
             "height": "150px",
             "width":"400px"
@@ -313,7 +313,7 @@
             "key": "cover_obj",
             "type": "codehinter",
             "mode": "javascript",
-            "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+            "placeholder": "{\ntype: \"external\",\nexternal: {\nurl: \"https://upload.wikimedia.org/wikipedia/commons/6/62/Tuscankale.jpg\"\n}\n}",
             "description": "Enter cover object",
             "height": "150px",
             "width":"400px"
@@ -353,7 +353,7 @@
             "key": "icon_obj",
             "type": "codehinter",
             "mode": "javascript",
-            "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+            "placeholder": "{\ntype: \"emoji\",emoji: \"🔥\"\n}",
             "description": "Enter icon object",
             "height": "150px",
             "width":"400px"
@@ -363,7 +363,7 @@
             "key": "cover_obj",
             "type": "codehinter",
             "mode": "javascript",
-            "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+            "placeholder": "{\ntype: \"external\",\nexternal: {\nurl: \"https://upload.wikimedia.org/wikipedia/commons/6/62/Tuscankale.jpg\"\n}\n}",
             "description": "Enter cover object",
             "height": "150px",
             "width":"400px"
@@ -395,7 +395,7 @@
           "key": "icon_obj",
           "type": "codehinter",
           "mode": "javascript",
-          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "placeholder": "{\ntype: \"emoji\",emoji: \"🔥\"\n}",
           "description": "Enter icon object",
           "height": "150px",
           "width":"400px"
@@ -405,7 +405,7 @@
           "key": "cover_obj",
           "type": "codehinter",
           "mode": "javascript",
-          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "placeholder": "{\ntype: \"external\",\nexternal: {\nurl: \"https://upload.wikimedia.org/wikipedia/commons/6/62/Tuscankale.jpg\"\n}\n}",
           "description": "Enter cover object",
           "height": "150px",
           "width":"400px"
