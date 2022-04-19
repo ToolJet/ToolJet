@@ -1,7 +1,7 @@
 import React from 'react';
 import 'codemirror/theme/duotone-light.css';
 import DOMPurify from 'dompurify';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from '@/_ui/Select';
 import { openapiService } from '@/_services';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
@@ -21,14 +21,16 @@ class Stripe extends React.Component {
   }
 
   componentDidMount() {
+    const queryParams = {
+      path: this.props.options?.params?.path ?? {},
+      query: this.props.options?.params?.query ?? {},
+      request: this.props.options?.params?.request ?? {},
+    };
     this.setState({
       loadingSpec: true,
       options: {
-        params: {
-          path: {},
-          query: {},
-          request: {},
-        },
+        ...this.props.options,
+        params: queryParams,
       },
     });
 
@@ -63,11 +65,11 @@ class Stripe extends React.Component {
 
     this.setState(
       {
-        selectedOperation: this.state.specJson.paths[path][operation],
         options: {
           ...this.state.options,
           path,
           operation,
+          selectedOperation: this.state.specJson.paths[path][operation],
         },
       },
       () => {
@@ -96,32 +98,53 @@ class Stripe extends React.Component {
     this.props.optionsChanged(newOptions);
   };
 
-  renderOperationOption = (props, option, snapshot, className) => {
-    return (
-      <button {...props} className={className} type="button">
-        <div className="row">
-          <div className="col-md-1">
-            <span className={`badge bg-${operationColorMapping[option.operation]}`}>{option.operation}</span>
-          </div>
+  removeParam = (paramType, paramName) => {
+    const newOptions = JSON.parse(JSON.stringify(this.state.options));
+    newOptions['params'][paramType][paramName] = undefined;
 
-          <div className="col-md-8">
-            <span className="text-muted mx-2">{option.name}</span>
-          </div>
-        </div>
-      </button>
+    this.setState(
+      {
+        options: newOptions,
+      },
+      () => {
+        this.props.optionsChanged(newOptions);
+      }
     );
   };
 
-  computeOperationSelectionOptions = (paths) => {
-    let options = [];
+  renderOperationOption = (props) => {
+    const path = props.value;
+    const operation = props.label;
+    if (path && operation) {
+      return (
+        <div className="row">
+          <div className="col-auto" style={{ width: '60px' }}>
+            <span className={`badge bg-${operationColorMapping[operation]}`}>{operation}</span>
+          </div>
 
-    for (const path of Object.keys(paths)) {
-      for (const operation of Object.keys(paths[path])) {
-        options.push({
-          value: `${operation},${path}`,
-          name: path,
-          operation: operation,
-        });
+          <div className="col">
+            <span>{path}</span>
+          </div>
+        </div>
+      );
+    } else {
+      return 'Select an operation';
+    }
+  };
+
+  computeOperationSelectionOptions = (operationOptions) => {
+    let options = [];
+    const paths = operationOptions?.paths;
+
+    if (paths) {
+      for (const path of Object.keys(paths)) {
+        for (const operation of Object.keys(paths[path])) {
+          options.push({
+            value: `${operation},${path}`,
+            name: path,
+            operation: operation,
+          });
+        }
       }
     }
 
@@ -129,7 +152,9 @@ class Stripe extends React.Component {
   };
 
   render() {
-    const { options, selectedOperation, specJson, loadingSpec } = this.state;
+    const { options, specJson, loadingSpec } = this.state;
+    const selectedOperation = options?.selectedOperation;
+
     let pathParams = [];
     let queryParams = [];
     let requestBody = [];
@@ -145,6 +170,8 @@ class Stripe extends React.Component {
         requestBody = selectedOperation.requestBody.content[requestType];
       }
     }
+
+    const currentValue = this.state.options?.operation + ',' + this.props.options?.path ?? null;
 
     return (
       <div>
@@ -162,14 +189,13 @@ class Stripe extends React.Component {
                 <label className="form-label pt-2">Operation</label>
               </div>
               <div className="col stripe-operation-options" style={{ width: '90px', marginTop: 0 }}>
-                <SelectSearch
-                  options={this.computeOperationSelectionOptions(specJson.paths)}
-                  value="sv"
-                  search={true}
+                <Select
+                  options={this.computeOperationSelectionOptions(specJson)}
+                  value={currentValue}
                   onChange={(value) => this.changeOperation(value)}
-                  filterOptions={fuzzySearch}
-                  renderOption={this.renderOperationOption}
-                  placeholder="Select an operation"
+                  width={'100%'}
+                  useMenuPortal={true}
+                  customOption={this.renderOperationOption}
                 />
 
                 {selectedOperation && (
@@ -205,7 +231,11 @@ class Stripe extends React.Component {
                             width="268px"
                           />
                         </div>
-                        <span className="btn-sm col-2 mt-2" role="button">
+                        <span
+                          className="btn-sm col-2 mt-2"
+                          role="button"
+                          onClick={() => this.removeParam('path', param.name)}
+                        >
                           <svg
                             width="12"
                             height="13"
@@ -237,7 +267,7 @@ class Stripe extends React.Component {
                         <div className="col-6 field" style={{ width: '300px' }}>
                           <CodeHinter
                             currentState={this.props.currentState}
-                            initialValue={this.state.options.params.query[param.name]}
+                            initialValue={this.state.options.params?.query[param.name] ?? ''}
                             mode="text"
                             placeholder={'value'}
                             theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
@@ -247,7 +277,11 @@ class Stripe extends React.Component {
                             width="268px"
                           />
                         </div>
-                        <span className="btn-sm col-2 mt-2" role="button">
+                        <span
+                          className="btn-sm col-2 mt-2"
+                          role="button"
+                          onClick={() => this.removeParam('query', param.name)}
+                        >
                           <svg
                             width="12"
                             height="13"
@@ -279,17 +313,21 @@ class Stripe extends React.Component {
                         <div className="col-6 field" style={{ width: '300px' }}>
                           <CodeHinter
                             currentState={this.props.currentState}
-                            initialValue={this.state.options.params.request[param.name]}
+                            initialValue={this.state.options.params?.request[param] ?? ''}
                             mode="text"
                             placeholder={'value'}
                             theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                             lineNumbers={false}
-                            onChange={(value) => this.changeParam('request', param.name, value)}
+                            onChange={(value) => this.changeParam('request', param, value)}
                             height={'36px'}
                             width="268px"
                           />
                         </div>
-                        <span className="btn-sm col-2 mt-2" role="button">
+                        <span
+                          className="btn-sm col-2 mt-2"
+                          role="button"
+                          onClick={() => this.removeParam('request', param)}
+                        >
                           <svg
                             width="12"
                             height="13"

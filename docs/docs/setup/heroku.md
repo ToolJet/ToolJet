@@ -20,11 +20,11 @@ sidebar_label: Heroku
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Deployment- Heroku](/img/deployment/heroku/appname.png)
+![ToolJet - Deployment- Heroku](/img/setup/heroku/appname.png)
 
 </div>
 
-3. Now let's enter the `Config vars` to configure additional [environment variables](/docs/deployment/env-vars) that are required for the installation.
+3. Now let's enter the `Config vars` to configure additional [environment variables](/docs/setup/env-vars) that are required for the installation.
    - **LOCKBOX_MASTER_KEY**: ToolJet server uses lockbox to encrypt datasource credentials. You should set the environment variable LOCKBOX_MASTER_KEY with a 32 byte hexadecimal string. If you have OpenSSL installed, you can run the command `openssl rand -hex 32` to generate the key.
    - **NODE_ENV**: By default NODE_ENV is set to production. 
    - **NODE_OPTIONS**: Node options are configured to increase node memory to support app build.
@@ -39,7 +39,7 @@ sidebar_label: Heroku
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Deployment- Heroku](/img/deployment/heroku/build.png)
+![ToolJet - Deployment- Heroku](/img/setup/heroku/build.png)
 
 </div>
 
@@ -47,7 +47,7 @@ sidebar_label: Heroku
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Deployment- Heroku](/img/deployment/heroku/login.png)
+![ToolJet - Deployment- Heroku](/img/setup/heroku/login.png)
 
 </div>
 
@@ -56,5 +56,5 @@ The one click deployment will create a **free dyno** and a **free postgresql dat
 :::
 
 :::tip
-ToolJet server and client can be deployed as standalone applications. If you do not want to deploy the client on Heroku, modify `package.json` accordingly. We have a [guide](/docs/deployment/client) on deploying ToolJet client using services such as Firebase.
+ToolJet server and client can be deployed as standalone applications. If you do not want to deploy the client on Heroku, modify `package.json` accordingly. We have a [guide](/docs/setup/client) on deploying ToolJet client using services such as Firebase.
 :::
