@@ -109,6 +109,108 @@
           "className": "codehinter-plugins",
           "description": "Enter limit here"
         }
+      },
+      "create_database":{
+        "page_id":{
+          "label": "Page ID",
+          "key": "page_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter page id here"
+        },
+        "title":{
+          "label": "Title",
+          "key": "title",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "description": "Enter filter object",
+          "height": "150px",
+          "width":"400px"
+        },
+        "properties":{
+          "label": "Properties",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+          "description": "Enter filter object",
+          "height": "200px"
+        },
+        "icon_obj":{
+          "label": "Icon Object",
+          "key": "icon_obj",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "description": "Enter icon object",
+          "height": "150px",
+          "width":"400px"
+        },
+        "cover_obj":{
+          "label": "Cover Object",
+          "key": "cover_obj",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "description": "Enter cover object",
+          "height": "150px",
+          "width":"400px"
+        }
+      },
+      "update_database":{
+        "database_id":{
+          "label": "Database ID",
+          "key": "database_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter database id here"
+        },
+        "title":{
+          "label": "Title",
+          "key": "title",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "description": "Enter filter object",
+          "height": "150px",
+          "width":"400px"
+        },
+        "properties":{
+          "label": "Properties",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+          "description": "Enter filter object",
+          "height": "200px"
+        },
+        "icon_obj":{
+          "label": "Icon Object",
+          "key": "icon_obj",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "description": "Enter icon object",
+          "height": "150px",
+          "width":"400px"
+        },
+        "cover_obj":{
+          "label": "Cover Object",
+          "key": "cover_obj",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "description": "Enter cover object",
+          "height": "150px",
+          "width":"400px"
+        }
       }
     },
     "page":{
@@ -124,16 +226,16 @@
             "name": "Retrieve a page"
           },
           {
-            "value": "query_database",
-            "name": "Query a database"
+            "value": "create_page",
+            "name": "Create a page"
           },
           {
-            "value": "create_database",
-            "name": "Create a Database"
+            "value": "update_page",
+            "name": "Update a page"
           },
           {
-            "value": "update_database",
-            "name": "Update a database"
+            "value": "get_page_property",
+            "name": "Retrieve a page property"
           }
         ]
       },
@@ -149,7 +251,126 @@
           "description": "Enter page id here"
         }
       },
-      "query_page":{
+      "create_page":{
+        "parent_type": {
+          "label": "Parent Type",
+          "key": "parent_type",
+          "className":"col-md-4",
+          "type": "dropdown-component-flip",
+          "description": "Parent select",
+          "list": [
+            {
+              "value": "page_id",
+              "name": "Page"
+            },
+            {
+              "value": "database_id",
+              "name": "Database"
+            }
+          ]
+        },
+        "page_id":{
+          "page_id":{
+            "label": "Page ID",
+            "key": "page_id",
+            "type": "codehinter",
+            "lineNumbers": false,
+            "height": "36px",
+            "width": "320px",
+            "className": "codehinter-plugins",
+            "description": "Enter page id here"
+          },
+          "properties":{
+            "label": "Properties",
+            "key": "properties",
+            "type": "codehinter",
+            "mode": "javascript",
+            "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+            "description": "Enter filter object",
+            "height": "200px"
+          },
+          "children":{
+            "label": "Children (Blocks)",
+            "key": "children",
+            "type": "codehinter",
+            "mode": "javascript",
+            "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+            "description": "Enter blocks array",
+            "height": "200px"
+          },
+          "icon_obj":{
+            "label": "Icon Object",
+            "key": "icon_obj",
+            "type": "codehinter",
+            "mode": "javascript",
+            "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+            "description": "Enter icon object",
+            "height": "150px",
+            "width":"400px"
+          },
+          "cover_obj":{
+            "label": "Cover Object",
+            "key": "cover_obj",
+            "type": "codehinter",
+            "mode": "javascript",
+            "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+            "description": "Enter cover object",
+            "height": "150px",
+            "width":"400px"
+          }
+        },
+        "database_id":{
+          "database_id":{
+            "label": "Database ID",
+            "key": "database_id",
+            "type": "codehinter",
+            "lineNumbers": false,
+            "height": "36px",
+            "width": "320px",
+            "className": "codehinter-plugins",
+            "description": "Enter database id here"
+          },
+          "properties":{
+            "label": "Properties",
+            "key": "properties",
+            "type": "codehinter",
+            "mode": "javascript",
+            "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+            "description": "Enter filter object",
+            "height": "200px"
+          },
+          "children":{
+            "label": "Children (Blocks)",
+            "key": "children",
+            "type": "codehinter",
+            "mode": "javascript",
+            "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+            "description": "Enter blocks array",
+            "height": "200px"
+          },
+          "icon_obj":{
+            "label": "Icon Object",
+            "key": "icon_obj",
+            "type": "codehinter",
+            "mode": "javascript",
+            "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+            "description": "Enter icon object",
+            "height": "150px",
+            "width":"400px"
+          },
+          "cover_obj":{
+            "label": "Cover Object",
+            "key": "cover_obj",
+            "type": "codehinter",
+            "mode": "javascript",
+            "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+            "description": "Enter cover object",
+            "height": "150px",
+            "width":"400px"
+          }
+        }
+      },
+      "update_page":{
         "page_id":{
           "label": "Page ID",
           "key": "page_id",
@@ -159,6 +380,35 @@
           "width": "320px",
           "className": "codehinter-plugins",
           "description": "Enter page id here"
+        },
+        "properties":{
+          "label": "Properties",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+          "description": "Enter filter object",
+          "height": "200px"
+        },
+        "icon_obj":{
+          "label": "Icon Object",
+          "key": "icon_obj",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "description": "Enter icon object",
+          "height": "150px",
+          "width":"400px"
+        },
+        "cover_obj":{
+          "label": "Cover Object",
+          "key": "cover_obj",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "description": "Enter cover object",
+          "height": "150px",
+          "width":"400px"
         }
       }
     }

@@ -33,6 +33,26 @@ export async function databaseOperations(notion: Client, queryOptions: QueryOpti
         page_size: returnNumber(limit),
       });
     }
+    case 'create_database': {
+      const { page_id, title, properties, cover_obj, icon_obj } = queryOptions;
+      return await notion.databases.create({
+        parent: { page_id },
+        title: returnObject(title),
+        properties: returnObject(properties),
+        cover: returnObject(cover_obj),
+        icon: returnObject(icon_obj),
+      });
+    }
+    case 'update_database': {
+      const { database_id, title, properties, cover_obj, icon_obj } = queryOptions;
+      return await notion.databases.update({
+        database_id,
+        title: returnObject(title),
+        properties: returnObject(properties),
+        cover: returnObject(cover_obj),
+        icon: returnObject(icon_obj),
+      });
+    }
     default:
       throw Error('Invalid operation');
   }
@@ -44,6 +64,29 @@ export async function pageOperations(notion: Client, queryOptions: QueryOptions,
       const { page_id } = queryOptions;
       return await notion.pages.retrieve({
         page_id,
+      });
+    }
+    case 'create_page': {
+      const { parent_type, page_id, database_id, properties, children, icon_obj, cover_obj } = queryOptions;
+      return await notion.pages.create({
+        parent: {
+          type: parent_type,
+          database_id: parent_type === 'database' ? database_id : undefined,
+          page_id: parent_type === 'page' ? page_id : undefined,
+        },
+        properties: returnObject(properties),
+        children: returnObject(children),
+        icon: returnObject(icon_obj),
+        cover: returnObject(cover_obj),
+      });
+    }
+    case 'update_page': {
+      const { page_id, properties, icon_obj, cover_obj } = queryOptions;
+      return await notion.pages.update({
+        page_id,
+        properties: returnObject(properties),
+        icon: returnObject(icon_obj),
+        cover: returnObject(cover_obj),
       });
     }
     default:

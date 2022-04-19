@@ -7,4 +7,10 @@ export type QueryOptions = {
   filter: any;
   sorts: any;
   limit: any;
+  title: any;
+  properties: any;
+  children: any;
+  icon_obj: any;
+  cover_obj: any;
+  parent_type: any;
 };
