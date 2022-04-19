@@ -7,9 +7,8 @@ export type SourceOptions = {
 };
 export type QueryOptions = {
   operation: string;
-  data: any;
   key: string;
-  body: object | Array<object>;
+  body: any;
   product_id: string;
   order_id: string;
   customer_id: string;

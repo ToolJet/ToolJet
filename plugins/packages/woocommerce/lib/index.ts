@@ -6,8 +6,7 @@ export default class Woocommerce implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const operation = queryOptions.operation;
     let result = {};
-    const { consumer_key, host, consumer_secret } = sourceOptions;
-    const { product_id, order_id, customer_id, data } = queryOptions;
+    const { product_id, order_id, customer_id, body } = queryOptions;
 
     try {
       switch (operation) {
@@ -24,9 +23,9 @@ export default class Woocommerce implements QueryService {
           break;
         }
         case 'update_customer': {
-          console.log('checker', data);
+          console.log('checker', body);
           const WooCommerce = this.getClient(sourceOptions);
-          result = await WooCommerce.put(`customers/${customer_id}`, this.parseJSON(data))
+          result = await WooCommerce.put(`customers/${customer_id}`, this.parseJSON(body))
             .then((response) => {
               return response.data;
             })
@@ -51,7 +50,7 @@ export default class Woocommerce implements QueryService {
         }
         case 'batch_update_customer': {
           const WooCommerce = this.getClient(sourceOptions);
-          result = await WooCommerce.post('customers/batch', this.parseJSON(data))
+          result = await WooCommerce.post('customers/batch', this.parseJSON(body))
             .then((response) => {
               return response.data;
             })
@@ -63,9 +62,7 @@ export default class Woocommerce implements QueryService {
         }
         case 'create_customer': {
           const WooCommerce = this.getClient(sourceOptions);
-          console.log('data is ***', data);
-
-          const returned = await WooCommerce.post('customers', this.parseJSON(data))
+          const returned = await WooCommerce.post('customers', this.parseJSON(body))
             .then((response) => {
               return response.data;
             })
@@ -95,29 +92,22 @@ export default class Woocommerce implements QueryService {
         // PRODUCTS
 
         case 'list_product': {
-          const WooCommerceRestApi = require('@woocommerce/woocommerce-rest-api').default;
+          const WooCommerce = this.getClient(sourceOptions);
 
-          const WooCommerce = new WooCommerceRestApi({
-            url: host, // Your store URL
-            consumerKey: consumer_key, // Your consumer key
-            consumerSecret: consumer_secret, // Your consumer secret
-            version: 'wc/v3', // WooCommerce WP REST API version
-          });
-          const data = await WooCommerce.get('products')
+          result = await WooCommerce.get('products')
             .then((response) => {
               return response?.data;
             })
             .catch((error) => {
               return error.response.data;
             });
-          result = data;
 
           break;
         }
         case 'update_product': {
           const WooCommerce = this.getClient(sourceOptions);
 
-          result = await WooCommerce.put(`products/${product_id}`, this.parseJSON(data))
+          result = await WooCommerce.put(`products/${product_id}`, this.parseJSON(body))
             .then((response) => {
               return response.data;
             })
@@ -143,7 +133,7 @@ export default class Woocommerce implements QueryService {
         case 'batch_update_product': {
           const WooCommerce = this.getClient(sourceOptions);
 
-          result = await WooCommerce.post('products/batch', this.parseJSON(data))
+          result = await WooCommerce.post('products/batch', this.parseJSON(body))
             .then((response) => {
               return response.data;
             })
@@ -154,7 +144,7 @@ export default class Woocommerce implements QueryService {
         }
         case 'create_product': {
           const WooCommerce = this.getClient(sourceOptions);
-          result = await WooCommerce.post('products', this.parseJSON(data))
+          result = await WooCommerce.post('products', this.parseJSON(body))
             .then((response) => {
               return response.data;
             })
@@ -165,7 +155,7 @@ export default class Woocommerce implements QueryService {
         }
         case 'retreive_product': {
           const WooCommerce = this.getClient(sourceOptions);
-          WooCommerce.get(`products/${product_id}`)
+          result = await WooCommerce.get(`products/${product_id}`)
             .then((response) => {
               return response.data;
             })
@@ -177,27 +167,20 @@ export default class Woocommerce implements QueryService {
         }
         // ORDERS
         case 'list_order': {
-          const WooCommerceRestApi = require('@woocommerce/woocommerce-rest-api').default;
+          const WooCommerce = this.getClient(sourceOptions);
 
-          const WooCommerce = new WooCommerceRestApi({
-            url: host, // Your store URL
-            consumerKey: consumer_key, // Your consumer key
-            consumerSecret: consumer_secret, // Your consumer secret
-            version: 'wc/v3', // WooCommerce WP REST API version
-          });
-          const data = await WooCommerce.get('orders')
+          result = await WooCommerce.get('orders')
             .then((response) => {
               return response?.data;
             })
             .catch((error) => {
               return error.response.data;
             });
-          result = data;
           break;
         }
         case 'update_order': {
           const WooCommerce = this.getClient(sourceOptions);
-          result = await WooCommerce.put(`orders/${order_id}`, this.parseJSON(data))
+          result = await WooCommerce.put(`orders/${order_id}`, this.parseJSON(body))
             .then((response) => {
               return response.data;
             })
@@ -206,7 +189,7 @@ export default class Woocommerce implements QueryService {
             });
           break;
         }
-        case ' delete_order': {
+        case 'delete_order': {
           const WooCommerce = this.getClient(sourceOptions);
 
           result = await WooCommerce.delete(`orders/${order_id}`, {
@@ -223,7 +206,7 @@ export default class Woocommerce implements QueryService {
         case 'batch_update_order': {
           const WooCommerce = this.getClient(sourceOptions);
 
-          result = await WooCommerce.post('orders/batch', this.parseJSON(data))
+          result = await WooCommerce.post('orders/batch', this.parseJSON(body))
             .then((response) => {
               return response.data;
             })
@@ -235,7 +218,7 @@ export default class Woocommerce implements QueryService {
         case 'create_order': {
           const WooCommerce = this.getClient(sourceOptions);
 
-          result = await WooCommerce.post('orders', this.parseJSON(data))
+          result = await WooCommerce.post('orders', this.parseJSON(body))
             .then((response) => {
               return response.data;
             })
@@ -257,6 +240,15 @@ export default class Woocommerce implements QueryService {
           break;
         }
         case 'list_coupon': {
+          const WooCommerce = this.getClient(sourceOptions);
+          result = await WooCommerce.get(`coupons`)
+            .then((response) => {
+              return response.data;
+            })
+            .catch((error) => {
+              return error.response.data;
+            });
+
           break;
         }
       }

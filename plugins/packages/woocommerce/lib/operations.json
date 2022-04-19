@@ -89,39 +89,35 @@
         }
       ]
     },
-    "list_customer": {
-      
-    },
+    "list_customer": {},
     "update_customer": {
       "customer_id": {
         "label": "Customer ID",
         "key": "customer_id",
         "type": "codehinter",
-        "lineNumbers": false,
+
         "description": "Enter customer ID",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": ""
       },
-      "data": {
+      "body": {
         "label": "Data",
-        "key": "data",
+        "key": "body",
         "type": "codehinter",
-        "lineNumbers": false,
+
         "description": "Enter data",
         "height": "150px",
-        "className": "codehinter-plugins",
         "placeholder": ""
       }
-
     },
     "delete_customer": {
       "customer_id": {
         "label": "Customer ID",
         "key": "customer_id",
         "type": "codehinter",
-        "lineNumbers": false,
+
         "description": "Enter customer ID",
         "width": "320px",
         "height": "36px",
@@ -130,26 +126,23 @@
       }
     },
     "batch_update_customer": {
-      "data": {
+      "body": {
         "label": "Data",
-        "key": "data",
+        "key": "body",
         "type": "codehinter",
-        "lineNumbers": false,
+
         "description": "Enter data",
         "height": "150px",
-        "className": "codehinter-plugins",
         "placeholder": ""
       }
     },
     "create_customer": {
-      "data": {
+      "body": {
         "label": "Data",
-        "key": "data",
+        "key": "body",
         "type": "codehinter",
-        "lineNumbers": false,
         "description": "Enter data",
         "height": "150px",
-        "className": "codehinter-plugins",
         "placeholder": ""
       }
     },
@@ -158,164 +151,144 @@
         "label": "Customer ID",
         "key": "customer_id",
         "type": "codehinter",
-        "lineNumbers": false,
+
         "description": "Enter customer ID",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": ""
       }
-    }
-  },
-  "list_order": {
-  },
-  "update_order": {
-    "order_id": {
-      "label": "Order ID",
-      "key": "order_id",
-      "type": "codehinter",
-      "lineNumbers": false,
-      "description": "Enter order ID",
-      "width": "320px",
-      "height": "36px",
-      "className": "codehinter-plugins",
-      "placeholder": ""
     },
-    "data": {
-      "label": "Data",
-      "key": "data",
-      "type": "codehinter",
-      "lineNumbers": false,
-      "description": "Enter data",
-      "height": "150px",
-      "className": "codehinter-plugins",
-      "placeholder": ""
-    }
-  },
-  "delete_order": {
-    "order_id": {
-      "label": "Order ID",
-      "key": "order_id",
-      "type": "codehinter",
-      "lineNumbers": false,
-      "description": "Enter order ID",
-      "width": "320px",
-      "height": "36px",
-      "className": "codehinter-plugins",
-      "placeholder": ""
-    }
-  },
-  "batch_update_order": {
-    "data": {
-      "label": "Data",
-      "key": "data",
-      "type": "codehinter",
-      "lineNumbers": false,
-      "description": "Enter data",
-      "height": "150px",
-      "className": "codehinter-plugins",
-      "placeholder": ""
-    }
-  },
-  "create_order": {
-    "data": {
-      "label": "Data",
-      "key": "data",
-      "type": "codehinter",
-      "lineNumbers": false,
-      "description": "Enter data",
-      "height": "150px",
-      "className": "codehinter-plugins",
-      "placeholder": ""
-    }
-  },
-  "retreive_order": {
-    "order_id": {
-      "label": "Order ID",
-      "key": "order_id",
-      "type": "codehinter",
-      "lineNumbers": false,
-      "description": "Enter order ID",
-      "width": "320px",
-      "height": "36px",
-      "className": "codehinter-plugins",
-      "placeholder": ""
-    }
-  },
-  "list_product": {
-  },
-  "update_product": {
-    "product_id": {
-      "label": "Product ID",
-      "key": "product_id",
-      "type": "codehinter",
-      "lineNumbers": false,
-      "description": "Enter product ID",
-      "width": "320px",
-      "height": "36px",
-      "className": "codehinter-plugins",
-      "placeholder": ""
+    "list_order": {},
+    "update_order": {
+      "order_id": {
+        "label": "Order ID",
+        "key": "order_id",
+        "type": "codehinter",
+        "description": "Enter order ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "body": {
+        "label": "Data",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter data",
+        "height": "150px",
+        "placeholder": ""
+      }
     },
-    "data": {
-      "label": "Data",
-      "key": "data",
-      "type": "codehinter",
-      "lineNumbers": false,
-      "description": "Enter data",
-      "height": "150px",
-      "className": "codehinter-plugins",
-      "placeholder": ""
-    }
-  },
-  "delete_product": {
-    "product_id": {
-      "label": "Product ID",
-      "key": "product_id",
-      "type": "codehinter",
-      "lineNumbers": false,
-      "description": "Enter product ID",
-      "width": "320px",
-      "height": "36px",
-      "className": "codehinter-plugins",
-      "placeholder": ""
-    }
-  },
-  "batch_update_product": {
-    "data": {
-      "label": "Data",
-      "key": "data",
-      "type": "codehinter",
-      "lineNumbers": false,
-      "description": "Enter data",
-      "height": "150px",
-      "className": "codehinter-plugins",
-      "placeholder": ""
-    }
-  },
-  "create_product": {
-    "data": {
-      "label": "Data",
-      "key": "data",
-      "type": "codehinter",
-      "lineNumbers": false,
-      "description": "Enter data",
-      "height": "150px",
-      "className": "codehinter-plugins",
-      "placeholder": ""
-    }
-  },
-  "retreive_product": {
-    "product_id": {
-      "label": "Product ID",
-      "key": "product_id",
-      "type": "codehinter",
-      "lineNumbers": false,
-      "description": "Enter product ID",
-      "width": "320px",
-      "height": "36px",
-      "className": "codehinter-plugins",
-      "placeholder": ""
-    }
+    "delete_order": {
+      "order_id": {
+        "label": "Order ID",
+        "key": "order_id",
+        "type": "codehinter",
+        "description": "Enter order ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      }
+    },
+    "batch_update_order": {
+      "body": {
+        "label": "Data",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter data",
+        "height": "150px",
+        "placeholder": ""
+      }
+    },
+    "create_order": {
+      "body": {
+        "label": "Data",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter data",
+        "height": "150px",
+        "placeholder": ""
+      }
+    },
+    "retreive_order": {
+      "order_id": {
+        "label": "Order ID",
+        "key": "order_id",
+        "type": "codehinter",
+        "description": "Enter order ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      }
+    },
+    "list_product": {},
+    "update_product": {
+      "product_id": {
+        "label": "Product ID",
+        "key": "product_id",
+        "type": "codehinter",
+        "description": "Enter product ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      },
+      "body": {
+        "label": "Data",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter data",
+        "height": "150px",
+        "placeholder": ""
+      }
+    },
+    "delete_product": {
+      "product_id": {
+        "label": "Product ID",
+        "key": "product_id",
+        "type": "codehinter",
+        "description": "Enter product ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      }
+    },
+    "batch_update_product": {
+      "body": {
+        "label": "Data",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter data",
+        "height": "150px",
+        "placeholder": ""
+      }
+    },
+    "create_product": {
+      "body": {
+        "label": "Data",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter data",
+        "height": "150px",
+        "placeholder": ""
+      }
+    },
+    "retreive_product": {
+      "product_id": {
+        "label": "Product ID",
+        "key": "product_id",
+        "type": "codehinter",
+        "description": "Enter product ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": ""
+      }
+    },
+    "list_coupon": {}
   }
 }
-
