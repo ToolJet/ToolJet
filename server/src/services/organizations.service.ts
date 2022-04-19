@@ -185,6 +185,10 @@ export class OrganizationsService {
       })
       .getOne();
 
+    if (!(result?.ssoConfigs?.length > 0)) {
+      return;
+    }
+
     for (const sso of result?.ssoConfigs) {
       await this.decryptSecret(sso?.configs);
     }

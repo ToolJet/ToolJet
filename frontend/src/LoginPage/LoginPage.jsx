@@ -31,9 +31,6 @@ class LoginPage extends React.Component {
     if (organizationId || this.single_organization) {
       authenticationService.getOrganizationConfigs(organizationId).then(
         (configs) => {
-          if (!configs) {
-            return this.props.history.push('/');
-          }
           this.setState({ isGettingConfigs: false, configs });
         },
         () => this.props.history.push({ pathname: '/', state: { errorMessage: 'Error while login, please try again' } })
@@ -135,6 +132,7 @@ class LoginPage extends React.Component {
               this.showLoading()
             ) : (
               <div className="card-body">
+                {!configs && <div className="text-center">No login methods enabled for this organization</div>}
                 {configs?.form?.enabled && (
                   <div>
                     <h2 className="card-title text-center mb-4" data-cy="login-page-header">
