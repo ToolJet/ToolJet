@@ -262,8 +262,14 @@ export default class Woocommerce implements QueryService {
       consumerSecret: consumer_secret, // Your consumer secret
       version: 'wc/v3', // WooCommerce WP REST API version
     });
-
-    if (!WooCommerce) {
+    const client = await WooCommerce.get('system_status')
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        return error.response.data;
+      });
+    if (client?.data?.status == '401') {
       throw new Error('Invalid credentials');
     }
     return {
