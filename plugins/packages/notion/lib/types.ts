@@ -16,5 +16,6 @@ export type QueryOptions = {
   archived: boolean;
   property_id: string;
   block_id: string;
+  user_id: string;
   start_cursor: string;
 };

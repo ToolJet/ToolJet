@@ -24,6 +24,10 @@
         {
           "value": "block",
           "name": "Block"
+        },
+        {
+          "value": "user",
+          "name": "User"
         }
       ]
     },
@@ -640,6 +644,59 @@
           "width": "320px",
           "className": "codehinter-plugins",
           "description": "Enter block id here"
+        }
+      }
+    },
+    "user":{
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "className":"col-md-4",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_user",
+            "name": "Retrieve a user"
+          },
+          {
+            "value": "list_users",
+            "name": "List all users"
+          }
+        ]
+      },
+      "get_user":{
+        "user_id":{
+          "label": "User ID",
+          "key": "user_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter user id here"
+        }
+      },
+      "list_users":{
+        "limit":{
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter limit here"
+        },
+        "start_cursor":{
+          "label": "Start cursor",
+          "key": "start_cursor",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter cursor id"
         }
       }
     }

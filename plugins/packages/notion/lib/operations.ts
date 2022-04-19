@@ -152,3 +152,23 @@ export async function blockOperations(notion: Client, queryOptions: QueryOptions
       throw Error('Invalid operation');
   }
 }
+
+export async function userOperations(notion: Client, queryOptions: QueryOptions, operation: string) {
+  switch (operation) {
+    case 'get_user': {
+      const { user_id } = queryOptions;
+      return await notion.users.retrieve({
+        user_id,
+      });
+    }
+    case 'list_users': {
+      const { limit, start_cursor } = queryOptions;
+      return await notion.users.list({
+        start_cursor: start_cursor !== '' || start_cursor ? start_cursor : undefined,
+        page_size: returnNumber(limit),
+      });
+    }
+    default:
+      throw Error('Invalid operation');
+  }
+}
