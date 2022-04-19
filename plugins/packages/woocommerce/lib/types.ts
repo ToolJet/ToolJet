@@ -7,7 +7,7 @@ export type SourceOptions = {
 };
 export type QueryOptions = {
   operation: string;
-  data: string | object;
+  data: any;
   key: string;
   body: object | Array<object>;
   product_id: string;

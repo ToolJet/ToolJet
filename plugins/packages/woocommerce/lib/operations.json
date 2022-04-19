@@ -136,8 +136,7 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter data",
-        "width": "320px",
-        "height": "36px",
+        "height": "150px",
         "className": "codehinter-plugins",
         "placeholder": ""
       }
@@ -213,8 +212,7 @@
       "type": "codehinter",
       "lineNumbers": false,
       "description": "Enter data",
-      "width": "320px",
-      "height": "36px",
+      "height": "150px",
       "className": "codehinter-plugins",
       "placeholder": ""
     }
@@ -289,8 +287,7 @@
       "type": "codehinter",
       "lineNumbers": false,
       "description": "Enter data",
-      "width": "320px",
-      "height": "36px",
+      "height": "150px",
       "className": "codehinter-plugins",
       "placeholder": ""
     }
@@ -302,8 +299,7 @@
       "type": "codehinter",
       "lineNumbers": false,
       "description": "Enter data",
-      "width": "320px",
-      "height": "36px",
+      "height": "150px",
       "className": "codehinter-plugins",
       "placeholder": ""
     }

@@ -24,8 +24,9 @@ export default class Woocommerce implements QueryService {
           break;
         }
         case 'update_customer': {
+          console.log('checker', data);
           const WooCommerce = this.getClient(sourceOptions);
-          result = await WooCommerce.put(`customers/${customer_id}`, data)
+          result = await WooCommerce.put(`customers/${customer_id}`, this.parseJSON(data))
             .then((response) => {
               return response.data;
             })
@@ -50,7 +51,7 @@ export default class Woocommerce implements QueryService {
         }
         case 'batch_update_customer': {
           const WooCommerce = this.getClient(sourceOptions);
-          result = await WooCommerce.post('customers/batch', data)
+          result = await WooCommerce.post('customers/batch', this.parseJSON(data))
             .then((response) => {
               return response.data;
             })
@@ -64,36 +65,7 @@ export default class Woocommerce implements QueryService {
           const WooCommerce = this.getClient(sourceOptions);
           console.log('data is ***', data);
 
-          const returned = await WooCommerce.post('customers', {
-            email: 'john.doe@example.com',
-            first_name: 'John',
-            last_name: 'Doe',
-            username: 'john.doe',
-            billing: {
-              first_name: 'John',
-              last_name: 'Doe',
-              company: '',
-              address_1: '969 Market',
-              address_2: '',
-              city: 'San Francisco',
-              state: 'CA',
-              postcode: '94103',
-              country: 'US',
-              email: 'john.doe@example.com',
-              phone: '(555) 555-5555',
-            },
-            shipping: {
-              first_name: 'John',
-              last_name: 'Doe',
-              company: '',
-              address_1: '969 Market',
-              address_2: '',
-              city: 'San Francisco',
-              state: 'CA',
-              postcode: '94103',
-              country: 'US',
-            },
-          })
+          const returned = await WooCommerce.post('customers', this.parseJSON(data))
             .then((response) => {
               return response.data;
             })
@@ -145,7 +117,7 @@ export default class Woocommerce implements QueryService {
         case 'update_product': {
           const WooCommerce = this.getClient(sourceOptions);
 
-          WooCommerce.put(`products/${product_id}`, data)
+          result = await WooCommerce.put(`products/${product_id}`, this.parseJSON(data))
             .then((response) => {
               return response.data;
             })
@@ -157,7 +129,7 @@ export default class Woocommerce implements QueryService {
         case 'delete_product': {
           const WooCommerce = this.getClient(sourceOptions);
 
-          WooCommerce.delete(`products/${product_id}`, {
+          result = await WooCommerce.delete(`products/${product_id}`, {
             force: true,
           })
             .then((response) => {
@@ -171,7 +143,7 @@ export default class Woocommerce implements QueryService {
         case 'batch_update_product': {
           const WooCommerce = this.getClient(sourceOptions);
 
-          WooCommerce.post('products/batch', data)
+          result = await WooCommerce.post('products/batch', this.parseJSON(data))
             .then((response) => {
               return response.data;
             })
@@ -182,7 +154,7 @@ export default class Woocommerce implements QueryService {
         }
         case 'create_product': {
           const WooCommerce = this.getClient(sourceOptions);
-          WooCommerce.post('products', data)
+          result = await WooCommerce.post('products', this.parseJSON(data))
             .then((response) => {
               return response.data;
             })
@@ -225,7 +197,7 @@ export default class Woocommerce implements QueryService {
         }
         case 'update_order': {
           const WooCommerce = this.getClient(sourceOptions);
-          WooCommerce.put('orders/727', data)
+          result = await WooCommerce.put(`orders/${order_id}`, this.parseJSON(data))
             .then((response) => {
               return response.data;
             })
@@ -237,7 +209,7 @@ export default class Woocommerce implements QueryService {
         case ' delete_order': {
           const WooCommerce = this.getClient(sourceOptions);
 
-          WooCommerce.delete(`orders/${order_id}`, {
+          result = await WooCommerce.delete(`orders/${order_id}`, {
             force: true,
           })
             .then((response) => {
@@ -251,7 +223,7 @@ export default class Woocommerce implements QueryService {
         case 'batch_update_order': {
           const WooCommerce = this.getClient(sourceOptions);
 
-          WooCommerce.post('orders/batch', data)
+          result = await WooCommerce.post('orders/batch', this.parseJSON(data))
             .then((response) => {
               return response.data;
             })
@@ -263,7 +235,7 @@ export default class Woocommerce implements QueryService {
         case 'create_order': {
           const WooCommerce = this.getClient(sourceOptions);
 
-          WooCommerce.post('orders', data)
+          result = await WooCommerce.post('orders', this.parseJSON(data))
             .then((response) => {
               return response.data;
             })
@@ -274,7 +246,7 @@ export default class Woocommerce implements QueryService {
         }
         case 'retreive_order': {
           const WooCommerce = this.getClient(sourceOptions);
-          WooCommerce.get(`orders/${order_id}`)
+          result = await WooCommerce.get(`orders/${order_id}`)
             .then((response) => {
               return response.data;
             })
