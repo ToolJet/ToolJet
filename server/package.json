@@ -71,7 +71,8 @@
     "tsconfig-paths": "^3.10.1",
     "typeorm": "^0.2.38",
     "typescript": "^4.3.5",
-    "ws": "^7.5.5"
+    "ws": "^7.5.5",
+    "y-websocket": "^1.4.0"
   },
   "devDependencies": {
     "@golevelup/ts-jest": "^0.3.2",

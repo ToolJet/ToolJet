@@ -524,6 +524,7 @@ button {
       background: transparent;
     }
     .query-pane {
+      z-index: 1;
       height: 350px;
       position: fixed;
       left: 76px; //sidebar is 76px
@@ -4699,6 +4700,11 @@ div#driver-page-overlay {
   // top: -10px !important;
   // left: 100px !important;
   // background-color: #0565ff;
+}
+
+.realtime-avatars {
+  position: absolute;
+  left: 35%;
 }
 .widget-style-field-header{
   font-family: 'Inter';
