@@ -49,7 +49,8 @@
     "@tooljet-plugins/snowflake": "file:packages/snowflake",
     "@tooljet-plugins/stripe": "file:packages/stripe",
     "@tooljet-plugins/twilio": "file:packages/twilio",
-    "@tooljet-plugins/typesense": "file:packages/typesense"
+    "@tooljet-plugins/typesense": "file:packages/typesense",
+    "@tooljet-plugins/woocommerce": "file:packages/woocommerce"
   },
   "devDependencies": {
     "@types/jest": "^27.4.1",
