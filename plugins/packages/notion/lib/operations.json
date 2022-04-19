@@ -104,6 +104,16 @@
           "width": "320px",
           "className": "codehinter-plugins",
           "description": "Enter limit here"
+        },
+        "start_cursor":{
+          "label": "Start cursor",
+          "key": "start_cursor",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter cursor id"
         }
       },
       "create_database":{
@@ -441,6 +451,16 @@
           "width": "320px",
           "className": "codehinter-plugins",
           "description": "Enter limit here"
+        },
+        "start_cursor":{
+          "label": "Start cursor",
+          "key": "start_cursor",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter cursor id"
         }
       },
       "archive_page":{

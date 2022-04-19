@@ -25,12 +25,13 @@ export async function databaseOperations(notion: Client, queryOptions: QueryOpti
       });
     }
     case 'query_database': {
-      const { database_id, filter, sorts, limit } = queryOptions;
+      const { database_id, filter, sorts, limit, start_cursor } = queryOptions;
       return await notion.databases.query({
         database_id,
         filter: returnObject(filter),
         sorts: returnObject(sorts),
         page_size: returnNumber(limit),
+        start_cursor: start_cursor !== '' || start_cursor ? start_cursor : undefined,
       });
     }
     case 'create_database': {
@@ -97,11 +98,12 @@ export async function pageOperations(notion: Client, queryOptions: QueryOptions,
       });
     }
     case 'get_page_property': {
-      const { page_id, property_id, limit } = queryOptions;
+      const { page_id, property_id, limit, start_cursor } = queryOptions;
       return await notion.pages.properties.retrieve({
         page_id,
         property_id,
         page_size: returnNumber(limit),
+        start_cursor: start_cursor !== '' || start_cursor ? start_cursor : undefined,
       });
     }
     default:
