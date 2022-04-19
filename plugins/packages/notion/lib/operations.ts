@@ -89,6 +89,21 @@ export async function pageOperations(notion: Client, queryOptions: QueryOptions,
         cover: returnObject(cover_obj),
       });
     }
+    case 'archive_page': {
+      const { page_id, archived } = queryOptions;
+      return await notion.pages.update({
+        page_id,
+        archived,
+      });
+    }
+    case 'get_page_property': {
+      const { page_id, property_id, limit } = queryOptions;
+      return await notion.pages.properties.retrieve({
+        page_id,
+        property_id,
+        page_size: returnNumber(limit),
+      });
+    }
     default:
       throw Error('Invalid operation');
   }

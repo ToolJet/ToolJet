@@ -13,4 +13,6 @@ export type QueryOptions = {
   icon_obj: any;
   cover_obj: any;
   parent_type: any;
+  archived: boolean;
+  property_id: string;
 };
