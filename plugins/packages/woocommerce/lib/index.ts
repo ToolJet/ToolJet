@@ -3,7 +3,7 @@ import { SourceOptions, QueryOptions } from './types';
 const JSON5 = require('json5');
 
 export default class Woocommerce implements QueryService {
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     const operation = queryOptions.operation;
     let result = {};
     const { product_id, order_id, customer_id, body } = queryOptions;
