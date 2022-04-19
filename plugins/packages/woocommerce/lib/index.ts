@@ -213,11 +213,20 @@ export default class Woocommerce implements QueryService {
             .catch((error) => {
               return error.response.data;
             });
-
           break;
         }
         case 'list_coupon': {
           result = await WooCommerce.get(`coupons`)
+            .then((response) => {
+              return response.data;
+            })
+            .catch((error) => {
+              return error.response.data;
+            });
+          break;
+        }
+        case 'create_coupon': {
+          result = await WooCommerce.post('coupons', this.parseJSON(body))
             .then((response) => {
               return response.data;
             })

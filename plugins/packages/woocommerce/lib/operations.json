@@ -86,6 +86,10 @@
         {
           "value": "list_coupon",
           "name": "List all coupons"
+        },
+        {
+          "value": "create_coupon",
+          "name": "Create a coupon"
         }
       ]
     },
@@ -297,6 +301,16 @@
         "lineNumbers": false
       }
     },
-    "list_coupon": {}
+    "list_coupon": {},
+    "create_coupon": {
+      "body": {
+        "label": "Data",
+        "key": "body",
+        "type": "codehinter",
+        "description": "Enter data",
+        "height": "150px",
+        "placeholder": ""
+      }
+    }
   }
 }
