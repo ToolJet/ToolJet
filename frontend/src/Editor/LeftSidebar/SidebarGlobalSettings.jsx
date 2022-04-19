@@ -27,7 +27,11 @@ export const LeftSidebarGlobalSettings = ({
     <>
       <Confirm
         show={showConfirmation}
-        message={`Do you want to ${is_maintenance_on ? 'disable' : 'enable'} maintenance ?`}
+        message={
+          is_maintenance_on
+            ? 'Users will now be able to launch the released version of this app, do you wish to continue?'
+            : 'Users will not be able to launch the app until maintenance mode is turned off, do you wish to continue?'
+        }
         onConfirm={() => toggleAppMaintenance()}
         onCancel={() => setConfirmationShow(false)}
         darkMode={darkMode}

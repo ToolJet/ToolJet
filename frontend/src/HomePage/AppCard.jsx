@@ -127,7 +127,7 @@ export default function AppCard({
                       }
                     }}
                   >
-                    Launch
+                    {app?.is_maintenance_on ? 'Maintenance' : 'Launch'}
                   </button>
                 </span>
               </ToolTip>

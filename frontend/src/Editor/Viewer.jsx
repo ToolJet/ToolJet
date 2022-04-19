@@ -191,7 +191,7 @@ class Viewer extends React.Component {
       return (
         <div className="maintenance_container">
           <div className="card">
-            <div className="card-body">
+            <div className="card-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <h3>Sorry!. This app is under maintenance</h3>
             </div>
           </div>
