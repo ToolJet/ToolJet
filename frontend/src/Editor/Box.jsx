@@ -138,17 +138,16 @@ export const Box = function Box({
     const componentName = getComponentName(currentState, id);
     const errorLog = Object.fromEntries(
       [...propertyErrors, ...styleErrors].map((error) => [
-        componentName,
+        `${componentName} - ${error.property}`,
         {
           type: 'component',
           kind: 'component',
-          data: { message: `${error.property}: ${error.message}`, status: true },
+          data: { message: `${error.message}`, status: true },
           resolvedProperties: properties,
           effectiveProperties: resolvedProperties,
         },
       ])
     );
-    if (!_.isEmpty(errorLog)) console.log({ errorLog });
     sideBarDebugger?.error(errorLog);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ propertyErrors, styleErrors })]);

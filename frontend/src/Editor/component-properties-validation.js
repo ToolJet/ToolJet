@@ -1,4 +1,4 @@
-const { object, number, string, array, any, optional, assert } = require('superstruct');
+const { object, number, string, array, any, optional, assert, boolean } = require('superstruct');
 import _ from 'lodash';
 
 const generateSchemaFromValidationDefinition = (definition) => {
@@ -11,6 +11,10 @@ const generateSchemaFromValidationDefinition = (definition) => {
     }
     case 'number': {
       schema = number();
+      break;
+    }
+    case 'boolean': {
+      schema = boolean();
       break;
     }
     case 'array': {

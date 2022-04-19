@@ -196,7 +196,7 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
         {errorProps.type != 'component' ? (
           <span className="text-red">{`${_.startCase(errorProps.type)} failed: ${errorProps.message}`} .</span>
         ) : (
-          <span className="text-red">{`Invalid properties detected: ${errorProps.message}`} .</span>
+          <span className="text-red">{`Invalid property detected: ${errorProps.message}`} .</span>
         )}
         <br />
         <small className="text-muted px-1">{moment(errorProps.timestamp).fromNow()}</small>

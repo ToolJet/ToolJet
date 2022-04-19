@@ -128,7 +128,11 @@ export const componentTypes = [
         displayName: 'Button Text',
         validation: { type: 'string', default: 'Button', required: true },
       },
-      loadingState: { type: 'toggle', displayName: 'Loading State' },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading State',
+        validation: { default: false, required: true, type: 'boolean' },
+      },
     },
     events: {
       onClick: { displayName: 'On click' },
