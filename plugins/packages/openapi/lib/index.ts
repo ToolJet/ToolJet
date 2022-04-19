@@ -1,25 +1,13 @@
-import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions } from './types';
+import { QueryError, QueryService } from '@tooljet-plugins/common';
+import { SourceOptions, QueryOptions, RestAPIResult } from './types';
 import got, { HTTPError } from 'got';
 import urrl from 'url';
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
 const { CookieJar } = require('tough-cookie');
 
-interface RestAPIResult extends QueryResult {
-  request?: Array<object> | object;
-  response?: Array<object> | object;
-  responseHeaders?: Array<object> | object;
-}
-
-function sanitizeCustomParams(customArray: any) {
-  const params = Object.fromEntries(customArray ?? []);
-  Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
-  return params;
-}
-
 export default class Openapi implements QueryService {
-  resolvePathParams(params: any, path: string) {
+  private resolvePathParams(params: any, path: string) {
     let newString = path;
     Object.entries(params).map(([key, value]) => {
       newString = newString.replace(`{${key}}`, value as any);
@@ -27,22 +15,56 @@ export default class Openapi implements QueryService {
     return newString;
   }
 
-  sanitizeObject(params: any) {
+  private sanitizeObject(params: any) {
     Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
     return params;
   }
 
+  private sanitizeCustomParams(customArray: any) {
+    const params = Object.fromEntries(customArray ?? []);
+    Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
+    return params;
+  }
+
+  private resolveApiKeyParams = (apiKeys, auth_key: string, header: any, url: URL, cookieJar: any) => {
+    const processKey = (type: string, name: string, value: string) => {
+      if (type === 'header') {
+        header[name] = value;
+      } else if (type === 'query') {
+        url.searchParams.append(name, value);
+      } else if (type === 'cookie') {
+        cookieJar.setCookie(`${name}=${value}`, url);
+      }
+    };
+    apiKeys.map((key: any) => {
+      if (key.parentKey && key.parentKey === auth_key) {
+        //process multiple keys
+        key.fields.map((field: any) => {
+          processKey(field.in, field.name, field.value);
+        });
+      } else {
+        if (auth_key === key.key) {
+          processKey(key.in, key.name, key.value);
+          return;
+        }
+      }
+    });
+
+    return { header, url, cookieJar };
+  };
+
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<RestAPIResult> {
     const { host, path, operation, params } = queryOptions;
-    const { header, query, request } = params;
+    const { query, request } = params;
+    let header = params.header;
     const pathParams = params.path;
     const authType = sourceOptions['auth_type'];
     const requiresOauth = authType === 'oauth2';
-    const cookieJar = new CookieJar();
+    let cookieJar = new CookieJar();
 
-    const url = new URL(host + this.resolvePathParams(pathParams, path));
+    let url = new URL(host + this.resolvePathParams(pathParams, path));
     const json = operation !== 'get' ? this.sanitizeObject(request) : undefined;
-    const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
+    const customQueryParams = this.sanitizeCustomParams(sourceOptions['custom_query_params']);
 
     let result = {};
     let requestObject = {};
@@ -53,35 +75,11 @@ export default class Openapi implements QueryService {
       header['Authorization'] = `Bearer ${sourceOptions.bearer_token}`;
     }
 
-    const resolveApiKeyParams = () => {
-      const apiKeys = sourceOptions.api_keys;
-      const auth_key = sourceOptions.auth_key;
-      const processKey = (type: string, name: string, value: string) => {
-        if (type === 'header') {
-          header[name] = value;
-        } else if (type === 'query') {
-          url.searchParams.append(name, value);
-        } else if (type === 'cookie') {
-          cookieJar.setCookie(`${name}=${value}`, url);
-        }
-      };
-      apiKeys.map((key: any) => {
-        if (key.parentKey && key.parentKey === auth_key) {
-          //process multiple keys
-          key.fields.map((field: any) => {
-            processKey(field.in, field.name, field.value);
-          });
-        } else {
-          if (auth_key === key.key) {
-            processKey(key.in, key.name, key.value);
-            return;
-          }
-        }
-      });
-    };
-
     if (authType === 'apiKey') {
-      resolveApiKeyParams();
+      const resolved = this.resolveApiKeyParams(sourceOptions.api_keys, sourceOptions.auth_key, header, url, cookieJar);
+      header = resolved.header;
+      url = resolved.url;
+      cookieJar = resolved.cookieJar;
     }
 
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
@@ -165,11 +163,11 @@ export default class Openapi implements QueryService {
   }
 
   /* This function fetches the access token from the token url set in REST API (oauth) datasource */
-  async fetchOAuthToken(sourceOptions: any, code: string): Promise<any> {
+  private async fetchOAuthToken(sourceOptions: any, code: string): Promise<any> {
     const tooljetHost = process.env.TOOLJET_HOST;
     const accessTokenUrl = sourceOptions['access_token_url'];
 
-    const customParams = sanitizeCustomParams(sourceOptions['custom_auth_params']);
+    const customParams = this.sanitizeCustomParams(sourceOptions['custom_auth_params']);
 
     const response = await got(accessTokenUrl, {
       method: 'post',
@@ -188,7 +186,7 @@ export default class Openapi implements QueryService {
     return { access_token: result['access_token'] };
   }
 
-  fetchHttpsCertsForCustomCA() {
+  private fetchHttpsCertsForCustomCA() {
     if (!process.env.NODE_EXTRA_CA_CERTS) return {};
 
     return {
@@ -198,13 +196,13 @@ export default class Openapi implements QueryService {
     };
   }
 
-  checkIfContentTypeIsURLenc(headers: []) {
+  private checkIfContentTypeIsURLenc(headers: []) {
     const objectHeaders = Object.fromEntries(headers);
     const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
     return contentType === 'application/x-www-form-urlencoded';
   }
 
-  async refreshToken(sourceOptions, error) {
+  private async refreshToken(sourceOptions, error) {
     const refreshToken = sourceOptions['tokenData']['refresh_token'];
     if (!refreshToken) {
       throw new QueryError('Refresh token not found', error.response, {});
