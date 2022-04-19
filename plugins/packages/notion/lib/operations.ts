@@ -108,3 +108,45 @@ export async function pageOperations(notion: Client, queryOptions: QueryOptions,
       throw Error('Invalid operation');
   }
 }
+
+export async function blockOperations(notion: Client, queryOptions: QueryOptions, operation: string) {
+  switch (operation) {
+    case 'get_block': {
+      const { block_id } = queryOptions;
+      return await notion.blocks.retrieve({
+        block_id,
+      });
+    }
+    case 'update_block': {
+      const { block_id, properties, archived } = queryOptions;
+      return await notion.blocks.update({
+        block_id,
+        archived: archived ?? undefined,
+        ...returnObject(properties),
+      });
+    }
+    case 'get_block_children': {
+      const { block_id, limit, start_cursor } = queryOptions;
+      return await notion.blocks.children.list({
+        block_id,
+        start_cursor: start_cursor !== '' || start_cursor ? start_cursor : undefined,
+        page_size: returnNumber(limit),
+      });
+    }
+    case 'append_block_children': {
+      const { block_id, children } = queryOptions;
+      return await notion.blocks.children.append({
+        block_id,
+        children: returnObject(children),
+      });
+    }
+    case 'delete_block': {
+      const { block_id } = queryOptions;
+      return await notion.blocks.delete({
+        block_id,
+      });
+    }
+    default:
+      throw Error('Invalid operation');
+  }
+}

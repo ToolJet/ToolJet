@@ -472,6 +472,156 @@
           ]
         }
       }
+    },
+    "block":{
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "className":"col-md-4",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_block",
+            "name": "Retrieve a block"
+          },
+          {
+            "value": "append_block_children",
+            "name": "Append block children"
+          },
+          {
+            "value": "get_block_children",
+            "name": "Retrieve block children"
+          },
+          {
+            "value": "update_block",
+            "name": "Update a block"
+          },
+          {
+            "value": "delete_block",
+            "name": "Delete a block"
+          }
+        ]
+      },
+      "get_block":{
+        "block_id":{
+          "label": "Block ID",
+          "key": "block_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter block id here"
+        }
+      },
+      "update_block":{
+        "block_id":{
+          "label": "Block ID",
+          "key": "block_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter block id here"
+        },
+        "properties":{
+          "label": "Properties",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+          "description": "Enter property object",
+          "height": "200px"
+        },
+        "archived": {
+          "label": "Archive",
+          "key": "archived",
+          "className": "col-4",
+          "type": "dropdown",
+          "description": "Single select dropdown for archive",
+          "list": [
+            {
+              "value": null,
+              "name": "None"
+            },
+            {
+              "value": true,
+              "name": "Archive"
+            },
+            {
+              "value": false,
+              "name": "Un archive"
+            }
+          ]
+        }
+      },
+      "get_block_children":{
+        "block_id":{
+          "label": "Block ID",
+          "key": "block_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter block id here"
+        },
+        "limit":{
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter limit here"
+        },
+        "start_cursor":{
+          "label": "Start cursor",
+          "key": "start_cursor",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter cursor id"
+        }
+      },
+      "append_block_children":{
+        "block_id":{
+          "label": "Block ID",
+          "key": "block_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter block id here"
+        },
+        "children":{
+          "label": "Children (Blocks)",
+          "key": "children",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+          "description": "Enter blocks array",
+          "height": "200px"
+        }
+      },
+      "delete_block":{
+        "block_id":{
+          "label": "Block ID",
+          "key": "block_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter block id here"
+        }
+      }
     }
   }
 }

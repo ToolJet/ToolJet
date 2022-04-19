@@ -15,4 +15,6 @@ export type QueryOptions = {
   parent_type: any;
   archived: boolean;
   property_id: string;
+  block_id: string;
+  start_cursor: string;
 };

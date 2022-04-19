@@ -1,13 +1,13 @@
 import { QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { Client } from '@notionhq/client';
-import { databaseOperations, pageOperations } from './operations';
+import { blockOperations, databaseOperations, pageOperations } from './operations';
 
 export default class Notion implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const notionClient = await this.getConnection(sourceOptions);
     const { resource, operation } = queryOptions;
-    let result;
+    let result: any;
 
     switch (resource) {
       case 'database':
@@ -15,6 +15,9 @@ export default class Notion implements QueryService {
         break;
       case 'page':
         result = await pageOperations(notionClient, queryOptions, operation);
+        break;
+      case 'block':
+        result = await blockOperations(notionClient, queryOptions, operation);
         break;
     }
 
