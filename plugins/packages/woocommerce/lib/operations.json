@@ -203,7 +203,7 @@
         "type": "codehinter",
         "description": "Enter data",
         "height": "150px",
-        "placeholder": "",
+        "placeholder": ""
       }
     },
     "create_order": {
