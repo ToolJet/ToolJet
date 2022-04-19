@@ -12,7 +12,10 @@ import { BaseUrl } from './BaseUrl';
 class Restapi extends React.Component {
   constructor(props) {
     super(props);
-    const options = defaults({ ...props.options }, { headers: [], url_params: [], body: [], bodyToggle: false });
+    const options = defaults(
+      { ...props.options },
+      { headers: [], url_params: [], body: [], json_body: null, body_toggle: false }
+    );
     this.state = {
       options,
     };
@@ -39,12 +42,8 @@ class Restapi extends React.Component {
   }
 
   onBodyToggleChanged = (value) => {
-    this.setState({
-      bodyToggle: value,
-    });
-
     const { options } = this.state;
-    options['bodyToggle'] = value;
+    options['body_toggle'] = value;
     this.setState({ options }, () => {
       this.props.optionsChanged(options);
     });
@@ -78,9 +77,9 @@ class Restapi extends React.Component {
     });
   };
 
-  handleJsonBodyChanged = (body) => {
+  handleJsonBodyChanged = (jsonBody) => {
     const { options } = this.state;
-    options['body'] = body;
+    options['json_body'] = jsonBody;
 
     this.setState({ options }, () => {
       this.props.optionsChanged(options);
@@ -210,7 +209,7 @@ class Restapi extends React.Component {
             addNewKeyValuePair={this.addNewKeyValuePair}
             darkMode={this.props.darkMode}
             componentName={queryName}
-            bodyToggle={this.state.options.bodyToggle}
+            bodyToggle={this.state.options.body_toggle}
             setBodyToggle={this.onBodyToggleChanged}
           />
         </div>

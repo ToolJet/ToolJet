@@ -1,21 +1,12 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
-import { isJson } from '@/_helpers/utils';
-import JSON5 from 'json5';
-
-const sanitizeObj = (obj) => {
-  Object.keys(obj).forEach((key) => (obj[key] === '' ? delete obj[key] : {}));
-  if (Object.keys(obj).length === 0) {
-    return;
-  }
-  return obj;
-};
 
 export default ({
   options = [],
   currentState,
   theme,
   onChange,
+  jsonBody,
   onJsonBodyChange,
   componentName,
   removeKeyValuePair,
@@ -24,23 +15,6 @@ export default ({
   bodyToggle,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const initialJsonBody = options.length > 0 ? JSON.stringify(Object.fromEntries(options)) : '';
-  const [jsonBody, setJsonBody] = React.useState(initialJsonBody);
-
-  useEffect(() => {
-    const optionsObj = sanitizeObj(Object.fromEntries(options));
-    setJsonBody(JSON.stringify(optionsObj));
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bodyToggle]);
-
-  const computeJsonValue = (value) => {
-    setJsonBody(value);
-    if (isJson(value) || typeof value == 'object') {
-      const obj = typeof value == 'object' ? value : JSON5.parse(value);
-      onJsonBodyChange(Object.entries(obj));
-    }
-  };
 
   return (
     <>
@@ -113,7 +87,7 @@ export default ({
               height={'300px'}
               className="query-hinter"
               ignoreBraces={false}
-              onChange={(value) => computeJsonValue(value)}
+              onChange={(value) => onJsonBodyChange(value)}
               componentName={`${componentName}/${tabType}`}
             />
           </div>

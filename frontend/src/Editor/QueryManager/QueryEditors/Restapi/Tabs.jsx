@@ -65,6 +65,7 @@ function ControlledTabs({
                 onChange={onChange}
                 onJsonBodyChange={onJsonBodyChange}
                 options={options['body']}
+                jsonBody={options['json_body']}
                 currentState={currentState}
                 theme={theme}
                 bodyToggle={bodyToggle}

@@ -4,6 +4,7 @@ import TabContent from './TabContent';
 
 export default ({
   options = [],
+  jsonBody,
   currentState,
   theme,
   removeKeyValuePair,
@@ -33,6 +34,7 @@ export default ({
         onJsonBodyChange={onJsonBodyChange}
         componentName={componentName}
         tabType={'body'}
+        jsonBody={jsonBody}
         paramType={'body'}
         bodyToggle={bodyToggle}
       />
