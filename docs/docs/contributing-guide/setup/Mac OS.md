@@ -3,7 +3,7 @@ sidebar_position: 1
 ---
 
 # Mac OS
-Follow these steps to setup and run ToolJet on macOS for development purposes. Open terminal and run the commands below. We recommend reading our guide on [architecture](/docs/deployment/architecture) of ToolJet before proceeding.
+Follow these steps to setup and run ToolJet on macOS for development purposes. Open terminal and run the commands below. We recommend reading our guide on [architecture](/docs/setup/architecture) of ToolJet before proceeding.
 
 ## Setting up
 
@@ -39,7 +39,7 @@ Follow these steps to setup and run ToolJet on macOS for development purposes. O
 
 2. Set up environment variables
 
-    Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/deployment/env-vars)
+    Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/setup/env-vars)
     ```bash
     cp .env.example .env
     ```

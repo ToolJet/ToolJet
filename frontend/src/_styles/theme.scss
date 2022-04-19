@@ -4714,3 +4714,6 @@ div#driver-page-overlay {
   line-height: 20px;
   color: #61656C;
 }
+.list-timeline:not(.list-timeline-simple) .list-timeline-time {
+  top: auto;
+}
