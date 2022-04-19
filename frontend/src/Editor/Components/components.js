@@ -2021,4 +2021,43 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'Html',
+    displayName: 'HTML Viewer',
+    description: 'HTML Viewer',
+    component: 'Html',
+    defaultSize: {
+      width: 10,
+      height: 310,
+    },
+    properties: {
+      rawHtml: { type: 'code', displayName: 'Raw HTML' },
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      value: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        rawHtml: {
+          value: '',
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
 ];
