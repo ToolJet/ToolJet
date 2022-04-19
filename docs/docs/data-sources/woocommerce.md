@@ -47,6 +47,7 @@ retreive order
 **Coupon**
 
 list coupon
+create coupon
 
 :::info
 NOTE: For more info visit https://woocommerce.github.io/woocommerce-rest-api-docs/?javascript.
