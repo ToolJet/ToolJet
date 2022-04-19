@@ -524,6 +524,7 @@ button {
       background: transparent;
     }
     .query-pane {
+      z-index: 1;
       height: 350px;
       position: fixed;
       left: 76px; //sidebar is 76px
@@ -1135,12 +1136,14 @@ button {
 }
 .fx-common{
   position: absolute;
-  top: -45px;
+  top: -37.5px;
   right: 0px;
 }
 
 .fx-button {
   font-weight: 400;
+  font-size: 13px;
+  color: #61656C;
 }
 
 .fx-button:hover,
@@ -1225,6 +1228,7 @@ button {
     }
   }
 }
+
 
 .datasource-picker,
 .stripe-operation-options {
@@ -3980,7 +3984,7 @@ input[type="text"] {
 
 .app-version-menu-sm {
   height: 30px;
-  display: inline-block;
+  display: flex;
   font-size: 12px;
 }
 
@@ -4693,7 +4697,7 @@ div#driver-page-overlay {
   --tblr-gutter-x: 0 !important;
 }
 
-.btn-loading:after {
+.widget-button >.btn-loading:after {
   border: 1px solid var(--loader-color);
   border-right-color: transparent;
 }
@@ -4711,4 +4715,20 @@ div#driver-page-overlay {
   // top: -10px !important;
   // left: 100px !important;
   // background-color: #0565ff;
+}
+
+.realtime-avatars {
+  position: absolute;
+  left: 35%;
+}
+.widget-style-field-header{
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 20px;
+  color: #61656C;
+}
+.list-timeline:not(.list-timeline-simple) .list-timeline-time {
+  top: auto;
 }

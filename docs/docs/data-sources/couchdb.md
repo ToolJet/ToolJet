@@ -1,38 +1,41 @@
 ---
 sidebar_position: 4.1
+sidebar_label: CouchDB
 ---
 
-# Couchdb
+# CouchDB
 
+ToolJet can connect to CouchDB databases to read and write data. CocuhDB uses basic auth for authentication , username and password for the database is required to create an CouchDB data source on ToolJet. For more info visit [CouchDB docs](https://docs.couchdb.org/en/stable/).
 
-ToolJet can connect to CouchDB databases to read and write data. CocuhDB uses basic auth for authentication , username and password for the database is required to create an CouchDB data source on ToolJet. For more info visit https://docs.couchdb.org/en/stable/
+<div style={{textAlign: 'center'}}>
 
-<img class="screenshot-full" src="/img/datasource-reference/couchdb/auth_couch.gif" alt="ToolJet - Data source - CouchDb" height="420" />
+![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/auth_couch.gif)
 
-Supported queries: 
+</div>
 
-- Listing records 
-- Retrieving a record
-- Creating a record
-- Updating a record
-- Deleting a record
-- Find 
-- Retrieving a view
+## Supported queries: 
+
+- [Listing records](#listing-records)
+- [Retrieving a record](#retrieving-a-record)
+- [Creating a record](#creating-a-record)
+- [Updating a record](#updating-a-record)
+- [Deleting a record](#deleting-a-record)
+- [Find](#find)
+- [Retrieving a view](#retrieving-a-view)
 
 :::info
 NOTE: Record ID is same as document ID("_id") .
 :::
-## Listing records 
+### Listing records 
 
 This query lists all the records in a database.
 
-Optional parameters: 
+#### Optional parameters: 
 
-- Descending order
-- Limit
-- Skip 
-- Include docs 
-
+- **Include docs**
+- **Descending order**
+- **Limit**
+- **Skip**
 
 :::info
 descending (boolean) – Return the documents in descending order by key. Default is false.
@@ -45,7 +48,11 @@ include_docs (boolean) – include_docs key is set to false by default , if true
 
 :::
 
-<img class="screenshot-full" src="/img/datasource-reference/couchdb/list.png" alt="ToolJet - CouchDb Delete Operarion" height="420" />
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/listing.png)
+
+</div>
 
 
 Example response from CouchDb: 
@@ -80,14 +87,17 @@ Example response from CouchDb:
 }
 ```
 
-## Retrieving a record 
+### Retrieving a record 
 
-Required parameters: 
+#### Required parameters: 
 
-- Record ID
+- **Record ID**
 
+<div style={{textAlign: 'center'}}>
 
-<img class="screenshot-full" src="/img/datasource-reference/couchdb/retreive.png" alt="ToolJet - Data source - CouchDb Retrieve Operation" height="420" />
+![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/retrieving.png)
+
+</div>
 
 
 Example response from CouchDb: 
@@ -104,19 +114,19 @@ Example response from CouchDb:
 The returned JSON is the JSON of the document, including the document ID and revision number:
 
 
-## Creating a record
+### Creating a record
 
-<img class="screenshot-full" src="/img/datasource-reference/couchdb/create.png" alt="ToolJet - Data source - CouchDb Create Operarion" height="420"/>
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/creating.png)
+
+</div>
 
 #### Example Records:
 
 ```json
-
   [{"name":"tooljet"}]
- 
-
 ```
-
 
 Click on the `run` button to run the query.
 
@@ -135,25 +145,25 @@ Example response from CouchDb:
 
 ```
 
-## Updating a record
+### Updating a record
 
 You can get the revision id  value, by sending a GET request to get the document details.
 You get the document as JSON in the response. For each update to the document, the revision field "_rev" gets changed.
 
+#### Required parameters:
+- **Revision ID**
+- **Record ID**
 
-Required parameters:
-- Revision ID
-- Record ID
+<div style={{textAlign: 'center'}}>
 
-<img class="screenshot-full" src="/img/datasource-reference/couchdb/update.png" alt="ToolJet - Data source - CouchDb Update Operarion" height="420"/>
+![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/updating.png)
+
+</div>
 
 #### Example body:
 
 ```json
-
   [{"name":"tooljet"}]
- 
-
 ```
 
 
@@ -165,21 +175,24 @@ NOTE: Query must be saved before running.
 
 Example response from CouchDb:
 ```json
-
-   {
+{
     "ok": true,
     "id": "23212104e60a71edb42ebc509f0049a2",
     "rev": "2-b0a625abc4e21ee554737920156e911f"
 }
 ```
 
-## Deleting a record
+### Deleting a record
 
-Required parameters:
-- Revision ID
-- Record ID
+#### Required parameters:
+- **Revision ID**
+- **Record ID**
 
-<img class="screenshot-full" src="/img/datasource-reference/couchdb/delete.png" alt="ToolJet - CouchDb Delete Operarion" height="420" />
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/deleting.png)
+
+</div>
 
 
 Click on the `run` button to run the query.
@@ -195,19 +208,23 @@ Example response from CouchDb:
 }
 ```
 
-## Find 
+### Find 
 
 Find documents using a declarative JSON querying syntax.
 
-Required parameters:
-- Selector
+#### Required parameters:
+- **Selector**
 
 :::info
 NOTE:
 selector syntax: https://pouchdb.com/guides/mango-queries.html
 :::
 
-<img class="screenshot-full" src="/img/datasource-reference/couchdb/find.png" alt="ToolJet - Data source - CouchDb Find Operarion" height="420"/>
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/find.png)
+
+</div>
 
 #### Example body:
 
@@ -231,26 +248,34 @@ More information : https://docs.couchdb.org/en/stable/api/database/find.html
 :::
 
 Example response from CouchDb:
-<img class="screenshot-full" src="/img/datasource-reference/couchdb/find_response.png" alt="ToolJet - Data source - CouchDb Find Operarion" height="420"/>
 
-## Retrieving a view
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/find_response.png)
+
+</div>
+
+### Retrieving a view
 
 Views are the primary tool used for querying and reporting on CouchDB documents.
 
-Required parameters:
-- View url
+#### Required parameters:
+- **View url**
 
 Reference for view :https://docs.couchdb.org/en/3.2.0/ddocs/views/intro.html#what-is-a-view
 
-<img class="screenshot-full" src="/img/datasource-reference/couchdb/view.png" alt="ToolJet - Data source - CouchDb View Operarion" height="420"/>
+<div style={{textAlign: 'center'}}>
 
+![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/get_view.png)
 
-Optional parameters: 
+</div>
 
-- Start key
-- End key
-- Limit
-- Skip 
+#### Optional parameters: 
+
+- **Start key**
+- **End key**
+- **Limit**
+- **Skip**
 
 Click on the `run` button to run the query.
 

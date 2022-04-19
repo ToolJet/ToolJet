@@ -130,6 +130,10 @@ export class UsersService {
     const lastName = params['last_name'];
     const newSignup = params['new_signup'];
 
+    if (!token) {
+      throw new BadRequestException('Invalid token');
+    }
+
     const user = await this.usersRepository.findOne({ where: { invitationToken: token } });
 
     if (user) {
