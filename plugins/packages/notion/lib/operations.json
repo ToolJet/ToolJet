@@ -150,25 +150,55 @@
           "description": "Enter filter object",
           "height": "200px"
         },
-        "icon_obj":{
-          "label": "Icon Object",
-          "key": "icon_obj",
-          "type": "codehinter",
-          "mode": "javascript",
-          "placeholder": "{\ntype: \"emoji\",emoji: \"🔥\"\n}",
-          "description": "Enter icon object",
-          "height": "150px",
-          "width":"400px"
+        "icon_type":{
+          "label": "Icon Type",
+          "key": "icon_type",
+          "className":"col-md-4",
+          "type": "dropdown",
+          "description": "Icon type select",
+          "list": [
+            {
+              "value": "external",
+              "name": "External URL"
+            },
+            {
+              "value": "emoji",
+              "name": "Emoji"
+            }
+          ]
         },
-        "cover_obj":{
-          "label": "Cover Object",
-          "key": "cover_obj",
+        "icon_value": {
+          "label": "Icon Value",
+          "key": "icon_value",
           "type": "codehinter",
-          "mode": "javascript",
-          "placeholder": "{\ntype: \"external\",\nexternal: {\nurl: \"https://upload.wikimedia.org/wikipedia/commons/6/62/Tuscankale.jpg\"\n}\n}",
-          "description": "Enter cover object",
-          "height": "150px",
-          "width":"400px"
+          "placeholder": "Enter icon external url / emoji here",
+          "description": "Enter Enter value here",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "cover_type":{
+          "label": "Cover Type",
+          "key": "cover_type",
+          "className":"col-md-4",
+          "type": "dropdown",
+          "description": "Cover type select",
+          "list": [
+            {
+              "value": "external",
+              "name": "External URL"
+            }
+          ]
+        },
+        "cover_value": {
+          "label": "Cover Value",
+          "key": "cover_value",
+          "type": "codehinter",
+          "placeholder": "Enter cover external url here",
+          "description": "Enter value here",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins"
         }
       },
       "update_database":{
@@ -201,25 +231,55 @@
           "description": "Enter filter object",
           "height": "200px"
         },
-        "icon_obj":{
-          "label": "Icon Object",
-          "key": "icon_obj",
-          "type": "codehinter",
-          "mode": "javascript",
-          "placeholder": "{\ntype: \"emoji\",emoji: \"🔥\"\n}",
-          "description": "Enter icon object",
-          "height": "150px",
-          "width":"400px"
+        "icon_type":{
+          "label": "Icon Type",
+          "key": "icon_type",
+          "className":"col-md-4",
+          "type": "dropdown",
+          "description": "Icon type select",
+          "list": [
+            {
+              "value": "external",
+              "name": "External URL"
+            },
+            {
+              "value": "emoji",
+              "name": "Emoji"
+            }
+          ]
         },
-        "cover_obj":{
-          "label": "Cover Object",
-          "key": "cover_obj",
+        "icon_value": {
+          "label": "Icon Value",
+          "key": "icon_value",
           "type": "codehinter",
-          "mode": "javascript",
-          "placeholder": "{\ntype: \"external\",\nexternal: {\nurl: \"https://upload.wikimedia.org/wikipedia/commons/6/62/Tuscankale.jpg\"\n}\n}",
-          "description": "Enter cover object",
-          "height": "150px",
-          "width":"400px"
+          "placeholder": "Enter icon external url / emoji here",
+          "description": "Enter external url",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "cover_type":{
+          "label": "Cover Type",
+          "key": "cover_type",
+          "className":"col-md-4",
+          "type": "dropdown",
+          "description": "Cover type select",
+          "list": [
+            {
+              "value": "external",
+              "name": "External URL"
+            }
+          ]
+        },
+        "cover_value": {
+          "label": "Cover Value",
+          "key": "cover_value",
+          "type": "codehinter",
+          "placeholder": "Enter cover external url here",
+          "description": "Enter value here",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins"
         }
       }
     },
@@ -312,25 +372,55 @@
             "description": "Enter blocks array",
             "height": "200px"
           },
-          "icon_obj":{
-            "label": "Icon Object",
-            "key": "icon_obj",
-            "type": "codehinter",
-            "mode": "javascript",
-            "placeholder": "{\ntype: \"emoji\",emoji: \"🔥\"\n}",
-            "description": "Enter icon object",
-            "height": "150px",
-            "width":"400px"
+          "icon_type":{
+            "label": "Icon Type",
+            "key": "icon_type",
+            "className":"col-md-4",
+            "type": "dropdown",
+            "description": "Icon type select",
+            "list": [
+              {
+                "value": "external",
+                "name": "External URL"
+              },
+              {
+                "value": "emoji",
+                "name": "Emoji"
+              }
+            ]
           },
-          "cover_obj":{
-            "label": "Cover Object",
-            "key": "cover_obj",
+          "icon_value": {
+            "label": "Icon Value",
+            "key": "icon_value",
             "type": "codehinter",
-            "mode": "javascript",
-            "placeholder": "{\ntype: \"external\",\nexternal: {\nurl: \"https://upload.wikimedia.org/wikipedia/commons/6/62/Tuscankale.jpg\"\n}\n}",
-            "description": "Enter cover object",
-            "height": "150px",
-            "width":"400px"
+            "placeholder": "Enter icon external url / emoji here",
+            "description": "Enter external url",
+            "lineNumbers": false,
+            "height": "36px",
+            "className": "codehinter-plugins"
+          },
+          "cover_type":{
+            "label": "Cover Type",
+            "key": "cover_type",
+            "className":"col-md-4",
+            "type": "dropdown",
+            "description": "Cover type select",
+            "list": [
+              {
+                "value": "external",
+                "name": "External URL"
+              }
+            ]
+          },
+          "cover_value": {
+            "label": "Cover Value",
+            "key": "cover_value",
+            "type": "codehinter",
+            "placeholder": "Enter cover external url here",
+            "description": "Enter value here",
+            "lineNumbers": false,
+            "height": "36px",
+            "className": "codehinter-plugins"
           }
         },
         "database_id":{
@@ -362,25 +452,55 @@
             "description": "Enter blocks array",
             "height": "200px"
           },
-          "icon_obj":{
-            "label": "Icon Object",
-            "key": "icon_obj",
-            "type": "codehinter",
-            "mode": "javascript",
-            "placeholder": "{\ntype: \"emoji\",emoji: \"🔥\"\n}",
-            "description": "Enter icon object",
-            "height": "150px",
-            "width":"400px"
+          "icon_type":{
+            "label": "Icon Type",
+            "key": "icon_type",
+            "className":"col-md-4",
+            "type": "dropdown",
+            "description": "Icon type select",
+            "list": [
+              {
+                "value": "external",
+                "name": "External URL"
+              },
+              {
+                "value": "emoji",
+                "name": "Emoji"
+              }
+            ]
           },
-          "cover_obj":{
-            "label": "Cover Object",
-            "key": "cover_obj",
+          "icon_value": {
+            "label": "Icon Value",
+            "key": "icon_value",
             "type": "codehinter",
-            "mode": "javascript",
-            "placeholder": "{\ntype: \"external\",\nexternal: {\nurl: \"https://upload.wikimedia.org/wikipedia/commons/6/62/Tuscankale.jpg\"\n}\n}",
-            "description": "Enter cover object",
-            "height": "150px",
-            "width":"400px"
+            "placeholder": "Enter icon external url / emoji here",
+            "description": "Enter external url",
+            "lineNumbers": false,
+            "height": "36px",
+            "className": "codehinter-plugins"
+          },
+          "cover_type":{
+            "label": "Cover Type",
+            "key": "cover_type",
+            "className":"col-md-4",
+            "type": "dropdown",
+            "description": "Cover type select",
+            "list": [
+              {
+                "value": "external",
+                "name": "External URL"
+              }
+            ]
+          },
+          "cover_value": {
+            "label": "Cover Value",
+            "key": "cover_value",
+            "type": "codehinter",
+            "placeholder": "Enter cover external url here",
+            "description": "Enter value here",
+            "lineNumbers": false,
+            "height": "36px",
+            "className": "codehinter-plugins"
           }
         }
       },
@@ -404,25 +524,55 @@
           "description": "Enter filter object",
           "height": "200px"
         },
-        "icon_obj":{
-          "label": "Icon Object",
-          "key": "icon_obj",
-          "type": "codehinter",
-          "mode": "javascript",
-          "placeholder": "{\ntype: \"emoji\",emoji: \"🔥\"\n}",
-          "description": "Enter icon object",
-          "height": "150px",
-          "width":"400px"
+        "icon_type":{
+          "label": "Icon Type",
+          "key": "icon_type",
+          "className":"col-md-4",
+          "type": "dropdown",
+          "description": "Icon type select",
+          "list": [
+            {
+              "value": "external",
+              "name": "External URL"
+            },
+            {
+              "value": "emoji",
+              "name": "Emoji"
+            }
+          ]
         },
-        "cover_obj":{
-          "label": "Cover Object",
-          "key": "cover_obj",
+        "icon_value": {
+          "label": "Icon Value",
+          "key": "icon_value",
           "type": "codehinter",
-          "mode": "javascript",
-          "placeholder": "{\ntype: \"external\",\nexternal: {\nurl: \"https://upload.wikimedia.org/wikipedia/commons/6/62/Tuscankale.jpg\"\n}\n}",
-          "description": "Enter cover object",
-          "height": "150px",
-          "width":"400px"
+          "placeholder": "Enter icon external url / emoji here",
+          "description": "Enter external url",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "cover_type":{
+          "label": "Cover Type",
+          "key": "cover_type",
+          "className":"col-md-4",
+          "type": "dropdown",
+          "description": "Cover type select",
+          "list": [
+            {
+              "value": "external",
+              "name": "External URL"
+            }
+          ]
+        },
+        "cover_value": {
+          "label": "Cover Value",
+          "key": "cover_value",
+          "type": "codehinter",
+          "placeholder": "Enter cover external url here",
+          "description": "Enter value here",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins"
         }
       },
       "get_page_property":{

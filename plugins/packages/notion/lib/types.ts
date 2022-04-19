@@ -10,9 +10,11 @@ export type QueryOptions = {
   title: any;
   properties: any;
   children: any;
-  icon_obj: any;
-  cover_obj: any;
+  icon_type: any;
+  icon_value: any;
   parent_type: any;
+  cover_type: any;
+  cover_value: any;
   archived: boolean;
   property_id: string;
   block_id: string;

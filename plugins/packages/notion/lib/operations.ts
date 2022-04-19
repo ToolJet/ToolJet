@@ -16,6 +16,24 @@ function returnNumber(data: any) {
   return typeof data === 'string' ? Number.parseInt(data) : data;
 }
 
+function returnImgObject(type: string, value: string): any {
+  if (type === 'external' && value) {
+    return {
+      type: 'external',
+      external: {
+        url: value,
+      },
+    };
+  } else if (type === 'emoji' && value) {
+    return {
+      type: 'emoji',
+      emoji: value,
+    };
+  } else {
+    return undefined;
+  }
+}
+
 export async function databaseOperations(notion: Client, queryOptions: QueryOptions, operation: string) {
   switch (operation) {
     case 'get_database': {
@@ -35,23 +53,23 @@ export async function databaseOperations(notion: Client, queryOptions: QueryOpti
       });
     }
     case 'create_database': {
-      const { page_id, title, properties, cover_obj, icon_obj } = queryOptions;
+      const { page_id, title, properties, cover_type, cover_value, icon_type, icon_value } = queryOptions;
       return await notion.databases.create({
         parent: { page_id },
         title: returnObject(title),
         properties: returnObject(properties),
-        cover: returnObject(cover_obj),
-        icon: returnObject(icon_obj),
+        cover: returnImgObject(cover_type, cover_value),
+        icon: returnImgObject(icon_type, icon_value),
       });
     }
     case 'update_database': {
-      const { database_id, title, properties, cover_obj, icon_obj } = queryOptions;
+      const { database_id, title, properties, cover_type, cover_value, icon_type, icon_value } = queryOptions;
       return await notion.databases.update({
         database_id,
         title: returnObject(title),
         properties: returnObject(properties),
-        cover: returnObject(cover_obj),
-        icon: returnObject(icon_obj),
+        cover: returnImgObject(cover_type, cover_value),
+        icon: returnImgObject(icon_type, icon_value),
       });
     }
     default:
@@ -68,7 +86,17 @@ export async function pageOperations(notion: Client, queryOptions: QueryOptions,
       });
     }
     case 'create_page': {
-      const { parent_type, page_id, database_id, properties, children, icon_obj, cover_obj } = queryOptions;
+      const {
+        parent_type,
+        page_id,
+        database_id,
+        properties,
+        children,
+        icon_type,
+        icon_value,
+        cover_type,
+        cover_value,
+      } = queryOptions;
       return await notion.pages.create({
         parent: {
           type: parent_type,
@@ -77,17 +105,17 @@ export async function pageOperations(notion: Client, queryOptions: QueryOptions,
         },
         properties: returnObject(properties),
         children: returnObject(children),
-        icon: returnObject(icon_obj),
-        cover: returnObject(cover_obj),
+        icon: returnImgObject(icon_type, icon_value),
+        cover: returnImgObject(cover_type, cover_value),
       });
     }
     case 'update_page': {
-      const { page_id, properties, icon_obj, cover_obj } = queryOptions;
+      const { page_id, properties, icon_type, icon_value, cover_type, cover_value } = queryOptions;
       return await notion.pages.update({
         page_id,
         properties: returnObject(properties),
-        icon: returnObject(icon_obj),
-        cover: returnObject(cover_obj),
+        icon: returnImgObject(icon_type, icon_value),
+        cover: returnImgObject(cover_type, cover_value),
       });
     }
     case 'archive_page': {
