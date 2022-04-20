@@ -4744,6 +4744,22 @@ div#driver-page-overlay {
     margin-left: 2px;
     margin-top: -16px;
   }
+
+  .json-node-element {
+    &:hover {
+      background-color: #C0CEFF;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+  }
+
+  .selected-node {
+    //rectangle box 
+    background-color: #8c96b9;
+    border-radius: 2px;
+    height: 20px;
+    margin-bottom: 20px;
+  }
   
 }
 

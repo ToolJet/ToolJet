@@ -1,5 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
+import cx from 'classnames';
 
 export const JSONNode = ({ data, ...restProps }) => {
   const {
@@ -18,7 +19,12 @@ export const JSONNode = ({ data, ...restProps }) => {
     typeof shouldExpandNode === 'function' ? shouldExpandNode(path, data) : shouldExpandNode
   );
 
-  const toggleExpandNode = () => set((prev) => !prev);
+  const [selectedNode, setSelectedNode] = React.useState(null);
+
+  const toggleExpandNode = (node) => {
+    set((prev) => !prev);
+    setSelectedNode(node);
+  };
 
   const currentNodePath = getCurrentPath(path, currentNode);
   // if data is an array or an object and is not empty and is expandable then show the node
@@ -84,7 +90,12 @@ export const JSONNode = ({ data, ...restProps }) => {
     useIndentedBlock && expandable && (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array');
 
   return (
-    <div className="row mt-1 font-monospace">
+    <div
+      className={cx('row mt-1 font-monospace', {
+        'json-node-element': !expandable,
+        'selected-node': expandable && currentNode === selectedNode,
+      })}
+    >
       {toRenderSelector ? (
         <React.Fragment>
           <div className="col-md-1 json-tree-icon-container">
@@ -93,6 +104,7 @@ export const JSONNode = ({ data, ...restProps }) => {
               toShowJSONNOde={toExpandNode}
               handleToggle={toggleExpandNode}
               typeofCurrentNode={typeofCurrentNode}
+              currentNode={currentNode}
             />
           </div>
         </React.Fragment>
@@ -110,7 +122,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 };
 
 const JSONTreeNodeIndicator = ({ toExpand, toShowJSONNOde, handleToggle, ...restProps }) => {
-  const { renderCustomIndicator, typeofCurrentNode } = restProps;
+  const { renderCustomIndicator, typeofCurrentNode, currentNode } = restProps;
 
   const defaultStyles = {
     transform: toExpand ? 'rotate(90deg)' : 'rotate(0deg)',
@@ -135,7 +147,7 @@ const JSONTreeNodeIndicator = ({ toExpand, toShowJSONNOde, handleToggle, ...rest
 
   return (
     <React.Fragment>
-      <span className="json-tree-node-icon" onClick={handleToggle} style={defaultStyles}>
+      <span className="json-tree-node-icon" onClick={() => handleToggle(currentNode)} style={defaultStyles}>
         {renderCustomIndicator ? renderCustomIndicator() : renderDefaultIndicator()}
       </span>
     </React.Fragment>
