@@ -84,7 +84,13 @@ export function Git({ settings, updateData }) {
             </div>
           </div>
           <div className="form-group mb-3">
-            <label className="form-label">Client Secret</label>
+            <label className="form-label">
+              Client Secret
+              <small className="text-green mx-2">
+                <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+                Encrypted
+              </small>
+            </label>
             <div>
               <input
                 type="text"
