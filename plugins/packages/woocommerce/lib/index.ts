@@ -22,7 +22,6 @@ export default class Woocommerce implements QueryService {
           break;
         }
         case 'update_customer': {
-          console.log('checker', body);
           result = await WooCommerce.put(`customers/${customer_id}`, this.parseJSON(body))
             .then((response) => {
               return response.data;
@@ -62,15 +61,12 @@ export default class Woocommerce implements QueryService {
             .catch((error) => {
               return error.response.data;
             });
-          console.log('return data', returned);
           result = returned;
           break;
         }
         case 'retreive_customer': {
           result = await WooCommerce.get(`customers/${customer_id}`)
             .then((response) => {
-              console.log('check', response.data);
-
               return response.data;
             })
             .catch((error) => {
