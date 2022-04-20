@@ -13,15 +13,12 @@
     },
     "options": {
       "consumer_key": {
-        "type": "string",
         "encrypted": true
       },
       "consumer_secret": {
-        "type": "string",
         "encrypted": true
       },
       "host":{
-        "type": "string"
       }
     },
     "customTesting": false
