@@ -26,12 +26,20 @@ export const LeftSidebar = ({
   globalSettings,
   currentState,
   appDefinition,
+  setSelectedComponent,
+  removeComponent,
 }) => {
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   return (
     <div className="left-sidebar">
-      <LeftSidebarInspector darkMode={darkMode} currentState={currentState} appDefinition={appDefinition} />
+      <LeftSidebarInspector
+        darkMode={darkMode}
+        currentState={currentState}
+        appDefinition={appDefinition}
+        setSelectedComponent={setSelectedComponent}
+        removeComponent={removeComponent}
+      />
       <LeftSidebarDataSources
         darkMode={darkMode}
         appId={appId}

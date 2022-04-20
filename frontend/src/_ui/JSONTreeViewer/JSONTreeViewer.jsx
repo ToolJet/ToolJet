@@ -24,6 +24,8 @@ export class JSONTreeViewer extends React.Component {
       currentNode: 'Root',
       darkTheme: false,
       selectedNode: null,
+      showHideActions: false,
+      actionList: [],
     };
   }
 
@@ -31,6 +33,7 @@ export class JSONTreeViewer extends React.Component {
     this.setState({
       data: nextProps.data,
       shouldExpandNode: nextProps.shouldExpandNode,
+      showHideActions: nextProps.showHideActions,
       ...nextProps,
     });
   }
@@ -106,6 +109,7 @@ export class JSONTreeViewer extends React.Component {
           useIndentedBlock={this.props.useIndentedBlock ?? false}
           selectedNode={this.state.selectedNode}
           updateSelectedNode={this.updateSelectedNode}
+          showHideActions={this.state.showHideActions}
         />
       </div>
     );

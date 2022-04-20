@@ -5,8 +5,15 @@ import { SidebarPinnedButton } from './SidebarPinnedButton';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import { allSvgs } from '@tooljet/plugins/client';
+import { runQuery } from '@/_helpers/appUtils';
 
-export const LeftSidebarInspector = ({ darkMode, currentState, appDefinition }) => {
+export const LeftSidebarInspector = ({
+  darkMode,
+  currentState,
+  appDefinition,
+  setSelectedComponent,
+  removeComponent,
+}) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
   const jsontreeData = { ...currentState };
@@ -39,6 +46,25 @@ export const LeftSidebarInspector = ({ darkMode, currentState, appDefinition }) 
     ...queryIcons,
     ...componentIcons,
   ];
+  console.log('SidebarInspector.jsx: ', appDefinition);
+
+  const callbackActions = [
+    {
+      for: 'queries',
+      actions: [{ name: 'Run Query', action: runQuery }],
+      enableForAllChildren: false,
+      enableFor1stLevelChildren: true,
+    },
+    {
+      for: 'components',
+      actions: [
+        { name: 'Select Widget', action: setSelectedComponent },
+        { name: 'Delete Widget', action: removeComponent },
+      ],
+      enableForAllChildren: false,
+      enableFor1stLevelChildren: true,
+    },
+  ];
 
   return (
     <>
@@ -61,7 +87,14 @@ export const LeftSidebarInspector = ({ darkMode, currentState, appDefinition }) 
           updateState={updatePopoverPinnedState}
         />
         <div style={{ marginTop: '1rem' }} className="card-body">
-          <JSONTreeViewer data={jsontreeData} useIcons={true} iconsList={iconsList} useIndentedBlock={true} />
+          <JSONTreeViewer
+            data={jsontreeData}
+            useIcons={true}
+            iconsList={iconsList}
+            useIndentedBlock={true}
+            showHideActions={true}
+            actionsList={callbackActions}
+          />
         </div>
       </div>
     </>

@@ -4753,6 +4753,14 @@ div#driver-page-overlay {
     }
   }
 
+  .copy-to-clipboard {
+    cursor: pointer;
+    margin-left: 1rem;
+    &:hover {
+      color: $primary;
+    }
+  }
+
 }
 
 // Font sizes 

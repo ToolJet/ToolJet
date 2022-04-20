@@ -1029,6 +1029,8 @@ class Editor extends React.Component {
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
               appDefinition={{ components: appDefinition.components, queries: dataQueries }}
+              setSelectedComponent={this.setSelectedComponent}
+              removeComponent={this.removeComponent}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div

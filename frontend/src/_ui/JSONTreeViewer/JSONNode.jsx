@@ -1,6 +1,8 @@
 import React from 'react';
 import _ from 'lodash';
 import cx from 'classnames';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { toast } from 'react-hot-toast';
 
 export const JSONNode = ({ data, ...restProps }) => {
   const {
@@ -20,6 +22,8 @@ export const JSONNode = ({ data, ...restProps }) => {
   const [expandable, set] = React.useState(() =>
     typeof shouldExpandNode === 'function' ? shouldExpandNode(path, data) : shouldExpandNode
   );
+
+  const [showHiddenOptionsForNode, setShowHiddenOptionsForNode] = React.useState(false);
 
   const toggleExpandNode = (node) => {
     updateSelectedNode(node);
@@ -105,6 +109,8 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   return (
     <div
+      onMouseEnter={() => setShowHiddenOptionsForNode(true)}
+      onMouseLeave={() => setShowHiddenOptionsForNode(false)}
       className={cx('row mt-1 font-monospace', {
         'json-node-element': !expandable,
       })}
@@ -135,6 +141,7 @@ export const JSONNode = ({ data, ...restProps }) => {
             className="col"
           >
             {$key} {$NODEType}
+            {showHiddenOptionsForNode && <JSONNode.CopyToClipboard data={data} />}
             {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
           </div>
         </div>
@@ -245,8 +252,75 @@ const DisplayNodeLabel = ({ type = '', children }) => {
   );
 };
 
+const CopyToClipboardObject = ({ data }) => {
+  const [copied, setCopied] = React.useState(false);
+
+  //clears the clipboard after 2 seconds
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
+  if (copied) {
+    return (
+      <svg
+        className="copy-to-clipboard"
+        width="12"
+        height="12"
+        viewBox="0 0 10 10"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M3.75 4.58333L5 5.83333L8.33333 2.5"
+          stroke="#4D72FA"
+          strokeWidth="1"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M8.3333 4.99984V7.49984C8.3333 7.72085 8.2455 7.93281 8.08922 8.08909C7.93294 8.24537 7.72098 8.33317 7.49996 8.33317H2.49996C2.27895 8.33317 2.06698 8.24537 1.9107 8.08909C1.75442 7.93281 1.66663 7.72085 1.66663 7.49984V2.49984C1.66663 2.27882 1.75442 2.06686 1.9107 1.91058C2.06698 1.7543 2.27895 1.6665 2.49996 1.6665H6.24996"
+          stroke="#4D72FA"
+          strokeWidth="0.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <CopyToClipboard
+      text={JSON.stringify(data, null, 2)}
+      onCopy={() => {
+        console.log('JSONNOde copy to clipboard', data);
+        setCopied(true);
+        toast.success('Copied to clipboard', { position: 'top-center' });
+      }}
+    >
+      <svg
+        className="copy-to-clipboard"
+        width="10"
+        height="10"
+        viewBox="0 0 15 18"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        strokeWidth="0.35"
+      >
+        <path
+          d="M10.5 15.6667H2.16667V4.83334C2.16667 4.37501 1.79167 4.00001 1.33333 4.00001C0.875 4.00001 0.5 4.37501 0.5 4.83334V15.6667C0.5 16.5833 1.25 17.3333 2.16667 17.3333H10.5C10.9583 17.3333 11.3333 16.9583 11.3333 16.5C11.3333 16.0417 10.9583 15.6667 10.5 15.6667ZM14.6667 12.3333V2.33334C14.6667 1.41667 13.9167 0.666672 13 0.666672H5.5C4.58333 0.666672 3.83333 1.41667 3.83333 2.33334V12.3333C3.83333 13.25 4.58333 14 5.5 14H13C13.9167 14 14.6667 13.25 14.6667 12.3333ZM13 12.3333H5.5V2.33334H13V12.3333Z"
+          fill="currentColor"
+        />
+      </svg>
+    </CopyToClipboard>
+  );
+};
+
 JSONNode.NodeIndicator = JSONTreeNodeIndicator;
 JSONNode.ValueNode = JSONTreeValueNode;
 JSONNode.ObjectNode = JSONTreeObjectNode;
 JSONNode.ArrayNode = JSONTreeArrayNode;
 JSONNode.DisplayNodeLabel = DisplayNodeLabel;
+JSONNode.CopyToClipboard = CopyToClipboardObject;
