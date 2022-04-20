@@ -13,17 +13,17 @@ export const JSONNode = ({ data, ...restProps }) => {
     toUseNodeIcons,
     renderNodeIcons,
     useIndentedBlock,
+    selectedNode,
+    updateSelectedNode,
   } = restProps;
 
   const [expandable, set] = React.useState(() =>
     typeof shouldExpandNode === 'function' ? shouldExpandNode(path, data) : shouldExpandNode
   );
 
-  const [selectedNode, setSelectedNode] = React.useState(null);
-
   const toggleExpandNode = (node) => {
+    updateSelectedNode(node);
     set((prev) => !prev);
-    setSelectedNode(node);
   };
 
   const currentNodePath = getCurrentPath(path, currentNode);
@@ -36,6 +36,20 @@ export const JSONNode = ({ data, ...restProps }) => {
   const typeofCurrentNode = getCurrentNodeType(data);
   const numberOfEntries = getLength(typeofCurrentNode, data);
   const toRenderSelector = (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array') && numberOfEntries > 0;
+
+  const selectedNodeStyles = expandable &&
+    selectedNode === currentNode && {
+      backgroundColor: '#D3D8F0',
+      borderRadius: '2px',
+      height: '20px',
+    };
+
+  React.useEffect(() => {
+    if (!expandable) {
+      updateSelectedNode(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expandable]);
 
   if (toUseNodeIcons && currentNode) {
     $NODEIcon = renderNodeIcons(currentNode);
@@ -93,7 +107,6 @@ export const JSONNode = ({ data, ...restProps }) => {
     <div
       className={cx('row mt-1 font-monospace', {
         'json-node-element': !expandable,
-        'selected-node': expandable && currentNode === selectedNode,
       })}
     >
       {toRenderSelector ? (
@@ -109,13 +122,23 @@ export const JSONNode = ({ data, ...restProps }) => {
           </div>
         </React.Fragment>
       ) : null}
+
       <div className={`col ${shouldDisplayIntendedBlock && 'group-border'}`}>
-        <div className={`row ${shouldDisplayIntendedBlock && 'group-object-container'}`}>
+        <div
+          style={{ ...selectedNodeStyles }}
+          className={`row ${shouldDisplayIntendedBlock && 'group-object-container'} `}
+        >
           {$NODEIcon && <div className="col-md-1 json-tree-icon-container">{$NODEIcon}</div>}
-          <div className="col">
-            {$key} {$NODEType} {toExpandNode && !expandable ? null : $VALUE}
+
+          <div
+            style={{ marginLeft: toExpandNode ? '' : '11px', paddingLeft: toExpandNode && !$NODEIcon && 0 }}
+            className="col"
+          >
+            {$key} {$NODEType}
+            {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
           </div>
         </div>
+        {toRenderSelector && (toExpandNode && !expandable ? null : $VALUE)}
       </div>
     </div>
   );

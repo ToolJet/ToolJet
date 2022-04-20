@@ -23,6 +23,7 @@ export class JSONTreeViewer extends React.Component {
       shouldExpandNode: false,
       currentNode: 'Root',
       darkTheme: false,
+      selectedNode: null,
     };
   }
 
@@ -83,6 +84,14 @@ export class JSONTreeViewer extends React.Component {
     }
   };
 
+  updateSelectedNode = (node) => {
+    if (node) {
+      this.setState({
+        selectedNode: node,
+      });
+    }
+  };
+
   render() {
     return (
       <div className="json-tree-container">
@@ -95,6 +104,8 @@ export class JSONTreeViewer extends React.Component {
           getLength={this.getLength}
           renderNodeIcons={this.renderNodeIcons}
           useIndentedBlock={this.props.useIndentedBlock ?? false}
+          selectedNode={this.state.selectedNode}
+          updateSelectedNode={this.updateSelectedNode}
         />
       </div>
     );

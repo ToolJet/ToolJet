@@ -4746,20 +4746,13 @@ div#driver-page-overlay {
   }
 
   .json-node-element {
+    cursor: pointer;
     &:hover {
       background-color: #C0CEFF;
       border-radius: 2px;
-      cursor: pointer;
     }
   }
 
-  .selected-node {
-    background-color: #D3D8F0;
-    border-radius: 2px;
-    height: 20px;
-    margin-bottom: 20px;
-  }
-  
 }
 
 // Font sizes 
