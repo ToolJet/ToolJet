@@ -1,15 +1,7 @@
-import { MigrationInterface, QueryRunner, Table, TableColumn, TableForeignKey } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
-export class OrganisationConfigs1646823984673 implements MigrationInterface {
+export class OrganizationConfigs1646823984673 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.addColumns('organizations', [
-      new TableColumn({
-        name: 'enable_sign_up',
-        type: 'boolean',
-        default: false,
-      }),
-    ]);
-
     await queryRunner.createTable(
       new Table({
         name: 'sso_configs',

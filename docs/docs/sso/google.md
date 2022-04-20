@@ -80,6 +80,6 @@ Set the `Redirect URL` under Authorised redirect URIs
 
 </div>
 
-Lastly, set the `client id` in google manage sso page. This value will be available from your [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials)
+Lastly, set the `client id` in google manage SSO page. This value will be available from your [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials)
 
 The Google sign-in button will now be available in your ToolJet login screen, if you are not enabled multiple organization.

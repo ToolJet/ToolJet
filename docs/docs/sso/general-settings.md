@@ -3,7 +3,7 @@ sidebar_position: 6
 sidebar_label: General Settings
 ---
 
-# Single Sign-on General Settings
+# Single Sign-On General Settings
 
 Select `Manage SSO` from organization options
 
@@ -23,8 +23,8 @@ Select `General Settings`
 
 ## Enable Signup
 
-You can enable/disable `Enable signup`. If its enabled, New account will be created for user's first time sso sign in. Only existing users will be allowed its disabled.
+You can enable/disable `Enable signup`. If it is enabled, new account will be created for user's first time SSO sign in else only existing users will be allowed to sign in via SSO.
 
 ## Allowed domain
 
-You can set allowed domains for sso login, can add multiple domains comma separated. Allowed all domains by default.
+You can set allowed domains for SSO login, can add multiple domains comma separated. Allowed all domains by default.

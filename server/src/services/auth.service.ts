@@ -94,7 +94,12 @@ export class AuthService {
         await this.usersService.updateDefaultOrganization(user, organization.id);
       }
 
-      const payload = { username: user.id, sub: user.email, organizationId: user.organizationId, isFormLogin: true };
+      const payload = {
+        username: user.id,
+        sub: user.email,
+        organizationId: user.organizationId,
+        isPasswordLogin: true,
+      };
 
       return decamelizeKeys({
         id: user.id,
@@ -114,7 +119,7 @@ export class AuthService {
   }
 
   async switchOrganization(newOrganizationId: string, user: User) {
-    if (!user.isFormLogin) {
+    if (!user.isPasswordLogin) {
       throw new UnauthorizedException();
     }
     if (this.configService.get<string>('MULTI_ORGANIZATION') !== 'true') {
@@ -137,7 +142,12 @@ export class AuthService {
       // Updating default organization Id
       await this.usersService.updateDefaultOrganization(newUser, newUser.organizationId);
 
-      const payload = { username: user.id, sub: user.email, organizationId: newUser.organizationId, isFormLogin: true };
+      const payload = {
+        username: user.id,
+        sub: user.email,
+        organizationId: newUser.organizationId,
+        isPasswordLogin: true,
+      };
 
       return decamelizeKeys({
         id: newUser.id,

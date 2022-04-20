@@ -21,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) return false;
 
     user.organizationId = payload.organizationId;
-    user.isFormLogin = payload.isFormLogin;
+    user.isPasswordLogin = payload.isPasswordLogin;
 
     if (user && (await this.usersService.status(user)) !== 'archived') return user;
     else return false;

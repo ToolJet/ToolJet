@@ -68,7 +68,7 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
   return { app, mockConfig: moduleRef.get(ConfigService) };
 }
 
-export function authHeaderForUser(user: User, organizationId?: string, formLogin = true): string {
+export function authHeaderForUser(user: User, organizationId?: string, isPasswordLogin = true): string {
   const configService = new ConfigService();
   const jwtService = new JwtService({
     secret: configService.get<string>('SECRET_KEY_BASE'),
@@ -77,7 +77,7 @@ export function authHeaderForUser(user: User, organizationId?: string, formLogin
     username: user.id,
     sub: user.email,
     organizationId: organizationId || user.defaultOrganizationId,
-    isFormLogin: formLogin,
+    isPasswordLogin,
   };
   const authToken = jwtService.sign(authPayload);
   return `Bearer ${authToken}`;

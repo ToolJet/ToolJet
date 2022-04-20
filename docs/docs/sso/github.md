@@ -53,6 +53,6 @@ Then create `Client secrets` by clicking `Generate new client secret`
 
 </div>
 
-Lastly, Enter `Client Id` and `Client Secret` in Git manage sso page and save.
+Lastly, enter `Client Id` and `Client Secret` in Git manage SSO page and save.
 
-The GitHub sign-in button will now be available in your ToolJet login screen if you are not enabled multiple organization.
+The GitHub sign-in button will now be available in your ToolJet login screen if you have not enabled multiple organization.
