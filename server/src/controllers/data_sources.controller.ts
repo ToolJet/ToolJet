@@ -8,6 +8,7 @@ import {
   Put,
   Query,
   Request,
+  Response,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -87,7 +88,7 @@ export class DataSourcesController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async delete(@Request() req, @Param() params) {
+  async delete(@Request() req, @Response() res, @Param() params) {
     const dataSourceId = params.id;
 
     const dataSource = await this.dataSourcesService.findOne(dataSourceId);
@@ -102,7 +103,9 @@ export class DataSourcesController {
     }
 
     const result = await this.dataSourcesService.delete(params.id);
-    return decamelizeKeys(result);
+    if (result.affected == 1) {
+      return res.status(200).send();
+    }
   }
 
   @UseGuards(JwtAuthGuard)
