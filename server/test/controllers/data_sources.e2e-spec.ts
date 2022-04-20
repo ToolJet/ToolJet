@@ -7,6 +7,7 @@ import {
   createUser,
   createNestAppInstance,
   createDataSource,
+  createDataQuery,
   createAppGroupPermission,
   createApplicationVersion,
 } from '../test.helper';
@@ -318,6 +319,80 @@ describe('data sources controller', () => {
       await dataSource.reload();
       expect(dataSource.options.method).toBe(oldOptions.method);
     }
+  });
+
+  it('should be able to a delete data sources from a specific version of an app', async () => {
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      groups: ['all_users', 'admin'],
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
+
+    const appVersion1 = await createApplicationVersion(app, application);
+    const dataSource1 = await createDataSource(app, {
+      name: 'api',
+      kind: 'restapi',
+      application: application,
+      user: adminUserData.user,
+      appVersion: appVersion1,
+    });
+
+    await createDataQuery(app, {
+      application,
+      kind: 'restapi',
+      dataSource: dataSource1,
+      options: {
+        method: 'get',
+        url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
+        url_params: [],
+        headers: [],
+        body: [],
+      },
+      appVersion: appVersion1,
+    });
+
+    const appVersion2 = await createApplicationVersion(app, application);
+    const dataSource2 = await createDataSource(app, {
+      name: 'api2',
+      kind: 'restapi',
+      application: application,
+      user: adminUserData.user,
+      appVersion: appVersion2,
+    });
+
+    const dataSource2Temp = dataSource2;
+
+    const query2 = await createDataQuery(app, {
+      application,
+      kind: 'restapi',
+      dataSource: dataSource2,
+      options: {
+        method: 'get',
+        url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
+        url_params: [],
+        headers: [],
+        body: [],
+      },
+      appVersion: appVersion2,
+    });
+
+    const dataQuery2Temp = query2;
+
+    const response = await request(app.getHttpServer())
+      .delete(`/api/data_sources/${dataSource1.id}`)
+      .set('Authorization', authHeaderForUser(adminUserData.user))
+      .send();
+
+    expect(response.statusCode).toBe(200);
+
+    await dataSource2.reload();
+    await query2.reload();
+
+    expect(dataSource2.id).toBe(dataSource2Temp.id);
+    expect(query2.id).toBe(dataQuery2Temp.id);
   });
 
   it('should be able to search data sources with application version id', async () => {
