@@ -66,7 +66,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 <hr>
 
 ## Quickstart 
-The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/deployment/architecture).
+The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/setup/architecture).
 
 You can deploy ToolJet on Heroku for free using the one-click-deployment button below.
 <p align="center">
@@ -92,13 +92,13 @@ You can use ToolJet cloud for a fully managed solution. If you want to self-host
 
 | Provider  | Documentation |
 | ------------- | ------------- |
-| AWS EC2 | [Link](https://docs.tooljet.com/docs/deployment/ec2)  |
-| AWS EKS (Kubernetes) | [Link](https://docs.tooljet.com/docs/deployment/kubernetes)   |
-| GCP GKE (Kubernetes) | [Link](https://docs.tooljet.com/docs/deployment/kubernetes-gke)   |
-| Azure AKS (Kubernetes) | [Link](https://docs.tooljet.com/docs/deployment/kubernetes-aks)   |
-| Heroku  | [Link](https://docs.tooljet.com/docs/deployment/heroku)  |
-| Docker  | [Link](https://docs.tooljet.com/docs/deployment/docker)   |
-| Google Cloud Run  | [Link](https://docs.tooljet.com/docs/deployment/google-cloud-run)   |
+| AWS EC2 | [Link](https://docs.tooljet.com/docs/setup/ec2)  |
+| AWS EKS (Kubernetes) | [Link](https://docs.tooljet.com/docs/setup/kubernetes)   |
+| GCP GKE (Kubernetes) | [Link](https://docs.tooljet.com/docs/setup/kubernetes-gke)   |
+| Azure AKS (Kubernetes) | [Link](https://docs.tooljet.com/docs/setup/kubernetes-aks)   |
+| Heroku  | [Link](https://docs.tooljet.com/docs/setup/heroku)  |
+| Docker  | [Link](https://docs.tooljet.com/docs/setup/docker)   |
+| Google Cloud Run  | [Link](https://docs.tooljet.com/docs/setup/google-cloud-run)   |
 
 ## Community support
 For general help using ToolJet, please refer to the official [documentation](https://docs.tooljet.com/docs/intro/). For additional help, you can use one of these channels to ask a question:

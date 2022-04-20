@@ -116,7 +116,7 @@
   },
   "properties": {
     "url": {
-      "label": "URL",
+      "label": "Base URL",
       "key": "url",
       "type": "text",
       "description": "https://api.example.com/v1/"
