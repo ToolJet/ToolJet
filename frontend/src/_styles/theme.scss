@@ -524,6 +524,7 @@ button {
       background: transparent;
     }
     .query-pane {
+      z-index: 1;
       height: 350px;
       position: fixed;
       left: 76px; //sidebar is 76px
@@ -1227,6 +1228,7 @@ button {
     }
   }
 }
+
 
 .datasource-picker,
 .stripe-operation-options {
@@ -3968,7 +3970,7 @@ input[type="text"] {
 
 .app-version-menu-sm {
   height: 30px;
-  display: inline-block;
+  display: flex;
   font-size: 12px;
 }
 
@@ -4681,7 +4683,7 @@ div#driver-page-overlay {
   --tblr-gutter-x: 0 !important;
 }
 
-.btn-loading:after {
+.widget-button >.btn-loading:after {
   border: 1px solid var(--loader-color);
   border-right-color: transparent;
 }
@@ -4699,6 +4701,11 @@ div#driver-page-overlay {
   // top: -10px !important;
   // left: 100px !important;
   // background-color: #0565ff;
+}
+
+.realtime-avatars {
+  position: absolute;
+  left: 35%;
 }
 .widget-style-field-header{
   font-family: 'Inter';
@@ -4723,4 +4730,7 @@ div#driver-page-overlay {
       align-items: center;
     }
   }
+}
+.list-timeline:not(.list-timeline-simple) .list-timeline-time {
+  top: auto;
 }
