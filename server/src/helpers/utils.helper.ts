@@ -1,4 +1,5 @@
 import { QueryError } from 'src/modules/data_sources/query.errors';
+import * as sanitizeHtml from 'sanitize-html';
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -37,5 +38,13 @@ export function cleanObject(obj: any): any {
     if (obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
       cleanObject(obj[key]);
     }
+  });
+}
+
+export function sanitizeInput(value: string) {
+  return sanitizeHtml(value, {
+    allowedTags: [],
+    allowedAttributes: {},
+    disallowedTagsMode: 'recursiveEscape',
   });
 }

@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { clearDB, createUser, authHeaderForUser, createNestAppInstanceWithEnvMock } from '../test.helper';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { EmailService } from '@services/email.service';
 
 describe('Authentication', () => {
   let app: INestApplication;
@@ -134,7 +135,6 @@ describe('Authentication', () => {
         email: 'admin@tooljet.io',
         firstName: 'user',
         lastName: 'name',
-        status: 'active',
       });
       current_organization = organization;
       current_user = user;
@@ -260,7 +260,7 @@ describe('Authentication', () => {
       it('should be able to switch between organizations with admin privilage', async () => {
         const { organization: invited_organization } = await createUser(
           app,
-          { organizationName: 'New Organization', status: 'active' },
+          { organizationName: 'New Organization' },
           current_user
         );
         const response = await request(app.getHttpServer())
@@ -322,7 +322,7 @@ describe('Authentication', () => {
       it('should be able to switch between organizations with user privilage', async () => {
         const { organization: invited_organization } = await createUser(
           app,
-          { groups: ['all_users'], organizationName: 'New Organization', status: 'active' },
+          { groups: ['all_users'], organizationName: 'New Organization' },
           current_user
         );
         const response = await request(app.getHttpServer())
@@ -380,6 +380,81 @@ describe('Authentication', () => {
         await current_user.reload();
         expect(current_user.defaultOrganizationId).toBe(invited_organization.id);
       });
+    });
+  });
+
+  describe('POST /api/forgot_password', () => {
+    beforeEach(async () => {
+      await createUser(app, {
+        email: 'admin@tooljet.io',
+        firstName: 'user',
+        lastName: 'name',
+      });
+    });
+    it('should return error if required params are not present', async () => {
+      const response = await request(app.getHttpServer()).post('/api/forgot_password');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toStrictEqual(['email should not be empty', 'email must be an email']);
+    });
+
+    it('should set token and send email', async () => {
+      const emailServiceMock = jest.spyOn(EmailService.prototype, 'sendPasswordResetEmail');
+      emailServiceMock.mockImplementation();
+
+      const response = await request(app.getHttpServer())
+        .post('/api/forgot_password')
+        .send({ email: 'admin@tooljet.io' });
+
+      expect(response.statusCode).toBe(201);
+
+      const user = await getManager().findOne(User, {
+        where: { email: 'admin@tooljet.io' },
+      });
+
+      expect(emailServiceMock).toHaveBeenCalledWith(user.email, user.forgotPasswordToken);
+    });
+  });
+
+  describe('POST /api/reset_password', () => {
+    beforeEach(async () => {
+      await createUser(app, {
+        email: 'admin@tooljet.io',
+        firstName: 'user',
+        lastName: 'name',
+      });
+    });
+    it('should return error if required params are not present', async () => {
+      const response = await request(app.getHttpServer()).post('/api/reset_password');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toStrictEqual([
+        'password should not be empty',
+        'password must be a string',
+        'token should not be empty',
+        'token must be a string',
+      ]);
+    });
+
+    it('should reset password', async () => {
+      const user = await getManager().findOne(User, {
+        where: { email: 'admin@tooljet.io' },
+      });
+
+      user.forgotPasswordToken = 'token';
+      await user.save();
+
+      const response = await request(app.getHttpServer()).post('/api/reset_password').send({
+        password: 'new_password',
+        token: 'token',
+      });
+
+      expect(response.statusCode).toBe(201);
+
+      await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'admin@tooljet.io', password: 'new_password' })
+        .expect(201);
     });
   });
 

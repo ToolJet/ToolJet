@@ -58,7 +58,7 @@ function acceptInvite({ token, password }) {
 }
 
 function updateCurrentUser(firstName, lastName) {
-  const body = { firstName, lastName };
+  const body = { first_name: firstName, last_name: lastName };
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/users/update`, requestOptions).then(handleResponse);
 }

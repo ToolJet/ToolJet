@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Controller, Param, Post, UseGuards, Body } from '@nestjs/common';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -7,6 +7,7 @@ import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { User } from 'src/decorators/user.decorator';
+import { InviteNewUserDto } from '../dto/invite-new-user.dto';
 
 @Controller('organization_users')
 export class OrganizationUsersController {
@@ -16,8 +17,8 @@ export class OrganizationUsersController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('inviteUser', UserEntity))
   @Post()
-  async create(@User() user, @Body() body) {
-    const result = await this.organizationUsersService.inviteNewUser(user, body);
+  async create(@User() user, @Body() inviteNewUserDto: InviteNewUserDto) {
+    const result = await this.organizationUsersService.inviteNewUser(user, inviteNewUserDto);
     return decamelizeKeys({ users: result });
   }
 
@@ -37,12 +38,12 @@ export class OrganizationUsersController {
     return decamelizeKeys({ result });
   }
 
-  // Depricated
+  // Deprecated
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('changeRole', UserEntity))
   @Post(':id/change_role')
-  async changeRole(@Request() req, @Param() params) {
-    const result = await this.organizationUsersService.changeRole(req.user, params.id, req.body.role);
+  async changeRole(@Param('id') id, @Body('role') role) {
+    const result = await this.organizationUsersService.changeRole(id, role);
     return decamelizeKeys({ result });
   }
 }

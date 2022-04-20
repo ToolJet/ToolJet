@@ -28,7 +28,7 @@ describe('users controller', () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
   });
 
-  describe('change password', () => {
+  describe('PATCH /api/users/change_password', () => {
     it('should allow users to update their password', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });
       const { user } = userData;
@@ -41,7 +41,6 @@ describe('users controller', () => {
         .send({ currentPassword: 'password', newPassword: 'new password' });
 
       expect(response.statusCode).toBe(200);
-
       const updatedUser = await getManager().findOneOrFail(User, { where: { email: user.email } });
       expect(updatedUser.password).not.toEqual(oldPassword);
     });
@@ -55,7 +54,10 @@ describe('users controller', () => {
       const response = await request(app.getHttpServer())
         .patch('/api/users/change_password')
         .set('Authorization', authHeaderForUser(user))
-        .send({ currentPassword: 'wrong password', newPassword: 'new password' });
+        .send({
+          currentPassword: 'wrong password',
+          newPassword: 'new password',
+        });
 
       expect(response.statusCode).toBe(403);
 
@@ -64,17 +66,17 @@ describe('users controller', () => {
     });
   });
 
-  describe('update user', () => {
+  describe('PATCH /api/users/update', () => {
     it('should allow users to update their firstName, lastName and password', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });
       const { user } = userData;
 
-      const [firstName, lastName] = ['Daenerys', 'Targaryen', 'drogo666'];
+      const [firstName, lastName] = ['Daenerys', 'Targaryen'];
 
       const response = await request(app.getHttpServer())
         .patch('/api/users/update')
         .set('Authorization', authHeaderForUser(user))
-        .send({ firstName, lastName });
+        .send({ first_name: firstName, last_name: lastName });
 
       expect(response.statusCode).toBe(200);
 
@@ -84,7 +86,7 @@ describe('users controller', () => {
     });
   });
 
-  describe('sign up from token ', () => {
+  describe('POST /api/users/set_password_from_token', () => {
     it('should allow users to setup account after sign up using  multi organization', async () => {
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
         switch (key) {
@@ -121,6 +123,35 @@ describe('users controller', () => {
       expect(updatedUser.defaultOrganizationId).toEqual(organization.id);
       const organizationUser = await getManager().findOneOrFail(OrganizationUser, { where: { userId: user.id } });
       expect(organizationUser.status).toEqual('active');
+    });
+
+    it('should return error if required params are not present - multi organization', async () => {
+      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        switch (key) {
+          case 'DISABLE_SIGNUPS':
+            return 'false';
+          case 'MULTI_ORGANIZATION':
+            return 'true';
+          default:
+            return process.env[key];
+        }
+      });
+      const invitationToken = uuidv4();
+      await createUser(app, {
+        email: 'signup@tooljet.io',
+        invitationToken,
+        status: 'invited',
+      });
+
+      const response = await request(app.getHttpServer()).post('/api/users/set_password_from_token');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toStrictEqual([
+        'password should not be empty',
+        'password must be a string',
+        'token should not be empty',
+        'token must be a string',
+      ]);
     });
 
     it('should not allow users to setup account for single organization', async () => {
@@ -289,7 +320,7 @@ describe('users controller', () => {
     });
   });
 
-  describe('accept organization invitation from token ', () => {
+  describe('POST /api/users/accept-invite', () => {
     it('should allow users to accept invitation when multi organization is enabled', async () => {
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
         switch (key) {
