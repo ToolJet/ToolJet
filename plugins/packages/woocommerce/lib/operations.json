@@ -13,27 +13,27 @@
       "list": [
         {
           "value": "list_customer",
-          "name": "List all Customer"
+          "name": "List all customer"
         },
         {
           "value": "update_customer",
-          "name": "Update a Customer"
+          "name": "Update a customer"
         },
         {
           "value": "delete_customer",
-          "name": "Delete a Customer"
+          "name": "Delete a customer"
         },
         {
           "value": "batch_update_customer",
-          "name": "Batch update Customer"
+          "name": "Batch update customer"
         },
         {
           "value": "create_customer",
-          "name": "Create a Customer"
+          "name": "Create a customer"
         },
         {
           "value": "retreive_customer",
-          "name": "Retrieve a Customer"
+          "name": "Retrieve a customer"
         },
         {
           "value": "list_product",
@@ -111,7 +111,6 @@
         "label": "Data",
         "key": "body",
         "type": "codehinter",
-
         "description": "Enter data",
         "height": "150px",
         "placeholder": ""
@@ -122,7 +121,6 @@
         "label": "Customer ID",
         "key": "customer_id",
         "type": "codehinter",
-
         "description": "Enter customer ID",
         "width": "320px",
         "height": "36px",
@@ -162,7 +160,6 @@
         "className": "codehinter-plugins",
         "placeholder": "",
         "lineNumbers": false
-
       }
     },
     "list_order": {},
