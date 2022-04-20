@@ -13,41 +13,47 @@ You may use [HTTP Basic Auth] by providing the REST API Consumer Key as the user
 - **Consumer key**
 - **Consumer secret**
 
+![ToolJet - Data Source - Woocommerce](/img/datasource-reference/woocommerce/woocomerce-auth.png)
+
+:::info
+NOTE: For generating keys visit admin dashboard of woocommerce , more info: https://woocommerce.github.io/woocommerce-rest-api-docs/?javascript#authentication
+:::
+
 ## Querying Woocommerce
 
 **Operations**
 
 **Customer**
 
-list customer
-update customer
-delete customer
-batch update customer
-create customer
-retreive customer
+- list customer
+- update customer
+- delete customer
+- batch update customer
+- create customer
+- retreive customer
 
 **PRODUCT**
 
-list product
-update product
-delete product
-batch update product
-create product
-retreive product
+- list product
+- update product
+- delete product
+- batch update product
+- create product
+- retreive product
 
 **ORDER**
 
-list order
-update order
-delete order
-batch update order
-create order
-retreive order
+- list order
+- update order
+- delete order
+- batch update order
+- create order
+- retreive order
 
 **Coupon**
 
-list coupon
-create coupon
+- list coupon
+- create coupon
 
 :::info
 NOTE: For more info visit https://woocommerce.github.io/woocommerce-rest-api-docs/?javascript.
