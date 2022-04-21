@@ -42,17 +42,17 @@ export const JSONNode = ({ data, ...restProps }) => {
     set((prev) => !prev);
   };
 
+  const typeofCurrentNode = getCurrentNodeType(data);
   const currentNodePath = getCurrentPath(path, currentNode);
-  // if data is an array or an object and is not empty and is expandable then show the node
   const toExpandNode = (data instanceof Array || data instanceof Object) && !_.isEmpty(data);
-  const toShowNodeIndicator = data instanceof Array || data instanceof Object;
+  const toShowNodeIndicator = (data instanceof Array || data instanceof Object) && typeofCurrentNode !== 'Function';
+  const numberOfEntries = getLength(typeofCurrentNode, data);
+  const toRenderSelector = (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array') && numberOfEntries > 0;
 
+  console.log('typeofCurrentNode ==>', typeofCurrentNode, currentNode);
   let $VALUE = null;
   let $NODEType = null;
   let $NODEIcon = null;
-  const typeofCurrentNode = getCurrentNodeType(data);
-  const numberOfEntries = getLength(typeofCurrentNode, data);
-  const toRenderSelector = (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array') && numberOfEntries > 0;
 
   const selectedNodeStyles = expandable &&
     selectedNode === currentNode && {
