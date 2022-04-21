@@ -9,4 +9,5 @@ export type QueryOptions = {
   product_id: string;
   order_id: string;
   customer_id: string;
+  resource: string;
 };

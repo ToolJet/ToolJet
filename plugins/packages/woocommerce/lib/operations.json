@@ -61,74 +61,74 @@
             "value": "retreive_customer",
             "name": "Retrieve a customer"
           }
-        ],
-        "list_customer": {},
-        "update_customer": {
-          "customer_id": {
-            "label": "Customer ID",
-            "key": "customer_id",
-            "type": "codehinter",
-            "description": "Enter customer ID",
-            "width": "320px",
-            "height": "36px",
-            "className": "codehinter-plugins",
-            "placeholder": "",
-            "lineNumbers": false
-          },
-          "body": {
-            "label": "Data",
-            "key": "body",
-            "type": "codehinter",
-            "description": "Enter data",
-            "height": "150px",
-            "placeholder": ""
-          }
+        ]
+      },
+      "list_customer": {},
+      "update_customer": {
+        "customer_id": {
+          "label": "Customer ID",
+          "key": "customer_id",
+          "type": "codehinter",
+          "description": "Enter customer ID",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "",
+          "lineNumbers": false
         },
-        "delete_customer": {
-          "customer_id": {
-            "label": "Customer ID",
-            "key": "customer_id",
-            "type": "codehinter",
-            "description": "Enter customer ID",
-            "width": "320px",
-            "height": "36px",
-            "className": "codehinter-plugins",
-            "placeholder": "",
-            "lineNumbers": false
-          }
-        },
-        "batch_update_customer": {
-          "body": {
-            "label": "Data",
-            "key": "body",
-            "type": "codehinter",
-            "description": "Enter data",
-            "height": "150px",
-            "placeholder": ""
-          }
-        },
-        "create_customer": {
-          "body": {
-            "label": "Data",
-            "key": "body",
-            "type": "codehinter",
-            "description": "Enter data",
-            "height": "150px",
-            "placeholder": ""
-          }
-        },
-        "retreive_customer": {
-          "customer_id": {
-            "label": "Customer ID",
-            "key": "customer_id",
-            "type": "codehinter",
-            "description": "Enter customer ID",
-            "width": "320px",
-            "height": "36px",
-            "className": "codehinter-plugins",
-            "placeholder": "",
-            "lineNumbers": false
-          }
+        "body": {
+          "label": "Data",
+          "key": "body",
+          "type": "codehinter",
+          "description": "Enter data",
+          "height": "150px",
+          "placeholder": ""
+        }
+      },
+      "delete_customer": {
+        "customer_id": {
+          "label": "Customer ID",
+          "key": "customer_id",
+          "type": "codehinter",
+          "description": "Enter customer ID",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "",
+          "lineNumbers": false
+        }
+      },
+      "batch_update_customer": {
+        "body": {
+          "label": "Data",
+          "key": "body",
+          "type": "codehinter",
+          "description": "Enter data",
+          "height": "150px",
+          "placeholder": ""
+        }
+      },
+      "create_customer": {
+        "body": {
+          "label": "Data",
+          "key": "body",
+          "type": "codehinter",
+          "description": "Enter data",
+          "height": "150px",
+          "placeholder": ""
+        }
+      },
+      "retreive_customer": {
+        "customer_id": {
+          "label": "Customer ID",
+          "key": "customer_id",
+          "type": "codehinter",
+          "description": "Enter customer ID",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "",
+          "lineNumbers": false
         }
       }
     },
@@ -163,74 +163,74 @@
             "value": "retreive_product",
             "name": "Retrieve a product"
           }
-        ],
-        "list_product": {},
-        "update_product": {
-          "product_id": {
-            "label": "Product ID",
-            "key": "product_id",
-            "type": "codehinter",
-            "description": "Enter product ID",
-            "width": "320px",
-            "height": "36px",
-            "className": "codehinter-plugins",
-            "placeholder": "",
-            "lineNumbers": false
-          },
-          "body": {
-            "label": "Data",
-            "key": "body",
-            "type": "codehinter",
-            "description": "Enter data",
-            "height": "150px",
-            "placeholder": ""
-          }
+        ]
+      },
+      "list_product": {},
+      "update_product": {
+        "product_id": {
+          "label": "Product ID",
+          "key": "product_id",
+          "type": "codehinter",
+          "description": "Enter product ID",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "",
+          "lineNumbers": false
         },
-        "delete_product": {
-          "product_id": {
-            "label": "Product ID",
-            "key": "product_id",
-            "type": "codehinter",
-            "description": "Enter product ID",
-            "width": "320px",
-            "height": "36px",
-            "className": "codehinter-plugins",
-            "placeholder": "",
-            "lineNumbers": false
-          }
-        },
-        "batch_update_product": {
-          "body": {
-            "label": "Data",
-            "key": "body",
-            "type": "codehinter",
-            "description": "Enter data",
-            "height": "150px",
-            "placeholder": ""
-          }
-        },
-        "create_product": {
-          "body": {
-            "label": "Data",
-            "key": "body",
-            "type": "codehinter",
-            "description": "Enter data",
-            "height": "150px",
-            "placeholder": ""
-          }
-        },
-        "retreive_product": {
-          "product_id": {
-            "label": "Product ID",
-            "key": "product_id",
-            "type": "codehinter",
-            "description": "Enter product ID",
-            "width": "320px",
-            "height": "36px",
-            "className": "codehinter-plugins",
-            "placeholder": "",
-            "lineNumbers": false
-          }
+        "body": {
+          "label": "Data",
+          "key": "body",
+          "type": "codehinter",
+          "description": "Enter data",
+          "height": "150px",
+          "placeholder": ""
+        }
+      },
+      "delete_product": {
+        "product_id": {
+          "label": "Product ID",
+          "key": "product_id",
+          "type": "codehinter",
+          "description": "Enter product ID",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "",
+          "lineNumbers": false
+        }
+      },
+      "batch_update_product": {
+        "body": {
+          "label": "Data",
+          "key": "body",
+          "type": "codehinter",
+          "description": "Enter data",
+          "height": "150px",
+          "placeholder": ""
+        }
+      },
+      "create_product": {
+        "body": {
+          "label": "Data",
+          "key": "body",
+          "type": "codehinter",
+          "description": "Enter data",
+          "height": "150px",
+          "placeholder": ""
+        }
+      },
+      "retreive_product": {
+        "product_id": {
+          "label": "Product ID",
+          "key": "product_id",
+          "type": "codehinter",
+          "description": "Enter product ID",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "",
+          "lineNumbers": false
         }
       }
     },
@@ -351,17 +351,17 @@
             "value": "create_coupon",
             "name": "Create a coupon"
           }
-        ],
-        "list_coupon": {},
-        "create_coupon": {
-          "body": {
-            "label": "Data",
-            "key": "body",
-            "type": "codehinter",
-            "description": "Enter data",
-            "height": "150px",
-            "placeholder": ""
-          }
+        ]
+      },
+      "list_coupon": {},
+      "create_coupon": {
+        "body": {
+          "label": "Data",
+          "key": "body",
+          "type": "codehinter",
+          "description": "Enter data",
+          "height": "150px",
+          "placeholder": ""
         }
       }
     }
