@@ -58,12 +58,11 @@ export const LeftSidebarInspector = ({
   ];
 
   const handleRemoveComponent = (component) => {
-    console.log('removeComponent', component);
     removeComponent(component);
   };
 
   const handleSeletttingComponentOnEditor = (component) => {
-    console.log('handleSeletttingComponentOnEditor', component);
+    setSelectedComponent(component.id, component);
   };
 
   const callbackActions = [

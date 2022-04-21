@@ -142,7 +142,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   return (
     <div
-      onMouseEnter={() => setShowHiddenOptionsForNode(true)}
+      onMouseEnter={() => !expandable && setShowHiddenOptionsForNode(true)}
       onMouseLeave={() => setShowHiddenOptionsForNode(false)}
       className={cx('row mt-1 font-monospace', {
         'json-node-element': !expandable,
