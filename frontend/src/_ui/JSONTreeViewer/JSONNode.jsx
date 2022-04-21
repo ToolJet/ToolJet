@@ -20,11 +20,9 @@ export const JSONNode = ({ data, ...restProps }) => {
     updateSelectedNode,
     useActions,
     enableCopyToClipboard,
-    dispatchActions,
     getNodeShowHideComponents,
   } = restProps;
 
-  dispatchActions('Delete Widget', { currentNode: currentNode, parent: path ? path[0] : 'Root', data: data });
   const [expandable, set] = React.useState(() =>
     typeof shouldExpandNode === 'function' ? shouldExpandNode(path, data) : shouldExpandNode
   );
@@ -135,7 +133,7 @@ export const JSONNode = ({ data, ...restProps }) => {
           <span
             style={{ height: '13px', width: '13px', marginBottom: '2px' }}
             className="btn badge bg-azure-lt mx-1"
-            onClick={() => dispatchAction(data)}
+            onClick={() => dispatchAction(data, currentNode)}
           >
             <img src={src ?? `/assets/images/icons/${icon}.svg`} width={width} height={height} />
           </span>

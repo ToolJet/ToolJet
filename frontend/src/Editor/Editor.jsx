@@ -1031,6 +1031,7 @@ class Editor extends React.Component {
               appDefinition={{ components: appDefinition.components, queries: dataQueries }}
               setSelectedComponent={this.setSelectedComponent}
               removeComponent={this.removeComponent}
+              runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div

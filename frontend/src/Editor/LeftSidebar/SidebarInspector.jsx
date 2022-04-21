@@ -5,7 +5,6 @@ import { SidebarPinnedButton } from './SidebarPinnedButton';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import { allSvgs } from '@tooljet/plugins/client';
-import { runQuery } from '@/_helpers/appUtils';
 
 export const LeftSidebarInspector = ({
   darkMode,
@@ -13,6 +12,7 @@ export const LeftSidebarInspector = ({
   appDefinition,
   setSelectedComponent,
   removeComponent,
+  runQuery,
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
@@ -65,8 +65,8 @@ export const LeftSidebarInspector = ({
     setSelectedComponent(component.id, component);
   };
 
-  const handleRunQuery = (query) => {
-    console.log('Handles Run query', query);
+  const handleRunQuery = (query, currentNode) => {
+    runQuery(query.id, currentNode);
   };
 
   const callbackActions = [

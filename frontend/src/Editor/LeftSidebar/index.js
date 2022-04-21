@@ -28,6 +28,7 @@ export const LeftSidebar = ({
   appDefinition,
   setSelectedComponent,
   removeComponent,
+  runQuery,
 }) => {
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -39,6 +40,7 @@ export const LeftSidebar = ({
         appDefinition={appDefinition}
         setSelectedComponent={setSelectedComponent}
         removeComponent={removeComponent}
+        runQuery={runQuery}
       />
       <LeftSidebarDataSources
         darkMode={darkMode}
