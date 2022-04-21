@@ -72,15 +72,7 @@ export const LeftSidebarDataSources = ({
           </span>
         </div>
         <div className="col-auto">
-          <button
-            className="btn btn-sm ds-delete-btn"
-            onClick={() => deleteDataSource(dataSource)}
-            style={
-              {
-                // display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
-              }
-            }
-          >
+          <button className="btn btn-sm ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
             <div>
               <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" />
             </div>
