@@ -45,6 +45,7 @@ export const JSONNode = ({ data, ...restProps }) => {
   const currentNodePath = getCurrentPath(path, currentNode);
   // if data is an array or an object and is not empty and is expandable then show the node
   const toExpandNode = (data instanceof Array || data instanceof Object) && !_.isEmpty(data);
+  const toShowNodeIndicator = data instanceof Array || data instanceof Object;
 
   let $VALUE = null;
   let $NODEType = null;
@@ -150,19 +151,15 @@ export const JSONNode = ({ data, ...restProps }) => {
         'json-node-element': !expandable,
       })}
     >
-      {toRenderSelector ? (
-        <React.Fragment>
-          <div className="col-md-1 json-tree-icon-container">
-            <JSONNode.NodeIndicator
-              toExpand={expandable}
-              toShowJSONNOde={toExpandNode}
-              handleToggle={toggleExpandNode}
-              typeofCurrentNode={typeofCurrentNode}
-              currentNode={currentNode}
-            />
-          </div>
-        </React.Fragment>
-      ) : null}
+      <div className="col-md-1 json-tree-icon-container">
+        <JSONNode.NodeIndicator
+          toExpand={expandable}
+          toShowNodeIndicator={toShowNodeIndicator}
+          handleToggle={toggleExpandNode}
+          typeofCurrentNode={typeofCurrentNode}
+          currentNode={currentNode}
+        />
+      </div>
 
       <div className={`col ${shouldDisplayIntendedBlock && 'group-border'}`}>
         <div
@@ -171,10 +168,7 @@ export const JSONNode = ({ data, ...restProps }) => {
         >
           {$NODEIcon && <div className="col-md-1 json-tree-icon-container">{$NODEIcon}</div>}
 
-          <div
-            style={{ marginLeft: toExpandNode ? '' : '11px', paddingLeft: toExpandNode && !$NODEIcon && 0 }}
-            className="col"
-          >
+          <div className="col">
             {$key} {$NODEType}
             {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
             {showHiddenOptionsForNode && useActions && renderHiddenOptionsForNode(true)}
@@ -187,7 +181,7 @@ export const JSONNode = ({ data, ...restProps }) => {
   );
 };
 
-const JSONTreeNodeIndicator = ({ toExpand, toShowJSONNOde, handleToggle, ...restProps }) => {
+const JSONTreeNodeIndicator = ({ toExpand, toShowNodeIndicator, handleToggle, ...restProps }) => {
   const { renderCustomIndicator, typeofCurrentNode, currentNode } = restProps;
 
   const defaultStyles = {
@@ -208,8 +202,7 @@ const JSONTreeNodeIndicator = ({ toExpand, toShowJSONNOde, handleToggle, ...rest
     </svg>
   );
 
-  if (!toShowJSONNOde && (typeofCurrentNode !== 'Object' || typeofCurrentNode !== 'Array')) return null;
-  if (!toShowJSONNOde) return renderDefaultIndicator();
+  if (!toShowNodeIndicator && (typeofCurrentNode !== 'Object' || typeofCurrentNode !== 'Array')) return null;
 
   return (
     <React.Fragment>
