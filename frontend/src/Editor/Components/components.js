@@ -2021,4 +2021,53 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'ButtonGroup',
+    displayName: 'ButtonGroup',
+    description: 'ButtonGroup',
+    component: 'ButtonGroup',
+    properties: {
+      data: { type: 'code', displayName: 'ButtonGroup' },
+      text: { type: 'code', displayName: 'Button Text' },
+    },
+    defaultSize: {
+      width: 4,
+      height: 50,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {
+      onClick: { displayName: 'On click' },
+    },
+    styles: {
+      backgroundColor: { type: 'color', displayName: 'Background color' },
+      textColor: { type: 'color', displayName: 'Text color' },
+      loaderColor: { type: 'color', displayName: 'Loader color' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+      borderRadius: { type: 'number', displayName: 'Border radius' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        text: { value: `Button` },
+        visible: { value: '{{true}}' },
+      },
+      events: [],
+      styles: {
+        backgroundColor: { value: '#375FCF' },
+        textColor: { value: '#fff' },
+        loaderColor: { value: '#fff' },
+        visibility: { value: '{{true}}' },
+        borderRadius: { value: '{{0}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];
