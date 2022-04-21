@@ -16,10 +16,20 @@ export const LeftSidebarInspector = ({
 }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
-  const jsontreeData = { ...currentState };
-  delete jsontreeData.errors;
-
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
+  const queryDefinitions = appDefinition['queries'];
+
+  const queries = {};
+
+  if (queryDefinitions) {
+    queryDefinitions.forEach((query) => {
+      queries[query.name] = { id: query.id };
+    });
+  }
+
+  const data = _.merge(currentState, { queries });
+  const jsontreeData = { ...data };
+  delete jsontreeData.errors;
 
   const queryIcons = Object.entries(currentState['queries']).map(([key, value]) => {
     const Icon = allSvgs[value.kind];
@@ -46,7 +56,24 @@ export const LeftSidebarInspector = ({
     ...queryIcons,
     ...componentIcons,
   ];
-  console.log('SidebarInspector.jsx: ', appDefinition);
+
+  // const deleteButton = (callback = () => null) => {
+  //   return (
+  //     <button
+  //       className="btn badge bg-azure-lt"
+  //       onClick={callback}
+  //       style={{
+  //         // display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
+  //         display: 'block',
+  //         marginTop: '3px',
+  //       }}
+  //     >
+  //       <div>
+  //         <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" className="mx-1" />
+  //       </div>
+  //     </button>
+  //   );
+  // };
 
   const callbackActions = [
     {
@@ -58,8 +85,8 @@ export const LeftSidebarInspector = ({
     {
       for: 'components',
       actions: [
-        { name: 'Select Widget', action: setSelectedComponent },
-        { name: 'Delete Widget', action: removeComponent },
+        { name: 'Select Widget', action: setSelectedComponent, icon: 'settings' },
+        { name: 'Delete Widget', action: removeComponent, icon: 'trash' },
       ],
       enableForAllChildren: false,
       enableFor1stLevelChildren: true,
@@ -92,8 +119,11 @@ export const LeftSidebarInspector = ({
             useIcons={true}
             iconsList={iconsList}
             useIndentedBlock={true}
+            enableCopyToClipboard={true}
             showHideActions={true}
             actionsList={callbackActions}
+            currentState={appDefinition}
+            actionIdentifier="id"
           />
         </div>
       </div>

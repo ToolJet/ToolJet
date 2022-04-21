@@ -25,7 +25,8 @@ export class JSONTreeViewer extends React.Component {
       darkTheme: false,
       selectedNode: null,
       showHideActions: false,
-      actionList: [],
+      enableCopyToClipboard: false,
+      actionsList: [],
     };
   }
 
@@ -95,6 +96,43 @@ export class JSONTreeViewer extends React.Component {
     }
   };
 
+  getDispatchActionsForNode = (node) => {
+    if (!node) return null;
+    return this.state.actionsList.filter((action) => action.for === node)[0];
+  };
+
+  getNodeShowHideComponents = (currentNode, path) => {
+    const showHideComponents = [];
+    const parent = path ? path[path.length - 2] : 'root';
+    const dispatchActionForCurrentNode = this.getDispatchActionsForNode(parent);
+
+    if (currentNode === parent) return;
+
+    if (dispatchActionForCurrentNode && dispatchActionForCurrentNode['enableFor1stLevelChildren']) {
+      dispatchActionForCurrentNode['actions'].map((action) => showHideComponents.push(action.icon));
+    }
+
+    return showHideComponents;
+    // console.log('From getNodeSHowHideComponents', currentNode, showHideComponents);
+    //Todo: if actions should be available for all children
+  };
+
+  dispatchActions = (actionName, currentNode) => {
+    // const { parent, data } = currentNode;
+    // // const action = this.state.actionsList.filter((action) => action.actionName === actionName);
+    // const identifier = this.props.actionIdentifier;
+    // const dispatchActions = this.state.actionsList.filter((action) => action.for === parent)[0];
+    // const dispatchActionFor1stLevelChildren = dispatchActions?.enableFor1stLevelChildren && dispatchActions['actions'];
+
+    // const dispatch = dispatchActionFor1stLevelChildren?.filter((action) => action.name === actionName);
+    // if (dispatch && currentNode === 'button1') {
+    //   console.log('dispatchActions: ', dispatch.action, data);
+    //   dispatch.action(data);
+    // }
+
+    console.log('dispatchActions: ', actionName, currentNode);
+  };
+
   render() {
     return (
       <div className="json-tree-container">
@@ -109,7 +147,11 @@ export class JSONTreeViewer extends React.Component {
           useIndentedBlock={this.props.useIndentedBlock ?? false}
           selectedNode={this.state.selectedNode}
           updateSelectedNode={this.updateSelectedNode}
-          showHideActions={this.state.showHideActions}
+          useActions={this.state.showHideActions}
+          actionsList={this.state.actionsList}
+          enableCopyToClipboard={this.state.enableCopyToClipboard}
+          dispatchActions={this.dispatchActions}
+          getNodeShowHideComponents={this.getNodeShowHideComponents}
         />
       </div>
     );

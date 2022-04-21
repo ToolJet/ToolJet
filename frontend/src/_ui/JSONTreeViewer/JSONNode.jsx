@@ -17,13 +17,26 @@ export const JSONNode = ({ data, ...restProps }) => {
     useIndentedBlock,
     selectedNode,
     updateSelectedNode,
+    useActions,
+    enableCopyToClipboard,
+    dispatchActions,
+    getNodeShowHideComponents,
   } = restProps;
 
+  dispatchActions('Delete Widget', { currentNode: currentNode, parent: path ? path[0] : 'Root', data: data });
   const [expandable, set] = React.useState(() =>
     typeof shouldExpandNode === 'function' ? shouldExpandNode(path, data) : shouldExpandNode
   );
 
   const [showHiddenOptionsForNode, setShowHiddenOptionsForNode] = React.useState(false);
+  const [showHiddenOptionButtons, setShowHiddenOptionButtons] = React.useState([]);
+
+  React.useEffect(() => {
+    if (showHiddenOptionButtons) {
+      setShowHiddenOptionButtons(() => getNodeShowHideComponents(currentNode, path));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggleExpandNode = (node) => {
     updateSelectedNode(node);
@@ -54,6 +67,10 @@ export const JSONNode = ({ data, ...restProps }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expandable]);
+
+  React.useEffect(() => {
+    console.log('useEffect On MouseEnter to show components ==>', showHiddenOptionButtons);
+  }, [showHiddenOptionsForNode]);
 
   if (toUseNodeIcons && currentNode) {
     $NODEIcon = renderNodeIcons(currentNode);
@@ -107,6 +124,25 @@ export const JSONNode = ({ data, ...restProps }) => {
   const shouldDisplayIntendedBlock =
     useIndentedBlock && expandable && (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array');
 
+  const renderHiddenOptionsForNode = (toShow = false) => {
+    if (!toShow && showHiddenOptionButtons?.length > 0) return null;
+
+    return (
+      <>
+        {showHiddenOptionButtons?.map((icon, index) => {
+          return (
+            <span
+              key={index}
+              // onClick={this.deleteDataQuery}
+            >
+              <img src={`/assets/images/icons/${icon}.svg`} width="12" height="12" className="mx-1" />
+            </span>
+          );
+        })}
+      </>
+    );
+  };
+
   return (
     <div
       onMouseEnter={() => setShowHiddenOptionsForNode(true)}
@@ -141,8 +177,9 @@ export const JSONNode = ({ data, ...restProps }) => {
             className="col"
           >
             {$key} {$NODEType}
-            {showHiddenOptionsForNode && <JSONNode.CopyToClipboard data={data} />}
             {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
+            {showHiddenOptionsForNode && useActions && renderHiddenOptionsForNode(true)}
+            {showHiddenOptionsForNode && enableCopyToClipboard && <JSONNode.CopyToClipboard data={data} />}
           </div>
         </div>
         {toRenderSelector && (toExpandNode && !expandable ? null : $VALUE)}
@@ -266,7 +303,7 @@ const CopyToClipboardObject = ({ data }) => {
   if (copied) {
     return (
       <svg
-        className="copy-to-clipboard"
+        className="hide-show-icon"
         width="12"
         height="12"
         viewBox="0 0 10 10"
@@ -301,7 +338,7 @@ const CopyToClipboardObject = ({ data }) => {
       }}
     >
       <svg
-        className="copy-to-clipboard"
+        className="hide-show-icon"
         width="10"
         height="10"
         viewBox="0 0 15 18"
