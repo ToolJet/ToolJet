@@ -1852,6 +1852,7 @@ export const componentTypes = [
       secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
       secondaryValue: { type: 'code', displayName: 'Secondary value' },
       secondarySignDisplay: { type: 'code', displayName: 'Secondary sign display' },
+      loadingState: { type: 'toggle', displayName: 'Loading State' },
     },
     events: {},
     styles: {
@@ -1872,6 +1873,7 @@ export const componentTypes = [
         secondaryValueLabel: { value: 'Last month' },
         secondaryValue: { value: '2.85' },
         secondarySignDisplay: { value: 'positive' },
+        loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
