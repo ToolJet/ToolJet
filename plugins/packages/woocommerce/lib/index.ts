@@ -54,7 +54,7 @@ export default class Woocommerce implements QueryService {
         return response.data;
       })
       .catch((error) => {
-        return error.response.data;
+        throw new Error('Invalid credentials');
       });
     if (client?.data?.status == '401') {
       throw new Error('Invalid credentials');

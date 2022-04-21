@@ -17,8 +17,6 @@
       },
       "consumer_secret": {
         "encrypted": true
-      },
-      "host":{
       }
     },
     "customTesting": false
