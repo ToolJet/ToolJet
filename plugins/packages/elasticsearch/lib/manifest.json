@@ -33,6 +33,9 @@
       },
       "client_cert": {
         "encrypted": true
+      },
+      "root_cert": {
+        "encrypted": true
       }
     }
   },

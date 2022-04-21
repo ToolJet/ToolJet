@@ -82,7 +82,7 @@ export default class ElasticsearchService implements QueryService {
         };
       } else if (sslCertificate === 'client_certificate') {
         options['ssl'] = {
-          ca: sourceOptions.ca_cert ?? undefined,
+          ca: sourceOptions.root_cert ?? undefined,
           cert: sourceOptions.client_cert ?? undefined,
           key: sourceOptions.client_key ?? undefined,
         };
