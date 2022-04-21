@@ -86,7 +86,6 @@
     "uuid": "8.3.2",
     "webpack": "^5.55.1",
     "webpack-cli": "^4.8.0",
-    "yaml-parser": "^3.5.3",
     "y-presence": "^1.0.6",
     "y-websocket": "^1.4.0",
     "yjs": "^13.5.28",
