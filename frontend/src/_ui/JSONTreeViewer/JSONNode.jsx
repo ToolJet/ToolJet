@@ -3,6 +3,7 @@ import _ from 'lodash';
 import cx from 'classnames';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { toast } from 'react-hot-toast';
+import { ToolTip } from '@/_components/ToolTip';
 
 export const JSONNode = ({ data, ...restProps }) => {
   const {
@@ -68,9 +69,9 @@ export const JSONNode = ({ data, ...restProps }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expandable]);
 
-  React.useEffect(() => {
-    console.log('useEffect On MouseEnter to show components ==>', showHiddenOptionButtons);
-  }, [showHiddenOptionsForNode]);
+  // React.useEffect(() => {
+  //   console.log('useEffect On MouseEnter to show components ==>', showHiddenOptionButtons);
+  // }, [showHiddenOptionsForNode]);
 
   if (toUseNodeIcons && currentNode) {
     $NODEIcon = renderNodeIcons(currentNode);
@@ -127,17 +128,19 @@ export const JSONNode = ({ data, ...restProps }) => {
   const renderHiddenOptionsForNode = (toShow = false) => {
     if (!toShow && showHiddenOptionButtons?.length > 0) return null;
 
-    return (
-      <>
-        {showHiddenOptionButtons?.map((actionOption, index) => {
-          return (
-            <span key={`${actionOption.name}-${index}`} onClick={() => actionOption.action(data)}>
-              <img src={`/assets/images/icons/${actionOption.icon}.svg`} width="12" height="12" className="mx-1" />
-            </span>
-          );
-        })}
-      </>
-    );
+    return showHiddenOptionButtons?.map((actionOption, index) => {
+      return (
+        <ToolTip key={`${actionOption.name}-${index}`} message={`${actionOption.name} ${currentNode}`}>
+          <span
+            style={{ height: '13px', width: '13px', marginBottom: '2px' }}
+            className="btn badge bg-azure-lt mx-1"
+            onClick={() => actionOption.action(data)}
+          >
+            <img src={`/assets/images/icons/${actionOption.icon}.svg`} width="12" height="12" />
+          </span>
+        </ToolTip>
+      );
+    });
   };
 
   return (
@@ -326,29 +329,19 @@ const CopyToClipboardObject = ({ data }) => {
   }
 
   return (
-    <CopyToClipboard
-      text={JSON.stringify(data, null, 2)}
-      onCopy={() => {
-        console.log('JSONNOde copy to clipboard', data);
-        setCopied(true);
-        toast.success('Copied to clipboard', { position: 'top-center' });
-      }}
-    >
-      <svg
-        className="hide-show-icon"
-        width="10"
-        height="10"
-        viewBox="0 0 15 18"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        strokeWidth="0.35"
+    <ToolTip message={'Copy to clipboard'}>
+      <CopyToClipboard
+        text={JSON.stringify(data, null, 2)}
+        onCopy={() => {
+          setCopied(true);
+          toast.success('Copied to clipboard', { position: 'top-center' });
+        }}
       >
-        <path
-          d="M10.5 15.6667H2.16667V4.83334C2.16667 4.37501 1.79167 4.00001 1.33333 4.00001C0.875 4.00001 0.5 4.37501 0.5 4.83334V15.6667C0.5 16.5833 1.25 17.3333 2.16667 17.3333H10.5C10.9583 17.3333 11.3333 16.9583 11.3333 16.5C11.3333 16.0417 10.9583 15.6667 10.5 15.6667ZM14.6667 12.3333V2.33334C14.6667 1.41667 13.9167 0.666672 13 0.666672H5.5C4.58333 0.666672 3.83333 1.41667 3.83333 2.33334V12.3333C3.83333 13.25 4.58333 14 5.5 14H13C13.9167 14 14.6667 13.25 14.6667 12.3333ZM13 12.3333H5.5V2.33334H13V12.3333Z"
-          fill="currentColor"
-        />
-      </svg>
-    </CopyToClipboard>
+        <span style={{ height: '13px', width: '13px', marginBottom: '2px' }} className="btn badge bg-azure-lt mx-1">
+          <img src={`/assets/images/icons/copy.svg`} width="12" height="12" />
+        </span>
+      </CopyToClipboard>
+    </ToolTip>
   );
 };
 
