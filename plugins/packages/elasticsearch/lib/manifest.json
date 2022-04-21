@@ -24,6 +24,15 @@
       "password": {
         "type": "string",
         "encrypted": true
+      },
+      "ca_cert": {
+        "encrypted": true
+      },
+      "client_key": {
+        "encrypted": true
+      },
+      "client_cert": {
+        "encrypted": true
       }
     }
   },
@@ -42,6 +51,9 @@
     },
     "ssl_enabled": {
       "value": true
+    },
+    "ssl_certificate":{
+      "value": "none"
     }
   },
   "properties": {
@@ -56,8 +68,8 @@
           "name": "CA certificate"
         },
         {
-          "value": "self_signed",
-          "name": "Self-signed certificate"
+          "value": "client_certificate",
+          "name": "Client certificate"
         },
         {
           "value": "none",
@@ -106,7 +118,7 @@
         "description": "Enter ca certificate"
       }
     },
-    "self_signed":{
+    "client_certificate":{
       "client_key": {
         "label": "Client Key",
         "key": "client_key",
