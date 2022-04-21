@@ -48,14 +48,7 @@ export const LeftSidebarInspector = ({
     }
   });
 
-  const iconsList = [
-    { iconName: 'queries', iconPath: '/assets/images/icons/editor/left-sidebar/queries.svg' },
-    { iconName: 'components', iconPath: '/assets/images/icons/editor/left-sidebar/components.svg' },
-    { iconName: 'globals', iconPath: '/assets/images/icons/editor/left-sidebar/globals.svg' },
-    { iconName: 'variables', iconPath: '/assets/images/icons/editor/left-sidebar/variables.svg' },
-    ...queryIcons,
-    ...componentIcons,
-  ];
+  const iconsList = [...queryIcons, ...componentIcons];
 
   const handleRemoveComponent = (component) => {
     removeComponent(component);
