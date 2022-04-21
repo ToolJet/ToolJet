@@ -16,18 +16,19 @@ export function GeneralSettings({ settings, updateData }) {
     setSaving(true);
     organizationService.editOrganization({ enableSignUp, domain }).then(
       () => {
+        setSaving(false);
         updateData('general', { enable_sign_up: enableSignUp, domain });
         toast.success('updated sso configurations', {
           position: 'top-center',
         });
       },
       () => {
+        setSaving(false);
         toast.error('Error saving sso configurations', {
           position: 'top-center',
         });
       }
     );
-    setSaving(false);
   };
 
   return (

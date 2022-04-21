@@ -18,40 +18,42 @@ export function Git({ settings, updateData }) {
     setSaving(true);
     organizationService.editOrganizationConfigs({ type: 'git', configs: { clientId, clientSecret } }).then(
       (data) => {
+        setSaving(false);
         data.id && setConfigId(data.id);
         updateData('git', { id: data.id, configs: { client_id: clientId, client_secret: clientSecret } });
-        toast.success('updated sso configurations', {
+        toast.success('updated SSO configurations', {
           position: 'top-center',
         });
       },
       () => {
+        setSaving(false);
         toast.error('Error saving sso configurations', {
           position: 'top-center',
         });
       }
     );
-    setSaving(false);
   };
 
   const changeStatus = () => {
     setSaving(true);
     organizationService.editOrganizationConfigs({ type: 'git', enabled: !enabled }).then(
       (data) => {
+        setSaving(false);
         const enabled_tmp = !enabled;
         setEnabled(enabled_tmp);
         data.id && setConfigId(data.id);
         updateData('git', { id: data.id, enabled: enabled_tmp });
-        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} Git sso`, {
+        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} Git SSO`, {
           position: 'top-center',
         });
       },
       () => {
+        setSaving(false);
         toast.error('Error saving sso configurations', {
           position: 'top-center',
         });
       }
     );
-    setSaving(false);
   };
 
   return (

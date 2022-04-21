@@ -16,40 +16,42 @@ export function Google({ settings, updateData }) {
     setSaving(true);
     organizationService.editOrganizationConfigs({ type: 'google', configs: { clientId } }).then(
       (data) => {
+        setSaving(false);
         data.id && setConfigId(data.id);
         updateData('google', { id: data.id, configs: { client_id: clientId } });
-        toast.success('updated sso configurations', {
+        toast.success('updated SSO configurations', {
           position: 'top-center',
         });
       },
       () => {
+        setSaving(false);
         toast.error('Error saving sso configurations', {
           position: 'top-center',
         });
       }
     );
-    setSaving(false);
   };
 
   const changeStatus = () => {
     setSaving(true);
     organizationService.editOrganizationConfigs({ type: 'google', enabled: !enabled }).then(
       (data) => {
+        setSaving(false);
         const enabled_tmp = !enabled;
         setEnabled(enabled_tmp);
         data.id && setConfigId(data.id);
         updateData('google', { id: data.id, enabled: enabled_tmp });
-        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} Google sso`, {
+        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} Google SSO`, {
           position: 'top-center',
         });
       },
       () => {
+        setSaving(false);
         toast.error('Error saving sso configurations', {
           position: 'top-center',
         });
       }
     );
-    setSaving(false);
   };
 
   return (
