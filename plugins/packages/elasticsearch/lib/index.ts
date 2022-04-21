@@ -10,23 +10,19 @@ export default class ElasticsearchService implements QueryService {
     let result = {};
     const operation = queryOptions.operation;
 
-    try {
-      switch (operation) {
-        case 'search':
-          result = await search(client, queryOptions.index, queryOptions.query);
-          break;
-        case 'index_document':
-          result = await indexDocument(client, queryOptions.index, queryOptions.body);
-          break;
-        case 'get':
-          result = await getDocument(client, queryOptions.index, queryOptions.id);
-          break;
-        case 'update':
-          result = await updateDocument(client, queryOptions.index, queryOptions.id, queryOptions.body);
-          break;
-      }
-    } catch (err) {
-      console.log(err);
+    switch (operation) {
+      case 'search':
+        result = await search(client, queryOptions.index, queryOptions.query);
+        break;
+      case 'index_document':
+        result = await indexDocument(client, queryOptions.index, queryOptions.body);
+        break;
+      case 'get':
+        result = await getDocument(client, queryOptions.index, queryOptions.id);
+        break;
+      case 'update':
+        result = await updateDocument(client, queryOptions.index, queryOptions.id, queryOptions.body);
+        break;
     }
 
     return {
