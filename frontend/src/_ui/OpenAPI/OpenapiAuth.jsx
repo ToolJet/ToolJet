@@ -82,75 +82,80 @@ const OpenapiAuth = ({
     } else return null;
   };
 
-  if (auth_type === 'basic') {
-    return (
-      <div>
-        <div className="col-md-12">
-          <label className="form-label text-muted mt-3">Username</label>
-          <Input
-            type="text"
-            className="form-control"
-            onChange={(e) => optionchanged('username', e.target.value)}
-            value={username}
-          />
-        </div>
-        <div className="col-md-12">
-          <label className="form-label text-muted mt-3">Password</label>
-          <Input
-            type="text"
-            className="form-control"
-            onChange={(e) => optionchanged('password', e.target.value)}
-            value={password}
-          />
-        </div>
-      </div>
-    );
-  } else if (auth_type === 'bearer') {
-    return (
-      <div>
-        <div className="col-md-12">
-          <label className="form-label text-muted mt-3">Token</label>
-          <Input
-            type="text"
-            className="form-control"
-            onChange={(e) => optionchanged('bearer_token', e.target.value)}
-            value={bearer_token}
-          />
-        </div>
-      </div>
-    );
-  } else if (auth_type === 'apiKey') {
-    if (Array.isArray(authObject)) {
+  switch (auth_type) {
+    case 'basic': {
       return (
         <div>
-          {authObject.map((auth, index) => {
-            return renderApiKeyField(auth, index);
-          })}
+          <div className="col-md-12">
+            <label className="form-label text-muted mt-3">Username</label>
+            <Input
+              type="text"
+              className="form-control"
+              onChange={(e) => optionchanged('username', e.target.value)}
+              value={username}
+            />
+          </div>
+          <div className="col-md-12">
+            <label className="form-label text-muted mt-3">Password</label>
+            <Input
+              type="text"
+              className="form-control"
+              onChange={(e) => optionchanged('password', e.target.value)}
+              value={password}
+            />
+          </div>
         </div>
       );
-    } else {
-      return renderApiKeyField(authObject);
     }
-  } else if (auth_type === 'oauth2') {
-    return (
-      <Oauth
-        add_token_to={add_token_to}
-        header_prefix={header_prefix}
-        access_token_url={access_token_url}
-        grant_type={grant_type}
-        optionchanged={optionchanged}
-        custom_auth_params={custom_auth_params}
-        custom_query_params={custom_query_params}
-        client_id={client_id}
-        client_secret={client_secret}
-        client_auth={client_auth}
-        scopes={scopes}
-        auth_url={auth_url}
-        authObject={authObject}
-      />
-    );
-  } else {
-    return null;
+    case 'bearer': {
+      return (
+        <div>
+          <div className="col-md-12">
+            <label className="form-label text-muted mt-3">Token</label>
+            <Input
+              type="text"
+              className="form-control"
+              onChange={(e) => optionchanged('bearer_token', e.target.value)}
+              value={bearer_token}
+            />
+          </div>
+        </div>
+      );
+    }
+    case 'apiKey': {
+      if (Array.isArray(authObject)) {
+        return (
+          <div>
+            {authObject.map((auth, index) => {
+              return renderApiKeyField(auth, index);
+            })}
+          </div>
+        );
+      } else {
+        return renderApiKeyField(authObject);
+      }
+    }
+    case 'oauth2': {
+      return (
+        <Oauth
+          add_token_to={add_token_to}
+          header_prefix={header_prefix}
+          access_token_url={access_token_url}
+          grant_type={grant_type}
+          optionchanged={optionchanged}
+          custom_auth_params={custom_auth_params}
+          custom_query_params={custom_query_params}
+          client_id={client_id}
+          client_secret={client_secret}
+          client_auth={client_auth}
+          scopes={scopes}
+          auth_url={auth_url}
+          authObject={authObject}
+        />
+      );
+    }
+    default:
+      return null;
   }
 };
 
