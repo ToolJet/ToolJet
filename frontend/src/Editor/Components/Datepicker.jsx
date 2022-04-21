@@ -44,7 +44,10 @@ export const Datepicker = function Datepicker({
     if (dateMomentInstance && dateMomentInstance.isValid()) {
       setDate(dateMomentInstance.toDate());
       setExposedVariable('value', defaultValue);
-    } else setDate(null);
+    } else {
+      setDate(null);
+      setExposedVariable('value', undefined);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
 
