@@ -11,6 +11,10 @@ export class AppUpdateDto {
   @IsOptional()
   is_public: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  is_maintenance_on: boolean;
+
   @IsString()
   @IsOptional()
   @Transform(({ value }) => sanitizeInput(value))

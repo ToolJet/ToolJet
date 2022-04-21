@@ -79,6 +79,7 @@ class Editor extends React.Component {
       components: {},
       globalSettings: {
         hideHeader: false,
+        appInMaintenance: false,
         canvasMaxWidth: 1292,
         canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
       },
@@ -308,6 +309,26 @@ class Editor extends React.Component {
     queries.forEach((query) => {
       if (query.options.runOnPageLoad) {
         runQuery(this, query.id, query.name);
+      }
+    });
+  };
+
+  toggleAppMaintenance = () => {
+    const newState = !this.state.app.is_maintenance_on;
+
+    // eslint-disable-next-line no-unused-vars
+    appService.setMaintenance(this.state.app.id, newState).then((data) => {
+      this.setState({
+        app: {
+          ...this.state.app,
+          is_maintenance_on: newState,
+        },
+      });
+
+      if (newState) {
+        toast.success('Application is on maintenance.');
+      } else {
+        toast.success('Application maintenance is completed');
       }
     });
   };
@@ -1027,6 +1048,8 @@ class Editor extends React.Component {
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
+              toggleAppMaintenance={this.toggleAppMaintenance}
+              is_maintenance_on={this.state.app.is_maintenance_on}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
