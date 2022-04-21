@@ -69,9 +69,9 @@ export const JSONNode = ({ data, ...restProps }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expandable]);
 
-  // React.useEffect(() => {
-  //   console.log('useEffect On MouseEnter to show components ==>', showHiddenOptionButtons);
-  // }, [showHiddenOptionsForNode]);
+  React.useEffect(() => {
+    console.log('useEffect On MouseEnter to show components ==>', showHiddenOptionButtons);
+  }, [showHiddenOptionsForNode]);
 
   if (toUseNodeIcons && currentNode) {
     $NODEIcon = renderNodeIcons(currentNode);
@@ -129,14 +129,15 @@ export const JSONNode = ({ data, ...restProps }) => {
     if (!toShow && showHiddenOptionButtons?.length > 0) return null;
 
     return showHiddenOptionButtons?.map((actionOption, index) => {
+      const { name, src, icon, dispatchAction, width = 12, height = 12 } = actionOption;
       return (
-        <ToolTip key={`${actionOption.name}-${index}`} message={`${actionOption.name} ${currentNode}`}>
+        <ToolTip key={`${name}-${index}`} message={`${name} ${currentNode}`}>
           <span
             style={{ height: '13px', width: '13px', marginBottom: '2px' }}
             className="btn badge bg-azure-lt mx-1"
-            onClick={() => actionOption.action(data)}
+            onClick={() => dispatchAction(data)}
           >
-            <img src={`/assets/images/icons/${actionOption.icon}.svg`} width="12" height="12" />
+            <img src={src ?? `/assets/images/icons/${icon}.svg`} width={width} height={height} />
           </span>
         </ToolTip>
       );

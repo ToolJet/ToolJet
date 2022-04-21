@@ -65,18 +65,30 @@ export const LeftSidebarInspector = ({
     setSelectedComponent(component.id, component);
   };
 
+  const handleRunQuery = (query) => {
+    console.log('Handles Run query', query);
+  };
+
   const callbackActions = [
     {
       for: 'queries',
-      actions: [{ name: 'Run Query', action: runQuery }],
+      actions: [
+        {
+          name: 'Run Query',
+          dispatchAction: handleRunQuery,
+          src: '/assets/images/icons/editor/play.svg',
+          width: 8,
+          height: 8,
+        },
+      ],
       enableForAllChildren: false,
       enableFor1stLevelChildren: true,
     },
     {
       for: 'components',
       actions: [
-        { name: 'Select Widget', action: handleSeletttingComponentOnEditor, icon: 'settings' },
-        { name: 'Delete Widget', action: handleRemoveComponent, icon: 'trash' },
+        { name: 'Select Widget', dispatchAction: handleSeletttingComponentOnEditor, icon: 'settings' },
+        { name: 'Delete Widget', dispatchAction: handleRemoveComponent, icon: 'trash' },
       ],
       enableForAllChildren: false,
       enableFor1stLevelChildren: true,
