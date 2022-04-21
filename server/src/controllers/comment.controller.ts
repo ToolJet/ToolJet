@@ -24,7 +24,7 @@ export class CommentController {
   constructor(private commentService: CommentService, private commentsAbilityFactory: CommentsAbilityFactory) {}
 
   @UseGuards(JwtAuthGuard)
-  @Post('create')
+  @Post()
   public async createComment(@User() user, @Body() createCommentDto: CreateCommentDTO): Promise<Comment> {
     const _response = await Thread.findOne({
       where: { id: createCommentDto.threadId },
@@ -80,7 +80,7 @@ export class CommentController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch('/edit/:commentId')
+  @Patch('/:commentId')
   public async editComment(
     @Request() req,
     @Body() createCommentDto: CreateCommentDTO,
@@ -100,7 +100,7 @@ export class CommentController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete('/delete/:commentId')
+  @Delete('/:commentId')
   public async deleteComment(@Request() req, @Param('commentId') commentId: number) {
     const _response = await Comment.findOne({
       where: { id: commentId },
