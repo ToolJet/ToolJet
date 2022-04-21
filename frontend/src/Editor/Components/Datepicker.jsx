@@ -18,7 +18,7 @@ export const Datepicker = function Datepicker({
   const { format, enableTime, enableDate, defaultValue, disabledDates } = properties;
   const { visibility, disabledState, borderRadius } = styles;
 
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(null);
   const [excludedDates, setExcludedDates] = useState([]);
 
   const selectedDateFormat = enableTime ? `${format} LT` : format;
@@ -40,11 +40,11 @@ export const Datepicker = function Datepicker({
   };
 
   useEffect(() => {
-    const dateMomentInstance = moment(defaultValue, selectedDateFormat);
-    if (dateMomentInstance.isValid()) {
+    const dateMomentInstance = defaultValue && moment(defaultValue, selectedDateFormat);
+    if (dateMomentInstance && dateMomentInstance.isValid()) {
       setDate(dateMomentInstance.toDate());
       setExposedVariable('value', defaultValue);
-    }
+    } else setDate(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
 
@@ -74,7 +74,7 @@ export const Datepicker = function Datepicker({
       <input
         readOnly
         {...props}
-        value={computeDateString(date)}
+        value={date !== null ? computeDateString(date) : 'select date'}
         className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
           darkMode ? 'bg-dark color-white' : 'bg-light'
         }`}
