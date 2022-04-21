@@ -42,7 +42,7 @@ export const Inspector = ({
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
   useHotkeys('escape', () => switchSidebarTab(2));
 
-  useHotkeys('cmd+d, ctrl+d', (e) => {
+  useHotkeys('cmd+d, ctrl+d, cmd+c, ctrl+c', (e) => {
     e.preventDefault();
     let clonedComponent = JSON.parse(JSON.stringify(component));
     clonedComponent.id = uuidv4();
