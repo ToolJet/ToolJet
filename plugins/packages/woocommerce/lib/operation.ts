@@ -88,7 +88,8 @@ export async function productOperations(WooCommerce, queryOptions: QueryOptions,
     case 'list_product': {
       return await WooCommerce.get('products')
         .then((response) => {
-          return response?.data;
+          returnValue = { statusCode: response.status, ...response?.data };
+          return returnValue;
         })
         .catch((error) => {
           return error.response.data;
@@ -159,7 +160,8 @@ export async function orderOperations(WooCommerce, queryOptions: QueryOptions, o
     case 'list_order': {
       return await WooCommerce.get('orders')
         .then((response) => {
-          return response?.data;
+          returnValue = { statusCode: response.status, ...response?.data };
+          return returnValue;
         })
         .catch((error) => {
           return error.response.data;
