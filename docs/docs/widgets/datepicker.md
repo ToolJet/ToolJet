@@ -8,6 +8,11 @@ The Datepicker widget allows users to select a single value for date and time fr
 
 </div>
 
+## Events
+### Event: On select
+
+On select event is triggered when an date is selected.
+
 ## Properties
 
 ### Default value
