@@ -543,6 +543,10 @@ class Editor extends React.Component {
 
     newComponent.component.name = computeComponentName(newComponent.component.component, appDefinition.components);
 
+    Object.keys(newComponent.layouts).map((layout) => {
+      newComponent.layouts[layout].top = newComponent.layouts[layout].top + newComponent.layouts[layout].height;
+    });
+
     appDefinition.components[newComponent.id] = newComponent;
     this.appDefinitionChanged(appDefinition);
   };
