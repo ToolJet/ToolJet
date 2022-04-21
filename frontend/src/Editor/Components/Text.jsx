@@ -5,7 +5,8 @@ export const Text = function Text({ height, properties, styles, darkMode }) {
   const [loadingState, setLoadingState] = useState(false);
 
   const { textColor, textAlign, visibility, disabledState } = styles;
-  const text = properties.text ?? '';
+
+  let text = (properties.text === 0 ? '0' : properties.text === false ? 'false' : properties.text) ?? '';
   const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
 
   useEffect(() => {
