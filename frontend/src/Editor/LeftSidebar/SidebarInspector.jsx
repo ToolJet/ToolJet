@@ -57,23 +57,14 @@ export const LeftSidebarInspector = ({
     ...componentIcons,
   ];
 
-  // const deleteButton = (callback = () => null) => {
-  //   return (
-  //     <button
-  //       className="btn badge bg-azure-lt"
-  //       onClick={callback}
-  //       style={{
-  //         // display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
-  //         display: 'block',
-  //         marginTop: '3px',
-  //       }}
-  //     >
-  //       <div>
-  //         <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" className="mx-1" />
-  //       </div>
-  //     </button>
-  //   );
-  // };
+  const handleRemoveComponent = (component) => {
+    console.log('removeComponent', component);
+    removeComponent(component);
+  };
+
+  const handleSeletttingComponentOnEditor = (component) => {
+    console.log('handleSeletttingComponentOnEditor', component);
+  };
 
   const callbackActions = [
     {
@@ -85,8 +76,8 @@ export const LeftSidebarInspector = ({
     {
       for: 'components',
       actions: [
-        { name: 'Select Widget', action: setSelectedComponent, icon: 'settings' },
-        { name: 'Delete Widget', action: removeComponent, icon: 'trash' },
+        { name: 'Select Widget', action: handleSeletttingComponentOnEditor, icon: 'settings' },
+        { name: 'Delete Widget', action: handleRemoveComponent, icon: 'trash' },
       ],
       enableForAllChildren: false,
       enableFor1stLevelChildren: true,

@@ -109,11 +109,11 @@ export class JSONTreeViewer extends React.Component {
     if (currentNode === parent) return;
 
     if (dispatchActionForCurrentNode && dispatchActionForCurrentNode['enableFor1stLevelChildren']) {
-      dispatchActionForCurrentNode['actions'].map((action) => showHideComponents.push(action.icon));
+      console.log('From getNodeSHowHideComponents', currentNode, dispatchActionForCurrentNode['actions']);
+      dispatchActionForCurrentNode['actions'].map((action) => showHideComponents.push(action));
     }
 
     return showHideComponents;
-    // console.log('From getNodeSHowHideComponents', currentNode, showHideComponents);
     //Todo: if actions should be available for all children
   };
 

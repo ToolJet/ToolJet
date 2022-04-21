@@ -129,13 +129,10 @@ export const JSONNode = ({ data, ...restProps }) => {
 
     return (
       <>
-        {showHiddenOptionButtons?.map((icon, index) => {
+        {showHiddenOptionButtons?.map((actionOption, index) => {
           return (
-            <span
-              key={index}
-              // onClick={this.deleteDataQuery}
-            >
-              <img src={`/assets/images/icons/${icon}.svg`} width="12" height="12" className="mx-1" />
+            <span key={`${actionOption.name}-${index}`} onClick={() => actionOption.action(data)}>
+              <img src={`/assets/images/icons/${actionOption.icon}.svg`} width="12" height="12" className="mx-1" />
             </span>
           );
         })}
