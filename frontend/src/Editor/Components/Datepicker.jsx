@@ -14,6 +14,7 @@ export const Datepicker = function Datepicker({
   component,
   id,
   darkMode,
+  fireEvent,
 }) {
   const { format, enableTime, enableDate, defaultValue, disabledDates } = properties;
   const { visibility, disabledState, borderRadius } = styles;
@@ -34,6 +35,7 @@ export const Datepicker = function Datepicker({
   };
 
   const onDateChange = (date) => {
+    fireEvent('onSelect');
     setDate(date);
     const dateString = computeDateString(date);
     setExposedVariable('value', dateString);
