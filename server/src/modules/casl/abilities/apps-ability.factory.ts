@@ -15,6 +15,7 @@ type Actions =
   | 'createVersions'
   | 'deleteVersions'
   | 'deleteApp'
+  | 'deleteDataSource'
   | 'deleteQuery'
   | 'fetchUsers'
   | 'fetchVersions'
@@ -79,6 +80,7 @@ export class AppsAbilityFactory {
 
       can('updateDataSource', App, { organizationId: user.organizationId });
       can('createDataSource', App, { organizationId: user.organizationId });
+      can('deleteDataSource', App, { organizationId: user.organizationId });
     }
 
     if (await this.usersService.userCan(user, 'delete', 'App', params.id)) {
