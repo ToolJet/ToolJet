@@ -161,7 +161,7 @@ describe('organizations controller', () => {
         expect(ssoConfigs.sso).toBe('git');
         expect(ssoConfigs.enabled).toBeTruthy();
         expect(ssoConfigs.configs.clientId).toBe('client-id');
-        expect(ssoConfigs.configs.clientSecret).not.toBe('client-secret');
+        expect(ssoConfigs.configs['clientSecret']).not.toBe('client-secret');
       });
 
       it('should not change organization configs if changes are not done by admin', async () => {

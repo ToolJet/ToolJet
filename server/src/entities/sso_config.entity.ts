@@ -9,21 +9,13 @@ import {
 } from 'typeorm';
 import { Organization } from './organization.entity';
 
-interface Google {
+type Google = {
   clientId: string;
-}
-interface Git {
-  clientId: string;
-  clientSecret: string;
-}
-interface Okta {
+};
+type Git = {
   clientId: string;
   clientSecret: string;
-  domain: string;
-  redirectUri: string;
-  authServer?: string;
-}
-
+};
 @Entity({ name: 'sso_configs' })
 export class SSOConfigs {
   @PrimaryGeneratedColumn('uuid')
@@ -33,10 +25,10 @@ export class SSOConfigs {
   organizationId: string;
 
   @Column({ name: 'sso' })
-  sso: 'google' | 'git' | 'okta' | 'form';
+  sso: 'google' | 'git' | 'form';
 
   @Column({ type: 'json' })
-  configs: Google | Git | Okta;
+  configs: Google | Git;
 
   @Column({ name: 'enabled' })
   enabled: boolean;
