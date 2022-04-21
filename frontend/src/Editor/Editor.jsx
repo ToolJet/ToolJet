@@ -162,7 +162,7 @@ class Editor extends React.Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.appDefinition !== this.state.appDefinition) {
+    if (!isEqual(prevState.appDefinition, this.state.appDefinition)) {
       computeComponentState(this, this.state.appDefinition.components);
     }
   }
