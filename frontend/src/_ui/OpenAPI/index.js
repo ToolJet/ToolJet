@@ -156,12 +156,12 @@ const OpenApi = ({
   const getSelectedAuth = () => {
     securities.map((security) => {
       if (Array.isArray(security)) {
-        if (security[0].key === auth_key || security[0].key === auth_key) {
+        if (security[0].key === auth_key) {
           optionchanged('auth_type', security[0].scheme ?? security[0].type);
           setSelectedAuth(security);
         }
       } else {
-        if (security.key === auth_key || security.key === auth_key) {
+        if (security.key === auth_key) {
           setSelectedAuth(security);
           optionchanged('auth_type', security.scheme ?? security.type);
         }
@@ -189,11 +189,6 @@ const OpenApi = ({
           onChange={(e) => optionchanged('definition', e.target.value)}
         />
       </div>
-      {/* <div className="col-auto text-right">
-        <button type="button" className="mt-2 btn btn-success" onClick={() => validateDef()}>
-          Validate
-        </button>
-      </div> */}
 
       {loadingSpec && (
         <div className="p-3">
@@ -208,7 +203,7 @@ const OpenApi = ({
         </div>
       )}
 
-      {!loadingSpec && securities.length > 0 && (
+      {!loadingSpec && Array.isArray(securities) && securities.length > 0 && (
         <>
           <div className="col-md-12">
             <label className="form-label text-muted mt-3">Authentication</label>
