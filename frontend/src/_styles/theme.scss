@@ -4715,6 +4715,22 @@ div#driver-page-overlay {
   line-height: 20px;
   color: #61656C;
 }
+
+.maintenance_container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .card {
+    .card-body {
+      display: flex;
+      height: 200px !important;
+      align-items: center;
+    }
+  }
+}
 .list-timeline:not(.list-timeline-simple) .list-timeline-time {
   top: auto;
 }
