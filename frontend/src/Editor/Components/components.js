@@ -493,11 +493,11 @@ export const componentTypes = [
         customRule: { value: null },
       },
       properties: {
-        defaultValue: { value: '{{[]}}' },
+        defaultValue: { value: '01/01/2022' },
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
         enableDate: { value: '{{true}}' },
-        disabledDates: { value: ['1/09/2021'] },
+        disabledDates: { value: '{{[]}}' },
       },
       events: [],
       styles: {
