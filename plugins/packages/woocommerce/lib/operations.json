@@ -39,7 +39,7 @@
         "list": [
           {
             "value": "list_customer",
-            "name": "List all customer"
+            "name": "List all customers"
           },
           {
             "value": "update_customer",
@@ -51,7 +51,7 @@
           },
           {
             "value": "batch_update_customer",
-            "name": "Batch update customer"
+            "name": "Batch update customers"
           },
           {
             "value": "create_customer",
@@ -141,7 +141,7 @@
         "list": [
           {
             "value": "list_product",
-            "name": "List all product"
+            "name": "List all products"
           },
           {
             "value": "update_product",
@@ -153,7 +153,7 @@
           },
           {
             "value": "batch_update_product",
-            "name": "Batch update product"
+            "name": "Batch update products"
           },
           {
             "value": "create_product",
@@ -243,7 +243,7 @@
         "list": [
           {
             "value": "list_order",
-            "name": "List all order"
+            "name": "List all orders"
           },
           {
             "value": "update_order",
@@ -255,7 +255,7 @@
           },
           {
             "value": "batch_update_order",
-            "name": "Batch update order"
+            "name": "Batch update orders"
           },
           {
             "value": "create_order",

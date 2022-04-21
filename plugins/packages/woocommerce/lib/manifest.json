@@ -37,19 +37,19 @@
       "label": "Consumer key",
       "key": "consumer_key",
       "type": "password",
-      "description": "Consumer key for woocommerce"
+      "description": "Consumer key for Woocommerce"
     },
     "consumer_secret": {
       "label": "Consumer secret",
       "key": "consumer_secret",
       "type": "password",
-      "description": "Consumer secret for woocommerce"
+      "description": "Consumer secret for Woocommerce"
     },
     "host": {
       "label": "Host",
       "key": "host",
       "type": "text",
-      "description": "Host for woocommerce"
+      "description": "Host for Woocommerce"
     }
   },
   "required": ["consumer_key","consumer_secret","host"]
