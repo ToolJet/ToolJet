@@ -179,6 +179,8 @@ const OpenApi = ({
         ]}
         value={format}
         onChange={(value) => optionchanged('format', value)}
+        width={'100%'}
+        useMenuPortal={false}
       />
       <div className="col-md-12">
         <label className="form-label text-muted mt-3">Definition</label>
@@ -212,6 +214,8 @@ const OpenApi = ({
               options={computeAuthOptions()}
               value={auth_key}
               onChange={(value) => optionchanged('auth_key', value)}
+              width={'100%'}
+              useMenuPortal={false}
             />
           </div>
 
