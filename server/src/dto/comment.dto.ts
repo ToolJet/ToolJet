@@ -1,8 +1,9 @@
+import { PartialType } from '@nestjs/mapped-types';
 import { Transform } from 'class-transformer';
 import { IsUUID, IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 
-export class CreateCommentDTO {
+export class CreateCommentDto {
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @IsNotEmpty()
@@ -22,3 +23,5 @@ export class CreateCommentDTO {
   @IsString()
   appVersionsId: string;
 }
+
+export class UpdateCommentDto extends PartialType(CreateCommentDto) {}
