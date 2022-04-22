@@ -84,7 +84,7 @@ export const JSONNode = ({ data, ...restProps }) => {
   const numberOfEntries = getLength(typeofCurrentNode, data);
   const toRenderSelector = (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array') && numberOfEntries > 0;
 
-  console.log('typeofCurrentNode ==>', typeofCurrentNode, currentNode);
+  console.log('typeofCurrentNode ==>', typeofCurrentNode, currentNode, path, 'current', currentNodePath);
   let $VALUE = null;
   let $NODEType = null;
   let $NODEIcon = null;
@@ -184,7 +184,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
     return (
       <div style={{ fontSize: '9px', marginTop: '3px' }} className="d-flex end-0 position-absolute">
-        {enableCopyToClipboard && <JSONNode.CopyToClipboard data={data} />}
+        {enableCopyToClipboard && <JSONNode.CopyToClipboard data={currentNodePath} path={true} />}
         {renderOptions()}
         <span>
           <svg
@@ -246,7 +246,8 @@ export const JSONNode = ({ data, ...restProps }) => {
           {$NODEIcon && <div className="ml-1 json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {$NODEType}
           {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
-          <div className="action-icons-group">{showHiddenOptionsForNode && renderHiddenOptionsForNode()}</div>
+          {/* <div className="action-icons-group">{showHiddenOptionsForNode && renderHiddenOptionsForNode()}</div> */}
+          <div className="action-icons-group">{renderHiddenOptionsForNode()}</div>
         </div>
         {toRenderSelector && (toExpandNode && !expandable ? null : $VALUE)}
       </div>
@@ -353,8 +354,22 @@ const DisplayNodeLabel = ({ type = '', children }) => {
   );
 };
 
-const CopyToClipboardObject = ({ data }) => {
+const CopyToClipboardObject = ({ data, path = true }) => {
   const [copied, setCopied] = React.useState(false);
+  let dataToCopy = data;
+
+  if (path) {
+    //array to string with separator '.'
+    let pathString = '';
+    dataToCopy.forEach((item, index) => {
+      if (index === 0) {
+        pathString += item;
+      } else {
+        pathString += `.${item}`;
+      }
+    });
+    dataToCopy = pathString;
+  }
 
   //clears the clipboard after 2 seconds
   React.useEffect(() => {
@@ -371,7 +386,7 @@ const CopyToClipboardObject = ({ data }) => {
   return (
     <ToolTip message={'Copy path to clipboard'}>
       <CopyToClipboard
-        text={JSON.stringify(data, null, 2)}
+        text={JSON.stringify(dataToCopy, null, 2)}
         onCopy={() => {
           setCopied(true);
           toast.success('Path copied to clipboard', { position: 'top-center' });
