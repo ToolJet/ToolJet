@@ -11,7 +11,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { ThreadService } from '../services/thread.service';
-import { CreateThreadDTO } from '../dto/create-thread.dto';
+import { CreateThreadDto, UpdateThreadDto } from '../dto/thread.dto';
 import { Thread } from '../entities/thread.entity';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { ThreadsAbilityFactory } from 'src/modules/casl/abilities/threads-ability.factory';
@@ -23,7 +23,7 @@ export class ThreadController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  public async createThread(@User() user, @Body() createThreadDto: CreateThreadDTO): Promise<Thread> {
+  public async createThread(@User() user, @Body() createThreadDto: CreateThreadDto): Promise<Thread> {
     const ability = await this.threadsAbilityFactory.appsActions(user, createThreadDto.appId);
 
     if (!ability.can('createThread', Thread)) {
@@ -64,8 +64,8 @@ export class ThreadController {
   @UseGuards(JwtAuthGuard)
   @Patch('/:threadId')
   public async editThread(
-    @Body() createThreadDto: CreateThreadDTO,
-    @Param('threadId') threadId: number,
+    @Body() updateThreadDto: UpdateThreadDto,
+    @Param('threadId') threadId: string,
     @User() user
   ): Promise<Thread> {
     const _response = await Thread.findOne({
@@ -77,13 +77,13 @@ export class ThreadController {
     if (!ability.can('updateThread', Thread)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const thread = await this.threadService.editThread(threadId, createThreadDto);
+    const thread = await this.threadService.editThread(threadId, updateThreadDto);
     return thread;
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete('/:threadId')
-  public async deleteThread(@Param('threadId') threadId: number, @User() user) {
+  public async deleteThread(@Param('threadId') threadId: string, @User() user) {
     const _response = await Thread.findOne({
       where: { id: threadId },
     });

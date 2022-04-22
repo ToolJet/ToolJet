@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Comment } from '../entities/comment.entity';
 import { CommentRepository } from '../repositories/comment.repository';
-import { CreateCommentDTO } from '../dto/create-comment.dto';
+import { CreateCommentDto, UpdateCommentDto } from '../dto/comment.dto';
 import { groupBy, head } from 'lodash';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class CommentService {
     private commentRepository: CommentRepository
   ) {}
 
-  public async createComment(createCommentDto: CreateCommentDTO, id: string, organizationId: string): Promise<Comment> {
+  public async createComment(createCommentDto: CreateCommentDto, id: string, organizationId: string): Promise<Comment> {
     return await this.commentRepository.createComment(createCommentDto, id, organizationId);
   }
 
@@ -69,7 +69,7 @@ export class CommentService {
     return _comments;
   }
 
-  public async getComment(commentId: number): Promise<Comment> {
+  public async getComment(commentId: string): Promise<Comment> {
     const foundComment = await this.commentRepository.findOne({ where: { id: commentId } });
     if (!foundComment) {
       throw new NotFoundException('Comment not found');
@@ -77,15 +77,15 @@ export class CommentService {
     return foundComment;
   }
 
-  public async editComment(commentId: number, createCommentDto: CreateCommentDTO): Promise<Comment> {
+  public async editComment(commentId: string, updateCommentDto: UpdateCommentDto): Promise<Comment> {
     const editedComment = await this.commentRepository.findOne({ where: { id: commentId } });
     if (!editedComment) {
       throw new NotFoundException('Comment not found');
     }
-    return this.commentRepository.editComment(createCommentDto, editedComment);
+    return this.commentRepository.editComment(updateCommentDto, editedComment);
   }
 
-  public async deleteComment(commentId: number): Promise<void> {
+  public async deleteComment(commentId: string): Promise<void> {
     await this.commentRepository.delete(commentId);
   }
 }

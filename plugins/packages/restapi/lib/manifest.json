@@ -32,6 +32,12 @@
         "type": "string",
         "encrypted": true
       },
+      "password": {
+        "encrypted": true
+      },
+      "bearer_token":{
+        "encrypted": true
+      },
       "scopes": {
         "type": "string"
       },
@@ -82,6 +88,15 @@
     },
     "scopes": {
       "value": "read, write"
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "bearer_token": {
+      "value": ""
     },
     "auth_url": {
       "value": ""
