@@ -365,40 +365,16 @@ const CopyToClipboardObject = ({ data }) => {
   }, [copied]);
 
   if (copied) {
-    return (
-      <svg
-        className="hide-show-icon"
-        width="12"
-        height="12"
-        viewBox="0 0 10 10"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M3.75 4.58333L5 5.83333L8.33333 2.5"
-          stroke="#4D72FA"
-          strokeWidth="1"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M8.3333 4.99984V7.49984C8.3333 7.72085 8.2455 7.93281 8.08922 8.08909C7.93294 8.24537 7.72098 8.33317 7.49996 8.33317H2.49996C2.27895 8.33317 2.06698 8.24537 1.9107 8.08909C1.75442 7.93281 1.66663 7.72085 1.66663 7.49984V2.49984C1.66663 2.27882 1.75442 2.06686 1.9107 1.91058C2.06698 1.7543 2.27895 1.6665 2.49996 1.6665H6.24996"
-          stroke="#4D72FA"
-          strokeWidth="0.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
+    return <center>Copied</center>;
   }
 
   return (
-    <ToolTip message={'Copy to clipboard'}>
+    <ToolTip message={'Copy path to clipboard'}>
       <CopyToClipboard
         text={JSON.stringify(data, null, 2)}
         onCopy={() => {
           setCopied(true);
-          toast.success('Copied to clipboard', { position: 'top-center' });
+          toast.success('Path copied to clipboard', { position: 'top-center' });
         }}
       >
         <span style={{ height: '13px', width: '13px', marginBottom: '2px' }} className="mx-1">
