@@ -21,6 +21,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     useActions,
     enableCopyToClipboard,
     getNodeShowHideComponents,
+    getOnSelectLabelDispatchActions,
   } = restProps;
 
   const [expandable, set] = React.useState(() =>
@@ -29,6 +30,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   const [showHiddenOptionsForNode, setShowHiddenOptionsForNode] = React.useState(false);
   const [showHiddenOptionButtons, setShowHiddenOptionButtons] = React.useState([]);
+  const [onSelectDispatchActions, setOnSelectDispatchActions] = React.useState([]);
 
   React.useEffect(() => {
     if (showHiddenOptionButtons) {
@@ -37,9 +39,29 @@ export const JSONNode = ({ data, ...restProps }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  React.useEffect(() => {
+    if (useActions && currentNode) {
+      const onSelectDispatchActions = getOnSelectLabelDispatchActions(currentNode, path).filter(
+        (action) => action.onSelect
+      );
+      if (onSelectDispatchActions.length > 0) {
+        setOnSelectDispatchActions(onSelectDispatchActions);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedNode]);
+
   const toggleExpandNode = (node) => {
     updateSelectedNode(node);
     set((prev) => !prev);
+  };
+
+  const onSelect = (data, currentNode) => {
+    const actions = onSelectDispatchActions;
+    actions.forEach((action) => action.dispatchAction(data, currentNode));
+
+    updateSelectedNode(currentNode);
+    set(true);
   };
 
   const typeofCurrentNode = getCurrentNodeType(data);
@@ -62,10 +84,6 @@ export const JSONNode = ({ data, ...restProps }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expandable]);
-
-  React.useEffect(() => {
-    console.log('useEffect On MouseEnter to show components ==>', showHiddenOptionButtons);
-  }, [showHiddenOptionsForNode]);
 
   if (toUseNodeIcons && currentNode) {
     $NODEIcon = renderNodeIcons(currentNode);
@@ -112,7 +130,8 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   let $key = (
     <span
-      style={{ marginTop: '1px' }}
+      onClick={() => onSelect(data, currentNode)}
+      style={{ marginTop: '1px', cursor: 'pointer' }}
       className={`fs-12 fw-bold mx-1 ${
         expandable && selectedNode === currentNode && 'badge badge-outline color-primary text-lowercase'
       }`}
@@ -133,18 +152,20 @@ export const JSONNode = ({ data, ...restProps }) => {
       if (!useActions || showHiddenOptionButtons?.length === 0) return null;
 
       return showHiddenOptionButtons?.map((actionOption, index) => {
-        const { name, src, icon, dispatchAction, width = 12, height = 12 } = actionOption;
-        return (
-          <ToolTip key={`${name}-${index}`} message={`${name} ${currentNode}`}>
-            <span
-              style={{ height: '13px', width: '13px' }}
-              className="mx-1"
-              onClick={() => dispatchAction(data, currentNode)}
-            >
-              <img src={src ?? `/assets/images/icons/${icon}.svg`} width={width} height={height} />
-            </span>
-          </ToolTip>
-        );
+        const { name, icon, src, iconName, dispatchAction, width = 12, height = 12 } = actionOption;
+        if (icon) {
+          return (
+            <ToolTip key={`${name}-${index}`} message={`${name} ${currentNode}`}>
+              <span
+                style={{ height: '13px', width: '13px' }}
+                className="mx-1"
+                onClick={() => dispatchAction(data, currentNode)}
+              >
+                <img src={src ?? `/assets/images/icons/${iconName}.svg`} width={width} height={height} />
+              </span>
+            </ToolTip>
+          );
+        }
       });
     };
 

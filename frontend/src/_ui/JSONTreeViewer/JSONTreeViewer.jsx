@@ -121,6 +121,19 @@ export class JSONTreeViewer extends React.Component {
     //Todo: if actions should be available for all children
   };
 
+  getOnSelectLabelDispatchActions = (currentNode, path) => {
+    const actions = [];
+    const parent = path ? path[path.length - 2] : 'root';
+    const dispatchActionForCurrentNode = this.getDispatchActionsForNode(parent);
+    if (currentNode === parent) return;
+
+    if (dispatchActionForCurrentNode && dispatchActionForCurrentNode['enableFor1stLevelChildren']) {
+      dispatchActionForCurrentNode['actions'].map((action) => actions.push(action));
+    }
+    //Todo: if actions should be available for all children
+    return actions;
+  };
+
   render() {
     return (
       <div className="json-tree-container row-flex container-fluid p-0">
@@ -139,6 +152,7 @@ export class JSONTreeViewer extends React.Component {
           actionsList={this.state.actionsList}
           enableCopyToClipboard={this.state.enableCopyToClipboard}
           getNodeShowHideComponents={this.getNodeShowHideComponents}
+          getOnSelectLabelDispatchActions={this.getOnSelectLabelDispatchActions}
         />
       </div>
     );

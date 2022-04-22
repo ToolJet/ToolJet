@@ -54,7 +54,7 @@ export const LeftSidebarInspector = ({
     removeComponent(component);
   };
 
-  const handleSeletttingComponentOnEditor = (component) => {
+  const handleSelectComponentOnEditor = (component) => {
     setSelectedComponent(component.id, component);
   };
 
@@ -69,6 +69,7 @@ export const LeftSidebarInspector = ({
         {
           name: 'Run Query',
           dispatchAction: handleRunQuery,
+          icon: true,
           src: '/assets/images/icons/editor/play.svg',
           width: 8,
           height: 8,
@@ -80,8 +81,8 @@ export const LeftSidebarInspector = ({
     {
       for: 'components',
       actions: [
-        // { name: 'Select Widget', dispatchAction: handleSeletttingComponentOnEditor, icon: 'settings' },
-        { name: 'Delete Widget', dispatchAction: handleRemoveComponent, icon: 'trash' },
+        { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
+        { name: 'Delete Widget', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' },
       ],
       enableForAllChildren: false,
       enableFor1stLevelChildren: true,
