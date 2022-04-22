@@ -9,6 +9,7 @@ export class PopulateSSOConfigs1650485473528 implements MigrationInterface {
     const encryptionService = new EncryptionService();
     const OrganizationRepository = entityManager.getRepository(Organization);
 
+    const isSingleOrganization = process.env.MULTI_ORGANIZATION !== 'true';
     const enableSignUp = process.env.SSO_DISABLE_SIGNUP !== 'true';
     const domain = process.env.SSO_RESTRICTED_DOMAIN;
 
@@ -53,37 +54,48 @@ export class PopulateSSOConfigs1650485473528 implements MigrationInterface {
             .values({
               organizationId: organization.id,
               sso: 'form',
-              enabled: passwordEnabled,
+              enabled: !isSingleOrganization ? true : passwordEnabled,
             })
             .execute();
+        }
+        if (
+          isSingleOrganization &&
+          googleEnabled &&
+          !organization.ssoConfigs?.some((og) => {
+            og?.sso === 'google';
+          })
+        ) {
+          await entityManager
+            .createQueryBuilder()
+            .insert()
+            .into(SSOConfigs, ['organizationId', 'sso', 'enabled', 'configs'])
+            .values({
+              organizationId: organization.id,
+              sso: 'google',
+              enabled: googleEnabled,
+              configs: googleConfigs,
+            })
+            .execute();
+        }
 
-          if (googleEnabled) {
-            await entityManager
-              .createQueryBuilder()
-              .insert()
-              .into(SSOConfigs, ['organizationId', 'sso', 'enabled', 'configs'])
-              .values({
-                organizationId: organization.id,
-                sso: 'google',
-                enabled: googleEnabled,
-                configs: googleConfigs,
-              })
-              .execute();
-          }
-
-          if (gitEnabled) {
-            await entityManager
-              .createQueryBuilder()
-              .insert()
-              .into(SSOConfigs, ['organizationId', 'sso', 'enabled', 'configs'])
-              .values({
-                organizationId: organization.id,
-                sso: 'git',
-                enabled: gitEnabled,
-                configs: gitConfigs,
-              })
-              .execute();
-          }
+        if (
+          isSingleOrganization &&
+          gitEnabled &&
+          !organization.ssoConfigs?.some((og) => {
+            og?.sso === 'git';
+          })
+        ) {
+          await entityManager
+            .createQueryBuilder()
+            .insert()
+            .into(SSOConfigs, ['organizationId', 'sso', 'enabled', 'configs'])
+            .values({
+              organizationId: organization.id,
+              sso: 'git',
+              enabled: gitEnabled,
+              configs: gitConfigs,
+            })
+            .execute();
         }
       }
     }
