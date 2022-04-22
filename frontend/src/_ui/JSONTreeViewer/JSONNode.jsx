@@ -127,11 +127,11 @@ export const JSONNode = ({ data, ...restProps }) => {
   const shouldDisplayIntendedBlock =
     useIndentedBlock && expandable && (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array');
 
-  const renderHiddenOptionsForNode = (toShow = false) => {
-    if (!toShow && showHiddenOptionButtons?.length > 0) return null;
+  const renderHiddenOptionsForNode = () => {
+    const renderOptions = () => {
+      if (!useActions || showHiddenOptionButtons?.length === 0) return null;
 
-    const renderOptions = () =>
-      showHiddenOptionButtons?.map((actionOption, index) => {
+      return showHiddenOptionButtons?.map((actionOption, index) => {
         const { name, src, icon, dispatchAction, width = 12, height = 12 } = actionOption;
         return (
           <ToolTip key={`${name}-${index}`} message={`${name} ${currentNode}`}>
@@ -145,6 +145,7 @@ export const JSONNode = ({ data, ...restProps }) => {
           </ToolTip>
         );
       });
+    };
 
     return (
       <div style={{ fontSize: '9px', marginTop: '2px' }} className="d-flex flex-row justify-content-end">
@@ -156,8 +157,6 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   return (
     <div
-      onMouseEnter={() => !expandable && setShowHiddenOptionsForNode(true)}
-      onMouseLeave={() => setShowHiddenOptionsForNode(false)}
       className={cx('d-flex row-flex mt-1 font-monospace', {
         'json-node-element': !expandable,
       })}
@@ -179,11 +178,13 @@ export const JSONNode = ({ data, ...restProps }) => {
             'group-object-container': shouldDisplayIntendedBlock,
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
           })}
+          onMouseEnter={() => setShowHiddenOptionsForNode(true)}
+          onMouseLeave={() => setShowHiddenOptionsForNode(false)}
         >
           {$NODEIcon && <div className="ml-1 json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {$NODEType}
           {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
-          {showHiddenOptionsForNode && useActions && renderHiddenOptionsForNode(true)}
+          {showHiddenOptionsForNode && renderHiddenOptionsForNode()}
         </div>
         {toRenderSelector && (toExpandNode && !expandable ? null : $VALUE)}
       </div>
