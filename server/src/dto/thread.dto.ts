@@ -1,6 +1,7 @@
+import { PartialType } from '@nestjs/mapped-types';
 import { IsBoolean, IsNumber, IsOptional, IsUUID } from 'class-validator';
 
-export class CreateThreadDTO {
+export class CreateThreadDto {
   @IsNumber()
   x: number;
 
@@ -21,3 +22,5 @@ export class CreateThreadDTO {
   @IsOptional()
   isResolved: boolean;
 }
+
+export class UpdateThreadDto extends PartialType(CreateThreadDto) {}
