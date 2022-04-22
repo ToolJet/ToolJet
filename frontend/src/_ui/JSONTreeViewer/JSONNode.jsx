@@ -22,6 +22,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     enableCopyToClipboard,
     getNodeShowHideComponents,
     getOnSelectLabelDispatchActions,
+    expandWithLabels,
   } = restProps;
 
   const [expandable, set] = React.useState(() =>
@@ -60,8 +61,20 @@ export const JSONNode = ({ data, ...restProps }) => {
     const actions = onSelectDispatchActions;
     actions.forEach((action) => action.dispatchAction(data, currentNode));
 
-    updateSelectedNode(currentNode);
-    set(true);
+    if (!expandWithLabels) {
+      updateSelectedNode(currentNode);
+      set(true);
+    }
+  };
+
+  const handleOnClickLabels = (data, currentNode) => {
+    if (expandWithLabels) {
+      toggleExpandNode(currentNode);
+    }
+
+    if (useActions) {
+      onSelect(data, currentNode);
+    }
   };
 
   const typeofCurrentNode = getCurrentNodeType(data);
@@ -130,7 +143,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   let $key = (
     <span
-      onClick={() => onSelect(data, currentNode)}
+      onClick={() => handleOnClickLabels(data, currentNode)}
       style={{ marginTop: '1px', cursor: 'pointer' }}
       className={`fs-12 fw-bold mx-1 ${
         expandable && selectedNode === currentNode && 'badge badge-outline color-primary text-lowercase'

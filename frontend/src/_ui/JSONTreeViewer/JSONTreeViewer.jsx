@@ -34,7 +34,6 @@ export class JSONTreeViewer extends React.Component {
     this.setState({
       data: nextProps.data,
       shouldExpandNode: nextProps.shouldExpandNode,
-      showHideActions: nextProps.showHideActions,
       ...nextProps,
     });
   }
@@ -148,11 +147,12 @@ export class JSONTreeViewer extends React.Component {
           useIndentedBlock={this.props.useIndentedBlock ?? false}
           selectedNode={this.state.selectedNode}
           updateSelectedNode={this.updateSelectedNode}
-          useActions={this.state.showHideActions}
+          useActions={this.state.useActions}
           actionsList={this.state.actionsList}
           enableCopyToClipboard={this.state.enableCopyToClipboard}
           getNodeShowHideComponents={this.getNodeShowHideComponents}
           getOnSelectLabelDispatchActions={this.getOnSelectLabelDispatchActions}
+          expandWithLabels={this.state.expandWithLabels ?? false}
         />
       </div>
     );

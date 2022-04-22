@@ -116,10 +116,11 @@ export const LeftSidebarInspector = ({
             iconsList={iconsList}
             useIndentedBlock={true}
             enableCopyToClipboard={true}
-            showHideActions={true}
+            useActions={true}
             actionsList={callbackActions}
             currentState={appDefinition}
             actionIdentifier="id"
+            expandWithLabels={false}
           />
         </div>
       </div>
