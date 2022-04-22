@@ -26,12 +26,12 @@ export default class Openapi implements QueryService {
     return params;
   }
 
-  private resolveApiKeyParams = (apiKeys, auth_key: string, header: any, url: URL, cookieJar: any) => {
+  private resolveApiKeyParams = (apiKeys, auth_key: string, header: any, url: URL, query: any, cookieJar: any) => {
     const processKey = (type: string, name: string, value: string) => {
       if (type === 'header') {
         header[name] = value;
       } else if (type === 'query') {
-        url.searchParams.append(name, value);
+        query[name] = value;
       } else if (type === 'cookie') {
         cookieJar.setCookie(`${name}=${value}`, url);
       }
@@ -50,19 +50,19 @@ export default class Openapi implements QueryService {
       }
     });
 
-    return { header, url, cookieJar };
+    return { header, query, cookieJar };
   };
 
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<RestAPIResult> {
     const { host, path, operation, params } = queryOptions;
-    const { query, request } = params;
-    let header = params.header;
+    const { request } = params;
+    let { query, header } = params;
     const pathParams = params.path;
     const authType = sourceOptions['auth_type'];
     const requiresOauth = authType === 'oauth2';
     let cookieJar = new CookieJar();
 
-    let url = new URL(host + this.resolvePathParams(pathParams, path));
+    const url = new URL(host + this.resolvePathParams(pathParams, path));
     const json = operation !== 'get' ? this.sanitizeObject(request) : undefined;
     const customQueryParams = this.sanitizeCustomParams(sourceOptions['custom_query_params']);
 
@@ -76,9 +76,16 @@ export default class Openapi implements QueryService {
     }
 
     if (authType === 'apiKey') {
-      const resolved = this.resolveApiKeyParams(sourceOptions.api_keys, sourceOptions.auth_key, header, url, cookieJar);
+      const resolved = this.resolveApiKeyParams(
+        sourceOptions.api_keys,
+        sourceOptions.auth_key,
+        header,
+        url,
+        query,
+        cookieJar
+      );
       header = resolved.header;
-      url = resolved.url;
+      query = resolved.query;
       cookieJar = resolved.cookieJar;
     }
 
