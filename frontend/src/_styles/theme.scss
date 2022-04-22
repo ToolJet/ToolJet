@@ -4744,10 +4744,6 @@ div#driver-page-overlay {
     border-left: 0.5px solid #dadcde;
     margin-top: 16px;
     margin-left: -12px;
-
-    // .selected-node {
-    //   border-color: #4D72FA !important;
-    // }
   }
 
   .selected-node {
@@ -4779,6 +4775,10 @@ div#driver-page-overlay {
   .action-icons-group {
     margin-right: 4rem !important;
     margin-left: 2rem !important;
+  }
+
+  .action-icons-group {
+    cursor: pointer;
   }
 
 }
