@@ -4714,9 +4714,15 @@ div#driver-page-overlay {
   }
   .node-type {
     color: #A6B6CC;
+    padding-top: 2px;
+  }
+  .json-tree-valuetype {
+    font-size: 10px;
+    padding-top: 2px;
   }
   .node-length-color {
     color: #3650AF;
+    padding-top: 3px;
   }
   .json-tree-node-value {
     font-size: 11px;
@@ -4737,11 +4743,11 @@ div#driver-page-overlay {
   .group-border {
     border-left: 0.5px solid #dadcde;
     margin-top: 16px;
-    margin-left: -10px;
+    margin-left: -12px;
   }
 
   .group-object-container {
-    margin-left: 2px;
+    margin-left: 0.72rem;
     margin-top: -16px;
   }
 
@@ -4762,6 +4768,9 @@ div#driver-page-overlay {
 // Font sizes 
 .fs-9 {
   font-size: 9px !important;
+}
+.fs-10 {
+  font-size: 10px !important;
 }
 
 .fs-12 {

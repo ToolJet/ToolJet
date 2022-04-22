@@ -80,7 +80,11 @@ export class JSONTreeViewer extends React.Component {
 
     if (icon && icon.iconPath) {
       return (
-        <img style={{ maxWidth: 'none' }} className={`json-tree-svg-icon ${icon.className}`} src={icon.iconPath} />
+        <img
+          style={{ maxWidth: 'none', padding: '2px' }}
+          className={`json-tree-svg-icon ${icon.className}`}
+          src={icon.iconPath}
+        />
       );
     }
     if (icon && icon.jsx) {

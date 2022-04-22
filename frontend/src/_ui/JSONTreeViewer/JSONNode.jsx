@@ -58,7 +58,6 @@ export const JSONNode = ({ data, ...restProps }) => {
     selectedNode === currentNode && {
       backgroundColor: '#D3D8F0',
       borderRadius: '2px',
-      height: '20px',
     };
 
   React.useEffect(() => {
@@ -115,7 +114,11 @@ export const JSONNode = ({ data, ...restProps }) => {
       $NODEType = typeofCurrentNode;
   }
 
-  let $key = <span className="fs-12 fw-bold">{String(currentNode)}</span>;
+  let $key = (
+    <span style={{ marginTop: '1px' }} className="fs-12 fw-bold mx-1">
+      {String(currentNode)}
+    </span>
+  );
 
   if (!currentNode) {
     return $VALUE;
@@ -127,31 +130,39 @@ export const JSONNode = ({ data, ...restProps }) => {
   const renderHiddenOptionsForNode = (toShow = false) => {
     if (!toShow && showHiddenOptionButtons?.length > 0) return null;
 
-    return showHiddenOptionButtons?.map((actionOption, index) => {
-      const { name, src, icon, dispatchAction, width = 12, height = 12 } = actionOption;
-      return (
-        <ToolTip key={`${name}-${index}`} message={`${name} ${currentNode}`}>
-          <span
-            style={{ height: '13px', width: '13px', marginBottom: '2px' }}
-            className="btn badge bg-azure-lt mx-1"
-            onClick={() => dispatchAction(data, currentNode)}
-          >
-            <img src={src ?? `/assets/images/icons/${icon}.svg`} width={width} height={height} />
-          </span>
-        </ToolTip>
-      );
-    });
+    const renderOptions = () =>
+      showHiddenOptionButtons?.map((actionOption, index) => {
+        const { name, src, icon, dispatchAction, width = 12, height = 12 } = actionOption;
+        return (
+          <ToolTip key={`${name}-${index}`} message={`${name} ${currentNode}`}>
+            <span
+              style={{ height: '13px', width: '13px' }}
+              className="btn badge bg-azure-lt mx-1"
+              onClick={() => dispatchAction(data, currentNode)}
+            >
+              <img src={src ?? `/assets/images/icons/${icon}.svg`} width={width} height={height} />
+            </span>
+          </ToolTip>
+        );
+      });
+
+    return (
+      <div style={{ fontSize: '9px', marginTop: '2px' }} className="d-flex flex-row justify-content-end">
+        <div>{enableCopyToClipboard && <JSONNode.CopyToClipboard data={data} />}</div>
+        <div>{renderOptions()}</div>
+      </div>
+    );
   };
 
   return (
     <div
       onMouseEnter={() => !expandable && setShowHiddenOptionsForNode(true)}
       onMouseLeave={() => setShowHiddenOptionsForNode(false)}
-      className={cx('row mt-1 font-monospace', {
+      className={cx('d-flex row-flex mt-1 font-monospace', {
         'json-node-element': !expandable,
       })}
     >
-      <div className="col-md-1 json-tree-icon-container">
+      <div className="json-tree-icon-container mx-2">
         <JSONNode.NodeIndicator
           toExpand={expandable}
           toShowNodeIndicator={toShowNodeIndicator}
@@ -161,19 +172,18 @@ export const JSONNode = ({ data, ...restProps }) => {
         />
       </div>
 
-      <div className={`col ${shouldDisplayIntendedBlock && 'group-border'}`}>
+      <div className={`${shouldDisplayIntendedBlock && 'group-border'}`}>
         <div
           style={{ ...selectedNodeStyles }}
-          className={`row ${shouldDisplayIntendedBlock && 'group-object-container'} `}
+          className={cx('d-flex flex-row align-items-center', {
+            'group-object-container': shouldDisplayIntendedBlock,
+            'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
+          })}
         >
-          {$NODEIcon && <div className="col-md-1 json-tree-icon-container">{$NODEIcon}</div>}
-
-          <div className="col">
-            {$key} {$NODEType}
-            {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
-            {showHiddenOptionsForNode && useActions && renderHiddenOptionsForNode(true)}
-            {showHiddenOptionsForNode && enableCopyToClipboard && <JSONNode.CopyToClipboard data={data} />}
-          </div>
+          {$NODEIcon && <div className="ml-1 json-tree-icon-container">{$NODEIcon}</div>}
+          {$key} {$NODEType}
+          {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
+          {showHiddenOptionsForNode && useActions && renderHiddenOptionsForNode(true)}
         </div>
         {toRenderSelector && (toExpandNode && !expandable ? null : $VALUE)}
       </div>
@@ -232,7 +242,9 @@ const JSONTreeValueNode = ({ data, type }) => {
   const clsForUndefinedOrNull = (type === 'Undefined' || type === 'Null') && 'badge badge-secondary';
   return (
     <span
-      className={`json-tree-value json-tree-node-${String(type).toLowerCase()} text-break ${clsForUndefinedOrNull}`}
+      className={`mx-2 json-tree-valuetype json-tree-node-${String(
+        type
+      ).toLowerCase()} text-break ${clsForUndefinedOrNull}`}
     >
       {value}
     </span>
@@ -274,10 +286,10 @@ const DisplayNodeLabel = ({ type = '', children }) => {
     return null;
   }
   return (
-    <React.Fragment>
-      <span className="mx-1 fs-9 node-type ">{type}</span>
+    <>
+      <span className="mx-1 fs-10 node-type">{type}</span>
       {children}
-    </React.Fragment>
+    </>
   );
 };
 
