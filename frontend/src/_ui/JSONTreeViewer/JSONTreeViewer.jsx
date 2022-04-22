@@ -123,7 +123,7 @@ export class JSONTreeViewer extends React.Component {
 
   render() {
     return (
-      <div className="json-tree-container">
+      <div className="json-tree-container row-flex container-fluid p-0">
         <JSONNode
           data={this.state.data}
           shouldExpandNode={false}

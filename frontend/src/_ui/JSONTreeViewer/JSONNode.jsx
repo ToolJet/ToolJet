@@ -54,11 +54,7 @@ export const JSONNode = ({ data, ...restProps }) => {
   let $NODEType = null;
   let $NODEIcon = null;
 
-  const selectedNodeStyles = expandable &&
-    selectedNode === currentNode && {
-      backgroundColor: '#D3D8F0',
-      borderRadius: '2px',
-    };
+  const selectedNodeStyles = expandable && selectedNode === currentNode;
 
   React.useEffect(() => {
     if (!expandable) {
@@ -115,7 +111,12 @@ export const JSONNode = ({ data, ...restProps }) => {
   }
 
   let $key = (
-    <span style={{ marginTop: '1px' }} className="fs-12 fw-bold mx-1">
+    <span
+      style={{ marginTop: '1px' }}
+      className={`fs-12 fw-bold mx-1 ${
+        expandable && selectedNode === currentNode && 'badge badge-outline color-primary text-lowercase'
+      }`}
+    >
       {String(currentNode)}
     </span>
   );
@@ -137,7 +138,7 @@ export const JSONNode = ({ data, ...restProps }) => {
           <ToolTip key={`${name}-${index}`} message={`${name} ${currentNode}`}>
             <span
               style={{ height: '13px', width: '13px' }}
-              className="btn badge bg-azure-lt mx-1"
+              className="mx-1"
               onClick={() => dispatchAction(data, currentNode)}
             >
               <img src={src ?? `/assets/images/icons/${icon}.svg`} width={width} height={height} />
@@ -148,43 +149,62 @@ export const JSONNode = ({ data, ...restProps }) => {
     };
 
     return (
-      <div style={{ fontSize: '9px', marginTop: '2px' }} className="d-flex flex-row justify-content-end">
-        <div>{enableCopyToClipboard && <JSONNode.CopyToClipboard data={data} />}</div>
-        <div>{renderOptions()}</div>
+      <div style={{ fontSize: '9px', marginTop: '3px' }} className="d-flex end-0 position-absolute">
+        {enableCopyToClipboard && <JSONNode.CopyToClipboard data={data} />}
+        {renderOptions()}
+        <span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="icon-tabler icon-tabler-dots-vertical"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            strokeWidth="0.75"
+            stroke="#2c3e50"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <circle cx="12" cy="12" r="1" />
+            <circle cx="12" cy="19" r="1" />
+            <circle cx="12" cy="5" r="1" />
+          </svg>
+        </span>
       </div>
     );
   };
 
   return (
     <div
-      className={cx('d-flex row-flex mt-1 font-monospace', {
+      className={cx('d-flex row-flex mt-1 font-monospace container-fluid px-1', {
         'json-node-element': !expandable,
       })}
+      onMouseEnter={() => setShowHiddenOptionsForNode(true)}
+      onMouseLeave={() => setShowHiddenOptionsForNode(false)}
     >
-      <div className="json-tree-icon-container mx-2">
+      <div className={`json-tree-icon-container  mx-2 ${selectedNodeStyles && 'selected-node'}`}>
         <JSONNode.NodeIndicator
           toExpand={expandable}
           toShowNodeIndicator={toShowNodeIndicator}
           handleToggle={toggleExpandNode}
           typeofCurrentNode={typeofCurrentNode}
           currentNode={currentNode}
+          isSelected={selectedNode === currentNode}
         />
       </div>
 
-      <div className={`${shouldDisplayIntendedBlock && 'group-border'}`}>
+      <div className={`${shouldDisplayIntendedBlock && 'group-border'} ${selectedNodeStyles && 'selected-node'}`}>
         <div
-          style={{ ...selectedNodeStyles }}
-          className={cx('d-flex flex-row align-items-center', {
+          className={cx('d-flex', {
             'group-object-container': shouldDisplayIntendedBlock,
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
           })}
-          onMouseEnter={() => setShowHiddenOptionsForNode(true)}
-          onMouseLeave={() => setShowHiddenOptionsForNode(false)}
         >
           {$NODEIcon && <div className="ml-1 json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {$NODEType}
           {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
-          {showHiddenOptionsForNode && renderHiddenOptionsForNode()}
+          <div className="action-icons-group">{showHiddenOptionsForNode && renderHiddenOptionsForNode()}</div>
         </div>
         {toRenderSelector && (toExpandNode && !expandable ? null : $VALUE)}
       </div>
@@ -193,7 +213,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 };
 
 const JSONTreeNodeIndicator = ({ toExpand, toShowNodeIndicator, handleToggle, ...restProps }) => {
-  const { renderCustomIndicator, typeofCurrentNode, currentNode } = restProps;
+  const { renderCustomIndicator, typeofCurrentNode, currentNode, isSelected } = restProps;
 
   const defaultStyles = {
     transform: toExpand ? 'rotate(90deg)' : 'rotate(0deg)',
@@ -206,7 +226,7 @@ const JSONTreeNodeIndicator = ({ toExpand, toShowNodeIndicator, handleToggle, ..
     <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
         d="M1.02063 1L5.01032 5.01028L1.00003 8.99997"
-        stroke="#61656F"
+        stroke={`${toExpand && isSelected ? '#4D72FA' : '#61656F'}`}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -229,10 +249,7 @@ const JSONTreeValueNode = ({ data, type }) => {
     const functionString = `${data.toString().split('{')[0].trim()}{...}`;
     return (
       <React.Fragment>
-        <span
-          className="badge bg-light text-dark"
-          style={{ fontSize: '10px', fontFamily: 'monospace', textTransform: 'none' }}
-        >
+        <span className="text-dark" style={{ fontSize: '10px', fontFamily: 'monospace', textTransform: 'none' }}>
           {functionString}
         </span>
       </React.Fragment>
@@ -342,7 +359,7 @@ const CopyToClipboardObject = ({ data }) => {
           toast.success('Copied to clipboard', { position: 'top-center' });
         }}
       >
-        <span style={{ height: '13px', width: '13px', marginBottom: '2px' }} className="btn badge bg-azure-lt mx-1">
+        <span style={{ height: '13px', width: '13px', marginBottom: '2px' }} className="mx-1">
           <img src={`/assets/images/icons/copy.svg`} width="12" height="12" />
         </span>
       </CopyToClipboard>

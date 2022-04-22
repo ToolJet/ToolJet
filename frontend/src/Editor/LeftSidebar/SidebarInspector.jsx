@@ -80,7 +80,7 @@ export const LeftSidebarInspector = ({
     {
       for: 'components',
       actions: [
-        { name: 'Select Widget', dispatchAction: handleSeletttingComponentOnEditor, icon: 'settings' },
+        // { name: 'Select Widget', dispatchAction: handleSeletttingComponentOnEditor, icon: 'settings' },
         { name: 'Delete Widget', dispatchAction: handleRemoveComponent, icon: 'trash' },
       ],
       enableForAllChildren: false,

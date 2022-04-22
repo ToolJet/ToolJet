@@ -4744,6 +4744,19 @@ div#driver-page-overlay {
     border-left: 0.5px solid #dadcde;
     margin-top: 16px;
     margin-left: -12px;
+
+    // .selected-node {
+    //   border-color: #4D72FA !important;
+    // }
+  }
+
+  .selected-node {
+    border-color: #4D72FA !important;
+  }
+
+  .selected-node .group-object-container .badge {
+    font-weight: 400 !important;
+    height: 1rem !important;
   }
 
   .group-object-container {
@@ -4761,6 +4774,11 @@ div#driver-page-overlay {
     &:hover {
       color: $primary;
     }
+  }
+
+  .action-icons-group {
+    margin-right: 4rem !important;
+    margin-left: 2rem !important;
   }
 
 }
