@@ -6,7 +6,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
 
-export const LeftSidebarDebugger = ({ darkMode, errors }) => {
+export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
   const [currrentTab, setCurrentTab] = React.useState(1);
   const [errorLogs, setErrorLogs] = React.useState([]);
@@ -34,6 +34,8 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
         (arr) => arr.filter(([key, value]) => value.data?.status),
         Object.fromEntries,
       ])(errors);
+
+      console.log({ debug: 3, newError, errors });
 
       const errorData = [];
       Object.entries(newError).forEach(([key, value]) => {
@@ -87,7 +89,12 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
       const newData = [...errorData, ...copy];
       return newData;
     });
+    debuggerActions.flush();
   }, [JSON.stringify(errors)]);
+
+  React.useEffect(() => {
+    console.log({ shashi: errorLogs });
+  }, [errorLogs]);
 
   React.useEffect(() => {
     if (open === false && errorLogs.length !== unReadErrorCount.read) {

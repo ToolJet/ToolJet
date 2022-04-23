@@ -25,6 +25,7 @@ export const LeftSidebar = ({
   globalSettingsChanged,
   globalSettings,
   currentState,
+  debuggerActions,
 }) => {
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -38,7 +39,12 @@ export const LeftSidebar = ({
         dataSources={dataSources}
         dataSourcesChanged={dataSourcesChanged}
       />
-      <LeftSidebarDebugger darkMode={darkMode} components={components} errors={errorLogs} />
+      <LeftSidebarDebugger
+        darkMode={darkMode}
+        components={components}
+        errors={errorLogs}
+        debuggerActions={debuggerActions}
+      />
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
       )}

@@ -862,6 +862,9 @@ class Editor extends React.Component {
     error: (data) => {
       debuggerActions.error(this, data);
     },
+    flush: () => {
+      debuggerActions.flush(this);
+    },
   };
 
   changeDarkMode = (newMode) => {
@@ -1034,6 +1037,7 @@ class Editor extends React.Component {
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
+              debuggerActions={this.sideBarDebugger}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
