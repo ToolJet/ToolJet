@@ -150,7 +150,6 @@ export const Box = function Box({
         },
       ])
     );
-    console.log({ debug: 1, componentName, errorLog });
     sideBarDebugger?.error(errorLog);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ propertyErrors, styleErrors })]);

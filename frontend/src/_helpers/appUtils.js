@@ -832,32 +832,26 @@ export const getSvgIcon = (key, height = 50, width = 50) => {
 
 export const debuggerActions = {
   error: (_self, errors) => {
-    _self.setState(
-      (prevState) => ({
-        ...prevState,
-        currentState: {
-          ...prevState.currentState,
-          errors: {
-            ...prevState.currentState.errors,
-            ...errors,
-          },
+    _self.setState((prevState) => ({
+      ...prevState,
+      currentState: {
+        ...prevState.currentState,
+        errors: {
+          ...prevState.currentState.errors,
+          ...errors,
         },
-      }),
-      () => console.log({ debug: 2, errors: _self.state.currentState?.errors })
-    );
+      },
+    }));
   },
 
   flush: (_self) => {
-    _self.setState(
-      (prevState) => ({
-        ...prevState,
-        currentState: {
-          ...prevState.currentState,
-          errors: {},
-        },
-      }),
-      () => console.log({ debug: 2, errors: _self.state.currentState?.errors })
-    );
+    _self.setState((prevState) => ({
+      ...prevState,
+      currentState: {
+        ...prevState.currentState,
+        errors: {},
+      },
+    }));
   },
 };
 

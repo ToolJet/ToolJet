@@ -35,8 +35,6 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
         Object.fromEntries,
       ])(errors);
 
-      console.log({ debug: 3, newError, errors });
-
       const errorData = [];
       Object.entries(newError).forEach(([key, value]) => {
         const variableNames = {
@@ -91,10 +89,6 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
     });
     debuggerActions.flush();
   }, [JSON.stringify(errors)]);
-
-  React.useEffect(() => {
-    console.log({ shashi: errorLogs });
-  }, [errorLogs]);
 
   React.useEffect(() => {
     if (open === false && errorLogs.length !== unReadErrorCount.read) {
