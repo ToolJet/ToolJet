@@ -377,7 +377,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      title: { type: 'code', displayName: 'Title' },
+      title: { type: 'code', displayName: 'Title', validation: [{ type: 'string', required: true, default: '' }] },
       size: {
         type: 'select',
         displayName: 'Modal size',
@@ -386,11 +386,16 @@ export const componentTypes = [
           { name: 'medium', value: 'md' },
           { name: 'large', value: 'lg' },
         ],
+        validation: [{ type: 'string', required: true, default: 'md' }],
       },
     },
     events: {},
     styles: {
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: [{ type: 'boolean', required: true, default: false }],
+      },
     },
     exposedVariables: {
       show: null,
