@@ -101,6 +101,8 @@ const DynamicForm = ({
           options: list,
           value: options[key]?.value || options[key],
           onChange: (value) => optionchanged(key, value),
+          width: width || '100%',
+          useMenuPortal: queryName ? true : false,
         };
       case 'react-component-headers':
         return {
@@ -119,6 +121,9 @@ const DynamicForm = ({
           client_secret: options.client_secret?.value,
           client_auth: options.client_auth?.value,
           scopes: options.scopes?.value,
+          username: options.username?.value,
+          password: options.password?.value,
+          bearer_token: options.bearer_token?.value,
           auth_url: options.auth_url?.value,
           custom_auth_params: options.custom_auth_params?.value,
           custom_query_params: options.custom_query_params?.value,

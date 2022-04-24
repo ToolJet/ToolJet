@@ -12,6 +12,9 @@ const OAuth = ({
   custom_auth_params,
   custom_query_params,
   scopes,
+  username,
+  password,
+  bearer_token,
   auth_url,
   header_prefix,
   add_token_to,
@@ -22,10 +25,14 @@ const OAuth = ({
       <Select
         options={[
           { name: 'None', value: 'none' },
+          { name: 'Basic', value: 'basic' },
+          { name: 'Bearer', value: 'bearer' },
           { name: 'OAuth 2.0', value: 'oauth2' },
         ]}
         value={auth_type}
         onChange={(value) => optionchanged('auth_type', value)}
+        width={'100%'}
+        useMenuPortal={false}
       />
       <Authentication
         add_token_to={add_token_to}
@@ -40,6 +47,9 @@ const OAuth = ({
         client_secret={client_secret}
         client_auth={client_auth}
         scopes={scopes}
+        username={username}
+        password={password}
+        bearer_token={bearer_token}
         auth_url={auth_url}
       />
     </>
