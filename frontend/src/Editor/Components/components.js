@@ -734,7 +734,14 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      placeholder: { type: 'code', displayName: 'Placeholder' },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          schemas: [{ type: 'string', required: true }],
+          default: '',
+        },
+      },
     },
     validation: {
       regex: { type: 'code', displayName: 'Regex' },
@@ -744,9 +751,30 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schemas: [{ type: 'boolean', required: true }],
+          default: true,
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schemas: [{ type: 'boolean', required: true }],
+          default: false,
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schemas: [{ type: 'number', required: true }],
+          default: 0,
+        },
+      },
     },
     exposedVariables: {
       value: '',
