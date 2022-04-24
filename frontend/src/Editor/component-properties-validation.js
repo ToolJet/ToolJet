@@ -57,7 +57,7 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
   let allErrors = [];
   const coercedProperties = Object.fromEntries(
     Object.entries(resolvedProperties ?? {}).map(([propertyName, value]) => {
-      const validationDefinition = propertyDefinitions[propertyName]?.validation ?? [];
+      const validationDefinition = propertyDefinitions[propertyName]?.validation?.schemas ?? [];
 
       const schema = _.isEmpty(validationDefinition)
         ? any()
