@@ -1,4 +1,4 @@
-const { type, number, string, array, any, optional, assert, boolean } = require('superstruct');
+const { type, number, string, array, any, optional, assert, boolean, union } = require('superstruct');
 import _ from 'lodash';
 
 const generateSchemaFromValidationDefinition = (definition) => {
@@ -57,8 +57,13 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
   let allErrors = [];
   const coercedProperties = Object.fromEntries(
     Object.entries(resolvedProperties ?? {}).map(([propertyName, value]) => {
-      const validationDefinition = propertyDefinitions[propertyName]?.validation ?? {};
-      const schema = generateSchemaFromValidationDefinition(validationDefinition);
+      const validationDefinition = propertyDefinitions[propertyName]?.validation ?? [];
+
+      const schema = _.isEmpty(validationDefinition)
+        ? any()
+        : validationDefinition.length === 1
+        ? generateSchemaFromValidationDefinition(validationDefinition[0])
+        : union(validationDefinition.map(generateSchemaFromValidationDefinition));
 
       const [valid, errors] = validate(value, schema);
 

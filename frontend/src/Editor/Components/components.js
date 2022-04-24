@@ -9,68 +9,68 @@ export const componentTypes = [
       data: {
         type: 'code',
         displayName: 'Table data',
-        validation: { type: 'array', required: true, element: { type: 'object', required: true }, default: [] },
+        validation: [{ type: 'array', required: true, element: { type: 'object', required: true }, default: [] }],
       },
       loadingState: {
         type: 'toggle',
         displayName: 'Loading state',
-        validation: { type: 'boolean', required: true, default: false },
+        validation: [{ type: 'boolean', required: true, default: false }],
       },
       columns: { type: 'array', displayName: 'Table Columns' },
       serverSidePagination: {
         type: 'toggle',
         displayName: 'Server-side pagination',
-        validation: { type: 'boolean', required: true, default: false },
+        validation: [{ type: 'boolean', required: true, default: false }],
       },
       clientSidePagination: {
         type: 'toggle',
         displayName: 'Client-side pagination',
-        validation: { type: 'boolean', required: true, default: true },
+        validation: [{ type: 'boolean', required: true, default: true }],
       },
       serverSideSearch: {
         type: 'toggle',
         displayName: 'Server-side search',
-        validation: { type: 'boolean', required: true, default: false },
+        validation: [{ type: 'boolean', required: true, default: false }],
       },
       actionButtonBackgroundColor: {
         type: 'color',
         displayName: 'Background color',
-        validation: { type: 'string', required: true, default: '#4D72FA' },
+        validation: [{ type: 'string', required: true, default: '#4D72FA' }],
       },
       actionButtonTextColor: {
         type: 'color',
         displayName: 'Text color',
-        validation: { type: 'string', required: true, default: 'black' },
+        validation: [{ type: 'string', required: true, default: 'black' }],
       },
       displaySearchBox: {
         type: 'toggle',
         displayName: 'Show search box',
-        validation: { type: 'boolean', required: true, default: true },
+        validation: [{ type: 'boolean', required: true, default: true }],
       },
       showDownloadButton: {
         type: 'toggle',
         displayName: 'Show download button',
-        validation: { type: 'boolean', required: true, default: true },
+        validation: [{ type: 'boolean', required: true, default: true }],
       },
       showFilterButton: {
         type: 'toggle',
         displayName: 'Show filter button',
-        validation: { type: 'boolean', required: true, default: true },
+        validation: [{ type: 'boolean', required: true, default: true }],
       },
       showBulkUpdateActions: {
         type: 'toggle',
         displayName: 'Show bulk update actions',
-        validation: { type: 'boolean', required: true, default: true },
+        validation: [{ type: 'boolean', required: true, default: true }],
       },
       showBulkSelector: {
         type: 'toggle',
         displayName: 'Bulk selection',
-        validation: { type: 'boolean', required: true, default: false },
+        validation: [{ type: 'boolean', required: true, default: false }],
       },
       highlightSelectedRow: {
         type: 'toggle',
         displayName: 'Highlight selected row',
-        validation: { type: 'boolean', required: true, default: false },
+        validation: [{ type: 'boolean', required: true, default: false }],
       },
     },
     others: {
@@ -91,12 +91,12 @@ export const componentTypes = [
       textColor: {
         type: 'color',
         displayName: 'Text Color',
-        validation: { type: 'string', required: true, default: 'black' },
+        validation: [{ type: 'string', required: true, default: 'black' }],
       },
       actionButtonRadius: {
         type: 'code',
         displayName: 'Action Button Radius',
-        validation: { type: 'number', required: true, default: 0 },
+        validation: [{ type: 'number', required: true, default: 0 }],
       },
       tableType: {
         type: 'select',
@@ -108,7 +108,7 @@ export const componentTypes = [
           { name: 'Striped', value: 'table-striped' },
           { name: 'Striped & bordered', value: 'table-striped table-bordered' },
         ],
-        validation: { type: 'string', required: true, default: '' },
+        validation: [{ type: 'string', required: true, default: '' }],
       },
       cellSize: {
         type: 'select',
@@ -117,22 +117,22 @@ export const componentTypes = [
           { name: 'Compact', value: 'compact' },
           { name: 'Spacious', value: 'spacious' },
         ],
-        validation: { type: 'string', required: true, default: '' },
+        validation: [{ type: 'string', required: true, default: '' }],
       },
       borderRadius: {
         type: 'code',
         displayName: 'Border Radius',
-        validation: { type: 'number', required: true, default: 0 },
+        validation: [{ type: 'number', required: true, default: 0 }],
       },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
-        validation: { type: 'boolean', required: true, default: true },
+        validation: [{ type: 'boolean', required: true, default: true }],
       },
       disabledState: {
         type: 'toggle',
         displayName: 'Disable',
-        validation: { type: 'boolean', required: true, default: false },
+        validation: [{ type: 'boolean', required: true, default: false }],
       },
     },
     exposedVariables: {
@@ -175,11 +175,11 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
-        actionButtonRadius: { value: '0' },
+        actionButtonRadius: { value: '{{0}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         cellSize: { value: 'compact' },
-        borderRadius: { value: '0' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -200,12 +200,12 @@ export const componentTypes = [
       text: {
         type: 'code',
         displayName: 'Button Text',
-        validation: { type: 'string', default: 'Button', required: true },
+        validation: [{ type: 'string', default: 'Button', required: true }],
       },
       loadingState: {
         type: 'toggle',
         displayName: 'Loading State',
-        validation: { default: false, required: true, type: 'boolean' },
+        validation: [{ default: false, required: true, type: 'boolean' }],
       },
     },
     events: {
@@ -217,7 +217,7 @@ export const componentTypes = [
       loaderColor: { type: 'color', displayName: 'Loader color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'number', displayName: 'Border radius', validation: { type: 'number' } },
+      borderRadius: { type: 'number', displayName: 'Border radius' },
     },
     exposedVariables: {},
     definition: {
