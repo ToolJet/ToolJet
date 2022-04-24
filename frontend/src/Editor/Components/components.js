@@ -255,12 +255,28 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      title: { type: 'code', displayName: 'Title' },
-      data: { type: 'json', displayName: 'Data' },
-      loadingState: { type: 'toggle', displayName: 'Loading State' },
-      markerColor: { type: 'color', displayName: 'Marker color' },
-      showAxes: { type: 'toggle', displayName: 'Show axes' },
-      showGridLines: { type: 'toggle', displayName: 'Show grid lines' },
+      title: { type: 'code', displayName: 'Title', validation: [{ type: 'string', required: true, default: '' }] },
+      data: { type: 'json', displayName: 'Data', validation: [{ type: 'string', required: true, default: '[]' }] },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading State',
+        validation: [{ type: 'boolean', required: true, default: false }],
+      },
+      markerColor: {
+        type: 'color',
+        displayName: 'Marker color',
+        validation: [{ type: 'string', required: true, default: '#CDE1F8' }],
+      },
+      showAxes: {
+        type: 'toggle',
+        displayName: 'Show axes',
+        validation: [{ type: 'boolean', required: true, default: true }],
+      },
+      showGridLines: {
+        type: 'toggle',
+        displayName: 'Show grid lines',
+        validation: [{ type: 'boolean', required: true, default: true }],
+      },
       type: {
         type: 'select',
         displayName: 'Chart type',
@@ -269,15 +285,32 @@ export const componentTypes = [
           { name: 'Bar', value: 'bar' },
           { name: 'Pie', value: 'pie' },
         ],
+        validation: [{ type: 'string', required: true, default: 'line' }],
       },
-      jsonDescription: { type: 'json', displayName: 'Json Description' },
-      plotFromJson: { type: 'toggle', displayName: 'Use Plotly JSON schema' },
+      jsonDescription: {
+        type: 'json',
+        displayName: 'Json Description',
+        validation: [{ type: 'string', required: true, default: '{}' }],
+      },
+      plotFromJson: {
+        type: 'toggle',
+        displayName: 'Use Plotly JSON schema',
+        validation: [{ type: 'boolean', required: true, default: false }],
+      },
     },
     events: {},
     styles: {
-      padding: { type: 'code', displayName: 'Padding' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      padding: { type: 'code', displayName: 'Padding', validation: [{ type: 'number', required: true, default: 50 }] },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: [{ type: 'boolean', required: true, default: true }],
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: [{ type: 'boolean', required: true, default: false }],
+      },
     },
     exposedVariables: {
       show: null,
@@ -324,7 +357,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        padding: { value: '50' },
+        padding: { value: '{{50}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
