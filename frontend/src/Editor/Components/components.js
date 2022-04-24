@@ -818,17 +818,73 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      defaultValue: { type: 'code', displayName: 'Default value' },
-      format: { type: 'code', displayName: 'Format' },
-      enableTime: { type: 'code', displayName: 'Enable time selection?' },
-      enableDate: { type: 'code', displayName: 'Enable date selection?' },
-      disabledDates: { type: 'code', displayName: 'Disabled dates' },
+      defaultValue: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schemas: [{ type: 'string', required: true }],
+          default: '1/09/2021',
+        },
+      },
+      format: {
+        type: 'code',
+        displayName: 'Format',
+        validation: {
+          schemas: [{ type: 'string', required: true }],
+          default: 'DD/MM/YYYY',
+        },
+      },
+      enableTime: {
+        type: 'code',
+        displayName: 'Enable time selection?',
+        validation: {
+          schemas: [{ type: 'boolean', required: true }],
+          default: false,
+        },
+      },
+      enableDate: {
+        type: 'code',
+        displayName: 'Enable date selection?',
+        validation: {
+          schemas: [{ type: 'boolean', required: true }],
+          default: true,
+        },
+      },
+      disabledDates: {
+        type: 'code',
+        displayName: 'Disabled dates',
+        validation: {
+          schemas: [{ type: 'array', element: { type: 'string', required: true }, required: true }],
+          default: [],
+        },
+      },
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schemas: [{ type: 'boolean', required: true }],
+          default: true,
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schemas: [{ type: 'boolean', required: true }],
+          default: false,
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schemas: [{ type: 'string', required: true }],
+          default: 0,
+        },
+      },
     },
     exposedVariables: {
       value: '',
