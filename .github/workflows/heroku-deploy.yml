@@ -1,31 +1,20 @@
-name: Heroku deploy
-
+name: Heroku Review Application
 on:
-  # push:
-   # branches: [develop, main]
   pull_request:
-    types: [labeled]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/develop' ||  github.ref == 'refs/heads/main') && github.run_number || github.ref }}
-  cancel-in-progress: true
+    types: [opened, reopened, synchronize, labeled, closed]
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled, closed]
 
 jobs:
-  deploy:
+  heroku-review-application:
+    name: Heroku Review Application
     runs-on: ubuntu-latest
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'deploy-heroku') ||
-      github.ref == 'refs/heads/main' ||
-      github.ref == 'refs/heads/develop'
+    if: contains(github.event.pull_request.labels.*.name, 'deploy-heroku')
     steps:
-      - uses: actions/checkout@v2
-      - uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "tooljet-pr-${{github.event.number}}"
-          heroku_email: "social@tooljet.io"
-          branch: ${{github.ref}}
+      - name: Heroku Review Application
+        uses: mheap/github-action-pr-heroku-review-app@master
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LOCKBOX_MASTER_KEY: ${{secrets.LOCKBOX_MASTER_KEY}}
           NODE_ENV: "production"
           NODE_OPTIONS: "--max-old-space-size=4096"
