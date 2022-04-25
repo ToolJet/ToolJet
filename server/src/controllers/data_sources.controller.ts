@@ -11,6 +11,7 @@ import {
   Request,
   Response,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
@@ -112,7 +113,9 @@ export class DataSourcesController {
 
     const result = await this.dataSourcesService.delete(params.id);
     if (result.affected == 1) {
-      return res.status(200).send();
+      return;
+    } else {
+      throw new BadRequestException();
     }
   }
 
