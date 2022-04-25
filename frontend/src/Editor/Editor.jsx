@@ -1028,7 +1028,11 @@ class Editor extends React.Component {
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
-              appDefinition={{ components: appDefinition.components, queries: dataQueries }}
+              appDefinition={{
+                components: appDefinition.components,
+                queries: dataQueries,
+                selectedComponent: this.state?.selectedComponent,
+              }}
               setSelectedComponent={this.setSelectedComponent}
               removeComponent={this.removeComponent}
               runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}

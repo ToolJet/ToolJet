@@ -18,6 +18,10 @@ export const LeftSidebarInspector = ({
 
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const queryDefinitions = appDefinition['queries'];
+  const selectedComponent = {
+    id: appDefinition['selectedComponent']?.id,
+    component: appDefinition['selectedComponent']?.component?.name,
+  };
 
   const queries = {};
 
@@ -38,7 +42,7 @@ export const LeftSidebarInspector = ({
 
   const componentIcons = Object.entries(currentState['components']).map(([key, value]) => {
     const component = componentDefinitions[value.id]['component'];
-    console.log('check check ==>', component);
+
     if (component.name === key) {
       return {
         iconName: key,
@@ -89,6 +93,7 @@ export const LeftSidebarInspector = ({
     },
   ];
 
+  console.log('selectedComponent --->', selectedComponent, '<------');
   return (
     <>
       <LeftSidebarItem
@@ -121,6 +126,7 @@ export const LeftSidebarInspector = ({
             currentState={appDefinition}
             actionIdentifier="id"
             expandWithLabels={false}
+            selectedComponent={selectedComponent}
           />
         </div>
       </div>

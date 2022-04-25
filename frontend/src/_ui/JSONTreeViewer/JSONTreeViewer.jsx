@@ -31,11 +31,13 @@ export class JSONTreeViewer extends React.Component {
     };
   }
 
+  componentDidMount() {
+    this.setState({
+      data: this.props.data,
+    });
+  }
+
   componentWillReceiveProps(nextProps) {
-    // let hastMap;
-    // if (!_.isEmpty(nextProps.data)) {
-    //   hastMap = hashTable(nextProps.data);
-    // }
     this.setState({
       data: nextProps.data,
       shouldExpandNode: nextProps.shouldExpandNode,
@@ -44,10 +46,24 @@ export class JSONTreeViewer extends React.Component {
     });
   }
 
-  componentDidMount() {
-    this.setState({
-      data: this.props.data,
-    });
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.selectedComponent !== this.state.selectedComponent) {
+      const matchedWidget = Object.keys(this.state.data.components).filter(
+        (component) => this.state.data.components[component].id === this.state.selectedComponent.id
+      )[0];
+
+      console.log('selectedComponent changed', matchedWidget);
+      if (matchedWidget) {
+        this.setState(
+          {
+            selectedWidget: matchedWidget,
+          },
+          () => {
+            this.updateSelectedNode(matchedWidget);
+          }
+        );
+      }
+    }
   }
 
   getCurrentNodePath(path, node) {
@@ -217,6 +233,7 @@ export class JSONTreeViewer extends React.Component {
           renderNodeIcons={this.renderNodeIcons}
           useIndentedBlock={this.props.useIndentedBlock ?? false}
           selectedNode={this.state.selectedNode}
+          selectedWidget={this.state.selectedWidget ?? null}
           updateSelectedNode={this.updateSelectedNode}
           useActions={this.state.useActions}
           actionsList={this.state.actionsList}

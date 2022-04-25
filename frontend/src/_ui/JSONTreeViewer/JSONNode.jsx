@@ -50,6 +50,10 @@ export const JSONNode = ({ data, ...restProps }) => {
         setOnSelectDispatchActions(onSelectDispatchActions);
       }
     }
+
+    if (selectedNode === currentNode) {
+      set(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedNode]);
 
