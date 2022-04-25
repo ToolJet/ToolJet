@@ -118,8 +118,8 @@ export class AuthService {
     }
   }
 
-  async switchOrganization(newOrganizationId: string, user: User) {
-    if (!user.isPasswordLogin) {
+  async switchOrganization(newOrganizationId: string, user: User, isNewOrganization?: boolean) {
+    if (!(isNewOrganization || user.isPasswordLogin)) {
       throw new UnauthorizedException();
     }
     if (this.configService.get<string>('MULTI_ORGANIZATION') !== 'true') {
