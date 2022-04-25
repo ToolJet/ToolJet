@@ -38,11 +38,11 @@ export const LeftSidebarInspector = ({
 
   const componentIcons = Object.entries(currentState['components']).map(([key, value]) => {
     const component = componentDefinitions[value.id]['component'];
-
+    console.log('check check ==>', component);
     if (component.name === key) {
       return {
         iconName: key,
-        iconPath: `/assets/images/icons/widgets/${component.displayName.toLowerCase()}.svg`,
+        iconPath: `/assets/images/icons/widgets/${component.component.toLowerCase()}.svg`,
         className: 'component-icon',
       };
     }
