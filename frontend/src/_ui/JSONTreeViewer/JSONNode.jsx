@@ -91,7 +91,6 @@ export const JSONNode = ({ data, ...restProps }) => {
   const numberOfEntries = getLength(typeofCurrentNode, data);
   const toRenderSelector = (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array') && numberOfEntries > 0;
 
-  // console.log('typeofCurrentNode ==>', typeofCurrentNode, currentNode, path, 'current', currentNodePath);
   let $VALUE = null;
   let $NODEType = null;
   let $NODEIcon = null;

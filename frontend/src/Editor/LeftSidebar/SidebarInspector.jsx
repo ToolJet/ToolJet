@@ -130,6 +130,7 @@ export const LeftSidebarInspector = ({
             actionIdentifier="id"
             expandWithLabels={false}
             selectedComponent={selectedComponent}
+            treeType="inspector"
           />
         </div>
       </div>

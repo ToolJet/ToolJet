@@ -2,20 +2,6 @@ import _ from 'lodash';
 import React from 'react';
 import { JSONNode } from './JSONNode';
 
-/**
- * @Props {
- ** shouldExpandNode: true, //? Bool OR Function()
- ** hideRoot: false,
- ** keyPath: ['root'], //! access directly by keyPath
- ** labelRenderer,
- ** valueRenderer,
- ** renderCustomNode: () -> JSX
- ** collectionLimit: 50 //? To Limit the number of items to be displayed in an collection or an array,
- ** darkTheme: false,
- ** cls: '' //custom classes
- * }
- */
-
 export class JSONTreeViewer extends React.Component {
   constructor(props) {
     super(props);
@@ -41,13 +27,12 @@ export class JSONTreeViewer extends React.Component {
     this.setState({
       data: nextProps.data,
       shouldExpandNode: nextProps.shouldExpandNode,
-      // hasMap: hastMap,
       ...nextProps,
     });
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.selectedComponent !== this.state.selectedComponent) {
+    if (prevState.selectedComponent !== this.state.selectedComponent && this.props.treeType === 'inspector') {
       const matchedWidget = Object.keys(this.state.data.components).filter(
         (component) => this.state.data.components[component].id === this.state.selectedComponent.id
       )[0];
@@ -69,7 +54,6 @@ export class JSONTreeViewer extends React.Component {
   getCurrentNodePath(path, node) {
     let currentPath = path ?? [];
     if (node) {
-      //check last element of the path is not the same as the current node
       if (!currentPath[currentPath.length - 1] === node) {
         currentPath = [...currentPath, node];
       }
@@ -81,10 +65,6 @@ export class JSONTreeViewer extends React.Component {
     const typeofCurrentNode = Object.prototype.toString.call(node).slice(8, -1);
     //Todo: Handle more types (Custom type or Iterable type)
 
-    // console.log('typeofCurrentNode [[JSONNodeTree]] ', typeofCurrentNode, node);
-    // if (node instanceof Object) {
-    //   return 'Object';
-    // }
     return typeofCurrentNode;
   }
 
@@ -137,7 +117,6 @@ export class JSONTreeViewer extends React.Component {
     if (currentNode === parent) return;
 
     if (dispatchActionForCurrentNode && dispatchActionForCurrentNode['enableFor1stLevelChildren']) {
-      console.log('From getNodeSHowHideComponents', currentNode, dispatchActionForCurrentNode['actions']);
       dispatchActionForCurrentNode['actions'].map((action) => showHideComponents.push(action));
     }
 
@@ -182,9 +161,7 @@ export class JSONTreeViewer extends React.Component {
         } else if (_.isArray(value)) {
           map.set(newPath, { type: _type });
           buildMap(value, newPath);
-        }
-        //check if the type is a function
-        else if (_.isFunction(value)) {
+        } else if (_.isFunction(value)) {
           map.set(newPath, { type: _type });
         } else {
           map.set(newPath, { type: _type });
