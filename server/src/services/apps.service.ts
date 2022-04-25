@@ -216,12 +216,14 @@ export class AppsService {
   async update(user: User, appId: string, appUpdateDto: AppUpdateDto) {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
+    const isMaintenanceOn = appUpdateDto.is_maintenance_on;
     const { name, slug, icon } = appUpdateDto;
 
     const updateableParams = {
       name,
       slug,
       isPublic,
+      isMaintenanceOn,
       currentVersionId,
       icon,
     };

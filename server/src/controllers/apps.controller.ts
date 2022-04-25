@@ -109,6 +109,7 @@ export class AppsController {
       data_queries: versionToLoad?.dataQueries,
       definition: versionToLoad?.definition,
       is_public: app.isPublic,
+      is_maintenance_on: app.isMaintenanceOn,
       name: app.name,
       slug: app.slug,
     };
