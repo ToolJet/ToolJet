@@ -149,9 +149,9 @@ export const JSONNode = ({ data, ...restProps }) => {
   let $key = (
     <span
       onClick={() => handleOnClickLabels(data, currentNode)}
-      style={{ marginTop: '1px', cursor: 'pointer' }}
+      style={{ marginTop: '1px', cursor: 'pointer', textTransform: 'none' }}
       className={`fs-12 fw-bold mx-1 ${
-        expandable && selectedNode === currentNode && 'badge badge-outline color-primary text-lowercase'
+        expandable && selectedNode === currentNode && 'badge badge-outline color-primary'
       }`}
     >
       {String(currentNode)}
