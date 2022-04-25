@@ -1,4 +1,4 @@
-name: Heroku Review Application
+name: Heroku review application deploy
 on:
   pull_request:
     types: [opened, reopened, synchronize, labeled, closed]
@@ -6,8 +6,8 @@ on:
     types: [opened, reopened, synchronize, labeled, closed]
 
 jobs:
-  heroku-review-application:
-    name: Heroku Review Application
+  deploy:
+    name: Heroku review application deploy
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'deploy-heroku')
     steps:
