@@ -10,14 +10,16 @@ export const JSONNode = ({ data, ...restProps }) => {
     path,
     shouldExpandNode,
     currentNode,
+    selectedNode,
+    hoveredNode,
     getCurrentPath,
     getCurrentNodeType,
     getLength,
     toUseNodeIcons,
     renderNodeIcons,
     useIndentedBlock,
-    selectedNode,
     updateSelectedNode,
+    updateHoveredNode,
     useActions,
     enableCopyToClipboard,
     getNodeShowHideComponents,
@@ -109,6 +111,17 @@ export const JSONNode = ({ data, ...restProps }) => {
       set(true);
     }
   }, [selectedNode, currentNode]);
+
+  React.useEffect(() => {
+    if (hoveredNode === currentNode) {
+      setShowHiddenOptionsForNode(true);
+    }
+
+    return () => {
+      setShowHiddenOptionsForNode(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hoveredNode]);
 
   if (toUseNodeIcons && currentNode) {
     $NODEIcon = renderNodeIcons(currentNode);
@@ -207,7 +220,7 @@ export const JSONNode = ({ data, ...restProps }) => {
             width="13"
             height="13"
             viewBox="0 0 24 24"
-            strokeWidth="0.75"
+            strokeWidth="2"
             stroke="#2c3e50"
             fill="none"
             strokeLinecap="round"
@@ -228,6 +241,8 @@ export const JSONNode = ({ data, ...restProps }) => {
       className={cx('d-flex row-flex mt-1 font-monospace container-fluid px-1', {
         'json-node-element': !expandable,
       })}
+      onMouseEnter={() => updateHoveredNode(currentNode)}
+      onMouseLeave={() => updateHoveredNode(null)}
     >
       <div className={`json-tree-icon-container  mx-2 ${selectedNodeStyles && 'selected-node'}`}>
         <JSONNode.NodeIndicator
@@ -242,13 +257,6 @@ export const JSONNode = ({ data, ...restProps }) => {
 
       <div
         style={{ width: 'inherit' }}
-        onMouseEnter={() => {
-          if (expandable && currentNode !== selectedNode) {
-            return;
-          }
-          return setShowHiddenOptionsForNode(true);
-        }}
-        onMouseLeave={() => setShowHiddenOptionsForNode(false)}
         className={`${shouldDisplayIntendedBlock && 'group-border'} ${selectedNodeStyles && 'selected-node'}`}
       >
         <div

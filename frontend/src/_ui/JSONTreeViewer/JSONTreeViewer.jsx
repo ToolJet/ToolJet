@@ -10,8 +10,9 @@ export class JSONTreeViewer extends React.Component {
       data: {},
       shouldExpandNode: false,
       currentNode: 'Root',
-      darkTheme: false,
       selectedNode: null,
+      hoveredNode: null,
+      darkTheme: false,
       showHideActions: false,
       enableCopyToClipboard: false,
       actionsList: [],
@@ -103,6 +104,13 @@ export class JSONTreeViewer extends React.Component {
     if (node) {
       this.setState({
         selectedNode: node,
+      });
+    }
+  };
+  updateHoveredNode = (node) => {
+    if (node) {
+      this.setState({
+        hoveredNode: node,
       });
     }
   };
@@ -214,8 +222,10 @@ export class JSONTreeViewer extends React.Component {
             renderNodeIcons={this.renderNodeIcons}
             useIndentedBlock={this.props.useIndentedBlock ?? false}
             selectedNode={this.state.selectedNode}
+            hoveredNode={this.state.hoveredNode}
             selectedWidget={this.state.selectedWidget ?? null}
             updateSelectedNode={this.updateSelectedNode}
+            updateHoveredNode={this.updateHoveredNode}
             useActions={this.state.useActions}
             actionsList={this.state.actionsList}
             enableCopyToClipboard={this.state.enableCopyToClipboard}
