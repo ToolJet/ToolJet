@@ -199,7 +199,7 @@ export class JSONTreeViewer extends React.Component {
         prevPath = abs;
         prevRelPath = currentPath;
       }
-      console.log('computeAbsolutePath -------------->', abs, '<--------------');
+
       return abs;
     };
 

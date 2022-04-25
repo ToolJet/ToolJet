@@ -208,7 +208,10 @@ export const JSONNode = ({ data, ...restProps }) => {
     };
 
     return (
-      <div style={{ fontSize: '9px', marginTop: '3px' }} className="d-flex end-0 position-absolute">
+      <div
+        style={{ fontSize: '9px', marginTop: expandable ? '0px' : '3px' }}
+        className="d-flex end-0 position-absolute"
+      >
         {enableCopyToClipboard && (
           <JSONNode.CopyToClipboard data={currentNodePath} path={true} callback={getAbsoluteNodePath} />
         )}
