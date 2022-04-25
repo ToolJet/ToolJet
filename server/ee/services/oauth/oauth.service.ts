@@ -38,6 +38,7 @@ export class OauthService {
     if (
       !restrictedDomain
         .split(',')
+        .map((e) => e && e.trim())
         .filter((e) => !!e)
         .includes(domain)
     ) {
