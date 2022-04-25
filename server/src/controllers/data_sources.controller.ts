@@ -9,7 +9,6 @@ import {
   Put,
   Query,
   Request,
-  Response,
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
@@ -97,7 +96,7 @@ export class DataSourcesController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async delete(@Request() req, @Response() res, @Param() params) {
+  async delete(@Request() req, @Param() params) {
     const dataSourceId = params.id;
 
     const dataSource = await this.dataSourcesService.findOne(dataSourceId);
