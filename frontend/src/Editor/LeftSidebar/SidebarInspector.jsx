@@ -5,6 +5,7 @@ import { SidebarPinnedButton } from './SidebarPinnedButton';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import { allSvgs } from '@tooljet/plugins/client';
+import RunjsIcon from '../Icons/runjs.svg';
 
 export const LeftSidebarInspector = ({
   darkMode,
@@ -36,6 +37,9 @@ export const LeftSidebarInspector = ({
   delete jsontreeData.errors;
 
   const queryIcons = Object.entries(currentState['queries']).map(([key, value]) => {
+    if (value.kind === 'runjs') {
+      return { iconName: key, jsx: () => <RunjsIcon style={{ height: 16, width: 16, marginRight: 12 }} /> };
+    }
     const Icon = allSvgs[value.kind];
     return { iconName: key, jsx: () => <Icon style={{ height: 16, width: 16, marginRight: 12 }} /> };
   });
@@ -93,7 +97,6 @@ export const LeftSidebarInspector = ({
     },
   ];
 
-  console.log('selectedComponent --->', selectedComponent, '<------');
   return (
     <>
       <LeftSidebarItem
