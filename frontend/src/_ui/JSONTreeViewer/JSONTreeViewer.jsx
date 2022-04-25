@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
 import { JSONNode } from './JSONNode';
+import ErrorBoundary from '@/Editor/ErrorBoundary';
 
 export class JSONTreeViewer extends React.Component {
   constructor(props) {
@@ -33,20 +34,22 @@ export class JSONTreeViewer extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevState.selectedComponent !== this.state.selectedComponent && this.props.treeType === 'inspector') {
-      const matchedWidget = Object.keys(this.state.data.components).filter(
-        (component) => this.state.data.components[component].id === this.state.selectedComponent.id
-      )[0];
+      if (this.getCurrentNodePath(this.state.data) === 'Object') {
+        const matchedWidget = Object.keys(this.state.data.components).filter(
+          (component) => this.state.data.components[component].id === this.state.selectedComponent.id
+        )[0];
 
-      console.log('selectedComponent changed', matchedWidget);
-      if (matchedWidget) {
-        this.setState(
-          {
-            selectedWidget: matchedWidget,
-          },
-          () => {
-            this.updateSelectedNode(matchedWidget);
-          }
-        );
+        console.log('selectedComponent changed', matchedWidget);
+        if (matchedWidget) {
+          this.setState(
+            {
+              selectedWidget: matchedWidget,
+            },
+            () => {
+              this.updateSelectedNode(matchedWidget);
+            }
+          );
+        }
       }
     }
   }
@@ -200,26 +203,28 @@ export class JSONTreeViewer extends React.Component {
   render() {
     return (
       <div className="json-tree-container row-flex container-fluid p-0">
-        <JSONNode
-          data={this.state.data}
-          shouldExpandNode={false}
-          getCurrentPath={this.getCurrentNodePath}
-          getCurrentNodeType={this.getCurrentNodeType}
-          toUseNodeIcons={this.props.useIcons ?? false}
-          getLength={this.getLength}
-          renderNodeIcons={this.renderNodeIcons}
-          useIndentedBlock={this.props.useIndentedBlock ?? false}
-          selectedNode={this.state.selectedNode}
-          selectedWidget={this.state.selectedWidget ?? null}
-          updateSelectedNode={this.updateSelectedNode}
-          useActions={this.state.useActions}
-          actionsList={this.state.actionsList}
-          enableCopyToClipboard={this.state.enableCopyToClipboard}
-          getNodeShowHideComponents={this.getNodeShowHideComponents}
-          getOnSelectLabelDispatchActions={this.getOnSelectLabelDispatchActions}
-          expandWithLabels={this.state.expandWithLabels ?? false}
-          getAbsoluteNodePath={this.getAbsoluteNodePath}
-        />
+        <ErrorBoundary showFallback={true}>
+          <JSONNode
+            data={this.state.data}
+            shouldExpandNode={false}
+            getCurrentPath={this.getCurrentNodePath}
+            getCurrentNodeType={this.getCurrentNodeType}
+            toUseNodeIcons={this.props.useIcons ?? false}
+            getLength={this.getLength}
+            renderNodeIcons={this.renderNodeIcons}
+            useIndentedBlock={this.props.useIndentedBlock ?? false}
+            selectedNode={this.state.selectedNode}
+            selectedWidget={this.state.selectedWidget ?? null}
+            updateSelectedNode={this.updateSelectedNode}
+            useActions={this.state.useActions}
+            actionsList={this.state.actionsList}
+            enableCopyToClipboard={this.state.enableCopyToClipboard}
+            getNodeShowHideComponents={this.getNodeShowHideComponents}
+            getOnSelectLabelDispatchActions={this.getOnSelectLabelDispatchActions}
+            expandWithLabels={this.state.expandWithLabels ?? false}
+            getAbsoluteNodePath={this.getAbsoluteNodePath}
+          />
+        </ErrorBoundary>
       </div>
     );
   }
