@@ -51,14 +51,16 @@ export const JSONNode = ({ data, ...restProps }) => {
       }
     }
 
-    if (selectedNode === currentNode) {
-      set(true);
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedNode]);
 
   const toggleExpandNode = (node) => {
-    updateSelectedNode(node);
+    if (expandable) {
+      updateSelectedNode(null);
+    } else {
+      updateSelectedNode(node);
+    }
+
     set((prev) => !prev);
   };
 
@@ -102,6 +104,12 @@ export const JSONNode = ({ data, ...restProps }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expandable]);
+
+  React.useEffect(() => {
+    if (selectedNode === currentNode) {
+      set(true);
+    }
+  }, [selectedNode, currentNode]);
 
   if (toUseNodeIcons && currentNode) {
     $NODEIcon = renderNodeIcons(currentNode);
