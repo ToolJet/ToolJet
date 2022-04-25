@@ -158,7 +158,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     <span
       onClick={() => handleOnClickLabels(data, currentNode)}
       style={{ marginTop: '1px', cursor: 'pointer', textTransform: 'none' }}
-      className={`fs-12 fw-bold mx-1 ${
+      className={`node-key fs-12 fw-bold mx-1 ${
         expandable && selectedNode === currentNode && 'badge badge-outline color-primary'
       }`}
     >
@@ -306,7 +306,10 @@ const JSONTreeValueNode = ({ data, type }) => {
     const functionString = `${data.toString().split('{')[0].trim()}{...}`;
     return (
       <React.Fragment>
-        <span className="text-dark" style={{ fontSize: '10px', fontFamily: 'monospace', textTransform: 'none' }}>
+        <span
+          className={`text-secondary node-value-${type}`}
+          style={{ fontSize: '12px', fontFamily: 'monospace', textTransform: 'none' }}
+        >
           {functionString}
         </span>
       </React.Fragment>
@@ -403,7 +406,7 @@ const CopyToClipboardObject = ({ data, path = true, callback }) => {
           toast.success(message, { position: 'top-center' });
         }}
       >
-        <span style={{ height: '13px', width: '13px', marginBottom: '2px' }} className="mx-1">
+        <span style={{ height: '13px', width: '13px', marginBottom: '2px' }} className="mx-1 copy-to-clipboard">
           <img src={`/assets/images/icons/copy.svg`} width="12" height="12" />
         </span>
       </CopyToClipboard>

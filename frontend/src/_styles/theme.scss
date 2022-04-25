@@ -4704,6 +4704,45 @@ div#driver-page-overlay {
 }
 
 
+.theme-dark .json-tree-container {
+  .json-tree-node-icon {
+    svg {
+      filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg) brightness(99%) contrast(96%);
+    }
+  }
+  .json-tree-svg-icon.component-icon {
+    filter: brightness(0) invert(1);
+  }
+
+  .node-key {
+    color: #ccd4df;
+  }
+  .node-key.badge {
+    color: $primary-light !important;
+  }
+  .selected-node {
+    border-color: $primary-light !important;
+  }
+  .json-tree-icon-container  .selected-node  > svg:first-child {
+    filter: invert(65%) sepia(62%) saturate(4331%) hue-rotate(204deg) brightness(106%) contrast(97%);
+  }
+  .node-length-color {
+    color: #B8C7FD;
+  }
+  .node-type {
+    color: #8a96a6;
+  }
+  .group-border {
+    border-color: rgb(97, 101, 111);
+  }
+
+  .action-icons-group {
+    img, svg {
+      filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg) brightness(99%) contrast(96%);
+    }
+  }
+}
+
 .json-tree-container {
   .json-tree-svg-icon.component-icon {
     height: 16px;
