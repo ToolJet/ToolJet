@@ -44,7 +44,7 @@ export class OrganizationsController {
     if (!result) {
       throw new Error();
     }
-    return await this.authService.switchOrganization(result.id, user);
+    return await this.authService.switchOrganization(result.id, user, true);
   }
 
   @Get(['/:organizationId/public-configs', '/public-configs'])

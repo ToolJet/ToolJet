@@ -19,7 +19,7 @@ export class AppController {
     if (!organizationId) {
       throw new BadRequestException();
     }
-    return await this.authService.switchOrganization(organizationId, user, true);
+    return await this.authService.switchOrganization(organizationId, user);
   }
 
   @Post('signup')

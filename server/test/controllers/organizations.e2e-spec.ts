@@ -3,10 +3,12 @@ import { INestApplication } from '@nestjs/common';
 import { authHeaderForUser, clearDB, createUser, createNestAppInstanceWithEnvMock } from '../test.helper';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { User } from 'src/entities/user.entity';
 
 describe('organizations controller', () => {
   let app: INestApplication;
   let ssoConfigsRepository: Repository<SSOConfigs>;
+  let userRepository: Repository<User>;
   let mockConfig;
 
   beforeEach(async () => {
@@ -24,6 +26,7 @@ describe('organizations controller', () => {
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
     ssoConfigsRepository = app.get('SSOConfigsRepository');
+    userRepository = app.get('UserRepository');
   });
 
   afterEach(() => {
@@ -85,6 +88,9 @@ describe('organizations controller', () => {
         expect(response.body.organization_id).not.toBe(organization.id);
         expect(response.body.organization).toBe('My organization');
         expect(response.body.admin).toBeTruthy();
+
+        const newUser = await userRepository.findOneOrFail({ where: { id: user.id } });
+        expect(newUser.defaultOrganizationId).toBe(response.body.organization_id);
       });
 
       it('should throw error if name is empty', async () => {
@@ -112,6 +118,29 @@ describe('organizations controller', () => {
           .send({ name: 'My organization' })
           .set('Authorization', authHeaderForUser(user))
           .expect(403);
+      });
+
+      it('should create new organization if multi organization supported and user logged in via SSO', async () => {
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'MULTI_ORGANIZATION':
+              return 'true';
+            default:
+              return process.env[key];
+          }
+        });
+        const { user, organization } = await createUser(app, {
+          email: 'admin@tooljet.io',
+        });
+        const response = await request(app.getHttpServer())
+          .post('/api/organizations')
+          .send({ name: 'My organization' })
+          .set('Authorization', authHeaderForUser(user, null, false));
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.organization_id).not.toBe(organization.id);
+        expect(response.body.organization).toBe('My organization');
+        expect(response.body.admin).toBeTruthy();
       });
     });
     describe('update organization', () => {
