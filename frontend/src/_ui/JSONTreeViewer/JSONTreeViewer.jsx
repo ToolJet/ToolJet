@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React from 'react';
 import { JSONNode } from './JSONNode';
 
@@ -31,9 +32,14 @@ export class JSONTreeViewer extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    // let hastMap;
+    // if (!_.isEmpty(nextProps.data)) {
+    //   hastMap = hashTable(nextProps.data);
+    // }
     this.setState({
       data: nextProps.data,
       shouldExpandNode: nextProps.shouldExpandNode,
+      // hasMap: hastMap,
       ...nextProps,
     });
   }
@@ -136,6 +142,68 @@ export class JSONTreeViewer extends React.Component {
     return actions;
   };
 
+  getAbsoluteNodePath = (path) => {
+    const data = this.state.data;
+    if (!data || _.isEmpty(data)) return null;
+    const map = new Map();
+
+    // loop through the data and build the map
+    const buildMap = (data, path = '') => {
+      const keys = Object.keys(data);
+      keys.forEach((key) => {
+        const value = data[key];
+        const _type = Object.prototype.toString.call(value).slice(8, -1);
+        let newPath = '';
+        if (path === '') {
+          newPath = key;
+        } else {
+          newPath = `${path}.${key}`;
+        }
+
+        if (_.isObject(value)) {
+          map.set(newPath, { type: _type });
+          buildMap(value, newPath);
+        } else if (_.isArray(value)) {
+          map.set(newPath, { type: _type });
+          buildMap(value, newPath);
+        }
+        //check if the type is a function
+        else if (_.isFunction(value)) {
+          map.set(newPath, { type: _type });
+        } else {
+          map.set(newPath, { type: _type });
+        }
+      });
+    };
+
+    const computeAbsolutePath = (path) => {
+      let prevPath, prevType, prevRelPath, currentPath, abs;
+
+      for (let i = 0; i < path.length; i++) {
+        prevType = map.get(prevRelPath)?.type;
+        const node = path[i];
+
+        currentPath = prevRelPath ? `${prevRelPath}.${node}` : node;
+
+        if (prevType === 'Object') {
+          abs = `${prevPath}.${node}`;
+        } else if (prevType === 'Array') {
+          abs = `${prevPath}[${node}]`;
+        } else {
+          abs = currentPath;
+        }
+        prevPath = abs;
+        prevRelPath = currentPath;
+      }
+      console.log('computeAbsolutePath -------------->', abs, '<--------------');
+      return abs;
+    };
+
+    buildMap(data);
+
+    return computeAbsolutePath(path);
+  };
+
   render() {
     return (
       <div className="json-tree-container row-flex container-fluid p-0">
@@ -156,6 +224,7 @@ export class JSONTreeViewer extends React.Component {
           getNodeShowHideComponents={this.getNodeShowHideComponents}
           getOnSelectLabelDispatchActions={this.getOnSelectLabelDispatchActions}
           expandWithLabels={this.state.expandWithLabels ?? false}
+          getAbsoluteNodePath={this.getAbsoluteNodePath}
         />
       </div>
     );

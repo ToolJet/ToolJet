@@ -23,6 +23,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     getNodeShowHideComponents,
     getOnSelectLabelDispatchActions,
     expandWithLabels,
+    getAbsoluteNodePath,
   } = restProps;
 
   const [expandable, set] = React.useState(() =>
@@ -84,7 +85,7 @@ export const JSONNode = ({ data, ...restProps }) => {
   const numberOfEntries = getLength(typeofCurrentNode, data);
   const toRenderSelector = (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array') && numberOfEntries > 0;
 
-  console.log('typeofCurrentNode ==>', typeofCurrentNode, currentNode, path, 'current', currentNodePath);
+  // console.log('typeofCurrentNode ==>', typeofCurrentNode, currentNode, path, 'current', currentNodePath);
   let $VALUE = null;
   let $NODEType = null;
   let $NODEIcon = null;
@@ -184,7 +185,9 @@ export const JSONNode = ({ data, ...restProps }) => {
 
     return (
       <div style={{ fontSize: '9px', marginTop: '3px' }} className="d-flex end-0 position-absolute">
-        {enableCopyToClipboard && <JSONNode.CopyToClipboard data={currentNodePath} path={true} />}
+        {enableCopyToClipboard && (
+          <JSONNode.CopyToClipboard data={currentNodePath} path={true} callback={getAbsoluteNodePath} />
+        )}
         {renderOptions()}
         <span>
           <svg
@@ -246,8 +249,7 @@ export const JSONNode = ({ data, ...restProps }) => {
           {$NODEIcon && <div className="ml-1 json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {$NODEType}
           {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
-          {/* <div className="action-icons-group">{showHiddenOptionsForNode && renderHiddenOptionsForNode()}</div> */}
-          <div className="action-icons-group">{renderHiddenOptionsForNode()}</div>
+          <div className="action-icons-group">{showHiddenOptionsForNode && renderHiddenOptionsForNode()}</div>
         </div>
         {toRenderSelector && (toExpandNode && !expandable ? null : $VALUE)}
       </div>
@@ -354,21 +356,16 @@ const DisplayNodeLabel = ({ type = '', children }) => {
   );
 };
 
-const CopyToClipboardObject = ({ data, path = true }) => {
+const CopyToClipboardObject = ({ data, path = true, callback }) => {
   const [copied, setCopied] = React.useState(false);
   let dataToCopy = data;
+  const message = path ? 'Path copied to clipboard' : 'Data copied to clipboard';
+  const tip = path ? 'Copy path to clipboard' : 'Copy data to clipboard';
 
   if (path) {
-    //array to string with separator '.'
-    let pathString = '';
-    dataToCopy.forEach((item, index) => {
-      if (index === 0) {
-        pathString += item;
-      } else {
-        pathString += `.${item}`;
-      }
-    });
-    dataToCopy = pathString;
+    dataToCopy = callback(dataToCopy);
+  } else {
+    dataToCopy = JSON.stringify(dataToCopy, null, 2);
   }
 
   //clears the clipboard after 2 seconds
@@ -383,13 +380,15 @@ const CopyToClipboardObject = ({ data, path = true }) => {
     return <center>Copied</center>;
   }
 
+  dataToCopy = path ? dataToCopy : JSON.stringify(dataToCopy, null, 2);
+
   return (
-    <ToolTip message={'Copy path to clipboard'}>
+    <ToolTip message={tip}>
       <CopyToClipboard
-        text={JSON.stringify(dataToCopy, null, 2)}
+        text={dataToCopy}
         onCopy={() => {
           setCopied(true);
-          toast.success('Path copied to clipboard', { position: 'top-center' });
+          toast.success(message, { position: 'top-center' });
         }}
       >
         <span style={{ height: '13px', width: '13px', marginBottom: '2px' }} className="mx-1">
