@@ -2032,6 +2032,7 @@ export const componentTypes = [
     },
     properties: {
       rawHtml: { type: 'code', displayName: 'Raw HTML' },
+      rawCSS: { type: 'code', displayName: 'Raw CSS' },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -2051,6 +2052,9 @@ export const componentTypes = [
       },
       properties: {
         rawHtml: {
+          value: '',
+        },
+        rawCSS: {
           value: '',
         },
       },
