@@ -29,7 +29,6 @@ export const JSONNode = ({ data, ...restProps }) => {
     expandWithLabels,
     getAbsoluteNodePath,
     actionsList,
-    parentPopoverState,
     updateParentState = () => null,
   } = restProps;
 
@@ -217,7 +216,7 @@ export const JSONNode = ({ data, ...restProps }) => {
               aria-current="true"
               onClick={() => {
                 action.dispatchAction(data, currentNode);
-                updateParentState(true);
+                updateParentState();
               }}
             >
               {action.name}
@@ -264,7 +263,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
         {moreActions.actions?.length > 0 && (
           <OverlayTrigger
-            rootClose={!parentPopoverState}
+            rootClose={true}
             rootCloseEvent="mousedown"
             trigger="click"
             placement={'right'}
