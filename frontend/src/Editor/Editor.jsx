@@ -221,6 +221,9 @@ class Editor extends React.Component {
   initEventListeners() {
     document.addEventListener('mousemove', this.onMouseMove);
     document.addEventListener('mouseup', this.onMouseUp);
+    this.socket?.addEventListener('message', (event) => {
+      if (event.data === 'versionReleased') this.fetchApp();
+    });
   }
 
   componentWillUnmount() {
@@ -792,12 +795,22 @@ class Editor extends React.Component {
   };
 
   onVersionRelease = (versionId) => {
-    this.setState({
-      app: {
-        ...this.state.app,
-        current_version_id: versionId,
+    this.setState(
+      {
+        app: {
+          ...this.state.app,
+          current_version_id: versionId,
+        },
       },
-    });
+      () => {
+        this.socket.send(
+          JSON.stringify({
+            event: 'events',
+            data: { message: 'versionReleased', appId: this.state.appId },
+          })
+        );
+      }
+    );
   };
 
   onZoomChanged = (zoom) => {
