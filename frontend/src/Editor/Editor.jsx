@@ -1071,7 +1071,7 @@ class Editor extends React.Component {
                   className="canvas-area"
                   style={{
                     width: currentLayout === 'desktop' ? '100%' : '450px',
-                    height: '100%',
+                    minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                     maxWidth: +this.state.appDefinition.globalSettings.canvasMaxWidth,
                     maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                     backgroundColor: this.state.appDefinition.globalSettings.canvasBackgroundColor,
