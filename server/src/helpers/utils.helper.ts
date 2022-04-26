@@ -1,5 +1,4 @@
 import { QueryError } from 'src/modules/data_sources/query.errors';
-import * as sanitizeHtml from 'sanitize-html';
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -29,12 +28,4 @@ export async function getCachedConnection(dataSourceId, dataSourceUpdatedAt): Pr
       return cachedData['connection'];
     }
   }
-}
-
-export function sanitizeInput(value: string) {
-  return sanitizeHtml(value, {
-    allowedTags: [],
-    allowedAttributes: {},
-    disallowedTagsMode: 'recursiveEscape',
-  });
 }

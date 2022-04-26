@@ -51,14 +51,11 @@ export async function getObject(client: S3Client, options: object): Promise<obje
 }
 
 export async function uploadObject(client: S3Client, options: object): Promise<object> {
-  const encoding = options['encoding'] || 'utf8';
-  const body = new Buffer(options['data'], encoding);
   const command = new PutObjectCommand({
     Bucket: options['bucket'],
     Key: options['key'],
-    Body: body,
+    Body: options['data'],
     ContentType: options['contentType'],
-    ContentEncoding: encoding,
   });
   const data = await client.send(command);
   return data;

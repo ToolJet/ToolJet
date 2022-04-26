@@ -2,7 +2,7 @@ const urrl = require('url');
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
-import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
+import got, { Headers, HTTPError } from 'got';
 
 function isEmpty(value: number | null | undefined | string) {
   return (
@@ -79,8 +79,7 @@ export default class RestapiQueryService implements QueryService {
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
-    const authType = sourceOptions['auth_type'];
-    const requiresOauth = authType === 'oauth2';
+    const requiresOauth = sourceOptions['auth_type'] === 'oauth2';
 
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
     const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
@@ -120,29 +119,17 @@ export default class RestapiQueryService implements QueryService {
     const method = queryOptions['method'];
     const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
     const paramsFromUrl = urrl.parse(url, true).query;
-
-    if (authType === 'bearer') {
-      headers['Authorization'] = `Bearer ${sourceOptions.bearer_token}`;
-    }
-
-    const requestOptions: OptionsOfTextResponseBody = {
-      method,
-      headers,
-      ...this.fetchHttpsCertsForCustomCA(),
-      searchParams: {
-        ...paramsFromUrl,
-        ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
-      },
-      json,
-    };
-
-    if (authType === 'basic') {
-      requestOptions.username = sourceOptions.username;
-      requestOptions.password = sourceOptions.password;
-    }
-
     try {
-      const response = await got(url, requestOptions);
+      const response = await got(url, {
+        method,
+        headers,
+        ...this.fetchHttpsCertsForCustomCA(),
+        searchParams: {
+          ...paramsFromUrl,
+          ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
+        },
+        json,
+      });
       result = this.isJson(response.body) ? JSON.parse(response.body) : response.body;
       requestObject = {
         requestUrl: response.request.requestUrl,

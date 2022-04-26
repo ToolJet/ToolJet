@@ -7,6 +7,7 @@ export const GlobalFilter = ({
   setGlobalFilter,
   onComponentOptionChanged,
   component,
+  serverSideSearch,
   onEvent,
 }) => {
   const count = preGlobalFilteredRows.length;
@@ -20,7 +21,9 @@ export const GlobalFilter = ({
     onChange(text);
 
     onComponentOptionChanged(component, 'searchText', text).then(() => {
-      onEvent('onSearch', { component, data: {} });
+      if (serverSideSearch === true) {
+        onEvent('onSearch', { component, data: {} });
+      }
     });
   };
 

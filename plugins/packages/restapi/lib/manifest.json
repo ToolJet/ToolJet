@@ -32,12 +32,6 @@
         "type": "string",
         "encrypted": true
       },
-      "password": {
-        "encrypted": true
-      },
-      "bearer_token":{
-        "encrypted": true
-      },
       "scopes": {
         "type": "string"
       },
@@ -89,15 +83,6 @@
     "scopes": {
       "value": "read, write"
     },
-    "username": {
-      "value": ""
-    },
-    "password": {
-      "value": ""
-    },
-    "bearer_token": {
-      "value": ""
-    },
     "auth_url": {
       "value": ""
     },
@@ -131,7 +116,7 @@
   },
   "properties": {
     "url": {
-      "label": "Base URL",
+      "label": "URL",
       "key": "url",
       "type": "text",
       "description": "https://api.example.com/v1/"

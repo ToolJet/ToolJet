@@ -1,10 +1,10 @@
 import { Repository, EntityRepository } from 'typeorm';
 import { Thread } from '../entities/thread.entity';
-import { CreateThreadDto, UpdateThreadDto } from '../dto/thread.dto';
+import { CreateThreadDTO } from '../dto/create-thread.dto';
 
 @EntityRepository(Thread)
 export class ThreadRepository extends Repository<Thread> {
-  public async createThread(createThreadDto: CreateThreadDto, userId: string, organizationId: string): Promise<Thread> {
+  public async createThread(createThreadDto: CreateThreadDTO, userId: string, organizationId: string): Promise<Thread> {
     const { x, y, appId, appVersionsId } = createThreadDto;
 
     const thread = new Thread();
@@ -23,8 +23,8 @@ export class ThreadRepository extends Repository<Thread> {
     return _response;
   }
 
-  public async editThread(updateThreadDto: UpdateThreadDto, editedThread: Thread): Promise<Thread> {
-    const { x, y, isResolved } = updateThreadDto;
+  public async editThread(createThreadDto: CreateThreadDTO, editedThread: Thread): Promise<Thread> {
+    const { x, y, isResolved } = createThreadDto;
 
     editedThread.x = x;
     editedThread.y = y;

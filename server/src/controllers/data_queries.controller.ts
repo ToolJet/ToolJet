@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Param,
-  Body,
   Post,
   Patch,
   Delete,
@@ -18,7 +17,6 @@ import { DataSourcesService } from '../../src/services/data_sources.service';
 import { QueryAuthGuard } from 'src/modules/auth/query-auth.guard';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { AppsService } from '@services/apps.service';
-import { CreateDataQueryDto, UpdateDataQueryDto } from '@dto/data-query.dto';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -59,8 +57,8 @@ export class DataQueriesController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Request() req, @Body() dataQueryDto: CreateDataQueryDto): Promise<object> {
-    const { kind, name, options, app_id, app_version_id, data_source_id } = dataQueryDto;
+  async create(@Request() req) {
+    const { kind, name, options, app_id, app_version_id, data_source_id } = req.body;
     const appId = app_id;
     const appVersionId = app_version_id;
     const dataSourceId = data_source_id;
@@ -96,8 +94,8 @@ export class DataQueriesController {
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  async update(@Request() req, @Param() params, @Body() updateDataQueryDto: UpdateDataQueryDto) {
-    const { name, options } = updateDataQueryDto;
+  async update(@Request() req, @Param() params) {
+    const { name, options } = req.body;
     const dataQueryId = params.id;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
@@ -133,9 +131,9 @@ export class DataQueriesController {
 
   @UseGuards(QueryAuthGuard)
   @Post(':id/run')
-  async runQuery(@Request() req, @Param() params, @Body() updateDataQueryDto: UpdateDataQueryDto) {
+  async runQuery(@Request() req, @Param() params) {
     const dataQueryId = params.id;
-    const { options } = updateDataQueryDto;
+    const { options } = req.body;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
 
@@ -177,8 +175,8 @@ export class DataQueriesController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/preview')
-  async previewQuery(@Request() req, @Body() updateDataQueryDto: UpdateDataQueryDto) {
-    const { options, query } = updateDataQueryDto;
+  async previewQuery(@Request() req, @Param() params) {
+    const { options, query } = req.body;
     const dataQueryEntity = {
       ...query,
       dataSource: await this.dataSourcesService.findOne(query['data_source_id']),
