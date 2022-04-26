@@ -25,6 +25,8 @@ jobs:
         uses: hashicorp/packer-github-actions@master
         with:
           command: init
+          target: .
+          working_directory: deploy/ec2
 
       # validate templates
       - name: Validate Template
