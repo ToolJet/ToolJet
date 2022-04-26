@@ -1,5 +1,4 @@
-import { AppAuthenticationDto, AppForgotPasswordDto, AppPasswordResetDto } from '@dto/app-authentication.dto';
-import { Controller, Get, Request, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Get, Request, Post, UseGuards } from '@nestjs/common';
 import { PasswordLoginDisabledGuard } from 'src/modules/auth/password-login-disabled.guard';
 import { AuthService } from '../services/auth.service';
 
@@ -9,31 +8,37 @@ export class AppController {
 
   @UseGuards(PasswordLoginDisabledGuard)
   @Post('authenticate')
-  async login(@Body() appAuthDto: AppAuthenticationDto) {
-    return this.authService.login(appAuthDto);
+  async login(@Request() req) {
+    return this.authService.login(req.body);
   }
 
   @UseGuards(PasswordLoginDisabledGuard)
   @Post('signup')
-  async signup(@Body() appAuthDto: AppAuthenticationDto) {
-    return this.authService.signup(appAuthDto);
+  async signup(@Request() req) {
+    return this.authService.signup(req.body);
   }
 
   @Post('/forgot_password')
-  async forgotPassword(@Body() appAuthDto: AppForgotPasswordDto) {
-    await this.authService.forgotPassword(appAuthDto.email);
+  async forgotPassword(@Request() req) {
+    await this.authService.forgotPassword(req.body.email);
     return {};
   }
 
   @Post('/reset_password')
-  async resetPassword(@Body() appAuthDto: AppPasswordResetDto) {
-    const { token, password } = appAuthDto;
+  async resetPassword(@Request() req) {
+    const { token, password } = req.body;
     await this.authService.resetPassword(token, password);
     return {};
   }
 
   @Get('/health')
   async healthCheck(@Request() req) {
+    return { works: 'yeah' };
+  }
+
+  // TODO: Added to debug intermittent failures when paired with proxy
+  @Post('/health')
+  async postHealthCheck(@Request() req) {
     return { works: 'yeah' };
   }
 }

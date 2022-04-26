@@ -19,8 +19,6 @@ import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
 import { FoldersService } from '@services/folders.service';
 import { App } from 'src/entities/app.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
-import { AppUpdateDto } from '@dto/app-update.dto';
-import { VersionCreateDto } from '@dto/version-create.dto';
 
 @Controller('apps')
 export class AppsController {
@@ -41,9 +39,9 @@ export class AppsController {
     }
     const app = await this.appsService.create(req.user);
 
-    const appUpdateDto = new AppUpdateDto();
-    appUpdateDto.slug = app.id;
-    await this.appsService.update(req.user, app.id, appUpdateDto);
+    await this.appsService.update(req.user, app.id, {
+      slug: app.id,
+    });
 
     return decamelizeKeys(app);
   }
@@ -109,7 +107,6 @@ export class AppsController {
       data_queries: versionToLoad?.dataQueries,
       definition: versionToLoad?.definition,
       is_public: app.isPublic,
-      is_maintenance_on: app.isMaintenanceOn,
       name: app.name,
       slug: app.slug,
     };
@@ -117,7 +114,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(@Request() req, @Param() params, @Body('app') appUpdateDto: AppUpdateDto) {
+  async update(@Request() req, @Param() params, @Body('app') appChanges) {
     const app = await this.appsService.find(params.id);
     const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
@@ -125,7 +122,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.update(req.user, params.id, appUpdateDto);
+    const result = await this.appsService.update(req.user, params.id, appChanges);
     const response = decamelizeKeys(result);
 
     return response;
@@ -263,7 +260,12 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/versions')
-  async createVersion(@Request() req, @Param() params, @Body() versionCreateDto: VersionCreateDto) {
+  async createVersion(
+    @Request() req,
+    @Param() params,
+    @Body('versionName') versionName,
+    @Body('versionFromId') versionFromId
+  ) {
     const app = await this.appsService.find(params.id);
     const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
@@ -271,12 +273,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const appUser = await this.appsService.createVersion(
-      req.user,
-      app,
-      versionCreateDto.versionName,
-      versionCreateDto.versionFromId
-    );
+    const appUser = await this.appsService.createVersion(req.user, app, versionName, versionFromId);
     return decamelizeKeys(appUser);
   }
 
@@ -332,9 +329,9 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const appUpdateDto = new AppUpdateDto();
-    appUpdateDto.icon = icon;
-    const appUser = await this.appsService.update(req.user, params.id, appUpdateDto);
+    const appUser = await this.appsService.update(req.user, params.id, {
+      icon,
+    });
     return decamelizeKeys(appUser);
   }
 }

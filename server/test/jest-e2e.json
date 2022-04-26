@@ -9,7 +9,6 @@
   "moduleNameMapper": {
     "^src/(.*)": "<rootDir>/../src/$1",
     "@plugins/(.*)": "<rootDir>/../plugins/$1",
-    "@dto/(.*)": "<rootDir>/../src/dto/$1",
     "@services/(.*)": "<rootDir>/../src/services/$1",
     "@controllers/(.*)": "<rootDir>/../src/controllers/$1",
     "@ee/(.*)": "<rootDir>/../ee/$1"
