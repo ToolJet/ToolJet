@@ -1,8 +1,8 @@
 name: AWS AMI build using Packer config
 
 on:
-  push:
-    branches: [chore/ami-release-workflow]
+  release:
+    types: [created]
 
 jobs:
   packer:
@@ -42,7 +42,7 @@ jobs:
         uses: hashicorp/packer-github-actions@master
         with:
           command: build
-          arguments: "-color=false -on-error=abort -var ami_name=test123"
+          arguments: "-color=false -on-error=abort -var ami_name=${GITHUB_REF##*/}"
           target: .
           working_directory: deploy/ec2
         env:
