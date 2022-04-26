@@ -35,12 +35,11 @@ export class JSONTreeViewer extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevState.selectedComponent !== this.state.selectedComponent && this.props.treeType === 'inspector') {
-      if (this.getCurrentNodePath(this.state.data) === 'Object') {
+      if (this.getCurrentNodeType(this.state.data) === 'Object') {
         const matchedWidget = Object.keys(this.state.data.components).filter(
           (component) => this.state.data.components[component].id === this.state.selectedComponent.id
         )[0];
 
-        console.log('selectedComponent changed', matchedWidget);
         if (matchedWidget) {
           this.setState(
             {
