@@ -9,9 +9,7 @@ import { SignupPage } from '@/SignupPage';
 import { ConfirmationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
-import { Editor, Viewer } from '@/Editor';
-import '@/_styles/theme.scss';
-import 'emoji-mart/css/emoji-mart.css';
+import { Viewer } from '@/Editor';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
@@ -21,6 +19,10 @@ import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { lt } from 'semver';
 import { Toaster } from 'react-hot-toast';
+import { RealtimeEditor } from '@/Editor/RealtimeEditor';
+
+import '@/_styles/theme.scss';
+import 'emoji-mart/css/emoji-mart.css';
 
 class App extends React.Component {
   constructor(props) {
@@ -140,7 +142,7 @@ class App extends React.Component {
             <PrivateRoute
               exact
               path="/apps/:id"
-              component={Editor}
+              component={RealtimeEditor}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
