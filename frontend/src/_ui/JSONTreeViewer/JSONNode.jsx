@@ -29,6 +29,8 @@ export const JSONNode = ({ data, ...restProps }) => {
     expandWithLabels,
     getAbsoluteNodePath,
     actionsList,
+    parentPopoverState,
+    updateParentState = () => null,
   } = restProps;
 
   const [expandable, set] = React.useState(() =>
@@ -205,6 +207,10 @@ export const JSONNode = ({ data, ...restProps }) => {
               type="button"
               className="list-group-item list-group-item-action popover-more-actions"
               aria-current="true"
+              onClick={() => {
+                action.dispatchAction(data, currentNode);
+                updateParentState(true);
+              }}
             >
               {action.name}
             </span>
@@ -248,8 +254,14 @@ export const JSONNode = ({ data, ...restProps }) => {
         )}
         {renderOptions()}
 
-        {moreActions?.length > 0 && (
-          <OverlayTrigger trigger="click" placement={'right'} overlay={moreActionsPopover(moreActions?.actions)}>
+        {moreActions.actions?.length > 0 && (
+          <OverlayTrigger
+            rootClose={!parentPopoverState}
+            rootCloseEvent="mousedown"
+            trigger="click"
+            placement={'right'}
+            overlay={moreActionsPopover(moreActions?.actions)}
+          >
             <span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -417,17 +429,11 @@ const DisplayNodeLabel = ({ type = '', children }) => {
   );
 };
 
-const CopyToClipboardObject = ({ data, path = true, callback }) => {
+const CopyToClipboardObject = ({ data, callback }) => {
   const [copied, setCopied] = React.useState(false);
-  let dataToCopy = data;
-  const message = path ? 'Path copied to clipboard' : 'Data copied to clipboard';
-  const tip = path ? 'Copy path to clipboard' : 'Copy data to clipboard';
-
-  if (path) {
-    dataToCopy = callback(dataToCopy);
-  } else {
-    dataToCopy = JSON.stringify(dataToCopy, null, 2);
-  }
+  const dataToCopy = callback(data);
+  const message = 'Path copied to clipboard';
+  const tip = 'Copy path to clipboard';
 
   //clears the clipboard after 2 seconds
   React.useEffect(() => {
@@ -440,8 +446,6 @@ const CopyToClipboardObject = ({ data, path = true, callback }) => {
   if (copied) {
     return <center>Copied</center>;
   }
-
-  dataToCopy = path ? dataToCopy : JSON.stringify(dataToCopy, null, 2);
 
   return (
     <ToolTip message={tip}>

@@ -233,6 +233,8 @@ export class JSONTreeViewer extends React.Component {
             getOnSelectLabelDispatchActions={this.getOnSelectLabelDispatchActions}
             expandWithLabels={this.state.expandWithLabels ?? false}
             getAbsoluteNodePath={this.getAbsoluteNodePath}
+            parentPopoverState={this.state.parentPopoverState ?? false}
+            updateParentState={this.state.updateParentState}
           />
         </ErrorBoundary>
       </div>

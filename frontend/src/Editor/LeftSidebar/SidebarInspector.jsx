@@ -6,6 +6,7 @@ import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import { allSvgs } from '@tooljet/plugins/client';
 import RunjsIcon from '../Icons/runjs.svg';
+import { toast } from 'react-hot-toast';
 
 export const LeftSidebarInspector = ({
   darkMode,
@@ -70,6 +71,12 @@ export const LeftSidebarInspector = ({
     runQuery(query.id, currentNode);
   };
 
+  const copyToClipboard = (data) => {
+    const stringified = JSON.stringify(data, null, 2);
+    navigator.clipboard.writeText(stringified);
+    return toast.success('Copied to the clipboard', { position: 'top-center' });
+  };
+
   const callbackActions = [
     {
       for: 'queries',
@@ -97,7 +104,7 @@ export const LeftSidebarInspector = ({
     },
     {
       for: 'all',
-      actions: [{ name: 'Copy value', dispatchAction: 'CopyToClipboard', icon: false }],
+      actions: [{ name: 'Copy value', dispatchAction: copyToClipboard, icon: false }],
     },
   ];
 
@@ -135,6 +142,8 @@ export const LeftSidebarInspector = ({
             expandWithLabels={false}
             selectedComponent={selectedComponent}
             treeType="inspector"
+            parentPopoverState={popoverPinned}
+            updateParentState={updatePopoverPinnedState}
           />
         </div>
       </div>
