@@ -1,0 +1,854 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Notion datasource",
+  "description": "A schema defining Notion datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "resource": {
+      "label": "Resource",
+      "key": "resource",
+      "className":"col-md-4",
+      "type": "dropdown-component-flip",
+      "description": "Resource select",
+      "list": [
+        {
+          "value": "database",
+          "name": "Database"
+        },
+        {
+          "value": "page",
+          "name": "Page"
+        },
+        {
+          "value": "block",
+          "name": "Block"
+        },
+        {
+          "value": "user",
+          "name": "User"
+        }
+      ]
+    },
+    "database":{
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "className":"col-md-4",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_database",
+            "name": "Retrieve a database"
+          },
+          {
+            "value": "query_database",
+            "name": "Query a database"
+          },
+          {
+            "value": "create_database",
+            "name": "Create a Database"
+          },
+          {
+            "value": "update_database",
+            "name": "Update a database"
+          }
+        ]
+      },
+      "get_database":{
+        "database_id":{
+          "label": "Database ID",
+          "key": "database_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter database id here"
+        }
+      },
+      "query_database":{
+        "database_id":{
+          "label": "Database ID",
+          "key": "database_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter database id here"
+        },
+        "filter": {
+          "label": "Filter",
+          "key": "filter",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{or: [{ property: 'In stock', checkbox: { equals: true, } },...]}",
+          "description": "Enter filter object",
+          "height": "150px"
+        },
+        "sorts":{
+          "label": "Sort",
+          "key": "sorts",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "[{\"property\": \"Name\",\"direction\": \"ascending\"}]",
+          "description": "Enter the sort array",
+          "height": "150px",
+          "width":"400px"
+        },
+        "limit":{
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter limit here"
+        },
+        "start_cursor":{
+          "label": "Start cursor",
+          "key": "start_cursor",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter cursor id"
+        }
+      },
+      "create_database":{
+        "page_id":{
+          "label": "Page ID",
+          "key": "page_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter page id here"
+        },
+        "title":{
+          "label": "Title",
+          "key": "title",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "description": "Enter filter object",
+          "height": "150px",
+          "width":"400px"
+        },
+        "properties":{
+          "label": "Properties",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+          "description": "Enter filter object",
+          "height": "200px"
+        },
+        "icon_type":{
+          "label": "Icon Type",
+          "key": "icon_type",
+          "className":"col-md-4",
+          "type": "dropdown",
+          "description": "Icon type select",
+          "list": [
+            {
+              "value": "external",
+              "name": "External URL"
+            },
+            {
+              "value": "emoji",
+              "name": "Emoji"
+            }
+          ]
+        },
+        "icon_value": {
+          "label": "Icon Value",
+          "key": "icon_value",
+          "type": "codehinter",
+          "placeholder": "Enter icon external url / emoji here",
+          "description": "Enter Enter value here",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "cover_type":{
+          "label": "Cover Type",
+          "key": "cover_type",
+          "className":"col-md-4",
+          "type": "dropdown",
+          "description": "Cover type select",
+          "list": [
+            {
+              "value": "external",
+              "name": "External URL"
+            }
+          ]
+        },
+        "cover_value": {
+          "label": "Cover Value",
+          "key": "cover_value",
+          "type": "codehinter",
+          "placeholder": "Enter cover external url here",
+          "description": "Enter value here",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins"
+        }
+      },
+      "update_database":{
+        "database_id":{
+          "label": "Database ID",
+          "key": "database_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter database id here"
+        },
+        "title":{
+          "label": "Title",
+          "key": "title",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "Array of rich text objects \n [{\"type\": \"text\",\"text\": {\"content\": \"Grocery List\",\"link\": null}}]",
+          "description": "Enter filter object",
+          "height": "150px",
+          "width":"400px"
+        },
+        "properties":{
+          "label": "Properties",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+          "description": "Enter filter object",
+          "height": "200px"
+        },
+        "icon_type":{
+          "label": "Icon Type",
+          "key": "icon_type",
+          "className":"col-md-4",
+          "type": "dropdown",
+          "description": "Icon type select",
+          "list": [
+            {
+              "value": "external",
+              "name": "External URL"
+            },
+            {
+              "value": "emoji",
+              "name": "Emoji"
+            }
+          ]
+        },
+        "icon_value": {
+          "label": "Icon Value",
+          "key": "icon_value",
+          "type": "codehinter",
+          "placeholder": "Enter icon external url / emoji here",
+          "description": "Enter external url",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "cover_type":{
+          "label": "Cover Type",
+          "key": "cover_type",
+          "className":"col-md-4",
+          "type": "dropdown",
+          "description": "Cover type select",
+          "list": [
+            {
+              "value": "external",
+              "name": "External URL"
+            }
+          ]
+        },
+        "cover_value": {
+          "label": "Cover Value",
+          "key": "cover_value",
+          "type": "codehinter",
+          "placeholder": "Enter cover external url here",
+          "description": "Enter value here",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins"
+        }
+      }
+    },
+    "page":{
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "className":"col-md-4",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_page",
+            "name": "Retrieve a page"
+          },
+          {
+            "value": "create_page",
+            "name": "Create a page"
+          },
+          {
+            "value": "update_page",
+            "name": "Update a page"
+          },
+          {
+            "value": "get_page_property",
+            "name": "Retrieve a page property"
+          },
+          {
+            "value": "archive_page",
+            "name": "Archive a page"
+          }
+        ]
+      },
+      "get_page":{
+        "page_id":{
+          "label": "Page ID",
+          "key": "page_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter page id here"
+        }
+      },
+      "create_page":{
+        "parent_type": {
+          "label": "Parent Type",
+          "key": "parent_type",
+          "className":"col-md-4",
+          "type": "dropdown-component-flip",
+          "description": "Parent select",
+          "list": [
+            {
+              "value": "page_id",
+              "name": "Page"
+            },
+            {
+              "value": "database_id",
+              "name": "Database"
+            }
+          ]
+        },
+        "page_id":{
+          "page_id":{
+            "label": "Page ID",
+            "key": "page_id",
+            "type": "codehinter",
+            "lineNumbers": false,
+            "height": "36px",
+            "width": "320px",
+            "className": "codehinter-plugins",
+            "description": "Enter page id here"
+          },
+          "properties":{
+            "label": "Properties",
+            "key": "properties",
+            "type": "codehinter",
+            "mode": "javascript",
+            "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+            "description": "Enter filter object",
+            "height": "200px"
+          },
+          "children":{
+            "label": "Children (Blocks)",
+            "key": "children",
+            "type": "codehinter",
+            "mode": "javascript",
+            "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+            "description": "Enter blocks array",
+            "height": "200px"
+          },
+          "icon_type":{
+            "label": "Icon Type",
+            "key": "icon_type",
+            "className":"col-md-4",
+            "type": "dropdown",
+            "description": "Icon type select",
+            "list": [
+              {
+                "value": "external",
+                "name": "External URL"
+              },
+              {
+                "value": "emoji",
+                "name": "Emoji"
+              }
+            ]
+          },
+          "icon_value": {
+            "label": "Icon Value",
+            "key": "icon_value",
+            "type": "codehinter",
+            "placeholder": "Enter icon external url / emoji here",
+            "description": "Enter external url",
+            "lineNumbers": false,
+            "height": "36px",
+            "className": "codehinter-plugins"
+          },
+          "cover_type":{
+            "label": "Cover Type",
+            "key": "cover_type",
+            "className":"col-md-4",
+            "type": "dropdown",
+            "description": "Cover type select",
+            "list": [
+              {
+                "value": "external",
+                "name": "External URL"
+              }
+            ]
+          },
+          "cover_value": {
+            "label": "Cover Value",
+            "key": "cover_value",
+            "type": "codehinter",
+            "placeholder": "Enter cover external url here",
+            "description": "Enter value here",
+            "lineNumbers": false,
+            "height": "36px",
+            "className": "codehinter-plugins"
+          }
+        },
+        "database_id":{
+          "database_id":{
+            "label": "Database ID",
+            "key": "database_id",
+            "type": "codehinter",
+            "lineNumbers": false,
+            "height": "36px",
+            "width": "320px",
+            "className": "codehinter-plugins",
+            "description": "Enter database id here"
+          },
+          "properties":{
+            "label": "Properties",
+            "key": "properties",
+            "type": "codehinter",
+            "mode": "javascript",
+            "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+            "description": "Enter filter object",
+            "height": "200px"
+          },
+          "children":{
+            "label": "Children (Blocks)",
+            "key": "children",
+            "type": "codehinter",
+            "mode": "javascript",
+            "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+            "description": "Enter blocks array",
+            "height": "200px"
+          },
+          "icon_type":{
+            "label": "Icon Type",
+            "key": "icon_type",
+            "className":"col-md-4",
+            "type": "dropdown",
+            "description": "Icon type select",
+            "list": [
+              {
+                "value": "external",
+                "name": "External URL"
+              },
+              {
+                "value": "emoji",
+                "name": "Emoji"
+              }
+            ]
+          },
+          "icon_value": {
+            "label": "Icon Value",
+            "key": "icon_value",
+            "type": "codehinter",
+            "placeholder": "Enter icon external url / emoji here",
+            "description": "Enter external url",
+            "lineNumbers": false,
+            "height": "36px",
+            "className": "codehinter-plugins"
+          },
+          "cover_type":{
+            "label": "Cover Type",
+            "key": "cover_type",
+            "className":"col-md-4",
+            "type": "dropdown",
+            "description": "Cover type select",
+            "list": [
+              {
+                "value": "external",
+                "name": "External URL"
+              }
+            ]
+          },
+          "cover_value": {
+            "label": "Cover Value",
+            "key": "cover_value",
+            "type": "codehinter",
+            "placeholder": "Enter cover external url here",
+            "description": "Enter value here",
+            "lineNumbers": false,
+            "height": "36px",
+            "className": "codehinter-plugins"
+          }
+        }
+      },
+      "update_page":{
+        "page_id":{
+          "label": "Page ID",
+          "key": "page_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter page id here"
+        },
+        "properties":{
+          "label": "Properties",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+          "description": "Enter filter object",
+          "height": "200px"
+        },
+        "icon_type":{
+          "label": "Icon Type",
+          "key": "icon_type",
+          "className":"col-md-4",
+          "type": "dropdown",
+          "description": "Icon type select",
+          "list": [
+            {
+              "value": "external",
+              "name": "External URL"
+            },
+            {
+              "value": "emoji",
+              "name": "Emoji"
+            }
+          ]
+        },
+        "icon_value": {
+          "label": "Icon Value",
+          "key": "icon_value",
+          "type": "codehinter",
+          "placeholder": "Enter icon external url / emoji here",
+          "description": "Enter external url",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "cover_type":{
+          "label": "Cover Type",
+          "key": "cover_type",
+          "className":"col-md-4",
+          "type": "dropdown",
+          "description": "Cover type select",
+          "list": [
+            {
+              "value": "external",
+              "name": "External URL"
+            }
+          ]
+        },
+        "cover_value": {
+          "label": "Cover Value",
+          "key": "cover_value",
+          "type": "codehinter",
+          "placeholder": "Enter cover external url here",
+          "description": "Enter value here",
+          "lineNumbers": false,
+          "height": "36px",
+          "className": "codehinter-plugins"
+        }
+      },
+      "get_page_property":{
+        "page_id":{
+          "label": "Page ID",
+          "key": "page_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter page id here"
+        },
+        "property_id":{
+          "label": "Property ID",
+          "key": "property_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter property id here"
+        },
+        "limit":{
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter limit here"
+        },
+        "start_cursor":{
+          "label": "Start cursor",
+          "key": "start_cursor",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter cursor id"
+        }
+      },
+      "archive_page":{
+        "page_id":{
+          "label": "Page ID",
+          "key": "page_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter page id here"
+        },
+        "archived": {
+          "label": "Archive",
+          "key": "archived",
+          "className": "col-4",
+          "type": "dropdown",
+          "description": "Single select dropdown for archive",
+          "list": [
+            {
+              "value": true,
+              "name": "Archive"
+            },
+            {
+              "value": false,
+              "name": "Un archive"
+            }
+          ]
+        }
+      }
+    },
+    "block":{
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "className":"col-md-4",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_block",
+            "name": "Retrieve a block"
+          },
+          {
+            "value": "append_block_children",
+            "name": "Append block children"
+          },
+          {
+            "value": "get_block_children",
+            "name": "Retrieve block children"
+          },
+          {
+            "value": "update_block",
+            "name": "Update a block"
+          },
+          {
+            "value": "delete_block",
+            "name": "Delete a block"
+          }
+        ]
+      },
+      "get_block":{
+        "block_id":{
+          "label": "Block ID",
+          "key": "block_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter block id here"
+        }
+      },
+      "update_block":{
+        "block_id":{
+          "label": "Block ID",
+          "key": "block_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter block id here"
+        },
+        "properties":{
+          "label": "Properties",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+          "description": "Enter property object",
+          "height": "200px"
+        },
+        "archived": {
+          "label": "Archive",
+          "key": "archived",
+          "className": "col-4",
+          "type": "dropdown",
+          "description": "Single select dropdown for archive",
+          "list": [
+            {
+              "value": null,
+              "name": "None"
+            },
+            {
+              "value": true,
+              "name": "Archive"
+            },
+            {
+              "value": false,
+              "name": "Un archive"
+            }
+          ]
+        }
+      },
+      "get_block_children":{
+        "block_id":{
+          "label": "Block ID",
+          "key": "block_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter block id here"
+        },
+        "limit":{
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter limit here"
+        },
+        "start_cursor":{
+          "label": "Start cursor",
+          "key": "start_cursor",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter cursor id"
+        }
+      },
+      "append_block_children":{
+        "block_id":{
+          "label": "Block ID",
+          "key": "block_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter block id here"
+        },
+        "children":{
+          "label": "Children (Blocks)",
+          "key": "children",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\"Name\": {\"title\": {}},\"Description\": {\"rich_text\": {}, .....}",
+          "description": "Enter blocks array",
+          "height": "200px"
+        }
+      },
+      "delete_block":{
+        "block_id":{
+          "label": "Block ID",
+          "key": "block_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter block id here"
+        }
+      }
+    },
+    "user":{
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "className":"col-md-4",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_user",
+            "name": "Retrieve a user"
+          },
+          {
+            "value": "list_users",
+            "name": "List all users"
+          }
+        ]
+      },
+      "get_user":{
+        "user_id":{
+          "label": "User ID",
+          "key": "user_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter user id here"
+        }
+      },
+      "list_users":{
+        "limit":{
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter limit here"
+        },
+        "start_cursor":{
+          "label": "Start cursor",
+          "key": "start_cursor",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "height": "36px",
+          "width": "320px",
+          "className": "codehinter-plugins",
+          "description": "Enter cursor id"
+        }
+      }
+    }
+  }
+}
