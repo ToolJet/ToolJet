@@ -65,29 +65,29 @@ export const JSONNode = ({ data, ...restProps }) => {
     if (expandable) {
       updateSelectedNode(null);
     } else {
-      updateSelectedNode(node);
+      updateSelectedNode(node, path);
     }
 
     set((prev) => !prev);
   };
 
-  const onSelect = (data, currentNode) => {
+  const onSelect = (data, currentNode, path) => {
     const actions = onSelectDispatchActions;
     actions.forEach((action) => action.dispatchAction(data, currentNode));
 
     if (!expandWithLabels) {
-      updateSelectedNode(currentNode);
+      updateSelectedNode(currentNode, path);
       set(true);
     }
   };
 
-  const handleOnClickLabels = (data, currentNode) => {
+  const handleOnClickLabels = (data, currentNode, path) => {
     if (expandWithLabels) {
       toggleExpandNode(currentNode);
     }
 
     if (useActions) {
-      onSelect(data, currentNode);
+      onSelect(data, currentNode, path);
     }
   };
 
@@ -102,7 +102,17 @@ export const JSONNode = ({ data, ...restProps }) => {
   let $NODEType = null;
   let $NODEIcon = null;
 
-  const selectedNodeStyles = expandable && selectedNode === currentNode;
+  const checkSelectedNode = (_selectedNode, _currentNode, parent, toExpand) => {
+    if (selectedNode?.parent && parent) {
+      return _selectedNode.parent === parent && _selectedNode?.node === _currentNode && toExpand;
+    }
+
+    return toExpand && _selectedNode?.node === _currentNode;
+  };
+
+  const parent = path && typeof path?.length === 'number' ? path[path.length - 2] : null;
+
+  const applySelectedNodeStyles = checkSelectedNode(selectedNode, currentNode, parent, expandable);
 
   React.useEffect(() => {
     if (!expandable) {
@@ -112,7 +122,7 @@ export const JSONNode = ({ data, ...restProps }) => {
   }, [expandable]);
 
   React.useEffect(() => {
-    if (selectedNode === currentNode) {
+    if (selectedNode?.node === currentNode) {
       set(true);
     }
   }, [selectedNode, currentNode]);
@@ -173,11 +183,9 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   let $key = (
     <span
-      onClick={() => handleOnClickLabels(data, currentNode)}
+      onClick={() => handleOnClickLabels(data, currentNode, path)}
       style={{ marginTop: '1px', cursor: 'pointer', textTransform: 'none' }}
-      className={`node-key fs-12 fw-bold mx-1 ${
-        expandable && selectedNode === currentNode && 'badge badge-outline color-primary'
-      }`}
+      className={`node-key fs-12 fw-bold mx-1 ${applySelectedNodeStyles && 'badge badge-outline color-primary'}`}
     >
       {String(currentNode)}
     </span>
@@ -295,20 +303,20 @@ export const JSONNode = ({ data, ...restProps }) => {
       onMouseEnter={() => updateHoveredNode(currentNode)}
       onMouseLeave={() => updateHoveredNode(null)}
     >
-      <div className={`json-tree-icon-container  mx-2 ${selectedNodeStyles && 'selected-node'}`}>
+      <div className={`json-tree-icon-container  mx-2 ${applySelectedNodeStyles && 'selected-node'}`}>
         <JSONNode.NodeIndicator
           toExpand={expandable}
           toShowNodeIndicator={toShowNodeIndicator}
           handleToggle={toggleExpandNode}
           typeofCurrentNode={typeofCurrentNode}
           currentNode={currentNode}
-          isSelected={selectedNode === currentNode}
+          isSelected={selectedNode?.node === currentNode}
         />
       </div>
 
       <div
         style={{ width: 'inherit' }}
-        className={`${shouldDisplayIntendedBlock && 'group-border'} ${selectedNodeStyles && 'selected-node'}`}
+        className={`${shouldDisplayIntendedBlock && 'group-border'} ${applySelectedNodeStyles && 'selected-node'}`}
       >
         <div
           className={cx('d-flex', {

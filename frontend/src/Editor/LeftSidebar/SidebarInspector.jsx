@@ -79,6 +79,12 @@ export const LeftSidebarInspector = ({
     return toast.success('Copied to the clipboard', { position: 'top-center' });
   };
 
+  const updatePinnedParentState = () => {
+    if (!popoverPinned) {
+      updatePopoverPinnedState();
+    }
+  };
+
   const callbackActions = [
     {
       for: 'queries',
@@ -145,7 +151,7 @@ export const LeftSidebarInspector = ({
             selectedComponent={selectedComponent}
             treeType="inspector"
             parentPopoverState={popoverPinned}
-            updateParentState={updatePopoverPinnedState}
+            updateParentState={updatePinnedParentState}
           />
         </div>
       </div>

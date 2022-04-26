@@ -99,10 +99,10 @@ export class JSONTreeViewer extends React.Component {
     }
   };
 
-  updateSelectedNode = (node) => {
+  updateSelectedNode = (node, path) => {
     if (node) {
       this.setState({
-        selectedNode: node,
+        selectedNode: { node: node, parent: path?.length ? path[path.length - 2] : null },
       });
     }
   };
