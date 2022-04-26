@@ -223,6 +223,8 @@ class Editor extends React.Component {
     document.addEventListener('mouseup', this.onMouseUp);
     this.socket?.addEventListener('message', (event) => {
       if (event.data === 'versionReleased') this.fetchApp();
+      else if (event.data === 'dataQueriesChanged') this.fetchDataQueries();
+      else if (event.data === 'dataSourcesChanged') this.fetchDataSources();
     });
   }
 
@@ -391,12 +393,23 @@ class Editor extends React.Component {
   };
 
   dataSourcesChanged = () => {
-    this.fetchDataSources();
+    this.socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: { message: 'dataSourcesChanged', appId: this.state.appId },
+      })
+    );
   };
 
   dataQueriesChanged = () => {
-    this.fetchDataQueries();
-    this.setState({ addingQuery: false });
+    this.setState({ addingQuery: false }, () => {
+      this.socket.send(
+        JSON.stringify({
+          event: 'events',
+          data: { message: 'dataQueriesChanged', appId: this.state.appId },
+        })
+      );
+    });
   };
 
   switchSidebarTab = (tabIndex) => {
