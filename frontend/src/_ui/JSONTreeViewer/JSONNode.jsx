@@ -111,7 +111,9 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   const parent = path && typeof path?.length === 'number' ? path[path.length - 2] : null;
 
-  const applySelectedNodeStyles = checkSelectedNode(selectedNode, currentNode, parent, expandable);
+  const applySelectedNodeStyles = toExpandNode
+    ? checkSelectedNode(selectedNode, currentNode, parent, expandable)
+    : false;
 
   React.useEffect(() => {
     if (!expandable) {
@@ -182,7 +184,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   let $key = (
     <span
-      onClick={() => handleOnClickLabels(data, currentNode, path)}
+      onClick={() => toExpandNode && handleOnClickLabels(data, currentNode, path)}
       style={{ marginTop: '1px', cursor: 'pointer', textTransform: 'none' }}
       className={`node-key fs-12 fw-bold mx-1 ${applySelectedNodeStyles && 'badge badge-outline color-primary'}`}
     >
