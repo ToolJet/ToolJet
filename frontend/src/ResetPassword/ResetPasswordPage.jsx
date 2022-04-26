@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import config from 'config';
-import { authenticationService } from '@/_services';
 
 class ResetPassword extends React.Component {
   constructor(props) {
@@ -35,8 +34,13 @@ class ResetPassword extends React.Component {
       this.setState({
         isLoading: true,
       });
-      authenticationService
-        .resetPassword(this.state)
+      fetch(`${config.apiUrl}/reset_password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(this.state),
+      })
         .then((res) => res.json())
         .then((res) => {
           if (res.error) {

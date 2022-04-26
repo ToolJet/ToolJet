@@ -124,9 +124,8 @@ export const AppVersionsManager = function AppVersionsManager({
   };
 
   const selectVersion = (version) => {
-    appVersionService.getOne(appId, version.id).then((data) => {
-      setAppDefinitionFromVersion(data);
-    });
+    setEditingAppVersion(version);
+    setAppDefinitionFromVersion(version);
   };
 
   return (

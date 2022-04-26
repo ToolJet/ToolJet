@@ -14,7 +14,6 @@ export const authenticationService = {
     return currentUserSubject.value;
   },
   signInViaOAuth,
-  resetPassword,
 };
 
 function login(email, password) {
@@ -54,19 +53,6 @@ function signup(email) {
     .then((user) => {
       return user;
     });
-}
-
-function resetPassword(params) {
-  const { token, password } = params;
-  const body = JSON.stringify({ token, password });
-
-  const requestOptions = {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body,
-  };
-
-  return fetch(`${config.apiUrl}/reset_password`, requestOptions);
 }
 
 function logout() {

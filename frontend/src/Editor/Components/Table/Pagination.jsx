@@ -47,19 +47,11 @@ export const Pagination = function Pagination({
   return (
     <div className="pagination">
       {!serverSide && (
-        <button
-          className={`btn btn-sm btn-light mx-2 ${pageIndex === 1 ? 'cursor-not-allowed' : ''}`}
-          onClick={() => gotoPage(1)}
-          disabled={pageIndex === 1}
-        >
+        <button className="btn btn-sm btn-light mx-2" onClick={() => gotoPage(1)}>
           {'<<'}
         </button>
       )}
-      <button
-        className={`btn btn-sm btn-light ${pageIndex === 1 ? 'cursor-not-allowed' : ''}`}
-        onClick={() => goToPreviousPage()}
-        disabled={pageIndex === 1}
-      >
+      <button className="btn btn-light btn-sm" onClick={() => goToPreviousPage()} disabled={pageIndex === 1}>
         {'<'}
       </button>{' '}
       <small className="p-1 mx-2">
@@ -71,18 +63,14 @@ export const Pagination = function Pagination({
         )}
       </small>
       <button
-        className={`btn btn-light btn-sm ${!autoCanNextPage && !serverSide ? 'cursor-not-allowed' : ''}`}
+        className="btn btn-light btn-sm"
         onClick={() => goToNextPage()}
         disabled={!autoCanNextPage && !serverSide}
       >
         {'>'}
       </button>{' '}
       {!serverSide && (
-        <button
-          className={`btn btn-light btn-sm mx-2 ${!autoCanNextPage && !serverSide ? 'cursor-not-allowed' : ''}`}
-          onClick={() => gotoPage(pageCount)}
-          disabled={!autoCanNextPage && !serverSide}
-        >
+        <button className="btn btn-light btn-sm mx-2" onClick={() => gotoPage(pageCount)}>
           {'>>'}
         </button>
       )}

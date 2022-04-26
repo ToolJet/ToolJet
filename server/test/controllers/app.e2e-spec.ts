@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { getManager, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { clearDB, createUser, createNestAppInstance, authHeaderForUser } from '../test.helper';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { EmailService } from '@services/email.service';
 
 describe('Authentication', () => {
   let app: INestApplication;
@@ -95,7 +94,7 @@ describe('Authentication', () => {
       expect(response.statusCode).toBe(403);
     });
 
-    it('does not authenticate if valid credentials', async () => {
+    it('does authenticate if valid credentials', async () => {
       await request(app.getHttpServer())
         .post('/api/authenticate')
         .send({ email: 'admin@tooljet.io', password: 'password' })
@@ -104,67 +103,6 @@ describe('Authentication', () => {
 
     afterAll(async () => {
       process.env = { ...originalEnv };
-    });
-  });
-
-  describe('POST /api/forgot_password', () => {
-    it('should return error if required params are not present', async () => {
-      const response = await request(app.getHttpServer()).post('/api/forgot_password');
-
-      expect(response.statusCode).toBe(400);
-      expect(response.body.message).toStrictEqual(['email should not be empty', 'email must be an email']);
-    });
-
-    it('should set token and send email', async () => {
-      const emailServiceMock = jest.spyOn(EmailService.prototype, 'sendPasswordResetEmail');
-      emailServiceMock.mockImplementation();
-
-      const response = await request(app.getHttpServer())
-        .post('/api/forgot_password')
-        .send({ email: 'admin@tooljet.io' });
-
-      expect(response.statusCode).toBe(201);
-
-      const user = await getManager().findOne(User, {
-        where: { email: 'admin@tooljet.io' },
-      });
-
-      expect(emailServiceMock).toHaveBeenCalledWith(user.email, user.forgotPasswordToken);
-    });
-  });
-
-  describe('POST /api/reset_password', () => {
-    it('should return error if required params are not present', async () => {
-      const response = await request(app.getHttpServer()).post('/api/reset_password');
-
-      expect(response.statusCode).toBe(400);
-      expect(response.body.message).toStrictEqual([
-        'password should not be empty',
-        'password must be a string',
-        'token should not be empty',
-        'token must be a string',
-      ]);
-    });
-
-    it('should reset password', async () => {
-      const user = await getManager().findOne(User, {
-        where: { email: 'admin@tooljet.io' },
-      });
-
-      user.forgotPasswordToken = 'token';
-      await user.save();
-
-      const response = await request(app.getHttpServer()).post('/api/reset_password').send({
-        password: 'new_password',
-        token: 'token',
-      });
-
-      expect(response.statusCode).toBe(201);
-
-      await request(app.getHttpServer())
-        .post('/api/authenticate')
-        .send({ email: 'admin@tooljet.io', password: 'new_password' })
-        .expect(201);
     });
   });
 

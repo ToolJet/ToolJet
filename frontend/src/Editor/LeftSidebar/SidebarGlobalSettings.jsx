@@ -1,21 +1,13 @@
 import React from 'react';
 import usePopover from '@/_hooks/use-popover';
 import { SketchPicker } from 'react-color';
-import { Confirm } from '../Viewer/Confirm';
 
 import { LeftSidebarItem } from './SidebarItem';
 
-export const LeftSidebarGlobalSettings = ({
-  globalSettings,
-  globalSettingsChanged,
-  darkMode,
-  toggleAppMaintenance,
-  is_maintenance_on,
-}) => {
+export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChanged }) => {
   const [open, trigger, content] = usePopover(false);
   const { hideHeader, canvasMaxWidth, canvasBackgroundColor } = globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
-  const [showConfirmation, setConfirmationShow] = React.useState(false);
   const coverStyles = {
     position: 'fixed',
     top: '0px',
@@ -25,17 +17,6 @@ export const LeftSidebarGlobalSettings = ({
   };
   return (
     <>
-      <Confirm
-        show={showConfirmation}
-        message={
-          is_maintenance_on
-            ? 'Users will now be able to launch the released version of this app, do you wish to continue?'
-            : 'Users will not be able to launch the app until maintenance mode is turned off, do you wish to continue?'
-        }
-        onConfirm={() => toggleAppMaintenance()}
-        onCancel={() => setConfirmationShow(false)}
-        darkMode={darkMode}
-      />
       <LeftSidebarItem
         tip="Global settings"
         {...trigger}
@@ -54,17 +35,6 @@ export const LeftSidebarGlobalSettings = ({
                   type="checkbox"
                   checked={hideHeader}
                   onChange={(e) => globalSettingsChanged('hideHeader', e.target.checked)}
-                />
-              </div>
-            </div>
-            <div className="d-flex mb-3">
-              <span>Maintenance mode</span>
-              <div className="ms-auto form-check form-switch position-relative">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={is_maintenance_on}
-                  onChange={() => setConfirmationShow(true)}
                 />
               </div>
             </div>

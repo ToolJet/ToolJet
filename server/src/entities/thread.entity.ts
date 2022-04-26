@@ -5,8 +5,8 @@ import { Organization } from './organization.entity';
 
 @Entity({ name: 'threads' })
 export class Thread extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({ name: 'x' })
   x: number;

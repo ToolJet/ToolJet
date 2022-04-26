@@ -582,7 +582,6 @@ export function Table({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
-                  tableRef={tableRef}
                 />
               </div>
             );
@@ -854,8 +853,6 @@ export function Table({
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
   }, [pageCount]);
 
-  const tableRef = React.useRef();
-
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -871,7 +868,6 @@ export function Table({
         event.stopPropagation();
         onComponentClick(id, component, event);
       }}
-      ref={tableRef}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
       {displaySearchBox && (

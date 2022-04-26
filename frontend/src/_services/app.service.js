@@ -17,7 +17,6 @@ export const appService = {
   getAppUsers,
   createAppUser,
   setVisibility,
-  setMaintenance,
   setSlug,
 };
 
@@ -109,15 +108,6 @@ function setVisibility(appId, visibility) {
     method: 'PUT',
     headers: authHeader(),
     body: JSON.stringify({ app: { is_public: visibility } }),
-  };
-  return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
-}
-
-function setMaintenance(appId, value) {
-  const requestOptions = {
-    method: 'PUT',
-    headers: authHeader(),
-    body: JSON.stringify({ app: { is_maintenance_on: value } }),
   };
   return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
 }

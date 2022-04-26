@@ -14,7 +14,7 @@ class WebSocketConnection {
     return window.location.host;
   }
 
-  addListeners(appId) {
+  addListeners() {
     // Connection opened
     this.socket.addEventListener('open', (event) => {
       console.log('connection established', event);
@@ -24,13 +24,6 @@ class WebSocketConnection {
         JSON.stringify({
           event: 'authenticate',
           data: currentUser.auth_token,
-        })
-      );
-
-      this.socket.send(
-        JSON.stringify({
-          event: 'subscribe',
-          data: appId,
         })
       );
     });

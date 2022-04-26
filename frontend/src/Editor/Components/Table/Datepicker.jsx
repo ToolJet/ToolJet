@@ -1,6 +1,7 @@
 import React from 'react';
 import Datetime from 'react-datetime';
 import moment from 'moment';
+
 import 'react-datetime/css/react-datetime.css';
 import '@/_styles/custom.scss';
 
@@ -16,12 +17,10 @@ export const Datepicker = function Datepicker({
   onChange,
   readOnly,
   isTimeChecked,
-  tableRef,
   dateDisplayFormat, //?Display date format
   parseDateFormat, //?Parse date format
 }) {
   const [date, setDate] = React.useState(() => getDate(value, parseDateFormat, dateDisplayFormat));
-  const pickerRef = React.useRef();
 
   const dateChange = (event) => {
     const value = event._isAMomentObject ? event.format() : event;
@@ -45,20 +44,8 @@ export const Datepicker = function Datepicker({
     disabled: !readOnly,
   };
 
-  const calculatePosition = () => {
-    const dropdown = pickerRef.current && pickerRef.current.querySelectorAll('.rdtPicker')[0];
-    if (dropdown && tableRef.current) {
-      const tablePos = tableRef.current.getBoundingClientRect();
-      const dropDownPos = pickerRef.current.getBoundingClientRect();
-      const left = dropDownPos.left - tablePos.left;
-      const top = dropDownPos.bottom - tablePos.top;
-      dropdown.style.left = `${left}px`;
-      dropdown.style.top = `${top}px`;
-    }
-  };
-
   return (
-    <div ref={pickerRef}>
+    <>
       <Datetime
         inputProps={inputProps}
         timeFormat={isTimeChecked}
@@ -69,11 +56,7 @@ export const Datepicker = function Datepicker({
         closeOnSelect={true}
         onClose={onDatepickerClose}
         disabled={readOnly}
-        renderView={(viewMode, renderDefault) => {
-          calculatePosition();
-          return renderDefault();
-        }}
       />
-    </div>
+    </>
   );
 };

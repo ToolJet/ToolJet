@@ -12,7 +12,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { ThreadService } from '../services/thread.service';
-import { CreateThreadDto, UpdateThreadDto } from '../dto/thread.dto';
+import { CreateThreadDTO } from '../dto/create-thread.dto';
 import { Thread } from '../entities/thread.entity';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { ThreadsAbilityFactory } from 'src/modules/casl/abilities/threads-ability.factory';
@@ -23,7 +23,7 @@ export class ThreadController {
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
-  public async createThread(@Request() req, @Body() createThreadDto: CreateThreadDto): Promise<Thread> {
+  public async createThread(@Request() req, @Body() createThreadDto: CreateThreadDTO): Promise<Thread> {
     const ability = await this.threadsAbilityFactory.appsActions(req.user, { id: createThreadDto.appId });
 
     if (!ability.can('createThread', Thread)) {
@@ -64,8 +64,8 @@ export class ThreadController {
   @UseGuards(JwtAuthGuard)
   @Patch('/edit/:threadId')
   public async editThread(
-    @Body() updateThreadDto: UpdateThreadDto,
-    @Param('threadId') threadId: string,
+    @Body() createThreadDto: CreateThreadDTO,
+    @Param('threadId') threadId: number,
     @Request() req
   ): Promise<Thread> {
     const _response = await Thread.findOne({
@@ -77,13 +77,13 @@ export class ThreadController {
     if (!ability.can('updateThread', Thread)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const thread = await this.threadService.editThread(threadId, updateThreadDto);
+    const thread = await this.threadService.editThread(threadId, createThreadDto);
     return thread;
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete('/delete/:threadId')
-  public async deleteThread(@Param('threadId') threadId: string, @Request() req) {
+  public async deleteThread(@Param('threadId') threadId: number, @Request() req) {
     const _response = await Thread.findOne({
       where: { id: threadId },
     });

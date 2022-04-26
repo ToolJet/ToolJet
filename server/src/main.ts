@@ -5,7 +5,6 @@ import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from './all-exceptions-filter';
-import { ValidationPipe } from '@nestjs/common';
 
 const fs = require('fs');
 
@@ -21,8 +20,6 @@ async function bootstrap() {
 
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-
   if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
     app.useWebSocketAdapter(new WsAdapter(app));
   }
