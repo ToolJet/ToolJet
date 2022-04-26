@@ -31,7 +31,7 @@ gcloud compute addresses create tj-static-ip --global
 curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/GKE/deployment.yaml
 ```
 
-Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](https://docs.tooljet.com/docs/deployment/env-vars).
+Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](https://docs.tooljet.com/docs/setup/env-vars).
 
 :::info
 If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.

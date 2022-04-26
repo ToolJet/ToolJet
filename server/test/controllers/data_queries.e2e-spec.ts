@@ -349,6 +349,7 @@ describe('data queries controller', () => {
     });
 
     const requestBody = {
+      name: 'get query',
       app_id: application.id,
       kind: 'restapi',
       options: { method: 'get' },
@@ -402,11 +403,15 @@ describe('data queries controller', () => {
       user: adminUserData.user,
     });
 
+    const applicationVersion = await createApplicationVersion(app, application);
+
     let queryParams = {
+      name: 'get query',
       app_id: application.id,
       data_source_id: dataSource.id,
       kind: 'restapi',
       options: { method: 'get' },
+      app_version_id: applicationVersion.id,
     };
 
     // Create query if data source belongs to same app
@@ -418,10 +423,12 @@ describe('data queries controller', () => {
     expect(response.statusCode).toBe(201);
 
     queryParams = {
+      name: 'get query',
       app_id: anotherApplication.id,
       data_source_id: dataSource.id,
       kind: 'restapi',
       options: { method: 'get' },
+      app_version_id: applicationVersion.id,
     };
 
     // Fordbidden if data source belongs to another app

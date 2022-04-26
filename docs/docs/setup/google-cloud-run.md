@@ -58,7 +58,7 @@ If you are to use [Public IP](https://cloud.google.com/sql/docs/mysql/connect-ru
 
 3. Create default user (Optional)
 
-Signing up requires [SMTP configuration](https://docs.tooljet.com/docs/deployment/env-vars#smtp-configuration--optional-) to be done, but if you want to start off with default user you can run the command by modifying the `args` flag for a one time usage.
+Signing up requires [SMTP configuration](https://docs.tooljet.com/docs/setup/env-vars#smtp-configuration--optional-) to be done, but if you want to start off with default user you can run the command by modifying the `args` flag for a one time usage.
 
    ```bash
    gcloud run deploy <replace-service-name> \
@@ -125,7 +125,7 @@ If you are to use [Public IP](https://cloud.google.com/sql/docs/mysql/connect-ru
 
 3. Create default user **(Optional)**
 
-Signing up requires [SMTP configuration](https://docs.tooljet.com/docs/deployment/env-vars#smtp-configuration--optional-) to be done, but if you want to start off with default user you can run the command by modifying the `args` flag for a one time usage.
+Signing up requires [SMTP configuration](https://docs.tooljet.com/docs/setup/env-vars#smtp-configuration--optional-) to be done, but if you want to start off with default user you can run the command by modifying the `args` flag for a one time usage.
 
    ```bash
    gcloud run deploy <replace-service-name> \

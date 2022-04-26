@@ -50,7 +50,7 @@ curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/.e
 mv .env.example .env
 ```
 
-Set up environment variables in `.env` file as explained in [environment variables reference](/docs/deployment/env-vars)
+Set up environment variables in `.env` file as explained in [environment variables reference](/docs/setup/env-vars)
 
 `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use.
 

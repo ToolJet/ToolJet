@@ -43,7 +43,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
    PG_HOST=<pg host>
    PG_PASS=<pg user password>
    ```
-   Read **[environment variables reference](/docs/deployment/env-vars)**
+   Read **[environment variables reference](/docs/setup/env-vars)**
 
    :::info
    If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.

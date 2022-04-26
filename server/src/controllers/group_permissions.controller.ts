@@ -1,5 +1,4 @@
-import { Controller, Post, Get, Put, Delete, Request, UseGuards, Param } from '@nestjs/common';
-
+import { Controller, Body, Post, Get, Put, Delete, Request, UseGuards, Param } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { GroupPermissionsService } from '../services/group_permissions.service';
@@ -7,6 +6,7 @@ import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { User } from 'src/entities/user.entity';
+import { CreateGroupPermissionDto, UpdateGroupPermissionDto } from '@dto/group-permission.dto';
 
 @Controller('group_permissions')
 export class GroupPermissionsController {
@@ -15,8 +15,8 @@ export class GroupPermissionsController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Post()
-  async create(@Request() req) {
-    const groupPermission = await this.groupPermissionsService.create(req.user, req.body.group);
+  async create(@Request() req, @Body() createGroupPermissionDto: CreateGroupPermissionDto) {
+    const groupPermission = await this.groupPermissionsService.create(req.user, createGroupPermissionDto.group);
 
     return decamelizeKeys(groupPermission);
   }
@@ -33,12 +33,16 @@ export class GroupPermissionsController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Put(':id/app_group_permissions/:appGroupPermissionId')
-  async updateAppGroupPermission(@Request() req, @Param() params) {
+  async updateAppGroupPermission(
+    @Request() req,
+    @Param() params,
+    @Body() updateGroupPermissionDto: UpdateGroupPermissionDto
+  ) {
     const groupPermission = await this.groupPermissionsService.updateAppGroupPermission(
       req.user,
       params.id,
       params.appGroupPermissionId,
-      req.body.actions
+      updateGroupPermissionDto.actions
     );
 
     return decamelizeKeys(groupPermission);
