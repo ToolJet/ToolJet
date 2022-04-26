@@ -570,13 +570,16 @@ class Editor extends React.Component {
 
   globalSettingsChanged = (key, value) => {
     const appDefinition = { ...this.state.appDefinition };
-
     appDefinition.globalSettings[key] = value;
     this.setState(
       {
         appDefinition,
       },
       () => {
+        this.props.ymap.set('appDef', {
+          newDefinition: appDefinition,
+          editingVersionId: this.state.editingVersion?.id,
+        });
         this.autoSave();
       }
     );
