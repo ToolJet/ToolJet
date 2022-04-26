@@ -75,7 +75,7 @@ export const LeftSidebarGlobalSettings = ({
                   <input
                     type="text"
                     className={`form-control form-control-sm`}
-                    placeholder={'Enter canvas max-width'}
+                    placeholder={'0'}
                     onChange={(e) => {
                       globalSettingsChanged('canvasMaxWidth', e.target.value);
                     }}
@@ -92,9 +92,10 @@ export const LeftSidebarGlobalSettings = ({
                   <input
                     type="text"
                     className={`form-control form-control-sm`}
-                    placeholder={'min: 2400'}
+                    placeholder={'0'}
                     onChange={(e) => {
-                      globalSettingsChanged('canvasMaxHeight', e.target.value);
+                      const height = e.target.value;
+                      if (!Number.isNaN(height) && height <= 2400) globalSettingsChanged('canvasMaxHeight', height);
                     }}
                     value={canvasMaxHeight}
                   />
