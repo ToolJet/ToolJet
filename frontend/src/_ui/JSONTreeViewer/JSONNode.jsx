@@ -4,6 +4,8 @@ import cx from 'classnames';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { toast } from 'react-hot-toast';
 import { ToolTip } from '@/_components/ToolTip';
+import { Popover } from 'react-bootstrap';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 export const JSONNode = ({ data, ...restProps }) => {
   const {
@@ -26,6 +28,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     getOnSelectLabelDispatchActions,
     expandWithLabels,
     getAbsoluteNodePath,
+    actionsList,
   } = restProps;
 
   const [expandable, set] = React.useState(() =>
@@ -185,7 +188,35 @@ export const JSONNode = ({ data, ...restProps }) => {
   const shouldDisplayIntendedBlock =
     useIndentedBlock && expandable && (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array');
 
+  function moreActionsPopover(actions) {
+    //Todo: For adding more actions to the menu popover!
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+
+    return (
+      <Popover
+        id="popover-basic popover-positioned-right json-tree-popover"
+        style={{ maxWidth: '350px', padding: '0px' }}
+        className={`shadow ${darkMode && 'popover-dark-themed theme-dark'}`}
+      >
+        <div className="list-group">
+          {actions?.map((action, index) => (
+            <span
+              key={index}
+              type="button"
+              className="list-group-item list-group-item-action popover-more-actions"
+              aria-current="true"
+            >
+              {action.name}
+            </span>
+          ))}
+        </div>
+      </Popover>
+    );
+  }
+
   const renderHiddenOptionsForNode = () => {
+    const moreActions = actionsList.filter((action) => action.for === 'all')[0];
+
     const renderOptions = () => {
       if (!useActions || showHiddenOptionButtons?.length === 0) return null;
 
@@ -216,25 +247,30 @@ export const JSONNode = ({ data, ...restProps }) => {
           <JSONNode.CopyToClipboard data={currentNodePath} path={true} callback={getAbsoluteNodePath} />
         )}
         {renderOptions()}
-        <span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="icon-tabler icon-tabler-dots-vertical"
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-            stroke="#2c3e50"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <circle cx="12" cy="12" r="1" />
-            <circle cx="12" cy="19" r="1" />
-            <circle cx="12" cy="5" r="1" />
-          </svg>
-        </span>
+
+        {moreActions?.length > 0 && (
+          <OverlayTrigger trigger="click" placement={'right'} overlay={moreActionsPopover(moreActions?.actions)}>
+            <span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="icon-tabler icon-tabler-dots-vertical"
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="#2c3e50"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <circle cx="12" cy="12" r="1" />
+                <circle cx="12" cy="19" r="1" />
+                <circle cx="12" cy="5" r="1" />
+              </svg>
+            </span>
+          </OverlayTrigger>
+        )}
       </div>
     );
   };

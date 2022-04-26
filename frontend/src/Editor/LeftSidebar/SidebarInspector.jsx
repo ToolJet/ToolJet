@@ -95,6 +95,10 @@ export const LeftSidebarInspector = ({
       enableForAllChildren: false,
       enableFor1stLevelChildren: true,
     },
+    {
+      for: 'all',
+      actions: [{ name: 'Copy value', dispatchAction: 'CopyToClipboard', icon: false }],
+    },
   ];
 
   return (

@@ -4822,6 +4822,26 @@ div#driver-page-overlay {
 
 }
 
+.popover-more-actions {
+  font-weight: 400!important;
+
+  &:hover {
+    background: #d2ddec !important;
+  }
+}
+
+.popover-dark-themed .popover-more-actions {
+  color: #ccd4df;
+
+  &:hover {
+    background-color: #324156 !important;
+  }
+}
+
+#json-tree-popover {
+  padding: 0.25rem !important;
+}
+
 // Font sizes 
 .fs-9 {
   font-size: 9px !important;
