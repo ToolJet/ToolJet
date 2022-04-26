@@ -233,6 +233,7 @@ class Viewer extends React.Component {
                     style={{
                       width: canvasWidth,
                       maxWidth: +appDefinition.globalSettings?.canvasMaxWidth || 1292,
+                      maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                       backgroundColor: appDefinition.globalSettings?.canvasBackgroundColor || '#edeff5',
                     }}
                   >

@@ -13,7 +13,7 @@ export const LeftSidebarGlobalSettings = ({
   is_maintenance_on,
 }) => {
   const [open, trigger, content] = usePopover(false);
-  const { hideHeader, canvasMaxWidth, canvasBackgroundColor } = globalSettings;
+  const { hideHeader, canvasMaxWidth, canvasMaxHeight, canvasBackgroundColor } = globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
   const [showConfirmation, setConfirmationShow] = React.useState(false);
   const coverStyles = {
@@ -80,6 +80,23 @@ export const LeftSidebarGlobalSettings = ({
                       globalSettingsChanged('canvasMaxWidth', e.target.value);
                     }}
                     value={canvasMaxWidth}
+                  />
+                  <span className="input-group-text">px</span>
+                </div>
+              </div>
+            </div>
+            <div className="d-flex mb-3">
+              <span className="w-full m-auto">Max height of canvas</span>
+              <div className="position-relative">
+                <div className="input-with-icon">
+                  <input
+                    type="text"
+                    className={`form-control form-control-sm`}
+                    placeholder={'min: 2400'}
+                    onChange={(e) => {
+                      globalSettingsChanged('canvasMaxHeight', e.target.value);
+                    }}
+                    value={canvasMaxHeight}
                   />
                   <span className="input-group-text">px</span>
                 </div>
