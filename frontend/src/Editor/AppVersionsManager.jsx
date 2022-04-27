@@ -247,7 +247,7 @@ const CreateVersionModal = function CreateVersionModal({
   });
   const width = '100%';
   const height = 32;
-  const darkMode = localStorage.getItem('darkMode');
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   const customStyles = {
     ...defaultStyle(darkMode, width, height),
     option: (provided, state) => {
