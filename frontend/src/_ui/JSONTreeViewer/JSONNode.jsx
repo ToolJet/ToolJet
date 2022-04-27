@@ -312,6 +312,7 @@ export const JSONNode = ({ data, ...restProps }) => {
           typeofCurrentNode={typeofCurrentNode}
           currentNode={currentNode}
           isSelected={selectedNode?.node === currentNode}
+          toExpandNode={toExpandNode}
         />
       </div>
 
@@ -337,10 +338,10 @@ export const JSONNode = ({ data, ...restProps }) => {
 };
 
 const JSONTreeNodeIndicator = ({ toExpand, toShowNodeIndicator, handleToggle, ...restProps }) => {
-  const { renderCustomIndicator, typeofCurrentNode, currentNode, isSelected } = restProps;
+  const { renderCustomIndicator, typeofCurrentNode, currentNode, isSelected, toExpandNode } = restProps;
 
   const defaultStyles = {
-    transform: toExpand ? 'rotate(90deg)' : 'rotate(0deg)',
+    transform: toExpandNode && toExpand ? 'rotate(90deg)' : 'rotate(0deg)',
     transition: '0.2s all',
     display: 'inline-block',
     cursor: 'pointer',
