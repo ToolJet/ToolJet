@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
+import { FileService } from '../services/file.service';
 import { Organization } from 'src/entities/organization.entity';
 import { App } from 'src/entities/app.entity';
-import { createQueryBuilder, EntityManager, getManager, getRepository, In, Repository } from 'typeorm';
+import { Connection, createQueryBuilder, EntityManager, getManager, getRepository, In, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
@@ -16,6 +17,8 @@ const bcrypt = require('bcrypt');
 @Injectable()
 export class UsersService {
   constructor(
+    private readonly fileService: FileService,
+    private connection: Connection,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(OrganizationUser)
@@ -346,6 +349,36 @@ export class UsersService {
       },
     });
     return !!app;
+  }
+
+  async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const user = await queryRunner.manager.findOne(User, userId);
+      const currentAvatarId = user.avatarId;
+      const avatar = await this.fileService.uploadFile(imageBuffer, filename, queryRunner);
+
+      await queryRunner.manager.update(User, userId, {
+        avatarId: avatar.id,
+      });
+
+      if (currentAvatarId) {
+        await this.fileService.deleteFile(currentAvatarId, queryRunner);
+      }
+
+      await queryRunner.commitTransaction();
+
+      return avatar;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(error);
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[] | GroupPermission[]): boolean {

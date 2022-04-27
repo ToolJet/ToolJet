@@ -17,12 +17,14 @@ import { OauthService, GoogleOAuthService, GitOAuthService } from '@ee/services/
 import { OauthController } from '@ee/controllers/oauth.controller';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
+import { File } from 'src/entities/file.entity';
+import { FileService } from '@services/file.service';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
-    TypeOrmModule.forFeature([User, Organization, OrganizationUser, GroupPermission, App]),
+    TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, GroupPermission, App]),
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
         return {
@@ -45,6 +47,7 @@ import { App } from 'src/entities/app.entity';
     OauthService,
     GoogleOAuthService,
     GitOAuthService,
+    FileService,
   ],
   controllers: [OauthController],
   exports: [AuthService],

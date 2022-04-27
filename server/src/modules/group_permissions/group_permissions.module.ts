@@ -11,6 +11,8 @@ import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { App } from 'src/entities/app.entity';
+import { File } from 'src/entities/file.entity';
+import { FileService } from '@services/file.service';
 
 @Module({
   controllers: [GroupPermissionsController],
@@ -23,9 +25,10 @@ import { App } from 'src/entities/app.entity';
       OrganizationUser,
       Organization,
       App,
+      File,
     ]),
     CaslModule,
   ],
-  providers: [GroupPermissionsService, UsersService],
+  providers: [GroupPermissionsService, FileService, UsersService],
 })
 export class GroupPermissionsModule {}

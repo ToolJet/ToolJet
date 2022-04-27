@@ -10,12 +10,14 @@ import { OrganizationUsersController } from '@controllers/organization_users.con
 import { UsersService } from 'src/services/users.service';
 import { CaslModule } from '../casl/casl.module';
 import { EmailService } from '@services/email.service';
+import { FileService } from '@services/file.service';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
+import { File } from 'src/entities/file.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Organization, OrganizationUser, User, GroupPermission, App]), CaslModule],
-  providers: [OrganizationsService, OrganizationUsersService, UsersService, EmailService],
+  imports: [TypeOrmModule.forFeature([Organization, File, OrganizationUser, User, GroupPermission, App]), CaslModule],
+  providers: [OrganizationsService, FileService, OrganizationUsersService, UsersService, EmailService],
   controllers: [OrganizationsController, OrganizationUsersController],
 })
 export class OrganizationsModule {}

@@ -12,12 +12,14 @@ import {
   BaseEntity,
   ManyToMany,
   JoinTable,
+  OneToOne,
 } from 'typeorm';
 import { GroupPermission } from './group_permission.entity';
 import { Organization } from './organization.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
 import { UserGroupPermission } from './user_group_permission.entity';
+import { File } from './file.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -40,6 +42,9 @@ export class User extends BaseEntity {
 
   @Column()
   email: string;
+
+  @Column({ name: 'avatar_id', nullable: true, default: null })
+  avatarId?: string;
 
   @Column({ name: 'invitation_token' })
   invitationToken: string;
@@ -74,6 +79,12 @@ export class User extends BaseEntity {
   @ManyToOne(() => Organization, (organization) => organization.id)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
+
+  @JoinColumn({ name: 'avatar_id' })
+  @OneToOne(() => File, {
+    nullable: true,
+  })
+  avatar?: File;
 
   @ManyToMany(() => GroupPermission)
   @JoinTable({
