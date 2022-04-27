@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 export const Statistics = function Statistics({ width, height, properties, styles, darkMode }) {
-  const { primaryValueLabel, primaryValue, secondaryValueLabel, secondaryValue, secondarySignDisplay, hideSecondary } =
-    properties;
+  const {
+    primaryValueLabel,
+    primaryValue,
+    secondaryValueLabel,
+    secondaryValue,
+    secondarySignDisplay,
+    hideSecondary,
+    loadingState,
+  } = properties;
   const { primaryLabelColour, primaryTextColour, secondaryLabelColour, secondaryTextColour, visibility } = styles;
-
-  const [loadingState, setLoadingState] = useState(false);
-  useEffect(() => {
-    const loadingStateProperty = properties.loadingState;
-    if (loadingStateProperty != undefined) {
-      setLoadingState(loadingStateProperty);
-    }
-  }, [properties.loadingState]);
 
   const baseStyle = {
     borderRadius: 4,
