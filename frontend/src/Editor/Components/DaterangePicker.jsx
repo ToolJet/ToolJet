@@ -23,7 +23,7 @@ export const DaterangePicker = function DaterangePicker({
   const endDateProp = isEmpty(exposedVariables.endDate) ? moment(defaultEndDate, formatProp) : exposedVariables.endDate;
 
   const [focusedInput, setFocusedInput] = useState(null);
-  const [startDate, setStartDate] = useState(moment(defaultStartDate, formatProp));
+  const [startDate, setStartDate] = useState(startDateProp);
   const [endDate, setEndDate] = useState(endDateProp);
 
   const dateRangeRef = useRef(null);

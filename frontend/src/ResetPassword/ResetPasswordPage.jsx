@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import config from 'config';
 import { authenticationService } from '@/_services';
 
 class ResetPassword extends React.Component {
