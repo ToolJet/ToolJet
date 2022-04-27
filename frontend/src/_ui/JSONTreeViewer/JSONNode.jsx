@@ -136,6 +136,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     return () => {
       setShowHiddenOptionsForNode(false);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hoveredNode]);
 
   if (toUseNodeIcons && currentNode) {
