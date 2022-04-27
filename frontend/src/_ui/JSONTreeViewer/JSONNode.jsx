@@ -272,23 +272,25 @@ export const JSONNode = ({ data, ...restProps }) => {
             overlay={moreActionsPopover(moreActions?.actions)}
           >
             <span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="icon-tabler icon-tabler-dots-vertical"
-                width="13"
-                height="13"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="#2c3e50"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <circle cx="12" cy="12" r="1" />
-                <circle cx="12" cy="19" r="1" />
-                <circle cx="12" cy="5" r="1" />
-              </svg>
+              <ToolTip message={'More actions'}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="icon-tabler icon-tabler-dots-vertical"
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="#2c3e50"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <circle cx="12" cy="12" r="1" />
+                  <circle cx="12" cy="19" r="1" />
+                  <circle cx="12" cy="5" r="1" />
+                </svg>
+              </ToolTip>
             </span>
           </OverlayTrigger>
         )}
