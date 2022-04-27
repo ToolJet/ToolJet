@@ -77,6 +77,11 @@ export const Tabs = function Tabs({
                   ? { color: parsedHighlightColor, borderBottom: `1px solid ${parsedHighlightColor}` }
                   : {}
               }
+              ref={(el) => {
+                if (el && currentTab == tab.id) {
+                  el.style.setProperty('color', parsedHighlightColor, 'important');
+                }
+              }}
             >
               {tab.title}
             </a>

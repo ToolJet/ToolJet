@@ -79,6 +79,7 @@ class Editor extends React.Component {
       components: {},
       globalSettings: {
         hideHeader: false,
+        appInMaintenance: false,
         canvasMaxWidth: 1292,
         canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
       },
@@ -162,7 +163,7 @@ class Editor extends React.Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.appDefinition !== this.state.appDefinition) {
+    if (!isEqual(prevState.appDefinition, this.state.appDefinition)) {
       computeComponentState(this, this.state.appDefinition.components);
     }
   }
@@ -309,6 +310,26 @@ class Editor extends React.Component {
     queries.forEach((query) => {
       if (query.options.runOnPageLoad) {
         runQuery(this, query.id, query.name);
+      }
+    });
+  };
+
+  toggleAppMaintenance = () => {
+    const newState = !this.state.app.is_maintenance_on;
+
+    // eslint-disable-next-line no-unused-vars
+    appService.setMaintenance(this.state.app.id, newState).then((data) => {
+      this.setState({
+        app: {
+          ...this.state.app,
+          is_maintenance_on: newState,
+        },
+      });
+
+      if (newState) {
+        toast.success('Application is on maintenance.');
+      } else {
+        toast.success('Application maintenance is completed');
       }
     });
   };
@@ -550,13 +571,16 @@ class Editor extends React.Component {
 
   globalSettingsChanged = (key, value) => {
     const appDefinition = { ...this.state.appDefinition };
-
     appDefinition.globalSettings[key] = value;
     this.setState(
       {
         appDefinition,
       },
       () => {
+        this.props.ymap.set('appDef', {
+          newDefinition: appDefinition,
+          editingVersionId: this.state.editingVersion?.id,
+        });
         this.autoSave();
       }
     );
@@ -1036,6 +1060,8 @@ class Editor extends React.Component {
               setSelectedComponent={this.setSelectedComponent}
               removeComponent={this.removeComponent}
               runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
+              toggleAppMaintenance={this.toggleAppMaintenance}
+              is_maintenance_on={this.state.app.is_maintenance_on}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div

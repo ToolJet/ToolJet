@@ -106,12 +106,10 @@ export class JSONTreeViewer extends React.Component {
       });
     }
   };
-  updateHoveredNode = (node) => {
-    if (node) {
-      this.setState({
-        hoveredNode: node,
-      });
-    }
+  updateHoveredNode = (node, path) => {
+    this.setState({
+      hoveredNode: { node: node, parent: path?.length ? path[path.length - 2] : null },
+    });
   };
 
   getDispatchActionsForNode = (node) => {

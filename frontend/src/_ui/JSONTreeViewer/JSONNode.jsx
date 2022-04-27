@@ -129,14 +129,13 @@ export const JSONNode = ({ data, ...restProps }) => {
   }, [selectedNode, currentNode]);
 
   React.useEffect(() => {
-    if (hoveredNode === currentNode) {
+    if (hoveredNode?.node === currentNode && hoveredNode?.parent === parent) {
       setShowHiddenOptionsForNode(true);
     }
 
     return () => {
       setShowHiddenOptionsForNode(false);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hoveredNode]);
 
   if (toUseNodeIcons && currentNode) {
@@ -301,7 +300,7 @@ export const JSONNode = ({ data, ...restProps }) => {
       className={cx('d-flex row-flex mt-1 font-monospace container-fluid px-1', {
         'json-node-element': !expandable,
       })}
-      onMouseEnter={() => updateHoveredNode(currentNode)}
+      onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
       onMouseLeave={() => updateHoveredNode(null)}
     >
       <div className={`json-tree-icon-container  mx-2 ${applySelectedNodeStyles && 'selected-node'}`}>
