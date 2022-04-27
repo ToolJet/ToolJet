@@ -2,7 +2,7 @@ name: AWS AMI build using Packer config
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
   packer:
