@@ -11,7 +11,10 @@ import { BaseUrl } from './BaseUrl';
 class Restapi extends React.Component {
   constructor(props) {
     super(props);
-    const options = defaults({ ...props.options }, { headers: [], url_params: [], body: [] });
+    const options = defaults(
+      { ...props.options },
+      { headers: [], url_params: [], body: [], json_body: null, body_toggle: false }
+    );
     this.state = {
       options,
     };
@@ -37,6 +40,14 @@ class Restapi extends React.Component {
     }
   }
 
+  onBodyToggleChanged = (value) => {
+    const { options } = this.state;
+    options['body_toggle'] = value;
+    this.setState({ options }, () => {
+      this.props.optionsChanged(options);
+    });
+  };
+
   addNewKeyValuePair = (option) => {
     const { options } = this.state;
     const newOptions = { ...options, [option]: [...options[option], ['', '']] };
@@ -59,6 +70,15 @@ class Restapi extends React.Component {
     const { options } = this.state;
 
     options[option][index][keyIndex] = value;
+
+    this.setState({ options }, () => {
+      this.props.optionsChanged(options);
+    });
+  };
+
+  handleJsonBodyChanged = (jsonBody) => {
+    const { options } = this.state;
+    options['json_body'] = jsonBody;
 
     this.setState({ options }, () => {
       this.props.optionsChanged(options);
@@ -183,10 +203,13 @@ class Restapi extends React.Component {
             options={this.state.options}
             currentState={this.props.currentState}
             onChange={this.handleChange}
+            onJsonBodyChange={this.handleJsonBodyChanged}
             removeKeyValuePair={this.removeKeyValuePair}
             addNewKeyValuePair={this.addNewKeyValuePair}
             darkMode={this.props.darkMode}
             componentName={queryName}
+            bodyToggle={this.state.options.body_toggle}
+            setBodyToggle={this.onBodyToggleChanged}
           />
         </div>
       </div>
