@@ -23,3 +23,4 @@ jobs:
           SECRET_KEY_BASE: ${{secrets.SECRET_KEY_BASE}}
           TOOLJET_HOST: "https://tooljet-pr-${{github.event.number}}.herokuapp.com"
           TOOLJET_SERVER_URL: "https://tooljet-pr-${{github.event.number}}.herokuapp.com"
+          DISABLE_TOOLJET_TELEMETRY: true
