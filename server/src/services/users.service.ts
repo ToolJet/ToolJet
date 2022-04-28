@@ -11,6 +11,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import { CreateUserDto } from '@dto/user.dto';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -135,12 +136,11 @@ export class UsersService {
     return { user, newUserCreated };
   }
 
-  async setupAccountFromInvitationToken(request: any): Promise<void> {
-    const params = request.body;
-    const { organization, password, token, role } = params; // TODO: organization is the name of the organization, this should be changed
-    const firstName = params['first_name'];
-    const lastName = params['last_name'];
-    const newSignup = params['new_signup'];
+  async setupAccountFromInvitationToken(request: any, userCreateDto: CreateUserDto) {
+    const { organization, password, token, role } = userCreateDto;
+    const firstName = userCreateDto.first_name;
+    const lastName = userCreateDto.last_name;
+    const newSignup = userCreateDto.new_signup;
 
     if (!token) {
       throw new BadRequestException('Invalid token');

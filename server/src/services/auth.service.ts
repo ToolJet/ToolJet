@@ -8,6 +8,7 @@ import { EmailService } from './email.service';
 import { decamelizeKeys } from 'humps';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import { AppAuthenticationDto } from '@dto/app-authentication.dto';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -40,9 +41,8 @@ export class AuthService {
     return isVerified ? user : null;
   }
 
-  async login(request: any) {
-    const params = request.body;
-    const user = await this.validateUser(params.email, params.password);
+  async login(request: any, appAuthDto: AppAuthenticationDto) {
+    const user = await this.validateUser(appAuthDto.email, appAuthDto.password);
 
     if (user && (await this.usersService.status(user)) !== 'archived') {
       await this.auditLoggerService.perform({
@@ -71,14 +71,13 @@ export class AuthService {
     }
   }
 
-  async signup(request: any) {
-    const params = request.body;
+  async signup(request: any, appAuthDto: AppAuthenticationDto) {
     // Check if the installation allows user signups
     if (process.env.DISABLE_SIGNUPS === 'true') {
       return {};
     }
 
-    const { email } = params;
+    const { email } = appAuthDto;
     const existingUser = await this.usersService.findByEmail(email);
     if (existingUser) {
       throw new NotAcceptableException('Email already exists');

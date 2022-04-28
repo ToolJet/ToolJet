@@ -63,7 +63,6 @@ class ManageGroupPermissions extends React.Component {
         this.setState({
           creatingGroup: false,
           showNewGroupForm: false,
-          newGroup: null,
         });
         toast.success('Group has been created', {
           position: 'top-center',
@@ -75,7 +74,6 @@ class ManageGroupPermissions extends React.Component {
         this.setState({
           creatingGroup: false,
           showNewGroupForm: true,
-          newGroup: {},
         });
       });
   };
@@ -155,12 +153,18 @@ class ManageGroupPermissions extends React.Component {
                     <h3 className="card-title">Add new group</h3>
                   </div>
                   <div className="card-body">
-                    <form>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        this.createGroup();
+                      }}
+                    >
                       <div className="form-group mb-3 ">
                         <div className="row">
                           <div className="col">
                             <input
                               type="text"
+                              required
                               className="form-control"
                               placeholder="Enter Name"
                               onChange={(e) => {
@@ -172,11 +176,12 @@ class ManageGroupPermissions extends React.Component {
                       </div>
                       <div className="form-footer">
                         <button
+                          type="button"
                           className="btn btn-light mr-2"
                           onClick={() =>
                             this.setState({
                               showNewGroupForm: false,
-                              newGroup: null,
+                              newGroupName: null,
                             })
                           }
                           disabled={creatingGroup}
@@ -184,11 +189,8 @@ class ManageGroupPermissions extends React.Component {
                           Cancel
                         </button>
                         <button
+                          type="submit"
                           className={`btn mx-2 btn-primary ${creatingGroup ? 'btn-loading' : ''}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            this.createGroup();
-                          }}
                           disabled={creatingGroup}
                         >
                           Create Group
