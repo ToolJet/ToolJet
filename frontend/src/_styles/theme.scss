@@ -3910,7 +3910,7 @@ input[type="text"] {
 }
 .close-icon {
   position: fixed;
-  top: 45px;
+  top: 76px;
   right: 0;
   width: 60px;
   height: 22;
@@ -4747,4 +4747,10 @@ div#driver-page-overlay {
 }
 .list-timeline:not(.list-timeline-simple) .list-timeline-time {
   top: auto;
+}
+.editor-actions {
+  border-bottom: 1px solid #eee;
+  padding: 5px;
+  display: flex;
+  justify-content: end;
 }

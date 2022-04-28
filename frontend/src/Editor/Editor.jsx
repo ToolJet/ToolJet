@@ -1,5 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 import React, { createRef } from 'react';
+import cx from 'classnames';
 import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -1308,10 +1309,48 @@ class Editor extends React.Component {
               </div>
             </div>
             <div className="editor-sidebar">
-              <div className="col-md-12">
-                <div></div>
+              <div className="editor-actions col-md-12">
+                <div>
+                  <svg
+                    title="undo"
+                    onClick={this.handleUndo}
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-back-up', {
+                      disabled: !this.canUndo,
+                    })}
+                    width="44"
+                    height="44"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="#2c3e50"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M9 13l-4 -4l4 -4m-4 4h11a4 4 0 0 1 0 8h-1" />
+                  </svg>
+                  <svg
+                    title="redo"
+                    onClick={this.handleRedo}
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
+                      disabled: !this.canRedo,
+                    })}
+                    width="44"
+                    height="44"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="#2c3e50"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M15 13l4 -4l-4 -4m4 4h-11a4 4 0 0 0 0 8h1" />
+                  </svg>
+                </div>
               </div>
-
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
                   {selectedComponent &&
