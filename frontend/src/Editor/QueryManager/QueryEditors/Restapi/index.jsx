@@ -86,7 +86,8 @@ class Restapi extends React.Component {
   };
 
   handleChange = (key, keyIndex, idx) => (value) => {
-    if (this.state.options[key].length - 1 === idx) this.addNewKeyValuePair(key);
+    const lastPair = this.state.options[key][idx];
+    if (this.state.options[key].length - 1 === idx && (lastPair[0] || lastPair[1])) this.addNewKeyValuePair(key);
     this.keyValuePairValueChanged(value, keyIndex, key, idx);
   };
 
