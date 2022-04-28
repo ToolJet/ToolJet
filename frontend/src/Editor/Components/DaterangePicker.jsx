@@ -17,6 +17,7 @@ export const DaterangePicker = function DaterangePicker({
   const { borderRadius, visibility, disabledState } = styles;
   const { defaultStartDate, defaultEndDate } = properties;
   const formatProp = properties.format;
+  // eslint-disable-next-line no-unused-vars
   const startDateProp = isEmpty(exposedVariables.startDate)
     ? moment(defaultStartDate, formatProp)
     : exposedVariables.startDate;
