@@ -1,9 +1,9 @@
 name: Heroku review application deploy
 on:
   pull_request:
-    types: [opened, reopened, synchronize, labeled, closed]
+    types: [opened, reopened, synchronize, labeled, pull_request_target]
   pull_request_target:
-    types: [opened, reopened, synchronize, labeled, closed]
+    types: [opened, reopened, synchronize, labeled, pull_request_target]
 
 jobs:
   deploy:
