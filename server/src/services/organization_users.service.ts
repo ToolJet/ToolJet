@@ -9,6 +9,7 @@ import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 const uuid = require('uuid');
 
 @Injectable()
@@ -25,14 +26,11 @@ export class OrganizationUsersService {
     return await this.organizationUsersRepository.findOne({ where: { id } });
   }
 
-  async inviteNewUser(request): Promise<OrganizationUser> {
-    const currentUser: User = request.user;
-    const params: any = request.body;
-
+  async inviteNewUser(request: any, currentUser: User, inviteNewUserDto: InviteNewUserDto): Promise<OrganizationUser> {
     const userParams = <User>{
-      firstName: params['first_name'],
-      lastName: params['last_name'],
-      email: params['email'],
+      firstName: inviteNewUserDto.first_name,
+      lastName: inviteNewUserDto.last_name,
+      email: inviteNewUserDto.email,
     };
 
     const existingUser = await this.usersService.findByEmail(userParams.email);
@@ -76,7 +74,9 @@ export class OrganizationUsersService {
 
   async changeRole(user: User, id: string, role: string) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const organizationUser = await this.organizationUsersRepository.findOne({ where: { id } });
+    const organizationUser = await this.organizationUsersRepository.findOne({
+      where: { id },
+    });
     if (organizationUser.role == 'admin') {
       const lastActiveAdmin = await this.lastActiveAdmin(organizationUser.organizationId);
 
@@ -89,8 +89,12 @@ export class OrganizationUsersService {
 
   async archive(id: string) {
     await getManager().transaction(async (manager) => {
-      const organizationUser = await manager.findOne(OrganizationUser, { where: { id } });
-      const user = await manager.findOne(User, { where: { id: organizationUser.userId } });
+      const organizationUser = await manager.findOne(OrganizationUser, {
+        where: { id },
+      });
+      const user = await manager.findOne(User, {
+        where: { id: organizationUser.userId },
+      });
 
       await this.usersService.throwErrorIfRemovingLastActiveAdmin(user);
 
@@ -102,14 +106,19 @@ export class OrganizationUsersService {
   }
 
   async unarchive(user: User, id: string) {
-    const organizationUser = await this.organizationUsersRepository.findOne({ where: { id } });
+    const organizationUser = await this.organizationUsersRepository.findOne({
+      where: { id },
+    });
     if (organizationUser.status !== 'archived') return false;
 
     await getManager().transaction(async (manager) => {
       await manager.update(OrganizationUser, organizationUser.id, {
         status: 'invited',
       });
-      await manager.update(User, organizationUser.userId, { invitationToken: uuid.v4(), password: uuid.v4() });
+      await manager.update(User, organizationUser.userId, {
+        invitationToken: uuid.v4(),
+        password: uuid.v4(),
+      });
     });
 
     const updatedUser = await this.usersService.findOne(organizationUser.userId);

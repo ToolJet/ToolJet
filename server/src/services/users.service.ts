@@ -12,6 +12,7 @@ import { BadRequestException } from '@nestjs/common';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import got from 'got';
+import { CreateUserDto } from '@dto/user.dto';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 const freshdeskBaseUrl = 'https://tooljet-417912114917301615.myfreshworks.com/crm/sales/api/';
@@ -172,12 +173,11 @@ export class UsersService {
     return true;
   }
 
-  async setupAccountFromInvitationToken(request: any): Promise<void> {
-    const params = request.body;
-    const { organization, password, token, role } = params; // TODO: organization is the name of the organization, this should be changed
-    const firstName = params['first_name'];
-    const lastName = params['last_name'];
-    const newSignup = params['new_signup'];
+  async setupAccountFromInvitationToken(request: any, userCreateDto: CreateUserDto) {
+    const { organization, password, token, role } = userCreateDto;
+    const firstName = userCreateDto.first_name;
+    const lastName = userCreateDto.last_name;
+    const newSignup = userCreateDto.new_signup;
 
     if (!token) {
       throw new BadRequestException('Invalid token');

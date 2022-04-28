@@ -1,6 +1,5 @@
 import React from 'react';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
-import { ToolTip } from './Components/ToolTip';
 
 export const Code = ({
   param,

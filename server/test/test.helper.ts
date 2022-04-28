@@ -6,7 +6,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { User } from 'src/entities/user.entity';
 import { App } from 'src/entities/app.entity';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -37,6 +37,7 @@ export async function createNestAppInstance(): Promise<INestApplication> {
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useWebSocketAdapter(new WsAdapter(app));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   await app.init();
 
   return app;
@@ -61,6 +62,7 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
   await app.init();
 

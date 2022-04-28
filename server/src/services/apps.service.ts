@@ -15,6 +15,7 @@ import { UsersService } from './users.service';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
+import { AppUpdateDto } from '@dto/app-update.dto';
 
 @Injectable()
 export class AppsService {
@@ -212,15 +213,17 @@ export class AppsService {
     return await viewableAppsQb.getMany();
   }
 
-  async update(user: User, appId: string, params: any) {
-    const currentVersionId = params['current_version_id'];
-    const isPublic = params['is_public'];
-    const { name, slug, icon } = params;
+  async update(user: User, appId: string, appUpdateDto: AppUpdateDto) {
+    const currentVersionId = appUpdateDto.current_version_id;
+    const isPublic = appUpdateDto.is_public;
+    const isMaintenanceOn = appUpdateDto.is_maintenance_on;
+    const { name, slug, icon } = appUpdateDto;
 
     const updateableParams = {
       name,
       slug,
       isPublic,
+      isMaintenanceOn,
       currentVersionId,
       icon,
     };
@@ -502,6 +505,9 @@ export class AppsService {
   }
 
   async updateVersion(user: User, version: AppVersion, definition: any) {
+    if (version.id === version.app.currentVersionId)
+      throw new BadRequestException('You cannot update a released version');
+
     return await this.appVersionsRepository.update(version.id, { definition });
   }
 
