@@ -524,6 +524,7 @@ button {
       background: transparent;
     }
     .query-pane {
+      z-index: 1;
       height: 350px;
       position: fixed;
       left: 76px; //sidebar is 76px
@@ -1135,12 +1136,14 @@ button {
 }
 .fx-common{
   position: absolute;
-  top: -45px;
+  top: -37.5px;
   right: 0px;
 }
 
 .fx-button {
   font-weight: 400;
+  font-size: 13px;
+  color: #61656C;
 }
 
 .fx-button:hover,
@@ -1226,6 +1229,7 @@ button {
   }
 }
 
+
 .datasource-picker,
 .stripe-operation-options {
   .select-search,
@@ -1236,6 +1240,20 @@ button {
     height: 32px !important;
     border-radius: $border-radius !important;
   }
+}
+
+.openapi-operation-options {
+  .select-search,
+  .select-search-dark,
+  .select-search__value input,
+  .select-search-dark input {
+    height: 32px !important;
+    border-radius: $border-radius !important;
+  }
+}
+
+.openapi-operations-desc {
+  padding: 10px;
 }
 
 .select-search {
@@ -3966,7 +3984,7 @@ input[type="text"] {
 
 .app-version-menu-sm {
   height: 30px;
-  display: inline-block;
+  display: flex;
   font-size: 12px;
 }
 
@@ -4697,4 +4715,36 @@ div#driver-page-overlay {
   // top: -10px !important;
   // left: 100px !important;
   // background-color: #0565ff;
+}
+
+.realtime-avatars {
+  position: absolute;
+  left: 35%;
+}
+.widget-style-field-header{
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 20px;
+  color: #61656C;
+}
+
+.maintenance_container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .card {
+    .card-body {
+      display: flex;
+      height: 200px !important;
+      align-items: center;
+    }
+  }
+}
+.list-timeline:not(.list-timeline-simple) .list-timeline-time {
+  top: auto;
 }

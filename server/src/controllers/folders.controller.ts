@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Query, Request, UseGuards, Body } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { FoldersService } from '../services/folders.service';
 import { ForbiddenException } from '@nestjs/common';
 import { FoldersAbilityFactory } from 'src/modules/casl/abilities/folders-ability.factory';
 import { Folder } from 'src/entities/folder.entity';
+import { CreateFolderDto } from '@dto/create-folder.dto';
 
 @Controller('folders')
 export class FoldersController {
@@ -19,7 +20,7 @@ export class FoldersController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Request() req) {
+  async create(@Request() req, @Body() createFolderDto: CreateFolderDto) {
     const ability = await this.foldersAbilityFactory.folderActions(req.user, {});
 
     if (!ability.can('createFolder', Folder)) {
