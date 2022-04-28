@@ -2,7 +2,8 @@ const urrl = require('url');
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
-import got, { Headers, HTTPError } from 'got';
+const JSON5 = require('json5');
+import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
 
 function isEmpty(value: number | null | undefined | string) {
   return (
@@ -45,14 +46,22 @@ export default class RestapiQueryService implements QueryService {
 
   /* Body params of the source will be overridden by body params of the query */
   body(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
-    const _body = (queryOptions.body || []).filter((o) => {
-      return o.some((e) => !isEmpty(e));
-    });
+    const bodyToggle = queryOptions['body_toggle'];
+    if (bodyToggle) {
+      const jsonBody = queryOptions['json_body'];
+      if (!jsonBody) return undefined;
+      if (typeof jsonBody === 'string') return JSON5.parse(jsonBody);
+      else return jsonBody;
+    } else {
+      const _body = (queryOptions.body || []).filter((o) => {
+        return o.some((e) => !isEmpty(e));
+      });
 
-    if (!hasDataSource) return Object.fromEntries(_body);
+      if (!hasDataSource) return Object.fromEntries(_body);
 
-    const bodyParams = _body.concat(sourceOptions.body || []);
-    return Object.fromEntries(bodyParams);
+      const bodyParams = _body.concat(sourceOptions.body || []);
+      return Object.fromEntries(bodyParams);
+    }
   }
 
   /* Search params of the source will be overridden by Search params of the query */
@@ -79,7 +88,8 @@ export default class RestapiQueryService implements QueryService {
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
-    const requiresOauth = sourceOptions['auth_type'] === 'oauth2';
+    const authType = sourceOptions['auth_type'];
+    const requiresOauth = authType === 'oauth2';
 
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
     const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
@@ -119,17 +129,29 @@ export default class RestapiQueryService implements QueryService {
     const method = queryOptions['method'];
     const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
     const paramsFromUrl = urrl.parse(url, true).query;
+
+    if (authType === 'bearer') {
+      headers['Authorization'] = `Bearer ${sourceOptions.bearer_token}`;
+    }
+
+    const requestOptions: OptionsOfTextResponseBody = {
+      method,
+      headers,
+      ...this.fetchHttpsCertsForCustomCA(),
+      searchParams: {
+        ...paramsFromUrl,
+        ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
+      },
+      json,
+    };
+
+    if (authType === 'basic') {
+      requestOptions.username = sourceOptions.username;
+      requestOptions.password = sourceOptions.password;
+    }
+
     try {
-      const response = await got(url, {
-        method,
-        headers,
-        ...this.fetchHttpsCertsForCustomCA(),
-        searchParams: {
-          ...paramsFromUrl,
-          ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
-        },
-        json,
-      });
+      const response = await got(url, requestOptions);
       result = this.isJson(response.body) ? JSON.parse(response.body) : response.body;
       requestObject = {
         requestUrl: response.request.requestUrl,

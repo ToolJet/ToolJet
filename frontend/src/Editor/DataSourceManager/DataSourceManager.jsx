@@ -343,7 +343,7 @@ class DataSourceManager extends React.Component {
         <ListGroup className="datasource-lists-modal" variant="flush">
           {dataSourceList.map((datasource) => (
             <ListGroup.Item key={datasource.key} eventKey={datasource.key}>
-              {datasource.type}
+              {`${datasource.type} (${datasource.list.length})`}
             </ListGroup.Item>
           ))}
         </ListGroup>

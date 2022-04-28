@@ -43,12 +43,15 @@ import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 import { AppVersionsManager } from './AppVersionsManager';
 import { SearchBoxComponent } from '@/_ui/Search';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
+import { Cursor } from './Cursor';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import RealtimeAvatars from './RealtimeAvatars';
 import InitVersionCreateModal from './InitVersionCreateModal';
 
 setAutoFreeze(false);
 enablePatches();
+
 class Editor extends React.Component {
   constructor(props) {
     super(props);
@@ -59,9 +62,9 @@ class Editor extends React.Component {
 
     const { socket } = createWebsocketConnection(appId);
 
-    let userVars = {};
-
     this.socket = socket;
+
+    let userVars = {};
 
     if (currentUser) {
       userVars = {
@@ -76,6 +79,7 @@ class Editor extends React.Component {
       components: {},
       globalSettings: {
         hideHeader: false,
+        appInMaintenance: false,
         canvasMaxWidth: 1292,
         canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
       },
@@ -119,14 +123,12 @@ class Editor extends React.Component {
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
       showInitVersionCreateModal: false,
-      isSavingEditingVersion: false,
-      showSaveDetail: false,
-      hasAppDefinitionChanged: false,
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
+    this.realtimeSave = debounce(this.appDefinitionChanged, 500);
   }
 
   setWindowTitle(name) {
@@ -137,11 +139,33 @@ class Editor extends React.Component {
     this.fetchApps(0);
     this.fetchApp();
     this.initComponentVersioning();
+    this.initRealtimeSave();
     this.initEventListeners();
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
     });
+  }
+
+  /**
+   * When a new update is received over-the-websocket connection
+   * the useEffect in Container.jsx is trigged, but already appDef had been updated
+   * to avoid ymap observe going into a infinite loop a check is added where if the
+   * current appDef is equal to the newAppDef then we do not trigger a realtimeSave
+   */
+  initRealtimeSave = () => {
+    this.props.ymap.observe(() => {
+      if (!isEqual(this.state.editingVersion?.id, this.props.ymap.get('appDef').editingVersionId)) return;
+      if (isEqual(this.state.appDefinition, this.props.ymap.get('appDef').newDefinition)) return;
+
+      this.realtimeSave(this.props.ymap.get('appDef').newDefinition, { skipAutoSave: true, skipYmapUpdate: true });
+    });
+  };
+
+  componentDidUpdate(prevProps, prevState) {
+    if (!isEqual(prevState.appDefinition, this.state.appDefinition)) {
+      computeComponentState(this, this.state.appDefinition.components);
+    }
   }
 
   isVersionReleased = (version = this.state.editingVersion) => {
@@ -197,6 +221,11 @@ class Editor extends React.Component {
   initEventListeners() {
     document.addEventListener('mousemove', this.onMouseMove);
     document.addEventListener('mouseup', this.onMouseUp);
+    this.socket?.addEventListener('message', (event) => {
+      if (event.data === 'versionReleased') this.fetchApp();
+      else if (event.data === 'dataQueriesChanged') this.fetchDataQueries();
+      else if (event.data === 'dataSourcesChanged') this.fetchDataSources();
+    });
   }
 
   componentWillUnmount() {
@@ -289,6 +318,26 @@ class Editor extends React.Component {
     });
   };
 
+  toggleAppMaintenance = () => {
+    const newState = !this.state.app.is_maintenance_on;
+
+    // eslint-disable-next-line no-unused-vars
+    appService.setMaintenance(this.state.app.id, newState).then((data) => {
+      this.setState({
+        app: {
+          ...this.state.app,
+          is_maintenance_on: newState,
+        },
+      });
+
+      if (newState) {
+        toast.success('Application is on maintenance.');
+      } else {
+        toast.success('Application maintenance is completed');
+      }
+    });
+  };
+
   fetchApps = (page) => {
     appService.getAll(page).then((data) =>
       this.setState({
@@ -330,7 +379,10 @@ class Editor extends React.Component {
   };
 
   setAppDefinitionFromVersion = (version) => {
-    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), { skipAutoSave: true });
+    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
+      skipAutoSave: true,
+      skipYmapUpdate: true,
+    });
     this.setState({
       editingVersion: version,
     });
@@ -341,12 +393,23 @@ class Editor extends React.Component {
   };
 
   dataSourcesChanged = () => {
-    this.fetchDataSources();
+    this.socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: { message: 'dataSourcesChanged', appId: this.state.appId },
+      })
+    );
   };
 
   dataQueriesChanged = () => {
-    this.fetchDataQueries();
-    this.setState({ addingQuery: false });
+    this.setState({ addingQuery: false }, () => {
+      this.socket.send(
+        JSON.stringify({
+          event: 'events',
+          data: { message: 'dataQueriesChanged', appId: this.state.appId },
+        })
+      );
+    });
   };
 
   switchSidebarTab = (tabIndex) => {
@@ -423,6 +486,9 @@ class Editor extends React.Component {
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
     if (isEqual(this.state.appDefinition, newDefinition)) return;
+    if (!opts.skipYmapUpdate) {
+      this.props.ymap.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
+    }
 
     produce(
       this.state.appDefinition,
@@ -500,7 +566,12 @@ class Editor extends React.Component {
       this.handleAddPatch
     );
     setStateAsync(_self, newDefinition).then(() => {
+      computeComponentState(_self, _self.state.appDefinition.components);
       this.autoSave();
+      this.props.ymap.set('appDef', {
+        newDefinition: newDefinition.appDefinition,
+        editingVersionId: this.state.editingVersion?.id,
+      });
     });
   };
 
@@ -515,13 +586,16 @@ class Editor extends React.Component {
 
   globalSettingsChanged = (key, value) => {
     const appDefinition = { ...this.state.appDefinition };
-
     appDefinition.globalSettings[key] = value;
     this.setState(
       {
         appDefinition,
       },
       () => {
+        this.props.ymap.set('appDef', {
+          newDefinition: appDefinition,
+          editingVersionId: this.state.editingVersion?.id,
+        });
         this.autoSave();
       }
     );
@@ -734,12 +808,22 @@ class Editor extends React.Component {
   };
 
   onVersionRelease = (versionId) => {
-    this.setState({
-      app: {
-        ...this.state.app,
-        current_version_id: versionId,
+    this.setState(
+      {
+        app: {
+          ...this.state.app,
+          current_version_id: versionId,
+        },
       },
-    });
+      () => {
+        this.socket.send(
+          JSON.stringify({
+            event: 'events',
+            data: { message: 'versionReleased', appId: this.state.appId },
+          })
+        );
+      }
+    );
   };
 
   onZoomChanged = (zoom) => {
@@ -786,17 +870,18 @@ class Editor extends React.Component {
     if (this.isVersionReleased()) {
       this.setState({ showCreateVersionModalPrompt: true });
     } else if (!isEmpty(this.state.editingVersion)) {
-      this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
-      appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
-        this.setState({
-          isSavingEditingVersion: false,
-          editingVersion: {
-            ...this.state.editingVersion,
-            ...{ definition: this.state.appDefinition },
-          },
-        });
-
-        setTimeout(() => this.setState({ showSaveDetail: false }), 3000);
+      toast.promise(appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition), {
+        loading: 'Saving...',
+        success: () => {
+          this.setState({
+            editingVersion: {
+              ...this.state.editingVersion,
+              ...{ definition: this.state.appDefinition },
+            },
+          });
+          return 'Saved!';
+        },
+        error: 'App could not save.',
       });
     }
   };
@@ -869,8 +954,6 @@ class Editor extends React.Component {
       defaultComponentStateComputed,
       showComments,
       editingVersion,
-      isSavingEditingVersion,
-      showSaveDetail,
       showCreateVersionModalPrompt,
       hoveredComponent,
     } = this.state;
@@ -880,7 +963,6 @@ class Editor extends React.Component {
     return (
       <div className="editor wrapper">
         <ReactTooltip type="dark" effect="solid" eventOff="click" delayShow={250} />
-
         {/* This is for viewer to show query confirmations */}
         <Confirm
           show={showQueryConfirmation}
@@ -898,98 +980,88 @@ class Editor extends React.Component {
           onCancel={() => this.cancelDeleteDataQuery()}
           darkMode={this.props.darkMode}
         />
-        <DndProvider backend={HTML5Backend}>
-          <div className="header">
-            <header className="navbar navbar-expand-md navbar-light d-print-none">
-              <div className="container-xl header-container">
-                <button
-                  className="navbar-toggler"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#navbar-menu"
-                >
-                  <span className="navbar-toggler-icon"></span>
-                </button>
-                <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                  <Link to={'/'}>
-                    <Logo />
-                  </Link>
-                </h1>
-
-                {this.state.app && (
-                  <div className={`app-name input-icon ${this.props.darkMode ? 'dark' : ''}`}>
-                    <input
-                      type="text"
-                      onFocus={(e) => this.setState({ oldName: e.target.value })}
-                      onChange={(e) => this.onNameChanged(e.target.value)}
-                      onBlur={(e) => this.saveAppName(this.state.app.id, e.target.value)}
-                      className="form-control-plaintext form-control-plaintext-sm"
-                      value={this.state.app.name}
-                    />
-                    <span className="input-icon-addon">
-                      <EditIcon />
-                    </span>
-                  </div>
-                )}
-                {showSaveDetail && (
-                  <div className="nav-auto-save">
-                    <img src={'/assets/images/icons/editor/auto-save.svg'} width="25" height="25" />
-                    <em className="small lh-base p-1">{isSavingEditingVersion ? 'Saving..' : 'Saved'}</em>
-                  </div>
-                )}
-
-                {editingVersion && (
-                  <AppVersionsManager
-                    appId={appId}
-                    editingVersion={editingVersion}
-                    releasedVersionId={app.current_version_id}
-                    setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
-                    showCreateVersionModalPrompt={showCreateVersionModalPrompt}
-                    closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
+        <div className="header">
+          <header className="navbar navbar-expand-md navbar-light d-print-none">
+            <div className="container-xl header-container">
+              <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+                <span className="navbar-toggler-icon"></span>
+              </button>
+              <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
+                <Link to={'/'}>
+                  <Logo />
+                </Link>
+              </h1>
+              {this.state.app && (
+                <div className={`app-name input-icon ${this.props.darkMode ? 'dark' : ''}`}>
+                  <input
+                    type="text"
+                    onFocus={(e) => this.setState({ oldName: e.target.value })}
+                    onChange={(e) => this.onNameChanged(e.target.value)}
+                    onBlur={(e) => this.saveAppName(this.state.app.id, e.target.value)}
+                    className="form-control-plaintext form-control-plaintext-sm"
+                    value={this.state.app.name}
                   />
-                )}
-
-                <div className="layout-buttons cursor-pointer">
-                  {this.renderLayoutIcon(currentLayout === 'desktop')}
+                  <span className="input-icon-addon">
+                    <EditIcon />
+                  </span>
                 </div>
-                <div className="navbar-nav flex-row order-md-last release-buttons">
-                  <div className="nav-item dropdown d-none d-md-flex me-2">
-                    <a
-                      href={appVersionPreviewLink}
-                      target="_blank"
-                      className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
-                      rel="noreferrer"
-                    >
-                      Preview
-                    </a>
-                  </div>
-                  <div className="nav-item dropdown d-none d-md-flex me-2">
-                    {app.id && (
-                      <ManageAppUsers
-                        app={app}
-                        slug={slug}
-                        darkMode={this.props.darkMode}
-                        handleSlugChange={this.handleSlugChange}
-                      />
-                    )}
-                  </div>
-                  <div className="nav-item dropdown me-2">
-                    {app.id && (
-                      <ReleaseVersionButton
-                        isVersionReleased={this.isVersionReleased()}
-                        appId={app.id}
-                        appName={app.name}
-                        onVersionRelease={this.onVersionRelease}
-                        editingVersion={editingVersion}
-                        fetchApp={this.fetchApp}
-                        saveEditingVersion={this.saveEditingVersion}
-                      />
-                    )}
-                  </div>
+              )}
+              <RealtimeAvatars
+                updatePresence={this.props.updatePresence}
+                editingVersionId={this.state?.editingVersion?.id}
+                self={this.props.self}
+              />
+              {editingVersion && (
+                <AppVersionsManager
+                  appId={appId}
+                  editingVersion={editingVersion}
+                  releasedVersionId={app.current_version_id}
+                  setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                  showCreateVersionModalPrompt={showCreateVersionModalPrompt}
+                  closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
+                />
+              )}
+
+              <div className="layout-buttons cursor-pointer">{this.renderLayoutIcon(currentLayout === 'desktop')}</div>
+              <div className="navbar-nav flex-row order-md-last release-buttons">
+                <div className="nav-item dropdown d-none d-md-flex me-2">
+                  <a
+                    href={appVersionPreviewLink}
+                    target="_blank"
+                    className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
+                    rel="noreferrer"
+                  >
+                    Preview
+                  </a>
+                </div>
+                <div className="nav-item dropdown d-none d-md-flex me-2">
+                  {app.id && (
+                    <ManageAppUsers
+                      app={app}
+                      slug={slug}
+                      darkMode={this.props.darkMode}
+                      handleSlugChange={this.handleSlugChange}
+                    />
+                  )}
+                </div>
+                <div className="nav-item dropdown me-2">
+                  {app.id && (
+                    <ReleaseVersionButton
+                      isVersionReleased={this.isVersionReleased()}
+                      appId={app.id}
+                      appName={app.name}
+                      onVersionRelease={this.onVersionRelease}
+                      editingVersion={editingVersion}
+                      fetchApp={this.fetchApp}
+                      saveEditingVersion={this.saveEditingVersion}
+                    />
+                  )}
                 </div>
               </div>
-            </header>
-          </div>
+            </div>
+          </header>
+        </div>
+        <DndProvider backend={HTML5Backend}>
           <div className="sub-section">
             <LeftSidebar
               appVersionsId={this.state?.editingVersion?.id}
@@ -1005,6 +1077,8 @@ class Editor extends React.Component {
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
+              toggleAppMaintenance={this.toggleAppMaintenance}
+              is_maintenance_on={this.state.app.is_maintenance_on}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
@@ -1024,6 +1098,12 @@ class Editor extends React.Component {
                     backgroundColor: this.state.appDefinition.globalSettings.canvasBackgroundColor,
                   }}
                 >
+                  {this.props.othersOnSameVersion.map(({ id, presence }) => {
+                    if (!presence) return null;
+                    return (
+                      <Cursor key={id} name={presence.firstName} color={presence.color} x={presence.x} y={presence.y} />
+                    );
+                  })}
                   {defaultComponentStateComputed && (
                     <>
                       <Container

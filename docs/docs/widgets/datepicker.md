@@ -8,11 +8,20 @@ The Datepicker widget allows users to select a single value for date and time fr
 
 </div>
 
+## Events
+### Event: On select
+
+On select event is triggered when an date is selected.
+
 ## Properties
 
 ### Default value
 
 This value acts as placeholder for the date picker widget, if any value is not provided then the default value will be used from the picker. The default value needs to a `String` with respect to the `format` field. Ex: If format is set to `MM/YYYY` then provide default value as `04/2022`.
+
+### Disabled dates
+
+We can give disabled dates property which will make specific dates disabled and cannot be selected. The default value needs to a an array of`Strings`.
 
 ### Format
 
