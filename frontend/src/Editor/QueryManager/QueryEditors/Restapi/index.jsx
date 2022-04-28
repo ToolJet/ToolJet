@@ -96,62 +96,6 @@ class Restapi extends React.Component {
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
     const queryName = this.props.queryName;
 
-    const selectStyles = {
-      container: (provided) => ({
-        ...provided,
-        width: 100,
-        height: 32,
-      }),
-      control: (provided) => ({
-        ...provided,
-        borderColor: 'hsl(0, 0%, 80%)',
-        boxShadow: 'none',
-        '&:hover': {
-          borderColor: 'hsl(0, 0%, 80%)',
-        },
-        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
-        height: '32px!important',
-        minHeight: '32px!important',
-      }),
-      valueContainer: (provided, _state) => ({
-        ...provided,
-        height: 32,
-        marginBottom: '4px',
-      }),
-      indicatorsContainer: (provided, _state) => ({
-        ...provided,
-        height: 32,
-      }),
-      indicatorSeparator: (_state) => ({
-        display: 'none',
-      }),
-      input: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-      }),
-      menu: (provided) => ({
-        ...provided,
-        zIndex: 2,
-        backgroundColor: this.props.darkMode ? 'rgb(31,40,55)' : 'white',
-      }),
-      option: (provided) => ({
-        ...provided,
-        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-        ':hover': {
-          backgroundColor: this.props.darkMode ? '#323C4B' : '#d8dce9',
-        },
-      }),
-      placeholder: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#808080',
-      }),
-      singleValue: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-      }),
-    };
-
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
     return (
       <div>
