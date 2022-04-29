@@ -29,7 +29,7 @@ Enable Git. You can see `Redirect URL` generated
 
 </div>
 
-Goto [GitHub Developer settings](https://github.com/settings/developers) and navigate to `OAuth Apps` and create a project. `Authorization callback URL` should be the generated `Redirect URL` in Git manage SSO page
+Go to [GitHub Developer settings](https://github.com/settings/developers) and navigate to `OAuth Apps` and create a project. `Authorization callback URL` should be the generated `Redirect URL` in Git manage SSO page.
 
 <div style={{textAlign: 'center'}}>
 
@@ -37,7 +37,7 @@ Goto [GitHub Developer settings](https://github.com/settings/developers) and nav
 
 </div>
 
-Open the application details, and you can see the `Client ID`
+- Open the application details, and you can see the `Client ID`
 
 <div style={{textAlign: 'center'}}>
 
@@ -45,7 +45,7 @@ Open the application details, and you can see the `Client ID`
 
 </div>
 
-Then create `Client secrets` by clicking `Generate new client secret`
+- Then create `Client secrets` by clicking `Generate new client secret`
 
 <div style={{textAlign: 'center'}}>
 

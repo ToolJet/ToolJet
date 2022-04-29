@@ -29,7 +29,7 @@ Enable Google. You can see `Redirect URL` generated
 
 </div>
 
-Goto [Google cloud console](https://console.cloud.google.com/) and create a project.
+Go to [Google cloud console](https://console.cloud.google.com/) and create a project.
 
 <div style={{textAlign: 'center'}}>
 
@@ -37,7 +37,7 @@ Goto [Google cloud console](https://console.cloud.google.com/) and create a proj
 
 </div>
 
-Goto [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials), and create an OAuth client ID
+- Go to the [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials), and create an OAuth client ID
 
 <div style={{textAlign: 'center'}}>
 
@@ -45,7 +45,7 @@ Goto [Google cloud console credentials page](https://console.cloud.google.com/ap
 
 </div>
 
-You'll be asked to select user type in consent screen. To allow only users within your organization, select 'Internal', otherwise,
+- You'll be asked to select user type in consent screen. To allow only users within your organization, select 'Internal', otherwise,
 select 'External'.
 
 <div style={{textAlign: 'center'}}>
@@ -54,7 +54,7 @@ select 'External'.
 
 </div>
 
-You'll be led to an app registration page where you can set OAuth scopes. Select 'Add or remove scopes' and add the scopes
+- You'll be led to an app registration page where you can set OAuth scopes. Select 'Add or remove scopes' and add the scopes
 userinfo.email and userinfo.profile as shown in the image. This will allow ToolJet to store the email and name of the
 user who is signing in
 
@@ -64,7 +64,7 @@ user who is signing in
 
 </div>
 
-Set the domain on which ToolJet is hosted as an authorized domain
+- Set the domain on which ToolJet is hosted as an authorized domain
 
 <div style={{textAlign: 'center'}}>
 
@@ -72,7 +72,7 @@ Set the domain on which ToolJet is hosted as an authorized domain
 
 </div>
 
-Set the `Redirect URL` under Authorised redirect URIs
+Set the `Redirect URL` generated at manage SSO `Google` page under Authorised redirect URIs
 
 <div style={{textAlign: 'center'}}>
 
