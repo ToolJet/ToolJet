@@ -7,8 +7,8 @@ import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
 import Tooltip from 'react-bootstrap/esm/Tooltip';
 import { getSvgIcon } from '@/_helpers/appUtils';
-import { Confirm } from '.././Viewer/Confirm';
 import { datasourceService } from '@/_services';
+import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
 
 export const LeftSidebarDataSources = ({
@@ -84,7 +84,7 @@ export const LeftSidebarDataSources = ({
 
   return (
     <>
-      <Confirm
+      <ConfirmDialog
         show={isDeleteModalVisible}
         message={'You will lose all the queries created from this data source. Do you really want to delete?'}
         confirmButtonLoading={isDeletingDatasource}
