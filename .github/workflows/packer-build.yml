@@ -1,8 +1,7 @@
 name: AWS AMI build using Packer config
 
 on:
-  release:
-    types: [published]
+  push:
 
 jobs:
   packer:
@@ -12,6 +11,14 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: Test
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -42,7 +49,7 @@ jobs:
         uses: hashicorp/packer-github-actions@master
         with:
           command: build
-          arguments: -color=false -on-error=abort -var ami_name=tooljet_${GITHUB_REF##*/}.ubuntu_bionic
+          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_bionic
           target: .
           working_directory: deploy/ec2
         env:
