@@ -15,6 +15,7 @@ If you are self-hosting the application, you will need to perform some additiona
      * `GOOGLE_CLIENT_ID`
      * `GOOGLE_CLIENT_SECRET`
      * `TOOLJET_HOST`
+  3. Enable the Google Sheets API in the GCP console
 
 ## Authorization Scopes 
 
