@@ -2023,15 +2023,17 @@ export const componentTypes = [
   },
   {
     name: 'ButtonGroup',
-    displayName: 'ButtonGroup',
+    displayName: 'Button Group',
     description: 'ButtonGroup',
     component: 'ButtonGroup',
     properties: {
-      data: { type: 'code', displayName: 'ButtonGroup' },
-      text: { type: 'code', displayName: 'Button Text' },
+      label: { type: 'code', displayName: 'label' },
+      values: { type: 'code', displayName: 'values' },
+      labels: { type: 'code', displayName: 'Labels' },
+      defaultValue: { type: 'code', displayName: 'Default value' },
     },
     defaultSize: {
-      width: 4,
+      width: 12,
       height: 50,
     },
     others: {
@@ -2048,6 +2050,8 @@ export const componentTypes = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
       borderRadius: { type: 'number', displayName: 'Border radius' },
+      selectedTextColor: { type: 'number', displayName: 'Selected text colour' },
+      selectedBackgroundColor: { type: 'number', displayName: 'selectedBackgroundColor' },
     },
     exposedVariables: {},
     definition: {
@@ -2056,8 +2060,10 @@ export const componentTypes = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        text: { value: `Button` },
+        label: { value: `Button` },
         visible: { value: '{{true}}' },
+        values: { value: [1, 2, 3] },
+        labels: { value: ['one', 'two', 'three'] },
       },
       events: [],
       styles: {

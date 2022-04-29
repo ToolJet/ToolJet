@@ -4718,3 +4718,24 @@ div#driver-page-overlay {
 .list-timeline:not(.list-timeline-simple) .list-timeline-time {
   top: auto;
 }
+.widget-buttongroup{
+  display: flex;
+  flex-direction: row;
+  // justify-content: space-between;
+}
+.group-button{
+  margin: 0px 10px 10px 10px;
+  line-height: 1.499;
+  font-weight: 400;
+  white-space: nowrap;
+  text-align: center;
+  cursor: pointer;
+  height: 30px !important;
+  padding: 0 15px;
+  font-size: 12px;
+  border-radius: 4px;
+  color: rgba(0,0,0,.65) !important;
+  background-color: #fff !important;
+  border: 1px solid #d9d9d9;
+  width: 40px !important;
+}

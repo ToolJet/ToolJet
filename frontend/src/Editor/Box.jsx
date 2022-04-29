@@ -38,6 +38,7 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { RangeSlider } from './Components/RangeSlider';
 import { Timeline } from './Components/Timeline';
 import { SvgImage } from './Components/SvgImage';
+import { ButtonGroup } from './Components/ButtonGroup';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { resolveProperties, resolveStyles } from './component-properties-resolution';
@@ -82,6 +83,7 @@ const AllComponents = {
   RangeSlider,
   Timeline,
   SvgImage,
+  ButtonGroup,
 };
 
 export const Box = function Box({
