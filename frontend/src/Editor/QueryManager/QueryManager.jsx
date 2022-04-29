@@ -12,6 +12,8 @@ import RunjsIcon from '../Icons/runjs.svg';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import { allSvgs } from '@tooljet/plugins/client';
+import { Confirm } from '../Viewer/Confirm';
+import _ from 'lodash';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -32,6 +34,9 @@ let QueryManager = class QueryManager extends React.Component {
       dataQueries: [],
       theme: {},
       isSourceSelected: false,
+      isFieldsChanged: false,
+      showSaveConfirmation: false,
+      nextProps: null,
     };
 
     this.previewPanelRef = React.createRef();
@@ -109,6 +114,13 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   componentWillReceiveProps(nextProps) {
+    if (this.state.selectedDataSource && !['restapi', 'runjs'].includes(this.state.selectedDataSource.kind)) {
+      const isQueryChanged = !_.isEqual(this.state.selectedQuery.options, this.state.options);
+      if (this.state.selectedDataSource && this.state.isFieldsChanged && isQueryChanged) {
+        this.setState({ showSaveConfirmation: true, nextProps: nextProps });
+        return;
+      }
+    }
     this.setStateFromProps(nextProps);
   }
 
@@ -203,11 +215,11 @@ let QueryManager = class QueryManager extends React.Component {
         .update(this.state.selectedQuery.id, queryName, options)
         .then(() => {
           toast.success('Query Updated');
-          this.setState({ isUpdating: false });
+          this.setState({ isUpdating: false, isFieldsChanged: false });
           this.props.dataQueriesChanged();
         })
         .catch(({ error }) => {
-          this.setState({ isUpdating: false });
+          this.setState({ isUpdating: false, isFieldsChanged: false });
           toast.error(error);
         });
     } else {
@@ -227,11 +239,11 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   optionchanged = (option, value) => {
-    this.setState({ options: { ...this.state.options, [option]: value } });
+    this.setState({ options: { ...this.state.options, [option]: value }, isFieldsChanged: true });
   };
 
   optionsChanged = (newOptions) => {
-    this.setState({ options: newOptions });
+    this.setState({ options: newOptions, showSaveConfirmation: true });
   };
 
   toggleOption = (option) => {
@@ -293,6 +305,16 @@ let QueryManager = class QueryManager extends React.Component {
     return (
       <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
+        <Confirm
+          show={this.state.showSaveConfirmation}
+          message={'Query is unsaved, save or leave without saving. Do you want to save?'}
+          onConfirm={() => this.createOrUpdateDataQuery()}
+          onCancel={() => {
+            this.setState({ showSaveConfirmation: false, isFieldsChanged: false });
+            this.setStateFromProps(this.state.nextProps);
+          }}
+          queryConfirmationData={this.state.queryConfirmationData}
+        />
         <div className="row header">
           <div className="col">
             {(addingQuery || editingQuery) && selectedDataSource && (
