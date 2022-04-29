@@ -3970,8 +3970,7 @@ input[type="text"] {
 }
 
 .layout-buttons {
-  position: absolute;
-  left: 50%;
+  flex: 1;
 }
 
 .app-version-menu {
