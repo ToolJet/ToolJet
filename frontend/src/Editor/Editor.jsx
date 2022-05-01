@@ -1273,6 +1273,7 @@ class Editor extends React.Component {
                             apps={apps}
                             allComponents={appDefinition.components}
                             isSourceSelected={this.state.isSourceSelected}
+                            isQueryPaneDragging={this.state.isQueryPaneDragging}
                           />
                         </div>
                       </div>

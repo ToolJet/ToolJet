@@ -35,6 +35,7 @@ let QueryManager = class QueryManager extends React.Component {
       theme: {},
       isSourceSelected: false,
       isFieldsChanged: false,
+      paneHeightChanged: false,
       showSaveConfirmation: false,
       nextProps: null,
     };
@@ -62,6 +63,7 @@ let QueryManager = class QueryManager extends React.Component {
         currentState: props.currentState,
         selectedSource: source,
         dataSourceMeta,
+        paneHeightChanged,
         isSourceSelected: paneHeightChanged ? this.state.isSourceSelected : props.isSourceSelected,
         selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
         theme: {
@@ -114,7 +116,7 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    if (this.state.selectedQuery) {
+    if (this.state.selectedQuery && !nextProps.isQueryPaneDragging && !this.state.paneHeightChanged) {
       const isQueryChanged = !_.isEqual(this.state.selectedQuery.options, this.state.options);
       if (this.state.isFieldsChanged && isQueryChanged) {
         this.setState({ showSaveConfirmation: true, nextProps: nextProps });
