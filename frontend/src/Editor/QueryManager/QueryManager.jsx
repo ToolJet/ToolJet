@@ -228,11 +228,11 @@ let QueryManager = class QueryManager extends React.Component {
         .create(appId, appVersionId, queryName, kind, options, dataSourceId)
         .then(() => {
           toast.success('Query Added');
-          this.setState({ isCreating: false });
+          this.setState({ isCreating: false, isFieldsChanged: false });
           this.props.dataQueriesChanged();
         })
         .catch(({ error }) => {
-          this.setState({ isCreating: false });
+          this.setState({ isCreating: false, isFieldsChanged: false });
           toast.error(error);
         });
     }
