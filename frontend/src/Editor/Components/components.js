@@ -2042,9 +2042,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
     },
-    exposedVariables: {
-      value: {},
-    },
+    exposedVariables: {},
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
