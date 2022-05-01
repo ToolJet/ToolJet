@@ -114,9 +114,9 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    if (this.state.selectedDataSource && !['restapi', 'runjs'].includes(this.state.selectedDataSource.kind)) {
+    if (this.state.selectedQuery) {
       const isQueryChanged = !_.isEqual(this.state.selectedQuery.options, this.state.options);
-      if (this.state.selectedDataSource && this.state.isFieldsChanged && isQueryChanged) {
+      if (this.state.isFieldsChanged && isQueryChanged) {
         this.setState({ showSaveConfirmation: true, nextProps: nextProps });
         return;
       }
@@ -243,7 +243,7 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   optionsChanged = (newOptions) => {
-    this.setState({ options: newOptions, showSaveConfirmation: true });
+    this.setState({ options: newOptions, isFieldsChanged: true });
   };
 
   toggleOption = (option) => {
