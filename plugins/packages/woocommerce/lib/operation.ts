@@ -9,11 +9,25 @@ function parseJSON(json: any) {
 }
 
 export async function customerOpeations(WooCommerce, queryOptions: QueryOptions, operation: string) {
-  const { customer_id, body } = queryOptions;
+  const { customer_id, body, page, context, per_page, search, exclude, include, offset, order, orderby, email, role } =
+    queryOptions;
   let returnValue = {};
   switch (operation) {
     case 'list_customer': {
-      const data = await WooCommerce.get('customers')
+      const searchParams = {
+        ...(context?.length > 0 && { context }),
+        ...(page?.length > 0 && { page }),
+        ...(per_page && { per_page }),
+        ...(search?.length > 0 && { search }),
+        ...(exclude?.length > 0 && { exclude }),
+        ...(include?.length > 0 && { include }),
+        ...(offset?.length > 0 && { offset }),
+        ...(order && { order }),
+        ...(orderby?.length > 0 && { orderby }),
+        ...(email?.length > 0 && { email }),
+        ...(role?.length > 0 && { role }),
+      };
+      const data = await WooCommerce.get('customers', searchParams)
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
           return returnValue;
