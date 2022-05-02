@@ -93,9 +93,7 @@ export class DataSourcesController {
     const dataSource = await this.dataSourcesService.findOne(dataSourceId);
 
     const app = await this.appsService.find(dataSource.appId);
-    const ability = await this.appsAbilityFactory.appsActions(user, {
-      id: app.id,
-    });
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('deleteDataSource', dataSource.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
