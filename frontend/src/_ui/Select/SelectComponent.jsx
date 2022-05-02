@@ -14,6 +14,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
     customOption = undefined,
     defaultValue = null,
     useMenuPortal = true,
+    maxMenuHeight = 250,
   } = restProps;
 
   const useStyles = !_.isEmpty(styles) ? styles : defaultStyles(darkMode, width, height);
@@ -54,6 +55,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
         formatOptionLabel={(option) => renderCustomOption(option)}
         menuPortalTarget={useMenuPortal ? document.body : null}
         menuPlacement="auto"
+        maxMenuHeight={maxMenuHeight}
       />
     </React.Fragment>
   );

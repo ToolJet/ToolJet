@@ -505,6 +505,9 @@ export class AppsService {
   }
 
   async updateVersion(user: User, version: AppVersion, definition: any) {
+    if (version.id === version.app.currentVersionId)
+      throw new BadRequestException('You cannot update a released version');
+
     return await this.appVersionsRepository.update(version.id, { definition });
   }
 

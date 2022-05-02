@@ -77,7 +77,7 @@ const CommentHeader = ({ socket, count = 0, threadId, isResolved, isThreadOwner,
       <div className="ms-auto d-flex">
         <span
           title={isThreadOwner ? 'toggle resolved' : 'only creator of thread can resolve'}
-          className={cx('m-1 cursor-pointer', { disabled: !isThreadOwner })}
+          className={cx('m-1 cursor-pointer', { disabled: !isThreadOwner, 'd-none': !isResolved && !isThreadOwner })}
           onClick={handleResolved}
         >
           {getResolveIcon()}

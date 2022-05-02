@@ -9,7 +9,7 @@ class ConfirmationPage extends React.Component {
 
     this.state = {
       isLoading: false,
-      newSignup: queryString.parse(props.location.state.search).signup,
+      newSignup: !!queryString.parse(props.location.state.search).signup,
     };
     this.formRef = React.createRef(null);
   }
@@ -102,7 +102,7 @@ class ConfirmationPage extends React.Component {
           <form className="card card-md" action="." method="get" autoComplete="off">
             <div className="card-body">
               <h2 className="card-title text-center mb-4">Set up your account</h2>
-              {newSignup === 'true' && (
+              {newSignup && (
                 <>
                   <div className="mb-3">
                     <label className="form-label">First name</label>
