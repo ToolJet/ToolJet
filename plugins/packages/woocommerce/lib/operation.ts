@@ -354,12 +354,27 @@ export async function orderOperations(WooCommerce, queryOptions: QueryOptions, o
 }
 
 export async function couponOperations(WooCommerce, queryOptions: QueryOptions, operation: string) {
-  const { body } = queryOptions;
+  const { body, context, page, per_page, search, after, before, exclude, include, offset, order, orderby, code } =
+    queryOptions;
   let returnValue = {};
 
   switch (operation) {
     case 'list_coupon': {
-      return await WooCommerce.get(`coupons`)
+      const searchParams = {
+        ...(context?.length > 0 && { context }),
+        ...(page && { page }),
+        ...(per_page && { per_page }),
+        ...(search?.length > 0 && { search }),
+        ...(exclude?.length > 0 && { exclude }),
+        ...(include?.length > 0 && { include }),
+        ...(offset && { offset }),
+        ...(order && { order }),
+        ...(orderby?.length > 0 && { orderby }),
+        ...(before?.length > 0 && { before }),
+        ...(after?.length > 0 && { after }),
+        ...(code?.length > 0 && { code }),
+      };
+      return await WooCommerce.get(`coupons`, searchParams)
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
           return returnValue;
