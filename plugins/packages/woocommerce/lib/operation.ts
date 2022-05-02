@@ -9,19 +9,34 @@ function parseJSON(json: any) {
 }
 
 export async function customerOpeations(WooCommerce, queryOptions: QueryOptions, operation: string) {
-  const { customer_id, body, page, context, per_page, search, exclude, include, offset, order, orderby, email, role } =
-    queryOptions;
+  const {
+    customer_id,
+    body,
+    page,
+    context,
+    per_page,
+    search,
+    exclude,
+    include,
+    offset,
+    order,
+    orderby,
+    email,
+    role,
+    // parent,
+    // parent_exclude,
+  } = queryOptions;
   let returnValue = {};
   switch (operation) {
     case 'list_customer': {
       const searchParams = {
         ...(context?.length > 0 && { context }),
-        ...(page?.length > 0 && { page }),
+        ...(page && { page }),
         ...(per_page && { per_page }),
         ...(search?.length > 0 && { search }),
         ...(exclude?.length > 0 && { exclude }),
         ...(include?.length > 0 && { include }),
-        ...(offset?.length > 0 && { offset }),
+        ...(offset && { offset }),
         ...(order && { order }),
         ...(orderby?.length > 0 && { orderby }),
         ...(email?.length > 0 && { email }),
@@ -95,12 +110,55 @@ export async function customerOpeations(WooCommerce, queryOptions: QueryOptions,
 }
 
 export async function productOperations(WooCommerce, queryOptions: QueryOptions, operation: string) {
-  const { product_id, body } = queryOptions;
+  const {
+    product_id,
+    body,
+    slug,
+    status,
+    type,
+    sku,
+    featured,
+    category,
+    tag,
+    shipping_class,
+    attribute,
+    attribute_term,
+    tax_class,
+    on_sale,
+    min_price,
+    max_price,
+    stock_status,
+    before,
+    after,
+    parent_exclude,
+    parent,
+  } = queryOptions;
   let returnValue = {};
 
   switch (operation) {
     case 'list_product': {
-      return await WooCommerce.get('products')
+      const searchParams = {
+        ...(slug?.length > 0 && { slug }),
+        ...(status?.length > 0 && { status }),
+        ...(type && { type }),
+        ...(sku?.length > 0 && { sku }),
+        ...(featured && { featured }),
+        ...(category?.length > 0 && { category }),
+        ...(tag?.length > 0 && { tag }),
+        ...(shipping_class && { shipping_class }),
+        ...(attribute?.length > 0 && { attribute }),
+        ...(attribute_term?.length > 0 && { attribute_term }),
+        ...(tax_class?.length > 0 && { tax_class }),
+        ...(on_sale && { on_sale }),
+        ...(min_price?.length > 0 && { min_price }),
+        ...(max_price && { max_price }),
+        ...(stock_status?.length > 0 && { stock_status }),
+        ...(before?.length > 0 && { before }),
+        ...(after?.length > 0 && { after }),
+        ...(parent_exclude?.length > 0 && { parent_exclude }),
+        ...(parent?.length > 0 && { parent }),
+      };
+      return await WooCommerce.get('products', searchParams)
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
           return returnValue;
