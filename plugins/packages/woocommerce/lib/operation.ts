@@ -243,12 +243,51 @@ export async function productOperations(WooCommerce, queryOptions: QueryOptions,
 }
 
 export async function orderOperations(WooCommerce, queryOptions: QueryOptions, operation: string) {
-  const { order_id, body } = queryOptions;
+  const {
+    order_id,
+    body,
+    context,
+    page,
+    per_page,
+    search,
+    after,
+    before,
+    exclude,
+    include,
+    offset,
+    order,
+    orderby,
+    parent,
+    parent_exclude,
+    status,
+    customer,
+    product,
+    dp,
+  } = queryOptions;
   let returnValue = {};
 
   switch (operation) {
     case 'list_order': {
-      return await WooCommerce.get('orders')
+      const searchParams = {
+        ...(context?.length > 0 && { context }),
+        ...(page && { page }),
+        ...(per_page && { per_page }),
+        ...(search?.length > 0 && { search }),
+        ...(exclude?.length > 0 && { exclude }),
+        ...(include?.length > 0 && { include }),
+        ...(offset && { offset }),
+        ...(order && { order }),
+        ...(orderby?.length > 0 && { orderby }),
+        ...(status?.length > 0 && { status }),
+        ...(before?.length > 0 && { before }),
+        ...(after?.length > 0 && { after }),
+        ...(parent_exclude?.length > 0 && { parent_exclude }),
+        ...(parent?.length > 0 && { parent }),
+        ...(customer?.length > 0 && { customer }),
+        ...(product && { product }),
+        ...(dp && { dp }),
+      };
+      return await WooCommerce.get('orders', searchParams)
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
           return returnValue;
