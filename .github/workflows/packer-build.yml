@@ -13,6 +13,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -42,7 +45,7 @@ jobs:
         uses: hashicorp/packer-github-actions@master
         with:
           command: build
-          arguments: "-color=false -on-error=abort -var ami_name=${GITHUB_REF##*/}"
+          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_bionic
           target: .
           working_directory: deploy/ec2
         env:

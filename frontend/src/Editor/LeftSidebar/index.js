@@ -20,6 +20,7 @@ export const LeftSidebar = ({
   toggleComments,
   dataSources = [],
   dataSourcesChanged,
+  dataQueriesChanged,
   errorLogs,
   appVersionsId,
   globalSettingsChanged,
@@ -39,6 +40,7 @@ export const LeftSidebar = ({
         editingVersionId={appVersionsId}
         dataSources={dataSources}
         dataSourcesChanged={dataSourcesChanged}
+        dataQueriesChanged={dataQueriesChanged}
       />
       <LeftSidebarDebugger darkMode={darkMode} components={components} errors={errorLogs} />
       {config.COMMENT_FEATURE_ENABLE && (
