@@ -243,7 +243,7 @@ const CreateVersionModal = function CreateVersionModal({
     }
   };
   const options = appVersions.map((version) => {
-    return { ...version, label: version.name, value: version.name };
+    return { ...version, label: version.name, value: version };
   });
   const width = '100%';
   const height = 32;
