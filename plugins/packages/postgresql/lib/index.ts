@@ -71,7 +71,7 @@ export default class PostgresqlQueryService implements QueryService {
       connectionTimeoutMillis: 10000,
     };
 
-    const sslObject = { rejectUnauthorized: sourceOptions.ssl_certificate != 'none' };
+    const sslObject = { rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') != 'none' };
     if (sourceOptions.ssl_certificate === 'ca_certificate') {
       sslObject['ca'] = sourceOptions.ca_cert;
     }
