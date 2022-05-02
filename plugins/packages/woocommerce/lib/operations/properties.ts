@@ -1,4 +1,4 @@
-import { body } from './definitions';
+import { body, customer_id, product_id, order_id } from './definitions';
 
 export default {
   resource: {
@@ -61,31 +61,11 @@ export default {
     },
     list_customer: {},
     update_customer: {
-      customer_id: {
-        label: 'Customer ID',
-        key: 'customer_id',
-        type: 'codehinter',
-        description: 'Enter customer ID',
-        width: '320px',
-        height: '36px',
-        className: 'codehinter-plugins',
-        placeholder: '',
-        lineNumbers: false,
-      },
+      customer_id,
       body,
     },
     delete_customer: {
-      customer_id: {
-        label: 'Customer ID',
-        key: 'customer_id',
-        type: 'codehinter',
-        description: 'Enter customer ID',
-        width: '320px',
-        height: '36px',
-        className: 'codehinter-plugins',
-        placeholder: '',
-        lineNumbers: false,
-      },
+      customer_id,
     },
     batch_update_customer: {
       body,
@@ -94,17 +74,7 @@ export default {
       body,
     },
     retreive_customer: {
-      customer_id: {
-        label: 'Customer ID',
-        key: 'customer_id',
-        type: 'codehinter',
-        description: 'Enter customer ID',
-        width: '320px',
-        height: '36px',
-        className: 'codehinter-plugins',
-        placeholder: '',
-        lineNumbers: false,
-      },
+      customer_id,
     },
   },
   product: {
@@ -142,31 +112,11 @@ export default {
     },
     list_product: {},
     update_product: {
-      product_id: {
-        label: 'Product ID',
-        key: 'product_id',
-        type: 'codehinter',
-        description: 'Enter product ID',
-        width: '320px',
-        height: '36px',
-        className: 'codehinter-plugins',
-        placeholder: '',
-        lineNumbers: false,
-      },
+      product_id,
       body,
     },
     delete_product: {
-      product_id: {
-        label: 'Product ID',
-        key: 'product_id',
-        type: 'codehinter',
-        description: 'Enter product ID',
-        width: '320px',
-        height: '36px',
-        className: 'codehinter-plugins',
-        placeholder: '',
-        lineNumbers: false,
-      },
+      product_id,
     },
     batch_update_product: {
       body,
@@ -175,17 +125,7 @@ export default {
       body,
     },
     retreive_product: {
-      product_id: {
-        label: 'Product ID',
-        key: 'product_id',
-        type: 'codehinter',
-        description: 'Enter product ID',
-        width: '320px',
-        height: '36px',
-        className: 'codehinter-plugins',
-        placeholder: '',
-        lineNumbers: false,
-      },
+      product_id,
     },
   },
   order: {
@@ -223,31 +163,11 @@ export default {
     },
     list_order: {},
     update_order: {
-      order_id: {
-        label: 'Order ID',
-        key: 'order_id',
-        type: 'codehinter',
-        description: 'Enter order ID',
-        width: '320px',
-        height: '36px',
-        className: 'codehinter-plugins',
-        placeholder: '',
-        lineNumbers: false,
-      },
+      order_id,
       body,
     },
     delete_order: {
-      order_id: {
-        label: 'Order ID',
-        key: 'order_id',
-        type: 'codehinter',
-        description: 'Enter order ID',
-        width: '320px',
-        height: '36px',
-        className: 'codehinter-plugins',
-        placeholder: '',
-        lineNumbers: false,
-      },
+      order_id,
     },
     batch_update_order: {
       body,
@@ -256,17 +176,7 @@ export default {
       body,
     },
     retreive_order: {
-      order_id: {
-        label: 'Order ID',
-        key: 'order_id',
-        type: 'codehinter',
-        description: 'Enter order ID',
-        width: '320px',
-        height: '36px',
-        className: 'codehinter-plugins',
-        placeholder: '',
-        lineNumbers: false,
-      },
+      order_id,
     },
   },
   coupon: {
