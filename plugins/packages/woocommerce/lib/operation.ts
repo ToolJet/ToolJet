@@ -9,23 +9,8 @@ function parseJSON(json: any) {
 }
 
 export async function customerOpeations(WooCommerce, queryOptions: QueryOptions, operation: string) {
-  const {
-    customer_id,
-    body,
-    page,
-    context,
-    per_page,
-    search,
-    exclude,
-    include,
-    offset,
-    order,
-    orderby,
-    email,
-    role,
-    // parent,
-    // parent_exclude,
-  } = queryOptions;
+  const { customer_id, body, page, context, per_page, search, exclude, include, offset, order, orderby, email, role } =
+    queryOptions;
   let returnValue = {};
   switch (operation) {
     case 'list_customer': {
