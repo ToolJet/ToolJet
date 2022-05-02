@@ -1,3 +1,8 @@
+---
+sidebar_position: 2
+sidebar_label: REST API authentication using OAuth 2.0
+---
+
 # REST API authentication using OAuth 2.0
 
 ToolJet’s REST API data source supports OAuth 2.0 as the authentication type. In this guide, we’ll learn how to use **Google OAuth2 API** to delegate authorization and authentication for your ToolJet Application.
