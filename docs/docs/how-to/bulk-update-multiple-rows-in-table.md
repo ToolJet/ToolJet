@@ -7,7 +7,7 @@ sidebar_label: Bulk update multiple rows in table
 
 Currently, the datasources in ToolJet have operation for **bulk update(GUI mode)** but that only works for changes made in the single row. We will soon be adding a new operation for bulk updating the multiple rows but for now we can bulk update multiple rows by creating a Custom JS query. 
 
-In this guide, We have assumed that you have successfully connected the data source. For this guide, we will be using the PostgreSQL data source as an example database, you can use any of the available databases such as MySQL, MS SQL Server etc.
+In this guide, We have assumed that you have successfully connected the data source. For this guide, we will be using the PostgreSQL data source as an example database, currently, this workaround can be used only for PostgreSQL and MySQL.
 
 ## 1. Create a query to get the data from the database
 
