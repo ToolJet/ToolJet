@@ -1,5 +1,6 @@
 ---
-sidebar_position: 3
+id: building-queries
+title: Building Queries
 ---
 
 # Building Queries

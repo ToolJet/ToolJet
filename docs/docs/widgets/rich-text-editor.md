@@ -1,3 +1,7 @@
+---
+id: rich-text-editor
+title: Rich Text Editor
+---
 # Rich Text Editor
 
 Rich Text Editor can be used to enter and edit the text in HTML format.

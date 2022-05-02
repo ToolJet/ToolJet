@@ -1,6 +1,6 @@
 ---
-sidebar_position: 3
-sidebar_label: Heroku
+id: heroku
+title: Heroku
 ---
 
 # Deploying ToolJet on Heroku

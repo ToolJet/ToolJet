@@ -1,6 +1,6 @@
 ---
-sidebar_position: 6
-sidebar_label: GitHub
+id: github
+title: GitHub
 ---
 
 # GitHub Single Sign-on

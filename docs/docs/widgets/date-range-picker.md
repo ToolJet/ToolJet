@@ -1,3 +1,7 @@
+---
+id: date-range-picker
+title: Date-range picker
+---
 # Date-range picker
 
 The date-range picker widget allows users to select a range of dates.
