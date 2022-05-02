@@ -44,7 +44,7 @@ export const order_id = {
 };
 // page, context, per_page, search, exclude, include, offset, order, orderby, email, role :: customer/common
 export const context = {
-  label: 'context',
+  label: 'Context',
   key: 'context',
   type: 'codehinter',
   description: 'Enter context',
@@ -55,7 +55,7 @@ export const context = {
   lineNumbers: false,
 };
 export const page = {
-  label: 'page',
+  label: 'Page',
   key: 'page',
   type: 'codehinter',
   description: 'Enter page',
@@ -66,7 +66,7 @@ export const page = {
   lineNumbers: false,
 };
 export const per_page = {
-  label: 'per_page',
+  label: 'Per_page',
   key: 'per_page',
   type: 'codehinter',
   description: 'Enter per_page',
@@ -77,7 +77,7 @@ export const per_page = {
   lineNumbers: false,
 };
 export const exclude = {
-  label: 'exclude',
+  label: 'Exclude',
   key: 'exclude',
   type: 'codehinter',
   description: 'Enter exclude',
@@ -88,7 +88,7 @@ export const exclude = {
   lineNumbers: false,
 };
 export const include = {
-  label: 'include',
+  label: 'Include',
   key: 'include',
   type: 'codehinter',
   description: 'Enter include',
@@ -99,7 +99,7 @@ export const include = {
   lineNumbers: false,
 };
 export const offset = {
-  label: 'offset',
+  label: 'Offset',
   key: 'offset',
   type: 'codehinter',
   description: 'Enter offset',
@@ -110,7 +110,7 @@ export const offset = {
   lineNumbers: false,
 };
 export const order = {
-  label: 'order',
+  label: 'Order',
   key: 'order',
   type: 'codehinter',
   description: 'Enter order',
@@ -121,7 +121,7 @@ export const order = {
   lineNumbers: false,
 };
 export const orderby = {
-  label: 'orderby',
+  label: 'Orderby',
   key: 'orderby',
   type: 'codehinter',
   description: 'Enter orderby',
@@ -132,7 +132,7 @@ export const orderby = {
   lineNumbers: false,
 };
 export const email = {
-  label: 'email',
+  label: 'Email',
   key: 'email',
   type: 'codehinter',
   description: 'Enter email',
@@ -143,7 +143,7 @@ export const email = {
   lineNumbers: false,
 };
 export const role = {
-  label: 'role',
+  label: 'Role',
   key: 'role',
   type: 'codehinter',
   description: 'Enter role',
@@ -157,7 +157,7 @@ export const role = {
 // Products :: slug, status,type,sku,featured,category,tag,shipping_class,attribute,attribute_term,tax_class,on_sale,min_price,max_price,stock_status,before,after,parent_exclude,parent
 
 export const slug = {
-  label: 'slug',
+  label: 'Slug',
   key: 'slug',
   type: 'codehinter',
   description: 'Enter slug',
@@ -168,7 +168,7 @@ export const slug = {
   lineNumbers: false,
 };
 export const status = {
-  label: 'status',
+  label: 'Status',
   key: 'status',
   type: 'codehinter',
   description: 'Enter status',
@@ -179,7 +179,7 @@ export const status = {
   lineNumbers: false,
 };
 export const type = {
-  label: 'type',
+  label: 'Type',
   key: 'type',
   type: 'codehinter',
   description: 'Enter type',
@@ -190,7 +190,7 @@ export const type = {
   lineNumbers: false,
 };
 export const sku = {
-  label: 'sku',
+  label: 'SKU',
   key: 'sku',
   type: 'codehinter',
   description: 'Enter sku',
@@ -201,7 +201,7 @@ export const sku = {
   lineNumbers: false,
 };
 export const featured = {
-  label: 'featured',
+  label: 'Featured',
   key: 'featured',
   type: 'codehinter',
   description: 'Enter featured',
@@ -212,7 +212,7 @@ export const featured = {
   lineNumbers: false,
 };
 export const category = {
-  label: 'category',
+  label: 'Category',
   key: 'category',
   type: 'codehinter',
   description: 'Enter category',
@@ -223,7 +223,7 @@ export const category = {
   lineNumbers: false,
 };
 export const tag = {
-  label: 'tag',
+  label: 'Tag',
   key: 'tag',
   type: 'codehinter',
   description: 'Enter tag',
@@ -234,7 +234,7 @@ export const tag = {
   lineNumbers: false,
 };
 export const shipping_class = {
-  label: 'shipping_class',
+  label: 'Shipping Class',
   key: 'shipping_class',
   type: 'codehinter',
   description: 'Enter shipping_class',
@@ -245,7 +245,7 @@ export const shipping_class = {
   lineNumbers: false,
 };
 export const attribute = {
-  label: 'attribute',
+  label: 'Attribute',
   key: 'attribute',
   type: 'codehinter',
   description: 'Enter attribute',
@@ -256,7 +256,7 @@ export const attribute = {
   lineNumbers: false,
 };
 export const attribute_term = {
-  label: 'attribute_term',
+  label: 'Attribute Term',
   key: 'attribute_term',
   type: 'codehinter',
   description: 'Enter attribute_term',
@@ -268,7 +268,7 @@ export const attribute_term = {
 };
 
 export const tax_class = {
-  label: 'tax_class',
+  label: 'Tax Class',
   key: 'tax_class',
   type: 'codehinter',
   description: 'Enter tax_class',
@@ -279,7 +279,7 @@ export const tax_class = {
   lineNumbers: false,
 };
 export const on_sale = {
-  label: 'on_sale',
+  label: 'On Sale',
   key: 'on_sale',
   type: 'codehinter',
   description: 'Enter on_sale',
@@ -290,7 +290,7 @@ export const on_sale = {
   lineNumbers: false,
 };
 export const min_price = {
-  label: 'min_price',
+  label: 'Min Price',
   key: 'min_price',
   type: 'codehinter',
   description: 'Enter min_price',
@@ -301,7 +301,7 @@ export const min_price = {
   lineNumbers: false,
 };
 export const max_price = {
-  label: 'max_price',
+  label: 'Max Price',
   key: 'max_price',
   type: 'codehinter',
   description: 'Enter max_price',
@@ -312,7 +312,7 @@ export const max_price = {
   lineNumbers: false,
 };
 export const stock_status = {
-  label: 'stock_status',
+  label: 'Stock Status',
   key: 'stock_status',
   type: 'codehinter',
   description: 'Enter stock_status',
@@ -323,7 +323,7 @@ export const stock_status = {
   lineNumbers: false,
 };
 export const before = {
-  label: 'before',
+  label: 'Before',
   key: 'before',
   type: 'codehinter',
   description: 'Enter before',
@@ -334,7 +334,7 @@ export const before = {
   lineNumbers: false,
 };
 export const parent_exclude = {
-  label: 'parent_exclude',
+  label: 'Parent Exclude',
   key: 'parent_exclude',
   type: 'codehinter',
   description: 'Enter parent_exclude',
@@ -345,7 +345,7 @@ export const parent_exclude = {
   lineNumbers: false,
 };
 export const parent = {
-  label: 'parent',
+  label: 'Parent',
   key: 'parent',
   type: 'codehinter',
   description: 'Enter parent',
@@ -358,7 +358,7 @@ export const parent = {
 
 // status,customer,product,dp, :: order
 export const customer = {
-  label: 'customer',
+  label: 'Customer',
   key: 'customer',
   type: 'codehinter',
   description: 'Enter customer',
@@ -369,7 +369,7 @@ export const customer = {
   lineNumbers: false,
 };
 export const product = {
-  label: 'product',
+  label: 'Product',
   key: 'product',
   type: 'codehinter',
   description: 'Enter product',
@@ -380,7 +380,7 @@ export const product = {
   lineNumbers: false,
 };
 export const dp = {
-  label: 'dp',
+  label: 'DP',
   key: 'dp',
   type: 'codehinter',
   description: 'Enter dp',
@@ -393,7 +393,7 @@ export const dp = {
 
 // code :: coupon
 export const coupon = {
-  label: 'coupon',
+  label: 'Coupon',
   key: 'coupon',
   type: 'codehinter',
   description: 'Enter coupon',
