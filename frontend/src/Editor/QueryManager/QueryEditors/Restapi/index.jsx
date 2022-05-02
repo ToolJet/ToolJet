@@ -14,6 +14,7 @@ class Restapi extends React.Component {
     const options = defaults({ ...props.options }, { headers: [], url_params: [], body: [] });
     this.state = {
       options,
+      arrayValuesChanged: false,
     };
   }
 
@@ -51,21 +52,24 @@ class Restapi extends React.Component {
     options[option].splice(index, 1);
 
     this.setState({ options }, () => {
-      this.props.optionsChanged(options);
+      this.props.optionsChanged({ ...options, arrayValuesChanged: true });
     });
   };
 
   keyValuePairValueChanged = (value, keyIndex, option, index) => {
     const { options } = this.state;
-
+    const prevValue = options[option][index][keyIndex];
     options[option][index][keyIndex] = value;
 
     this.setState({ options }, () => {
-      this.props.optionsChanged(options);
+      this.props.optionsChanged({ ...options, arrayValuesChanged: prevValue !== value });
     });
   };
 
   handleChange = (key, keyIndex, idx) => (value) => {
+    this.setState({
+      arrayValuesChanged: false,
+    });
     if (this.state.options[key].length - 1 === idx) this.addNewKeyValuePair(key);
     this.keyValuePairValueChanged(value, keyIndex, key, idx);
   };

@@ -37,6 +37,7 @@ let QueryManager = class QueryManager extends React.Component {
       isFieldsChanged: false,
       paneHeightChanged: false,
       showSaveConfirmation: false,
+      restArrayValuesChanged: false,
       nextProps: null,
     };
 
@@ -117,14 +118,25 @@ let QueryManager = class QueryManager extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     if (this.state.selectedQuery && !nextProps.isQueryPaneDragging && !this.state.paneHeightChanged) {
-      const isQueryChanged = !_.isEqual(this.state.selectedQuery.options, this.state.options);
+      const isQueryChanged = !_.isEqual(
+        this.removeRestKey(this.state.options),
+        this.removeRestKey(this.state.selectedQuery.options)
+      );
       if (this.state.isFieldsChanged && isQueryChanged) {
-        this.setState({ showSaveConfirmation: true, nextProps: nextProps });
+        this.setState({ showSaveConfirmation: true, nextProps });
+        return;
+      } else if (!isQueryChanged && this.state.selectedQuery.kind === 'restapi' && this.state.restArrayValuesChanged) {
+        this.setState({ showSaveConfirmation: true, nextProps });
         return;
       }
     }
     this.setStateFromProps(nextProps);
   }
+
+  removeRestKey = (options) => {
+    delete options.arrayValuesChanged;
+    return options;
+  };
 
   componentDidMount() {
     this.setStateFromProps(this.props);
@@ -217,11 +229,11 @@ let QueryManager = class QueryManager extends React.Component {
         .update(this.state.selectedQuery.id, queryName, options)
         .then(() => {
           toast.success('Query Updated');
-          this.setState({ isUpdating: false, isFieldsChanged: false });
+          this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
           this.props.dataQueriesChanged();
         })
         .catch(({ error }) => {
-          this.setState({ isUpdating: false, isFieldsChanged: false });
+          this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
           toast.error(error);
         });
     } else {
@@ -230,11 +242,11 @@ let QueryManager = class QueryManager extends React.Component {
         .create(appId, appVersionId, queryName, kind, options, dataSourceId)
         .then(() => {
           toast.success('Query Added');
-          this.setState({ isCreating: false, isFieldsChanged: false });
+          this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });
           this.props.dataQueriesChanged();
         })
         .catch(({ error }) => {
-          this.setState({ isCreating: false, isFieldsChanged: false });
+          this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });
           toast.error(error);
         });
     }
@@ -245,7 +257,11 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   optionsChanged = (newOptions) => {
-    this.setState({ options: newOptions, isFieldsChanged: true });
+    this.setState({
+      options: newOptions,
+      isFieldsChanged: true,
+      restArrayValuesChanged: newOptions.arrayValuesChanged,
+    });
   };
 
   toggleOption = (option) => {
