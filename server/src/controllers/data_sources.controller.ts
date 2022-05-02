@@ -1,4 +1,16 @@
-import { Controller, ForbiddenException, Body, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  ForbiddenException,
+  Get,
+  Body,
+  Param,
+  Post,
+  Delete,
+  Put,
+  Query,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
 import { DataSourcesService } from '../../src/services/data_sources.service';
@@ -59,8 +71,7 @@ export class DataSourcesController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(@User() user, @Param() params, @Body() updateDataSourceDto: UpdateDataSourceDto) {
-    const dataSourceId = params.id;
+  async update(@User() user, @Param('id') dataSourceId, @Body() updateDataSourceDto: UpdateDataSourceDto) {
     const { name, options } = updateDataSourceDto;
 
     const dataSource = await this.dataSourcesService.findOne(dataSourceId);
@@ -74,6 +85,28 @@ export class DataSourcesController {
 
     const result = await this.dataSourcesService.update(dataSourceId, name, options);
     return decamelizeKeys(result);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async delete(@User() user, @Param('id') dataSourceId) {
+    const dataSource = await this.dataSourcesService.findOne(dataSourceId);
+
+    const app = await this.appsService.find(dataSource.appId);
+    const ability = await this.appsAbilityFactory.appsActions(user, {
+      id: app.id,
+    });
+
+    if (!ability.can('deleteDataSource', dataSource.app)) {
+      throw new ForbiddenException('you do not have permissions to perform this action');
+    }
+
+    const result = await this.dataSourcesService.delete(dataSourceId);
+    if (result.affected == 1) {
+      return;
+    } else {
+      throw new BadRequestException();
+    }
   }
 
   @UseGuards(JwtAuthGuard)

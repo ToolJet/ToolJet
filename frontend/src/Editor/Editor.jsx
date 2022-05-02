@@ -1071,6 +1071,7 @@ class Editor extends React.Component {
               darkMode={this.props.darkMode}
               dataSources={this.state.dataSources}
               dataSourcesChanged={this.dataSourcesChanged}
+              dataQueriesChanged={this.dataQueriesChanged}
               onZoomChanged={this.onZoomChanged}
               toggleComments={this.toggleComments}
               switchDarkMode={this.changeDarkMode}
