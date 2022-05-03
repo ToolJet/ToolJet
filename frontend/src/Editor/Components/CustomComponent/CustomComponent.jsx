@@ -5,10 +5,17 @@ import iframeContent from './iframe.html';
 export const CustomComponent = (props) => {
   const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataQueries } = props;
   const { visibility } = styles;
-  const { code } = properties;
-  const [customProps, setCustomProps] = useState(properties.data);
+  const { code, data } = properties;
+  const [customProps, setCustomProps] = useState(data);
   const iFrameRef = useRef(null);
-  const myStateRef = useRef(dataQueries);
+  const dataQueryRef = useRef(dataQueries);
+  const customPropRef = useRef(data);
+
+  useEffect(() => {
+    setCustomProps(data);
+    customPropRef.current = data;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(data)]);
 
   useEffect(() => {
     if (!isEqual(exposedVariables.data, customProps)) {
@@ -24,7 +31,7 @@ export const CustomComponent = (props) => {
   }, [code]);
 
   useEffect(() => {
-    myStateRef.current = dataQueries;
+    dataQueryRef.current = dataQueries;
   }, [dataQueries]);
 
   useEffect(() => {
@@ -32,9 +39,9 @@ export const CustomComponent = (props) => {
       try {
         if (e.data.from === 'customComponent' && e.data.componentId === id) {
           if (e.data.message === 'UPDATE_DATA') {
-            setCustomProps({ ...customProps, ...e.data.updatedObj });
+            setCustomProps({ ...customPropRef.current, ...e.data.updatedObj });
           } else if (e.data.message === 'RUN_QUERY') {
-            const filteredQuery = myStateRef.current.filter((query) => query.name === e.data.queryName);
+            const filteredQuery = dataQueryRef.current.filter((query) => query.name === e.data.queryName);
             filteredQuery.length === 1 &&
               fireEvent('onTrigger', { queryId: filteredQuery[0].id, queryName: filteredQuery[0].name });
           } else {
