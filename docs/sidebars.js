@@ -79,6 +79,8 @@ const sidebars = {
         'data-sources/mssql',
         'data-sources/mysql',
         'data-sources/n8n',
+        'data-sources/notion',
+        'data-sources/openapi',
         'data-sources/oracledb',
         'data-sources/postgresql',
         'data-sources/redis',
