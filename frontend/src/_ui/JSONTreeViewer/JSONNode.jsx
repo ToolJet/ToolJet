@@ -1,11 +1,14 @@
 import React from 'react';
 import _ from 'lodash';
 import cx from 'classnames';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { toast } from 'react-hot-toast';
 import { ToolTip } from '@/_components/ToolTip';
+import CopyToClipboardComponent from '@/_components/CopyToClipboard';
 import { Popover } from 'react-bootstrap';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import JSONNodeObject from './JSONNodeObject';
+import JSONNodeArray from './JSONNodeArray';
+import JSONNodeValue from './JSONNodeValue';
+import JSONNodeIndicator from './JSONNodeIndicator';
 
 export const JSONNode = ({ data, ...restProps }) => {
   const {
@@ -150,12 +153,12 @@ export const JSONNode = ({ data, ...restProps }) => {
     case 'Null':
     case 'Undefined':
     case 'Function':
-      $VALUE = <JSONNode.ValueNode data={data} type={typeofCurrentNode} />;
+      $VALUE = <JSONNodeValue data={data} type={typeofCurrentNode} />;
       $NODEType = <JSONNode.DisplayNodeLabel type={typeofCurrentNode} />;
       break;
 
     case 'Object':
-      $VALUE = <JSONNode.ObjectNode data={data} path={currentNodePath} {...restProps} />;
+      $VALUE = <JSONNodeObject data={data} path={currentNodePath} {...restProps} />;
       $NODEType = (
         <JSONNode.DisplayNodeLabel type={'Object'}>
           <span className="mx-1 fs-9 node-length-color">
@@ -166,7 +169,7 @@ export const JSONNode = ({ data, ...restProps }) => {
       break;
 
     case 'Array':
-      $VALUE = <JSONNode.ArrayNode data={data} path={currentNodePath} {...restProps} />;
+      $VALUE = <JSONNodeArray data={data} path={currentNodePath} {...restProps} />;
       $NODEType = (
         <JSONNode.DisplayNodeLabel type={'Array'}>
           <span className="mx-1 fs-9 node-length-color">
@@ -254,12 +257,9 @@ export const JSONNode = ({ data, ...restProps }) => {
     };
 
     return (
-      <div
-        style={{ fontSize: '9px', marginTop: expandable ? '0px' : '3px' }}
-        className="d-flex end-0 position-absolute"
-      >
+      <div style={{ fontSize: '9px', marginTop: '0px' }} className="d-flex end-0 position-absolute">
         {enableCopyToClipboard && (
-          <JSONNode.CopyToClipboard data={currentNodePath} path={true} callback={getAbsoluteNodePath} />
+          <CopyToClipboardComponent data={currentNodePath} path={true} callback={getAbsoluteNodePath} />
         )}
         {renderOptions()}
 
@@ -307,7 +307,7 @@ export const JSONNode = ({ data, ...restProps }) => {
       onMouseLeave={() => updateHoveredNode(null)}
     >
       <div className={`json-tree-icon-container  mx-2 ${applySelectedNodeStyles && 'selected-node'}`}>
-        <JSONNode.NodeIndicator
+        <JSONNodeIndicator
           toExpand={expandable}
           toShowNodeIndicator={toShowNodeIndicator}
           handleToggle={toggleExpandNode}
@@ -339,96 +339,6 @@ export const JSONNode = ({ data, ...restProps }) => {
   );
 };
 
-const JSONTreeNodeIndicator = ({ toExpand, toShowNodeIndicator, handleToggle, ...restProps }) => {
-  const { renderCustomIndicator, typeofCurrentNode, currentNode, isSelected, toExpandNode } = restProps;
-
-  const defaultStyles = {
-    transform: toExpandNode && toExpand ? 'rotate(90deg)' : 'rotate(0deg)',
-    transition: '0.2s all',
-    display: 'inline-block',
-    cursor: 'pointer',
-  };
-
-  const renderDefaultIndicator = () => (
-    <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M1.02063 1L5.01032 5.01028L1.00003 8.99997"
-        stroke={`${toExpand && isSelected ? '#4D72FA' : '#61656F'}`}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-
-  if (!toShowNodeIndicator && (typeofCurrentNode !== 'Object' || typeofCurrentNode !== 'Array')) return null;
-
-  return (
-    <React.Fragment>
-      <span className="json-tree-node-icon" onClick={() => handleToggle(currentNode)} style={defaultStyles}>
-        {renderCustomIndicator ? renderCustomIndicator() : renderDefaultIndicator()}
-      </span>
-    </React.Fragment>
-  );
-};
-
-const JSONTreeValueNode = ({ data, type }) => {
-  if (type === 'Function') {
-    const functionString = `${data.toString().split('{')[0].trim()}{...}`;
-    return (
-      <React.Fragment>
-        <span
-          className={`text-secondary node-value-${type}`}
-          style={{ fontSize: '12px', fontFamily: 'monospace', textTransform: 'none' }}
-        >
-          {functionString}
-        </span>
-      </React.Fragment>
-    );
-  }
-
-  const value = type === 'String' ? `"${data}"` : String(data);
-  const clsForUndefinedOrNull = (type === 'Undefined' || type === 'Null') && 'badge badge-secondary';
-  return (
-    <span
-      className={`mx-2 json-tree-valuetype json-tree-node-${String(
-        type
-      ).toLowerCase()} text-break ${clsForUndefinedOrNull}`}
-    >
-      {value}
-    </span>
-  );
-};
-
-const JSONTreeObjectNode = ({ data, path, ...restProps }) => {
-  const nodeKeys = Object.keys(data);
-
-  return nodeKeys.map((key, index) => {
-    const currentPath = [...path, key];
-    const _currentNode = key;
-    const props = { ...restProps };
-    props.currentNode = _currentNode;
-
-    return <JSONNode key={`obj-${key}/${index}`} data={data[key]} path={currentPath} {...props} />;
-  });
-};
-
-const JSONTreeArrayNode = ({ data, path, ...restProps }) => {
-  const keys = [];
-
-  for (let i = 0; i < data.length; i++) {
-    keys.push(String(i));
-  }
-
-  return keys.map((key, index) => {
-    const currentPath = [...path, key];
-    const _currentNode = key;
-    const props = { ...restProps };
-    props.currentNode = _currentNode;
-
-    return <JSONNode key={`arr-${key}/${index}`} data={data[Number(key)]} path={currentPath} {...props} />;
-  });
-};
-
 const DisplayNodeLabel = ({ type = '', children }) => {
   if (type === 'Null' || type === 'Undefined') {
     return null;
@@ -441,44 +351,4 @@ const DisplayNodeLabel = ({ type = '', children }) => {
   );
 };
 
-const CopyToClipboardObject = ({ data, callback }) => {
-  const [copied, setCopied] = React.useState(false);
-  const dataToCopy = callback(data);
-  const message = 'Path copied to clipboard';
-  const tip = 'Copy path to clipboard';
-
-  //clears the clipboard after 2 seconds
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setCopied(false);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [copied]);
-
-  if (copied) {
-    return <center>Copied</center>;
-  }
-
-  return (
-    <ToolTip message={tip}>
-      <CopyToClipboard
-        text={dataToCopy}
-        onCopy={() => {
-          setCopied(true);
-          toast.success(message, { position: 'top-center' });
-        }}
-      >
-        <span style={{ height: '13px', width: '13px', marginBottom: '2px' }} className="mx-1 copy-to-clipboard">
-          <img src={`/assets/images/icons/copy.svg`} width="12" height="12" />
-        </span>
-      </CopyToClipboard>
-    </ToolTip>
-  );
-};
-
-JSONNode.NodeIndicator = JSONTreeNodeIndicator;
-JSONNode.ValueNode = JSONTreeValueNode;
-JSONNode.ObjectNode = JSONTreeObjectNode;
-JSONNode.ArrayNode = JSONTreeArrayNode;
 JSONNode.DisplayNodeLabel = DisplayNodeLabel;
-JSONNode.CopyToClipboard = CopyToClipboardObject;
