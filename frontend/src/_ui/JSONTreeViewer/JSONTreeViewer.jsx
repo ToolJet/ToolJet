@@ -7,7 +7,7 @@ export class JSONTreeViewer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: {},
+      data: this.props.data,
       shouldExpandNode: false,
       currentNode: 'Root',
       selectedNode: null,
@@ -19,21 +19,15 @@ export class JSONTreeViewer extends React.Component {
     };
   }
 
-  componentDidMount() {
-    this.setState({
-      data: this.props.data,
-    });
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.setState({
-      data: nextProps.data,
-      shouldExpandNode: nextProps.shouldExpandNode,
-      ...nextProps,
-    });
-  }
-
   componentDidUpdate(prevProps, prevState) {
+    if (!_.isEqual(prevProps, this.props)) {
+      this.setState({
+        data: this.props.data,
+        shouldExpandNode: this.props.shouldExpandNode,
+        ...this.props,
+      });
+    }
+
     if (prevState.selectedComponent !== this.state.selectedComponent && this.props.treeType === 'inspector') {
       if (this.getCurrentNodeType(this.state.data) === 'Object') {
         const matchedWidget = Object.keys(this.state.data.components).filter(
