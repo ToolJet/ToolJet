@@ -315,6 +315,10 @@ export const JSONNode = ({ data, ...restProps }) => {
           currentNode={currentNode}
           isSelected={selectedNode?.node === currentNode}
           toExpandNode={toExpandNode}
+          data={data}
+          path={currentNodePath}
+          toExpandWithLabels={expandWithLabels}
+          toggleWithLabels={handleOnClickLabels}
         />
       </div>
 

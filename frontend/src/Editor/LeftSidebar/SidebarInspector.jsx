@@ -20,10 +20,13 @@ export const LeftSidebarInspector = ({
 
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const queryDefinitions = appDefinition['queries'];
-  const selectedComponent = {
-    id: appDefinition['selectedComponent']?.id,
-    component: appDefinition['selectedComponent']?.component?.name,
-  };
+  const selectedComponent = React.useMemo(() => {
+    return {
+      id: appDefinition['selectedComponent']?.id,
+      component: appDefinition['selectedComponent']?.component?.name,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appDefinition['selectedComponent']]);
 
   const queries = {};
 
