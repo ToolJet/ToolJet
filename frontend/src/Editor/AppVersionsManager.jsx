@@ -3,7 +3,8 @@ import Modal from '../HomePage/Modal';
 import { toast } from 'react-hot-toast';
 import { appVersionService } from '@/_services';
 import { Confirm } from './Viewer/Confirm';
-
+import Select from '../_ui/Select';
+import defaultStyle from '../_ui/Select/styles';
 export const AppVersionsManager = function AppVersionsManager({
   appId,
   editingVersion,
@@ -241,6 +242,37 @@ const CreateVersionModal = function CreateVersionModal({
       createVersion(versionName, createAppVersionFrom);
     }
   };
+  const options = appVersions.map((version) => {
+    return { ...version, label: version.name, value: version };
+  });
+  const width = '100%';
+  const height = 32;
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  const customStyles = {
+    ...defaultStyle(darkMode, width, height),
+    option: (provided, state) => {
+      return {
+        ...provided,
+        backgroundColor: darkMode
+          ? state.isSelected
+            ? '#3650AF'
+            : 'rgb(31,40,55)'
+          : state.isSelected
+          ? '#7A95FB'
+          : 'white',
+        color: darkMode ? '#fff' : '#232e3c',
+        '&:hover': {
+          backgroundColor: darkMode
+            ? state.isSelected
+              ? '#1F2E64'
+              : '#323C4B'
+            : state.isSelected
+            ? '#3650AF'
+            : '#d8dce9',
+        },
+      };
+    },
+  };
   return (
     <Modal
       show={showModal || showCreateVersionModalPrompt}
@@ -265,16 +297,20 @@ const CreateVersionModal = function CreateVersionModal({
         </div>
       </div>
 
-      <div className="mb-3">
+      <div className="mb-3" style={{ padding: '2rem 0' }}>
         <label className="form-label">Create version from</label>
         <div className="ts-control">
-          <select className="form-select">
-            {appVersions.map((version) => (
-              <option className="dropdown-item" key={version.id} onClick={() => setCreateAppVersionFrom(version)}>
-                {version.name}
-              </option>
-            ))}
-          </select>
+          <Select
+            options={options}
+            defaultValue={options[options.length - 1]}
+            onChange={(version) => {
+              setCreateAppVersionFrom(version);
+            }}
+            useMenuPortal={false}
+            width="100%"
+            maxMenuHeight={100}
+            styles={customStyles}
+          />
         </div>
       </div>
 

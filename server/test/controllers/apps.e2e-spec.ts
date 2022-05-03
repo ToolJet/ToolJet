@@ -1326,6 +1326,28 @@ describe('apps controller', () => {
 
         expect(response.statusCode).toBe(403);
       });
+
+      it('should not be able to update app versions if the version is already released', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const application = await createApplication(app, {
+          user: adminUserData.user,
+        });
+        const version = await createApplicationVersion(app, application);
+        await getManager().update(App, application, { currentVersionId: version.id });
+
+        const response = await request(app.getHttpServer())
+          .put(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('Authorization', authHeaderForUser(adminUserData.user))
+          .send({
+            definition: { components: {} },
+          });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toBe('You cannot update a released version');
+      });
     });
   });
 

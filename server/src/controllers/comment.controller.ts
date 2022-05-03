@@ -12,7 +12,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { CommentService } from '@services/comment.service';
-import { CreateCommentDTO } from '../dto/create-comment.dto';
+import { CreateCommentDto, UpdateCommentDto } from '../dto/comment.dto';
 import { Comment } from '../entities/comment.entity';
 import { Thread } from '../entities/thread.entity';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -24,7 +24,7 @@ export class CommentController {
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
-  public async createComment(@Request() req, @Body() createCommentDto: CreateCommentDTO): Promise<Comment> {
+  public async createComment(@Request() req, @Body() createCommentDto: CreateCommentDto): Promise<Comment> {
     const _response = await Thread.findOne({
       where: { id: createCommentDto.threadId },
     });
@@ -73,7 +73,7 @@ export class CommentController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/:commentId')
-  public async getComment(@Param('commentId') commentId: number) {
+  public async getComment(@Param('commentId') commentId: string) {
     const comment = await this.commentService.getComment(commentId);
     return comment;
   }
@@ -82,8 +82,8 @@ export class CommentController {
   @Patch('/edit/:commentId')
   public async editComment(
     @Request() req,
-    @Body() createCommentDto: CreateCommentDTO,
-    @Param('commentId') commentId: number
+    @Body() updateCommentDto: UpdateCommentDto,
+    @Param('commentId') commentId: string
   ): Promise<Comment> {
     const _response = await Comment.findOne({
       where: { id: commentId },
@@ -94,13 +94,13 @@ export class CommentController {
     if (!ability.can('updateComment', Comment)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const comment = await this.commentService.editComment(commentId, createCommentDto);
+    const comment = await this.commentService.editComment(commentId, updateCommentDto);
     return comment;
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete('/delete/:commentId')
-  public async deleteComment(@Request() req, @Param('commentId') commentId: number) {
+  public async deleteComment(@Request() req, @Param('commentId') commentId: string) {
     const _response = await Comment.findOne({
       where: { id: commentId },
       relations: ['thread'],

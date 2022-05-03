@@ -475,7 +475,9 @@ export const componentTypes = [
       enableDate: { type: 'code', displayName: 'Enable date selection?' },
       disabledDates: { type: 'code', displayName: 'Disabled dates' },
     },
-    events: {},
+    events: {
+      onSelect: { displayName: 'On select' },
+    },
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },

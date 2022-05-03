@@ -79,6 +79,7 @@ class Editor extends React.Component {
       components: {},
       globalSettings: {
         hideHeader: false,
+        appInMaintenance: false,
         canvasMaxWidth: 1292,
         canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
       },
@@ -220,6 +221,11 @@ class Editor extends React.Component {
   initEventListeners() {
     document.addEventListener('mousemove', this.onMouseMove);
     document.addEventListener('mouseup', this.onMouseUp);
+    this.socket?.addEventListener('message', (event) => {
+      if (event.data === 'versionReleased') this.fetchApp();
+      else if (event.data === 'dataQueriesChanged') this.fetchDataQueries();
+      else if (event.data === 'dataSourcesChanged') this.fetchDataSources();
+    });
   }
 
   componentWillUnmount() {
@@ -312,6 +318,26 @@ class Editor extends React.Component {
     });
   };
 
+  toggleAppMaintenance = () => {
+    const newState = !this.state.app.is_maintenance_on;
+
+    // eslint-disable-next-line no-unused-vars
+    appService.setMaintenance(this.state.app.id, newState).then((data) => {
+      this.setState({
+        app: {
+          ...this.state.app,
+          is_maintenance_on: newState,
+        },
+      });
+
+      if (newState) {
+        toast.success('Application is on maintenance.');
+      } else {
+        toast.success('Application maintenance is completed');
+      }
+    });
+  };
+
   fetchApps = (page) => {
     appService.getAll(page).then((data) =>
       this.setState({
@@ -367,12 +393,23 @@ class Editor extends React.Component {
   };
 
   dataSourcesChanged = () => {
-    this.fetchDataSources();
+    this.socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: { message: 'dataSourcesChanged', appId: this.state.appId },
+      })
+    );
   };
 
   dataQueriesChanged = () => {
-    this.fetchDataQueries();
-    this.setState({ addingQuery: false });
+    this.setState({ addingQuery: false }, () => {
+      this.socket.send(
+        JSON.stringify({
+          event: 'events',
+          data: { message: 'dataQueriesChanged', appId: this.state.appId },
+        })
+      );
+    });
   };
 
   switchSidebarTab = (tabIndex) => {
@@ -549,13 +586,16 @@ class Editor extends React.Component {
 
   globalSettingsChanged = (key, value) => {
     const appDefinition = { ...this.state.appDefinition };
-
     appDefinition.globalSettings[key] = value;
     this.setState(
       {
         appDefinition,
       },
       () => {
+        this.props.ymap.set('appDef', {
+          newDefinition: appDefinition,
+          editingVersionId: this.state.editingVersion?.id,
+        });
         this.autoSave();
       }
     );
@@ -768,12 +808,22 @@ class Editor extends React.Component {
   };
 
   onVersionRelease = (versionId) => {
-    this.setState({
-      app: {
-        ...this.state.app,
-        current_version_id: versionId,
+    this.setState(
+      {
+        app: {
+          ...this.state.app,
+          current_version_id: versionId,
+        },
       },
-    });
+      () => {
+        this.socket.send(
+          JSON.stringify({
+            event: 'events',
+            data: { message: 'versionReleased', appId: this.state.appId },
+          })
+        );
+      }
+    );
   };
 
   onZoomChanged = (zoom) => {
@@ -1021,12 +1071,15 @@ class Editor extends React.Component {
               darkMode={this.props.darkMode}
               dataSources={this.state.dataSources}
               dataSourcesChanged={this.dataSourcesChanged}
+              dataQueriesChanged={this.dataQueriesChanged}
               onZoomChanged={this.onZoomChanged}
               toggleComments={this.toggleComments}
               switchDarkMode={this.changeDarkMode}
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
+              toggleAppMaintenance={this.toggleAppMaintenance}
+              is_maintenance_on={this.state.app.is_maintenance_on}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div

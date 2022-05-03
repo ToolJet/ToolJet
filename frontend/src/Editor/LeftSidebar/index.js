@@ -20,11 +20,14 @@ export const LeftSidebar = ({
   toggleComments,
   dataSources = [],
   dataSourcesChanged,
+  dataQueriesChanged,
   errorLogs,
   appVersionsId,
   globalSettingsChanged,
   globalSettings,
   currentState,
+  toggleAppMaintenance,
+  is_maintenance_on,
 }) => {
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -37,12 +40,19 @@ export const LeftSidebar = ({
         editingVersionId={appVersionsId}
         dataSources={dataSources}
         dataSourcesChanged={dataSourcesChanged}
+        dataQueriesChanged={dataQueriesChanged}
       />
       <LeftSidebarDebugger darkMode={darkMode} components={components} errors={errorLogs} />
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
       )}
-      <LeftSidebarGlobalSettings globalSettingsChanged={globalSettingsChanged} globalSettings={globalSettings} />
+      <LeftSidebarGlobalSettings
+        globalSettingsChanged={globalSettingsChanged}
+        globalSettings={globalSettings}
+        darkMode={darkMode}
+        toggleAppMaintenance={toggleAppMaintenance}
+        is_maintenance_on={is_maintenance_on}
+      />
       <LeftSidebarItem
         onClick={() => setShowLeaveDialog(true)}
         tip="Back to home"

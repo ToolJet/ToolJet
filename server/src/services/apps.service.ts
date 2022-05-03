@@ -216,12 +216,14 @@ export class AppsService {
   async update(user: User, appId: string, appUpdateDto: AppUpdateDto) {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
+    const isMaintenanceOn = appUpdateDto.is_maintenance_on;
     const { name, slug, icon } = appUpdateDto;
 
     const updateableParams = {
       name,
       slug,
       isPublic,
+      isMaintenanceOn,
       currentVersionId,
       icon,
     };
@@ -503,6 +505,9 @@ export class AppsService {
   }
 
   async updateVersion(user: User, version: AppVersion, definition: any) {
+    if (version.id === version.app.currentVersionId)
+      throw new BadRequestException('You cannot update a released version');
+
     return await this.appVersionsRepository.update(version.id, { definition });
   }
 

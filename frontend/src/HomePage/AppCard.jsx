@@ -118,7 +118,7 @@ export default function AppCard({
                   <button
                     type="button"
                     className="btn btn-sm btn-primary launch-button"
-                    disabled={app?.current_version_id === null}
+                    disabled={app?.current_version_id === null || app?.is_maintenance_on}
                     onClick={() => {
                       if (app?.current_version_id) {
                         window.open(`/applications/${app.slug}`);
@@ -127,7 +127,7 @@ export default function AppCard({
                       }
                     }}
                   >
-                    Launch
+                    {app?.is_maintenance_on ? 'Maintenance' : 'Launch'}
                   </button>
                 </span>
               </ToolTip>
