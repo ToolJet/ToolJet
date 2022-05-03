@@ -2,6 +2,7 @@ const urrl = require('url');
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+const JSON5 = require('json5');
 import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
 
 function isEmpty(value: number | null | undefined | string) {
@@ -45,14 +46,22 @@ export default class RestapiQueryService implements QueryService {
 
   /* Body params of the source will be overridden by body params of the query */
   body(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
-    const _body = (queryOptions.body || []).filter((o) => {
-      return o.some((e) => !isEmpty(e));
-    });
+    const bodyToggle = queryOptions['body_toggle'];
+    if (bodyToggle) {
+      const jsonBody = queryOptions['json_body'];
+      if (!jsonBody) return undefined;
+      if (typeof jsonBody === 'string') return JSON5.parse(jsonBody);
+      else return jsonBody;
+    } else {
+      const _body = (queryOptions.body || []).filter((o) => {
+        return o.some((e) => !isEmpty(e));
+      });
 
-    if (!hasDataSource) return Object.fromEntries(_body);
+      if (!hasDataSource) return Object.fromEntries(_body);
 
-    const bodyParams = _body.concat(sourceOptions.body || []);
-    return Object.fromEntries(bodyParams);
+      const bodyParams = _body.concat(sourceOptions.body || []);
+      return Object.fromEntries(bodyParams);
+    }
   }
 
   /* Search params of the source will be overridden by Search params of the query */

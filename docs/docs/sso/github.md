@@ -5,7 +5,7 @@ sidebar_label: GitHub
 
 # GitHub Single Sign-on
 
-Goto [GitHub Developer settings](https://github.com/settings/developers) and navigate to `OAuth Apps` and create a project. `Authorization callback URL` should be `<Your Domain>/sso/git`
+- Go to the [GitHub Developer settings](https://github.com/settings/developers) and navigate to `OAuth Apps` and create a project. `Authorization callback URL` should be `<Your Domain>/sso/git`
 
 <div style={{textAlign: 'center'}}>
 
@@ -13,7 +13,7 @@ Goto [GitHub Developer settings](https://github.com/settings/developers) and nav
 
 </div>
 
-Open the application details, and you can see the `Client ID`
+- Open the application details, and you can see the `Client ID`
 
 <div style={{textAlign: 'center'}}>
 
@@ -21,7 +21,7 @@ Open the application details, and you can see the `Client ID`
 
 </div>
 
-Then create `Client secrets` by clicking `Generate new client secret`
+- Then create `Client secrets` by clicking `Generate new client secret`
 
 <div style={{textAlign: 'center'}}>
 
@@ -29,7 +29,7 @@ Then create `Client secrets` by clicking `Generate new client secret`
 
 </div>
 
-Lastly, supply the environment variables `SSO_GIT_OAUTH2_CLIENT_ID` which is client id and `SSO_GIT_OAUTH2_CLIENT_SECRET` is client secret to your deployment.
+- Lastly, supply the environment variables `SSO_GIT_OAUTH2_CLIENT_ID` which is client id and `SSO_GIT_OAUTH2_CLIENT_SECRET` is client secret to your deployment.
 
 :::info
 

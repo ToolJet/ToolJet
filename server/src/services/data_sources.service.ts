@@ -66,6 +66,10 @@ export class DataSourcesService {
     return this.dataSourcesRepository.save(updateableParams);
   }
 
+  async delete(dataSourceId: string) {
+    return await this.dataSourcesRepository.delete(dataSourceId);
+  }
+
   /* This function merges new options with the existing options */
   async updateOptions(dataSourceId: string, optionsToMerge: any): Promise<DataSource> {
     const dataSource = await this.findOne(dataSourceId);
