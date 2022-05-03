@@ -14,7 +14,7 @@ export const CustomComponent = function CustomComponent({
   layoutPropertyChanged,
 }) {
   const code = component.component.definition.properties.code;
-  const args = component.component.definition.properties.props;
+  const args = component.component.definition.properties.data;
 
   let items = [];
 
