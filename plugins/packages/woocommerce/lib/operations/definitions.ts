@@ -65,6 +65,17 @@ export const page = {
   placeholder: '',
   lineNumbers: false,
 };
+export const search = {
+  label: 'Search',
+  key: 'search',
+  type: 'codehinter',
+  description: 'Enter search',
+  width: '320px',
+  height: '36px',
+  className: 'codehinter-plugins',
+  placeholder: '',
+  lineNumbers: false,
+};
 export const per_page = {
   label: 'Per_page',
   key: 'per_page',
@@ -390,13 +401,24 @@ export const dp = {
   placeholder: '',
   lineNumbers: false,
 };
+export const after = {
+  label: 'After',
+  key: 'after',
+  type: 'codehinter',
+  description: 'Enter after',
+  width: '320px',
+  height: '36px',
+  className: 'codehinter-plugins',
+  placeholder: '',
+  lineNumbers: false,
+};
 
 // code :: coupon
-export const coupon = {
-  label: 'Coupon',
-  key: 'coupon',
+export const code = {
+  label: 'Code',
+  key: 'code',
   type: 'codehinter',
-  description: 'Enter coupon',
+  description: 'Enter code',
   width: '320px',
   height: '36px',
   className: 'codehinter-plugins',
