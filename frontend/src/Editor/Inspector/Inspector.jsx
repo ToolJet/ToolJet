@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@/_components';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
+import { CustomComponent } from './Components/CustomComponent';
 import useFocus from '@/_hooks/use-Focus';
 
 export const Inspector = ({
@@ -275,6 +276,22 @@ export const Inspector = ({
       case 'FilePicker':
         return (
           <FilePicker
+            layoutPropertyChanged={layoutPropertyChanged}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            darkMode={darkMode}
+            eventsChanged={eventsChanged}
+            apps={apps}
+            allComponents={allComponents}
+          />
+        );
+
+      case 'CustomComponent':
+        return (
+          <CustomComponent
             layoutPropertyChanged={layoutPropertyChanged}
             component={component}
             paramUpdated={paramUpdated}

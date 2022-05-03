@@ -1133,6 +1133,7 @@ class Editor extends React.Component {
                         onComponentClick={this.handleComponentClick}
                         onComponentHover={this.handleComponentHover}
                         hoveredComponent={hoveredComponent}
+                        dataQueries={dataQueries}
                       />
                       <CustomDragLayer
                         snapToGrid={true}

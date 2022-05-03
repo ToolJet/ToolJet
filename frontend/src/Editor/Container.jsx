@@ -41,6 +41,7 @@ export const Container = ({
   handleRedo,
   onComponentHover,
   hoveredComponent,
+  dataQueries,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -467,6 +468,7 @@ export const Container = ({
               darkMode={darkMode}
               onComponentHover={onComponentHover}
               hoveredComponent={hoveredComponent}
+              dataQueries={dataQueries}
               containerProps={{
                 mode,
                 snapToGrid,
@@ -487,6 +489,7 @@ export const Container = ({
                 darkMode,
                 onComponentHover,
                 hoveredComponent,
+                dataQueries,
               }}
             />
           );
