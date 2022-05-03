@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import usePinnedPopover from '@/_hooks/usePinnedPopover';
 import { LeftSidebarItem } from './SidebarItem';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
@@ -30,15 +30,19 @@ export const LeftSidebarInspector = ({
 
   const queries = {};
 
-  if (queryDefinitions) {
+  if (!_.isEmpty(queryDefinitions)) {
     queryDefinitions.forEach((query) => {
       queries[query.name] = { id: query.id };
     });
   }
 
-  const data = _.merge(currentState, { queries });
-  const jsontreeData = { ...data };
-  delete jsontreeData.errors;
+  const memoizedJSONData = React.useMemo(() => {
+    const data = _.merge(currentState, { queries });
+    const jsontreeData = { ...data };
+    delete jsontreeData.errors;
+    return jsontreeData;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentState]);
 
   const queryIcons = Object.entries(currentState['queries']).map(([key, value]) => {
     if (value.kind === 'runjs') {
@@ -62,7 +66,7 @@ export const LeftSidebarInspector = ({
     }
   });
 
-  const iconsList = [...queryIcons, ...componentIcons];
+  const iconsList = useMemo(() => [...queryIcons, ...componentIcons], [queryIcons, componentIcons]);
 
   const handleRemoveComponent = (component) => {
     removeComponent(component);
@@ -141,7 +145,7 @@ export const LeftSidebarInspector = ({
         />
         <div style={{ marginTop: '1rem' }} className="card-body">
           <JSONTreeViewer
-            data={jsontreeData}
+            data={memoizedJSONData}
             useIcons={true}
             iconsList={iconsList}
             useIndentedBlock={true}
