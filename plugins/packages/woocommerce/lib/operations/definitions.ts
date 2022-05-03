@@ -77,7 +77,7 @@ export const search = {
   lineNumbers: false,
 };
 export const per_page = {
-  label: 'Per_page',
+  label: 'Per Page',
   key: 'per_page',
   type: 'codehinter',
   description: 'Enter per_page',
@@ -132,7 +132,7 @@ export const order = {
   lineNumbers: false,
 };
 export const orderby = {
-  label: 'Orderby',
+  label: 'Order By',
   key: 'orderby',
   type: 'codehinter',
   description: 'Enter orderby',
@@ -391,7 +391,7 @@ export const product = {
   lineNumbers: false,
 };
 export const dp = {
-  label: 'DP',
+  label: 'Decimal Point',
   key: 'dp',
   type: 'codehinter',
   description: 'Enter dp',

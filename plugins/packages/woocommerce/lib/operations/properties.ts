@@ -242,8 +242,6 @@ export default {
       ],
     },
     list_order: {
-      order_id,
-      body,
       context,
       page,
       per_page,
