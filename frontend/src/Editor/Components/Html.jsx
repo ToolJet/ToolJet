@@ -12,19 +12,16 @@ export const Html = function ({ width, height, properties, styles, darkMode }) {
       return acc;
     }, [])
     .join('');
-  console.log(css);
   const baseStyle = stringifyCSS
     ? null
     : {
         backgroundColor: darkMode ? '#47505D' : '#ffffff',
         color: darkMode ? 'white' : 'black',
       };
-  console.log(baseStyle);
   const { visibility } = styles;
 
   const [rawHtml, setRawHtml] = useState('');
   useEffect(() => {
-    console.log(css);
     setRawHtml(stringifyHTML + `<style>${css}</style>`);
   }, [stringifyHTML, stringifyCSS]);
 
