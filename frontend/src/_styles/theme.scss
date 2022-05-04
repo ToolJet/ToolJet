@@ -4755,7 +4755,8 @@ div#driver-page-overlay {
 .widget-buttongroup{
   display: flex;
   flex-direction: row;
-  // justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: left;
 }
 .group-button{
   margin: 0px 10px 10px 10px;
@@ -4772,4 +4773,11 @@ div#driver-page-overlay {
   background-color: #fff !important;
   border: 1px solid #d9d9d9;
   width: 40px !important;
+}
+.widget-buttongroup-label{
+  font-weight: 600;
+}
+.buttongrpup-active{
+  background-color: #4d72fa !important;
+  color: #fff !important;
 }

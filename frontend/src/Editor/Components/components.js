@@ -2036,7 +2036,7 @@ export const componentTypes = [
     },
     defaultSize: {
       width: 12,
-      height: 50,
+      height: 80,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -2063,9 +2063,10 @@ export const componentTypes = [
       },
       properties: {
         label: { value: `Button` },
-        visible: { value: '{{true}}' },
-        values: { value: [1, 2, 3] },
-        labels: { value: ['one', 'two', 'three'] },
+        defaultValue: { value: `1` },
+        values: { value: '{{[1,2,3]}}' },
+        labels: { value: '' },
+        // {{["one", "two", "three"]}}
       },
       events: [],
       styles: {
