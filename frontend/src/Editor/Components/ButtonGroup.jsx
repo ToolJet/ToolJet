@@ -2,8 +2,16 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 
 export const ButtonGroup = function Button({ height, properties, styles, fireEvent }) {
-  const { loadingState, values, labels, label, defaultValue } = properties;
-  const { backgroundColor, textColor, borderRadius, visibility, disabledState } = styles;
+  const { values, labels, label, defaultValue, multiSelection } = properties;
+  const {
+    backgroundColor,
+    textColor,
+    borderRadius,
+    visibility,
+    disabledState,
+    selectedBackgroundColor,
+    selectedTextColor,
+  } = styles;
 
   const computedStyles = {
     backgroundColor,
@@ -12,9 +20,10 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
     borderRadius: `${borderRadius}px`,
     height,
     display: visibility ? '' : 'none',
+    overflow: 'hidden',
   };
 
-  const [defaultActive, setDefaultActive] = useState(defaultValue);
+  const [defaultActive, setDefaultActive] = useState([defaultValue]);
   const [data, setData] = useState(labels.length > 0 ? labels : values);
 
   useEffect(() => {
@@ -26,26 +35,28 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
   }, [labels, values]);
 
   useEffect(() => {
-    console.log('check', defaultActive);
-  }, [defaultActive]);
+    setDefaultActive([]);
+  }, [multiSelection]);
 
+  const buttonClick = (value) => {};
   return (
     <div className="widget-buttongroup">
       <p className="widget-buttongroup-label">{label}</p>
       <div>
         {data.map((item) => (
           <button
+            style={{
+              ...computedStyles,
+              backgroundColor: defaultActive.includes(item) && selectedBackgroundColor,
+              color: defaultActive.includes(item) && selectedTextColor,
+            }}
             key={item}
             disabled={disabledState}
-            className={cx('group-button btn btn-primary p-1 overflow-hidden', {
-              'btn-loading': loadingState,
-              'buttongrpup-active': item == defaultActive,
-            })}
-            // style={computedStyles}
+            className={cx('group-button  p-1 overflow-hidden', {})}
             onClick={(event) => {
               event.stopPropagation();
               fireEvent('onClick');
-              setDefaultActive(item);
+              multiSelection ? setDefaultActive([...defaultActive, item]) : setDefaultActive([item]);
             }}
           >
             {item}
