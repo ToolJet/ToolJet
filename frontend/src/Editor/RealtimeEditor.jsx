@@ -23,8 +23,10 @@ export const RealtimeEditor = (props) => {
 
   React.useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    document.cookie = `auth_token=${currentUser?.auth_token}; domain=.${window.location.host}; path=/`;
-    document.cookie = `app_id=${router.query.id}; domain=.${window.location.host}; path=/`;
+    const host = window.location.host.split('.');
+    const domain = host.length > 2 ? host.slice(1, 3).join('.') : host.join('.');
+    document.cookie = `auth_token=${currentUser?.auth_token}; domain=.${domain}; path=/`;
+    document.cookie = `app_id=${router.query.id}; domain=.${domain}; path=/`;
     setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
   }, [appId]);
 
