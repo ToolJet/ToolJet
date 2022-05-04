@@ -1,6 +1,6 @@
 ---
-sidebar_position: 3
-sidebar_label: Upload files using GCS
+id: upload-files-gcs
+title: Upload files using GCS
 ---
 
 # Upload files using GCS

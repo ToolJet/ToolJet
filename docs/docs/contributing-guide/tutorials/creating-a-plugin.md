@@ -1,6 +1,6 @@
 ---
-sidebar_position: 2
-sidebar_label: Creating a plugin
+id: creating-a-plugin
+title: Creating Plugins
 ---
 
 # Creating plugins for ToolJet 

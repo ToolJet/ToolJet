@@ -1,3 +1,7 @@
+---
+id: toggle-switch
+title: Toggle Switch
+---
 # Toggle Switch
 
 The toggle switch widget allows the user to change a setting between two states.

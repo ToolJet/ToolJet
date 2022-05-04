@@ -1,3 +1,7 @@
+---
+id: statistics
+title: Statistics
+---
 # Statistics
 
 Statistics can be used to display different statistical information.

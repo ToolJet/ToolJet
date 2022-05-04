@@ -1,3 +1,7 @@
+---
+id: textarea
+title: Textarea
+---
 # Textarea
 
 Textarea widgets let users enter and edit just text like [Text Input](/docs/widgets/text-input) widget.

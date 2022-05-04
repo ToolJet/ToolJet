@@ -33,7 +33,7 @@ const RealtimeAvatars = ({ self, updatePresence, editingVersionId }) => {
               <Avatar
                 key={id}
                 borderColor={presence.color}
-                title={getAvatarTitle(self?.presence)}
+                title={getAvatarTitle(presence)}
                 text={getAvatarText(presence)}
               />
             );
