@@ -49,7 +49,7 @@ export class GroupPermissionsService {
       throw new ConflictException('Group name already exist');
     }
 
-    return this.groupPermissionsRepository.save(
+    const groupPermission = await this.groupPermissionsRepository.save(
       this.groupPermissionsRepository.create({
         organizationId: user.organizationId,
         group: group,
