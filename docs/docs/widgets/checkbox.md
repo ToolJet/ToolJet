@@ -1,3 +1,7 @@
+---
+id: checkbox
+title: Checkbox
+---
 # Checkbox
 
 Checkbox widget can be used for allowing the users to make a binary choice, e.g,. unselected or selected.

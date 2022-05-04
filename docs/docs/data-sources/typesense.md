@@ -1,5 +1,6 @@
 ---
-sidebar_position: 24
+id: typesense
+title: TypeSense
 ---
 
 # TypeSense

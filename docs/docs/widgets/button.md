@@ -1,3 +1,7 @@
+---
+id: button
+title: Button
+---
 # Button
 
 Button widget can be used to take actions.

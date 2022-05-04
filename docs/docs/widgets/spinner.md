@@ -1,3 +1,7 @@
+---
+id: spinner
+title: Spinner
+---
 # Spinner
 
 Spinner widget can be used to provide a visual indication that an action is in progress by awaiting a change.

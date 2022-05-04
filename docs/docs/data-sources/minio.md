@@ -1,5 +1,6 @@
 ---
-sidebar_position: 12
+id: minio
+title: MinIO
 ---
 
 # MinIO
