@@ -303,8 +303,6 @@ export const JSONNode = ({ data, ...restProps }) => {
       className={cx('d-flex row-flex mt-1 font-monospace container-fluid px-1', {
         'json-node-element': !expandable,
       })}
-      onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
-      onMouseLeave={() => updateHoveredNode(null)}
     >
       <div className={`json-tree-icon-container  mx-2 ${applySelectedNodeStyles && 'selected-node'}`}>
         <JSONNodeIndicator
@@ -327,6 +325,8 @@ export const JSONNode = ({ data, ...restProps }) => {
         className={`${shouldDisplayIntendedBlock && 'group-border'} ${applySelectedNodeStyles && 'selected-node'}`}
       >
         <div
+          onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
+          onMouseLeave={() => updateHoveredNode(null)}
           className={cx('d-flex', {
             'group-object-container': shouldDisplayIntendedBlock,
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
