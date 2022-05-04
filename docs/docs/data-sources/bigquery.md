@@ -1,5 +1,6 @@
 ---
-sidebar_position: 3
+id: bigquery
+title: BigQuery
 ---
 
 # BigQuery

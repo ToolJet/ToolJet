@@ -1,5 +1,6 @@
 ---
-sidebar_position: 18
+id: redis
+title: Redis
 ---
 
 # Redis

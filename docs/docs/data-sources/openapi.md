@@ -1,5 +1,9 @@
+---
+id: openapi
+title: OpenAPI
+---
 
-# openapi
+# OpenAPI
 
 ToolJet has a data source for generating REST API operations from OpenAPI Specs.
 

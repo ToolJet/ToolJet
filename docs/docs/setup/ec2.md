@@ -1,5 +1,6 @@
 ---
-sidebar_position: 4
+id: ec2
+title: AWS EC2
 ---
 
 # AWS EC2

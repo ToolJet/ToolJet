@@ -54,7 +54,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
   const onReset = () => {
     intervalId && clearInterval(intervalId);
     setTime(getTimeObj(getDefaultValue));
-    setExposedVariable('value', time);
+    setExposedVariable('value', getTimeObj(getDefaultValue));
     fireEvent('onReset');
     setState('initial');
   };

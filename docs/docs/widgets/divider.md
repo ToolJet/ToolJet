@@ -1,3 +1,7 @@
+---
+id: divider
+title: Divider
+---
 # Divider
 
 Divider widget is used to add separator between components. 
