@@ -218,7 +218,7 @@ export class JSONTreeViewer extends React.Component {
             enableCopyToClipboard={this.state.enableCopyToClipboard}
             getNodeShowHideComponents={this.getNodeShowHideComponents}
             getOnSelectLabelDispatchActions={this.getOnSelectLabelDispatchActions}
-            expandWithLabels={this.state.expandWithLabels ?? false}
+            expandWithLabels={this.props.expandWithLabels ?? false} //expand and collapse: onclick of label
             getAbsoluteNodePath={this.getAbsoluteNodePath}
             updateParentState={this.state.updateParentState}
           />
