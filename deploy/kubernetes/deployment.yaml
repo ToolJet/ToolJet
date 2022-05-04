@@ -144,9 +144,11 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: other
-                  key: FWAPIKey      
+                  key: FWAPIKey
             - name: customerIoApiKey
               valueFrom:
                 secretKeyRef:
                   name: other
                   key: customerIoApiKey
+            - name: REDIS_HOST
+              value: "tooljet-production-elasticache.nfupg8.ng.0001.use2.cache.amazonaws.com"
