@@ -1,5 +1,6 @@
 ---
-sidebar_label: Set localStorage
+id: set-localstorage
+title: Set localStorage
 ---
 
 # Set localStorage

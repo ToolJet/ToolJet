@@ -1,5 +1,6 @@
 ---
-sidebar_position: 8
+id: mobile-layout
+title: Mobile layout
 ---
 
 # Mobile layout

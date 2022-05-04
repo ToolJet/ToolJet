@@ -1,5 +1,6 @@
 ---
-sidebar_position: 10.1
+id: influxdb
+title: InfluxDB
 ---
 
 # InfluxDB
