@@ -53,9 +53,9 @@ export const LeftSidebarInspector = ({
   });
 
   const componentIcons = Object.entries(currentState['components']).map(([key, value]) => {
-    const component = componentDefinitions[value.id]['component'];
+    const component = componentDefinitions[value.id]?.component ?? {};
 
-    if (component.name === key) {
+    if (!_.isEmpty(component) && component.name === key) {
       return {
         iconName: key,
         iconPath: `/assets/images/icons/widgets/${
