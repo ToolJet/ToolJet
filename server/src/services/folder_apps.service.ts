@@ -15,7 +15,7 @@ export class FolderAppsService {
       where: { appId, folderId },
     });
 
-    if (existingFolderApp != null && existingFolderApp !== undefined) {
+    if (existingFolderApp) {
       throw new BadRequestException('App has been already added to the folder');
     }
 
