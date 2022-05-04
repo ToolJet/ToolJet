@@ -1,5 +1,6 @@
 ---
-sidebar_position: 10
+id: env-vars
+title: Environment variables
 ---
 
 # Environment variables

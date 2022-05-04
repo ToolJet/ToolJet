@@ -1,7 +1,7 @@
 ---
-sidebar_position: 22
+id: smtp
+title: SMTP
 ---
-
 
 # SMTP
 

@@ -1,5 +1,7 @@
 ---
-sidebar_position: 13
+id: tracking
+title: Tracking
+slug: /tracking
 ---
 
 # Tracking    

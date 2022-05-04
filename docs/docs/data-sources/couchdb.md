@@ -1,6 +1,6 @@
 ---
-sidebar_position: 4.1
-sidebar_label: CouchDB
+id: couchdb
+title: CouchDB
 ---
 
 # CouchDB

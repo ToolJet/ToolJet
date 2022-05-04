@@ -1,3 +1,7 @@
+---
+id: listview
+title: List view
+---
 # List view
 
 List view widget allows to create a list of repeatable rows of data. Just like container widget, you can nest other widgets inside of it and control how many times they repeat.

@@ -1,5 +1,6 @@
 ---
-sidebar_position: 26
+id: rethinkdb
+title: Rethinkdb
 ---
 # Rethinkdb
 
