@@ -6,6 +6,7 @@ import RealtimeCursors from '@/Editor/RealtimeCursors';
 import Spinner from '@/_ui/Spinner';
 import useRouter from '@/_hooks/use-router';
 const Y = require('yjs');
+const psl = require('psl');
 const { WebsocketProvider } = require('y-websocket');
 
 const ydoc = new Y.Doc();
@@ -25,8 +26,9 @@ export const RealtimeEditor = (props) => {
 
   React.useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    document.cookie = `auth_token=${currentUser?.auth_token}; path=/`;
-    document.cookie = `app_id=${router.query.id}; path=/`;
+    const domain = psl.parse(window.location.host).domain;
+    document.cookie = `auth_token=${currentUser?.auth_token}; domain=.${domain}; path=/`;
+    document.cookie = `app_id=${router.query.id}; domain=.${domain}; path=/`;
     setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
   }, [appId]);
 
