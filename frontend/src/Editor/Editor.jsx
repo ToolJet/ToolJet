@@ -1322,7 +1322,7 @@ class Editor extends React.Component {
                     height="44"
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
-                    stroke="#2c3e50"
+                    stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
                     fill="none"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1330,7 +1330,7 @@ class Editor extends React.Component {
                     <path stroke="none" d="M0 0h24v24H0z" fill="none">
                       <title>undo</title>
                     </path>
-                    <path d="M9 13l-4 -4l4 -4m-4 4h11a4 4 0 0 1 0 8h-1">
+                    <path d="M9 13l-4 -4l4 -4m-4 4h11a4 4 0 0 1 0 8h-1" fill="none">
                       <title>undo</title>
                     </path>
                   </svg>
@@ -1345,12 +1345,14 @@ class Editor extends React.Component {
                     height="44"
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
-                    stroke="#2c3e50"
+                    stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
                     fill="none"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none">
+                      <title>redo</title>
+                    </path>
                     <path d="M15 13l4 -4l-4 -4m4 4h-11a4 4 0 0 0 0 8h1" />
                   </svg>
                 </div>
