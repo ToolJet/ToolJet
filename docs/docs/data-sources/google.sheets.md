@@ -1,5 +1,6 @@
 ---
-sidebar_position: 9
+id: google.sheets
+title: Google Sheets
 ---
 
 # Google Sheets

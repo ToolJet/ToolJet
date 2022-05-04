@@ -1,5 +1,6 @@
 ---
-sidebar_position: 8
+id: gcs
+title: Google Cloud Storage
 ---
 
 # Google Cloud Storage

@@ -1,6 +1,6 @@
 ---
-sidebar_position: 6
-sidebar_label: Kubernetes (GKE)
+id: kubernetes-gke
+title: Kubernetes (GKE)
 ---
 
 # Deploying ToolJet on Kubernetes (GKE)

@@ -1,6 +1,6 @@
 ---
-sidebar_position: 7
-sidebar_label: Kubernetes (AKS)
+id: kubernetes-aks
+title: Kubernetes (AKS)
 ---
 
 # Deploying ToolJet on Kubernetes (AKS)

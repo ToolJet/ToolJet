@@ -1,6 +1,6 @@
 ---
-sidebar_position: 2
-sidebar_label: REST API authentication using OAuth 2.0
+id: oauth2-authorization
+title: REST API authentication using OAuth 2.0
 ---
 
 # REST API authentication using OAuth 2.0

@@ -1,5 +1,6 @@
 ---
-sidebar_position: 5
+id: custom-js
+title: Custom JavaScript
 ---
 
 # Custom JavaScript
