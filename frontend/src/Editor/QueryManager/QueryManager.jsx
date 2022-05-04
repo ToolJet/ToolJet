@@ -51,6 +51,7 @@ let QueryManager = class QueryManager extends React.Component {
     let dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
     const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
+    const queryPaneDragged = this.state.isQueryPaneDragging !== props.isQueryPaneDragging;
     this.setState(
       {
         appId: props.appId,
@@ -61,12 +62,14 @@ let QueryManager = class QueryManager extends React.Component {
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
         queryPaneHeight: props.queryPaneHeight,
+        isQueryPaneDragging: props.isQueryPaneDragging,
         currentState: props.currentState,
         selectedSource: source,
         dataSourceMeta,
         paneHeightChanged,
-        isSourceSelected: paneHeightChanged ? this.state.isSourceSelected : props.isSourceSelected,
-        selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
+        isSourceSelected: paneHeightChanged || queryPaneDragged ? this.state.isSourceSelected : props.isSourceSelected,
+        selectedDataSource:
+          paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource,
         theme: {
           scheme: 'bright',
           author: 'chris kempson (http://chriskempson.com)',
@@ -117,17 +120,29 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    if (this.state.selectedQuery && !nextProps.isQueryPaneDragging && !this.state.paneHeightChanged) {
-      const isQueryChanged = !_.isEqual(
-        this.removeRestKey(this.state.options),
-        this.removeRestKey(this.state.selectedQuery.options)
-      );
-      if (this.state.isFieldsChanged && isQueryChanged) {
-        this.setState({ showSaveConfirmation: true, nextProps });
-        return;
-      } else if (!isQueryChanged && this.state.selectedQuery.kind === 'restapi' && this.state.restArrayValuesChanged) {
-        this.setState({ showSaveConfirmation: true, nextProps });
-        return;
+    if (this.props.mode === 'edit') {
+      const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
+      if (
+        this.state.selectedQuery &&
+        !nextProps.isQueryPaneDragging &&
+        !this.state.paneHeightChanged &&
+        !themeModeChanged
+      ) {
+        const isQueryChanged = !_.isEqual(
+          this.removeRestKey(this.state.options),
+          this.removeRestKey(this.state.selectedQuery.options)
+        );
+        if (this.state.isFieldsChanged && isQueryChanged) {
+          this.setState({ showSaveConfirmation: true, nextProps });
+          return;
+        } else if (
+          !isQueryChanged &&
+          this.state.selectedQuery.kind === 'restapi' &&
+          this.state.restArrayValuesChanged
+        ) {
+          this.setState({ showSaveConfirmation: true, nextProps });
+          return;
+        }
       }
     }
     this.setStateFromProps(nextProps);
