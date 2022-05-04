@@ -5,6 +5,7 @@ import { PresenceProvider } from 'y-presence';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import Spinner from '@/_ui/Spinner';
 const Y = require('yjs');
+const psl = require('psl');
 const { WebsocketProvider } = require('y-websocket');
 
 const ydoc = new Y.Doc();
@@ -23,8 +24,7 @@ export const RealtimeEditor = (props) => {
 
   React.useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    const host = window.location.host.split('.');
-    const domain = host.length > 2 ? host.slice(1, 3).join('.') : host.join('.');
+    const domain = psl.parse(window.location.host).domain;
     document.cookie = `auth_token=${currentUser?.auth_token}; domain=.${domain}; path=/`;
     document.cookie = `app_id=${router.query.id}; domain=.${domain}; path=/`;
     setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
