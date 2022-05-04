@@ -1,3 +1,7 @@
+---
+id: range-slider
+title: Range Slider
+---
 # Range Slider
 
 Range sliders are widely used across different UIs. One of the main purposes is to filter, explore all the related content and available in the control and settings options.

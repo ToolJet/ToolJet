@@ -1,5 +1,6 @@
 ---
-sidebar_position: 2
+id: adding-a-datasource
+title: Adding a data source
 ---
 
 # Adding a data source

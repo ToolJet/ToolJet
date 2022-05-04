@@ -63,8 +63,7 @@ describe('group permissions controller', () => {
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
-      // FIXME: setup postgres error codes and handle error gracefully
-      expect(response.statusCode).toBe(500);
+      expect(response.statusCode).toBe(409);
     });
 
     it('should allow different organization to have same group name', async () => {

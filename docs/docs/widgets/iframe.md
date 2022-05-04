@@ -1,3 +1,7 @@
+---
+id: iframe
+title: Iframe
+---
 # Iframe
 
 Iframe widget is used to embed another HTML page into the current one and display iframes in your app.

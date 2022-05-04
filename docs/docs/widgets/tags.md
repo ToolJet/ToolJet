@@ -1,3 +1,7 @@
+---
+id: tags
+title: Tags
+---
 # Tags
 
 Tags widget can be used to show array of data as tags.

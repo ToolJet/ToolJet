@@ -1,3 +1,7 @@
+---
+id: radio-button
+title: Radio Button
+---
 # Radio Button
 
 Radio button widget can be used to select one option from a group of options.

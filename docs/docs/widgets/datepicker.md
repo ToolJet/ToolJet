@@ -1,3 +1,7 @@
+---
+id: datepicker
+title: Datepicker
+---
 # Datepicker
 
 The Datepicker widget allows users to select a single value for date and time from a pre-determined set.
