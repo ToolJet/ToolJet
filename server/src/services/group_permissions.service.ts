@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, createQueryBuilder, getManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -33,6 +33,18 @@ export class GroupPermissionsService {
     if (!group || group === '') {
       throw new BadRequestException('Cannot create group without name');
     }
+
+    const groupToFind = await this.groupPermissionsRepository.findOne({
+      where: {
+        organizationId: user.organizationId,
+        group,
+      },
+    });
+
+    if (groupToFind) {
+      throw new ConflictException('Group name already exist');
+    }
+
     return this.groupPermissionsRepository.save(
       this.groupPermissionsRepository.create({
         organizationId: user.organizationId,
