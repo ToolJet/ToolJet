@@ -189,7 +189,10 @@ export const JSONNode = ({ data, ...restProps }) => {
     <span
       onClick={() => toExpandNode && handleOnClickLabels(data, currentNode, path)}
       style={{ marginTop: '1px', cursor: 'pointer', textTransform: 'none' }}
-      className={`node-key fs-12 fw-bold mx-1 ${applySelectedNodeStyles && 'badge badge-outline color-primary'}`}
+      className={`node-key fs-12 fw-bold mx-1 ${
+        applySelectedNodeStyles && !showHiddenOptionsForNode && 'badge badge-outline color-primary'
+      }
+      ${showHiddenOptionsForNode && 'hovered-node badge badge-outline'}`}
     >
       {String(currentNode)}
     </span>

@@ -4735,11 +4735,12 @@ div#driver-page-overlay {
   .node-key {
     color: #ccd4df;
   }
-  .node-key.badge {
-    color: $primary-light !important;
-  }
+ 
   .selected-node {
     border-color: $primary-light !important;
+    .node-key.badge {
+      color: $primary-light;
+    }
   }
   .json-tree-icon-container  .selected-node  > svg:first-child {
     filter: invert(65%) sepia(62%) saturate(4331%) hue-rotate(204deg) brightness(106%) contrast(97%);
@@ -4758,6 +4759,11 @@ div#driver-page-overlay {
     img, svg {
       filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg) brightness(99%) contrast(96%);
     }
+  }
+
+  .hovered-node.node-key.badge {
+    color: #8092AB !important; 
+    border-color: #8092AB !important;
   }
 }
 
@@ -4836,6 +4842,12 @@ div#driver-page-overlay {
 
   .action-icons-group {
     cursor: pointer;
+  }
+
+  .hovered-node {
+    font-weight: 400 !important;
+    height: 1rem !important;
+    color:#8092AB;
   }
 
 }
