@@ -1,3 +1,7 @@
+---
+id: image
+title: Image
+---
 # Image
 
 Image widget is used to display images in your app. 

@@ -1,5 +1,6 @@
 ---
-sidebar_position: 1
+id: creating-app
+title: Creating new app
 ---
 
 # Creating new app

@@ -1,3 +1,7 @@
+---
+id: file-picker
+title: Filepicker
+---
 # Filepicker
 
 Filepicker widget allows the user to drag and drop files or upload files by browsing the filesystem and selecting one or more files in a directory.

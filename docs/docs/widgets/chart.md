@@ -1,3 +1,7 @@
+---
+id: chart
+title: Chart
+---
 # Chart
 
 Chart widget takes the chart type, data and styles to draw charts using Plotly.js.

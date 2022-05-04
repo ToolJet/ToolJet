@@ -1,5 +1,6 @@
 ---
-sidebar_position: 6
+id: dynamodb
+title: DynamoDB
 ---
 
 # DynamoDB
