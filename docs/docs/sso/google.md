@@ -1,6 +1,6 @@
 ---
-sidebar_position: 6
-sidebar_label: Google
+id: google
+title: Google
 ---
 
 # Google Single Sign-on

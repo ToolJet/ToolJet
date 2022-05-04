@@ -1,3 +1,7 @@
+---
+id: notion
+title: Notion
+---
 # Notion
 
 ToolJet can connect to a Notion workspace to do operations on notion pages, databases and blocks.

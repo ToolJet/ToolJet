@@ -1,5 +1,6 @@
 ---
-sidebar_position: 9
+id: client
+title: Deploying ToolJet client
 ---
 
 # Deploying ToolJet client

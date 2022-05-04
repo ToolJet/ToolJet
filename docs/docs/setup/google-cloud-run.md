@@ -1,6 +1,6 @@
 ---
-sidebar_position: 8
-sidebar_label: Google Cloud Run
+id: google-cloud-run
+title: Google Cloud Run
 ---
 
 # Deploying ToolJet on Google Cloud Run
