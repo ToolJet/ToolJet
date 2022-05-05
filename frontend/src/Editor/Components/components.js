@@ -916,7 +916,7 @@ export const componentTypes = [
       justifyContent: { type: 'alignButtons', displayName: 'Align Text' },
     },
     exposedVariables: {
-      value: null,
+      value: 2,
       searchText: '',
     },
     definition: {
