@@ -42,7 +42,7 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
     } else multiSelection ? setDefaultActive([...defaultActive, value]) : setDefaultActive([value]);
   };
   return (
-    <div className="widget-buttongroup" style={{ overflow: 'hidden', height }}>
+    <div className="widget-buttongroup" style={{ height }}>
       <p className="widget-buttongroup-label">{label}</p>
       <div>
         {data.map((item) => (
