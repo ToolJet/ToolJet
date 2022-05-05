@@ -52,7 +52,7 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
             }}
             key={item}
             disabled={disabledState}
-            className={'group-button  p-1 overflow-hidden'}
+            className={'group-button overflow-hidden'}
             onClick={(event) => {
               event.stopPropagation();
               fireEvent('onClick');
