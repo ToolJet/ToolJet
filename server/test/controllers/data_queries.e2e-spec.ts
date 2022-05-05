@@ -52,7 +52,7 @@ describe('data queries controller', () => {
     });
 
     // setup app permissions for developer
-    const developerUserGroup = await getRepository(GroupPermission).findOne({
+    const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
       where: {
         group: 'developer',
       },
@@ -64,7 +64,7 @@ describe('data queries controller', () => {
     });
 
     // setup app permissions for viewer
-    const viewerUserGroup = await getRepository(GroupPermission).findOne({
+    const viewerUserGroup = await getRepository(GroupPermission).findOneOrFail({
       where: {
         group: 'viewer',
       },
@@ -142,7 +142,7 @@ describe('data queries controller', () => {
     });
 
     // setup app permissions for developer
-    const developerUserGroup = await getRepository(GroupPermission).findOne({
+    const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
       where: {
         group: 'developer',
       },
@@ -229,7 +229,7 @@ describe('data queries controller', () => {
       groups: ['all_users', 'admin'],
     });
 
-    const allUserGroup = await getManager().findOne(GroupPermission, {
+    const allUserGroup = await getManager().findOneOrFail(GroupPermission, {
       where: { group: 'all_users', organization: adminUserData.organization },
     });
     await getManager().update(
@@ -239,7 +239,7 @@ describe('data queries controller', () => {
     );
 
     // setup app permissions for developer
-    const developerUserGroup = await getRepository(GroupPermission).findOne({
+    const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
       where: {
         group: 'developer',
       },
@@ -337,7 +337,7 @@ describe('data queries controller', () => {
     });
 
     // setup app permissions for developer
-    const developerUserGroup = await getRepository(GroupPermission).findOne({
+    const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
       where: {
         group: 'developer',
       },
@@ -473,7 +473,7 @@ describe('data queries controller', () => {
     });
 
     // setup app permissions for developer
-    const developerUserGroup = await getRepository(GroupPermission).findOne({
+    const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
       where: {
         group: 'developer',
       },
@@ -485,7 +485,7 @@ describe('data queries controller', () => {
     });
 
     // setup app permissions for viewer
-    const viewerUserGroup = await getRepository(GroupPermission).findOne({
+    const viewerUserGroup = await getRepository(GroupPermission).findOneOrFail({
       where: {
         group: 'viewer',
       },
