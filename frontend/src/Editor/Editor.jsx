@@ -1308,10 +1308,7 @@ class Editor extends React.Component {
             </div>
             <div className="editor-sidebar">
               <div className="editor-actions col-md-12">
-                <div className="layout-buttons cursor-pointer">
-                  {this.renderLayoutIcon(currentLayout === 'desktop')}
-                </div>
-                <div>
+                <div className="m-auto undo-redo-buttons">
                   <svg
                     onClick={this.handleUndo}
                     xmlns="http://www.w3.org/2000/svg"
@@ -1355,6 +1352,9 @@ class Editor extends React.Component {
                     </path>
                     <path d="M15 13l4 -4l-4 -4m4 4h-11a4 4 0 0 0 0 8h1" />
                   </svg>
+                </div>
+                <div className="layout-buttons cursor-pointer">
+                  {this.renderLayoutIcon(currentLayout === 'desktop')}
                 </div>
               </div>
               {currentSidebarTab === 1 && (
