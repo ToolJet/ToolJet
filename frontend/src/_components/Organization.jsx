@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { SearchBox } from './SearchBox';
 
 export const Organization = function Organization() {
-  const isSingleOrganization = window.public_config?.MULTI_ORGANIZATION !== 'true';
+  const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const { admin, organization_id } = authenticationService.currentUserValue;
   const [organization, setOrganization] = useState(authenticationService.currentUserValue?.organization);
   const [showCreateOrg, setShowCreateOrg] = useState(false);
@@ -58,7 +58,7 @@ export const Organization = function Organization() {
 
   const createOrganization = () => {
     if (!(newOrgName && newOrgName.trim())) {
-      toast.error("organization name can't be empty.", {
+      toast.error('Workspace name can not be empty.', {
         position: 'top-center',
       });
       return;
@@ -66,21 +66,22 @@ export const Organization = function Organization() {
     setIsCreating(true);
     organizationService.createOrganization(newOrgName).then(
       (data) => {
+        setIsCreating(false);
         authenticationService.updateCurrentUserDetails(data);
         window.location.href = '/';
       },
       () => {
-        toast.error('Error while creating organization', {
+        setIsCreating(false);
+        toast.error('Error while creating workspace', {
           position: 'top-center',
         });
       }
     );
-    setIsCreating(false);
   };
 
   const editOrganization = () => {
     if (!(newOrgName && newOrgName.trim())) {
-      toast.error("organization name can't be empty.", {
+      toast.error('Workspace name can not be empty.', {
         position: 'top-center',
       });
       return;
@@ -95,7 +96,7 @@ export const Organization = function Organization() {
         setOrganization(newOrgName);
       },
       () => {
-        toast.error('Error while editing organization', {
+        toast.error('Error while editing workspace', {
           position: 'top-center',
         });
       }
@@ -258,7 +259,7 @@ export const Organization = function Organization() {
         </div>
         {!isSingleOrganization && (
           <div className="dropdown-item org-actions">
-            <div onClick={showCreateModal}>Add Organizations</div>
+            <div onClick={showCreateModal}>Add workspace</div>
           </div>
         )}
         {admin && (
@@ -291,14 +292,14 @@ export const Organization = function Organization() {
           </div>
         )}
       </div>
-      <Modal show={showCreateOrg} closeModal={() => setShowCreateOrg(false)} title="Create organization">
+      <Modal show={showCreateOrg} closeModal={() => setShowCreateOrg(false)} title="Create workspace">
         <div className="row">
           <div className="col modal-main">
             <input
               type="text"
               onChange={(e) => setNewOrgName(e.target.value)}
               className="form-control"
-              placeholder="organization name"
+              placeholder="workspace name"
               disabled={isCreating}
               maxLength={25}
             />
@@ -314,19 +315,19 @@ export const Organization = function Organization() {
               className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`}
               onClick={createOrganization}
             >
-              Create organization
+              Create workspace
             </button>
           </div>
         </div>
       </Modal>
-      <Modal show={showEditOrg} closeModal={() => setShowEditOrg(false)} title="Edit organization">
+      <Modal show={showEditOrg} closeModal={() => setShowEditOrg(false)} title="Edit workspace">
         <div className="row">
           <div className="col modal-main">
             <input
               type="text"
               onChange={(e) => setNewOrgName(e.target.value)}
               className="form-control"
-              placeholder="organization name"
+              placeholder="workspace name"
               disabled={isCreating}
               value={newOrgName}
               maxLength={25}

@@ -7,6 +7,6 @@ export class MultiOrganizationGuard implements CanActivate {
   constructor(private configService: ConfigService) {}
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-    return this.configService.get<string>('MULTI_ORGANIZATION') === 'true';
+    return this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true';
   }
 }
