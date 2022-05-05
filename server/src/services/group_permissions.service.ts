@@ -27,11 +27,17 @@ export class GroupPermissionsService {
     private appRepository: Repository<App>,
 
     private usersService: UsersService
-  ) {}
+  ) { }
 
   async create(user: User, group: string): Promise<GroupPermission> {
     if (!group || group === '') {
       throw new BadRequestException('Cannot create group without name');
+    }
+
+    const reservedGroups = ['All Users', 'all_users', 'Admin', 'admin'];
+
+    if (reservedGroups.includes(group)) {
+      throw new BadRequestException('Cannot create group with system reserved group name');
     }
 
     const groupToFind = await this.groupPermissionsRepository.findOne({
