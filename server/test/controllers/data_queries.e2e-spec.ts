@@ -440,6 +440,69 @@ describe('data queries controller', () => {
     expect(response.statusCode).toBe(403);
   });
 
+  it('should be able to get queries sorted created wise', async () => {
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      groups: ['all_users', 'admin'],
+    });
+
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
+
+    const dataSource = await createDataSource(app, {
+      name: 'name',
+      kind: 'postgres',
+      application: application,
+      user: adminUserData.user,
+    });
+
+    const appVersion = await createApplicationVersion(app, application);
+
+    const options = {
+      method: 'get',
+      url: null,
+      url_params: [['', '']],
+      headers: [['', '']],
+      body: [['', '']],
+      json_body: null,
+      body_toggle: false,
+    };
+
+    const createdQueries = [];
+    const totalQueries = 15;
+
+    for (let i = 1; i <= totalQueries; i++) {
+      const queryParams = {
+        name: `restapi${i}`,
+        app_id: application.id,
+        data_source_id: dataSource.id,
+        kind: 'restapi',
+        options,
+        app_version_id: appVersion.id,
+      };
+
+      const response = await request(app.getHttpServer())
+        .post(`/api/data_queries`)
+        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .send(queryParams);
+
+      createdQueries.push(response.body);
+    }
+
+    // Latest query should be on top
+    createdQueries.reverse();
+
+    const response = await request(app.getHttpServer())
+      .get(`/api/data_queries?app_id=${application.id}&app_version_id=${appVersion.id}`)
+      .set('Authorization', authHeaderForUser(adminUserData.user));
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.data_queries.length).toBe(totalQueries);
+    expect(createdQueries).toMatchObject(response.body.data_queries);
+  });
+
   it('should be able to run queries of an app if the user belongs to the same organization', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',

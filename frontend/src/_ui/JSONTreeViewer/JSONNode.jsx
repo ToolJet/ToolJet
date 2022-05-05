@@ -189,10 +189,11 @@ export const JSONNode = ({ data, ...restProps }) => {
     <span
       onClick={() => toExpandNode && handleOnClickLabels(data, currentNode, path)}
       style={{ marginTop: '1px', cursor: 'pointer', textTransform: 'none' }}
-      className={`node-key fs-12 fw-bold mx-1 ${
-        applySelectedNodeStyles && !showHiddenOptionsForNode && 'badge badge-outline color-primary'
-      }
-      ${showHiddenOptionsForNode && 'hovered-node badge badge-outline'}`}
+      className={cx('node-key fs-12 mx-0 badge badge-outline', {
+        'color-primary': applySelectedNodeStyles && !showHiddenOptionsForNode,
+        'hovered-node': showHiddenOptionsForNode,
+        'node-key-outline': !applySelectedNodeStyles && !showHiddenOptionsForNode,
+      })}
     >
       {String(currentNode)}
     </span>
@@ -335,7 +336,7 @@ export const JSONNode = ({ data, ...restProps }) => {
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
           })}
         >
-          {$NODEIcon && <div className="ml-1 json-tree-icon-container">{$NODEIcon}</div>}
+          {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {$NODEType}
           {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
           <div className="action-icons-group">{showHiddenOptionsForNode && renderHiddenOptionsForNode()}</div>
