@@ -159,7 +159,7 @@ class App extends React.Component {
             <PrivateRoute
               exact
               path="/apps/:id"
-              component={config.MULTIPLAYER_FEATURE_ENABLE ? RealtimeEditor : Editor}
+              component={config.ENABLE_MULTIPLAYER_EDITING ? RealtimeEditor : Editor}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />

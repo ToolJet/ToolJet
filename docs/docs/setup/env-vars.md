@@ -63,7 +63,7 @@ Use this environment variable to enable/disable the feature that allows users to
 
 | variable | value            |
 | -------- | ---------------------- |
-| MULTIPLAYER_FEATURE_ENABLE  | `true` or `false` |
+| ENABLE_MULTIPLAYER_EDITING  | `true` or `false` |
 
 #### Server Host ( optional )
 

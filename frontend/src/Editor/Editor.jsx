@@ -154,7 +154,7 @@ class Editor extends React.Component {
    * current appDef is equal to the newAppDef then we do not trigger a realtimeSave
    */
   initRealtimeSave = () => {
-    if (!config.MULTIPLAYER_FEATURE_ENABLE) return null;
+    if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
 
     this.props.ymap?.observe(() => {
       if (!isEqual(this.state.editingVersion?.id, this.props.ymap?.get('appDef').editingVersionId)) return;
@@ -495,7 +495,7 @@ class Editor extends React.Component {
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
     if (isEqual(this.state.appDefinition, newDefinition)) return;
-    if (config.MULTIPLAYER_FEATURE_ENABLE && !opts.skipYmapUpdate) {
+    if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
       this.props.ymap?.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
     }
 
@@ -1015,7 +1015,7 @@ class Editor extends React.Component {
                   </span>
                 </div>
               )}
-              {config.MULTIPLAYER_FEATURE_ENABLE && (
+              {config.ENABLE_MULTIPLAYER_EDITING && (
                 <RealtimeAvatars
                   updatePresence={this.props.updatePresence}
                   editingVersionId={this.state?.editingVersion?.id}

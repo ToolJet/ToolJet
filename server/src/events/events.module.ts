@@ -9,7 +9,7 @@ if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
   providers.unshift(EventsGateway);
 }
 
-if (process.env.MULTIPLAYER_FEATURE_ENABLE !== 'false') {
+if (process.env.ENABLE_MULTIPLAYER_EDITING !== 'false') {
   providers.unshift(YjsGateway);
 }
 
