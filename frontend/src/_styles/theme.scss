@@ -4757,7 +4757,7 @@ div#driver-page-overlay {
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: left;
-  overflow: hidden;
+  overflow: hidden !important;
 }
 .group-button{
   margin: 0px 10px 10px 10px;
@@ -4766,7 +4766,6 @@ div#driver-page-overlay {
   white-space: nowrap;
   text-align: center;
   cursor: pointer;
-  height: 30px !important;
   padding: 0 15px;
   font-size: 12px;
   border-radius: 4px;

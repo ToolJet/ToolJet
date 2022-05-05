@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import cx from 'classnames';
 
 export const ButtonGroup = function Button({ height, properties, styles, fireEvent }) {
   const { values, labels, label, defaultValue, multiSelection } = properties;
@@ -18,9 +17,8 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
     color: textColor,
     width: '100%',
     borderRadius: `${borderRadius}px`,
-    height,
+    height: '30px',
     display: visibility ? '' : 'none',
-    overflow: 'hidden',
   };
 
   const [defaultActive, setDefaultActive] = useState([defaultValue]);
@@ -38,25 +36,29 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
     setDefaultActive([]);
   }, [multiSelection]);
 
-  const buttonClick = (value) => {};
+  const buttonClick = (value) => {
+    if (defaultActive.includes(value)) {
+      defaultActive.splice(defaultActive.indexOf(value), 1);
+    } else multiSelection ? setDefaultActive([...defaultActive, value]) : setDefaultActive([value]);
+  };
   return (
-    <div className="widget-buttongroup">
+    <div className="widget-buttongroup" style={{ overflow: 'hidden', height }}>
       <p className="widget-buttongroup-label">{label}</p>
       <div>
         {data.map((item) => (
           <button
             style={{
               ...computedStyles,
-              backgroundColor: defaultActive.includes(item) && selectedBackgroundColor,
-              color: defaultActive.includes(item) && selectedTextColor,
+              backgroundColor: defaultActive.includes(item) ? selectedBackgroundColor : backgroundColor,
+              color: defaultActive.includes(item) ? selectedTextColor : textColor,
             }}
             key={item}
             disabled={disabledState}
-            className={cx('group-button  p-1 overflow-hidden', {})}
+            className={'group-button  p-1 overflow-hidden'}
             onClick={(event) => {
               event.stopPropagation();
               fireEvent('onClick');
-              multiSelection ? setDefaultActive([...defaultActive, item]) : setDefaultActive([item]);
+              buttonClick(item);
             }}
           >
             {item}
