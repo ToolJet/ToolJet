@@ -9,6 +9,11 @@ export function getSuggestionKeys(currentState) {
         return suggestions.push(`${key}.${key2}`);
       }
       _.keys(currentState[key][key2]).forEach((key3) => {
+        if (key3 === 'data') {
+          _.keys(currentState[key][key2][key3]).forEach((key4) => {
+            return suggestions.push(`${key}.${key2}.${key3}.${key4}`);
+          });
+        }
         suggestions.push(`${key}.${key2}.${key3}`);
       });
     });
@@ -104,6 +109,7 @@ export function canShowHint(editor, ignoreBraces = false) {
 }
 
 export function handleChange(editor, onChange, suggestions, ignoreBraces = false) {
+  console.log('checki', suggestions);
   let state = editor.state.matchHighlighter;
   editor.addOverlay((state.overlay = makeOverlay(state.options.style)));
 
