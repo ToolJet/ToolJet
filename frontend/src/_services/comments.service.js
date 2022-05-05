@@ -9,15 +9,15 @@ function getThreads(appId, appVersionsId) {
 }
 
 function createThread(data) {
-  return adapter.post(`/threads/create`, data);
+  return adapter.post(`/threads`, data);
 }
 
 function updateThread(threadId, data) {
-  return adapter.patch(`/threads/edit/${threadId}`, data);
+  return adapter.patch(`/threads/${threadId}`, data);
 }
 
 function deleteThread(threadId) {
-  return adapter.delete(`/threads/delete/${threadId}`);
+  return adapter.delete(`/threads/${threadId}`);
 }
 
 function getComments(threadId, appVersionsId) {
@@ -25,15 +25,15 @@ function getComments(threadId, appVersionsId) {
 }
 
 function createComment(data) {
-  return adapter.post(`/comments/create`, data);
+  return adapter.post(`/comments`, data);
 }
 
 function updateComment(commentId, data) {
-  return adapter.patch(`/comments/edit/${commentId}`, data);
+  return adapter.patch(`/comments/${commentId}`, data);
 }
 
 function deleteComment(commentId) {
-  return adapter.delete(`/comments/delete/${commentId}`);
+  return adapter.delete(`/comments/${commentId}`);
 }
 
 function getNotifications(appId, isResolved, appVersionsId) {

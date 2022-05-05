@@ -6,7 +6,7 @@ import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
-import { ConfirmationPage } from '@/ConfirmationPage';
+import { ConfirmationPage, OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
@@ -17,6 +17,7 @@ import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
+import { ManageSSO } from '@/ManageSSO';
 import { lt } from 'semver';
 import { Toaster } from 'react-hot-toast';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
@@ -119,8 +120,9 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
-            <Route path="/login" component={LoginPage} />
-            <Route path="/sso/:origin" component={Oauth} />
+            <Route path="/login/:organisationId" exact component={LoginPage} />
+            <Route path="/login" exact component={LoginPage} />
+            <Route path="/sso/:origin/:configId" component={Oauth} />
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/reset-password" component={ResetPassword} />
@@ -132,13 +134,26 @@ class App extends React.Component {
                     pathname: '/confirm',
                     state: {
                       token: props.match.params.token,
-                      search: props.location.search,
                     },
                   }}
                 />
               )}
             />
             <Route path="/confirm" component={ConfirmationPage} />
+            <Route
+              path="/organization-invitations/:token"
+              render={(props) => (
+                <Redirect
+                  to={{
+                    pathname: '/confirm-invite',
+                    state: {
+                      token: props.match.params.token,
+                    },
+                  }}
+                />
+              )}
+            />
+            <Route path="/confirm-invite" component={OrganizationInvitationPage} />
             <PrivateRoute
               exact
               path="/apps/:id"
@@ -171,6 +186,13 @@ class App extends React.Component {
               exact
               path="/users"
               component={ManageOrgUsers}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/manage-sso"
+              component={ManageSSO}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />

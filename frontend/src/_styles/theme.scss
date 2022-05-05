@@ -1219,6 +1219,17 @@ button {
       filter: invert(89%) sepia(2%) saturate(127%) hue-rotate(175deg) brightness(99%) contrast(96%);
     }
   }
+  .organization-list {
+    margin-top: 5px;
+    .btn {
+      border: 0px;
+    }
+    .dropdown-toggle div {
+      max-width: 200px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+  }
 }
 
 .pagination {
@@ -3227,6 +3238,12 @@ input:focus-visible {
   .app-version-name.form-select {
     border-color: $border-grey-dark;
   }
+  .organization-list {
+    .btn {
+      background-color: #273342;
+      color: #656d77;
+    }
+  }
 }
 
 .main-wrapper {
@@ -4716,9 +4733,174 @@ div#driver-page-overlay {
 #transformation-popover-container {
   margin-left: 80px !important;
   margin-bottom: -2px !important;
-  // top: -10px !important;
-  // left: 100px !important;
-  // background-color: #0565ff;
+}
+
+.organization-list {
+  margin-top: 5px;
+  .btn {
+    border: 0px;
+  }
+  .dropdown-toggle div {
+    max-width: 200px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  .org-name {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    font-weight: bold;
+  }
+  .org-actions div {
+    color: #0565ff;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .dropdown-menu {
+    min-width: 14rem;
+  }
+  .org-avatar {
+    display: block;
+  }
+  .org-avatar:hover {
+    .avatar {
+      background: #fcfcfc no-repeat center/cover;
+    }
+    .arrow-container {
+      svg {
+        filter: invert(48%) sepia(6%) saturate(6%) hue-rotate(315deg) brightness(103%) contrast(96%);
+      }
+    }
+  }
+  .arrow-container {
+    padding: 5px 0px;
+  }
+  .arrow-container {
+    svg {
+      cursor: pointer;
+      height: 30px;
+      width: 30px;
+      padding: 0px 0px;
+      filter: invert(84%) sepia(13%) saturate(11%) hue-rotate(352deg) brightness(90%) contrast(91%);
+    }
+  }
+  .org-edit {
+    span {
+      color: #0565ff;
+      cursor: pointer;
+      font-size: 10px;
+    }
+  }
+  .organization-switchlist {
+    .back-btn {
+      font-size: 12px;
+      padding: 2px 0px;
+      cursor: pointer;
+    }
+    .back-ico {
+      cursor: pointer;
+      svg {
+        height: 20px;
+        width: 20px;
+        filter: invert(84%) sepia(13%) saturate(11%) hue-rotate(352deg) brightness(90%) contrast(91%);
+      }
+    }
+    .dd-item-padding {
+      padding: 0.5rem 0.75rem 0rem 0.75rem;
+    }
+    .search-box {
+      margin-top: 10px;
+    }
+    .org-list {
+      max-height: 60vh;
+      overflow: auto;
+    }
+    .tick-ico {
+      filter: invert(50%) sepia(13%) saturate(208%) hue-rotate(153deg) brightness(99%) contrast(86%);
+    }
+    .org-list-item {
+      cursor: pointer;
+    }
+    .org-list-item:hover {
+      .avatar {
+        background: #fcfcfc no-repeat center/cover;
+      }
+      .tick-ico {
+        filter: invert(35%) sepia(17%) saturate(238%) hue-rotate(153deg) brightness(94%) contrast(89%);
+      }
+    }
+  }
+}
+
+// Left Menu
+.left-menu {
+  background-color: #e8ebf4;
+  padding: 1rem 0.5rem;
+  border-radius: 5px;
+  ul {
+    overflow: auto;
+    margin: 0px;
+    padding: 0px;
+    li {
+      float: left;
+      list-style: none;
+      width: 100%;
+      padding: 5px 10px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 3px 0px;
+    }
+    li.active {
+      background-color: $primary;
+      color: $white;
+    }
+    li:not(.active):hover {
+      background-color: #d2daf0;
+    }
+  }
+}
+.manage-sso {
+  .title-with-toggle {
+    width: 100%;
+    input[type=checkbox] {
+      /* Double-sized Checkboxes */
+      -ms-transform: scale(1.5); /* IE */
+      -moz-transform: scale(1.5); /* FF */
+      -webkit-transform: scale(1.5); /* Safari and Chrome */
+      -o-transform: scale(1.5); /* Opera */
+      transform: scale(1.5);
+      margin-top: 5px;
+    }
+  }
+}
+.help-text {
+  overflow: auto;
+  div {
+    margin: 0px 0px 5px 0px;
+    background-color: #eaeaea;
+    float: left;
+    padding: 2px 10px;
+    font-size: 11px;
+    border-radius: 5px;
+    border: 1px solid #e1e1e1;
+  }
+}
+.org-invite-or {
+  padding: 1rem 0rem;
+  h2 {
+    width: 100%; 
+    text-align: center; 
+    border-bottom: 1px solid #000; 
+    line-height: 0.1em;
+    margin: 10px 0 20px;
+  } 
+  
+  h2 span { 
+     background:#fff; 
+     padding:0 10px; 
+  }
 }
 
 .realtime-avatars {
