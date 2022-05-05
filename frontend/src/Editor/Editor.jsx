@@ -476,7 +476,7 @@ class Editor extends React.Component {
           appDefinition,
         },
         () => {
-          this.props.ymap.set('appDef', {
+          this.props.ymap?.set('appDef', {
             newDefinition: appDefinition,
             editingVersionId: this.state.editingVersion?.id,
           });
@@ -501,7 +501,7 @@ class Editor extends React.Component {
           appDefinition,
         },
         () => {
-          this.props.ymap.set('appDef', {
+          this.props.ymap?.set('appDef', {
             newDefinition: appDefinition,
             editingVersionId: this.state.editingVersion?.id,
           });
