@@ -1,5 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 import React, { createRef } from 'react';
+import cx from 'classnames';
 import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -49,7 +50,6 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import RealtimeAvatars from './RealtimeAvatars';
 import InitVersionCreateModal from './InitVersionCreateModal';
-import { useHotkeys } from 'react-hotkeys-hook';
 
 setAutoFreeze(false);
 enablePatches();
@@ -285,6 +285,7 @@ class Editor extends React.Component {
               data.data_queries.forEach((query) => {
                 queryState[query.name] = {
                   ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+                  kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
                   ...this.state.currentState.queries[query.name],
                 };
               });
@@ -463,9 +464,17 @@ class Editor extends React.Component {
       this.canRedo = true;
 
       if (!appDefinition) return;
-      this.setState({
-        appDefinition,
-      });
+      this.setState(
+        {
+          appDefinition,
+        },
+        () => {
+          this.props.ymap.set('appDef', {
+            newDefinition: appDefinition,
+            editingVersionId: this.state.editingVersion?.id,
+          });
+        }
+      );
     }
   };
 
@@ -480,9 +489,17 @@ class Editor extends React.Component {
       this.canRedo = this.currentVersionChanges.hasOwnProperty(this.currentVersion + 1);
 
       if (!appDefinition) return;
-      this.setState({
-        appDefinition,
-      });
+      this.setState(
+        {
+          appDefinition,
+        },
+        () => {
+          this.props.ymap.set('appDef', {
+            newDefinition: appDefinition,
+            editingVersionId: this.state.editingVersion?.id,
+          });
+        }
+      );
     }
   };
 
@@ -1071,8 +1088,6 @@ class Editor extends React.Component {
                   closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
                 />
               )}
-
-              <div className="layout-buttons cursor-pointer">{this.renderLayoutIcon(currentLayout === 'desktop')}</div>
               <div className="navbar-nav flex-row order-md-last release-buttons">
                 <div className="nav-item dropdown d-none d-md-flex me-2">
                   <a
@@ -1128,6 +1143,14 @@ class Editor extends React.Component {
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
+              appDefinition={{
+                components: appDefinition.components,
+                queries: dataQueries,
+                selectedComponent: this.state?.selectedComponent,
+              }}
+              setSelectedComponent={this.setSelectedComponent}
+              removeComponent={this.removeComponent}
+              runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
               toggleAppMaintenance={this.toggleAppMaintenance}
               is_maintenance_on={this.state.app.is_maintenance_on}
             />
@@ -1360,8 +1383,55 @@ class Editor extends React.Component {
               </div>
             </div>
             <div className="editor-sidebar">
-              <div className="col-md-12">
-                <div></div>
+              <div className="editor-actions col-md-12">
+                <div className="m-auto undo-redo-buttons">
+                  <svg
+                    onClick={this.handleUndo}
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-back-up', {
+                      disabled: !this.canUndo,
+                    })}
+                    width="44"
+                    height="44"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none">
+                      <title>undo</title>
+                    </path>
+                    <path d="M9 13l-4 -4l4 -4m-4 4h11a4 4 0 0 1 0 8h-1" fill="none">
+                      <title>undo</title>
+                    </path>
+                  </svg>
+                  <svg
+                    title="redo"
+                    onClick={this.handleRedo}
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
+                      disabled: !this.canRedo,
+                    })}
+                    width="44"
+                    height="44"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none">
+                      <title>redo</title>
+                    </path>
+                    <path d="M15 13l4 -4l-4 -4m4 4h-11a4 4 0 0 0 0 8h1" />
+                  </svg>
+                </div>
+                <div className="layout-buttons cursor-pointer">
+                  {this.renderLayoutIcon(currentLayout === 'desktop')}
+                </div>
               </div>
 
               <EditorKeyHooks moveComponents={this.moveComponents}></EditorKeyHooks>

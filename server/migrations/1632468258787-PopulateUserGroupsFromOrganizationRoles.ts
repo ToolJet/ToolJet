@@ -11,7 +11,7 @@ export class PopulateUserGroupsFromOrganizationRoles1632468258787 implements Mig
     const entityManager = queryRunner.manager;
     const OrganizationRepository = entityManager.getRepository(Organization);
 
-    const organizations = await OrganizationRepository.find();
+    const organizations = await OrganizationRepository.find({ select: ['id'] });
 
     for (const organization of organizations) {
       const groupPermissions = await setupInitialGroupPermissions(entityManager, organization);
