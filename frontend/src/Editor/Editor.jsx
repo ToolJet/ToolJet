@@ -154,11 +154,13 @@ class Editor extends React.Component {
    * current appDef is equal to the newAppDef then we do not trigger a realtimeSave
    */
   initRealtimeSave = () => {
-    this.props.ymap.observe(() => {
-      if (!isEqual(this.state.editingVersion?.id, this.props.ymap.get('appDef').editingVersionId)) return;
-      if (isEqual(this.state.appDefinition, this.props.ymap.get('appDef').newDefinition)) return;
+    if (!config.MULTIPLAYER_FEATURE_ENABLE) return null;
 
-      this.realtimeSave(this.props.ymap.get('appDef').newDefinition, { skipAutoSave: true, skipYmapUpdate: true });
+    this.props.ymap?.observe(() => {
+      if (!isEqual(this.state.editingVersion?.id, this.props.ymap?.get('appDef').editingVersionId)) return;
+      if (isEqual(this.state.appDefinition, this.props.ymap?.get('appDef').newDefinition)) return;
+
+      this.realtimeSave(this.props.ymap?.get('appDef').newDefinition, { skipAutoSave: true, skipYmapUpdate: true });
     });
   };
 
@@ -393,22 +395,28 @@ class Editor extends React.Component {
   };
 
   dataSourcesChanged = () => {
-    this.socket.send(
-      JSON.stringify({
-        event: 'events',
-        data: { message: 'dataSourcesChanged', appId: this.state.appId },
-      })
-    );
+    if (!isEmpty(this.socket)) {
+      this.socket?.send(
+        JSON.stringify({
+          event: 'events',
+          data: { message: 'dataSourcesChanged', appId: this.state.appId },
+        })
+      );
+    } else {
+      this.fetchDataSources();
+    }
   };
 
   dataQueriesChanged = () => {
     this.setState({ addingQuery: false }, () => {
-      this.socket.send(
-        JSON.stringify({
-          event: 'events',
-          data: { message: 'dataQueriesChanged', appId: this.state.appId },
-        })
-      );
+      if (!isEmpty(this.socket)) {
+        this.socket?.send(
+          JSON.stringify({
+            event: 'events',
+            data: { message: 'dataQueriesChanged', appId: this.state.appId },
+          })
+        );
+      }
     });
   };
 
@@ -486,8 +494,8 @@ class Editor extends React.Component {
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
     if (isEqual(this.state.appDefinition, newDefinition)) return;
-    if (!opts.skipYmapUpdate) {
-      this.props.ymap.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
+    if (config.MULTIPLAYER_FEATURE_ENABLE && !opts.skipYmapUpdate) {
+      this.props.ymap?.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
     }
 
     produce(
@@ -568,7 +576,7 @@ class Editor extends React.Component {
     setStateAsync(_self, newDefinition).then(() => {
       computeComponentState(_self, _self.state.appDefinition.components);
       this.autoSave();
-      this.props.ymap.set('appDef', {
+      this.props.ymap?.set('appDef', {
         newDefinition: newDefinition.appDefinition,
         editingVersionId: this.state.editingVersion?.id,
       });
@@ -592,7 +600,7 @@ class Editor extends React.Component {
         appDefinition,
       },
       () => {
-        this.props.ymap.set('appDef', {
+        this.props.ymap?.set('appDef', {
           newDefinition: appDefinition,
           editingVersionId: this.state.editingVersion?.id,
         });
@@ -1006,11 +1014,13 @@ class Editor extends React.Component {
                   </span>
                 </div>
               )}
-              <RealtimeAvatars
-                updatePresence={this.props.updatePresence}
-                editingVersionId={this.state?.editingVersion?.id}
-                self={this.props.self}
-              />
+              {config.MULTIPLAYER_FEATURE_ENABLE && (
+                <RealtimeAvatars
+                  updatePresence={this.props.updatePresence}
+                  editingVersionId={this.state?.editingVersion?.id}
+                  self={this.props.self}
+                />
+              )}
               {editingVersion && (
                 <AppVersionsManager
                   appId={appId}
@@ -1099,7 +1109,7 @@ class Editor extends React.Component {
                     backgroundColor: this.state.appDefinition.globalSettings.canvasBackgroundColor,
                   }}
                 >
-                  {this.props.othersOnSameVersion.map(({ id, presence }) => {
+                  {this.props?.othersOnSameVersion?.map(({ id, presence }) => {
                     if (!presence) return null;
                     return (
                       <Cursor key={id} name={presence.firstName} color={presence.color} x={presence.x} y={presence.y} />
