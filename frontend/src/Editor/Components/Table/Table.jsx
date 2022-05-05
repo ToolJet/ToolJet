@@ -967,7 +967,11 @@ export function Table({
                           {...cellProps}
                         >
                           <div className="td-container">
-                            <HighlightedColumn value={cell.value} term={state.globalFilter}></HighlightedColumn>
+                            {cell?.column?.columnType ? (
+                              cell.render('Cell')
+                            ) : (
+                              <HighlightedColumn value={cell.value} term={state.globalFilter}></HighlightedColumn>
+                            )}
                           </div>
                         </td>
                       );
