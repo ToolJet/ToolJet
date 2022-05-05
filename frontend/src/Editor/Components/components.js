@@ -2029,8 +2029,8 @@ export const componentTypes = [
     description: 'Vertical Separator between components',
     component: 'VerticalDivider',
     defaultSize: {
-      width: 10,
-      height: 200,
+      width: 2,
+      height: 100,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
