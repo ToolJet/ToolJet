@@ -836,7 +836,12 @@ class Editor extends React.Component {
     this.setState({ showComments: !this.state.showComments });
   };
 
-  setSelectedComponent = (id, component, multiSelect) => {
+  setSelectedComponent = (id, component, multiSelect = false) => {
+    if (!multiSelect) {
+      this.switchSidebarTab(1);
+      this.setState({ selectedComponent: { id, component } });
+    }
+
     if (this.state.selectedComponents.length === 0 || !multiSelect) {
       this.switchSidebarTab(1);
     } else {
