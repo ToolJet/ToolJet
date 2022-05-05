@@ -462,9 +462,17 @@ class Editor extends React.Component {
       this.canRedo = true;
 
       if (!appDefinition) return;
-      this.setState({
-        appDefinition,
-      });
+      this.setState(
+        {
+          appDefinition,
+        },
+        () => {
+          this.props.ymap.set('appDef', {
+            newDefinition: appDefinition,
+            editingVersionId: this.state.editingVersion?.id,
+          });
+        }
+      );
     }
   };
 
@@ -479,9 +487,17 @@ class Editor extends React.Component {
       this.canRedo = this.currentVersionChanges.hasOwnProperty(this.currentVersion + 1);
 
       if (!appDefinition) return;
-      this.setState({
-        appDefinition,
-      });
+      this.setState(
+        {
+          appDefinition,
+        },
+        () => {
+          this.props.ymap.set('appDef', {
+            newDefinition: appDefinition,
+            editingVersionId: this.state.editingVersion?.id,
+          });
+        }
+      );
     }
   };
 
