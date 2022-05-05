@@ -1,7 +1,7 @@
 import { QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { customerOpeations, productOperations, orderOperations, couponOperations } from './operation';
-
+const WooCommerceRestApi = require('@woocommerce/woocommerce-rest-api').default;
 export default class Woocommerce implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     const WooCommerce = await this.getConnection(sourceOptions);
@@ -30,7 +30,6 @@ export default class Woocommerce implements QueryService {
   }
   async getConnection(sourceOptions: any, _options?: object): Promise<any> {
     const { host, consumer_key, consumer_secret } = sourceOptions;
-    const WooCommerceRestApi = require('@woocommerce/woocommerce-rest-api').default;
     const WooCommerce = new WooCommerceRestApi({
       url: host, // Your store URL
       consumerKey: consumer_key, // Your consumer key
@@ -42,7 +41,6 @@ export default class Woocommerce implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const { host, consumer_key, consumer_secret } = sourceOptions;
-    const WooCommerceRestApi = require('@woocommerce/woocommerce-rest-api').default;
     const WooCommerce = new WooCommerceRestApi({
       url: host, // Your store URL
       consumerKey: consumer_key, // Your consumer key
@@ -53,7 +51,7 @@ export default class Woocommerce implements QueryService {
       .then((response) => {
         return response.data;
       })
-      .catch((error) => {
+      .catch(() => {
         throw new Error('Invalid credentials');
       });
     if (client?.data?.status == '401') {
