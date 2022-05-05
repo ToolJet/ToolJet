@@ -15,9 +15,7 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
   const computedStyles = {
     backgroundColor,
     color: textColor,
-    width: '100%',
     borderRadius: `${borderRadius}px`,
-    height: '30px',
     display: visibility ? '' : 'none',
   };
 
