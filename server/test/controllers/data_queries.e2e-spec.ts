@@ -491,6 +491,9 @@ describe('data queries controller', () => {
       createdQueries.push(response.body);
     }
 
+    // Latest query should be on top
+    createdQueries.reverse();
+
     const response = await request(app.getHttpServer())
       .get(`/api/data_queries?app_id=${application.id}&app_version_id=${appVersion.id}`)
       .set('Authorization', authHeaderForUser(adminUserData.user));
