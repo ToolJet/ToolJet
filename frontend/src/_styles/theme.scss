@@ -4772,7 +4772,8 @@ div#driver-page-overlay {
   color: rgba(0,0,0,.65) ;
   background-color: #fff ;
   border: 1px solid #d9d9d9;
-  width: 40px !important;
+  min-width: 40px;
+  width: auto !important;
 }
 .widget-buttongroup-label{
   font-weight: 600;
