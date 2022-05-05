@@ -26,6 +26,10 @@ export const LeftSidebar = ({
   globalSettingsChanged,
   globalSettings,
   currentState,
+  appDefinition,
+  setSelectedComponent,
+  removeComponent,
+  runQuery,
   toggleAppMaintenance,
   is_maintenance_on,
 }) => {
@@ -33,7 +37,14 @@ export const LeftSidebar = ({
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   return (
     <div className="left-sidebar">
-      <LeftSidebarInspector darkMode={darkMode} currentState={currentState} />
+      <LeftSidebarInspector
+        darkMode={darkMode}
+        currentState={currentState}
+        appDefinition={appDefinition}
+        setSelectedComponent={setSelectedComponent}
+        removeComponent={removeComponent}
+        runQuery={runQuery}
+      />
       <LeftSidebarDataSources
         darkMode={darkMode}
         appId={appId}

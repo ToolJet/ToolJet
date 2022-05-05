@@ -283,6 +283,7 @@ class Editor extends React.Component {
               data.data_queries.forEach((query) => {
                 queryState[query.name] = {
                   ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+                  kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
                   ...this.state.currentState.queries[query.name],
                 };
               });
@@ -1078,6 +1079,14 @@ class Editor extends React.Component {
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
+              appDefinition={{
+                components: appDefinition.components,
+                queries: dataQueries,
+                selectedComponent: this.state?.selectedComponent,
+              }}
+              setSelectedComponent={this.setSelectedComponent}
+              removeComponent={this.removeComponent}
+              runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
               toggleAppMaintenance={this.toggleAppMaintenance}
               is_maintenance_on={this.state.app.is_maintenance_on}
             />

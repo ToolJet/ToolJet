@@ -4,6 +4,7 @@ import Tooltip from 'react-bootstrap/Tooltip';
 
 export const SidebarPinnedButton = ({ state, component, updateState, darkMode }) => {
   const tooltipMsg = state ? `Unpin ${component}` : `Pin ${component}`;
+  const pinnedIcon = !state ? 'pinned' : 'pinnedoff';
 
   return (
     <SidebarPinnedButton.OverlayContainer tip={tooltipMsg}>
@@ -13,7 +14,12 @@ export const SidebarPinnedButton = ({ state, component, updateState, darkMode })
         }`}
         onClick={updateState}
       >
-        <img className="svg-icon" src={`/assets/images/icons/editor/left-sidebar/pinned.svg`} width="16" height="16" />
+        <img
+          className="svg-icon"
+          src={`/assets/images/icons/editor/left-sidebar/${pinnedIcon}.svg`}
+          width="16"
+          height="16"
+        />
       </div>
     </SidebarPinnedButton.OverlayContainer>
   );
