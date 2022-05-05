@@ -1,39 +1,46 @@
-import { Body, Controller, Post, Patch, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Patch, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { PasswordRevalidateGuard } from 'src/modules/auth/password-revalidate.guard';
 import { UsersService } from 'src/services/users.service';
+import { User } from 'src/decorators/user.decorator';
+import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
+import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
 import { CreateUserDto, UpdateUserDto } from '@dto/user.dto';
+import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  @UseGuards(MultiOrganizationGuard, SignupDisableGuard)
   @Post('set_password_from_token')
   async create(@Body() userCreateDto: CreateUserDto) {
-    const result = await this.usersService.setupAccountFromInvitationToken(userCreateDto);
-    return result;
+    await this.usersService.setupAccountFromInvitationToken(userCreateDto);
+    return {};
+  }
+
+  @Post('accept-invite')
+  async acceptInvite(@Body() acceptInviteDto: AcceptInviteDto) {
+    await this.usersService.acceptOrganizationInvite(acceptInviteDto);
+    return {};
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch('update')
-  async update(@Request() req, @Body() updateUserDto: UpdateUserDto) {
-    const { first_name, last_name } = updateUserDto;
-    await this.usersService.update(req.user.id, {
-      firstName: first_name,
-      lastName: last_name,
-    });
-    await req.user.reload();
+  async update(@User() user, @Body() updateUserDto: UpdateUserDto) {
+    const { first_name: firstName, last_name: lastName } = updateUserDto;
+    await this.usersService.update(user.id, { firstName, lastName });
+    await user.reload();
     return {
-      first_name: req.user.firstName,
-      last_name: req.user.lastName,
+      first_name: user.firstName,
+      last_name: user.lastName,
     };
   }
 
   @UseGuards(JwtAuthGuard, PasswordRevalidateGuard)
   @Patch('change_password')
-  async changePassword(@Request() req, @Body() body) {
-    const { newPassword } = body;
-    return await this.usersService.update(req.user.id, {
+  async changePassword(@User() user, @Body('newPassword') newPassword) {
+    return await this.usersService.update(user.id, {
       password: newPassword,
     });
   }

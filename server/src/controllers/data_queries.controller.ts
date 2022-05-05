@@ -7,7 +7,6 @@ import {
   Patch,
   Delete,
   Query,
-  Request,
   UseGuards,
   ForbiddenException,
 } from '@nestjs/common';
@@ -19,6 +18,7 @@ import { QueryAuthGuard } from 'src/modules/auth/query-auth.guard';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { AppsService } from '@services/apps.service';
 import { CreateDataQueryDto, UpdateDataQueryDto } from '@dto/data-query.dto';
+import { User } from 'src/decorators/user.decorator';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -31,17 +31,15 @@ export class DataQueriesController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async index(@Request() req, @Query() query) {
+  async index(@User() user, @Query() query) {
     const app = await this.appsService.find(query.app_id);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {
-      id: query.app_id,
-    });
+    const ability = await this.appsAbilityFactory.appsActions(user, query.app_id);
 
     if (!ability.can('getQueries', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const queries = await this.dataQueriesService.all(req.user, query);
+    const queries = await this.dataQueriesService.all(user, query);
     const seralizedQueries = [];
 
     // serialize
@@ -59,16 +57,14 @@ export class DataQueriesController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Request() req, @Body() dataQueryDto: CreateDataQueryDto): Promise<object> {
+  async create(@User() user, @Body() dataQueryDto: CreateDataQueryDto): Promise<object> {
     const { kind, name, options, app_id, app_version_id, data_source_id } = dataQueryDto;
     const appId = app_id;
     const appVersionId = app_version_id;
     const dataSourceId = data_source_id;
 
     const app = await this.appsService.find(appId);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {
-      id: appId,
-    });
+    const ability = await this.appsAbilityFactory.appsActions(user, appId);
 
     if (!ability.can('createQuery', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -83,7 +79,7 @@ export class DataQueriesController {
     }
 
     const dataQuery = await this.dataQueriesService.create(
-      req.user,
+      user,
       name,
       kind,
       options,
@@ -96,32 +92,28 @@ export class DataQueriesController {
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  async update(@Request() req, @Param() params, @Body() updateDataQueryDto: UpdateDataQueryDto) {
+  async update(@User() user, @Param() params, @Body() updateDataQueryDto: UpdateDataQueryDto) {
     const { name, options } = updateDataQueryDto;
     const dataQueryId = params.id;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {
-      id: dataQuery.appId,
-    });
+    const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.appId);
 
     if (!ability.can('updateQuery', dataQuery.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const result = await this.dataQueriesService.update(req.user, dataQueryId, name, options);
+    const result = await this.dataQueriesService.update(user, dataQueryId, name, options);
     return decamelizeKeys(result);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async delete(@Request() req, @Param() params) {
+  async delete(@User() user, @Param() params) {
     const dataQueryId = params.id;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {
-      id: dataQuery.appId,
-    });
+    const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.appId);
 
     if (!ability.can('deleteQuery', dataQuery.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -133,16 +125,13 @@ export class DataQueriesController {
 
   @UseGuards(QueryAuthGuard)
   @Post(':id/run')
-  async runQuery(@Request() req, @Param() params, @Body() updateDataQueryDto: UpdateDataQueryDto) {
-    const dataQueryId = params.id;
+  async runQuery(@User() user, @Param('id') dataQueryId, @Body() updateDataQueryDto: UpdateDataQueryDto) {
     const { options } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
 
-    if (req.user) {
-      const ability = await this.appsAbilityFactory.appsActions(req.user, {
-        id: dataQuery.appId,
-      });
+    if (user) {
+      const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.appId);
 
       if (!ability.can('runQuery', dataQuery.app)) {
         throw new ForbiddenException('you do not have permissions to perform this action');
@@ -152,7 +141,7 @@ export class DataQueriesController {
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(req.user, dataQuery, options);
+      result = await this.dataQueriesService.runQuery(user, dataQuery, options);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {
@@ -177,7 +166,7 @@ export class DataQueriesController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/preview')
-  async previewQuery(@Request() req, @Body() updateDataQueryDto: UpdateDataQueryDto) {
+  async previewQuery(@User() user, @Body() updateDataQueryDto: UpdateDataQueryDto) {
     const { options, query } = updateDataQueryDto;
     const dataQueryEntity = {
       ...query,
@@ -185,9 +174,7 @@ export class DataQueriesController {
     };
 
     if (dataQueryEntity.dataSource) {
-      const ability = await this.appsAbilityFactory.appsActions(req.user, {
-        id: dataQueryEntity.dataSource.appId,
-      });
+      const ability = await this.appsAbilityFactory.appsActions(user, dataQueryEntity.dataSource.appId);
 
       if (!ability.can('previewQuery', dataQueryEntity.dataSource.app)) {
         throw new ForbiddenException('you do not have permissions to perform this action');
@@ -197,7 +184,7 @@ export class DataQueriesController {
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(req.user, dataQueryEntity, options);
+      result = await this.dataQueriesService.runQuery(user, dataQueryEntity, options);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {

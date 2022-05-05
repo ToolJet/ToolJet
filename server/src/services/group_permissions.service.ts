@@ -165,7 +165,7 @@ export class GroupPermissionsService {
           const params = {
             removeGroups: [groupPermission.group],
           };
-          await this.usersService.update(userId, params, manager);
+          await this.usersService.update(userId, params, manager, user.organizationId);
         }
       }
 
@@ -174,7 +174,7 @@ export class GroupPermissionsService {
           const params = {
             addGroups: [groupPermission.group],
           };
-          await this.usersService.update(userId, params, manager);
+          await this.usersService.update(userId, params, manager, user.organizationId);
         }
       }
     });
@@ -272,9 +272,23 @@ export class GroupPermissionsService {
       .getMany();
     const adminUserIds = adminUsers.map((u) => u.userId);
 
-    return await this.userRepository.find({
-      id: Not(In([...usersInGroupIds, ...adminUserIds])),
-      organizationId: user.organizationId,
-    });
+    return await createQueryBuilder(User, 'user')
+      .innerJoin(
+        'user.organizationUsers',
+        'organization_users',
+        'organization_users.organizationId = :organizationId',
+        { organizationId: user.organizationId }
+      )
+      .where('user.id NOT IN (:...userList)', { userList: [...usersInGroupIds, ...adminUserIds] })
+      .getMany();
+  }
+
+  async createUserGroupPermission(userId: string, groupPermissionId: string) {
+    await this.userGroupPermissionsRepository.save(
+      this.userGroupPermissionsRepository.create({
+        userId,
+        groupPermissionId,
+      })
+    );
   }
 }
