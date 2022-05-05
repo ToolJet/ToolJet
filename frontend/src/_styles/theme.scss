@@ -3931,7 +3931,7 @@ input[type="text"] {
 }
 .close-icon {
   position: fixed;
-  top: 45px;
+  top: 84px;
   right: 0;
   width: 60px;
   height: 22;
@@ -3990,9 +3990,9 @@ input[type="text"] {
   color: #36af8b;
 }
 
-.layout-buttons {
-  position: absolute;
-  left: 50%;
+.undo-redo-buttons {
+  flex: 1;
+  padding-left: .5rem;
 }
 
 .app-version-menu {
@@ -5097,4 +5097,10 @@ div#driver-page-overlay {
 }
 .list-timeline:not(.list-timeline-simple) .list-timeline-time {
   top: auto;
+}
+.editor-actions {
+  border-bottom: 1px solid #eee;
+  padding: 5px;
+  display: flex;
+  justify-content: end;
 }
