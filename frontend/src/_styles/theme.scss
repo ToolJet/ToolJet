@@ -4914,15 +4914,14 @@ div#driver-page-overlay {
     filter: brightness(0) invert(1);
   }
 
-  .node-key {
+  .node-key-outline {
+    height: 1rem!important;
+    border: 1px solid transparent!important;
     color: #ccd4df;
   }
  
   .selected-node {
     border-color: $primary-light !important;
-    .node-key.badge {
-      color: $primary-light;
-    }
   }
   .json-tree-icon-container  .selected-node  > svg:first-child {
     filter: invert(65%) sepia(62%) saturate(4331%) hue-rotate(204deg) brightness(106%) contrast(97%);
@@ -4956,6 +4955,7 @@ div#driver-page-overlay {
   }
   .json-tree-icon-container {
     max-width: 20px;
+    margin-right: 6px;
   }
   .node-type {
     color: #A6B6CC;
@@ -5030,6 +5030,17 @@ div#driver-page-overlay {
     font-weight: 400 !important;
     height: 1rem !important;
     color:#8092AB;
+  }
+
+  .node-key {
+    font-weight: 400!important;
+    margin-left: -0.25rem!important;
+  }
+
+  .node-key-outline {
+    height: 1rem!important;
+    border: 1px solid transparent!important; 
+    color: #3e525b;
   }
 
 }
