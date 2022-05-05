@@ -6,6 +6,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { computeComponentName } from '@/_helpers/utils';
 import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
 import { Container } from './Container';
+import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
 import { componentTypes } from './Components/components';
@@ -48,6 +49,7 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import RealtimeAvatars from './RealtimeAvatars';
 import InitVersionCreateModal from './InitVersionCreateModal';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 setAutoFreeze(false);
 enablePatches();
@@ -143,7 +145,7 @@ class Editor extends React.Component {
     this.initEventListeners();
     this.setState({
       currentSidebarTab: 2,
-      selectedComponent: null,
+      selectedComponents: [],
     });
   }
 
@@ -575,6 +577,40 @@ class Editor extends React.Component {
     });
   };
 
+  moveComponents = (direction) => {
+    let appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
+    let newComponents = appDefinition.components;
+
+    for (const selectedComponent of this.state.selectedComponents) {
+      newComponents = produce(newComponents, (draft) => {
+        let top = draft[selectedComponent.id].layouts[this.state.currentLayout].top;
+        let left = draft[selectedComponent.id].layouts[this.state.currentLayout].left;
+
+        const gridWidth = (1 * 100) / 43; // width of the canvs grid in percentage
+
+        switch (direction) {
+          case 'ArrowLeft':
+            left = left - gridWidth;
+            break;
+          case 'ArrowRight':
+            left = left + gridWidth;
+            break;
+          case 'ArrowDown':
+            top = top + 10;
+            break;
+          case 'ArrowUp':
+            top = top - 10;
+            break;
+        }
+
+        draft[selectedComponent.id].layouts[this.state.currentLayout].top = top;
+        draft[selectedComponent.id].layouts[this.state.currentLayout].left = left;
+      });
+    }
+    appDefinition.components = newComponents;
+    this.appDefinitionChanged(appDefinition);
+  };
+
   cloneComponent = (newComponent) => {
     const appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
 
@@ -783,9 +819,22 @@ class Editor extends React.Component {
     this.setState({ showComments: !this.state.showComments });
   };
 
-  setSelectedComponent = (id, component) => {
-    this.switchSidebarTab(1);
-    this.setState({ selectedComponent: { id, component } });
+  setSelectedComponent = (id, component, multiSelect) => {
+    if (this.state.selectedComponents.length === 0 || !multiSelect) {
+      this.switchSidebarTab(1);
+    } else {
+      this.switchSidebarTab(2);
+    }
+
+    const isAlreadySelected = this.state.selectedComponents.find((component) => component.id === id);
+
+    if (!isAlreadySelected) {
+      this.setState((prevState) => {
+        return {
+          selectedComponents: [...(multiSelect ? prevState.selectedComponents : []), { id, component }],
+        };
+      });
+    }
   };
 
   filterQueries = (value) => {
@@ -927,6 +976,7 @@ class Editor extends React.Component {
     const {
       currentSidebarTab,
       selectedComponent = {},
+      selectedComponents = [],
       appDefinition,
       appId,
       slug,
@@ -1087,7 +1137,7 @@ class Editor extends React.Component {
                 style={{ transform: `scale(${zoomLevel})` }}
                 onClick={(e) => {
                   if (['real-canvas', 'modal'].includes(e.target.className)) {
-                    this.switchSidebarTab(2);
+                    this.setState({ selectedComponents: [], currentSidebarTab: 2 });
                   }
                 }}
               >
@@ -1121,6 +1171,7 @@ class Editor extends React.Component {
                         currentLayout={currentLayout}
                         deviceWindowWidth={deviceWindowWidth}
                         selectedComponent={selectedComponent}
+                        selectedComponents={selectedComponents}
                         appLoading={isLoading}
                         onEvent={this.handleEvent}
                         onComponentOptionChanged={this.handleOnComponentOptionChanged}
@@ -1313,20 +1364,23 @@ class Editor extends React.Component {
                 <div></div>
               </div>
 
+              <EditorKeyHooks moveComponents={this.moveComponents}></EditorKeyHooks>
+
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
-                  {selectedComponent &&
+                  {selectedComponents.length === 1 &&
                   !isEmpty(appDefinition.components) &&
-                  !isEmpty(appDefinition.components[selectedComponent.id]) ? (
+                  !isEmpty(appDefinition.components[selectedComponents[0].id]) ? (
                     <Inspector
                       cloneComponent={this.cloneComponent}
+                      moveComponents={this.moveComponents}
                       componentDefinitionChanged={this.componentDefinitionChanged}
                       dataQueries={dataQueries}
                       removeComponent={this.removeComponent}
-                      selectedComponentId={selectedComponent.id}
+                      selectedComponentId={selectedComponents[0].id}
                       currentState={currentState}
                       allComponents={appDefinition.components}
-                      key={selectedComponent.id}
+                      key={selectedComponents[0].id}
                       switchSidebarTab={this.switchSidebarTab}
                       apps={apps}
                       darkMode={this.props.darkMode}

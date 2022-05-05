@@ -14,6 +14,7 @@ import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
+import produce from 'immer';
 
 export const Container = ({
   canvasWidth,
@@ -33,6 +34,7 @@ export const Container = ({
   removeComponent,
   deviceWindowWidth,
   selectedComponent,
+  selectedComponents,
   darkMode,
   showComments,
   appVersionsId,
@@ -217,25 +219,24 @@ export const Container = ({
 
     // Computing the left offset
     const leftOffset = nodeBounds.x - canvasBounds.x;
-    const left = convertXToPercentage(leftOffset, canvasWidth);
+    const currentLeftOffset = boxes[componentId].layouts[currentLayout].left;
+    const leftDiff = currentLeftOffset - convertXToPercentage(leftOffset, canvasWidth);
 
     // Computing the top offset
-    const top = nodeBounds.y - canvasBounds.y;
+    const currentTopOffset = boxes[componentId].layouts[currentLayout].top;
+    const topDiff = boxes[componentId].layouts[currentLayout].top - (nodeBounds.y - canvasBounds.y);
 
-    let newBoxes = {
-      ...boxes,
-      [id]: {
-        ...boxes[id],
-        layouts: {
-          ...boxes[id]['layouts'],
-          [currentLayout]: {
-            ...boxes[id]['layouts'][currentLayout],
-            top: top,
-            left: left,
-          },
-        },
-      },
-    };
+    let newBoxes = { ...boxes };
+
+    for (const selectedComponent of selectedComponents) {
+      newBoxes = produce(newBoxes, (draft) => {
+        const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
+        const leftOffset = draft[selectedComponent.id].layouts[currentLayout].left;
+
+        draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
+        draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
+      });
+    }
 
     setBoxes(newBoxes);
   }
@@ -463,7 +464,7 @@ export const Container = ({
               removeComponent={removeComponent}
               currentLayout={currentLayout}
               deviceWindowWidth={deviceWindowWidth}
-              isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
+              isSelectedComponent={selectedComponents.find((component) => component.id === key)}
               darkMode={darkMode}
               onComponentHover={onComponentHover}
               hoveredComponent={hoveredComponent}
