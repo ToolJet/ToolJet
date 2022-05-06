@@ -10,11 +10,11 @@ const redis = new RedisPubSub({
   redisOpts: process.env.REDIS_URL
     ? process.env.REDIS_URL
     : {
-      host: process.env.REDIS_HOST || 'localhost',
-      port: process.env.REDIS_PORT || 6379,
-      username: process.env.REDIS_USER || '',
-      password: process.env.REDIS_PASSWORD || '',
-    },
+        host: process.env.REDIS_HOST || 'localhost',
+        port: process.env.REDIS_PORT || 6379,
+        username: process.env.REDIS_USER || '',
+        password: process.env.REDIS_PASSWORD || '',
+      },
 });
 
 setPersistence({
@@ -33,7 +33,7 @@ setPersistence({
 
 @WebSocketGateway({ path: '/yjs' })
 export class YjsGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
   @WebSocketServer()
   server: Server;
 
@@ -72,5 +72,5 @@ export class YjsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.onConnection(client, args);
   }
 
-  handleDisconnect(client: any): void { }
+  handleDisconnect(client: any): void {}
 }
