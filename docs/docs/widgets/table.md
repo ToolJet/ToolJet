@@ -1,3 +1,7 @@
+---
+id: table
+title: Table
+---
 # Table
 
 Tables can be used for both displaying and editing data.

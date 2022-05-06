@@ -1,22 +1,30 @@
+import { Controller, Get, Request, Post, UseGuards, Body, Param, BadRequestException } from '@nestjs/common';
+import { User } from 'src/decorators/user.decorator';
+import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppAuthenticationDto, AppForgotPasswordDto, AppPasswordResetDto } from '@dto/app-authentication.dto';
-import { Controller, Get, Request, Post, UseGuards, Body } from '@nestjs/common';
-import { PasswordLoginDisabledGuard } from 'src/modules/auth/password-login-disabled.guard';
 import { AuthService } from '../services/auth.service';
 
 @Controller()
 export class AppController {
   constructor(private authService: AuthService) {}
 
-  @UseGuards(PasswordLoginDisabledGuard)
-  @Post('authenticate')
-  async login(@Body() appAuthDto: AppAuthenticationDto) {
-    return this.authService.login(appAuthDto);
+  @Post(['authenticate', 'authenticate/:organizationId'])
+  async login(@Body() appAuthDto: AppAuthenticationDto, @Param('organizationId') organizationId) {
+    return this.authService.login(appAuthDto.email, appAuthDto.password, organizationId);
   }
 
-  @UseGuards(PasswordLoginDisabledGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('switch/:organizationId')
+  async switch(@Param('organizationId') organizationId, @User() user) {
+    if (!organizationId) {
+      throw new BadRequestException();
+    }
+    return await this.authService.switchOrganization(organizationId, user);
+  }
+
   @Post('signup')
   async signup(@Body() appAuthDto: AppAuthenticationDto) {
-    return this.authService.signup(appAuthDto);
+    return this.authService.signup(appAuthDto.email);
   }
 
   @Post('/forgot_password')

@@ -1,5 +1,6 @@
 ---
-sidebar_label: Generate file
+id: generate-file
+title: Generate file
 ---
 
 # Generate file
