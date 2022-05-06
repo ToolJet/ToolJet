@@ -1,5 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 import React, { createRef } from 'react';
+import cx from 'classnames';
 import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -155,11 +156,13 @@ class Editor extends React.Component {
    * current appDef is equal to the newAppDef then we do not trigger a realtimeSave
    */
   initRealtimeSave = () => {
-    this.props.ymap.observe(() => {
-      if (!isEqual(this.state.editingVersion?.id, this.props.ymap.get('appDef').editingVersionId)) return;
-      if (isEqual(this.state.appDefinition, this.props.ymap.get('appDef').newDefinition)) return;
+    if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
 
-      this.realtimeSave(this.props.ymap.get('appDef').newDefinition, { skipAutoSave: true, skipYmapUpdate: true });
+    this.props.ymap?.observe(() => {
+      if (!isEqual(this.state.editingVersion?.id, this.props.ymap?.get('appDef').editingVersionId)) return;
+      if (isEqual(this.state.appDefinition, this.props.ymap?.get('appDef').newDefinition)) return;
+
+      this.realtimeSave(this.props.ymap?.get('appDef').newDefinition, { skipAutoSave: true, skipYmapUpdate: true });
     });
   };
 
@@ -222,6 +225,11 @@ class Editor extends React.Component {
   initEventListeners() {
     document.addEventListener('mousemove', this.onMouseMove);
     document.addEventListener('mouseup', this.onMouseUp);
+    this.socket?.addEventListener('message', (event) => {
+      if (event.data === 'versionReleased') this.fetchApp();
+      else if (event.data === 'dataQueriesChanged') this.fetchDataQueries();
+      else if (event.data === 'dataSourcesChanged') this.fetchDataSources();
+    });
   }
 
   componentWillUnmount() {
@@ -279,6 +287,7 @@ class Editor extends React.Component {
               data.data_queries.forEach((query) => {
                 queryState[query.name] = {
                   ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+                  kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
                   ...this.state.currentState.queries[query.name],
                 };
               });
@@ -389,12 +398,29 @@ class Editor extends React.Component {
   };
 
   dataSourcesChanged = () => {
-    this.fetchDataSources();
+    if (!isEmpty(this.socket)) {
+      this.socket?.send(
+        JSON.stringify({
+          event: 'events',
+          data: { message: 'dataSourcesChanged', appId: this.state.appId },
+        })
+      );
+    } else {
+      this.fetchDataSources();
+    }
   };
 
   dataQueriesChanged = () => {
-    this.fetchDataQueries();
-    this.setState({ addingQuery: false });
+    this.setState({ addingQuery: false }, () => {
+      if (!isEmpty(this.socket)) {
+        this.socket?.send(
+          JSON.stringify({
+            event: 'events',
+            data: { message: 'dataQueriesChanged', appId: this.state.appId },
+          })
+        );
+      }
+    });
   };
 
   switchSidebarTab = (tabIndex) => {
@@ -446,9 +472,17 @@ class Editor extends React.Component {
       this.canRedo = true;
 
       if (!appDefinition) return;
-      this.setState({
-        appDefinition,
-      });
+      this.setState(
+        {
+          appDefinition,
+        },
+        () => {
+          this.props.ymap?.set('appDef', {
+            newDefinition: appDefinition,
+            editingVersionId: this.state.editingVersion?.id,
+          });
+        }
+      );
     }
   };
 
@@ -463,16 +497,24 @@ class Editor extends React.Component {
       this.canRedo = this.currentVersionChanges.hasOwnProperty(this.currentVersion + 1);
 
       if (!appDefinition) return;
-      this.setState({
-        appDefinition,
-      });
+      this.setState(
+        {
+          appDefinition,
+        },
+        () => {
+          this.props.ymap?.set('appDef', {
+            newDefinition: appDefinition,
+            editingVersionId: this.state.editingVersion?.id,
+          });
+        }
+      );
     }
   };
 
   appDefinitionChanged = (newDefinition, opts = {}) => {
     if (isEqual(this.state.appDefinition, newDefinition)) return;
-    if (!opts.skipYmapUpdate) {
-      this.props.ymap.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
+    if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
+      this.props.ymap?.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
     }
 
     produce(
@@ -553,7 +595,7 @@ class Editor extends React.Component {
     setStateAsync(_self, newDefinition).then(() => {
       computeComponentState(_self, _self.state.appDefinition.components);
       this.autoSave();
-      this.props.ymap.set('appDef', {
+      this.props.ymap?.set('appDef', {
         newDefinition: newDefinition.appDefinition,
         editingVersionId: this.state.editingVersion?.id,
       });
@@ -571,13 +613,16 @@ class Editor extends React.Component {
 
   globalSettingsChanged = (key, value) => {
     const appDefinition = { ...this.state.appDefinition };
-
     appDefinition.globalSettings[key] = value;
     this.setState(
       {
         appDefinition,
       },
       () => {
+        this.props.ymap?.set('appDef', {
+          newDefinition: appDefinition,
+          editingVersionId: this.state.editingVersion?.id,
+        });
         this.autoSave();
       }
     );
@@ -790,12 +835,22 @@ class Editor extends React.Component {
   };
 
   onVersionRelease = (versionId) => {
-    this.setState({
-      app: {
-        ...this.state.app,
-        current_version_id: versionId,
+    this.setState(
+      {
+        app: {
+          ...this.state.app,
+          current_version_id: versionId,
+        },
       },
-    });
+      () => {
+        this.socket.send(
+          JSON.stringify({
+            event: 'events',
+            data: { message: 'versionReleased', appId: this.state.appId },
+          })
+        );
+      }
+    );
   };
 
   onZoomChanged = (zoom) => {
@@ -983,11 +1038,13 @@ class Editor extends React.Component {
                   </span>
                 </div>
               )}
-              <RealtimeAvatars
-                updatePresence={this.props.updatePresence}
-                editingVersionId={this.state?.editingVersion?.id}
-                self={this.props.self}
-              />
+              {config.ENABLE_MULTIPLAYER_EDITING && (
+                <RealtimeAvatars
+                  updatePresence={this.props.updatePresence}
+                  editingVersionId={this.state?.editingVersion?.id}
+                  self={this.props.self}
+                />
+              )}
               {editingVersion && (
                 <AppVersionsManager
                   appId={appId}
@@ -998,8 +1055,6 @@ class Editor extends React.Component {
                   closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
                 />
               )}
-
-              <div className="layout-buttons cursor-pointer">{this.renderLayoutIcon(currentLayout === 'desktop')}</div>
               <div className="navbar-nav flex-row order-md-last release-buttons">
                 <div className="nav-item dropdown d-none d-md-flex me-2">
                   <a
@@ -1048,12 +1103,21 @@ class Editor extends React.Component {
               darkMode={this.props.darkMode}
               dataSources={this.state.dataSources}
               dataSourcesChanged={this.dataSourcesChanged}
+              dataQueriesChanged={this.dataQueriesChanged}
               onZoomChanged={this.onZoomChanged}
               toggleComments={this.toggleComments}
               switchDarkMode={this.changeDarkMode}
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
+              appDefinition={{
+                components: appDefinition.components,
+                queries: dataQueries,
+                selectedComponent: this.state?.selectedComponent,
+              }}
+              setSelectedComponent={this.setSelectedComponent}
+              removeComponent={this.removeComponent}
+              runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
               toggleAppMaintenance={this.toggleAppMaintenance}
               is_maintenance_on={this.state.app.is_maintenance_on}
             />
@@ -1077,7 +1141,7 @@ class Editor extends React.Component {
                     backgroundColor: this.state.appDefinition.globalSettings.canvasBackgroundColor,
                   }}
                 >
-                  {this.props.othersOnSameVersion.map(({ id, presence }) => {
+                  {this.props?.othersOnSameVersion?.map(({ id, presence }) => {
                     if (!presence) return null;
                     return (
                       <Cursor key={id} name={presence.firstName} color={presence.color} x={presence.x} y={presence.y} />
@@ -1288,10 +1352,56 @@ class Editor extends React.Component {
               </div>
             </div>
             <div className="editor-sidebar">
-              <div className="col-md-12">
-                <div></div>
+              <div className="editor-actions col-md-12">
+                <div className="m-auto undo-redo-buttons">
+                  <svg
+                    onClick={this.handleUndo}
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-back-up', {
+                      disabled: !this.canUndo,
+                    })}
+                    width="44"
+                    height="44"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none">
+                      <title>undo</title>
+                    </path>
+                    <path d="M9 13l-4 -4l4 -4m-4 4h11a4 4 0 0 1 0 8h-1" fill="none">
+                      <title>undo</title>
+                    </path>
+                  </svg>
+                  <svg
+                    title="redo"
+                    onClick={this.handleRedo}
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
+                      disabled: !this.canRedo,
+                    })}
+                    width="44"
+                    height="44"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none">
+                      <title>redo</title>
+                    </path>
+                    <path d="M15 13l4 -4l-4 -4m4 4h-11a4 4 0 0 0 0 8h1" />
+                  </svg>
+                </div>
+                <div className="layout-buttons cursor-pointer">
+                  {this.renderLayoutIcon(currentLayout === 'desktop')}
+                </div>
               </div>
-
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
                   {selectedComponent &&

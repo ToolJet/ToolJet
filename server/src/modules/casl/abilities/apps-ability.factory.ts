@@ -15,6 +15,7 @@ type Actions =
   | 'createVersions'
   | 'deleteVersions'
   | 'deleteApp'
+  | 'deleteDataSource'
   | 'deleteQuery'
   | 'fetchUsers'
   | 'fetchVersions'
@@ -37,7 +38,7 @@ export type AppsAbility = Ability<[Actions, Subjects]>;
 export class AppsAbilityFactory {
   constructor(private usersService: UsersService) {}
 
-  async appsActions(user: User, params: any) {
+  async appsActions(user: User, id?: string) {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<AppsAbility>);
 
     if (await this.usersService.userCan(user, 'create', 'User')) {
@@ -49,7 +50,7 @@ export class AppsAbilityFactory {
       can('cloneApp', App, { organizationId: user.organizationId });
     }
 
-    if (await this.usersService.userCan(user, 'read', 'App', params.id)) {
+    if (await this.usersService.userCan(user, 'read', 'App', id)) {
       can('viewApp', App, { organizationId: user.organizationId });
 
       can('fetchUsers', App, { organizationId: user.organizationId });
@@ -66,7 +67,7 @@ export class AppsAbilityFactory {
       });
     }
 
-    if (await this.usersService.userCan(user, 'update', 'App', params.id)) {
+    if (await this.usersService.userCan(user, 'update', 'App', id)) {
       can('updateParams', App, { organizationId: user.organizationId });
       can('createVersions', App, { organizationId: user.organizationId });
       can('deleteVersions', App, { organizationId: user.organizationId });
@@ -79,9 +80,10 @@ export class AppsAbilityFactory {
 
       can('updateDataSource', App, { organizationId: user.organizationId });
       can('createDataSource', App, { organizationId: user.organizationId });
+      can('deleteDataSource', App, { organizationId: user.organizationId });
     }
 
-    if (await this.usersService.userCan(user, 'delete', 'App', params.id)) {
+    if (await this.usersService.userCan(user, 'delete', 'App', id)) {
       can('deleteApp', App, { organizationId: user.organizationId });
     }
 

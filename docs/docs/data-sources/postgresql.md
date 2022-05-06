@@ -1,5 +1,6 @@
 ---
-sidebar_position: 17
+id: postgresql
+title: PostgreSQL
 ---
 
 # PostgreSQL

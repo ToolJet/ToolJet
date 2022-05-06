@@ -1,6 +1,6 @@
 ---
-sidebar_position: 3
-sidebar_label: Baserow
+id: baserow
+title: Baserow
 ---
 
 # Baserow

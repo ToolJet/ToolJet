@@ -34,7 +34,6 @@ describe('folders controller', () => {
     it('should list all folders in an organization', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
-        role: 'admin',
       });
       const { user } = adminUserData;
 
@@ -66,7 +65,6 @@ describe('folders controller', () => {
 
       const anotherUserData = await createUser(nestApp, {
         email: 'admin@organization.com',
-        role: 'admin',
       });
       await getManager().save(Folder, {
         name: 'Folder1',
@@ -187,7 +185,6 @@ describe('folders controller', () => {
 
     const anotherUserData = await createUser(nestApp, {
       email: 'admin@organization.com',
-      role: 'admin',
     });
     await getManager().save(Folder, {
       name: 'another org folder',
@@ -229,7 +226,7 @@ describe('folders controller', () => {
       folderCreate: false,
       organization: newUserData.organization,
     });
-    const group = await getManager().findOne(GroupPermission, {
+    const group = await getManager().findOneOrFail(GroupPermission, {
       where: { group: 'folder-handler' },
     });
     await createAppGroupPermission(nestApp, appInFolder, group.id, {
@@ -278,7 +275,6 @@ describe('folders controller', () => {
     it('should create new folder in an organization', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
-        role: 'admin',
       });
       const { user } = adminUserData;
 

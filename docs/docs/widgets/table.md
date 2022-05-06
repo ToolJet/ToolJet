@@ -1,11 +1,15 @@
+---
+id: table
+title: Table
+---
 # Table
 
 Tables can be used for both displaying and editing data.
 
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - Widget Reference - Table](/img/widgets/table/table.png)
-
+<div style={{textAlign: 'left'}}>
+    <figure class="video_container">
+    <iframe width="630" height="400" src="https://www.youtube.com/embed/hTrdkUtz3aA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </figure>
 </div>
 
 ## Table data

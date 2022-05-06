@@ -1,5 +1,6 @@
 ---
-sidebar_position: 12
+id: keyboard-shortcuts
+title: Keyboard Shortcuts
 ---
 
 # Keyboard Shortcuts

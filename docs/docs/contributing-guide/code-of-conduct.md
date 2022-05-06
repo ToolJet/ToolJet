@@ -1,10 +1,10 @@
 ---
-sidebar_position: 3
-sidebar_label: Code of Conduct
+id: code-of-conduct
+title: Contributor Code of Conduct
 ---
 
 # Contributor Covenant Code of Conduct  
-&nbsp
+
 ## Our Pledge
 
 In the interest of fostering an open and welcoming environment, we as

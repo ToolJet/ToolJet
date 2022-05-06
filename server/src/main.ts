@@ -22,10 +22,7 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-
-  if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
-    app.useWebSocketAdapter(new WsAdapter(app));
-  }
+  app.useWebSocketAdapter(new WsAdapter(app));
   app.setGlobalPrefix('api');
   app.enableCors();
 
