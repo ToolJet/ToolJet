@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import LazyLoad from 'react-lazyload';
 
 export const Image = function Image({ height, properties, styles, fireEvent }) {
-  const { source, loadingState } = properties;
+  const { source, loadingState, alternativeText, zoomButtons } = properties;
   const { visibility, disabledState, borderType, backgroundColor, padding, objectFit } = styles;
   const widgetVisibility = visibility ?? true;
   const imageRef = useRef(null);
@@ -23,6 +23,15 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
       return layoutHeightWithOffset - document.documentElement.clientHeight;
     }
     return 0;
+  }
+
+  function zoomIn() {
+    console.log('zzom');
+    document.getElementsByClassName('zoom-image-wrap').classList.add('mystyle');
+  }
+  function zoomOut() {
+    console.log('zzom');
+    document.getElementsByClassName('zoom-image-wrap').classList.add('mystyle');
   }
 
   return (
@@ -46,13 +55,26 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
               <div className="spinner-border " role="status"></div>
             </center>
           ) : (
-            <img
-              src={source}
-              className={`${borderType !== 'none' ? borderType : ''}`}
-              style={{ backgroundColor, padding: Number.parseInt(padding), objectFit }}
-              height={height}
-              onClick={() => fireEvent('onClick')}
-            />
+            <>
+              <img
+                src={source}
+                className={`zoom-image-wrap ${borderType !== 'none' ? borderType : ''}`}
+                style={{ backgroundColor, padding: Number.parseInt(padding), objectFit }}
+                height={height}
+                onClick={() => fireEvent('onClick')}
+                alt={alternativeText}
+              />
+              {zoomButtons && (
+                <div>
+                  <button className="btn" onClick={() => zoomIn()}>
+                    +
+                  </button>
+                  <button className="btn" onClick={() => zoomOut()}>
+                    -
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </LazyLoad>
       )}

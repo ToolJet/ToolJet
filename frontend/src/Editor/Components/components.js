@@ -804,6 +804,8 @@ export const componentTypes = [
     properties: {
       source: { type: 'code', displayName: 'URL' },
       loadingState: { type: 'toggle', displayName: 'Loading state' },
+      alternativeText: { type: 'code', displayName: 'Alternative text' },
+      zoomButtons: { type: 'toggle', displayName: 'Zoom button' },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -835,6 +837,8 @@ export const componentTypes = [
         source: { value: 'https://www.svgrepo.com/show/34217/image.svg' },
         visible: { value: '{{true}}' },
         loadingState: { value: '{{false}}' },
+        alternativeText: { value: '' },
+        zoomButtons: { value: '{{false}}' },
       },
       events: [],
       styles: {
