@@ -416,9 +416,6 @@ class Editor extends React.Component {
   };
 
   switchSidebarTab = (tabIndex) => {
-    if (tabIndex === 2) {
-      this.setState({ selectedComponent: null });
-    }
     this.setState({
       currentSidebarTab: tabIndex,
     });
@@ -523,6 +520,7 @@ class Editor extends React.Component {
   };
 
   handleInspectorView = (component) => {
+    console.log('Inspector view for component', component);
     if (this.state.selectedComponent?.hasOwnProperty('component')) {
       const { id: selectedComponentId } = this.state.selectedComponent;
       if (selectedComponentId === component.id) {
@@ -837,11 +835,6 @@ class Editor extends React.Component {
   };
 
   setSelectedComponent = (id, component, multiSelect = false) => {
-    if (!multiSelect) {
-      this.switchSidebarTab(1);
-      this.setState({ selectedComponent: { id, component } });
-    }
-
     if (this.state.selectedComponents.length === 0 || !multiSelect) {
       this.switchSidebarTab(1);
     } else {
@@ -997,7 +990,7 @@ class Editor extends React.Component {
   render() {
     const {
       currentSidebarTab,
-      selectedComponent = {},
+      // selectedComponent = {},
       selectedComponents = [],
       appDefinition,
       appId,
@@ -1151,7 +1144,7 @@ class Editor extends React.Component {
               appDefinition={{
                 components: appDefinition.components,
                 queries: dataQueries,
-                selectedComponent: this.state?.selectedComponent,
+                selectedComponent: selectedComponents ? selectedComponents[selectedComponents.length - 1] : {},
               }}
               setSelectedComponent={this.setSelectedComponent}
               removeComponent={this.removeComponent}
@@ -1198,7 +1191,7 @@ class Editor extends React.Component {
                         zoomLevel={zoomLevel}
                         currentLayout={currentLayout}
                         deviceWindowWidth={deviceWindowWidth}
-                        selectedComponent={selectedComponent}
+                        // selectedComponent={selectedComponent}
                         selectedComponents={selectedComponents}
                         appLoading={isLoading}
                         onEvent={this.handleEvent}
@@ -1461,7 +1454,7 @@ class Editor extends React.Component {
                       darkMode={this.props.darkMode}
                     ></Inspector>
                   ) : (
-                    <div className="mt-5 p-2">Please select a component to inspect</div>
+                    <center className="mt-5 p-2">Please select a component to inspect</center>
                   )}
                 </div>
               )}

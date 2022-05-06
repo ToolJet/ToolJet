@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import cx from 'classnames';
 import { v4 as uuidv4 } from 'uuid';
@@ -33,7 +34,7 @@ export const Container = ({
   currentLayout,
   removeComponent,
   deviceWindowWidth,
-  selectedComponent,
+  // selectedComponent,
   selectedComponents,
   darkMode,
   showComments,
@@ -210,7 +211,7 @@ export const Container = ({
   );
 
   function onDragStop(e, componentId, direction, currentLayout) {
-    const id = componentId ? componentId : uuidv4();
+    // const id = componentId ? componentId : uuidv4();
 
     // Get the width of the canvas
     const canvasBounds = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
@@ -223,7 +224,7 @@ export const Container = ({
     const leftDiff = currentLeftOffset - convertXToPercentage(leftOffset, canvasWidth);
 
     // Computing the top offset
-    const currentTopOffset = boxes[componentId].layouts[currentLayout].top;
+    // const currentTopOffset = boxes[componentId].layouts[currentLayout].top;
     const topDiff = boxes[componentId].layouts[currentLayout].top - (nodeBounds.y - canvasBounds.y);
 
     let newBoxes = { ...boxes };
@@ -308,7 +309,7 @@ export const Container = ({
     }
   }
 
-  React.useEffect(() => {}, [selectedComponent]);
+  React.useEffect(() => {}, [selectedComponents]);
 
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
@@ -484,7 +485,7 @@ export const Container = ({
                 removeComponent,
                 currentLayout,
                 deviceWindowWidth,
-                selectedComponent,
+                selectedComponents,
                 darkMode,
                 onComponentHover,
                 hoveredComponent,
