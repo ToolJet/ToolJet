@@ -5,6 +5,9 @@ module.exports = async () => {
     rootDir: '.',
     testEnvironment: 'node',
     testRegex: '.spec.ts$',
+    transformIgnorePatterns: [
+      "node_modules/(?!(lib0|y-protocols)/)"
+    ],
     testPathIgnorePatterns: ['.e2e-spec.ts$'],
     transform: {
       '^.+\\.(t|j)s$': 'ts-jest',
