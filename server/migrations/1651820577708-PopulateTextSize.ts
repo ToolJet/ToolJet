@@ -16,7 +16,7 @@ export class PopulateTextSize1651820577708 implements MigrationInterface {
           const component = components[componentId];
 
           if (component.component.component === 'Text') {
-            component.component.definition.properties.textSize = { value: 14 };
+            component.component.definition.styles.textSize = { value: 14 };
             components[componentId] = {
               ...component,
               component: {
