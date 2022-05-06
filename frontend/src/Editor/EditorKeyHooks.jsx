@@ -1,11 +1,8 @@
-import React, { useState, useRef, useLayoutEffect } from 'react';
-import { useHotkeys } from 'react-hotkeys-hook';
+import React from 'react';
+import useKeyHooks from '@/_hooks/useKeyHooks';
 
 export const EditorKeyHooks = ({ moveComponents }) => {
-  useHotkeys('up, down, left, right', (e) => {
-    e.preventDefault();
-    moveComponents(e.code);
-  });
+  useKeyHooks(['up, down, left, right'], moveComponents);
 
   return <></>;
 };

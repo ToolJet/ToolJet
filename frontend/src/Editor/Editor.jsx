@@ -520,7 +520,7 @@ class Editor extends React.Component {
   };
 
   handleInspectorView = (component) => {
-    console.log('Inspector view for component', component);
+    console.log('Inspector view for component', this.state.selectedComponent);
     if (this.state.selectedComponent?.hasOwnProperty('component')) {
       const { id: selectedComponentId } = this.state.selectedComponent;
       if (selectedComponentId === component.id) {
