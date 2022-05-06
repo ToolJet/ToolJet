@@ -527,6 +527,13 @@ class Editor extends React.Component {
     this.setState({ slug: newSlug });
   };
 
+  removeComponents = () => {
+    if (!this.isVersionReleased() && this.state?.selectedComponents?.length > 1) {
+      const selectedComponents = this.state?.selectedComponents;
+      selectedComponents.forEach((component) => this.removeComponent(component));
+    }
+  };
+
   removeComponent = (component) => {
     if (!this.isVersionReleased()) {
       let newDefinition = cloneDeep(this.state.appDefinition);
@@ -1435,6 +1442,7 @@ class Editor extends React.Component {
               <EditorKeyHooks
                 moveComponents={this.moveComponents}
                 handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
+                removeMultipleComponents={this.removeComponents}
               />
 
               {currentSidebarTab === 1 && (
