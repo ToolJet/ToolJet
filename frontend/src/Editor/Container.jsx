@@ -34,7 +34,6 @@ export const Container = ({
   currentLayout,
   removeComponent,
   deviceWindowWidth,
-  // selectedComponent,
   selectedComponents,
   darkMode,
   showComments,

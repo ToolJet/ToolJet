@@ -997,7 +997,6 @@ class Editor extends React.Component {
   render() {
     const {
       currentSidebarTab,
-      // selectedComponent = {},
       selectedComponents = [],
       appDefinition,
       appId,
@@ -1198,7 +1197,6 @@ class Editor extends React.Component {
                         zoomLevel={zoomLevel}
                         currentLayout={currentLayout}
                         deviceWindowWidth={deviceWindowWidth}
-                        // selectedComponent={selectedComponent}
                         selectedComponents={selectedComponents}
                         appLoading={isLoading}
                         onEvent={this.handleEvent}
