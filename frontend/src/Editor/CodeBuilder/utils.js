@@ -109,7 +109,6 @@ export function canShowHint(editor, ignoreBraces = false) {
 }
 
 export function handleChange(editor, onChange, suggestions, ignoreBraces = false) {
-  console.log('checki', suggestions);
   let state = editor.state.matchHighlighter;
   editor.addOverlay((state.overlay = makeOverlay(state.options.style)));
 
