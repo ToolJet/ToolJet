@@ -2,8 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import LazyLoad from 'react-lazyload';
 
 export const Image = function Image({ height, properties, styles, fireEvent }) {
-  const { source } = properties;
-  const { visibility, disabledState, borderType, backgroundColor, padding } = styles;
+  const { source, loadingState } = properties;
+  const { visibility, disabledState, borderType, backgroundColor, padding, objectFit } = styles;
   const widgetVisibility = visibility ?? true;
   const imageRef = useRef(null);
   const [imageOffset, setImageOffset] = useState(0);
@@ -41,13 +41,19 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
           placeholder={<Placeholder />}
           debounce={500}
         >
-          <img
-            src={source}
-            className={`${borderType !== 'none' ? borderType : ''}`}
-            style={{ backgroundColor, padding: Number.parseInt(padding) }}
-            height={height}
-            onClick={() => fireEvent('onClick')}
-          />
+          {loadingState === true ? (
+            <center>
+              <div className="spinner-border " role="status"></div>
+            </center>
+          ) : (
+            <img
+              src={source}
+              className={`${borderType !== 'none' ? borderType : ''}`}
+              style={{ backgroundColor, padding: Number.parseInt(padding), objectFit }}
+              height={height}
+              onClick={() => fireEvent('onClick')}
+            />
+          )}
         </LazyLoad>
       )}
     </div>
