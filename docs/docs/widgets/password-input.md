@@ -1,3 +1,7 @@
+---
+id: password-input
+title: Password Input
+---
 # Password Input
 
 A Password Input widget provides a way for the users to securely enter a password. The Password Input is a one-line plain text editor in which the text is obscured so that it cannot be read, by replacing each character with an asterisk ("*") symbol.

@@ -1,5 +1,6 @@
 ---
-sidebar_position: 14
+id: mssql
+title: MS SQL Server / Azure SQL databases
 ---
 
 # MS SQL Server / Azure SQL databases

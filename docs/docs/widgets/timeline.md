@@ -1,3 +1,7 @@
+---
+id: timeline
+title: Timeline
+---
 # Timeline
 
 Timeline widget can be used to do a visual representation of a sequence of events

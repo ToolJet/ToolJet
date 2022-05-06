@@ -1,3 +1,7 @@
+---
+id: qr-scanner
+title: QR Scanner
+---
 # QR Scanner
 Scan QR codes using device camera and hold the data they carry.
 
