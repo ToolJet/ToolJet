@@ -519,15 +519,8 @@ class Editor extends React.Component {
     computeComponentState(this, newDefinition.components);
   };
 
-  handleInspectorView = (component) => {
-    console.log('Inspector view for component', this.state.selectedComponent);
-    if (this.state.selectedComponent?.hasOwnProperty('component')) {
-      const { id: selectedComponentId } = this.state.selectedComponent;
-      if (selectedComponentId === component.id) {
-        this.setState({ selectedComponent: null });
-        this.switchSidebarTab(2);
-      }
-    }
+  handleInspectorView = () => {
+    this.switchSidebarTab(2);
   };
 
   handleSlugChange = (newSlug) => {
@@ -562,7 +555,7 @@ class Editor extends React.Component {
       this.appDefinitionChanged(newDefinition, {
         skipAutoSave: this.isVersionReleased(),
       });
-      this.handleInspectorView(component);
+      this.handleInspectorView();
     }
   };
 
@@ -592,6 +585,13 @@ class Editor extends React.Component {
     });
   };
 
+  handleEditorEscapeKeyPress = () => {
+    if (this.state?.selectedComponents?.length > 0) {
+      this.setState({ selectedComponents: [] });
+      this.handleInspectorView();
+    }
+  };
+
   moveComponents = (direction) => {
     let appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
     let newComponents = appDefinition.components;
@@ -601,7 +601,7 @@ class Editor extends React.Component {
         let top = draft[selectedComponent.id].layouts[this.state.currentLayout].top;
         let left = draft[selectedComponent.id].layouts[this.state.currentLayout].left;
 
-        const gridWidth = (1 * 100) / 43; // width of the canvs grid in percentage
+        const gridWidth = (1 * 100) / 43; // width of the canvas grid in percentage
 
         switch (direction) {
           case 'ArrowLeft':
@@ -1432,7 +1432,10 @@ class Editor extends React.Component {
                 </div>
               </div>
 
-              <EditorKeyHooks moveComponents={this.moveComponents}></EditorKeyHooks>
+              <EditorKeyHooks
+                moveComponents={this.moveComponents}
+                handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
+              />
 
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
