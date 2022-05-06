@@ -110,6 +110,7 @@ module.exports = {
       apiUrl: `${API_URL[environment] || ''}/api`,
       SERVER_IP: process.env.SERVER_IP,
       COMMENT_FEATURE_ENABLE: true,
+      ENABLE_MULTIPLAYER_EDITING: true,
     }),
   },
 };
