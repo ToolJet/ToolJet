@@ -22,9 +22,8 @@ export class AppConfigService {
       'APM_VENDOR',
       'SENTRY_DNS',
       'SENTRY_DEBUG',
-      'SSO_GOOGLE_OAUTH2_CLIENT_ID',
-      'SSO_GIT_OAUTH2_CLIENT_ID',
-      'DISABLE_PASSWORD_LOGIN',
+      'DISABLE_SIGNUPS',
+      'MULTI_ORGANIZATION',
     ];
   }
 
