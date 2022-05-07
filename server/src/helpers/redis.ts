@@ -50,7 +50,7 @@ export class RedisInstance {
     this.doc.off('update', this.updateHandler);
     this.rps.docs.delete(this.name);
     return this.rps.subscriber.unsubscribe(this.name, this.awarenessChannel);
-  }
+  };
 }
 
 /**
@@ -78,7 +78,15 @@ export class RedisPubSub {
     this.subscriber.on('message', (channel: string, message: any) => {
       if (channel.includes('-awareness')) {
         const pdoc = this.docs.get(channel.replace('-awareness', ''));
-        awarenessProtocol.applyAwarenessUpdate(pdoc.doc.awareness, new Uint8Array(message.split(',')), this.subscriber);
+        try {
+          awarenessProtocol.applyAwarenessUpdate(
+            pdoc.doc.awareness,
+            new Uint8Array(message.split(',')),
+            this.subscriber
+          );
+        } catch (exception) {
+          console.error(exception, exception.stack);
+        }
       } else {
         const pdoc = this.docs.get(channel);
         if (pdoc) {
@@ -104,7 +112,7 @@ export class RedisPubSub {
     const redisInstance = new RedisInstance(this, name, ydoc);
     this.docs.set(name, redisInstance);
     return redisInstance;
-  }
+  };
 
   destroy = async () => {
     const docs = this.docs;
@@ -114,7 +122,7 @@ export class RedisPubSub {
     this.subscriber.quit();
     this.publisher = null;
     this.subscriber = null;
-  }
+  };
 
   /**
    * @param {string} name
@@ -124,5 +132,5 @@ export class RedisPubSub {
     if (doc) {
       return doc.destroy();
     }
-  }
+  };
 }
