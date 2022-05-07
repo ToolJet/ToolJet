@@ -46,7 +46,7 @@ export class RedisInstance {
     this.rps.publisher.publish(this.awarenessChannel, update);
   };
 
-  destroy() {
+  destroy = () => {
     this.doc.off('update', this.updateHandler);
     this.rps.docs.delete(this.name);
     return this.rps.subscriber.unsubscribe(this.name, this.awarenessChannel);
