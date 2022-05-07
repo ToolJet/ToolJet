@@ -31,7 +31,7 @@ export class DataQueriesService {
 
     return await this.dataQueriesRepository.find({
       where: whereClause,
-      order: { name: 'ASC' },
+      order: { createdAt: 'DESC' }, // Latest query should be on top
     });
   }
 
