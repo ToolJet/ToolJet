@@ -46,7 +46,7 @@ export class RedisInstance {
     this.rps.publisher.publish(this.awarenessChannel, update);
   };
 
-  destroy() {
+  destroy = () => {
     this.doc.off('update', this.updateHandler);
     this.rps.docs.delete(this.name);
     return this.rps.subscriber.unsubscribe(this.name, this.awarenessChannel);
@@ -97,7 +97,7 @@ export class RedisPubSub {
    * @param {Y.Doc} ydoc
    * @return {RedisInstance}
    */
-  bindState(name: string, ydoc: Y.Doc): RedisInstance {
+  bindState = (name: string, ydoc: Y.Doc): RedisInstance => {
     if (this.docs.has(name)) {
       throw new Error(`"${name}" is already bound to this RedisPubSub instance`);
     }
@@ -106,7 +106,7 @@ export class RedisPubSub {
     return redisInstance;
   }
 
-  async destroy() {
+  destroy = async () => {
     const docs = this.docs;
     this.docs = new Map();
     await Promise.all(Array.from(docs.values()).map((doc) => doc.destroy()));
@@ -119,7 +119,7 @@ export class RedisPubSub {
   /**
    * @param {string} name
    */
-  closeDoc(name: any) {
+  closeDoc = (name: any) => {
     const doc = this.docs.get(name);
     if (doc) {
       return doc.destroy();
