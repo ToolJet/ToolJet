@@ -106,7 +106,7 @@ export class RedisPubSub {
     return redisInstance;
   }
 
-  async destroy = () => {
+  destroy = async () => {
     const docs = this.docs;
     this.docs = new Map();
     await Promise.all(Array.from(docs.values()).map((doc) => doc.destroy()));
