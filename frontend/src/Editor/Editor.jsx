@@ -393,22 +393,30 @@ class Editor extends React.Component {
   };
 
   dataSourcesChanged = () => {
-    this.socket.send(
-      JSON.stringify({
-        event: 'events',
-        data: { message: 'dataSourcesChanged', appId: this.state.appId },
-      })
-    );
+    if (this.socket instanceof WebSocket) {
+      this.socket?.send(
+        JSON.stringify({
+          event: 'events',
+          data: { message: 'dataSourcesChanged', appId: this.state.appId },
+        })
+      );
+    } else {
+      this.fetchDataSources();
+    }
   };
 
   dataQueriesChanged = () => {
     this.setState({ addingQuery: false }, () => {
-      this.socket.send(
-        JSON.stringify({
-          event: 'events',
-          data: { message: 'dataQueriesChanged', appId: this.state.appId },
-        })
-      );
+      if (this.socket instanceof WebSocket) {
+        this.socket?.send(
+          JSON.stringify({
+            event: 'events',
+            data: { message: 'dataQueriesChanged', appId: this.state.appId },
+          })
+        );
+      } else {
+        this.fetchDataQueries();
+      }
     });
   };
 
