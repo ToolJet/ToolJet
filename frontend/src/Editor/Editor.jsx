@@ -529,8 +529,36 @@ class Editor extends React.Component {
 
   removeComponents = () => {
     if (!this.isVersionReleased() && this.state?.selectedComponents?.length > 1) {
+      let newDefinition = cloneDeep(this.state.appDefinition);
       const selectedComponents = this.state?.selectedComponents;
-      selectedComponents.forEach((component) => this.removeComponent(component));
+
+      selectedComponents.forEach((component) => {
+        let childComponents = [];
+
+        if (newDefinition.components[component.id].component.component === 'Tabs') {
+          childComponents = Object.keys(newDefinition.components).filter((key) =>
+            newDefinition.components[key].parent?.startsWith(component.id)
+          );
+        } else {
+          childComponents = Object.keys(newDefinition.components).filter(
+            (key) => newDefinition.components[key].parent === component.id
+          );
+        }
+
+        childComponents.forEach((componentId) => {
+          delete newDefinition.components[componentId];
+        });
+
+        delete newDefinition.components[component.id];
+      });
+
+      toast('Selected components deleted! (⌘Z to undo)', {
+        icon: '🗑️',
+      });
+      this.appDefinitionChanged(newDefinition, {
+        skipAutoSave: this.isVersionReleased(),
+      });
+      this.handleInspectorView();
     }
   };
 
