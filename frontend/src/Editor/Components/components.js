@@ -2111,7 +2111,7 @@ export const componentTypes = [
         borderRadius: { value: '{{0}}' },
         disabledState: { value: '{{false}}' },
         selectedTextColor: { value: '#fff' },
-        selectedBackgroundColor: { value: '#7ff00f' },
+        selectedBackgroundColor: { value: '#4D72FA' },
       },
     },
   },
