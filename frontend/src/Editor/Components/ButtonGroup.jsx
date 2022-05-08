@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
-export const ButtonGroup = function Button({ height, properties, styles, fireEvent }) {
-  const { values, labels, label, defaultValue, multiSelection } = properties;
+export const ButtonGroup = function Button({ height, properties, styles, fireEvent, setExposedVariable }) {
+  const { values, labels, label, selected, multiSelection } = properties;
   const {
     backgroundColor,
     textColor,
@@ -19,12 +19,12 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
     display: visibility ? '' : 'none',
   };
 
-  const [defaultActive, setDefaultActive] = useState([defaultValue]);
+  const [defaultActive, setDefaultActive] = useState([selected]);
   const [data, setData] = useState(labels.length > 0 ? labels : values);
 
   useEffect(() => {
-    setDefaultActive(defaultValue);
-  }, [defaultValue]);
+    setDefaultActive(selected);
+  }, [selected]);
 
   useEffect(() => {
     setData(labels.length > 0 ? labels : values.length > 0 ? values : []);
@@ -33,6 +33,10 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
   useEffect(() => {
     setDefaultActive([]);
   }, [multiSelection]);
+
+  useEffect(() => {
+    setExposedVariable('selected', defaultActive);
+  }, [defaultActive]);
 
   const buttonClick = (value) => {
     if (defaultActive.includes(value)) {

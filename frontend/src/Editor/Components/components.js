@@ -2067,7 +2067,7 @@ export const componentTypes = [
       label: { type: 'code', displayName: 'label' },
       values: { type: 'code', displayName: 'values' },
       labels: { type: 'code', displayName: 'Labels' },
-      defaultValue: { type: 'code', displayName: 'Default value' },
+      selected: { type: 'code', displayName: 'Selected buttons' },
       multiSelection: { type: 'toggle', displayName: 'Enable mutiple selection' },
     },
     defaultSize: {
@@ -2090,7 +2090,9 @@ export const componentTypes = [
       selectedTextColor: { type: 'color', displayName: 'Selected text colour' },
       selectedBackgroundColor: { type: 'color', displayName: 'Selected background color' },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      selected: { value: `1` },
+    },
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -2098,7 +2100,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: `Button` },
-        defaultValue: { value: `1` },
+        selected: { value: `1` },
         values: { value: '{{[1,2,3]}}' },
         labels: { value: '' },
         multiSelection: { value: '{{false}}' },
