@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import LazyLoad from 'react-lazyload';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 export const Image = function Image({ height, properties, styles, fireEvent }) {
   const { source, loadingState, alternativeText, zoomButtons } = properties;
@@ -56,24 +57,35 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
             </center>
           ) : (
             <>
-              <img
-                src={source}
-                className={`zoom-image-wrap ${borderType !== 'none' ? borderType : ''}`}
-                style={{ backgroundColor, padding: Number.parseInt(padding), objectFit }}
-                height={height}
-                onClick={() => fireEvent('onClick')}
-                alt={alternativeText}
-              />
-              {zoomButtons && (
-                <div>
-                  <button className="btn" onClick={() => zoomIn()}>
-                    +
-                  </button>
-                  <button className="btn" onClick={() => zoomOut()}>
-                    -
-                  </button>
-                </div>
-              )}
+              <TransformWrapper initialScale={1} initialPositionX={200} initialPositionY={100}>
+                {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+                  <>
+                    <React.Fragment>
+                      <TransformComponent>
+                        <img
+                          src={source}
+                          className={`zoom-image-wrap ${borderType !== 'none' ? borderType : ''}`}
+                          style={{ backgroundColor, padding: Number.parseInt(padding), objectFit }}
+                          height={height}
+                          onClick={() => fireEvent('onClick')}
+                          alt={alternativeText}
+                        />
+                      </TransformComponent>
+                    </React.Fragment>
+
+                    {zoomButtons && (
+                      <div>
+                        <button className="btn" onClick={() => zoomIn()}>
+                          +
+                        </button>
+                        <button className="btn" onClick={() => zoomOut()}>
+                          -
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </TransformWrapper>
             </>
           )}
         </LazyLoad>
