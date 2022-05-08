@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import LazyLoad from 'react-lazyload';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
-export const Image = function Image({ height, properties, styles, fireEvent }) {
+export const Image = function Image({ height, properties, styles, fireEvent, width }) {
   const { source, loadingState, alternativeText, zoomButtons } = properties;
   const { visibility, disabledState, borderType, backgroundColor, padding, objectFit } = styles;
   const widgetVisibility = visibility ?? true;
@@ -12,7 +12,6 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
   function Placeholder() {
     return <div className="skeleton-image" style={{ objectFit: 'contain', height }}></div>;
   }
-
   useEffect(() => {
     setImageOffset(computeOffset());
   }, [imageRef]);
@@ -24,15 +23,6 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
       return layoutHeightWithOffset - document.documentElement.clientHeight;
     }
     return 0;
-  }
-
-  function zoomIn() {
-    console.log('zzom');
-    document.getElementsByClassName('zoom-image-wrap').classList.add('mystyle');
-  }
-  function zoomOut() {
-    console.log('zzom');
-    document.getElementsByClassName('zoom-image-wrap').classList.add('mystyle');
   }
 
   return (
@@ -65,14 +55,18 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
                         <img
                           src={source}
                           className={`zoom-image-wrap ${borderType !== 'none' ? borderType : ''}`}
-                          style={{ backgroundColor, padding: Number.parseInt(padding), objectFit }}
+                          style={{
+                            backgroundColor,
+                            padding: Number.parseInt(padding),
+                            objectFit,
+                          }}
                           height={height}
                           onClick={() => fireEvent('onClick')}
                           alt={alternativeText}
+                          width={width}
                         />
                       </TransformComponent>
                     </React.Fragment>
-
                     {zoomButtons && (
                       <div>
                         <button className="btn" onClick={() => zoomIn()}>
