@@ -162,6 +162,7 @@ const sidebars = {
       items: [
         'how-to/bulk-update-multiple-rows',
         'how-to/oauth2-authorization',
+        'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
       ],
     },
