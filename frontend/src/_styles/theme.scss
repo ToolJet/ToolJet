@@ -5115,3 +5115,7 @@ div#driver-page-overlay {
   display: flex;
   justify-content: end;
 }
+
+.react-transform-wrapper .react-transform-component{
+  transform: translate3d(0px, 0px, 0px) scale(1) !important;
+}

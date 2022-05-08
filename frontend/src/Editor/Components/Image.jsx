@@ -57,8 +57,8 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
             </center>
           ) : (
             <>
-              <TransformWrapper initialScale={1} initialPositionX={200} initialPositionY={100}>
-                {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+              <TransformWrapper>
+                {({ zoomIn, zoomOut }) => (
                   <>
                     <React.Fragment>
                       <TransformComponent>
