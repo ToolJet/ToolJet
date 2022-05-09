@@ -182,7 +182,7 @@ class Editor extends React.Component {
   };
 
   closeCreateVersionModalPrompt = () => {
-    this.setState({ showCreateVersionModalPrompt: false });
+    this.setState({ isSaving: false, showCreateVersionModalPrompt: false });
   };
 
   onMouseMove = (e) => {
@@ -899,7 +899,7 @@ class Editor extends React.Component {
 
   saveEditingVersion = () => {
     if (this.isVersionReleased()) {
-      this.setState({ showCreateVersionModalPrompt: true });
+      this.setState({ isSaving: false, showCreateVersionModalPrompt: true });
     } else if (!isEmpty(this.state.editingVersion)) {
       appVersionService
         .save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition)
@@ -1051,6 +1051,7 @@ class Editor extends React.Component {
                 className={cx('autosave-indicator', {
                   'autosave-indicator-saving': this.state.isSaving,
                   'text-danger': this.state.saveError,
+                  'd-none': this.isVersionReleased(),
                 })}
               >
                 {this.state.isSaving ? <Spinner size="small" /> : 'All changes are saved'}
