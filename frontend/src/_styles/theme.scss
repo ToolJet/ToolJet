@@ -114,7 +114,7 @@ button {
 .editor {
   .header-container {
     max-width: 100%;
-    padding: 0 15px;
+    padding: 0 10px;
   }
 
   .resizer-active {
@@ -3971,7 +3971,7 @@ input[type="text"] {
 }
 
 .app-name {
-  width: 325px;
+  width: 250px;
   left: 150px;
   position: absolute;
 }
@@ -4010,7 +4010,7 @@ input[type="text"] {
 }
 
 .app-version-menu .dropdown-menu {
-  left: -90px;
+  left: -65px;
   width: 283px;
 }
 
@@ -4021,7 +4021,7 @@ input[type="text"] {
 .app-version-menu .released-subtext {
   font-size: 12px;
   color: #36af8b;
-  padding: 0;
+  padding: 0 8px;
 }
 
 .app-version-menu .create-link {
@@ -5080,8 +5080,9 @@ div#driver-page-overlay {
 
 .realtime-avatars {
   position: absolute;
-  left: 35%;
+  left: 50%;
 }
+
 .widget-style-field-header{
   font-family: 'Inter';
   font-style: normal;
@@ -5114,4 +5115,18 @@ div#driver-page-overlay {
   padding: 5px;
   display: flex;
   justify-content: end;
+}
+
+.autosave-indicator {
+  position: absolute;
+  left: 30%;
+  color: #868aa5;
+  white-space: nowrap;
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.autosave-indicator-saving {
+  left: 34.5%;
 }

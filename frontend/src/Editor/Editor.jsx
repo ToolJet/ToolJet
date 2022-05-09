@@ -41,6 +41,7 @@ import RunjsIcon from './Icons/runjs.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
+import Spinner from '@/_ui/Spinner';
 import { AppVersionsManager } from './AppVersionsManager';
 import { SearchBoxComponent } from '@/_ui/Search';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
@@ -126,6 +127,8 @@ class Editor extends React.Component {
       showInitVersionCreateModal: false,
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
+      isSaving: false,
+      saveError: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -523,7 +526,7 @@ class Editor extends React.Component {
       },
       this.handleAddPatch
     );
-    this.setState({ appDefinition: newDefinition }, () => {
+    this.setState({ isSaving: true, appDefinition: newDefinition }, () => {
       if (!opts.skipAutoSave) this.autoSave();
     });
     computeComponentState(this, newDefinition.components);
@@ -593,6 +596,7 @@ class Editor extends React.Component {
     );
     setStateAsync(_self, newDefinition).then(() => {
       computeComponentState(_self, _self.state.appDefinition.components);
+      this.setState({ isSaving: true });
       this.autoSave();
       this.props.ymap?.set('appDef', {
         newDefinition: newDefinition.appDefinition,
@@ -615,6 +619,7 @@ class Editor extends React.Component {
     appDefinition.globalSettings[key] = value;
     this.setState(
       {
+        isSaving: true,
         appDefinition,
       },
       () => {
@@ -896,19 +901,29 @@ class Editor extends React.Component {
     if (this.isVersionReleased()) {
       this.setState({ showCreateVersionModalPrompt: true });
     } else if (!isEmpty(this.state.editingVersion)) {
-      toast.promise(appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition), {
-        loading: 'Saving...',
-        success: () => {
-          this.setState({
-            editingVersion: {
-              ...this.state.editingVersion,
-              ...{ definition: this.state.appDefinition },
+      appVersionService
+        .save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition)
+        .then(() => {
+          this.setState(
+            {
+              saveError: false,
+              editingVersion: {
+                ...this.state.editingVersion,
+                ...{ definition: this.state.appDefinition },
+              },
             },
+            () => {
+              this.setState({
+                isSaving: false,
+              });
+            }
+          );
+        })
+        .catch(() => {
+          this.setState({ saveError: true, isSaving: false }, () => {
+            toast.error('App could not save.');
           });
-          return 'Saved!';
-        },
-        error: 'App could not save.',
-      });
+        });
     }
   };
 
@@ -1032,6 +1047,14 @@ class Editor extends React.Component {
                   </span>
                 </div>
               )}
+              <span
+                className={cx('autosave-indicator', {
+                  'autosave-indicator-saving': this.state.isSaving,
+                  'text-danger': this.state.saveError,
+                })}
+              >
+                {this.state.isSaving ? <Spinner size="small" /> : 'All changes are saved'}
+              </span>
               {config.ENABLE_MULTIPLAYER_EDITING && (
                 <RealtimeAvatars
                   updatePresence={this.props.updatePresence}
@@ -1054,7 +1077,9 @@ class Editor extends React.Component {
                   <a
                     href={appVersionPreviewLink}
                     target="_blank"
-                    className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
+                    className={`btn btn-sm font-500 color-primary border-0  ${
+                      app?.current_version_id ? '' : 'disabled'
+                    }`}
                     rel="noreferrer"
                   >
                     Preview
