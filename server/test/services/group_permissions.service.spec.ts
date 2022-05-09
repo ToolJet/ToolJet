@@ -18,7 +18,7 @@ describe('GroupPermissionsService', () => {
   describe('.create', () => {
     it('should pass group name', async () => {
       const { adminUser } = await setupOrganization(nestApp);
-      const mockReq = {} as globalThis.Request;
+      const mockReq = { headers: {} } as globalThis.Request;
 
       await expect(service.create(mockReq, adminUser, '')).rejects.toEqual(
         new BadRequestException('Cannot create group without name')
@@ -27,7 +27,7 @@ describe('GroupPermissionsService', () => {
 
     it('should validate uniqueness of group permission group name', async () => {
       const { adminUser } = await setupOrganization(nestApp);
-      const mockReq = {} as globalThis.Request;
+      const mockReq = { headers: {} } as globalThis.Request;
 
       const data = await service.create(mockReq, adminUser, 'avengers');
 
