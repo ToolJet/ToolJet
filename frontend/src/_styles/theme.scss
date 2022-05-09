@@ -2509,6 +2509,7 @@ hr {
     max-height: 10px;
     z-index: 100;
     min-width: 108px;
+    width: max-content;
 
     .handle-content {
       cursor: move;
