@@ -82,6 +82,7 @@ class Editor extends React.Component {
         hideHeader: false,
         appInMaintenance: false,
         canvasMaxWidth: 1292,
+        canvasMaxHeight: 2400,
         canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
       },
     };
@@ -867,6 +868,11 @@ class Editor extends React.Component {
     return canvasBoundingRect?.width;
   };
 
+  getCanvasHeight = () => {
+    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    return canvasBoundingRect?.height;
+  };
+
   renderLayoutIcon = (isDesktopSelected) => {
     if (isDesktopSelected)
       return (
@@ -1131,7 +1137,9 @@ class Editor extends React.Component {
                   className="canvas-area"
                   style={{
                     width: currentLayout === 'desktop' ? '100%' : '450px',
+                    minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                     maxWidth: +this.state.appDefinition.globalSettings.canvasMaxWidth,
+                    maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                     backgroundColor: this.state.appDefinition.globalSettings.canvasBackgroundColor,
                   }}
                 >
@@ -1145,6 +1153,7 @@ class Editor extends React.Component {
                     <>
                       <Container
                         canvasWidth={this.getCanvasWidth()}
+                        canvasHeight={this.getCanvasHeight()}
                         socket={this.socket}
                         showComments={showComments}
                         appVersionsId={this.state?.editingVersion?.id}
