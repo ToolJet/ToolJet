@@ -36,21 +36,21 @@ describe('UsersService', () => {
           firstName: 'John',
           lastName: 'Wick',
         },
-        adminUser.organization,
+        adminUser.defaultOrganizationId,
         ['all_users']
       );
 
       const manager = getManager();
-      const newUser = await manager.findOne(User, { where: { email: 'john@example.com' } });
+      const newUser = await manager.findOneOrFail(User, { where: { email: 'john@example.com' } });
       expect(newUser.firstName).toEqual('John');
       expect(newUser.lastName).toEqual('Wick');
-      expect(newUser.organizationId).toBe(adminUser.organizationId);
+      expect(newUser.defaultOrganizationId).toBe(adminUser.defaultOrganizationId);
 
       // expect default group permission is associated
       const userGroups = await manager.find(UserGroupPermission, { userId: newUser.id });
       expect(userGroups).toHaveLength(1);
 
-      const groupPermission = await manager.findOne(GroupPermission, {
+      const groupPermission = await manager.findOneOrFail(GroupPermission, {
         where: { id: userGroups[0].groupPermissionId },
       });
       expect(groupPermission.group).toEqual('all_users');
@@ -78,7 +78,7 @@ describe('UsersService', () => {
 
     it('should add user groups', async () => {
       const { defaultUser } = await setupOrganization(nestApp);
-      await createGroupPermission(nestApp, { organizationId: defaultUser.organizationId, group: 'new-group' });
+      await createGroupPermission(nestApp, { organizationId: defaultUser.defaultOrganizationId, group: 'new-group' });
 
       await service.update(defaultUser.id, { addGroups: ['new-group'] });
       await defaultUser.reload();
@@ -90,7 +90,7 @@ describe('UsersService', () => {
 
     it('should not add duplicate user groups', async () => {
       const { defaultUser } = await setupOrganization(nestApp);
-      await createGroupPermission(nestApp, { organizationId: defaultUser.organizationId, group: 'new-group' });
+      await createGroupPermission(nestApp, { organizationId: defaultUser.defaultOrganizationId, group: 'new-group' });
 
       await service.update(defaultUser.id, { addGroups: ['new-group'] });
       await defaultUser.reload();
@@ -104,7 +104,7 @@ describe('UsersService', () => {
 
     it('should remove user groups', async () => {
       const { defaultUser } = await setupOrganization(nestApp);
-      await createGroupPermission(nestApp, { organizationId: defaultUser.organizationId, group: 'new-group' });
+      await createGroupPermission(nestApp, { organizationId: defaultUser.defaultOrganizationId, group: 'new-group' });
 
       await service.update(defaultUser.id, { addGroups: ['new-group'] });
       await defaultUser.reload();
@@ -118,7 +118,7 @@ describe('UsersService', () => {
 
     it('should remove user groups only if it exists', async () => {
       const { defaultUser } = await setupOrganization(nestApp);
-      await createGroupPermission(nestApp, { organizationId: defaultUser.organizationId, group: 'new-group' });
+      await createGroupPermission(nestApp, { organizationId: defaultUser.defaultOrganizationId, group: 'new-group' });
 
       await service.update(defaultUser.id, { addGroups: ['new-group'] });
       await defaultUser.reload();
@@ -147,7 +147,7 @@ describe('UsersService', () => {
       await service.update(adminUser.id, { addGroups: ['group1'] });
       await adminUser.reload();
 
-      await createGroupPermission(nestApp, { organizationId: defaultUser.organizationId, group: 'group2' });
+      await createGroupPermission(nestApp, { organizationId: defaultUser.defaultOrganizationId, group: 'group2' });
       await service.update(defaultUser.id, { addGroups: ['group2'] });
       await defaultUser.reload();
 
@@ -185,7 +185,7 @@ describe('UsersService', () => {
         await getManager().find(GroupPermission, {
           where: {
             group: 'all_users',
-            organizationId: defaultUser.organizationId,
+            organizationId: defaultUser.defaultOrganizationId,
           },
         })
       ).map((gp) => gp.id);
@@ -197,7 +197,7 @@ describe('UsersService', () => {
   describe('.groupPermissionsForOrganization', () => {
     it('should return all group permissions within organization', async () => {
       const { defaultUser } = await setupOrganization(nestApp);
-      const groupPermissions = (await service.groupPermissionsForOrganization(defaultUser.organizationId)).map(
+      const groupPermissions = (await service.groupPermissionsForOrganization(defaultUser.defaultOrganizationId)).map(
         (x) => x.group
       );
 
