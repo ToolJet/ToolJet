@@ -172,6 +172,12 @@ class Editor extends React.Component {
     if (!isEqual(prevState.appDefinition, this.state.appDefinition)) {
       computeComponentState(this, this.state.appDefinition.components);
     }
+
+    if (config.ENABLE_MULTIPLAYER_EDITING) {
+      if (this.props.othersOnSameVersion.length !== prevProps.othersOnSameVersion.length) {
+        ReactTooltip.rebuild();
+      }
+    }
   }
 
   isVersionReleased = (version = this.state.editingVersion) => {
