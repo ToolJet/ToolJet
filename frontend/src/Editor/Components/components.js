@@ -762,6 +762,7 @@ export const componentTypes = [
     },
     events: [],
     styles: {
+      textSize: { type: 'number', displayName: 'Text Size' },
       textColor: { type: 'color', displayName: 'Text Color' },
       textAlign: { type: 'alignButtons', displayName: 'Align Text' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
@@ -781,6 +782,7 @@ export const componentTypes = [
       events: [],
       styles: {
         groupActions: { value: 'left' },
+        textSize: { value: 14 },
         textColor: { value: '#000' },
         textAlign: { value: 'left' },
         visibility: { value: '{{true}}' },
