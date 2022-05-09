@@ -1385,6 +1385,7 @@ class Editor extends React.Component {
                       disabled: !this.canUndo,
                     })}
                     width="44"
+                    data-tip="undo"
                     height="44"
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
@@ -1402,6 +1403,7 @@ class Editor extends React.Component {
                   </svg>
                   <svg
                     title="redo"
+                    data-tip="redo"
                     onClick={this.handleRedo}
                     xmlns="http://www.w3.org/2000/svg"
                     className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
