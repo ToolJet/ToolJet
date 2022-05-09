@@ -6,30 +6,33 @@ import { isEmpty } from 'lodash';
 import { setupWSConnection, setPersistence } from 'y-websocket/bin/utils';
 import { RedisPubSub } from '../helpers/redis';
 
-const redis = new RedisPubSub({
-  redisOpts: process.env.REDIS_URL
-    ? process.env.REDIS_URL
-    : {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: process.env.REDIS_PORT || 6379,
-        username: process.env.REDIS_USER || '',
-        password: process.env.REDIS_PASSWORD || '',
-      },
-});
+// TODO: Mock redis for test env
+if (process.env.NODE_ENV !== 'test') {
+  const redis = new RedisPubSub({
+    redisOpts: process.env.REDIS_URL
+      ? process.env.REDIS_URL
+      : {
+          host: process.env.REDIS_HOST || 'localhost',
+          port: process.env.REDIS_PORT || 6379,
+          username: process.env.REDIS_USER || '',
+          password: process.env.REDIS_PASSWORD || '',
+        },
+  });
 
-setPersistence({
-  provider: redis,
-  bindState: async (docName: any, ydoc: any) => {
-    const persistedYdoc = redis.bindState(docName, ydoc);
-    ydoc.on('update', persistedYdoc.updateHandler);
-    ydoc.awareness.on('update', (update, conn) => persistedYdoc.updateAwarenessHandler(ydoc.awareness, update, conn));
-  },
-  writeState: (docName: any, ydoc: any) => {
-    return new Promise((resolve) => {
-      resolve(redis.closeDoc(docName));
-    });
-  },
-});
+  setPersistence({
+    provider: redis,
+    bindState: async (docName: any, ydoc: any) => {
+      const persistedYdoc = redis.bindState(docName, ydoc);
+      ydoc.on('update', persistedYdoc.updateHandler);
+      ydoc.awareness.on('update', (update, conn) => persistedYdoc.updateAwarenessHandler(ydoc.awareness, update, conn));
+    },
+    writeState: (docName: any, ydoc: any) => {
+      return new Promise((resolve) => {
+        resolve(redis.closeDoc(docName));
+      });
+    },
+  });
+}
 
 @WebSocketGateway({ path: '/yjs' })
 export class YjsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -55,8 +58,8 @@ export class YjsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       else {
         try {
           const appId = this.getCookie(request?.headers?.cookie, 'app_id');
-          console.log(`User connected with app-id: ${appId}`);
           setupWSConnection(connection, request, { docName: appId });
+          console.log(`User connected with app-id: ${appId}`);
         } catch (error) {
           console.log(error);
         }
