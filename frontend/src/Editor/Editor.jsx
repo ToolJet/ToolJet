@@ -392,6 +392,7 @@ class Editor extends React.Component {
     });
     this.setState({
       editingVersion: version,
+      isSaving: false,
     });
 
     this.fetchDataSources();
