@@ -397,7 +397,7 @@ class Editor extends React.Component {
   };
 
   dataSourcesChanged = () => {
-    if (!isEmpty(this.socket)) {
+    if (this.socket instanceof WebSocket) {
       this.socket?.send(
         JSON.stringify({
           event: 'events',
@@ -411,13 +411,15 @@ class Editor extends React.Component {
 
   dataQueriesChanged = () => {
     this.setState({ addingQuery: false }, () => {
-      if (!isEmpty(this.socket)) {
+      if (this.socket instanceof WebSocket) {
         this.socket?.send(
           JSON.stringify({
             event: 'events',
             data: { message: 'dataQueriesChanged', appId: this.state.appId },
           })
         );
+      } else {
+        this.fetchDataQueries();
       }
     });
   };
