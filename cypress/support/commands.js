@@ -1,5 +1,6 @@
 import { commonSelectors } from "Selectors/common";
 import { loginSelectors} from "Selectors/login";
+import { commonText } from "Texts/common";
 
 Cypress.Commands.add("login",(email,password)=>{
     cy.visit("/");
@@ -49,5 +50,5 @@ Cypress.Commands.add("dragAndDropWidget" , (widgetName, position = "top") => {
   cy.get(commonSelectors.searchField).type(widgetName);
   cy.get(commonSelectors.firstWidget).trigger("dragstart", { dataTransfer }, { force: true });
   cy.get(commonSelectors.canvas).trigger("drop", position, { dataTransfer, force: true });
-
+  cy.get(commonSelectors.autoSave, { timeout: 9000 }).should("have.text", commonText.autoSave);
 });

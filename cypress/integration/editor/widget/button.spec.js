@@ -24,7 +24,6 @@ describe("Editor- Test Button widget",()=>{
         cy.get(buttonSelector.buttonName).clear().type(` ${buttonText.invalidButtonName}{enter}`);
         cy.verifyToastMessage(commonSelectors.toastMessage,buttonText.buttonNameErrToast);
         cy.get(buttonSelector.buttonName).clear().type(`{selectall}${buttonText.validButtonName}{enter}`);
-        cy.verifyToastMessage(commonSelectors.toastMessage,buttonText.savedToast);
 
         cy.get(buttonSelector.loadingStateFx).click();
         cy.get(buttonSelector.fxLoadingState).should("have.text", buttonText.falseText);

@@ -8,4 +8,5 @@ export const commonSelectors={
     appCardOptions: "[data-cy=app-card-menu-icon]",
     deleteApp: "[data-cy=card-options] :nth-child(5)>span",
     confirmButton: "[data-cy=confirm-yes-button]",
+    autoSave: "[data-cy=autosave-indicator]",
 }

@@ -1,3 +1,9 @@
 export const path={
-    loginPath:"/login"
+    loginPath:"/login",
 }
+
+export const commonText={
+    autoSave:"All changes are saved"
+}
+
+
