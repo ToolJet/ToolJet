@@ -103,6 +103,7 @@ class Viewer extends React.Component {
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
           },
         },
+        dataQueries: data.data_queries,
       },
       () => {
         computeComponentState(this, data?.definition?.components).then(() => {
@@ -185,6 +186,7 @@ class Viewer extends React.Component {
       deviceWindowWidth,
       defaultComponentStateComputed,
       canvasWidth,
+      dataQueries,
     } = this.state;
 
     if (this.state.app?.is_maintenance_on) {
@@ -232,7 +234,9 @@ class Viewer extends React.Component {
                     className="canvas-area"
                     style={{
                       width: canvasWidth,
+                      minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                       maxWidth: +appDefinition.globalSettings?.canvasMaxWidth || 1292,
+                      maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                       backgroundColor: appDefinition.globalSettings?.canvasBackgroundColor || '#edeff5',
                     }}
                   >
@@ -270,6 +274,7 @@ class Viewer extends React.Component {
                               onComponentOptionsChanged(this, component, options)
                             }
                             canvasWidth={this.getCanvasWidth()}
+                            dataQueries={dataQueries}
                           />
                         )}
                       </>

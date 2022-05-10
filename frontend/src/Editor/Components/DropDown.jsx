@@ -12,10 +12,12 @@ export const DropDown = function DropDown({
   onComponentClick,
   id,
   component,
+  exposedVariables,
 }) {
   let { label, value, display_values, values } = properties;
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
+  const { value: exposedValue } = exposedVariables;
 
   if (!_.isArray(values)) {
     values = [];
@@ -46,12 +48,13 @@ export const DropDown = function DropDown({
     if (values?.includes(value)) {
       newValue = value;
     }
+    setExposedVariable('value', value);
     setCurrentValue(newValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   useEffect(() => {
-    setExposedVariable('value', currentValue);
+    if (exposedValue !== currentValue) setExposedVariable('value', currentValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentValue]);
 

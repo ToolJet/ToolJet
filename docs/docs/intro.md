@@ -49,6 +49,7 @@ The references for data sources and widgets:
 - **[Build a WhatsApp CRM](https://blog.tooljet.com/build-a-whatsapp-crm-using-tooljet-within-10-mins/)**
 - **[Build a cryptocurrency dashboard](https://blog.tooljet.com/how-to-build-a-cryptocurrency-dashboard-in-10-minutes/)**
 - **[Build a Redis GUI](https://blog.tooljet.com/building-a-redis-gui-using-tooljet-in-5-minutes/)**
+- **[Build a coupon code manager app](https://blog.tooljet.com/build-a-coupon-code-manager-app-in-10-minutes/)**
 
 ## Help and Support
 - We have extensively documented the features of ToolJet, but in case you are stuck, please feel to e-mail us at **hello@tooljet.com**
