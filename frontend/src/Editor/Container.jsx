@@ -468,6 +468,7 @@ export const Container = ({
               darkMode={darkMode}
               onComponentHover={onComponentHover}
               hoveredComponent={hoveredComponent}
+              isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
               containerProps={{
                 mode,
                 snapToGrid,

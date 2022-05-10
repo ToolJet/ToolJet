@@ -7,6 +7,7 @@ import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
+import produce from 'immer';
 
 export const SubContainer = ({
   mode,
@@ -252,9 +253,6 @@ export const SubContainer = ({
   }
 
   function onDragStop(e, componentId, direction, currentLayout) {
-    const id = componentId ? componentId : uuidv4();
-
-    // Get the width of the canvas
     const canvasWidth = getContainerCanvasWidth();
     const nodeBounds = direction.node.getBoundingClientRect();
 
@@ -262,25 +260,24 @@ export const SubContainer = ({
 
     // Computing the left offset
     const leftOffset = nodeBounds.x - canvasBounds.x;
-    const left = convertXToPercentage(leftOffset, canvasWidth);
+    const currentLeftOffset = boxes[componentId].layouts[currentLayout].left;
+    const leftDiff = currentLeftOffset - convertXToPercentage(leftOffset, canvasWidth);
 
-    // Computing the top offset
-    const top = nodeBounds.y - canvasBounds.y;
+    const topDiff = boxes[componentId].layouts[currentLayout].top - (nodeBounds.y - canvasBounds.y);
 
-    let newBoxes = {
-      ...boxes,
-      [id]: {
-        ...boxes[id],
-        layouts: {
-          ...boxes[id]['layouts'],
-          [currentLayout]: {
-            ...boxes[id]['layouts'][currentLayout],
-            top: top,
-            left: left,
-          },
-        },
-      },
-    };
+    let newBoxes = { ...boxes };
+
+    if (selectedComponents) {
+      for (const selectedComponent of selectedComponents) {
+        newBoxes = produce(newBoxes, (draft) => {
+          const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
+          const leftOffset = draft[selectedComponent.id].layouts[currentLayout].left;
+
+          draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
+          draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
+        });
+      }
+    }
 
     setBoxes(newBoxes);
   }
@@ -428,6 +425,7 @@ export const SubContainer = ({
           onComponentHover={onComponentHover}
           hoveredComponent={hoveredComponent}
           parentId={parentComponent?.name}
+          isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
           containerProps={{
             mode,
             snapToGrid,

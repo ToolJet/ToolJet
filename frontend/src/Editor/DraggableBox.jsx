@@ -95,6 +95,7 @@ export const DraggableBox = function DraggableBox({
   parentId,
   hoveredComponent,
   onComponentHover,
+  isMultipleComponentsSelected,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -182,7 +183,6 @@ export const DraggableBox = function DraggableBox({
   const gridWidth = canvasWidth / 43;
   const width = (canvasWidth * currentLayoutOptions.width) / 43;
 
-  const multipleComponentsSelected = containerProps?.selectedComponents?.length > 1 ?? false;
   return (
     <div
       className={inCanvas ? '' : 'col-md-4 text-center align-items-center clearfix mb-2'}
@@ -255,7 +255,7 @@ export const DraggableBox = function DraggableBox({
                   setSelectedComponent={(id, component, multiSelect) =>
                     setSelectedComponent(id, component, multiSelect)
                   }
-                  isMultipleComponentsSelected={multipleComponentsSelected}
+                  isMultipleComponentsSelected={isMultipleComponentsSelected}
                 />
               )}
               <ErrorBoundary showFallback={mode === 'edit'}>
