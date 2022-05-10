@@ -15,12 +15,7 @@ const JSONTreeValueNode = ({ data, type }) => {
     );
   }
 
-  let value = type === 'String' ? `"${data}"` : String(data);
-
-  if (value.length > 60) {
-    value = `${value.substring(0, 60)} ... "`;
-  }
-
+  const value = type === 'String' ? `"${data}"` : String(data);
   const clsForUndefinedOrNull = (type === 'Undefined' || type === 'Null') && 'badge badge-secondary';
   return (
     <span
