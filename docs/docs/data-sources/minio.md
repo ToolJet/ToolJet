@@ -7,6 +7,15 @@ title: MinIO
 
 ToolJet can connect to minio and perform various operation on them.
 
+## Supported operations
+
+- **Read object**
+- **Put object**
+- **List buckets**
+- **List objects in a bucket**
+- **Presigned url for download**
+- **Presigned url for upload**
+
 ## Connection
 
 To add a new minio source, click on the **Add or edit datasource** icon on the left sidebar of the app editor and click on `Add datasource` button. Select Minio from the modal that pops up.
