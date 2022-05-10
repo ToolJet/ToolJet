@@ -157,8 +157,11 @@ export class JSONTreeViewer extends React.Component {
           newPath = `${path}.${key}`;
         }
 
-        if (_.isObject(value) || _.isArray(value)) {
+        if (_.isObject(value)) {
+          map.set(newPath, { type: _type });
           buildMap(value, newPath);
+        } else if (_.isArray(value)) {
+          map.set(newPath, { type: _type });
         } else if (_.isFunction(value)) {
           map.set(newPath, { type: _type });
         } else {
