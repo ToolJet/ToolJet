@@ -762,6 +762,7 @@ export const componentTypes = [
     },
     events: [],
     styles: {
+      textSize: { type: 'number', displayName: 'Text Size' },
       textColor: { type: 'color', displayName: 'Text Color' },
       textAlign: { type: 'alignButtons', displayName: 'Align Text' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
@@ -781,6 +782,7 @@ export const componentTypes = [
       events: [],
       styles: {
         groupActions: { value: 'left' },
+        textSize: { value: 14 },
         textColor: { value: '#000' },
         textAlign: { value: 'left' },
         visibility: { value: '{{true}}' },
@@ -916,7 +918,7 @@ export const componentTypes = [
       justifyContent: { type: 'alignButtons', displayName: 'Align Text' },
     },
     exposedVariables: {
-      value: null,
+      value: 2,
       searchText: '',
     },
     definition: {
@@ -1854,6 +1856,7 @@ export const componentTypes = [
       secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
       secondaryValue: { type: 'code', displayName: 'Secondary value' },
       secondarySignDisplay: { type: 'code', displayName: 'Secondary sign display' },
+      loadingState: { type: 'toggle', displayName: 'Loading State' },
     },
     events: {},
     styles: {
@@ -1874,6 +1877,7 @@ export const componentTypes = [
         secondaryValueLabel: { value: 'Last month' },
         secondaryValue: { value: '2.85' },
         secondarySignDisplay: { value: 'positive' },
+        loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
@@ -2020,6 +2024,41 @@ export const componentTypes = [
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'VerticalDivider',
+    displayName: 'Vertical Divider',
+    description: 'Vertical Separator between components',
+    component: 'VerticalDivider',
+    defaultSize: {
+      width: 2,
+      height: 100,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {},
+    events: {},
+    styles: {
+      dividerColor: { type: 'color', displayName: 'Divider Color' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      value: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {},
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        dividerColor: { value: '#E7E8EA' },
       },
     },
   },

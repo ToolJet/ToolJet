@@ -7,19 +7,19 @@ import {
   BeforeInsert,
   BeforeUpdate,
   OneToMany,
-  ManyToOne,
-  JoinColumn,
   BaseEntity,
   ManyToMany,
   JoinTable,
   OneToOne,
+  JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { GroupPermission } from './group_permission.entity';
-import { Organization } from './organization.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
 import { UserGroupPermission } from './user_group_permission.entity';
 import { File } from './file.entity';
+import { Organization } from './organization.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -56,16 +56,10 @@ export class User extends BaseEntity {
   password: string;
 
   @Column({ name: 'organization_id' })
-  organizationId: string;
+  defaultOrganizationId: string;
 
   @Column({ name: 'role' })
   role: string;
-
-  @Column({ name: 'sso_id' })
-  ssoId: string;
-
-  @Column({ name: 'sso' })
-  sso: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
@@ -100,4 +94,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => UserGroupPermission, (userGroupPermission) => userGroupPermission.user, { onDelete: 'CASCADE' })
   userGroupPermissions: UserGroupPermission[];
+
+  organizationId: string;
+  isPasswordLogin: boolean;
 }

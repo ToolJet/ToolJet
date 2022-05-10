@@ -1,6 +1,6 @@
 ---
-sidebar_position: 4
-sidebar_label: Slack Code of Conduct
+id: slackcoc
+title: Slack Code of Conduct
 ---
 
 # Slack Code of Conduct

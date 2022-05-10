@@ -14,10 +14,51 @@ import { FileService } from '@services/file.service';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
 import { File } from 'src/entities/file.entity';
+import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { AuthService } from '@services/auth.service';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { GroupPermissionsService } from '@services/group_permissions.service';
+import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
+import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { EncryptionService } from '@services/encryption.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Organization, File, OrganizationUser, User, GroupPermission, App]), CaslModule],
-  providers: [OrganizationsService, FileService, OrganizationUsersService, UsersService, EmailService],
+  imports: [
+    TypeOrmModule.forFeature([
+      Organization,
+      OrganizationUser,
+      User,
+      File,
+      GroupPermission,
+      App,
+      SSOConfigs,
+      AppGroupPermission,
+      UserGroupPermission,
+    ]),
+    CaslModule,
+    JwtModule.registerAsync({
+      useFactory: (config: ConfigService) => {
+        return {
+          secret: config.get<string>('SECRET_KEY_BASE'),
+          signOptions: {
+            expiresIn: config.get<string | number>('JWT_EXPIRATION_TIME') || '30d',
+          },
+        };
+      },
+      inject: [ConfigService],
+    }),
+  ],
+  providers: [
+    OrganizationsService,
+    OrganizationUsersService,
+    UsersService,
+    EmailService,
+    FileService,
+    AuthService,
+    GroupPermissionsService,
+    EncryptionService,
+  ],
   controllers: [OrganizationsController, OrganizationUsersController],
 })
 export class OrganizationsModule {}

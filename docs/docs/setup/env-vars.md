@@ -1,5 +1,6 @@
 ---
-sidebar_position: 10
+id: env-vars
+title: Environment variables
 ---
 
 # Environment variables
@@ -56,6 +57,14 @@ Use this environment variable to enable/disable the feature that allows you to a
 | -------- | ---------------------- |
 | COMMENT_FEATURE_ENABLE  | `true` or `false` |
 
+#### Multiplayer feature enable ( optional )
+
+Use this environment variable to enable/disable the feature that allows users to collaboratively work on the canvas.
+
+| variable | value            |
+| -------- | ---------------------- |
+| ENABLE_MULTIPLAYER_EDITING  | `true` or `false` |
+
 #### Server Host ( optional )
 
 You can specify a different server for backend if it is hosted on another server.
@@ -64,21 +73,18 @@ You can specify a different server for backend if it is hosted on another server
 | -------- | ---------------------- |
 | SERVER_HOST  | Configure a hostname for the server as a proxy pass. If no value is set, it defaults to `server`. |
 
+#### Enable multiple organizations ( optional )
+
+If you want to enable multiple environments, set the environment variable `MULTI_ORGANIZATION` to `true`.
+
+
 #### Disabling signups ( optional )
 
-If you want to restrict the signups and allow new users only by invitations, set the environment variable `DISABLE_SIGNUPS` to `true`.
+Sign up is enabled only for multiple organization environment. If you want to restrict the signups and allow new users only by invitations, set the environment variable `DISABLE_SIGNUPS` to `true`.
 
 :::tip
 You will still be able to see the signup page but won't be able to successfully submit the form.
 :::
-
-#### Disable login and signup using username and password
-
-:::info
-Use this feature only if you have configured other methods of authentication, such as SSO.
-:::
-
-If you want to restrict users from logging in using regular username and password, set the environment variable `DISABLE_PASSWORD_LOGIN` to `true`.
 
 #### Serve client as a server end-point ( optional )
 
@@ -144,12 +150,6 @@ Prints logs for sentry.
 | variable   | description                               |
 | ---------- | ----------------------------------------- |
 | SENTRY_DEBUG | `true` or `false`. Default value is `false` |
-
-#### SSO ( optional )
-
-:::info
-We currently support GitHub and Google SSO. Check out docs for **[GitHub SSO](/docs/sso/github)** and **[Google SSO](/docs/sso/google)** for more information on respective environment variables.
-:::
 
 #### Server URL ( optional)
 

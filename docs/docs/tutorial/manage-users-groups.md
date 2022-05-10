@@ -1,5 +1,6 @@
 ---
-sidebar_position: 11
+id: manage-users-groups
+title: Managing Users and Groups
 ---
 
 # Managing Users and Groups

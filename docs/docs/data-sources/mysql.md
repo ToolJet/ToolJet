@@ -1,5 +1,6 @@
 ---
-sidebar_position: 15
+id: mysql
+title: MySQL
 ---
 
 # MySQL

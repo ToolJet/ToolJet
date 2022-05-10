@@ -1,11 +1,35 @@
 ---
-sidebar_position: 6
-sidebar_label: Google
+id: google
+title: Google
 ---
 
 # Google Single Sign-on
 
-Goto [Google cloud console](https://console.cloud.google.com/) and create a project.
+Select `Manage SSO` from organization options
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - SSO configs](/img/password-login/organization-menu.png)
+
+</div>
+
+Select `Google`, Google login will be disabled by default
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - SSO configs](/img/sso/google/manage-sso-1.png)
+
+</div>
+
+Enable Google. You can see `Redirect URL` generated
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - SSO configs](/img/sso/google/manage-sso-2.png)
+
+</div>
+
+Go to [Google cloud console](https://console.cloud.google.com/) and create a project.
 
 <div style={{textAlign: 'center'}}>
 
@@ -13,7 +37,7 @@ Goto [Google cloud console](https://console.cloud.google.com/) and create a proj
 
 </div>
 
-Goto [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials), and create an OAuth client ID
+- Go to the [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials), and create an OAuth client ID
 
 <div style={{textAlign: 'center'}}>
 
@@ -21,7 +45,7 @@ Goto [Google cloud console credentials page](https://console.cloud.google.com/ap
 
 </div>
 
-You'll be asked to select user type in consent screen. To allow only users within your organization, select 'Internal', otherwise,
+- You'll be asked to select user type in consent screen. To allow only users within your organization, select 'Internal', otherwise,
 select 'External'.
 
 <div style={{textAlign: 'center'}}>
@@ -30,7 +54,7 @@ select 'External'.
 
 </div>
 
-You'll be led to an app registration page where you can set OAuth scopes. Select 'Add or remove scopes' and add the scopes
+- You'll be led to an app registration page where you can set OAuth scopes. Select 'Add or remove scopes' and add the scopes
 userinfo.email and userinfo.profile as shown in the image. This will allow ToolJet to store the email and name of the
 user who is signing in
 
@@ -40,7 +64,7 @@ user who is signing in
 
 </div>
 
-Set the domain on which ToolJet is hosted as an authorized domain
+- Set the domain on which ToolJet is hosted as an authorized domain
 
 <div style={{textAlign: 'center'}}>
 
@@ -48,20 +72,14 @@ Set the domain on which ToolJet is hosted as an authorized domain
 
 </div>
 
-Lastly, supply the environment variable `SSO_GOOGLE_OAUTH2_CLIENT_ID` to your deployment. This value will be available from your [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials)
+Set the `Redirect URL` generated at manage SSO `Google` page under Authorised redirect URIs
 
-:::info
+<div style={{textAlign: 'center'}}>
 
-### Restrict to your domains
-Set the environment variable `SSO_RESTRICTED_DOMAIN` to ensure that ToolJet verifies the domain of the user who signs in via SSO, on the server side.
-If you're setting this environment variable, please make sure that the value does not contain any protocols, subdomains or slashes. It should
-simply be `yourdomain.com`. Add multiple domians separated by coma example : `yourdomain.com,yourotherdomain.com`
-:::
+![ToolJet - authorized redirect urls](/img/sso/google/authorized-redirect-urls.png)
 
-:::info
-### Restrict signup via SSO
-Set the environment variable `SSO_DISABLE_SIGNUP` to `true` to ensure that users can only log in and not sign up via SSO. If this variable is set to `true`, only those users who have already signed up, or the ones that are invited, can access ToolJet via SSO.
-:::
+</div>
 
-<br />
-The Google sign-in button will now be available in your ToolJet login screen.
+Lastly, set the `client id` in google manage SSO page. This value will be available from your [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials)
+
+The Google sign-in button will now be available in your ToolJet login screen, if you are not enabled multiple organization.

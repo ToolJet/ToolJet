@@ -10,6 +10,7 @@ export function Authorize() {
   const router = useRouter();
 
   useEffect(() => {
+    authenticationService.clearUser();
     const errorMessage = router.query.error_description || router.query.error;
 
     if (errorMessage) {
@@ -21,15 +22,26 @@ export function Authorize() {
     }
 
     const configs = Configs[router.query.origin];
+    let authParams = {};
+
+    if (configs.responseType === 'hash') {
+      if (!window.location.hash) {
+        return setError('Login failed');
+      }
+      const params = new Proxy(new URLSearchParams(window.location.hash.substr(1)), {
+        get: (searchParams, prop) => searchParams.get(prop),
+      });
+      authParams.token = params[configs.params.token];
+      authParams.state = params[configs.params.state];
+    } else {
+      authParams.token = router.query[configs.params.token];
+      authParams.state = router.query[configs.params.state];
+    }
 
     authenticationService
-      .signInViaOAuth({
-        token: router.query[configs.params.token],
-        origin: router.query.origin,
-        state: router.query[configs.params.state],
-      })
+      .signInViaOAuth(router.query.configId, authParams)
       .then(() => setSuccess(true))
-      .catch(() => setError(`${configs.name} login failed`));
+      .catch((err) => setError(`${configs.name} login failed - ${err?.error ? err?.error : ''}`));
     // Disabled for useEffect not being called for updation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -77,7 +89,7 @@ export function Authorize() {
         <Redirect
           to={{
             pathname: '/login',
-            state: { errorMessage: success ? '' : error },
+            state: { errorMessage: error && error },
           }}
         />
       )}

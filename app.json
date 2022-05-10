@@ -32,6 +32,14 @@
     "NODE_OPTIONS": {
       "description": "Node options configured to increase node memory to support app build",
       "value": "--max-old-space-size=4096"
+    },
+    "DISABLE_SIGNUPS": {
+      "description": "Disable sign up in login page only applicable if MULTI_ORGANIZATION=true",
+      "value": "false"
+    },
+    "MULTI_ORGANIZATION": {
+      "description": "Enables multi organization feature",
+      "value": "false"
     }
   },
   "formation": {
