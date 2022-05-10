@@ -52,7 +52,7 @@ describe('group permissions controller', () => {
         organization: { adminUser },
       } = await setupOrganizations(nestApp);
 
-      const reservedGroups = ['All Users', 'all_users', 'Admin', 'admin'];
+      const reservedGroups = ['All Users', 'Admin'];
 
       for (let i = 0; i < reservedGroups.length; i += 1) {
         const response = await request(nestApp.getHttpServer())
@@ -61,7 +61,7 @@ describe('group permissions controller', () => {
           .send({ group: reservedGroups[i] });
 
         expect(response.statusCode).toBe(400);
-        expect(response.body.message).toBe('Cannot create group with system reserved group name');
+        expect(response.body.message).toBe('Group name already exist');
       }
     });
 
