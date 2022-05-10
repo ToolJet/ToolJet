@@ -2221,7 +2221,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
     exposedVariables: {
-      selected: [],
+      selected: 1,
     },
     definition: {
       others: {
