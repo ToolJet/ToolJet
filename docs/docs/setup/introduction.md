@@ -1,12 +1,8 @@
 ---
-sidebar_position: 1
-sidebar_label: Architecture
+id: introduction
+title: Introduction
 ---
-
-# Deploying ToolJet
-&nbsp
-
-## Architecture
+# Introduction
 
 ToolJet have two main components: **ToolJet Server** and **ToolJet Client**.
 

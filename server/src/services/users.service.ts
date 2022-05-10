@@ -9,6 +9,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
+import { cleanObject } from 'src/helpers/utils.helper';
 import { CreateUserDto } from '@dto/user.dto';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
@@ -30,17 +31,23 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  async findByEmail(email: string): Promise<User> {
-    return this.usersRepository.findOne({
-      where: { email },
-      relations: ['organization'],
-    });
-  }
-
-  async findBySSOId(ssoId: string): Promise<User> {
-    return this.usersRepository.findOne({
-      where: { ssoId },
-    });
+  async findByEmail(email: string, organisationId?: string): Promise<User> {
+    if (!organisationId) {
+      return this.usersRepository.findOne({
+        where: { email },
+      });
+    } else {
+      return await createQueryBuilder(User, 'users')
+        .innerJoinAndSelect(
+          'users.organizationUsers',
+          'organization_users',
+          'organization_users.organizationId = :organisationId',
+          { organisationId }
+        )
+        .where('organization_users.status = :active', { active: 'active' })
+        .andWhere('users.email = :email', { email })
+        .getOne();
+    }
   }
 
   async findByPasswordResetToken(token: string): Promise<User> {
@@ -49,32 +56,48 @@ export class UsersService {
     });
   }
 
-  async create(userParams: any, organization: Organization, groups?: string[]): Promise<User> {
+  async create(
+    userParams: any,
+    organizationId: string,
+    groups?: string[],
+    existingUser?: User,
+    isInvite?: boolean
+  ): Promise<User> {
     const password = uuid.v4();
-    const invitationToken = uuid.v4();
 
-    const { email, firstName, lastName, ssoId, sso } = userParams;
+    const { email, firstName, lastName } = userParams;
     let user: User;
 
     await getManager().transaction(async (manager) => {
-      user = manager.create(User, {
-        email,
-        firstName,
-        lastName,
-        password,
-        invitationToken,
-        ssoId,
-        sso,
-        organizationId: organization.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      await manager.save(user);
+      if (!existingUser) {
+        user = manager.create(User, {
+          email,
+          firstName,
+          lastName,
+          password,
+          invitationToken: isInvite ? uuid.v4() : null,
+          defaultOrganizationId: organizationId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await manager.save(user);
+      } else {
+        if (isInvite) {
+          // user already invited to an organization, but not active - user tries to sign up
+          await manager.save(
+            Object.assign(existingUser, {
+              invitationToken: uuid.v4(),
+              defaultOrganizationId: organizationId,
+            })
+          );
+        }
+        user = existingUser;
+      }
 
       for (const group of groups) {
         const orgGroupPermission = await manager.findOne(GroupPermission, {
           where: {
-            organizationId: organization.id,
+            organizationId: organizationId,
             group: group,
           },
         });
@@ -94,75 +117,123 @@ export class UsersService {
     return user;
   }
 
-  async updateSSODetails(user: User, { userSSOId, sso }) {
-    await this.usersRepository.save({
-      ...user,
-      ssoId: userSSOId,
-      sso,
-    });
-  }
-
   async status(user: User) {
     const orgUser = await this.organizationUsersRepository.findOne({ where: { user } });
     return orgUser.status;
   }
 
-  async findOrCreateByEmail(
-    userParams: any,
-    organization: Organization
-  ): Promise<{ user: User; newUserCreated: boolean }> {
+  async findOrCreateByEmail(userParams: any, organizationId: string): Promise<{ user: User; newUserCreated: boolean }> {
     let user: User;
     let newUserCreated = false;
 
     user = await this.findByEmail(userParams.email);
 
-    if (!user) {
-      const groups = ['all_users'];
-      user = await this.create({ ...userParams }, organization, groups);
-      newUserCreated = true;
+    if (user?.organizationUsers?.some((ou) => ou.organizationId === organizationId)) {
+      // User exist in current organization
+      return { user, newUserCreated };
     }
+
+    const groups = ['all_users'];
+    user = await this.create({ ...userParams }, organizationId, groups, user);
+    newUserCreated = true;
 
     return { user, newUserCreated };
   }
 
   async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
-    const { organization, password, token, role } = userCreateDto;
-    const firstName = userCreateDto.first_name;
-    const lastName = userCreateDto.last_name;
-    const newSignup = userCreateDto.new_signup;
+    const { organization, password, token, role, first_name: firstName, last_name: lastName } = userCreateDto;
 
     if (!token) {
       throw new BadRequestException('Invalid token');
     }
 
-    const user = await this.usersRepository.findOne({ where: { invitationToken: token } });
+    const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
 
-    if (user) {
-      // beforeUpdate hook will not trigger if using update method of repository
-      await this.usersRepository.save(
-        Object.assign(user, {
-          firstName,
-          lastName,
-          password,
-          role,
-          invitationToken: null,
-        })
-      );
+    if (!user?.organizationUsers) {
+      throw new BadRequestException('Invalid invitation link');
+    }
+    const organizationUser: OrganizationUser = user.organizationUsers.find(
+      (ou) => ou.organizationId === user.defaultOrganizationId
+    );
 
-      const organizationUser = user.organizationUsers[0];
-      await this.organizationUsersRepository.update(organizationUser.id, {
+    if (!organizationUser) {
+      throw new BadRequestException('Invalid invitation link');
+    }
+
+    await this.usersRepository.save(
+      Object.assign(user, {
+        firstName,
+        lastName,
+        password,
+        role,
+        invitationToken: null,
+      })
+    );
+
+    await this.organizationUsersRepository.save(
+      Object.assign(organizationUser, {
+        invitationToken: null,
         status: 'active',
-      });
+      })
+    );
 
-      if (newSignup) {
-        await this.organizationsRepository.update(user.organizationId, {
-          name: organization,
-        });
-      }
+    if (organization) {
+      await this.organizationsRepository.update(user.defaultOrganizationId, {
+        name: organization,
+      });
     }
   }
 
-  async update(userId: string, params: any, manager?: EntityManager) {
+  async acceptOrganizationInvite(params: any) {
+    const { password, token } = params;
+
+    const organizationUser = await this.organizationUsersRepository.findOne({
+      where: { invitationToken: token },
+      relations: ['user'],
+    });
+
+    if (!organizationUser?.user) {
+      throw new BadRequestException('Invalid invitation link');
+    }
+    const user: User = organizationUser.user;
+
+    if (user.invitationToken) {
+      // User sign up link send - not activated account
+      const defaultOrganizationUser = await this.organizationUsersRepository.findOne({
+        where: { organizationId: user.defaultOrganizationId, status: 'invited' },
+      });
+
+      if (defaultOrganizationUser) {
+        await this.organizationUsersRepository.save(
+          Object.assign(defaultOrganizationUser, {
+            invitationToken: null,
+            status: 'active',
+          })
+        );
+      }
+    }
+
+    // set new password if entered
+    await this.usersRepository.save(
+      Object.assign(user, {
+        ...(password ? { password } : {}),
+        invitationToken: null,
+      })
+    );
+
+    await this.organizationUsersRepository.save(
+      Object.assign(organizationUser, {
+        invitationToken: null,
+        status: 'active',
+      })
+    );
+  }
+
+  async updateDefaultOrganization(user: User, organizationId: string) {
+    await this.usersRepository.update(user.id, { defaultOrganizationId: organizationId });
+  }
+
+  async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
     const { forgotPasswordToken, password, firstName, lastName, addGroups, removeGroups } = params;
 
     const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
@@ -175,9 +246,7 @@ export class UsersService {
     };
 
     // removing keys with undefined values
-    Object.keys(updateableParams).forEach((key) =>
-      updateableParams[key] === undefined ? delete updateableParams[key] : {}
-    );
+    cleanObject(updateableParams);
 
     let user: User;
 
@@ -185,9 +254,9 @@ export class UsersService {
       await manager.update(User, userId, { ...updateableParams });
       user = await manager.findOne(User, { where: { id: userId } });
 
-      await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups);
+      await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups, organizationId);
 
-      await this.addUserGroupPermissions(manager, user, addGroups);
+      await this.addUserGroupPermissions(manager, user, addGroups, organizationId);
     };
 
     if (manager) {
@@ -201,9 +270,10 @@ export class UsersService {
     return user;
   }
 
-  async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[]) {
+  async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[], organizationId?: string) {
+    const orgId = organizationId || user.defaultOrganizationId;
     if (addGroups) {
-      const orgGroupPermissions = await this.groupPermissionsForOrganization(user.organizationId);
+      const orgGroupPermissions = await this.groupPermissionsForOrganization(orgId);
 
       for (const group of addGroups) {
         const orgGroupPermission = orgGroupPermissions.find((permission) => permission.group == group);
@@ -221,16 +291,22 @@ export class UsersService {
     }
   }
 
-  async removeUserGroupPermissionsIfExists(manager: EntityManager, user: User, removeGroups: string[]) {
+  async removeUserGroupPermissionsIfExists(
+    manager: EntityManager,
+    user: User,
+    removeGroups: string[],
+    organizationId?: string
+  ) {
+    const orgId = organizationId || user.defaultOrganizationId;
     if (removeGroups) {
-      await this.throwErrorIfRemovingLastActiveAdmin(user, removeGroups);
+      await this.throwErrorIfRemovingLastActiveAdmin(user, removeGroups, orgId);
       if (removeGroups.includes('all_users')) {
         throw new BadRequestException('Cannot remove user from default group.');
       }
 
       const groupPermissions = await manager.find(GroupPermission, {
         group: In(removeGroups),
-        organizationId: user.organizationId,
+        organizationId: orgId,
       });
       const groupIdsToMaybeRemove = groupPermissions.map((permission) => permission.id);
 
@@ -241,7 +317,7 @@ export class UsersService {
     }
   }
 
-  async throwErrorIfRemovingLastActiveAdmin(user: User, removeGroups: string[] = ['admin']) {
+  async throwErrorIfRemovingLastActiveAdmin(user: User, removeGroups: string[] = ['admin'], organizationId: string) {
     const removingAdmin = removeGroups.includes('admin');
     if (!removingAdmin) return;
 
@@ -252,7 +328,7 @@ export class UsersService {
       .andWhere('organization_users.status = :status', { status: 'active' })
       .andWhere('group_permissions.group = :group', { group: 'admin' })
       .andWhere('group_permissions.organization_id = :organizationId', {
-        organizationId: user.organizationId,
+        organizationId,
       })
       .getCount();
 
@@ -260,8 +336,6 @@ export class UsersService {
   }
 
   async hasGroup(user: User, group: string, organizationId?: string): Promise<boolean> {
-    // Currently user can be part of single organization and
-    // the organization id is present on the user itself
     const orgId = organizationId || user.organizationId;
 
     const result = await createQueryBuilder(GroupPermission, 'group_permissions')
@@ -289,7 +363,7 @@ export class UsersService {
         return await this.canUserPerformActionOnApp(user, 'update', resourceId);
 
       case 'Folder':
-        return await this.canUserPerformActionOnFolder(user, action, resourceId);
+        return await this.canUserPerformActionOnFolder(user, action);
 
       default:
         return false;
@@ -323,7 +397,7 @@ export class UsersService {
     return permissionGrant;
   }
 
-  async canUserPerformActionOnFolder(user: User, action: string, folderId?: string): Promise<boolean> {
+  async canUserPerformActionOnFolder(user: User, action: string): Promise<boolean> {
     let permissionGrant: boolean;
 
     switch (action) {
@@ -338,22 +412,22 @@ export class UsersService {
     return permissionGrant;
   }
 
-  async isUserOwnerOfApp(user, appId): Promise<boolean> {
-    const app = await this.appsRepository.findOne({
+  async isUserOwnerOfApp(user: User, appId: string): Promise<boolean> {
+    const app: App = await this.appsRepository.findOne({
       where: {
         id: appId,
         userId: user.id,
       },
     });
-    return !!app;
+    return !!app && app.organizationId === user.organizationId;
   }
 
   canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[] | GroupPermission[]): boolean {
     return permissions.some((p) => p[action]);
   }
 
-  async groupPermissions(user: User, organizationId?: string): Promise<GroupPermission[]> {
-    const orgUserGroupPermissions = await this.userGroupPermissions(user, organizationId);
+  async groupPermissions(user: User): Promise<GroupPermission[]> {
+    const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
     const groupPermissionRepository = getRepository(GroupPermission);
 
@@ -366,26 +440,32 @@ export class UsersService {
     return await groupPermissionRepository.find({ organizationId });
   }
 
-  async appGroupPermissions(user: User, appId?: string, organizationId?: string): Promise<AppGroupPermission[]> {
-    const orgUserGroupPermissions = await this.userGroupPermissions(user, organizationId);
+  async appGroupPermissions(user: User, appId?: string): Promise<AppGroupPermission[]> {
+    const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
-    const appGroupPermissionRepository = getRepository(AppGroupPermission);
+
+    if (!groupIds || groupIds.length === 0) {
+      return [];
+    }
+
+    const query = createQueryBuilder(AppGroupPermission, 'app_group_permissions')
+      .innerJoin(
+        'app_group_permissions.groupPermission',
+        'group_permissions',
+        'group_permissions.organization_id = :organizationId',
+        {
+          organizationId: user.organizationId,
+        }
+      )
+      .where('app_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
 
     if (appId) {
-      return await appGroupPermissionRepository.find({
-        groupPermissionId: In(groupIds),
-        appId: appId,
-      });
-    } else {
-      return await appGroupPermissionRepository.find({
-        groupPermissionId: In(groupIds),
-      });
+      query.andWhere('app_group_permissions.appId = :appId', { appId });
     }
+    return await query.getMany();
   }
 
   async userGroupPermissions(user: User, organizationId?: string): Promise<UserGroupPermission[]> {
-    // Currently user can be part of single organization
-    // and hence we can use organization_id on user entity
     const orgId = organizationId || user.organizationId;
 
     return await createQueryBuilder(UserGroupPermission, 'user_group_permissions')

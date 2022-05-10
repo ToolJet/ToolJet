@@ -1,5 +1,6 @@
 ---
-sidebar_position: 1
+id: airtable
+title: Airtable
 ---
 
 # Airtable

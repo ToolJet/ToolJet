@@ -1,5 +1,6 @@
 ---
-sidebar_position: 7
+id: debugger
+title: Debugger
 ---
 
 # Debugger    

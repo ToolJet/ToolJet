@@ -1,5 +1,6 @@
 ---
-sidebar_position: 9
+id: versioning-and-release
+title: Versioning and Release
 ---
 
 # Versioning and Release
