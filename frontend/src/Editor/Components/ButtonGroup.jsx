@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 export const ButtonGroup = function Button({ height, properties, styles, fireEvent, setExposedVariable }) {
-  const { values, labels, label, selected, multiSelection } = properties;
+  const { values, labels, label, defaultSelected, multiSelection } = properties;
   const {
     backgroundColor,
     textColor,
@@ -19,19 +19,23 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
     display: visibility ? '' : 'none',
   };
 
-  const [defaultActive, setDefaultActive] = useState([selected]);
+  const [defaultActive, setDefaultActive] = useState();
   const [data, setData] = useState(labels.length > 0 ? labels : values);
 
   useEffect(() => {
-    setDefaultActive(selected);
-  }, [selected]);
+    setDefaultActive(defaultSelected);
+  }, [defaultSelected]);
 
   useEffect(() => {
     setData(labels.length > 0 ? labels : values.length > 0 ? values : []);
   }, [labels, values]);
 
   useEffect(() => {
-    setDefaultActive([]);
+    console.log('darta', defaultActive);
+  }, [defaultActive]);
+
+  useEffect(() => {
+    multiSelection && setDefaultActive([]);
   }, [multiSelection]);
 
   useEffect(() => {
@@ -39,20 +43,20 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
   }, [defaultActive]);
 
   const buttonClick = (value) => {
-    if (defaultActive.includes(value)) {
-      defaultActive.splice(defaultActive.indexOf(value), 1);
+    if (defaultActive?.includes(value)) {
+      defaultActive?.splice(defaultActive?.indexOf(value), 1);
     } else multiSelection ? setDefaultActive([...defaultActive, value]) : setDefaultActive([value]);
   };
   return (
     <div className="widget-buttongroup" style={{ height }}>
       <p className="widget-buttongroup-label">{label}</p>
       <div>
-        {data.map((item) => (
+        {data?.map((item) => (
           <button
             style={{
               ...computedStyles,
-              backgroundColor: defaultActive.includes(item) ? selectedBackgroundColor : backgroundColor,
-              color: defaultActive.includes(item) ? selectedTextColor : textColor,
+              backgroundColor: defaultActive?.includes(item) ? selectedBackgroundColor : backgroundColor,
+              color: defaultActive?.includes(item) ? selectedTextColor : textColor,
             }}
             key={item}
             disabled={disabledState}
