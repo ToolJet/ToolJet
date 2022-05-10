@@ -189,7 +189,15 @@ export const FilePicker = ({
     }
 
     if (fileRejections.length > 0) {
-      fileRejections.map((rejectedFile) => toast.error(rejectedFile.errors[0].message));
+      const areAllFilesRejectedForTheSameError = fileRejections.every(
+        (rejectedFile, index, array) => rejectedFile.errors[0].message === array[0].errors[0].message
+      );
+      console.log(areAllFilesRejectedForTheSameError);
+      if (areAllFilesRejectedForTheSameError) {
+        toast.error(fileRejections[0].errors[0].message);
+      } else {
+        fileRejections.map((rejectedFile) => toast.error(rejectedFile.errors[0].message));
+      }
     }
 
     return () => {
