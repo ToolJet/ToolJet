@@ -107,6 +107,7 @@ export class AuthService {
         email: user.email,
         first_name: user.firstName,
         last_name: user.lastName,
+        avatar_id: user.avatarId,
         organizationId: user.organizationId,
         organization: organization.name,
         admin: await this.usersService.hasGroup(user, 'admin'),
