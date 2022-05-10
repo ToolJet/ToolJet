@@ -1,6 +1,6 @@
 ---
-sidebar_position: 1
-sidebar_label: Bulk update multiple rows in table
+id: bulk-update-multiple-rows
+title: Bulk update multiple rows in table
 ---
 
 # Bulk update multiple rows in table

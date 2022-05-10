@@ -19,6 +19,7 @@ import produce from 'immer';
 
 export const Container = ({
   canvasWidth,
+  canvasHeight,
   mode,
   snapToGrid,
   onComponentClick,
@@ -43,11 +44,13 @@ export const Container = ({
   handleRedo,
   onComponentHover,
   hoveredComponent,
+  dataQueries,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
-    height: 2400,
+    height: '100%',
     maxWidth: `${canvasWidth}px`,
+    maxHeight: `${canvasHeight}px`,
     position: 'absolute',
     backgroundSize: `${canvasWidth / 43}px 10px`,
   };
@@ -469,6 +472,7 @@ export const Container = ({
               onComponentHover={onComponentHover}
               hoveredComponent={hoveredComponent}
               isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+              dataQueries={dataQueries}
               containerProps={{
                 mode,
                 snapToGrid,
@@ -489,6 +493,7 @@ export const Container = ({
                 darkMode,
                 onComponentHover,
                 hoveredComponent,
+                dataQueries,
               }}
             />
           );

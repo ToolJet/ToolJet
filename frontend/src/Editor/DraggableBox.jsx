@@ -96,6 +96,7 @@ export const DraggableBox = function DraggableBox({
   hoveredComponent,
   onComponentHover,
   isMultipleComponentsSelected,
+  dataQueries,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -282,6 +283,7 @@ export const DraggableBox = function DraggableBox({
                   parentId={parentId}
                   allComponents={allComponents}
                   extraProps={extraProps}
+                  dataQueries={dataQueries}
                 />
               </ErrorBoundary>
             </div>
