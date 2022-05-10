@@ -34,7 +34,7 @@
     "@nestjs/jwt": "^8.0.0",
     "@nestjs/mapped-types": "^1.0.1",
     "@nestjs/passport": "^8.2.1",
-    "@nestjs/platform-express": "^8.0.0",
+    "@nestjs/platform-express": "^8.4.4",
     "@nestjs/platform-ws": "^8.0.10",
     "@nestjs/serve-static": "^2.2.2",
     "@nestjs/typeorm": "^8.0.0",
