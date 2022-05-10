@@ -21,11 +21,13 @@ export const Organization = function Organization() {
   const getAvatar = (organization) => {
     if (!organization) return;
 
-    const orgName = organization.split(' ');
+    const orgName = organization.split(' ').filter((e) => e && !!e.trim());
     if (orgName.length > 1) {
       return `${orgName[0]?.[0]}${orgName[1]?.[0]}`;
-    } else {
+    } else if (organization.lenth >= 2) {
       return `${organization[0]}${organization[1]}`;
+    } else {
+      return `${organization[0]}${organization[0]}`;
     }
   };
 
@@ -90,7 +92,7 @@ export const Organization = function Organization() {
     organizationService.editOrganization({ name: newOrgName }).then(
       () => {
         authenticationService.updateCurrentUserDetails({ organization: newOrgName });
-        toast.success('Organization updated', {
+        toast.success('Workspace updated', {
           position: 'top-center',
         });
         setOrganization(newOrgName);
