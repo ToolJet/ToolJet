@@ -8,7 +8,10 @@ export const Timeline = function Timeline({ height, darkMode, properties, styles
   const darkModeStyle = darkMode && 'text-white-50';
 
   return (
-    <div className="card" style={{ display: visibility ? '' : 'none', height }}>
+    <div
+      className="card"
+      style={{ display: visibility ? '' : 'none', height, overflow: 'auto', overflowWrap: 'normal' }}
+    >
       <div className="card-body">
         <ul className={`list list-timeline ${hideDate && 'list-timeline-simple'}`}>
           {(isArray(data) ? data : []).map((item, index) => (

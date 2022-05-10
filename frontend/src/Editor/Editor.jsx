@@ -41,6 +41,7 @@ import RunjsIcon from './Icons/runjs.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
+import Spinner from '@/_ui/Spinner';
 import { AppVersionsManager } from './AppVersionsManager';
 import { SearchBoxComponent } from '@/_ui/Search';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
@@ -82,6 +83,7 @@ class Editor extends React.Component {
         hideHeader: false,
         appInMaintenance: false,
         canvasMaxWidth: 1292,
+        canvasMaxHeight: 2400,
         canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
       },
     };
@@ -126,6 +128,8 @@ class Editor extends React.Component {
       showInitVersionCreateModal: false,
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
+      isSaving: false,
+      saveError: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -169,6 +173,12 @@ class Editor extends React.Component {
     if (!isEqual(prevState.appDefinition, this.state.appDefinition)) {
       computeComponentState(this, this.state.appDefinition.components);
     }
+
+    if (config.ENABLE_MULTIPLAYER_EDITING) {
+      if (this.props.othersOnSameVersion.length !== prevProps.othersOnSameVersion.length) {
+        ReactTooltip.rebuild();
+      }
+    }
   }
 
   isVersionReleased = (version = this.state.editingVersion) => {
@@ -179,7 +189,7 @@ class Editor extends React.Component {
   };
 
   closeCreateVersionModalPrompt = () => {
-    this.setState({ showCreateVersionModalPrompt: false });
+    this.setState({ isSaving: false, showCreateVersionModalPrompt: false });
   };
 
   onMouseMove = (e) => {
@@ -389,6 +399,7 @@ class Editor extends React.Component {
     });
     this.setState({
       editingVersion: version,
+      isSaving: false,
     });
 
     this.fetchDataSources();
@@ -525,7 +536,7 @@ class Editor extends React.Component {
       },
       this.handleAddPatch
     );
-    this.setState({ appDefinition: newDefinition }, () => {
+    this.setState({ isSaving: true, appDefinition: newDefinition }, () => {
       if (!opts.skipAutoSave) this.autoSave();
     });
     computeComponentState(this, newDefinition.components);
@@ -595,6 +606,7 @@ class Editor extends React.Component {
     );
     setStateAsync(_self, newDefinition).then(() => {
       computeComponentState(_self, _self.state.appDefinition.components);
+      this.setState({ isSaving: true });
       this.autoSave();
       this.props.ymap?.set('appDef', {
         newDefinition: newDefinition.appDefinition,
@@ -617,6 +629,7 @@ class Editor extends React.Component {
     appDefinition.globalSettings[key] = value;
     this.setState(
       {
+        isSaving: true,
         appDefinition,
       },
       () => {
@@ -867,6 +880,11 @@ class Editor extends React.Component {
     return canvasBoundingRect?.width;
   };
 
+  getCanvasHeight = () => {
+    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    return canvasBoundingRect?.height;
+  };
+
   renderLayoutIcon = (isDesktopSelected) => {
     if (isDesktopSelected)
       return (
@@ -896,21 +914,31 @@ class Editor extends React.Component {
 
   saveEditingVersion = () => {
     if (this.isVersionReleased()) {
-      this.setState({ showCreateVersionModalPrompt: true });
+      this.setState({ isSaving: false, showCreateVersionModalPrompt: true });
     } else if (!isEmpty(this.state.editingVersion)) {
-      toast.promise(appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition), {
-        loading: 'Saving...',
-        success: () => {
-          this.setState({
-            editingVersion: {
-              ...this.state.editingVersion,
-              ...{ definition: this.state.appDefinition },
+      appVersionService
+        .save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition)
+        .then(() => {
+          this.setState(
+            {
+              saveError: false,
+              editingVersion: {
+                ...this.state.editingVersion,
+                ...{ definition: this.state.appDefinition },
+              },
             },
+            () => {
+              this.setState({
+                isSaving: false,
+              });
+            }
+          );
+        })
+        .catch(() => {
+          this.setState({ saveError: true, isSaving: false }, () => {
+            toast.error('App could not save.');
           });
-          return 'Saved!';
-        },
-        error: 'App could not save.',
-      });
+        });
     }
   };
 
@@ -1034,6 +1062,15 @@ class Editor extends React.Component {
                   </span>
                 </div>
               )}
+              <span
+                className={cx('autosave-indicator', {
+                  'autosave-indicator-saving': this.state.isSaving,
+                  'text-danger': this.state.saveError,
+                  'd-none': this.isVersionReleased(),
+                })}
+              >
+                {this.state.isSaving ? <Spinner size="small" /> : 'All changes are saved'}
+              </span>
               {config.ENABLE_MULTIPLAYER_EDITING && (
                 <RealtimeAvatars
                   updatePresence={this.props.updatePresence}
@@ -1056,7 +1093,9 @@ class Editor extends React.Component {
                   <a
                     href={appVersionPreviewLink}
                     target="_blank"
-                    className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
+                    className={`btn btn-sm font-500 color-primary border-0  ${
+                      app?.current_version_id ? '' : 'disabled'
+                    }`}
                     rel="noreferrer"
                   >
                     Preview
@@ -1131,7 +1170,9 @@ class Editor extends React.Component {
                   className="canvas-area"
                   style={{
                     width: currentLayout === 'desktop' ? '100%' : '450px',
+                    minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                     maxWidth: +this.state.appDefinition.globalSettings.canvasMaxWidth,
+                    maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                     backgroundColor: this.state.appDefinition.globalSettings.canvasBackgroundColor,
                   }}
                 >
@@ -1145,6 +1186,7 @@ class Editor extends React.Component {
                     <>
                       <Container
                         canvasWidth={this.getCanvasWidth()}
+                        canvasHeight={this.getCanvasHeight()}
                         socket={this.socket}
                         showComments={showComments}
                         appVersionsId={this.state?.editingVersion?.id}
@@ -1355,6 +1397,7 @@ class Editor extends React.Component {
                       disabled: !this.canUndo,
                     })}
                     width="44"
+                    data-tip="undo"
                     height="44"
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
@@ -1372,6 +1415,7 @@ class Editor extends React.Component {
                   </svg>
                   <svg
                     title="redo"
+                    data-tip="redo"
                     onClick={this.handleRedo}
                     xmlns="http://www.w3.org/2000/svg"
                     className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
