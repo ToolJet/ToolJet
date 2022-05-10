@@ -2062,4 +2062,64 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'CustomComponent',
+    displayName: 'Custom Component',
+    description: 'Visual representation of a sequence of events',
+    component: 'CustomComponent',
+    properties: {
+      data: { type: 'code', displayName: 'Data' },
+      code: { type: 'code', displayName: 'Code' },
+    },
+    defaultSize: {
+      width: 20,
+      height: 140,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      data: { value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}` },
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        visible: { value: '{{true}}' },
+        data: {
+          value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}`,
+        },
+        code: {
+          value: `import React from 'https://cdn.skypack.dev/react';
+import ReactDOM from 'https://cdn.skypack.dev/react-dom';
+import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
+const MyCustomComponent = ({data, updateData, runQuery}) => (
+  <Container>
+      <h1>{data.title}</h1>
+      <Button
+        color="primary"
+        variant="outlined"
+        onClick={() => {updateData({title: 'Hello World!!'})}}
+      >
+        {data.buttonText}
+      </Button>
+    </Container>
+);
+const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
+ReactDOM.render(<ConnectedComponent />, document.body);`,
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
 ];
