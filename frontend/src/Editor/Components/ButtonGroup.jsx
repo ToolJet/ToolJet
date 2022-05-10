@@ -31,15 +31,12 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
   }, [labels, values]);
 
   useEffect(() => {
-    console.log('darta', defaultActive);
-  }, [defaultActive]);
-
-  useEffect(() => {
     multiSelection && setDefaultActive([]);
   }, [multiSelection]);
 
   useEffect(() => {
     setExposedVariable('selected', defaultActive);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultActive]);
 
   const buttonClick = (value) => {
@@ -57,6 +54,7 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
               ...computedStyles,
               backgroundColor: defaultActive?.includes(item) ? selectedBackgroundColor : backgroundColor,
               color: defaultActive?.includes(item) ? selectedTextColor : textColor,
+              transition: 'all .3s linear',
             }}
             key={item}
             disabled={disabledState}
