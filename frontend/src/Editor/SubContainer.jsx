@@ -35,6 +35,7 @@ export const SubContainer = ({
   listViewItemOptions,
   onComponentHover,
   hoveredComponent,
+  selectedComponents,
 }) => {
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
 
@@ -418,7 +419,7 @@ export const SubContainer = ({
           currentLayout={currentLayout}
           selectedComponent={selectedComponent}
           deviceWindowWidth={deviceWindowWidth}
-          isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
+          isSelectedComponent={selectedComponents.find((component) => component.id === key)}
           removeComponent={customRemoveComponent}
           canvasWidth={_containerCanvasWidth}
           readOnly={readOnly}
