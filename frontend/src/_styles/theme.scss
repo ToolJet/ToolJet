@@ -5111,12 +5111,12 @@ div#driver-page-overlay {
 }
 .widget-buttongroup{
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: left;
   overflow: hidden !important;
 }
 .group-button{
-  margin: 0px 10px 10px 10px;
+  margin: 0px 10px 10px 0px;
   line-height: 1.499;
   font-weight: 400;
   white-space: nowrap;
