@@ -17,6 +17,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 
 export const Container = ({
   canvasWidth,
+  canvasHeight,
   mode,
   snapToGrid,
   onComponentClick,
@@ -41,11 +42,13 @@ export const Container = ({
   handleRedo,
   onComponentHover,
   hoveredComponent,
+  dataQueries,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
-    height: 2400,
+    height: '100%',
     maxWidth: `${canvasWidth}px`,
+    maxHeight: `${canvasHeight}px`,
     position: 'absolute',
     backgroundSize: `${canvasWidth / 43}px 10px`,
   };
@@ -467,6 +470,7 @@ export const Container = ({
               darkMode={darkMode}
               onComponentHover={onComponentHover}
               hoveredComponent={hoveredComponent}
+              dataQueries={dataQueries}
               containerProps={{
                 mode,
                 snapToGrid,
@@ -487,6 +491,7 @@ export const Container = ({
                 darkMode,
                 onComponentHover,
                 hoveredComponent,
+                dataQueries,
               }}
             />
           );
