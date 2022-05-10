@@ -36,7 +36,6 @@ export const FilePicker = ({
   const parsedFileType = resolveWidgetFieldValue(fileType, currentState);
   const parsedMinSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(minSize, currentState) : minSize;
   const parsedMaxSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(maxSize, currentState) : maxSize;
-
   //* styles definitions
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -189,14 +188,21 @@ export const FilePicker = ({
     }
 
     if (fileRejections.length > 0) {
-      const areAllFilesRejectedForTheSameError = fileRejections.every(
-        (rejectedFile, index, array) => rejectedFile.errors[0].message === array[0].errors[0].message
-      );
-      console.log(areAllFilesRejectedForTheSameError);
-      if (areAllFilesRejectedForTheSameError) {
+      if (
+        fileRejections.every(
+          (rejectedFile, index, array) => rejectedFile.errors[0].message === array[0].errors[0].message
+        )
+      ) {
         toast.error(fileRejections[0].errors[0].message);
       } else {
-        fileRejections.map((rejectedFile) => toast.error(rejectedFile.errors[0].message));
+        const uniqueFileRejecetd = fileRejections.reduce((acc, rejectedFile) => {
+          if (!acc.includes(rejectedFile.errors[0].message)) {
+            console.log(rejectedFile.errors[0].message);
+            acc.push(rejectedFile.errors[0].message);
+          }
+          return acc;
+        }, []);
+        uniqueFileRejecetd.map((rejectedMessag) => toast.error(rejectedMessag));
       }
     }
 
