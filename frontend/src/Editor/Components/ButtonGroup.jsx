@@ -19,7 +19,7 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
     display: visibility ? '' : 'none',
   };
 
-  const [defaultActive, setDefaultActive] = useState();
+  const [defaultActive, setDefaultActive] = useState(defaultSelected);
   const [data, setData] = useState(labels.length > 0 ? labels : values);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
               ...computedStyles,
               backgroundColor: defaultActive?.includes(item) ? selectedBackgroundColor : backgroundColor,
               color: defaultActive?.includes(item) ? selectedTextColor : textColor,
-              transition: 'all .3s linear',
+              transition: 'all .3s ease',
             }}
             key={item}
             disabled={disabledState}
