@@ -1,23 +1,29 @@
+---
+id: saphana
+title: SAP HANA
+---
 
-# saphana
+# SAP HANA
 
 ToolJet can connect to SAP HANA databases to read and write data. 
 
 - [Connection](#connection)
-- [Getting Started](#querying-saphana)
+- [Querying SAP HANA](#querying-sap-hana)
 
 ## Connection
 
-Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
-
 To add a new SAP HANA database, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select SAP HANA from the modal that pops up.
 
-ToolJet requires the following to connect to your SAP HANA database.
+ToolJet requires the following to connect to your SAP HANA database:
 
 - **Host**
 - **Port**
 - **Username**
 - **Password**
+
+:::info
+Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
+:::
 
 <div style={{textAlign: 'center'}}>
 
