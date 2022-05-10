@@ -1,8 +1,21 @@
 const { readdirSync, writeFileSync } = require('fs');
+const { includes, excludes } = require('./configs.json');
 
-const packages = readdirSync('./packages', { withFileTypes: true }).filter(
+const allPackages = readdirSync('./packages', { withFileTypes: true }).filter(
   (dirent) => dirent.isDirectory() && dirent.name !== 'common'
 );
+
+const packages =
+  includes && includes.length > 0
+    ? allPackages.filter((dirent) => includes.includes(dirent.name))
+    : excludes && excludes.length > 0
+    ? allPackages.filter((dirent) => !excludes.includes(dirent.name))
+    : allPackages;
+
+// Adding Rest API
+if (!packages.some((e) => e.name === 'restapi') && allPackages.some((e) => e.name === 'restapi')) {
+  packages.push(allPackages.find((e) => e.name === 'restapi'));
+}
 
 const capitalize = (str) => str.replace(/^./, (str) => str.toUpperCase());
 

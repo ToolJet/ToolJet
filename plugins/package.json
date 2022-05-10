@@ -11,8 +11,8 @@
     "start": "tsc -b --watch",
     "build": "npm run create:client && npm run create:server && npm run build:packages && npm run build:server",
     "prebuild:packages": "npm run clean:packages",
-    "build:packages": "npx lerna run build --stream",
-    "clean:packages": "npx lerna run clean --parallel",
+    "build:packages": "node build-packages",
+    "clean:packages": "node clean-packages",
     "lint": "eslint .  '**/*.ts'",
     "format": "eslint . --fix '**/*.ts'",
     "test": "NODE_ENV=test jest"
