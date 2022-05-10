@@ -159,7 +159,7 @@ class ManageOrgVars extends React.Component {
                       <div className="form-group mb-3 ">
                         <div className="row">
                           <div className="col">
-                            <label className="form-label">Variable Name</label>
+                            <label className="form-label">Name</label>
                             <input
                               type="text"
                               className="form-control"
