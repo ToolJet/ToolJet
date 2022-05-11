@@ -226,7 +226,6 @@ export const FilePicker = ({
   };
 
   useEffect(() => {
-    console.log('selectedFiles ==> piku', selectedFiles);
     if (selectedFiles.length === 0) {
       setShowSelectedFiles(false);
     }
