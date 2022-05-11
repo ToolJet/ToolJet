@@ -5,7 +5,7 @@ sidebar_label: General Settings
 
 # Single Sign-On General Settings
 
-Select `Manage SSO` from organization options
+Select `Manage SSO` from workspace options
 
 <div style={{textAlign: 'center'}}>
 

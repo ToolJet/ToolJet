@@ -16,7 +16,7 @@ class LoginPage extends React.Component {
       isGettingConfigs: true,
       configs: undefined,
     };
-    this.single_organization = window.public_config?.MULTI_ORGANIZATION !== 'true';
+    this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   }
 
   componentDidMount() {
@@ -132,7 +132,7 @@ class LoginPage extends React.Component {
               this.showLoading()
             ) : (
               <div className="card-body">
-                {!configs && <div className="text-center">No login methods enabled for this organization</div>}
+                {!configs && <div className="text-center">No login methods enabled for this workspace</div>}
                 {configs?.form?.enabled && (
                   <div>
                     <h2 className="card-title text-center mb-4" data-cy="login-page-header">

@@ -1,6 +1,5 @@
 /* eslint-disable import/no-unresolved */
 import React from 'react';
-import config from 'config';
 import Avatar from '@/_ui/Avatar';
 import { useOthers } from 'y-presence';
 
