@@ -5130,3 +5130,54 @@ div#driver-page-overlay {
 .autosave-indicator-saving {
   left: 34.5%;
 }
+.pdf-page-controls {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  background: white;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity ease-in-out 0.2s;
+  border-radius: 4px;
+  box-shadow: 0 30px 40px 0 rgba(16, 36, 94, 0.2);
+
+  button {
+    width: 36px;
+    height: 36px;
+    background: white;
+    border: 0;
+    font-size: 1.2em;
+    border-radius: 4px;
+
+    &:first-child {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    &:last-child {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    &:hover {
+      background-color: #e6e6e6;
+    }
+  }
+
+  span {
+    font-family: inherit;
+    font-size: 1em;
+    padding: 0 0.5em;
+    color: #000;
+  }
+}
+.pdf-document{
+  canvas{
+    margin: 0px auto;
+  }
+  &:hover {
+    .pdf-page-controls {
+      opacity: 1;
+    }
+  }
+}

@@ -116,6 +116,7 @@ const sidebars = {
         'widgets/multiselect',
         'widgets/number-input',
         'widgets/password-input',
+        'widgets/pdf',
         'widgets/qr-scanner',
         'widgets/radio-button',
         'widgets/range-slider',
