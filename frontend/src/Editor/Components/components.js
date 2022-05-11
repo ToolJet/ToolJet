@@ -1252,7 +1252,7 @@ export const componentTypes = [
     properties: {
       enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
       enablePicker: { type: 'code', displayName: 'Use File Picker' },
-      enableMultiple: { type: 'code', displayName: 'Pick mulitple files' },
+      enableMultiple: { type: 'code', displayName: 'Pick multiple files' },
       maxFileCount: { type: 'code', displayName: 'Max file count' },
       fileType: { type: 'code', displayName: 'Accept file types' },
       maxSize: { type: 'code', displayName: 'Max size limit (Bytes)' },
