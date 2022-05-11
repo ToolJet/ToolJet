@@ -103,6 +103,7 @@ class Viewer extends React.Component {
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
           },
         },
+        dataQueries: data.data_queries,
       },
       () => {
         computeComponentState(this, data?.definition?.components).then(() => {
@@ -185,6 +186,7 @@ class Viewer extends React.Component {
       deviceWindowWidth,
       defaultComponentStateComputed,
       canvasWidth,
+      dataQueries,
     } = this.state;
 
     if (this.state.app?.is_maintenance_on) {
@@ -272,6 +274,7 @@ class Viewer extends React.Component {
                               onComponentOptionsChanged(this, component, options)
                             }
                             canvasWidth={this.getCanvasWidth()}
+                            dataQueries={dataQueries}
                           />
                         )}
                       </>

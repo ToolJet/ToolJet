@@ -2062,4 +2062,110 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'CustomComponent',
+    displayName: 'Custom Component',
+    description: 'Visual representation of a sequence of events',
+    component: 'CustomComponent',
+    properties: {
+      data: { type: 'code', displayName: 'Data' },
+      code: { type: 'code', displayName: 'Code' },
+    },
+    defaultSize: {
+      width: 20,
+      height: 140,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      data: { value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}` },
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        visible: { value: '{{true}}' },
+        data: {
+          value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}`,
+        },
+        code: {
+          value: `import React from 'https://cdn.skypack.dev/react';
+import ReactDOM from 'https://cdn.skypack.dev/react-dom';
+import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
+const MyCustomComponent = ({data, updateData, runQuery}) => (
+  <Container>
+      <h1>{data.title}</h1>
+      <Button
+        color="primary"
+        variant="outlined"
+        onClick={() => {updateData({title: 'Hello World!!'})}}
+      >
+        {data.buttonText}
+      </Button>
+    </Container>
+);
+const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
+ReactDOM.render(<ConnectedComponent />, document.body);`,
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'PDF',
+    displayName: 'PDF',
+    description: 'Embed PDF file',
+    component: 'PDF',
+    properties: {
+      url: { type: 'code', displayName: 'File URL' },
+      scale: { type: 'toggle', displayName: 'Scale page to width' },
+      pageControls: { type: 'toggle', displayName: 'Show page controls' },
+    },
+    defaultSize: {
+      width: 20,
+      height: 640,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        url: {
+          value:
+            'https://upload.wikimedia.org/wikipedia/commons/e/ee/Guideline_No._GD-Ed-2214_Marman_Clamp_Systems_Design_Guidelines.pdf',
+        },
+        scale: {
+          value: '{{true}}',
+        },
+        pageControls: {
+          value: `{{true}}`,
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
 ];

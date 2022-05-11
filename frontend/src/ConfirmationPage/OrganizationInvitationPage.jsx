@@ -10,7 +10,7 @@ class OrganizationInvitationPage extends React.Component {
       isLoading: false,
     };
     this.formRef = React.createRef(null);
-    this.single_organization = window.public_config?.MULTI_ORGANIZATION !== 'true';
+    this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   }
 
   handleChange = (event) => {
@@ -49,7 +49,7 @@ class OrganizationInvitationPage extends React.Component {
       })
       .then(() => {
         this.setState({ isLoading: false });
-        toast.success(`Added to the organization${isSetPassword ? ' and password has been set ' : ' '}successfully.`, {
+        toast.success(`Added to the workspace${isSetPassword ? ' and password has been set ' : ' '}successfully.`, {
           position: 'top-center',
         });
         this.props.history.push('/login');
