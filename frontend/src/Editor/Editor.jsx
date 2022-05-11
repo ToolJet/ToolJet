@@ -7,6 +7,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { computeComponentName } from '@/_helpers/utils';
 import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
 import { Container } from './Container';
+import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
 import { componentTypes } from './Components/components';
@@ -148,7 +149,7 @@ class Editor extends React.Component {
     this.initEventListeners();
     this.setState({
       currentSidebarTab: 2,
-      selectedComponent: null,
+      selectedComponents: [],
     });
   }
 
@@ -436,9 +437,6 @@ class Editor extends React.Component {
   };
 
   switchSidebarTab = (tabIndex) => {
-    if (tabIndex === 2) {
-      this.setState({ selectedComponent: null });
-    }
     this.setState({
       currentSidebarTab: tabIndex,
     });
@@ -542,18 +540,47 @@ class Editor extends React.Component {
     computeComponentState(this, newDefinition.components);
   };
 
-  handleInspectorView = (component) => {
-    if (this.state.selectedComponent?.hasOwnProperty('component')) {
-      const { id: selectedComponentId } = this.state.selectedComponent;
-      if (selectedComponentId === component.id) {
-        this.setState({ selectedComponent: null });
-        this.switchSidebarTab(2);
-      }
-    }
+  handleInspectorView = () => {
+    this.switchSidebarTab(2);
   };
 
   handleSlugChange = (newSlug) => {
     this.setState({ slug: newSlug });
+  };
+
+  removeComponents = () => {
+    if (!this.isVersionReleased() && this.state?.selectedComponents?.length > 1) {
+      let newDefinition = cloneDeep(this.state.appDefinition);
+      const selectedComponents = this.state?.selectedComponents;
+
+      selectedComponents.forEach((component) => {
+        let childComponents = [];
+
+        if (newDefinition.components[component.id].component.component === 'Tabs') {
+          childComponents = Object.keys(newDefinition.components).filter((key) =>
+            newDefinition.components[key].parent?.startsWith(component.id)
+          );
+        } else {
+          childComponents = Object.keys(newDefinition.components).filter(
+            (key) => newDefinition.components[key].parent === component.id
+          );
+        }
+
+        childComponents.forEach((componentId) => {
+          delete newDefinition.components[componentId];
+        });
+
+        delete newDefinition.components[component.id];
+      });
+
+      toast('Selected components deleted! (⌘Z to undo)', {
+        icon: '🗑️',
+      });
+      this.appDefinitionChanged(newDefinition, {
+        skipAutoSave: this.isVersionReleased(),
+      });
+      this.handleInspectorView();
+    }
   };
 
   removeComponent = (component) => {
@@ -584,7 +611,7 @@ class Editor extends React.Component {
       this.appDefinitionChanged(newDefinition, {
         skipAutoSave: this.isVersionReleased(),
       });
-      this.handleInspectorView(component);
+      this.handleInspectorView();
     }
   };
 
@@ -613,6 +640,47 @@ class Editor extends React.Component {
         editingVersionId: this.state.editingVersion?.id,
       });
     });
+  };
+
+  handleEditorEscapeKeyPress = () => {
+    if (this.state?.selectedComponents?.length > 0) {
+      this.setState({ selectedComponents: [] });
+      this.handleInspectorView();
+    }
+  };
+
+  moveComponents = (direction) => {
+    let appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
+    let newComponents = appDefinition.components;
+
+    for (const selectedComponent of this.state.selectedComponents) {
+      newComponents = produce(newComponents, (draft) => {
+        let top = draft[selectedComponent.id].layouts[this.state.currentLayout].top;
+        let left = draft[selectedComponent.id].layouts[this.state.currentLayout].left;
+
+        const gridWidth = (1 * 100) / 43; // width of the canvas grid in percentage
+
+        switch (direction) {
+          case 'ArrowLeft':
+            left = left - gridWidth;
+            break;
+          case 'ArrowRight':
+            left = left + gridWidth;
+            break;
+          case 'ArrowDown':
+            top = top + 10;
+            break;
+          case 'ArrowUp':
+            top = top - 10;
+            break;
+        }
+
+        draft[selectedComponent.id].layouts[this.state.currentLayout].top = top;
+        draft[selectedComponent.id].layouts[this.state.currentLayout].left = left;
+      });
+    }
+    appDefinition.components = newComponents;
+    this.appDefinitionChanged(appDefinition);
   };
 
   cloneComponent = (newComponent) => {
@@ -824,9 +892,22 @@ class Editor extends React.Component {
     this.setState({ showComments: !this.state.showComments });
   };
 
-  setSelectedComponent = (id, component) => {
-    this.switchSidebarTab(1);
-    this.setState({ selectedComponent: { id, component } });
+  setSelectedComponent = (id, component, multiSelect = false) => {
+    if (this.state.selectedComponents.length === 0 || !multiSelect) {
+      this.switchSidebarTab(1);
+    } else {
+      this.switchSidebarTab(2);
+    }
+
+    const isAlreadySelected = this.state.selectedComponents.find((component) => component.id === id);
+
+    if (!isAlreadySelected) {
+      this.setState((prevState) => {
+        return {
+          selectedComponents: [...(multiSelect ? prevState.selectedComponents : []), { id, component }],
+        };
+      });
+    }
   };
 
   filterQueries = (value) => {
@@ -982,7 +1063,7 @@ class Editor extends React.Component {
   render() {
     const {
       currentSidebarTab,
-      selectedComponent = {},
+      selectedComponents = [],
       appDefinition,
       appId,
       slug,
@@ -1148,7 +1229,7 @@ class Editor extends React.Component {
               appDefinition={{
                 components: appDefinition.components,
                 queries: dataQueries,
-                selectedComponent: this.state?.selectedComponent,
+                selectedComponent: selectedComponents ? selectedComponents[selectedComponents.length - 1] : {},
               }}
               setSelectedComponent={this.setSelectedComponent}
               removeComponent={this.removeComponent}
@@ -1162,7 +1243,7 @@ class Editor extends React.Component {
                 style={{ transform: `scale(${zoomLevel})` }}
                 onClick={(e) => {
                   if (['real-canvas', 'modal'].includes(e.target.className)) {
-                    this.switchSidebarTab(2);
+                    this.setState({ selectedComponents: [], currentSidebarTab: 2 });
                   }
                 }}
               >
@@ -1198,7 +1279,7 @@ class Editor extends React.Component {
                         zoomLevel={zoomLevel}
                         currentLayout={currentLayout}
                         deviceWindowWidth={deviceWindowWidth}
-                        selectedComponent={selectedComponent}
+                        selectedComponents={selectedComponents}
                         appLoading={isLoading}
                         onEvent={this.handleEvent}
                         onComponentOptionChanged={this.handleOnComponentOptionChanged}
@@ -1440,26 +1521,34 @@ class Editor extends React.Component {
                   {this.renderLayoutIcon(currentLayout === 'desktop')}
                 </div>
               </div>
+
+              <EditorKeyHooks
+                moveComponents={this.moveComponents}
+                handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
+                removeMultipleComponents={this.removeComponents}
+              />
+
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
-                  {selectedComponent &&
+                  {selectedComponents.length === 1 &&
                   !isEmpty(appDefinition.components) &&
-                  !isEmpty(appDefinition.components[selectedComponent.id]) ? (
+                  !isEmpty(appDefinition.components[selectedComponents[0].id]) ? (
                     <Inspector
                       cloneComponent={this.cloneComponent}
+                      moveComponents={this.moveComponents}
                       componentDefinitionChanged={this.componentDefinitionChanged}
                       dataQueries={dataQueries}
                       removeComponent={this.removeComponent}
-                      selectedComponentId={selectedComponent.id}
+                      selectedComponentId={selectedComponents[0].id}
                       currentState={currentState}
                       allComponents={appDefinition.components}
-                      key={selectedComponent.id}
+                      key={selectedComponents[0].id}
                       switchSidebarTab={this.switchSidebarTab}
                       apps={apps}
                       darkMode={this.props.darkMode}
                     ></Inspector>
                   ) : (
-                    <div className="mt-5 p-2">Please select a component to inspect</div>
+                    <center className="mt-5 p-2">Please select a component to inspect</center>
                   )}
                 </div>
               )}
