@@ -284,8 +284,12 @@ export const Organization = function Organization() {
 
   return (
     <div>
-      <div className="dropdown organization-list" onMouseEnter={() => setIsListOrganizations(false)}>
-        <a href="#" className={`btn ${!isSingleOrganization || admin ? 'dropdown-toggle' : ''}`}>
+      <div className="dropdown organization-list">
+        <a
+          href="#"
+          className={`btn ${!isSingleOrganization || admin ? 'dropdown-toggle' : ''}`}
+          onMouseOver={() => setIsListOrganizations(false)}
+        >
           <div>{organization}</div>
         </a>
         {(!isSingleOrganization || admin) && (
