@@ -59,7 +59,7 @@ export const Image = function Image({ height, properties, styles, fireEvent, wid
                           style={{
                             backgroundColor,
                             padding: Number.parseInt(padding),
-                            objectFit: imageFit,
+                            objectFit: imageFit ? imageFit : 'contain',
                           }}
                           height={height}
                           onClick={() => fireEvent('onClick')}
