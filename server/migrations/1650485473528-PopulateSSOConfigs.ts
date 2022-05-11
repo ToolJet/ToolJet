@@ -9,7 +9,7 @@ export class PopulateSSOConfigs1650485473528 implements MigrationInterface {
     const encryptionService = new EncryptionService();
     const OrganizationRepository = entityManager.getRepository(Organization);
 
-    const isSingleOrganization = process.env.MULTI_ORGANIZATION !== 'true';
+    const isSingleOrganization = process.env.DISABLE_MULTI_WORKSPACE === 'true';
     const enableSignUp = process.env.SSO_DISABLE_SIGNUP !== 'true';
     const domain = process.env.SSO_RESTRICTED_DOMAIN;
 

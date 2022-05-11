@@ -69,6 +69,7 @@
     "react-loading-skeleton": "^2.2.0",
     "react-mentions": "^4.3.0",
     "react-multi-select-component": "^4.2.3",
+    "react-pdf": "^5.7.2",
     "react-plotly.js": "^2.5.1",
     "react-qr-reader": "^2.2.1",
     "react-rnd": "^10.3.0",

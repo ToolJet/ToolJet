@@ -38,6 +38,18 @@ describe('Authentication', () => {
   });
 
   describe('Single organization', () => {
+    beforeEach(async () => {
+      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        switch (key) {
+          case 'DISABLE_SIGNUPS':
+            return 'false';
+          case 'DISABLE_MULTI_WORKSPACE':
+            return 'true';
+          default:
+            return process.env[key];
+        }
+      });
+    });
     it('should create new users and organization', async () => {
       const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
       expect(response.statusCode).toBe(201);
@@ -52,7 +64,7 @@ describe('Authentication', () => {
       });
 
       expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
-      expect(organization.name).toBe('Untitled organization');
+      expect(organization.name).toBe('Untitled workspace');
 
       const groupPermissions = await user.groupPermissions;
       const groupNames = groupPermissions.map((x) => x.group);
@@ -142,8 +154,6 @@ describe('Authentication', () => {
         switch (key) {
           case 'DISABLE_SIGNUPS':
             return 'false';
-          case 'MULTI_ORGANIZATION':
-            return 'true';
           default:
             return process.env[key];
         }
@@ -154,8 +164,6 @@ describe('Authentication', () => {
         jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
           switch (key) {
             case 'DISABLE_SIGNUPS':
-              return 'true';
-            case 'MULTI_ORGANIZATION':
               return 'true';
             default:
               return process.env[key];
@@ -182,7 +190,7 @@ describe('Authentication', () => {
         });
 
         expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
-        expect(organization?.name).toBe('Untitled organization');
+        expect(organization?.name).toBe('Untitled workspace');
 
         const groupPermissions = await user.groupPermissions;
         const groupNames = groupPermissions.map((x) => x.group);
@@ -255,7 +263,7 @@ describe('Authentication', () => {
           .send({ email: 'admin@tooljet.io', password: 'password' });
         expect(response.statusCode).toBe(201);
         expect(response.body.organization_id).not.toBe(current_organization.id);
-        expect(response.body.organization).toBe('Untitled organization');
+        expect(response.body.organization).toBe('Untitled workspace');
       });
       it('should be able to switch between organizations with admin privilage', async () => {
         const { organization: invited_organization } = await createUser(
