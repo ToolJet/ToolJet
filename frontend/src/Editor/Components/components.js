@@ -2168,4 +2168,39 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
   },
+  {
+    name: 'KanbanBoard',
+    displayName: 'Kanban Board',
+    description: 'Kanban Board',
+    component: 'KanbanBoard',
+    defaultSize: {
+      width: 30,
+      height: 600,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {},
+    events: {},
+    styles: {
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      value: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {},
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];
