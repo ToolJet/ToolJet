@@ -3,6 +3,8 @@ FROM node:14.17.3-buster AS builder
 
 RUN npm i -g npm@7.20.0
 
+RUN npm i -g if-env
+
 # set working directory
 WORKDIR /app
 
