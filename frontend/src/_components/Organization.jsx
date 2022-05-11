@@ -24,7 +24,7 @@ export const Organization = function Organization() {
     const orgName = organization.split(' ').filter((e) => e && !!e.trim());
     if (orgName.length > 1) {
       return `${orgName[0]?.[0]}${orgName[1]?.[0]}`;
-    } else if (organization.lenth >= 2) {
+    } else if (organization.length >= 2) {
       return `${organization[0]}${organization[1]}`;
     } else {
       return `${organization[0]}${organization[0]}`;
