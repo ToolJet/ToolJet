@@ -89,6 +89,8 @@ export const FilePicker = ({
       maxSize: parsedMaxSize,
       multiple: parsedEnableMultiple,
       disabled: parsedDisabledState,
+      validator: validateFileExists,
+      onDropRejected: () => setShowSelectedFiles(true),
     });
 
   const style = useMemo(
@@ -105,6 +107,19 @@ export const FilePicker = ({
   const [accepted, setAccepted] = React.useState(false);
   const [showSelectdFiles, setShowSelectedFiles] = React.useState(false);
   const [selectedFiles, setSelectedFiles] = React.useState([]);
+  //* custom validator
+  function validateFileExists(file) {
+    const isValid = selectedFiles.some((selectedFile) => selectedFile.name === file.name);
+
+    if (isValid) {
+      return {
+        code: 'same_file_exists',
+        message: `File ${file.name} already exists`,
+      };
+    }
+
+    return null;
+  }
 
   /**
    * *getFileData()
@@ -193,8 +208,10 @@ export const FilePicker = ({
     }
 
     return () => {
+      if (selectedFiles.length === 0) {
+        setShowSelectedFiles(false);
+      }
       setAccepted(false);
-      setShowSelectedFiles(false);
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -209,6 +226,7 @@ export const FilePicker = ({
   };
 
   useEffect(() => {
+    console.log('selectedFiles ==> piku', selectedFiles);
     if (selectedFiles.length === 0) {
       setShowSelectedFiles(false);
     }
