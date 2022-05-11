@@ -1,6 +1,7 @@
-import { Controller, Get, Request, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Request, Post, UseGuards, Body } from '@nestjs/common';
 import { MetadataService } from '@services/metadata.service';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
+import { UserOnboardingDto } from '@dto/user-onboarding.dto';
 
 @Controller('metadata')
 export class MetadataController {
@@ -8,8 +9,8 @@ export class MetadataController {
 
   @UseGuards(JwtAuthGuard)
   @Post('finish_installation')
-  async finishInstallation(@Request() req) {
-    const { name, email, org } = req.body;
+  async finishInstallation(@Request() req, @Body() userOnboardingDto: UserOnboardingDto) {
+    const { name, email, org } = userOnboardingDto;
     const installedVersion = globalThis.TOOLJET_VERSION;
 
     const metadata = await this.metadataService.getMetaData();

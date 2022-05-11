@@ -2,6 +2,7 @@
 import moment from 'moment';
 import _ from 'lodash';
 import axios from 'axios';
+import JSON5 from 'json5';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -312,7 +313,7 @@ export function toQuery(params, delimiter = '&') {
 
 export const isJson = (str) => {
   try {
-    JSON.parse(str);
+    JSON5.parse(str);
   } catch (e) {
     return false;
   }

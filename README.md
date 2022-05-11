@@ -16,13 +16,11 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 [![GitHub license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet)
 [![Twitter Follow](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
-
 <p align="center">
   <kbd>
-    <img src="https://user-images.githubusercontent.com/7828962/149466475-1d1f0b3e-8e25-49e8-a5c9-73e068f78de9.png"/>
+    <img src="https://user-images.githubusercontent.com/12490590/165771029-bf490c80-397d-4d3a-8409-0499ccc9b593.gif"/>
   </kbd>
 </p>
-
 
 ---
 
@@ -52,7 +50,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 - *Desktop & mobile*: ;layout widths can be customised to support different screens. 
 - *Self-host:* (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
 - *Collaborate:* add comments anywhere on the canvas and tag your team members.
-- *Extend with plugins:*: use our [commandline tool](https://www.npmjs.com/package/tooljet) to easily boostrap new connectors.
+- *Extend with plugins:*: use our [commandline tool](https://www.npmjs.com/package/@tooljet/cli) to easily boostrap new connectors.
 - *Version control:* every application have different versions with proper release cycle.
 - *Run JS code:* ability custom JavaScript snippets
 - *Granular access control* on organization-level and app-level.
@@ -66,7 +64,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 <hr>
 
 ## Quickstart 
-The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/deployment/architecture).
+The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/setup/architecture).
 
 You can deploy ToolJet on Heroku for free using the one-click-deployment button below.
 <p align="center">
@@ -92,13 +90,13 @@ You can use ToolJet cloud for a fully managed solution. If you want to self-host
 
 | Provider  | Documentation |
 | ------------- | ------------- |
-| AWS EC2 | [Link](https://docs.tooljet.com/docs/deployment/ec2)  |
-| AWS EKS (Kubernetes) | [Link](https://docs.tooljet.com/docs/deployment/kubernetes)   |
-| GCP GKE (Kubernetes) | [Link](https://docs.tooljet.com/docs/deployment/kubernetes-gke)   |
-| Azure AKS (Kubernetes) | [Link](https://docs.tooljet.com/docs/deployment/kubernetes-aks)   |
-| Heroku  | [Link](https://docs.tooljet.com/docs/deployment/heroku)  |
-| Docker  | [Link](https://docs.tooljet.com/docs/deployment/docker)   |
-| Google Cloud Run  | [Link](https://docs.tooljet.com/docs/deployment/google-cloud-run)   |
+| AWS EC2 | [Link](https://docs.tooljet.com/docs/setup/ec2)  |
+| AWS EKS (Kubernetes) | [Link](https://docs.tooljet.com/docs/setup/kubernetes)   |
+| GCP GKE (Kubernetes) | [Link](https://docs.tooljet.com/docs/setup/kubernetes-gke)   |
+| Azure AKS (Kubernetes) | [Link](https://docs.tooljet.com/docs/setup/kubernetes-aks)   |
+| Heroku  | [Link](https://docs.tooljet.com/docs/setup/heroku)  |
+| Docker  | [Link](https://docs.tooljet.com/docs/setup/docker)   |
+| Google Cloud Run  | [Link](https://docs.tooljet.com/docs/setup/google-cloud-run)   |
 
 ## Community support
 For general help using ToolJet, please refer to the official [documentation](https://docs.tooljet.com/docs/intro/). For additional help, you can use one of these channels to ask a question:

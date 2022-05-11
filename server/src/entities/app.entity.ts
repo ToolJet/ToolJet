@@ -36,6 +36,9 @@ export class App extends BaseEntity {
   @Column({ name: 'is_public', default: true })
   isPublic: boolean;
 
+  @Column({ name: 'is_maintenance_on', default: false })
+  isMaintenanceOn: boolean;
+
   @Column({ name: 'icon' })
   icon: string;
 

@@ -34,6 +34,7 @@
     "emoji-mart": "^3.0.1",
     "fuse.js": "^6.4.6",
     "history": "^4.9.0",
+    "html-loader": "^3.1.0",
     "html-webpack-plugin": "^5.3.2",
     "immer": "^9.0.6",
     "immutability-helper": "^3.1.1",
@@ -86,6 +87,9 @@
     "uuid": "8.3.2",
     "webpack": "^5.55.1",
     "webpack-cli": "^4.8.0",
+    "y-presence": "^1.0.6",
+    "y-websocket": "^1.4.0",
+    "yjs": "^13.5.28",
     "yup": "^0.27.0"
   },
   "devDependencies": {

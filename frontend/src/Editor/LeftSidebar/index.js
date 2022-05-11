@@ -20,23 +20,38 @@ export const LeftSidebar = ({
   toggleComments,
   dataSources = [],
   dataSourcesChanged,
+  dataQueriesChanged,
   errorLogs,
   appVersionsId,
   globalSettingsChanged,
   globalSettings,
   currentState,
+  appDefinition,
+  setSelectedComponent,
+  removeComponent,
+  runQuery,
+  toggleAppMaintenance,
+  is_maintenance_on,
 }) => {
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   return (
     <div className="left-sidebar">
-      <LeftSidebarInspector darkMode={darkMode} currentState={currentState} />
+      <LeftSidebarInspector
+        darkMode={darkMode}
+        currentState={currentState}
+        appDefinition={appDefinition}
+        setSelectedComponent={setSelectedComponent}
+        removeComponent={removeComponent}
+        runQuery={runQuery}
+      />
       <LeftSidebarDataSources
         darkMode={darkMode}
         appId={appId}
         editingVersionId={appVersionsId}
         dataSources={dataSources}
         dataSourcesChanged={dataSourcesChanged}
+        dataQueriesChanged={dataQueriesChanged}
       />
       <LeftSidebarDebugger darkMode={darkMode} components={components} errors={errorLogs} />
       {config.COMMENT_FEATURE_ENABLE && (
@@ -46,6 +61,9 @@ export const LeftSidebar = ({
         currentState={currentState}
         globalSettingsChanged={globalSettingsChanged}
         globalSettings={globalSettings}
+        darkMode={darkMode}
+        toggleAppMaintenance={toggleAppMaintenance}
+        is_maintenance_on={is_maintenance_on}
       />
       <LeftSidebarItem
         onClick={() => setShowLeaveDialog(true)}

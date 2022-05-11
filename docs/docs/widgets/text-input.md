@@ -1,3 +1,7 @@
+---
+id: text-input
+title: Text Input
+---
 # Text Input
 
 Text Input widget let users enter and edit text.

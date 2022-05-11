@@ -290,26 +290,26 @@ function executeAction(_ref, event, mode, customVariables) {
       case 'set-custom-variable': {
         const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
         const value = resolveReferences(event.value, _ref.state.currentState, undefined, customVariables);
-        const customVariables = { ..._ref.state.currentState.variables };
-        customVariables[key] = value;
+        const customAppVariables = { ..._ref.state.currentState.variables };
+        customAppVariables[key] = value;
 
         return _ref.setState({
           currentState: {
             ..._ref.state.currentState,
-            variables: customVariables,
+            variables: customAppVariables,
           },
         });
       }
 
       case 'unset-custom-variable': {
         const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
-        const customVariables = { ..._ref.state.currentState.variables };
-        delete customVariables[key];
+        const customAppVariables = { ..._ref.state.currentState.variables };
+        delete customAppVariables[key];
 
         return _ref.setState({
           currentState: {
             ..._ref.state.currentState,
-            variables: customVariables,
+            variables: customAppVariables,
           },
         });
       }
@@ -322,6 +322,26 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   console.log('Event: ', eventName);
 
   const { customVariables } = options;
+
+  if (eventName === 'onTrigger') {
+    const { component, queryId, queryName } = options;
+    _self.setState(
+      {
+        currentState: {
+          ..._self.state.currentState,
+          components: {
+            ..._self.state.currentState.components,
+            [component.name]: {
+              ..._self.state.currentState.components[component.name],
+            },
+          },
+        },
+      },
+      () => {
+        runQuery(_ref, queryId, queryName, true, mode);
+      }
+    );
+  }
 
   if (eventName === 'onRowClicked') {
     const { component, data, rowId } = options;

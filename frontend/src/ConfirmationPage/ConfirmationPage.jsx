@@ -1,7 +1,6 @@
 import React from 'react';
 import { userService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import queryString from 'query-string';
 
 class ConfirmationPage extends React.Component {
   constructor(props) {
@@ -9,7 +8,6 @@ class ConfirmationPage extends React.Component {
 
     this.state = {
       isLoading: false,
-      newSignup: queryString.parse(props.location.state.search).signup,
     };
     this.formRef = React.createRef(null);
   }
@@ -26,7 +24,7 @@ class ConfirmationPage extends React.Component {
   setPassword = (e) => {
     e.preventDefault();
     const token = this.props.location.state.token;
-    const { password, organization, role, newSignup, firstName, lastName, password_confirmation } = this.state;
+    const { password, organization, role, firstName, lastName, password_confirmation } = this.state;
     this.setState({ isLoading: true });
 
     if (!password || !password_confirmation || !password.trim() || !password_confirmation.trim()) {
@@ -51,13 +49,12 @@ class ConfirmationPage extends React.Component {
         password,
         organization,
         role,
-        newSignup,
         firstName,
         lastName,
       })
       .then(() => {
         this.setState({ isLoading: false });
-        toast.success('Password has been set successfully.', {
+        toast.success('Account has been setup successfully.', {
           position: 'top-center',
         });
         this.props.history.push('/login');
@@ -69,7 +66,7 @@ class ConfirmationPage extends React.Component {
   };
 
   render() {
-    const { isLoading, newSignup } = this.state;
+    const { isLoading } = this.state;
     const roles = [
       'CTO/CIO',
       'Founder/CEO',
@@ -102,59 +99,54 @@ class ConfirmationPage extends React.Component {
           <form className="card card-md" action="." method="get" autoComplete="off">
             <div className="card-body">
               <h2 className="card-title text-center mb-4">Set up your account</h2>
-              {newSignup === 'true' && (
-                <>
-                  <div className="mb-3">
-                    <label className="form-label">First name</label>
-                    <div className="input-group input-group-flat">
-                      <input
-                        onChange={this.handleChange}
-                        name="firstName"
-                        type="text"
-                        className="form-control"
-                        autoComplete="off"
-                      />
-                      <span className="input-group-text"></span>
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Last name</label>
-                    <div className="input-group input-group-flat">
-                      <input
-                        onChange={this.handleChange}
-                        name="lastName"
-                        type="text"
-                        className="form-control"
-                        autoComplete="off"
-                      />
-                      <span className="input-group-text"></span>
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Organization</label>
-                    <div className="input-group input-group-flat">
-                      <input
-                        onChange={this.handleChange}
-                        name="organization"
-                        type="text"
-                        className="form-control"
-                        autoComplete="off"
-                      />
-                      <span className="input-group-text"></span>
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <div className="form-label">Role</div>
-                    <select className="form-select" name="role" defaultValue="" onChange={this.handleChange}>
-                      <option value="" disabled>
-                        Please select
-                      </option>
-                      {roleOptions}
-                    </select>
-                  </div>
-                </>
-              )}
-
+              <div className="mb-3">
+                <label className="form-label">First name</label>
+                <div className="input-group input-group-flat">
+                  <input
+                    onChange={this.handleChange}
+                    name="firstName"
+                    type="text"
+                    className="form-control"
+                    autoComplete="off"
+                  />
+                  <span className="input-group-text"></span>
+                </div>
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Last name</label>
+                <div className="input-group input-group-flat">
+                  <input
+                    onChange={this.handleChange}
+                    name="lastName"
+                    type="text"
+                    className="form-control"
+                    autoComplete="off"
+                  />
+                  <span className="input-group-text"></span>
+                </div>
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Organization</label>
+                <div className="input-group input-group-flat">
+                  <input
+                    onChange={this.handleChange}
+                    name="organization"
+                    type="text"
+                    className="form-control"
+                    autoComplete="off"
+                  />
+                  <span className="input-group-text"></span>
+                </div>
+              </div>
+              <div className="mb-3">
+                <div className="form-label">Role</div>
+                <select className="form-select" name="role" defaultValue="" onChange={this.handleChange}>
+                  <option value="" disabled>
+                    Please select
+                  </option>
+                  {roleOptions}
+                </select>
+              </div>
               <div className="mb-3">
                 <label className="form-label">Password</label>
                 <div className="input-group input-group-flat">
