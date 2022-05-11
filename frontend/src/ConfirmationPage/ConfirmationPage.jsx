@@ -126,7 +126,7 @@ class ConfirmationPage extends React.Component {
                 </div>
               </div>
               <div className="mb-3">
-                <label className="form-label">Organization</label>
+                <label className="form-label">Workspace</label>
                 <div className="input-group input-group-flat">
                   <input
                     onChange={this.handleChange}

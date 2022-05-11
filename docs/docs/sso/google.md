@@ -5,7 +5,7 @@ title: Google
 
 # Google Single Sign-on
 
-Select `Manage SSO` from organization options
+Select `Manage SSO` from workspace options
 
 <div style={{textAlign: 'center'}}>
 
@@ -45,7 +45,7 @@ Go to [Google cloud console](https://console.cloud.google.com/) and create a pro
 
 </div>
 
-- You'll be asked to select user type in consent screen. To allow only users within your organization, select 'Internal', otherwise,
+- You'll be asked to select user type in consent screen. To allow only users within your workspace, select 'Internal', otherwise,
 select 'External'.
 
 <div style={{textAlign: 'center'}}>
@@ -82,4 +82,4 @@ Set the `Redirect URL` generated at manage SSO `Google` page under Authorised re
 
 Lastly, set the `client id` in google manage SSO page. This value will be available from your [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials)
 
-The Google sign-in button will now be available in your ToolJet login screen, if you are not enabled multiple organization.
+The Google sign-in button will now be available in your ToolJet login screen, if you are not enabled Multi-Workspace.

@@ -49,7 +49,7 @@ export class OrganizationsController {
 
   @Get(['/:organizationId/public-configs', '/public-configs'])
   async getOrganizationDetails(@Param('organizationId') organizationId: string) {
-    if (!organizationId && this.configService.get<string>('MULTI_ORGANIZATION') !== 'true') {
+    if (!organizationId && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       // Request from single organization login page - find one from organization and setting
       organizationId = (await this.organizationsService.getSingleOrganization()).id;
     }
