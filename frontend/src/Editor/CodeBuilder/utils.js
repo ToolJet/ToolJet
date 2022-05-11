@@ -6,7 +6,6 @@ export function getSuggestionKeys(currentState) {
 
   const map = new Map();
 
-  let x = [];
   const buildMap = (data, path = '') => {
     const keys = Object.keys(data);
     keys.forEach((key, index) => {
@@ -37,7 +36,7 @@ export function getSuggestionKeys(currentState) {
   };
 
   buildMap(currentState, '');
-  map.forEach((_, key) => suggestionList.push(key));
+  map.forEach((__, key) => suggestionList.push(key));
 
   return suggestionList;
 }
