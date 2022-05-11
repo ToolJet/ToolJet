@@ -153,6 +153,17 @@ export const FilePicker = ({
       parsedData: shouldProcessFileParsing ? await processFileContent(file.type, readFileAsText) : null,
     };
   };
+
+  const handleFileRejection = (fileRejections) => {
+    const uniqueFileRejecetd = fileRejections.reduce((acc, rejectedFile) => {
+      if (!acc.includes(rejectedFile.errors[0].message)) {
+        acc.push(rejectedFile.errors[0].message);
+      }
+      return acc;
+    }, []);
+    uniqueFileRejecetd.map((rejectedMessag) => toast.error(rejectedMessag));
+  };
+
   useEffect(() => {
     if (acceptedFiles.length === 0 && selectedFiles.length === 0) {
       onComponentOptionChanged(component, 'file', []);
@@ -172,7 +183,6 @@ export const FilePicker = ({
       setSelectedFiles(fileData);
       onComponentOptionChanged(component, 'file', fileData);
       onEvent('onFileSelected', { component }).then(() => {
-        console.log('inside on file selected event');
         setAccepted(true);
         // eslint-disable-next-line no-unused-vars
         return new Promise(function (resolve, reject) {
@@ -187,22 +197,7 @@ export const FilePicker = ({
     }
 
     if (fileRejections.length > 0) {
-      if (
-        fileRejections.every(
-          (rejectedFile, index, array) => rejectedFile.errors[0].message === array[0].errors[0].message
-        )
-      ) {
-        toast.error(fileRejections[0].errors[0].message);
-      } else {
-        const uniqueFileRejecetd = fileRejections.reduce((acc, rejectedFile) => {
-          if (!acc.includes(rejectedFile.errors[0].message)) {
-            console.log(rejectedFile.errors[0].message);
-            acc.push(rejectedFile.errors[0].message);
-          }
-          return acc;
-        }, []);
-        uniqueFileRejecetd.map((rejectedMessag) => toast.error(rejectedMessag));
-      }
+      handleFileRejection(fileRejections);
     }
 
     return () => {
@@ -247,7 +242,7 @@ export const FilePicker = ({
                   cls="text-secondary d-flex justify-content-start file-list mb-2"
                 />
               </div>
-              <div className="col-2 mt-1">
+              <div className="col-2 mt-0">
                 <button
                   className="btn badge bg-azure-lt"
                   onClick={(e) => {
