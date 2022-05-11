@@ -114,7 +114,7 @@ button {
 .editor {
   .header-container {
     max-width: 100%;
-    padding: 0 15px;
+    padding: 0 10px;
   }
 
   .resizer-active {
@@ -262,7 +262,7 @@ button {
     height: 100%;
     width: 76px;
     position: fixed;
-    z-index: 1;
+    z-index: 2;
     left: 0;
     overflow-x: hidden;
     flex: 1 1 auto;
@@ -3971,7 +3971,7 @@ input[type="text"] {
 }
 
 .app-name {
-  width: 325px;
+  width: 250px;
   left: 150px;
   position: absolute;
 }
@@ -4010,7 +4010,7 @@ input[type="text"] {
 }
 
 .app-version-menu .dropdown-menu {
-  left: -90px;
+  left: -65px;
   width: 283px;
 }
 
@@ -4021,7 +4021,7 @@ input[type="text"] {
 .app-version-menu .released-subtext {
   font-size: 12px;
   color: #36af8b;
-  padding: 0;
+  padding: 0 8px;
 }
 
 .app-version-menu .create-link {
@@ -5080,8 +5080,9 @@ div#driver-page-overlay {
 
 .realtime-avatars {
   position: absolute;
-  left: 35%;
+  left: 50%;
 }
+
 .widget-style-field-header{
   font-family: 'Inter';
   font-style: normal;
@@ -5114,4 +5115,69 @@ div#driver-page-overlay {
   padding: 5px;
   display: flex;
   justify-content: end;
+}
+
+.autosave-indicator {
+  position: absolute;
+  left: 30%;
+  color: #868aa5;
+  white-space: nowrap;
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.autosave-indicator-saving {
+  left: 34.5%;
+}
+.pdf-page-controls {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  background: white;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity ease-in-out 0.2s;
+  border-radius: 4px;
+  box-shadow: 0 30px 40px 0 rgba(16, 36, 94, 0.2);
+
+  button {
+    width: 36px;
+    height: 36px;
+    background: white;
+    border: 0;
+    font-size: 1.2em;
+    border-radius: 4px;
+
+    &:first-child {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    &:last-child {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    &:hover {
+      background-color: #e6e6e6;
+    }
+  }
+
+  span {
+    font-family: inherit;
+    font-size: 1em;
+    padding: 0 0.5em;
+    color: #000;
+  }
+}
+.pdf-document{
+  canvas{
+    margin: 0px auto;
+  }
+  &:hover {
+    .pdf-page-controls {
+      opacity: 1;
+    }
+  }
 }
