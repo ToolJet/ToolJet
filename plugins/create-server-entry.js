@@ -1,7 +1,7 @@
 const { readdirSync, writeFileSync } = require('fs');
 
 const isPrivatePackage = (name) => {
-  if (process.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production') {
     return false;
   }
   const pkg = require(`./packages/${name}/package.json`);
