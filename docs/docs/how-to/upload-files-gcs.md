@@ -1,3 +1,8 @@
+---
+id: upload-files-gcs
+title: Upload files using GCS
+---
+
 # Upload files using GCS
 
 In this guide, we are going to create an interface to upload PDFs to Google Cloud Storage.

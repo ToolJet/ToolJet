@@ -1,3 +1,7 @@
+---
+id: number-input
+title: Number Input
+---
 # Number Input
 
 Number Input widget lets users enter and change numbers.

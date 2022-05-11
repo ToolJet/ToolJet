@@ -1,5 +1,6 @@
 ---
-sidebar_position: 5
+id: adding-widget
+title: Adding a widget
 ---
 
 # Adding a widget

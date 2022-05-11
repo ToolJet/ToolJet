@@ -39,6 +39,8 @@ import { RangeSlider } from './Components/RangeSlider';
 import { Timeline } from './Components/Timeline';
 import { SvgImage } from './Components/SvgImage';
 import { Html } from './Components/Html';
+import { CustomComponent } from './Components/CustomComponent/CustomComponent';
+import { VerticalDivider } from './Components/verticalDivider';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { resolveProperties, resolveStyles } from './component-properties-resolution';
@@ -84,6 +86,8 @@ const AllComponents = {
   Timeline,
   SvgImage,
   Html,
+  CustomComponent,
+  VerticalDivider,
 };
 
 export const Box = function Box({
@@ -110,6 +114,7 @@ export const Box = function Box({
   parentId,
   allComponents,
   extraProps,
+  dataQueries,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -214,6 +219,7 @@ export const Box = function Box({
             validate={validate}
             parentId={parentId}
             customResolvables={customResolvables}
+            dataQueries={dataQueries}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>

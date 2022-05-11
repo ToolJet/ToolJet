@@ -1,3 +1,7 @@
+---
+id: calendar
+title: Calendar
+---
 # Calendar
 
 Calendar widget comes with the following features:  

@@ -22,10 +22,7 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-
-  if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
-    app.useWebSocketAdapter(new WsAdapter(app));
-  }
+  app.useWebSocketAdapter(new WsAdapter(app));
   app.setGlobalPrefix('api');
   app.enableCors();
 
@@ -43,6 +40,10 @@ async function bootstrap() {
           "'unsafe-inline'",
           "'unsafe-eval'",
           'blob:',
+          'https://unpkg.com/@babel/standalone@7.17.9/babel.min.js',
+          'https://unpkg.com/react@16.7.0/umd/react.production.min.js',
+          'https://unpkg.com/react-dom@16.7.0/umd/react-dom.production.min.js',
+          'cdn.skypack.dev',
         ],
         'default-src': [
           'maps.googleapis.com',
