@@ -154,16 +154,12 @@ export const FilePicker = ({
     };
   };
   useEffect(() => {
-    const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
-    if (acceptedFiles.length === 0) {
-      if (parseContent) {
-        onComponentOptionChanged(component, 'isParsing', true);
-      }
-      setSelectedFiles(fileData);
-      onComponentOptionChanged(component, 'file', fileData);
+    if (acceptedFiles.length === 0 && selectedFiles.length === 0) {
+      onComponentOptionChanged(component, 'file', []);
     }
 
     if (acceptedFiles.length !== 0) {
+      const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
       if (parseContent) {
         onComponentOptionChanged(component, 'isParsing', true);
       }
