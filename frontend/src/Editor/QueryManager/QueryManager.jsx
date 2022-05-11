@@ -120,7 +120,7 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.mode === 'edit') {
+    if (this.props.mode === 'create' || this.props.mode === 'edit') {
       const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
       if (
         this.state.selectedQuery &&
@@ -128,10 +128,10 @@ let QueryManager = class QueryManager extends React.Component {
         !this.state.paneHeightChanged &&
         !themeModeChanged
       ) {
-        const isQueryChanged = !_.isEqual(
-          this.removeRestKey(this.state.options),
-          this.removeRestKey(this.state.selectedQuery.options)
-        );
+        const isQueryChanged =
+          this.props.mode !== 'create'
+            ? !_.isEqual(this.removeRestKey(this.state.options), this.removeRestKey(this.state.selectedQuery.options))
+            : true;
         if (this.state.isFieldsChanged && isQueryChanged) {
           this.setState({ showSaveConfirmation: true, nextProps });
           return;
