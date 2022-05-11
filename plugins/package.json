@@ -11,8 +11,8 @@
     "start": "tsc -b --watch",
     "build": "npm run create:client && npm run create:server && npm run build:packages && npm run build:server",
     "prebuild:packages": "npm run clean:packages",
-    "build:packages": "if-env NODE_ENV=production && npx lerna run build --stream || npx lerna run build --stream --no-private",
-    "clean:packages": "if-env NODE_ENV=production && npx lerna run clean --parallel || npx lerna run clean --parallel --no-private",
+    "build:packages": "node build-packages.js",
+    "clean:packages": "node clean-packages.js",
     "lint": "eslint .  '**/*.ts'",
     "format": "eslint . --fix '**/*.ts'",
     "test": "NODE_ENV=test jest"
@@ -63,7 +63,6 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-jest": "^24.4.2",
     "eslint-plugin-prettier": "^3.4.1",
-    "if-env": "^1.0.4",
     "jest": "^27.4.5",
     "lerna": "^4.0.0",
     "prettier": "^2.3.2",
