@@ -102,7 +102,7 @@ export const FilePicker = ({
   );
 
   const [accepted, setAccepted] = React.useState(false);
-  const [showSelectdFiles, setShowSelectedFiles] = React.useState(false);
+  const [showSelectedFiles, setShowSelectedFiles] = React.useState(false);
   const [selectedFiles, setSelectedFiles] = React.useState([]);
 
   /**
@@ -226,56 +226,52 @@ export const FilePicker = ({
 
   return (
     <section>
-      {showSelectdFiles ? (
-        <FilePicker.AcceptedFiles
-          width={width}
-          height={height}
-          showFilezone={setShowSelectedFiles}
-          bgThemeColor={bgThemeColor}
-        >
-          {selectedFiles.map((acceptedFile, index) => (
-            <>
-              <div key={index} className="col-10">
-                <FilePicker.Signifiers
-                  signifier={selectedFiles.length > 0}
-                  feedback={acceptedFile.name}
-                  cls="text-secondary d-flex justify-content-start file-list mb-2"
-                />
-              </div>
-              <div className="col-2 mt-0">
-                <button
-                  className="btn badge bg-azure-lt"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    clearSelectedFiles(index);
-                  }}
-                >
-                  <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
-                </button>
-              </div>
-            </>
-          ))}
-        </FilePicker.AcceptedFiles>
-      ) : (
-        //* Dropzone
-        <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
-          <input {...getInputProps()} />
-          <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
+      <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
+        <input {...getInputProps()} />
+        <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
+
+        {showSelectedFiles ? (
+          <FilePicker.AcceptedFiles
+            width={width - 10}
+            height={height}
+            showFilezone={setShowSelectedFiles}
+            bgThemeColor={bgThemeColor}
+          >
+            {selectedFiles.map((acceptedFile, index) => (
+              <>
+                <div key={index} className="col-10">
+                  <FilePicker.Signifiers
+                    signifier={selectedFiles.length > 0}
+                    feedback={acceptedFile.name}
+                    cls="text-secondary d-flex justify-content-start file-list mb-2"
+                  />
+                </div>
+                <div className="col-2 mt-0">
+                  <button
+                    className="btn badge bg-azure-lt"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      clearSelectedFiles(index);
+                    }}
+                  >
+                    <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
+                  </button>
+                </div>
+              </>
+            ))}
+          </FilePicker.AcceptedFiles>
+        ) : (
           <FilePicker.Signifiers
             signifier={!isDragAccept && !accepted & !isDragReject}
             feedback={'Drag & drop some files here, or click to select files'}
             cls={`${darkMode ? 'text-secondary' : 'text-dark'} mt-3`}
           />
+        )}
 
-          <FilePicker.Signifiers
-            signifier={isDragAccept}
-            feedback={'All files will be accepted'}
-            cls="text-lime mt-3"
-          />
+        <FilePicker.Signifiers signifier={isDragAccept} feedback={'All files will be accepted'} cls="text-lime mt-3" />
 
-          <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
-        </div>
-      )}
+        <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
+      </div>
     </section>
   );
 };
@@ -290,10 +286,6 @@ FilePicker.Signifiers = ({ signifier, feedback, cls }) => {
 
 FilePicker.AcceptedFiles = ({ children, width, height, showFilezone, bgThemeColor }) => {
   const styles = {
-    borderWidth: 1.5,
-    borderRadius: 2,
-    borderColor: '#42536A',
-    borderStyle: 'dashed',
     color: '#bdbdbd',
     outline: 'none',
     padding: '5px',
@@ -302,7 +294,6 @@ FilePicker.AcceptedFiles = ({ children, width, height, showFilezone, bgThemeColo
     scrollbarWidth: 'none',
     width,
     height,
-    backgroundColor: bgThemeColor,
   };
   return (
     <aside style={styles} onClick={() => showFilezone(false)}>
