@@ -153,14 +153,17 @@ export const FilePicker = ({
       parsedData: shouldProcessFileParsing ? await processFileContent(file.type, readFileAsText) : null,
     };
   };
-
   useEffect(() => {
+    const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
     if (acceptedFiles.length === 0) {
-      onComponentOptionChanged(component, 'file', []);
+      if (parseContent) {
+        onComponentOptionChanged(component, 'isParsing', true);
+      }
+      setSelectedFiles(fileData);
+      onComponentOptionChanged(component, 'file', fileData);
     }
 
     if (acceptedFiles.length !== 0) {
-      const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
       if (parseContent) {
         onComponentOptionChanged(component, 'isParsing', true);
       }
@@ -170,10 +173,10 @@ export const FilePicker = ({
           fileData.push(data);
         });
       });
-
       setSelectedFiles(fileData);
       onComponentOptionChanged(component, 'file', fileData);
       onEvent('onFileSelected', { component }).then(() => {
+        console.log('inside on file selected event');
         setAccepted(true);
         // eslint-disable-next-line no-unused-vars
         return new Promise(function (resolve, reject) {
