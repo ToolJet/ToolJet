@@ -103,6 +103,7 @@ const sidebars = {
         'widgets/circular-progress-bar',
         'widgets/code-editor',
         'widgets/container',
+        'widgets/custom-component',
         'widgets/date-range-picker',
         'widgets/datepicker',
         'widgets/divider',
