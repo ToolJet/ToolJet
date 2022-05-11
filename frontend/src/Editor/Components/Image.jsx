@@ -4,7 +4,7 @@ import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 export const Image = function Image({ height, properties, styles, fireEvent, width }) {
   const { source, loadingState, alternativeText, zoomButtons } = properties;
-  const { visibility, disabledState, borderType, backgroundColor, padding, objectFit } = styles;
+  const { visibility, disabledState, borderType, backgroundColor, padding, imageFit } = styles;
   const widgetVisibility = visibility ?? true;
   const imageRef = useRef(null);
   const [imageOffset, setImageOffset] = useState(0);
@@ -33,6 +33,7 @@ export const Image = function Image({ height, properties, styles, fireEvent, wid
         justifyContent: 'center',
       }}
       ref={imageRef}
+      className="image-widget-wrapper"
     >
       {imageRef.current && (
         <LazyLoad
@@ -58,7 +59,7 @@ export const Image = function Image({ height, properties, styles, fireEvent, wid
                           style={{
                             backgroundColor,
                             padding: Number.parseInt(padding),
-                            objectFit,
+                            objectFit: imageFit,
                           }}
                           height={height}
                           onClick={() => fireEvent('onClick')}
@@ -68,11 +69,11 @@ export const Image = function Image({ height, properties, styles, fireEvent, wid
                       </TransformComponent>
                     </React.Fragment>
                     {zoomButtons && (
-                      <div>
-                        <button className="btn" onClick={() => zoomIn()}>
+                      <div className="zoom-button-wrapper">
+                        <button className="btn zoom-buttons " onClick={() => zoomIn()}>
                           +
                         </button>
-                        <button className="btn" onClick={() => zoomOut()}>
+                        <button className="btn zoom-buttons" onClick={() => zoomOut()}>
                           -
                         </button>
                       </div>

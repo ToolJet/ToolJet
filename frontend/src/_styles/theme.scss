@@ -5130,3 +5130,22 @@ div#driver-page-overlay {
 .autosave-indicator-saving {
   left: 34.5%;
 }
+.zoom-buttons{
+  width: 20px !important;
+  height: 25px !important;
+  margin-left: 2px;
+}
+.zoom-button-wrapper {
+  position: fixed;
+  right: 0px;
+  bottom: 5px;
+
+}
+.zoom-buttons{
+  opacity: 0;
+  visibility: hidden;
+}
+.image-widget-wrapper:hover  button{
+  opacity: 1 !important;
+  visibility: visible;
+}

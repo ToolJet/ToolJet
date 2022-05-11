@@ -827,7 +827,16 @@ export const componentTypes = [
       padding: { type: 'code', displayName: 'Padding' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
-      objectFit: { type: 'code', displayName: 'Object fit' },
+      imageFit: {
+        type: 'select',
+        displayName: 'Image fit',
+        options: [
+          { name: 'fill', value: 'fill' },
+          { name: 'contain', value: 'contain' },
+          { name: 'cover', value: 'cover' },
+          { name: 'scale-down', value: 'scale-down' },
+        ],
+      },
     },
     exposedVariables: {},
     definition: {
@@ -848,7 +857,7 @@ export const componentTypes = [
         padding: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        objectFit: { value: 'auto' },
+        imageFit: { value: 'contain' },
       },
     },
   },
