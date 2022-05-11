@@ -120,28 +120,28 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.mode === 'create' || this.props.mode === 'edit') {
-      const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
-      if (
-        this.state.selectedQuery &&
-        !nextProps.isQueryPaneDragging &&
-        !this.state.paneHeightChanged &&
-        !themeModeChanged
-      ) {
-        const isQueryChanged =
-          this.props.mode !== 'create'
-            ? !_.isEqual(this.removeRestKey(this.state.options), this.removeRestKey(this.state.selectedQuery.options))
-            : true;
-        if (this.state.isFieldsChanged && isQueryChanged) {
-          this.setState({ showSaveConfirmation: true, nextProps });
-          return;
-        } else if (
-          !isQueryChanged &&
-          this.state.selectedQuery.kind === 'restapi' &&
-          this.state.restArrayValuesChanged
-        ) {
-          this.setState({ showSaveConfirmation: true, nextProps });
-          return;
+    const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
+    if (!nextProps.isQueryPaneDragging && !this.state.paneHeightChanged && !themeModeChanged) {
+      if (this.props.mode === 'create' && this.state.isFieldsChanged) {
+        this.setState({ showSaveConfirmation: true, nextProps });
+        return;
+      } else if (this.props.mode === 'edit') {
+        if (this.state.selectedQuery) {
+          const isQueryChanged = !_.isEqual(
+            this.removeRestKey(this.state.options),
+            this.removeRestKey(this.state.selectedQuery.options)
+          );
+          if (this.state.isFieldsChanged && isQueryChanged) {
+            this.setState({ showSaveConfirmation: true, nextProps });
+            return;
+          } else if (
+            !isQueryChanged &&
+            this.state.selectedQuery.kind === 'restapi' &&
+            this.state.restArrayValuesChanged
+          ) {
+            this.setState({ showSaveConfirmation: true, nextProps });
+            return;
+          }
         }
       }
     }
