@@ -467,7 +467,9 @@ export const Container = ({
               removeComponent={removeComponent}
               currentLayout={currentLayout}
               deviceWindowWidth={deviceWindowWidth}
-              isSelectedComponent={selectedComponents.find((component) => component.id === key)}
+              isSelectedComponent={
+                mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false
+              }
               darkMode={darkMode}
               onComponentHover={onComponentHover}
               hoveredComponent={hoveredComponent}
