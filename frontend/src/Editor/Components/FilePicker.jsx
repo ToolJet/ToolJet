@@ -157,11 +157,32 @@ export const FilePicker = ({
   const handleFileRejection = (fileRejections) => {
     const uniqueFileRejecetd = fileRejections.reduce((acc, rejectedFile) => {
       if (!acc.includes(rejectedFile.errors[0].message)) {
-        acc.push(rejectedFile.errors[0].message);
+        acc.push(handleFileSizeErorrs(rejectedFile.file.size, rejectedFile.errors[0]));
       }
       return acc;
     }, []);
     uniqueFileRejecetd.map((rejectedMessag) => toast.error(rejectedMessag));
+  };
+
+  //** checks error codes for max and min size  */
+  const handleFileSizeErorrs = (rejectedFileSize, errorObj) => {
+    const { message, code } = errorObj;
+
+    const errorType = Object.freeze({
+      MIN_SIZE: 'file-too-small',
+      MAX_SIZE: 'file-too-large',
+    });
+
+    const fileSize = formatFileSize(rejectedFileSize);
+
+    if (code === errorType.MIN_SIZE) {
+      return `File size is too small. Minimum size is ${fileSize}`;
+    }
+    if (code === errorType.MAX_SIZE) {
+      return `File size is too large. Maximum size is ${fileSize}`;
+    }
+
+    return message;
   };
 
   useEffect(() => {
@@ -364,3 +385,12 @@ const handleErrors = (data) => {
 
   return [badData, errors];
 };
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 bytes';
+  var k = 1000,
+    dm = 2,
+    sizes = ['Bytes', 'KB', 'MB'],
+    i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
