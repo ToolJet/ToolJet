@@ -24,6 +24,7 @@ import { WsAdapter } from '@nestjs/platform-ws';
 import { AppsModule } from 'src/modules/apps/apps.module';
 import { LibraryAppCreationService } from '@services/library_app_creation.service';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -69,12 +70,17 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
   return { app, mockConfig: moduleRef.get(ConfigService) };
 }
 
-export function authHeaderForUser(user: any): string {
+export function authHeaderForUser(user: User, organizationId?: string, isPasswordLogin = true): string {
   const configService = new ConfigService();
   const jwtService = new JwtService({
     secret: configService.get<string>('SECRET_KEY_BASE'),
   });
-  const authPayload = { username: user.id, sub: user.email };
+  const authPayload = {
+    username: user.id,
+    sub: user.email,
+    organizationId: organizationId || user.defaultOrganizationId,
+    isPasswordLogin,
+  };
   const authToken = jwtService.sign(authPayload);
   return `Bearer ${authToken}`;
 }
@@ -99,7 +105,7 @@ export async function createApplication(nestApp, { name, user, isPublic, slug }:
       user,
       slug,
       isPublic: isPublic || false,
-      organizationId: user.organization.id,
+      organizationId: user.organizationId,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -132,7 +138,32 @@ export async function createApplicationVersion(nestApp, application, { name = 'v
 
 export async function createUser(
   nestApp,
-  { firstName, lastName, email, groups, organization, ssoId, status, invitationToken }: any
+  {
+    firstName,
+    lastName,
+    email,
+    groups,
+    organization,
+    status,
+    invitationToken,
+    formLoginStatus = true,
+    organizationName = 'Test Organization',
+    ssoConfigs = [],
+    enableSignUp = false,
+  }: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    groups?: Array<string>;
+    organization?: Organization;
+    status?: string;
+    invitationToken?: string;
+    formLoginStatus?: boolean;
+    organizationName?: string;
+    ssoConfigs?: Array<any>;
+    enableSignUp?: boolean;
+  },
+  existingUser?: User
 ) {
   let userRepository: Repository<User>;
   let organizationRepository: Repository<Organization>;
@@ -146,31 +177,46 @@ export async function createUser(
     organization ||
     (await organizationRepository.save(
       organizationRepository.create({
-        name: 'Test Organization',
+        name: organizationName,
+        enableSignUp,
         createdAt: new Date(),
         updatedAt: new Date(),
+        ssoConfigs: [
+          {
+            sso: 'form',
+            enabled: formLoginStatus,
+          },
+          ...ssoConfigs,
+        ],
       })
     ));
 
-  const user = await userRepository.save(
-    userRepository.create({
-      firstName: firstName || 'test',
-      lastName: lastName || 'test',
-      email: email || 'dev@tooljet.io',
-      password: 'password',
-      invitationToken,
-      organization,
-      ssoId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-  );
+  let user: User;
+
+  if (!existingUser) {
+    user = await userRepository.save(
+      userRepository.create({
+        firstName: firstName || 'test',
+        lastName: lastName || 'test',
+        email: email || 'dev@tooljet.io',
+        password: 'password',
+        invitationToken,
+        defaultOrganizationId: organization.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+    );
+  } else {
+    user = existingUser;
+  }
+  user.organizationId = organization.id;
 
   const orgUser = await organizationUsersRepository.save(
     organizationUsersRepository.create({
       user: user,
       organization,
-      status: status || 'invited',
+      invitationToken: status === 'invited' ? uuidv4() : null,
+      status: status || 'active',
       role: 'all_users',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -345,7 +391,7 @@ export async function addAllUsersGroupToUser(nestApp, user) {
   const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
   const userGroupPermissionRepository: Repository<UserGroupPermission> = nestApp.get('UserGroupPermissionRepository');
 
-  const orgDefaultGroupPermissions = await groupPermissionRepository.findOne({
+  const orgDefaultGroupPermissions = await groupPermissionRepository.findOneOrFail({
     where: {
       organizationId: user.organizationId,
       group: 'all_users',

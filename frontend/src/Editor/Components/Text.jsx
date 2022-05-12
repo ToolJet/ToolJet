@@ -4,7 +4,7 @@ import DOMPurify from 'dompurify';
 export const Text = function Text({ height, properties, styles, darkMode }) {
   const [loadingState, setLoadingState] = useState(false);
 
-  const { textColor, textAlign, visibility, disabledState } = styles;
+  const { textSize, textColor, textAlign, visibility, disabledState } = styles;
 
   const text = properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
 
@@ -27,7 +27,10 @@ export const Text = function Text({ height, properties, styles, darkMode }) {
   return (
     <div data-disabled={disabledState} className="text-widget" style={computedStyles}>
       {!loadingState && (
-        <div style={{ width: '100%' }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }} />
+        <div
+          style={{ width: '100%', fontSize: textSize }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
+        />
       )}
       {loadingState === true && (
         <div style={{ width: '100%' }}>

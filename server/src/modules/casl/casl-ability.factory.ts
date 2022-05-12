@@ -10,7 +10,8 @@ type Actions =
   | 'inviteUser'
   | 'accessGroupPermission'
   | 'accessAuditLogs'
-  | 'fetchAllUsers';
+  | 'fetchAllUsers'
+  | 'updateOrganizations';
 
 type Subjects = InferSubjects<typeof OrganizationUser | typeof User> | 'all';
 
@@ -31,6 +32,7 @@ export class CaslAbilityFactory {
       can('accessGroupPermission', User);
       can('accessAuditLogs', User);
       can('fetchAllUsers', User);
+      can('updateOrganizations', User);
     }
 
     return build({
