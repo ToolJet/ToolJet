@@ -6,7 +6,7 @@ title: Kubernetes (AKS)
 # Deploying ToolJet on Kubernetes (AKS)
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using Azure Database for PostgreSQL since this guide is for deploying using AKS.
+You should setup a PostgreSQL database and Redis manually to be used by ToolJet. We recommend using Azure Database for PostgreSQL since this guide is for deploying using AKS.
 :::
 
 Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.

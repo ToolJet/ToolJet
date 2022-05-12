@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tooljet-redis-statefulset
+spec:
+  selector:
+    matchLabels:
+      role: tooljet-redis
+  serviceName: tooljet-redis-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        role: tooljet-redis
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: redis
+        image: redis:6.0
+        ports:
+          - containerPort: 6379
+        volumeMounts:
+          - name: tooljet-redis-persistent-storage
+            mountPath: /data
+  volumeClaimTemplates:
+  - metadata:
+      name: tooljet-redis-persistent-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tooljet-redis-service
+  labels:
+    name: tooljet-redis
+spec:
+  type: NodePort
+  ports:
+    - port: 6379
+      targetPort: 6379
+  selector:
+    role: tooljet-redis

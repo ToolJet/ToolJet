@@ -18,22 +18,24 @@ describe('GroupPermissionsService', () => {
   describe('.create', () => {
     it('should pass group name', async () => {
       const { adminUser } = await setupOrganization(nestApp);
+      const mockReq = { headers: {} } as globalThis.Request;
 
-      await expect(service.create(adminUser, '')).rejects.toEqual(
+      await expect(service.create(mockReq, adminUser, '')).rejects.toEqual(
         new BadRequestException('Cannot create group without name')
       );
     });
 
     it('should validate uniqueness of group permission group name', async () => {
       const { adminUser } = await setupOrganization(nestApp);
+      const mockReq = { headers: {} } as globalThis.Request;
 
-      const data = await service.create(adminUser, 'avengers');
+      const data = await service.create(mockReq, adminUser, 'avengers');
 
       expect(data.id).toBeDefined();
       expect(data.organizationId).toBeDefined();
       expect(data.group).toEqual('avengers');
 
-      await expect(service.create(adminUser, 'avengers')).rejects.toEqual(
+      await expect(service.create(mockReq, adminUser, 'avengers')).rejects.toEqual(
         new ConflictException('Group name already exist')
       );
     });

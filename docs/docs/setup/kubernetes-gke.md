@@ -6,7 +6,7 @@ title: Kubernetes (GKE)
 # Deploying ToolJet on Kubernetes (GKE)
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using Cloud SQL since this guide is for deploying using GKE.
+You should setup a PostgreSQL database and Redis manually to be used by ToolJet. We recommend using Cloud SQL since this guide is for deploying using GKE.
 :::
 
 Follow the steps below to deploy ToolJet on a GKE Kubernetes cluster.

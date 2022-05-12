@@ -3,6 +3,7 @@
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
+  "transformIgnorePatterns": ["node_modules/(?!(lib0|y-protocols)/)"],
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
