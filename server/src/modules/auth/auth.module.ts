@@ -19,12 +19,27 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from '@services/audit_logger.service';
+import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { GroupPermissionsService } from '@services/group_permissions.service';
+import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
+import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { EncryptionService } from '@services/encryption.service';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
-    TypeOrmModule.forFeature([User, Organization, OrganizationUser, GroupPermission, App, AuditLog]),
+    TypeOrmModule.forFeature([
+      User,
+      Organization,
+      OrganizationUser,
+      GroupPermission,
+      App,
+      SSOConfigs,
+      AppGroupPermission,
+      UserGroupPermission,
+      AuditLog
+    ]),
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
         return {
@@ -48,6 +63,8 @@ import { AuditLoggerService } from '@services/audit_logger.service';
     GoogleOAuthService,
     AuditLoggerService,
     GitOAuthService,
+    GroupPermissionsService,
+    EncryptionService,
   ],
   controllers: [OauthController],
   exports: [AuthService],

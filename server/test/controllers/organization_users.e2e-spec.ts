@@ -45,7 +45,7 @@ describe('organization users controller', () => {
     const response = await request(app.getHttpServer())
       .post(`/api/organization_users/`)
       .set('Authorization', authHeaderForUser(adminUserData.user))
-      .send({ email: 'test@tooljet.io', groups: ['Viewer', 'all_users'] })
+      .send({ email: 'test@tooljet.io' })
       .expect(201);
 
     // should create audit log
@@ -63,13 +63,13 @@ describe('organization users controller', () => {
     await request(app.getHttpServer())
       .post(`/api/organization_users/`)
       .set('Authorization', authHeaderForUser(developerUserData.user))
-      .send({ email: 'test2@tooljet.io', groups: ['Viewer', 'all_users'] })
+      .send({ email: 'test2@tooljet.io' })
       .expect(403);
 
     await request(app.getHttpServer())
       .post(`/api/organization_users/`)
       .set('Authorization', authHeaderForUser(viewerUserData.user))
-      .send({ email: 'test3@tooljet.io', groups: ['Viewer', 'all_users'] })
+      .send({ email: 'test3@tooljet.io' })
       .expect(403);
   });
 
@@ -116,7 +116,6 @@ describe('organization users controller', () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['admin', 'all_users'],
-        status: 'active',
       });
       const organization = adminUserData.organization;
       const developerUserData = await createUser(app, {
@@ -128,6 +127,7 @@ describe('organization users controller', () => {
         email: 'viewer@tooljet.io',
         groups: ['viewer', 'all_users'],
         organization,
+        status: 'invited',
       });
 
       await request(app.getHttpServer())
@@ -169,8 +169,6 @@ describe('organization users controller', () => {
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
         status: 'archived',
-        invitationToken: 'old-token',
-        password: 'old-password',
         groups: ['viewer', 'all_users'],
         organization,
       });
@@ -199,7 +197,7 @@ describe('organization users controller', () => {
       await viewerUserData.orgUser.reload();
       await viewerUserData.user.reload();
       expect(viewerUserData.orgUser.status).toBe('invited');
-      expect(viewerUserData.user.invitationToken).not.toBe('old-token');
+      expect(viewerUserData.user.invitationToken).not.toBe('');
       expect(viewerUserData.user.password).not.toBe('old-password');
     });
 

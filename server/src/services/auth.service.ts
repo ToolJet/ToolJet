@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException, NotAcceptableException } from '@nestjs/common';
+import { Injectable, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { OrganizationsService } from './organizations.service';
 import { JwtService } from '@nestjs/jwt';
@@ -8,7 +8,9 @@ import { EmailService } from './email.service';
 import { decamelizeKeys } from 'humps';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
-import { AppAuthenticationDto } from '@dto/app-authentication.dto';
+import { Organization } from 'src/entities/organization.entity';
+import { ConfigService } from '@nestjs/config';
+import { SSOConfigs } from 'src/entities/sso_config.entity';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -20,7 +22,8 @@ export class AuthService {
     private organizationsService: OrganizationsService,
     private organizationUsersService: OrganizationUsersService,
     private emailService: EmailService,
-    private auditLoggerService: AuditLoggerService
+    private auditLoggerService: AuditLoggerService,
+    private configService: ConfigService
   ) {}
 
   verifyToken(token: string) {
@@ -32,8 +35,9 @@ export class AuthService {
     }
   }
 
-  async validateUser(email: string, password: string): Promise<User> {
-    const user = await this.usersService.findByEmail(email);
+  private async validateUser(email: string, password: string, organisationId?: string): Promise<User> {
+    const user = await this.usersService.findByEmail(email, organisationId);
+
     if (!user) return null;
 
     const isVerified = await bcrypt.compare(password, user.password);
@@ -41,20 +45,74 @@ export class AuthService {
     return isVerified ? user : null;
   }
 
-  async login(request: any, appAuthDto: AppAuthenticationDto) {
-    const user = await this.validateUser(appAuthDto.email, appAuthDto.password);
+  async login(request: any, email: string, password: string, organizationId?: string) {
+    let organization: Organization;
+
+    const user = await this.validateUser(email, password, organizationId);
 
     if (user && (await this.usersService.status(user)) !== 'archived') {
+      if (!organizationId) {
+        // Global login
+        // Determine the organization to be loaded
+        if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+          // Single organization
+          organization = await this.organizationsService.getSingleOrganization();
+          if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
+            throw new UnauthorizedException();
+          }
+        } else {
+          const organizationList: Organization[] = await this.organizationsService.findOrganizationSupportsFormLogin(
+            user
+          );
+
+          const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
+          // Multi organization
+          if (defaultOrgDetails) {
+            // default organization form login enabled
+            organization = defaultOrgDetails;
+          } else if (organizationList?.length > 0) {
+            // default organization form login not enabled, picking first one from form enabled list
+            organization = organizationList[0];
+          } else {
+            // no form login enabled organization available for user - creating new one
+            organization = await this.organizationsService.create('Untitled workspace', user);
+          }
+        }
+        user.organizationId = organization.id;
+      } else {
+        // organization specific login
+        user.organizationId = organizationId;
+
+        organization = await this.organizationsService.get(user.organizationId);
+        const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+
+        if (!formConfigs?.enabled) {
+          // no configurations in organization side or Form login disabled for the organization
+          throw new UnauthorizedException('Password login is disabled for the organization');
+        }
+      }
+
+      if (user.defaultOrganizationId !== user.organizationId) {
+        // Updating default organization Id
+        await this.usersService.updateDefaultOrganization(user, organization.id);
+      }
+
       await this.auditLoggerService.perform({
         request,
         userId: user.id,
-        organizationId: user.organizationId,
+        organizationId: organization.id,
         resourceId: user.id,
         resourceType: ResourceTypes.USER,
         resourceName: user.email,
         actionType: ActionTypes.USER_LOGIN,
       });
-      const payload = { username: user.id, sub: user.email };
+
+      const payload = {
+        username: user.id,
+        sub: user.email,
+        organizationId: user.organizationId,
+        isPasswordLogin: true,
+      };
 
       return decamelizeKeys({
         id: user.id,
@@ -62,6 +120,8 @@ export class AuthService {
         email: user.email,
         first_name: user.firstName,
         last_name: user.lastName,
+        organizationId: user.organizationId,
+        organization: organization.name,
         admin: await this.usersService.hasGroup(user, 'admin'),
         group_permissions: await this.usersService.groupPermissions(user),
         app_group_permissions: await this.usersService.appGroupPermissions(user),
@@ -71,23 +131,79 @@ export class AuthService {
     }
   }
 
-  async signup(request: any, appAuthDto: AppAuthenticationDto) {
-    // Check if the installation allows user signups
-    if (process.env.DISABLE_SIGNUPS === 'true') {
-      return {};
+  async switchOrganization(newOrganizationId: string, user: User, isNewOrganization?: boolean) {
+    if (!(isNewOrganization || user.isPasswordLogin)) {
+      throw new UnauthorizedException();
     }
+    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+      throw new UnauthorizedException();
+    }
+    const newUser = await this.usersService.findByEmail(user.email, newOrganizationId);
 
-    const { email } = appAuthDto;
+    if (newUser && (await this.usersService.status(newUser)) !== 'archived') {
+      newUser.organizationId = newOrganizationId;
+
+      const organization: Organization = await this.organizationsService.get(newUser.organizationId);
+
+      const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+
+      if (!formConfigs?.enabled) {
+        // no configurations in organization side or Form login disabled for the organization
+        throw new UnauthorizedException('Password login disabled for the organization');
+      }
+
+      // Updating default organization Id
+      await this.usersService.updateDefaultOrganization(newUser, newUser.organizationId);
+
+      const payload = {
+        username: user.id,
+        sub: user.email,
+        organizationId: newUser.organizationId,
+        isPasswordLogin: true,
+      };
+
+      return decamelizeKeys({
+        id: newUser.id,
+        auth_token: this.jwtService.sign(payload),
+        email: newUser.email,
+        first_name: newUser.firstName,
+        last_name: newUser.lastName,
+        organizationId: newUser.organizationId,
+        organization: organization.name,
+        admin: await this.usersService.hasGroup(newUser, 'admin'),
+        group_permissions: await this.usersService.groupPermissions(newUser),
+        app_group_permissions: await this.usersService.appGroupPermissions(newUser),
+      });
+    } else {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+  }
+
+  async signup(request: any, email: string) {
     const existingUser = await this.usersService.findByEmail(email);
-    if (existingUser) {
+    if (existingUser?.invitationToken || existingUser?.organizationUsers?.some((ou) => ou.status === 'active')) {
       throw new NotAcceptableException('Email already exists');
     }
-    const organization = await this.organizationsService.create('Untitled organization');
-    const user = await this.usersService.create({ email }, organization, ['all_users', 'admin']);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const organizationUser = await this.organizationUsersService.create(user, organization);
+    let organization: Organization;
+    // Check if the configs allows user signups
+    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+      // Single organization checking if organization exist
+      organization = await this.organizationsService.getSingleOrganization();
 
+      if (organization) {
+        throw new NotAcceptableException('Multi organization not supported - organization exist');
+      }
+    } else {
+      // Multi organization
+      if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
+        throw new NotAcceptableException();
+      }
+    }
+    // Create default organization
+    organization = await this.organizationsService.create('Untitled workspace');
+    const user = await this.usersService.create({ email }, organization.id, ['all_users', 'admin'], existingUser, true);
+    await this.organizationUsersService.create(user, organization, true);
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 
     await this.auditLoggerService.perform({
