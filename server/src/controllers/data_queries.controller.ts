@@ -6,6 +6,7 @@ import {
   Post,
   Patch,
   Delete,
+  Request,
   Query,
   UseGuards,
   ForbiddenException,
@@ -125,7 +126,12 @@ export class DataQueriesController {
 
   @UseGuards(QueryAuthGuard)
   @Post(':id/run')
-  async runQuery(@Request() req, @User() user, @Param('id') dataQueryId, @Body() updateDataQueryDto: UpdateDataQueryDto) {
+  async runQuery(
+    @Request() req,
+    @User() user,
+    @Param('id') dataQueryId,
+    @Body() updateDataQueryDto: UpdateDataQueryDto
+  ) {
     const { options } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
@@ -166,7 +172,7 @@ export class DataQueriesController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/preview')
-  async previewQuery(@Request() req, @Body() updateDataQueryDto: UpdateDataQueryDto) {
+  async previewQuery(@Request() req, @User() user, @Body() updateDataQueryDto: UpdateDataQueryDto) {
     const { options, query } = updateDataQueryDto;
     const dataQueryEntity = {
       ...query,

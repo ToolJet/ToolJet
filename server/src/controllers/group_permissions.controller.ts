@@ -1,4 +1,4 @@
-import { Controller, Body, Post, Get, Put, Delete, UseGuards, Param } from '@nestjs/common';
+import { Controller, Body, Request, Post, Get, Put, Delete, UseGuards, Param } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { GroupPermissionsService } from '../services/group_permissions.service';
@@ -74,7 +74,7 @@ export class GroupPermissionsController {
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Delete(':id')
   async destroy(@Request() req, @User() user, @Param('id') id) {
-    const groupPermission = await this.groupPermissionsService.destroy(user, id);
+    const groupPermission = await this.groupPermissionsService.destroy(req, user, id);
 
     return decamelizeKeys(groupPermission);
   }
