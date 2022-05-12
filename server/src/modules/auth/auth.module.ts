@@ -38,7 +38,7 @@ import { EncryptionService } from '@services/encryption.service';
       SSOConfigs,
       AppGroupPermission,
       UserGroupPermission,
-      AuditLog
+      AuditLog,
     ]),
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {

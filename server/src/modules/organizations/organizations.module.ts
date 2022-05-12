@@ -34,7 +34,7 @@ import { EncryptionService } from '@services/encryption.service';
       SSOConfigs,
       AppGroupPermission,
       UserGroupPermission,
-      AuditLog
+      AuditLog,
     ]),
     CaslModule,
     JwtModule.registerAsync({
@@ -57,7 +57,7 @@ import { EncryptionService } from '@services/encryption.service';
     AuthService,
     GroupPermissionsService,
     EncryptionService,
-    AuditLoggerService
+    AuditLoggerService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
 })
