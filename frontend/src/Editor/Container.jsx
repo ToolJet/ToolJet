@@ -473,7 +473,7 @@ export const Container = ({
               darkMode={darkMode}
               onComponentHover={onComponentHover}
               hoveredComponent={hoveredComponent}
-              isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+              isMultipleComponentsSelected={selectedComponents?.length > 1}
               dataQueries={dataQueries}
               containerProps={{
                 mode,

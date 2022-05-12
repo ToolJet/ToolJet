@@ -1,6 +1,7 @@
 /* eslint-disable import/no-named-as-default */
 import React, { createRef } from 'react';
 import cx from 'classnames';
+import { v4 as uuidv4 } from 'uuid';
 import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -683,6 +684,42 @@ class Editor extends React.Component {
     this.appDefinitionChanged(appDefinition);
   };
 
+  // TODO: create common fn for inspector clone function and editor clone fn
+  cloneComponents = () => {
+    for (let selectedComponent of this.state.selectedComponents) {
+      selectedComponent.id = uuidv4();
+      this.cloneComponent(selectedComponent);
+
+      let childComponents = [];
+
+      if ((selectedComponent.component.component === 'Tabs') | (selectedComponent.component.component === 'Calendar')) {
+        childComponents = Object.keys(this.state.appDefinition.components).filter((key) =>
+          this.state.appDefinition.components[key].parent?.startsWith(selectedComponent.id)
+        );
+      } else {
+        childComponents = Object.keys(this.state.appDefinition.components).filter(
+          (key) => this.state.appDefinition.components[key].parent === selectedComponent.id
+        );
+      }
+
+      childComponents.forEach((componentId) => {
+        let childComponent = JSON.parse(JSON.stringify(this.state.appDefinition.components[componentId]));
+        childComponent.id = uuidv4();
+
+        if (
+          (selectedComponent.component.component === 'Tabs') |
+          (selectedComponent.component.component === 'Calendar')
+        ) {
+          const childTabId = childComponent.parent.split('-').at(-1);
+          childComponent.parent = `${selectedComponent.id}-${childTabId}`;
+        } else {
+          childComponent.parent = selectedComponent.id;
+        }
+        this.cloneComponent(childComponent);
+      });
+    }
+  };
+
   cloneComponent = (newComponent) => {
     const appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
 
@@ -692,7 +729,7 @@ class Editor extends React.Component {
       newComponent.layouts[layout].top = newComponent.layouts[layout].top + newComponent.layouts[layout].height;
     });
 
-    appDefinition.components[newComponent.id] = newComponent;
+    appDefinition.components[newComponent.id] = JSON.parse(JSON.stringify(newComponent));
     this.appDefinitionChanged(appDefinition);
   };
 
@@ -897,21 +934,37 @@ class Editor extends React.Component {
   };
 
   setSelectedComponent = (id, component, multiSelect = false) => {
-    if (this.state.selectedComponents.length === 0 || !multiSelect) {
+    if (this.state.selectedComponents?.length === 0 || !multiSelect) {
       this.switchSidebarTab(1);
     } else {
       this.switchSidebarTab(2);
     }
 
-    const isAlreadySelected = this.state.selectedComponents.find((component) => component.id === id);
+    this.setState((prevState) => {
+      const selectedComponent = this.state.selectedComponents.find((component) => component.id === id);
 
-    if (!isAlreadySelected) {
-      this.setState((prevState) => {
+      if (multiSelect && !isEmpty(selectedComponent)) {
+        const selectedComponents = prevState.selectedComponents.filter((c) => c.id !== selectedComponent?.id);
+        selectedComponents.length === 1 && this.switchSidebarTab(1);
         return {
-          selectedComponents: [...(multiSelect ? prevState.selectedComponents : []), { id, component }],
+          selectedComponents,
         };
-      });
-    }
+      }
+
+      const appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
+
+      return {
+        selectedComponents: [
+          ...(multiSelect ? prevState.selectedComponents : []),
+          {
+            id,
+            component,
+            layouts: appDefinition?.components?.[id]?.layouts,
+            parent: appDefinition?.components?.[id]?.parent,
+          },
+        ],
+      };
+    });
   };
 
   filterQueries = (value) => {
@@ -1528,6 +1581,7 @@ class Editor extends React.Component {
 
               <EditorKeyHooks
                 moveComponents={this.moveComponents}
+                cloneComponents={this.cloneComponents}
                 handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
                 removeMultipleComponents={this.removeComponents}
               />
