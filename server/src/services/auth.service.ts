@@ -209,7 +209,7 @@ export class AuthService {
     await this.auditLoggerService.perform({
       request,
       userId: user.id,
-      organizationId: user.organizationId,
+      organizationId: organization.id,
       resourceId: user.id,
       resourceType: ResourceTypes.USER,
       resourceName: user.email,

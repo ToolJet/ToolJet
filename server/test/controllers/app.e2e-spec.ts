@@ -69,7 +69,7 @@ describe('Authentication', () => {
         userId: user.id,
       });
 
-      expect(auditLog.organizationId).toEqual(user.organizationId);
+      expect(auditLog.organizationId).toEqual(organization.id);
       expect(auditLog.resourceId).toEqual(user.id);
       expect(auditLog.resourceType).toEqual('USER');
       expect(auditLog.resourceName).toEqual(user.email);

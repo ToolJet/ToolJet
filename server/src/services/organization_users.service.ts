@@ -67,7 +67,7 @@ export class OrganizationUsersService {
     await this.auditLoggerService.perform({
       request,
       userId: currentUser.id,
-      organizationId: user.organizationId,
+      organizationId: currentOrganization.id,
       resourceId: user.id,
       resourceName: user.email,
       resourceType: ResourceTypes.USER,
