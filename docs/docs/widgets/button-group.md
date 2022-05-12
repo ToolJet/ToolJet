@@ -31,8 +31,9 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 
 | Properties  | description | Expected value |
 | ----------- | ----------- | -------------- |
-| label | It can be used to set the label of the button group. | Any **String** value |
-| values |Values for button group. | **Array** of strings  |
+| label | label is used to set the heading of the button group. | Any **String** value |
+| labels | It can be used to set the labels of the button group items. |  Array of **strings**|
+| values |Values for button group items. | **Array** of strings  |
 | Default  selected | Initial selected values can be set using this. | Array of **strings**  |
 | Enable multiple selection | Toggle this to allow multiple button selection. | Toggle to true/false |
 

@@ -20,15 +20,21 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
   };
 
   const [defaultActive, setDefaultActive] = useState(defaultSelected);
-  const [data, setData] = useState(labels.length > 0 ? labels : values);
+  const [data, setData] = useState(
+    values?.length <= labels?.length ? [...labels, ...values?.slice(labels?.length)] : labels
+  );
 
   useEffect(() => {
     setDefaultActive(defaultSelected);
   }, [defaultSelected]);
 
   useEffect(() => {
-    setData(labels.length > 0 ? labels : values.length > 0 ? values : []);
+    setData(labels?.length >= values?.length ? [...labels, ...values?.slice(labels?.length)] : labels);
   }, [labels, values]);
+
+  useEffect(() => {
+    console.log('data', data);
+  }, [data]);
 
   useEffect(() => {
     multiSelection && setDefaultActive([]);
