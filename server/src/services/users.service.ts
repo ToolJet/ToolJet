@@ -32,7 +32,7 @@ export class UsersService {
 
   async findAll(organizationId: string): Promise<User[]> {
     return this.usersRepository.find({
-      where: { organizationId },
+      where: { defaultOrganizationId: organizationId },
       select: ['id', 'email', 'firstName', 'lastName'],
       relations: [],
     });
