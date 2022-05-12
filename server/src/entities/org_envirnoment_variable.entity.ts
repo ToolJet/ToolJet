@@ -11,19 +11,19 @@ import {
 
 import { Organization } from './organization.entity';
 
-@Entity({ name: 'users' })
+@Entity({ name: 'org_envirnoment_variable' })
 export class OrgEnvironmentVariable extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ name: 'variable_name' })
-  firstName: string;
+  variableName: string;
 
   @Column({ name: 'value' })
-  lastName: string;
+  value: string;
 
   @Column({ name: 'encrypted' })
-  email: boolean;
+  encrypted: boolean;
 
   @Column({ name: 'organization_id' })
   organizationId: string;
