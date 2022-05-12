@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: tooljet
-          image: "tooljet/tooljet-ce:{{ .Chart.AppVersion }}"
+          image: "tooljet/tooljet-ee:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args: ["npm", "run", "start:prod"]
           ports:
@@ -36,6 +36,10 @@ spec:
           env:
             - name: TOOLJET_HOST
               value: "{{ .Values.apps.tooljet.service.host }}"
+            - name: REDIS_HOST
+              value: "{{ .Release.Name }}-redis-master"
+            - name: REDIS_PASSWORD
+              value: "{{ .Values.redis.auth.password }}"
             - name: PG_HOST
               value: "{{ .Release.Name }}-postgresql"
             - name: PG_USER

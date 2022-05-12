@@ -21,7 +21,7 @@ spec:
         - name: docker-secret
       containers:
         - name: container
-          image: tooljet/tooljet-ce:latest
+          image: tooljet/tooljet-ee:latest
           imagePullPolicy: Always
           args: ["npm", "run", "start:prod"]
           resources:
@@ -77,3 +77,5 @@ spec:
                 secretKeyRef:
                   name: server
                   key: tj_host
+            - name: REDIS_HOST
+              value: tooljet-redis-service.default.svc.cluster.local
