@@ -2,18 +2,43 @@ import _ from 'lodash';
 import Fuse from 'fuse.js';
 
 export function getSuggestionKeys(currentState) {
-  let suggestions = [];
-  _.keys(currentState).forEach((key) => {
-    _.keys(currentState[key]).forEach((key2) => {
-      if (key === 'variables') {
-        return suggestions.push(`${key}.${key2}`);
+  const suggestionList = [];
+
+  const map = new Map();
+
+  const buildMap = (data, path = '') => {
+    const keys = Object.keys(data);
+    keys.forEach((key, index) => {
+      const value = data[key];
+      const _type = Object.prototype.toString.call(value).slice(8, -1);
+      const prevType = map.get(path)?.type;
+
+      let newPath = '';
+      if (path === '') {
+        newPath = key;
+      } else if (prevType === 'Array') {
+        newPath = `${path}[${index}]`;
+      } else {
+        newPath = `${path}.${key}`;
       }
-      _.keys(currentState[key][key2]).forEach((key3) => {
-        suggestions.push(`${key}.${key2}.${key3}`);
-      });
+
+      if (_type === 'Object') {
+        map.set(newPath, { type: _type });
+        buildMap(value, newPath);
+      }
+      if (_type === 'Array') {
+        map.set(newPath, { type: _type });
+        buildMap(value, newPath);
+      } else {
+        map.set(newPath, { type: _type });
+      }
     });
-  });
-  return suggestions;
+  };
+
+  buildMap(currentState, '');
+  map.forEach((__, key) => suggestionList.push(key));
+
+  return suggestionList;
 }
 
 export function generateHints(word, suggestions) {

@@ -1,3 +1,5 @@
+const isProd = process.env.NODE_ENV === 'production';
+
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
   title: 'ToolJet - Documentation',
@@ -33,7 +35,7 @@ module.exports = {
     },
     navbar: {
       logo: {
-        href: '/docs/intro',
+        href: '/docs',
         alt: 'ToolJet Logo',
         src: 'img/logo.svg',
         width: 90
@@ -112,11 +114,13 @@ module.exports = {
           customCss: require.resolve('./src/css/custom.css'),
         },
         sitemap: {},
-        gtag: {
-          trackingID: process.env.GA_MID,
-          // Optional fields.
-          anonymizeIP: true, // Should IPs be anonymized?
-        },
+        gtag: isProd
+          ? {
+              trackingID: process.env.GA_MID,
+              // Optional fields.
+              anonymizeIP: true, // Should IPs be anonymized?
+            }
+          : undefined,
       },
     ],
   ],

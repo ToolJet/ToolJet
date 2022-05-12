@@ -1,12 +1,13 @@
 import React from 'react';
+import config from 'config';
 import { Router, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute } from '@/_components';
-import { HomePage, Library } from '@/HomePage';
+import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
-import { ConfirmationPage } from '@/ConfirmationPage';
+import { ConfirmationPage, OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
@@ -18,10 +19,12 @@ import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import posthog from 'posthog-js';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
+import { ManageSSO } from '@/ManageSSO';
 import { lt } from 'semver';
 import { AuditLogs } from '@/AuditLogs';
 import { Toaster } from 'react-hot-toast';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
+import { Editor } from '@/Editor/Editor';
 
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
@@ -189,8 +192,9 @@ class App extends React.Component {
               />
             )}
 
-            <Route path="/login" component={LoginPage} />
-            <Route path="/sso/:origin" component={Oauth} />
+            <Route path="/login/:organisationId" exact component={LoginPage} />
+            <Route path="/login" exact component={LoginPage} />
+            <Route path="/sso/:origin/:configId" component={Oauth} />
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/reset-password" component={ResetPassword} />
@@ -202,17 +206,30 @@ class App extends React.Component {
                     pathname: '/confirm',
                     state: {
                       token: props.match.params.token,
-                      search: props.location.search,
                     },
                   }}
                 />
               )}
             />
             <Route path="/confirm" component={ConfirmationPage} />
+            <Route
+              path="/organization-invitations/:token"
+              render={(props) => (
+                <Redirect
+                  to={{
+                    pathname: '/confirm-invite',
+                    state: {
+                      token: props.match.params.token,
+                    },
+                  }}
+                />
+              )}
+            />
+            <Route path="/confirm-invite" component={OrganizationInvitationPage} />
             <PrivateRoute
               exact
               path="/apps/:id"
-              component={RealtimeEditor}
+              component={config.ENABLE_MULTIPLAYER_EDITING ? RealtimeEditor : Editor}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
@@ -246,6 +263,13 @@ class App extends React.Component {
             />
             <PrivateRoute
               exact
+              path="/manage-sso"
+              component={ManageSSO}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
               path="/groups"
               component={ManageGroupPermissions}
               switchDarkMode={this.switchDarkMode}
@@ -255,13 +279,6 @@ class App extends React.Component {
               exact
               path="/groups/:id"
               component={ManageGroupPermissionResources}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/library"
-              component={Library}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
