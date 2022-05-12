@@ -4,7 +4,7 @@ import { Router, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute } from '@/_components';
-import { HomePage, Library } from '@/HomePage';
+import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
 import { ConfirmationPage, OrganizationInvitationPage } from '@/ConfirmationPage';
@@ -210,13 +210,6 @@ class App extends React.Component {
               exact
               path="/groups/:id"
               component={ManageGroupPermissionResources}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/library"
-              component={Library}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
