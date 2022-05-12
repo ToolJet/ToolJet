@@ -88,7 +88,7 @@ class ForgotPassword extends React.Component {
                   data-testid="emailField"
                 />
                 {this.state.buttonClicked && !this.state.isEmailFound && (
-                  <p style={{ color: '#b72525' }}>Email address is not associated with a ToolJet cloud account.</p>
+                  <p style={{ color: '#b72525' }}>Email address not found.</p>
                 )}
               </div>
               <div className="form-footer">

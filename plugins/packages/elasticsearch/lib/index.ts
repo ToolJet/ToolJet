@@ -1,4 +1,4 @@
-import { ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugins/common';
+import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@tooljet-plugins/common';
 import { getDocument, updateDocument } from './operations';
 import { indexDocument, search } from './operations';
 import { Client } from '@opensearch-project/opensearch';
@@ -27,6 +27,7 @@ export default class ElasticsearchService implements QueryService {
       }
     } catch (err) {
       console.log(err);
+      throw new QueryError('Query could not be completed', err.message, {});
     }
 
     return {

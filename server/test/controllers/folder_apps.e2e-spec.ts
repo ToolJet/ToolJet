@@ -40,6 +40,29 @@ describe('folder apps controller', () => {
       expect(folder_id).toBe(folder.id);
     });
 
+    it('should not add an app to a folder more than once', async () => {
+      const { adminUser, app } = await setupOrganization(nestApp);
+      const manager = getManager();
+
+      // create a new folder
+      const folder = await manager.save(
+        manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
+      );
+
+      await request(nestApp.getHttpServer())
+        .post(`/api/folder_apps`)
+        .set('Authorization', authHeaderForUser(adminUser))
+        .send({ folder_id: folder.id, app_id: app.id });
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/folder_apps`)
+        .set('Authorization', authHeaderForUser(adminUser))
+        .send({ folder_id: folder.id, app_id: app.id });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toBe('App has been already added to the folder');
+    });
+
     it('should remove an app from a folder', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
       const manager = getManager();

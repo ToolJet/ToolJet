@@ -1,5 +1,6 @@
 ---
-sidebar_position: 7
+id: elasticsearch
+title: Elasticsearch
 ---
 
 # Elasticsearch

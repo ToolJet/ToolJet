@@ -1,11 +1,12 @@
 ---
-sidebar_position: 2
+id: adding-a-datasource
+title: Adding a data source
 ---
 
 # Adding a data source
 
 :::tip
-The data sources are created on app level and not on organization level.
+The data sources are created on app level and not on workspace level.
 :::
 
 **Datasource manager** is on the left-sidebar of the app builder. To add a new data source, click on the `Add datasource` button.

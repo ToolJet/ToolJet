@@ -1,5 +1,6 @@
 ---
-sidebar_position: 1
+id: creating-widget
+title: Creating Widgets
 ---
 
 # Creating Widgets

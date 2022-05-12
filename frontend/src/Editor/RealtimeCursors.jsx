@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import React from 'react';
 import { useOthers, useSelf } from 'y-presence';
 import { xorWith, isEqual } from 'lodash';

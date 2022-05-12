@@ -1,5 +1,6 @@
 ---
-sidebar_position: 10
+id: sharing-and-deploying
+title: Preview and Sharing Apps
 ---
 
 # Preview and Sharing Apps
