@@ -54,8 +54,10 @@ class App extends React.Component {
   componentDidMount() {
     authenticationService.currentUser.subscribe((x) => {
       this.setState({ currentUser: x });
-      this.fetchMetadata();
-      setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+      if (x != null) {
+        this.fetchMetadata();
+        setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+      }
     });
   }
 
