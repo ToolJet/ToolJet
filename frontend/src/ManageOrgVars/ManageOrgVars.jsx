@@ -1,5 +1,5 @@
 import React from 'react';
-import { authenticationService, organizationService, organizationUserService } from '@/_services';
+import { authenticationService, orgEnvironmentVariableService } from '@/_services';
 import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { history } from '@/_helpers';
@@ -38,13 +38,26 @@ class ManageOrgVars extends React.Component {
       isLoading: true,
     });
 
-    organizationService.getUsers(null).then((data) =>
-      this.setState({
-        variables: data.users,
-        isLoading: false,
-      })
-    );
+    this.setState({
+      variables: [],
+      isLoading: false,
+    });
   };
+
+  handleValidation() {
+    let fields = this.state.fields;
+    let errors = {};
+    //variable name
+    if (!fields['variable_name']) {
+      errors['variable_name'] = 'Variable name is required';
+    }
+    //variable value
+    if (!fields['value']) {
+      errors['value'] = 'Value is required';
+    }
+    this.setState({ errors: errors });
+    return Object.keys(errors).length === 0;
+  }
 
   handleEncryptionToggle = (event) => {
     let fields = this.state.fields;
@@ -64,28 +77,23 @@ class ManageOrgVars extends React.Component {
     });
   };
 
-  addNewVariable = (event) => {
+  createVariable = (event) => {
     event.preventDefault();
 
+    let fields = {};
+    Object.keys(this.state.fields).map((key) => {
+      fields[key] = '';
+    });
+
+    this.setState({
+      addingVar: true,
+    });
+
     if (this.handleValidation()) {
-      let fields = {};
-      Object.keys(this.state.fields).map((key) => {
-        fields[key] = '';
-      });
-
-      this.setState({
-        addingVar: true,
-      });
-
-      organizationUserService
-        .create(
-          this.state.fields.firstName,
-          this.state.fields.lastName,
-          this.state.fields.email,
-          this.state.fields.role
-        )
+      orgEnvironmentVariableService
+        .create(this.state.fields.variable_name, this.state.fields.value, this.state.fields.encryption)
         .then(() => {
-          toast.success('User has been created', {
+          toast.success('Variable has been created', {
             position: 'top-center',
           });
           this.fetchUsers();
@@ -155,7 +163,7 @@ class ManageOrgVars extends React.Component {
                     <h3 className="card-title">Add new variable</h3>
                   </div>
                   <div className="card-body">
-                    <form onSubmit={this.addNewVariable} noValidate>
+                    <form onSubmit={this.createVariable} noValidate>
                       <div className="form-group mb-3 ">
                         <div className="row">
                           <div className="col">
@@ -164,11 +172,11 @@ class ManageOrgVars extends React.Component {
                               type="text"
                               className="form-control"
                               placeholder="Enter Variable Name"
-                              name="variableName"
-                              onChange={this.changeNewVariableOption.bind(this, 'variableName')}
-                              value={this.state.fields['variableName']}
+                              name="variable_name"
+                              onChange={this.changeNewVariableOption.bind(this, 'variable_name')}
+                              value={this.state.fields['variable_name']}
                             />
-                            <span className="text-danger">{this.state.errors['variableName']}</span>
+                            <span className="text-danger">{this.state.errors['variable_name']}</span>
                           </div>
                           <div className="col">
                             <label className="form-label">Value</label>
