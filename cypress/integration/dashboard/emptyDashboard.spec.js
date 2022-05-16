@@ -4,7 +4,7 @@ import { emptyDashboardText } from "Texts/dashboard";
 
 describe("Empty state of dashboard",()=>{
   before(()=>{
-  cy.appLogin();
+  cy.appUILogin();
   cy.wait(1000)
   });
 

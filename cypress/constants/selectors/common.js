@@ -10,4 +10,6 @@ export const commonSelectors={
     confirmButton: "[data-cy=confirm-yes-button]",
     autoSave: "[data-cy=autosave-indicator]",
     skipButton: ".driver-close-btn",
+    skipInstallationModal: "[data-cy=skip-button]",
+    homePageLogo: "[data-cy=home-page-logo]"
 }
