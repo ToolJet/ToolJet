@@ -1,3 +1,7 @@
+---
+id: datepicker
+title: Datepicker
+---
 # Datepicker
 
 The Datepicker widget allows users to select a single value for date and time from a pre-determined set.
@@ -7,6 +11,11 @@ The Datepicker widget allows users to select a single value for date and time fr
 ![ToolJet - Widget Reference - Date range picker](/img/widgets/datepicker/datepicker.png)
 
 </div>
+
+## Events
+### Event: On select
+
+On select event is triggered when an date is selected.
 
 ## Properties
 

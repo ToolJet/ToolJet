@@ -48,7 +48,12 @@ export default function AppCard({
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
-    <div className={`app-card mb-3 p-3 pt-2${focused ? ' highlight' : ''}`} key={app.id} ref={hoverRef}>
+    <div
+      className={`app-card mb-3 p-3 pt-2${focused ? ' highlight' : ''}`}
+      key={app.id}
+      ref={hoverRef}
+      data-cy="app-card"
+    >
       <div className="row mb-3">
         <div className="col-12 d-flex justify-content-between">
           <div className="pt-2">
@@ -102,6 +107,7 @@ export default function AppCard({
                     type="button"
                     className="btn btn-sm btn-light edit-button"
                     onClick={() => history.push(`/apps/${app.id}`)}
+                    data-cy="edit-button"
                   >
                     Edit
                   </button>
@@ -118,7 +124,7 @@ export default function AppCard({
                   <button
                     type="button"
                     className="btn btn-sm btn-primary launch-button"
-                    disabled={app?.current_version_id === null}
+                    disabled={app?.current_version_id === null || app?.is_maintenance_on}
                     onClick={() => {
                       if (app?.current_version_id) {
                         window.open(`/applications/${app.slug}`);
@@ -127,7 +133,7 @@ export default function AppCard({
                       }
                     }}
                   >
-                    Launch
+                    {app?.is_maintenance_on ? 'Maintenance' : 'Launch'}
                   </button>
                 </span>
               </ToolTip>

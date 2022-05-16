@@ -1,0 +1,101 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "OpenAPI datasource",
+  "description": "A schema defining OpenAPI datasource",
+  "type": "api",
+  "source": {
+    "name": "OpenAPI",
+    "kind": "openapi",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "password":{
+        "encrypted": true
+      },
+      "bearer_token": {
+        "encrypted": true
+      },
+      "client_secret": {
+        "encrypted": true
+      }
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "format": {
+      "value": "json"
+    },
+    "definition": {
+      "value": ""
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "bearer_token": {
+      "value": ""
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "add_token_to": {
+      "value": "header"
+    },
+    "header_prefix": {
+      "value": "Bearer "
+    },
+    "client_id": {
+      "value": ""
+    },
+    "client_secret": {
+      "value": ""
+    },
+    "auth_url": {
+      "value": ""
+    },
+    "access_token_url": {
+      "value": ""
+    },
+    "headers": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
+    },
+    "custom_query_params": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
+    },
+    "custom_auth_params": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
+    },
+    "client_auth": {
+      "value": "header"
+    }
+  },
+  "properties": {
+    "format": {
+      "label": "Format",
+      "key": "format",
+      "type": "react-component-openapi-validator",
+      "description": "Format of definition"
+    }
+  },
+  "required": ["definition"]
+}

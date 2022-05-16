@@ -1,3 +1,7 @@
+---
+id: tabs
+title: Tabs
+---
 # Tabs
 
 A Tabs widget contains a number of defined containers that can be navigated through the tabs. Each tab acts as a container and can have different components or widgets.

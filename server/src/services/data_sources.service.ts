@@ -5,6 +5,7 @@ import { getManager, Repository } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
+import { cleanObject } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class DataSourcesService {
@@ -59,11 +60,13 @@ export class DataSourcesService {
     };
 
     // Remove keys with undefined values
-    Object.keys(updateableParams).forEach((key) =>
-      updateableParams[key] === undefined ? delete updateableParams[key] : {}
-    );
+    cleanObject(updateableParams);
 
     return this.dataSourcesRepository.save(updateableParams);
+  }
+
+  async delete(dataSourceId: string) {
+    return await this.dataSourcesRepository.delete(dataSourceId);
   }
 
   /* This function merges new options with the existing options */

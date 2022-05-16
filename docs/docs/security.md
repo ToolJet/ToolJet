@@ -1,6 +1,7 @@
 ---
-sidebar_position: 3
-sidebar_label: Security
+id: security
+title: Security
+slug: /security
 ---
 
 # Security

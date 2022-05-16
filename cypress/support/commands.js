@@ -1,100 +1,63 @@
-Cypress.Commands.add('login', (email, password) => {
-  cy.visit('/login');
-  cy.get('[data-testid="emailField"]').type(email);
-  cy.get('[data-testid="passwordField"]').type(password);
-  cy.get('[data-testid="loginButton"').click();
+import { commonSelectors } from "Selectors/common";
+import { loginSelectors} from "Selectors/login";
+import { commonText } from "Texts/common";
+
+Cypress.Commands.add("login",(email,password)=>{
+    cy.visit("/");
+    cy.clearAndType(loginSelectors.emailField, email);
+    cy.clearAndType(loginSelectors.passwordField, password);
+    cy.get(loginSelectors.signInButton).click();
+    cy.get(loginSelectors.homePage).should("be.visible");
 })
 
+Cypress.Commands.add("clearAndType", (selector, text) => {
+    cy.get(selector).clear().type(text);
+  });
 
+  Cypress.Commands.add("verifyToastMessage", (selector,message) => {
+    cy.get(selector)
+      .should("be.visible")
+      .should("have.text", message);
+})
 
-Cypress.Commands.add('checkToastMessage', (toastId, message) => {
-  cy.get(`[id=${toastId}]`).should('contain', message);
-});
+Cypress.Commands.add("appLogin",()=>{
+  cy.request({
+    url: "http://localhost:3000/api/authenticate",
+    method: "POST",
+    body:{
+        email: "dev@tooljet.io", password: "password"
 
-Cypress.Commands.add('addPostgresDataSource', fn => {
+    }
 
-  cy.get('div[class="modal-title h4"] span[class="text-muted"]')
-    .should('have.text', 'Add new datasource')
-    .and('be.visible')
+  }).its('body').then(res=> localStorage.setItem('currentUser',JSON.stringify({"id":res.id,"auth_token":res.auth_token,"email":res.email,"first_name":res.first_name,"last_name":res.last_name,"organization_id":res.organization_id,"organization":res.organization,"admin":true,"group_permissions":[{"id":res.id,"organization_id":res.organization_id,"group":res.group,"app_create":false,"app_delete":false,"folder_create":false,},{"id":res.id,"organization_id":res.organization_id,"group":res.group,"app_create":true,"app_delete":true,"folder_create":true,}],"app_group_permissions":[]})))
+    
+  cy.visit('/');
+})
 
-  cy.get('.modal-body')
-    .find('div[class="row row-deck"]')
-    .find('h4[class="text-muted mb-2"]')
-    .should('have.text', 'DATABASES')
-
-  cy.get('.modal-body')
-    .find('.col-md-2')
-    .contains('PostgreSQL')
-    .and('be.visible')
-    .click()
-
-  cy.get('.row.mt-3')
-    .find('.col-md-4')
-    .find('.form-label')
-    .contains('Database Name')
-
-  cy.get('div[class="row mt-3"] div:nth-child(1)')
-    .find('.form-control')
-    .should('have.attr', 'type', 'text')
-    .type(Cypress.env('TEST_PG_DB'))
-
-  cy.get('.row.mt-3')
-    .find('.col-md-4')
-    .find('.form-label')
-    .contains('Username')
-
-  cy.get('div[class="row mt-3"] div:nth-child(2)')
-    .find('.form-control')
-    .should('have.attr', 'type', 'text')
-    .type(Cypress.env('TEST_PG_USERNAME'))
-
-  cy.get('.row.mt-3')
-    .find('.col-md-4')
-    .find('.form-label')
-    .contains('Password')
-
-  cy.get('div[class="row mt-3"] div:nth-child(3)')
-    .find('.form-control')
-    .should('have.attr', 'type', 'password')
-    .type(Cypress.env('TEST_PG_PASSWORD'))
-
-  cy.get('input[type="checkbox"]')
-    .uncheck()
-
-  cy.get('button[class="m-2 btn btn-success"]')
-    .should('have.text', 'Test Connection')
-    .click()
-
-  cy.get('.badge')
-    .should('have.text', 'connection verified')
-
-  cy.get('div[class="col-auto"] button[type="button"]')
-    .should('have.text', 'Save')
-    .click()
-});
 Cypress.Commands.add('createAppIfEmptyDashboard', fn => {
-  cy.get('body').then(($title => {
-    //check you are not running tests on empty dashboard state
-    if ($title.text().includes('You haven\'t created any apps yet.')) {
-      cy.get('a.btn').eq(0).should('have.text', 'Create your first app')
-        .click()
+  cy.get('.empty-title').then(($title => {
+    if ($title.text().includes('You can get started by creating a new application or by creating an application using a template in ToolJet Library.')) {
+      cy.get(".empty-action > :nth-child(1)").click();
+      cy.get(".modal-footer > .btn").click()
+      cy.wait(1000);
+      cy.get('body').then($el =>{
+        if($el.text().includes('Skip')){
+          cy.get(commonSelectors.skipButton).click();
+        }
+        else{
+          cy.log("instructions modal is skipped ")
+        }
+      });
       cy.go('back')
     }
   }))
 });
 
-Cypress.Commands.add('deployAppWithSingleVersion', fn => {
-  cy.get('.navbar')
-    .find('.navbar-nav')
-    .find('.nav-item')
-    .find('button[class="btn btn-primary btn-sm"]')
-    .should('have.text', 'Deploy')
-    .and('be.visible')
-    .click();
+Cypress.Commands.add("dragAndDropWidget" , (widgetName, position = "top") => {
+  const dataTransfer = new DataTransfer();
 
-  cy.get('.modal-title.h4').should('have.text', 'Versions and deployments').and('be.visible');
-  cy.get('.btn.btn-primary.btn-sm.mx-2').contains('+ Version').click();
-  cy.get('input[placeholder="version name"]').type('1.0');
-  cy.get('button[class="btn btn-primary"]').should('have.text', 'Create').click();
-  cy.get('table').contains('td', 'save').click().contains('td', 'deploy').click();
+  cy.get(commonSelectors.searchField).type(widgetName);
+  cy.get(commonSelectors.firstWidget).trigger("dragstart", { dataTransfer }, { force: true });
+  cy.get(commonSelectors.canvas).trigger("drop", position, { dataTransfer, force: true });
+  cy.get(commonSelectors.autoSave, { timeout: 9000 }).should("have.text", commonText.autoSave);
 });
