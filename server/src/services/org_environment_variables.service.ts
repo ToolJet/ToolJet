@@ -5,25 +5,41 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { cleanObject } from 'src/helpers/utils.helper';
+import { EncryptionService } from './encryption.service';
 
 @Injectable()
 export class OrgEnvironmentVariablesService {
   constructor(
     @InjectRepository(OrgEnvironmentVariable)
-    private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>
+    private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>,
+    private encryptionService: EncryptionService
   ) {}
 
   async fetchVariables(currentUser: User): Promise<OrgEnvironmentVariable[]> {
-    return await this.orgEnvironmentVariablesRepository.find({
+    const variables: OrgEnvironmentVariable[] = await this.orgEnvironmentVariablesRepository.find({
       where: { organizationId: currentUser.organizationId },
     });
+
+    await Promise.all(
+      variables.map(async (variable: OrgEnvironmentVariable) => {
+        variable['value'] = await this.decryptSecret(variable.value);
+      })
+    );
+
+    return variables;
   }
 
   async create(currentUser: User, environmentVariableDto: EnvironmentVariableDto): Promise<OrgEnvironmentVariable> {
+    let value: string;
+    if (environmentVariableDto.encrypted && environmentVariableDto.value) {
+      value = await this.encryptSecret(environmentVariableDto.value);
+    } else {
+      value = environmentVariableDto.value;
+    }
     return await this.orgEnvironmentVariablesRepository.save(
       this.orgEnvironmentVariablesRepository.create({
         variableName: environmentVariableDto.variable_name,
-        value: environmentVariableDto.value,
+        value,
         encrypted: environmentVariableDto.encrypted,
         organizationId: currentUser.organizationId,
         createdAt: new Date(),
@@ -48,5 +64,13 @@ export class OrgEnvironmentVariablesService {
 
   async delete(organizationId: string, variableId: string) {
     return await this.orgEnvironmentVariablesRepository.delete({ organizationId, id: variableId });
+  }
+
+  private async encryptSecret(value: string) {
+    return await this.encryptionService.encryptColumnValue('org_environment_variables', 'value', value);
+  }
+
+  private async decryptSecret(value: string) {
+    return await this.encryptionService.decryptColumnValue('org_environment_variables', 'value', value);
   }
 }
