@@ -2222,7 +2222,6 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     exposedVariables: {
       selected: [1],
-      values: [],
     },
     definition: {
       others: {
@@ -2231,7 +2230,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       properties: {
         label: { value: `Button` },
-        defaultSelected: { value: '1' },
+        defaultSelected: { value: '[1]' },
         values: { value: '{{[1,2,3]}}' },
         labels: { value: '{{[]}}' },
         multiSelection: { value: '{{false}}' },
