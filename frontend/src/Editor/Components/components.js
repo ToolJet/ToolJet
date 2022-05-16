@@ -805,6 +805,9 @@ export const componentTypes = [
     },
     properties: {
       source: { type: 'code', displayName: 'URL' },
+      loadingState: { type: 'toggle', displayName: 'Loading state' },
+      alternativeText: { type: 'code', displayName: 'Alternative text' },
+      zoomButtons: { type: 'toggle', displayName: 'Zoom button' },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -824,6 +827,16 @@ export const componentTypes = [
       padding: { type: 'code', displayName: 'Padding' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
+      imageFit: {
+        type: 'select',
+        displayName: 'Image fit',
+        options: [
+          { name: 'fill', value: 'fill' },
+          { name: 'contain', value: 'contain' },
+          { name: 'cover', value: 'cover' },
+          { name: 'scale-down', value: 'scale-down' },
+        ],
+      },
     },
     exposedVariables: {},
     definition: {
@@ -834,6 +847,9 @@ export const componentTypes = [
       properties: {
         source: { value: 'https://www.svgrepo.com/show/34217/image.svg' },
         visible: { value: '{{true}}' },
+        loadingState: { value: '{{false}}' },
+        alternativeText: { value: '' },
+        zoomButtons: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -841,6 +857,7 @@ export const componentTypes = [
         padding: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        imageFit: { value: 'contain' },
       },
     },
   },
