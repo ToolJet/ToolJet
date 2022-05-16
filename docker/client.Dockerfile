@@ -7,6 +7,8 @@ RUN npm i -g npm@7.20.0
 WORKDIR /app
 
 COPY ./package.json ./package.json
+COPY ./build-plugins.js ./build-plugins.js
+COPY ./plugins/ ./plugins/
 
 # Fix for heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -14,9 +16,6 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV NODE_ENV=production
 
 # Build plugins
-COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-RUN npm --prefix plugins install
-COPY ./plugins/ ./plugins/
 RUN npm run build:plugins
 
 # Build frontend
