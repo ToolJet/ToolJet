@@ -1149,6 +1149,7 @@ class Editor extends React.Component {
                   'text-danger': this.state.saveError,
                   'd-none': this.isVersionReleased(),
                 })}
+                data-cy="autosave-indicator"
               >
                 {this.state.isSaving ? <Spinner size="small" /> : 'All changes are saved'}
               </span>
