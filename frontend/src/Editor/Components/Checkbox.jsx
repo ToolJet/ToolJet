@@ -1,20 +1,7 @@
 import React, { useEffect } from 'react';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
-export const Checkbox = function Checkbox({
-  height,
-  properties,
-  styles,
-  fireEvent,
-  setExposedVariable,
-  component,
-  currentState,
-}) {
-  // properties definitions
-  const defaultValue = component.definition.properties.defaultValue?.value ?? false;
-  const parsedDefaultValue =
-    typeof defaultValue !== 'boolean' ? resolveWidgetFieldValue(defaultValue, currentState) : false;
-
+export const Checkbox = function Checkbox({ height, properties, styles, fireEvent, setExposedVariable }) {
+  const defaultValue = properties.defaultValue ?? false;
   const [checked, setChecked] = React.useState(defaultValue);
   const { label } = properties;
   const { visibility, disabledState, checkboxColor, textColor } = styles;
@@ -30,9 +17,10 @@ export const Checkbox = function Checkbox({
     }
   }
   useEffect(() => {
-    setExposedVariable('value', parsedDefaultValue);
-    setChecked(parsedDefaultValue);
-  }, [parsedDefaultValue]);
+    setExposedVariable('value', defaultValue);
+    setChecked(defaultValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultValue]);
 
   return (
     <div data-disabled={disabledState} className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>
