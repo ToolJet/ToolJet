@@ -109,7 +109,7 @@ export const FilePicker = ({
   const [selectedFiles, setSelectedFiles] = React.useState([]);
   //* custom validator
   function validateFileExists(file) {
-    const isValid = selectedFiles.some((selectedFile) => selectedFile.name === file.name);
+    const isValid = selectedFiles.some((selectedFile) => selectedFile.filePath === file.path);
 
     if (isValid) {
       return {
@@ -167,6 +167,7 @@ export const FilePicker = ({
       dataURL: readFileAsDataURL, // TODO: Fix dataURL to have correct format
       base64Data: readFileAsDataURL,
       parsedData: shouldProcessFileParsing ? await processFileContent(file.type, readFileAsText) : null,
+      filePath: file.path,
     };
   };
 
