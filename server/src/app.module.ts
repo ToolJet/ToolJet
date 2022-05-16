@@ -32,6 +32,7 @@ import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
+import { ExtensionsModule } from './extensions/extensions.module';
 
 const imports = [
   ConfigModule.forRoot({
@@ -80,6 +81,7 @@ const imports = [
   GroupPermissionsModule,
   FileModule,
   EventsModule,
+  ExtensionsModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {
