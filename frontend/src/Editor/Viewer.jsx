@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, authenticationService } from '@/_services';
+import { appService, authenticationService, orgEnvironmentVariableService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -41,6 +41,7 @@ class Viewer extends React.Component {
           currentUser: {},
           theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: {},
+          environment_variables: {},
         },
       },
     };
@@ -102,6 +103,7 @@ class Viewer extends React.Component {
             currentUser: userVars,
             theme: { name: this.props.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+            environment_variables: {},
           },
         },
         dataQueries: data.data_queries,
@@ -120,6 +122,24 @@ class Viewer extends React.Component {
       if (query.options.runOnPageLoad) {
         runQuery(this, query.id, query.name);
       }
+    });
+  };
+
+  fetchOrgEnvironmentVariables = async () => {
+    orgEnvironmentVariableService.getVariables().then((data) => {
+      const variables = {};
+      data.variables.map((variable) => {
+        variables[variable.variable_name] = variable.value;
+      });
+      this.setState({
+        currentState: {
+          ...this.state.currentState,
+          globals: {
+            ...this.state.currentState.globals,
+            environment_variables: variables,
+          },
+        },
+      });
     });
   };
 
@@ -143,6 +163,9 @@ class Viewer extends React.Component {
     const slug = this.props.match.params.slug;
     const appId = this.props.match.params.id;
     const versionId = this.props.match.params.versionId;
+
+    //fetch org env vars
+    this.fetchOrgEnvironmentVariables();
 
     this.setState({ isLoading: false });
     slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);

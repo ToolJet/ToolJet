@@ -48,8 +48,21 @@ export class OrgEnvironmentVariablesService {
     );
   }
 
+  async fetch(organizationId: string, variableId: string) {
+    return await this.orgEnvironmentVariablesRepository.findOne({
+      organizationId: organizationId,
+      id: variableId,
+    });
+  }
+
   async update(organizationId: string, variableId: string, params: any) {
-    const { variable_name, value } = params;
+    const { variable_name } = params;
+    let value = params.value;
+    const variable = await this.fetch(organizationId, variableId);
+
+    if (variable.encrypted && value) {
+      value = await this.encryptSecret(value);
+    }
 
     const updateableParams = {
       variableName: variable_name,

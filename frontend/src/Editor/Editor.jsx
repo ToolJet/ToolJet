@@ -1,7 +1,14 @@
 /* eslint-disable import/no-named-as-default */
 import React, { createRef } from 'react';
 import cx from 'classnames';
-import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
+import {
+  datasourceService,
+  dataqueryService,
+  appService,
+  authenticationService,
+  appVersionService,
+  orgEnvironmentVariableService,
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { computeComponentName } from '@/_helpers/utils';
@@ -119,6 +126,7 @@ class Editor extends React.Component {
           currentUser: userVars,
           theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
+          environment_variables: {},
         },
         errors: {},
         variables: {},
@@ -147,6 +155,7 @@ class Editor extends React.Component {
   componentDidMount() {
     this.fetchApps(0);
     this.fetchApp();
+    this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
     this.initRealtimeSave();
     this.initEventListeners();
@@ -170,6 +179,24 @@ class Editor extends React.Component {
       if (isEqual(this.state.appDefinition, this.props.ymap?.get('appDef').newDefinition)) return;
 
       this.realtimeSave(this.props.ymap?.get('appDef').newDefinition, { skipAutoSave: true, skipYmapUpdate: true });
+    });
+  };
+
+  fetchOrgEnvironmentVariables = () => {
+    orgEnvironmentVariableService.getVariables().then((data) => {
+      const variables = {};
+      data.variables.map((variable) => {
+        variables[variable.variable_name] = variable.value;
+      });
+      this.setState({
+        currentState: {
+          ...this.state.currentState,
+          globals: {
+            ...this.state.currentState.globals,
+            environment_variables: variables,
+          },
+        },
+      });
     });
   };
 
