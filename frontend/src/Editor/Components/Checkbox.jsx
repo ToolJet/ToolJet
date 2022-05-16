@@ -1,7 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
-export const Checkbox = function Checkbox({ height, properties, styles, fireEvent, setExposedVariable }) {
-  const [checked, setChecked] = React.useState(false);
+export const Checkbox = function Checkbox({
+  height,
+  properties,
+  styles,
+  fireEvent,
+  setExposedVariable,
+  component,
+  currentState,
+}) {
+  // properties definitions
+  const defaultValue = component.definition.properties.defaultValue?.value ?? false;
+  const parsedDefaultValue =
+    typeof defaultValue !== 'boolean' ? resolveWidgetFieldValue(defaultValue, currentState) : false;
+
+  const [checked, setChecked] = React.useState(defaultValue);
   const { label } = properties;
   const { visibility, disabledState, checkboxColor, textColor } = styles;
 
@@ -15,6 +29,10 @@ export const Checkbox = function Checkbox({ height, properties, styles, fireEven
       fireEvent('onUnCheck');
     }
   }
+  useEffect(() => {
+    setExposedVariable('value', parsedDefaultValue);
+    setChecked(parsedDefaultValue);
+  }, [parsedDefaultValue]);
 
   return (
     <div data-disabled={disabledState} className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>

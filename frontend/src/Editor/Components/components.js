@@ -524,6 +524,7 @@ export const componentTypes = [
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
+      defaultValue: { type: 'toggle', displayName: 'Default value' },
     },
     events: {
       onCheck: { displayName: 'On check' },
@@ -543,6 +544,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Checkbox label' },
+        defaultValue: { value: '{{false}}' },
       },
       events: [],
       styles: {
