@@ -524,7 +524,7 @@ export const componentTypes = [
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
-      defaultValue: { type: 'toggle', displayName: 'Default value' },
+      defaultValue: { type: 'toggle', displayName: 'Default Status' },
     },
     events: {
       onCheck: { displayName: 'On check' },
