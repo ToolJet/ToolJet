@@ -24,7 +24,8 @@ class Switch extends React.Component {
 }
 
 export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposedVariable }) => {
-  const [on, setOn] = React.useState(false);
+  const defaultValue = properties.defaultValue ?? false;
+  const [on, setOn] = React.useState(defaultValue);
   const label = properties.label;
 
   const { visibility, disabledState, toggleSwitchColor, textColor } = styles;
@@ -37,10 +38,10 @@ export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposed
 
   // Exposing the initially set false value once on load
   useEffect(() => {
-    console.log('shashi');
-    setExposedVariable('value', false);
+    setExposedVariable('value', defaultValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    setOn(defaultValue);
+  }, [defaultValue]);
 
   const toggle = () => setOn(!on);
 
