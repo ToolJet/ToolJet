@@ -1,6 +1,4 @@
 import React, { useEffect } from 'react';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
-
 class Switch extends React.Component {
   render() {
     const { on, onClick, onChange, disabledState, color } = this.props;
@@ -24,20 +22,9 @@ class Switch extends React.Component {
   }
 }
 
-export const ToggleSwitch = ({
-  height,
-  properties,
-  styles,
-  fireEvent,
-  setExposedVariable,
-  component,
-  currentState,
-}) => {
+export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposedVariable }) => {
   // definition props
-  const defaultValue = component.definition.properties.defaultValue?.value ?? false;
-  const parsedDefaultValue =
-    typeof defaultValue !== 'boolean' ? resolveWidgetFieldValue(defaultValue, currentState) : false;
-
+  const defaultValue = properties.defaultValue ?? false;
   const [on, setOn] = React.useState(defaultValue);
   const label = properties.label;
 
@@ -51,10 +38,11 @@ export const ToggleSwitch = ({
 
   // Exposing the initially set false value once on load
   useEffect(() => {
-    setExposedVariable('value', parsedDefaultValue);
+    setExposedVariable('value', defaultValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    setOn(parsedDefaultValue);
-  }, [parsedDefaultValue]);
+    setOn(defaultValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultValue]);
 
   const toggle = () => setOn(!on);
 

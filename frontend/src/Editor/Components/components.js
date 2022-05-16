@@ -629,9 +629,7 @@ export const componentTypes = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
-    exposedVariables: {
-      value: false,
-    },
+    exposedVariables: {},
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
