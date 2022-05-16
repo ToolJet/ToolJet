@@ -32,21 +32,21 @@ export class OrgEnvironmentVariablesService {
     );
   }
 
-  async update(organizationId: string, variableId: string, params) {
+  async update(organizationId: string, variableId: string, params: any) {
     const { variable_name, value } = params;
 
     const updateableParams = {
-      variable_name,
+      variableName: variable_name,
       value,
     };
 
     // removing keys with undefined values
     cleanObject(updateableParams);
 
-    return await this.orgEnvironmentVariablesRepository.update(variableId, updateableParams);
+    return await this.orgEnvironmentVariablesRepository.update({ organizationId, id: variableId }, updateableParams);
   }
 
   async delete(organizationId: string, variableId: string) {
-    return await this.orgEnvironmentVariablesRepository.delete(variableId);
+    return await this.orgEnvironmentVariablesRepository.delete({ organizationId, id: variableId });
   }
 }

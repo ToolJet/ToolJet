@@ -12,8 +12,8 @@ class ManageOrgVars extends React.Component {
     this.state = {
       currentUser: authenticationService.currentUserValue,
       isLoading: true,
-      showNewVariableForm: false,
-      variableToDelete: null,
+      showVariableForm: false,
+      selectedVariableId: null,
       addingVar: false,
       newVariable: {},
       fields: {
@@ -81,52 +81,69 @@ class ManageOrgVars extends React.Component {
     });
   };
 
-  createVariable = (event) => {
+  createOrUpdate = (event) => {
     event.preventDefault();
 
     let fields = {};
     Object.keys(this.state.fields).map((key) => {
       fields[key] = '';
     });
+    fields['encryption'] = false;
 
     this.setState({
       addingVar: true,
     });
 
     if (this.handleValidation()) {
-      orgEnvironmentVariableService
-        .create(this.state.fields.variable_name, this.state.fields.value, this.state.fields.encryption)
-        .then(() => {
-          toast.success('Variable has been created', {
-            position: 'top-center',
+      if (this.state.selectedVariableId) {
+        orgEnvironmentVariableService
+          .update(this.state.selectedVariableId, this.state.fields.variable_name, this.state.fields.value)
+          .then(() => {
+            toast.success('Variable has been updated', {
+              position: 'top-center',
+            });
+            this.fetchVariables();
+            this.setState({
+              addingVar: false,
+              showVariableForm: false,
+              fields: fields,
+              selectedVariableId: null,
+            });
+          })
+          .catch(({ error }) => {
+            toast.error(error, { position: 'top-center' });
+            this.setState({ addingVar: false, selectedVariableId: null });
           });
-          this.fetchUsers();
-          this.setState({
-            addingVar: false,
-            showNewVariableForm: false,
-            fields: fields,
+      } else {
+        orgEnvironmentVariableService
+          .create(this.state.fields.variable_name, this.state.fields.value, this.state.fields.encryption)
+          .then(() => {
+            toast.success('Variable has been created', {
+              position: 'top-center',
+            });
+            this.fetchVariables();
+            this.setState({
+              addingVar: false,
+              showVariableForm: false,
+              fields: fields,
+              selectedVariableId: null,
+            });
+          })
+          .catch(({ error }) => {
+            toast.error(error, { position: 'top-center' });
+            this.setState({ addingVar: false, selectedVariableId: null });
           });
-        })
-        .catch(({ error }) => {
-          toast.error(error, { position: 'top-center' });
-          this.setState({ addingVar: false });
-        });
+      }
     } else {
-      this.setState({ addingVar: false, showNewVariableForm: true });
+      this.setState({ addingVar: false, showVariableForm: true, selectedVariableId: null });
     }
-  };
-
-  updateVariable = () => {
-    this.setState({
-      isLoading: true,
-    });
   };
 
   deleteVariable = (id) => {
     this.setState({
       isLoading: true,
       showVariableDeleteConfirmation: false,
-      variableToDelete: null,
+      selectedVariableId: null,
     });
     orgEnvironmentVariableService
       .deleteVariable(id)
@@ -153,7 +170,7 @@ class ManageOrgVars extends React.Component {
   };
 
   render() {
-    const { isLoading, showNewVariableForm, addingVar, variables } = this.state;
+    const { isLoading, showVariableForm, addingVar, variables } = this.state;
     return (
       <div className="wrapper org-variables-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -163,10 +180,11 @@ class ManageOrgVars extends React.Component {
           show={this.state.showVariableDeleteConfirmation}
           message={'Variable will be deleted, do you want to continue?'}
           onConfirm={() => {
-            this.deleteVariable(this.state.variableToDelete);
+            this.deleteVariable(this.state.selectedVariableId);
           }}
           onCancel={() =>
             this.setState({
+              selectedVariableId: null,
               showVariableDeleteConfirmation: false,
             })
           }
@@ -181,8 +199,8 @@ class ManageOrgVars extends React.Component {
                   <h2 className="page-title">Environment Variables</h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
-                  {!showNewVariableForm && (
-                    <div className="btn btn-primary" onClick={() => this.setState({ showNewVariableForm: true })}>
+                  {!showVariableForm && (
+                    <div className="btn btn-primary" onClick={() => this.setState({ showVariableForm: true })}>
                       Add new variable
                     </div>
                   )}
@@ -192,14 +210,16 @@ class ManageOrgVars extends React.Component {
           </div>
 
           <div className="page-body">
-            {showNewVariableForm && (
+            {showVariableForm && (
               <div className="container-xl">
                 <div className="card">
                   <div className="card-header">
-                    <h3 className="card-title">Add new variable</h3>
+                    <h3 className="card-title">
+                      {!this.state.selectedVariableId ? 'Add new variable' : 'Update variable'}
+                    </h3>
                   </div>
                   <div className="card-body">
-                    <form onSubmit={this.createVariable} noValidate>
+                    <form onSubmit={this.createOrUpdate} noValidate>
                       <div className="form-group mb-3 ">
                         <div className="row">
                           <div className="col">
@@ -233,6 +253,7 @@ class ManageOrgVars extends React.Component {
                           <input
                             className="form-check-input"
                             type="checkbox"
+                            disabled={this.state.selectedVariableId ? true : false}
                             onChange={(e) => this.handleEncryptionToggle(e)}
                             checked={this.state.fields['encryption']}
                           />
@@ -245,8 +266,10 @@ class ManageOrgVars extends React.Component {
                           className="btn btn-light mr-2"
                           onClick={() =>
                             this.setState({
-                              showNewVariableForm: false,
+                              showVariableForm: false,
                               newVariable: {},
+                              fields: { encryption: false },
+                              selectedVariableId: null,
                             })
                           }
                         >
@@ -257,7 +280,7 @@ class ManageOrgVars extends React.Component {
                           className={`btn mx-2 btn-primary ${addingVar ? 'btn-loading' : ''}`}
                           disabled={addingVar}
                         >
-                          Create variable
+                          {!this.state.selectedVariableId ? 'Create variable ' : 'Save'}
                         </button>
                       </div>
                     </form>
@@ -266,7 +289,7 @@ class ManageOrgVars extends React.Component {
               </div>
             )}
 
-            {!showNewVariableForm && (
+            {!showVariableForm && (
               <div className="container-xl">
                 <div className="card">
                   <div
@@ -317,7 +340,19 @@ class ManageOrgVars extends React.Component {
                               </td>
                               <td>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}>
-                                  <button className="btn btn-sm" onClick={() => this.updateVariable(variable.id)}>
+                                  <button
+                                    className="btn btn-sm"
+                                    onClick={() =>
+                                      this.setState({
+                                        showVariableForm: true,
+                                        fields: {
+                                          ...variable,
+                                          encryption: variable.encrypted,
+                                        },
+                                        selectedVariableId: variable.id,
+                                      })
+                                    }
+                                  >
                                     <div>
                                       <img
                                         data-tip="Copy invitation link"
@@ -335,7 +370,7 @@ class ManageOrgVars extends React.Component {
                                     className="btn btn-sm"
                                     onClick={() =>
                                       this.setState({
-                                        variableToDelete: variable.id,
+                                        selectedVariableId: variable.id,
                                         showVariableDeleteConfirmation: true,
                                       })
                                     }
