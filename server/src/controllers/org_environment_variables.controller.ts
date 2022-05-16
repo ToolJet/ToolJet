@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Get, Patch, Delete, Param, BadRequestException } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { AppAbility } from 'src/modules/casl/casl-ability.factory';
@@ -13,6 +13,13 @@ import { OrgEnvironmentVariablesService } from '@services/org_environment_variab
 export class OrgEnvironmentVariablesController {
   constructor(private orgEnvironmentVariablesService: OrgEnvironmentVariablesService) {}
 
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @Get()
+  async get(@User() user) {
+    const result = await this.orgEnvironmentVariablesService.fetchVariables(user);
+    return decamelizeKeys({ variables: result });
+  }
+
   // Endpoint for adding new env vars
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('addOrgEnvironmentVariables', UserEntity))
@@ -20,5 +27,25 @@ export class OrgEnvironmentVariablesController {
   async create(@User() user, @Body() environmentVariableDto: EnvironmentVariableDto) {
     const result = await this.orgEnvironmentVariablesService.create(user, environmentVariableDto);
     return decamelizeKeys({ users: result });
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateOrgEnvironmentVariables', UserEntity))
+  @Patch(':id')
+  async update(@Body() body, @User() user, @Param('id') variableId) {
+    await this.orgEnvironmentVariablesService.update(user.organizationId, variableId, body);
+    return {};
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('deleteOrgEnvironmentVariables', UserEntity))
+  @Delete(':id')
+  async delete(@User() user, @Param('id') variableId) {
+    const result = await this.orgEnvironmentVariablesService.delete(user.organizationId, variableId);
+    if (result.affected == 1) {
+      return;
+    } else {
+      throw new BadRequestException();
+    }
   }
 }

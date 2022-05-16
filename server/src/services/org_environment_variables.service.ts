@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
+import { cleanObject } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class OrgEnvironmentVariablesService {
@@ -11,6 +12,12 @@ export class OrgEnvironmentVariablesService {
     @InjectRepository(OrgEnvironmentVariable)
     private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>
   ) {}
+
+  async fetchVariables(currentUser: User): Promise<OrgEnvironmentVariable[]> {
+    return await this.orgEnvironmentVariablesRepository.find({
+      where: { organizationId: currentUser.organizationId },
+    });
+  }
 
   async create(currentUser: User, environmentVariableDto: EnvironmentVariableDto): Promise<OrgEnvironmentVariable> {
     return await this.orgEnvironmentVariablesRepository.save(
@@ -23,5 +30,23 @@ export class OrgEnvironmentVariablesService {
         updatedAt: new Date(),
       })
     );
+  }
+
+  async update(organizationId: string, variableId: string, params) {
+    const { variable_name, value } = params;
+
+    const updateableParams = {
+      variable_name,
+      value,
+    };
+
+    // removing keys with undefined values
+    cleanObject(updateableParams);
+
+    return await this.orgEnvironmentVariablesRepository.update(variableId, updateableParams);
+  }
+
+  async delete(organizationId: string, variableId: string) {
+    return await this.orgEnvironmentVariablesRepository.delete(variableId);
   }
 }

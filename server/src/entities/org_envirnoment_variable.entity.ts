@@ -11,7 +11,7 @@ import {
 
 import { Organization } from './organization.entity';
 
-@Entity({ name: 'org_envirnoment_variable' })
+@Entity({ name: 'org_environment_variables' })
 export class OrgEnvironmentVariable extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

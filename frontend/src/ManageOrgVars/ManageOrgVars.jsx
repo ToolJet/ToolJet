@@ -1,6 +1,6 @@
 import React from 'react';
 import { authenticationService, orgEnvironmentVariableService } from '@/_services';
-import { Header } from '@/_components';
+import { Header, ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { history } from '@/_helpers';
 import ReactTooltip from 'react-tooltip';
@@ -13,12 +13,14 @@ class ManageOrgVars extends React.Component {
       currentUser: authenticationService.currentUserValue,
       isLoading: true,
       showNewVariableForm: false,
+      variableToDelete: null,
       addingVar: false,
       newVariable: {},
       fields: {
         encryption: false,
       },
       errors: {},
+      showVariableDeleteConfirmation: false,
     };
 
     this.tableRef = React.createRef(null);
@@ -38,9 +40,11 @@ class ManageOrgVars extends React.Component {
       isLoading: true,
     });
 
-    this.setState({
-      variables: [],
-      isLoading: false,
+    orgEnvironmentVariableService.getVariables().then((data) => {
+      this.setState({
+        variables: data.variables,
+        isLoading: false,
+      });
     });
   };
 
@@ -118,10 +122,29 @@ class ManageOrgVars extends React.Component {
     });
   };
 
-  deleteVariable = () => {
+  deleteVariable = (id) => {
     this.setState({
       isLoading: true,
+      showVariableDeleteConfirmation: false,
+      variableToDelete: null,
     });
+    orgEnvironmentVariableService
+      .deleteVariable(id)
+      .then(() => {
+        toast.success('The variable has been deleted', {
+          position: 'top-center',
+        });
+        this.setState({
+          isLoading: false,
+        });
+        this.fetchVariables();
+      })
+      .catch(({ error }) => {
+        toast.error(error, { position: 'top-center' });
+        this.setState({
+          isLoading: false,
+        });
+      });
   };
 
   logout = () => {
@@ -135,6 +158,19 @@ class ManageOrgVars extends React.Component {
       <div className="wrapper org-variables-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
+
+        <ConfirmDialog
+          show={this.state.showVariableDeleteConfirmation}
+          message={'Variable will be deleted, do you want to continue?'}
+          onConfirm={() => {
+            this.deleteVariable(this.state.variableToDelete);
+          }}
+          onCancel={() =>
+            this.setState({
+              showVariableDeleteConfirmation: false,
+            })
+          }
+        />
 
         <div className="page-wrapper">
           <div className="container-xl">
@@ -271,17 +307,17 @@ class ManageOrgVars extends React.Component {
                           {variables.map((variable) => (
                             <tr key={variable.id}>
                               <td>
-                                <span>{variable.name}</span>
+                                <span>{variable.variable_name}</span>
                               </td>
                               <td className="text-muted">
-                                <a className="text-reset user-email">{variable.email}</a>
+                                <a className="text-reset user-email">{variable.value}</a>
                               </td>
                               <td className="text-muted">
-                                <small className="user-status">{variable.status}</small>
+                                <small className="user-status">{variable.encrypted.toString()}</small>
                               </td>
                               <td>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}>
-                                  <button className="btn btn-sm" onClick={() => this.updateVariable()}>
+                                  <button className="btn btn-sm" onClick={() => this.updateVariable(variable.id)}>
                                     <div>
                                       <img
                                         data-tip="Copy invitation link"
@@ -295,7 +331,15 @@ class ManageOrgVars extends React.Component {
                                       ></img>
                                     </div>
                                   </button>
-                                  <button className="btn btn-sm" onClick={() => this.deleteVariable()}>
+                                  <button
+                                    className="btn btn-sm"
+                                    onClick={() =>
+                                      this.setState({
+                                        variableToDelete: variable.id,
+                                        showVariableDeleteConfirmation: true,
+                                      })
+                                    }
+                                  >
                                     <div>
                                       <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" />
                                     </div>

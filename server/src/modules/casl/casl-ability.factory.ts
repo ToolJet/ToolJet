@@ -10,7 +10,9 @@ type Actions =
   | 'inviteUser'
   | 'accessGroupPermission'
   | 'updateOrganizations'
-  | 'addOrgEnvironmentVariables';
+  | 'addOrgEnvironmentVariables'
+  | 'updateOrgEnvironmentVariables'
+  | 'deleteOrgEnvironmentVariables';
 
 type Subjects = InferSubjects<typeof OrganizationUser | typeof User> | 'all';
 
@@ -27,6 +29,8 @@ export class CaslAbilityFactory {
     if (isAdmin) {
       can('inviteUser', User);
       can('addOrgEnvironmentVariables', User);
+      can('updateOrgEnvironmentVariables', User);
+      can('deleteOrgEnvironmentVariables', User);
       can('archiveUser', User);
       can('changeRole', User);
       can('accessGroupPermission', User);
