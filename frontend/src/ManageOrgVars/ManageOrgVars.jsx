@@ -341,7 +341,7 @@ class ManageOrgVars extends React.Component {
                               <td>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}>
                                   <button
-                                    className="btn btn-sm"
+                                    className="btn btn-sm btn-org-env"
                                     onClick={() =>
                                       this.setState({
                                         showVariableForm: true,
@@ -355,7 +355,7 @@ class ManageOrgVars extends React.Component {
                                   >
                                     <div>
                                       <img
-                                        data-tip="Copy invitation link"
+                                        data-tip="Update"
                                         className="svg-icon"
                                         src="/assets/images/icons/edit.svg"
                                         width="15"
@@ -367,7 +367,7 @@ class ManageOrgVars extends React.Component {
                                     </div>
                                   </button>
                                   <button
-                                    className="btn btn-sm"
+                                    className="btn btn-sm btn-org-env"
                                     onClick={() =>
                                       this.setState({
                                         selectedVariableId: variable.id,
@@ -376,7 +376,16 @@ class ManageOrgVars extends React.Component {
                                     }
                                   >
                                     <div>
-                                      <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" />
+                                      <img
+                                        data-tip="Delete"
+                                        className="svg-icon"
+                                        src="/assets/images/icons/query-trash-icon.svg"
+                                        width="15"
+                                        height="15"
+                                        style={{
+                                          cursor: 'pointer',
+                                        }}
+                                      />
                                     </div>
                                   </button>
                                 </div>
