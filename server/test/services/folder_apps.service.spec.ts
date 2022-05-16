@@ -30,7 +30,7 @@ describe('FolderAppsService', () => {
       // add app to folder
       await service.create(folder.id, app.id);
 
-      const newFolder = await manager.findOne(FolderApp, { where: { folderId: folder.id, appId: app.id } });
+      const newFolder = await manager.findOneOrFail(FolderApp, { where: { folderId: folder.id, appId: app.id } });
       expect(newFolder.folderId).toBe(folder.id);
       expect(newFolder.appId).toBe(app.id);
     });
@@ -50,8 +50,9 @@ describe('FolderAppsService', () => {
       await service.remove(folder.id, app.id);
 
       await foldersService.create(adminUser, 'folder');
-      const result = await manager.findOne(FolderApp, { where: { folderId: folder.id, appId: app.id } });
-      expect(result).toBeUndefined();
+      await expect(manager.findOneOrFail(FolderApp, { where: { folderId: folder.id, appId: app.id } })).rejects.toThrow(
+        expect.any(Error)
+      );
     });
   });
 

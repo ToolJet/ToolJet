@@ -1,10 +1,10 @@
 import {
   SubscribeMessage,
+  MessageBody,
   WebSocketGateway,
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  MessageBody,
 } from '@nestjs/websockets';
 import { Server } from 'ws';
 import { AuthService } from 'src/services/auth.service';

@@ -3,7 +3,8 @@ import Modal from '../HomePage/Modal';
 import { toast } from 'react-hot-toast';
 import { appVersionService } from '@/_services';
 import { Confirm } from './Viewer/Confirm';
-
+import Select from '../_ui/Select';
+import defaultStyle from '../_ui/Select/styles';
 export const AppVersionsManager = function AppVersionsManager({
   appId,
   editingVersion,
@@ -124,13 +125,14 @@ export const AppVersionsManager = function AppVersionsManager({
   };
 
   const selectVersion = (version) => {
-    setEditingAppVersion(version);
-    setAppDefinitionFromVersion(version);
+    appVersionService.getOne(appId, version.id).then((data) => {
+      setAppDefinitionFromVersion(data);
+    });
   };
 
   return (
     <div ref={wrapperRef} className="input-group app-version-menu">
-      <span className="input-group-text app-version-menu-sm">App Version</span>
+      <span className="input-group-text app-version-menu-sm">Version</span>
       <span
         className={`app-version-name form-select app-version-menu-sm ${appVersions ? '' : 'disabled'}`}
         onClick={() => {
@@ -147,49 +149,58 @@ export const AppVersionsManager = function AppVersionsManager({
               <div className="app-version-content">
                 {appVersions.map((version) =>
                   releasedVersionId == version.id ? (
-                    <div className="row dropdown-item released" key={version.id} onClick={() => selectVersion(version)}>
-                      <div className="col-md-4">{version.name}</div>
-                      <div className="released-subtext">
-                        <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
-                        <span className="px-1">Currently Released</span>
+                    <>
+                      <div
+                        className="row dropdown-item released"
+                        key={version.id}
+                        onClick={() => selectVersion(version)}
+                      >
+                        <div className="col-md-4">{version.name}</div>
+                        <div className="released-subtext">
+                          <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
+                          <span className="px-1">Currently Released</span>
+                        </div>
                       </div>
-                    </div>
+                      <div className="dropdown-divider m-0"></div>
+                    </>
                   ) : (
-                    <div
-                      className="dropdown-item row"
-                      key={version.id}
-                      onClick={() => selectVersion(version)}
-                      onMouseEnter={() => setMouseHoveredOnVersion(version.id)}
-                      onMouseLeave={() => setMouseHoveredOnVersion(null)}
-                    >
-                      <div className="col-md-4">{version.name}</div>
+                    <>
+                      <div
+                        className="dropdown-item row"
+                        key={version.id}
+                        onClick={() => selectVersion(version)}
+                        onMouseEnter={() => setMouseHoveredOnVersion(version.id)}
+                        onMouseLeave={() => setMouseHoveredOnVersion(null)}
+                      >
+                        <div className="col-md-4">{version.name}</div>
 
-                      <div className="col-md-2 offset-md-6">
-                        <button
-                          className="btn badge bg-azure-lt"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeletingVersionId(version.id);
-                            setShowVersionDeletionConfirmation(true);
-                          }}
-                          disabled={isDeletingVersion}
-                          style={{
-                            display: mouseHoveredOnVersion === version.id ? 'flex' : 'none',
-                          }}
-                        >
-                          <img
-                            src="/assets/images/icons/query-trash-icon.svg"
-                            width="12"
-                            height="12"
-                            className="mx-1"
-                            style={{ paddingLeft: '0.6px' }}
-                          />
-                        </button>
+                        <div className="col-md-2 offset-md-6">
+                          <button
+                            className="btn badge bg-azure-lt"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingVersionId(version.id);
+                              setShowVersionDeletionConfirmation(true);
+                            }}
+                            disabled={isDeletingVersion}
+                            style={{
+                              display: mouseHoveredOnVersion === version.id ? 'flex' : 'none',
+                            }}
+                          >
+                            <img
+                              src="/assets/images/icons/query-trash-icon.svg"
+                              width="12"
+                              height="12"
+                              className="mx-1"
+                              style={{ paddingLeft: '0.6px' }}
+                            />
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                      <div className="dropdown-divider m-0"></div>
+                    </>
                   )
                 )}
-                <div className="dropdown-divider"></div>
               </div>
               <div className="dropdown-item" onClick={() => setShowModal(true)}>
                 <span className="color-primary create-link">Create Version</span>
@@ -240,6 +251,37 @@ const CreateVersionModal = function CreateVersionModal({
       createVersion(versionName, createAppVersionFrom);
     }
   };
+  const options = appVersions.map((version) => {
+    return { ...version, label: version.name, value: version };
+  });
+  const width = '100%';
+  const height = 32;
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  const customStyles = {
+    ...defaultStyle(darkMode, width, height),
+    option: (provided, state) => {
+      return {
+        ...provided,
+        backgroundColor: darkMode
+          ? state.isSelected
+            ? '#3650AF'
+            : 'rgb(31,40,55)'
+          : state.isSelected
+          ? '#7A95FB'
+          : 'white',
+        color: darkMode ? '#fff' : '#232e3c',
+        '&:hover': {
+          backgroundColor: darkMode
+            ? state.isSelected
+              ? '#1F2E64'
+              : '#323C4B'
+            : state.isSelected
+            ? '#3650AF'
+            : '#d8dce9',
+        },
+      };
+    },
+  };
   return (
     <Modal
       show={showModal || showCreateVersionModalPrompt}
@@ -264,16 +306,20 @@ const CreateVersionModal = function CreateVersionModal({
         </div>
       </div>
 
-      <div className="mb-3">
+      <div className="mb-3" style={{ padding: '2rem 0' }}>
         <label className="form-label">Create version from</label>
         <div className="ts-control">
-          <select className="form-select">
-            {appVersions.map((version) => (
-              <option className="dropdown-item" key={version.id} onClick={() => setCreateAppVersionFrom(version)}>
-                {version.name}
-              </option>
-            ))}
-          </select>
+          <Select
+            options={options}
+            defaultValue={options[options.length - 1]}
+            onChange={(version) => {
+              setCreateAppVersionFrom(version);
+            }}
+            useMenuPortal={false}
+            width="100%"
+            maxMenuHeight={100}
+            styles={customStyles}
+          />
         </div>
       </div>
 

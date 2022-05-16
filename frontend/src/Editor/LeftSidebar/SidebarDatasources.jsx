@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import React from 'react';
 import usePopover from '../../_hooks/use-popover';
 import { LeftSidebarItem } from './SidebarItem';
@@ -6,11 +7,52 @@ import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
 import Tooltip from 'react-bootstrap/esm/Tooltip';
 import { getSvgIcon } from '@/_helpers/appUtils';
+import { datasourceService } from '@/_services';
+import { ConfirmDialog } from '@/_components';
+import toast from 'react-hot-toast';
 
-export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, dataSources = [], dataSourcesChanged }) => {
+export const LeftSidebarDataSources = ({
+  appId,
+  editingVersionId,
+  darkMode,
+  dataSources = [],
+  dataSourcesChanged,
+  dataQueriesChanged,
+}) => {
   const [open, trigger, content] = usePopover(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
+  const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
+  const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
+
+  const deleteDataSource = (selectedSource) => {
+    setSelectedDataSource(selectedSource);
+    setDeleteModalVisibility(true);
+  };
+
+  const executeDataSourceDeletion = () => {
+    setDeleteModalVisibility(false);
+    setDeletingDatasource(true);
+    datasourceService
+      .deleteDataSource(selectedDataSource.id)
+      .then(() => {
+        toast.success('Data Source Deleted');
+        setDeletingDatasource(false);
+        setSelectedDataSource(null);
+        dataSourcesChanged();
+        dataQueriesChanged();
+      })
+      .catch(({ error }) => {
+        setDeletingDatasource(false);
+        setSelectedDataSource(null);
+        toast.error(error);
+      });
+  };
+
+  const cancelDeleteDataSource = () => {
+    setDeleteModalVisibility(false);
+    setSelectedDataSource(null);
+  };
 
   const renderDataSource = (dataSource, idx) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
@@ -25,7 +67,16 @@ export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, data
           className="col"
         >
           {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)}
-          <span className="p-2 font-500">{dataSource.name}</span>
+          <span className="font-500" style={{ paddingLeft: 5 }}>
+            {dataSource.name}
+          </span>
+        </div>
+        <div className="col-auto">
+          <button className="btn btn-sm ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
+            <div>
+              <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" />
+            </div>
+          </button>
         </div>
       </div>
     );
@@ -33,6 +84,14 @@ export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, data
 
   return (
     <>
+      <ConfirmDialog
+        show={isDeleteModalVisible}
+        message={'You will lose all the queries created from this data source. Do you really want to delete?'}
+        confirmButtonLoading={isDeletingDatasource}
+        onConfirm={() => executeDataSourceDeletion()}
+        onCancel={() => cancelDeleteDataSource()}
+        darkMode={darkMode}
+      />
       <LeftSidebarItem
         tip="Add or edit datasources"
         {...trigger}
@@ -84,13 +143,13 @@ const LeftSidebarDataSourcesContainer = ({ renderDataSource, dataSources = [], t
             </OverlayTrigger>
           </div>
         </div>
-        <div className="d-flex">
+        <div className="d-flex w-100">
           {dataSources.length === 0 ? (
             <center onClick={() => toggleDataSourceManagerModal(true)} className="p-2 color-primary cursor-pointer">
               + add data source
             </center>
           ) : (
-            <div className="mt-2">{dataSources?.map((source, idx) => renderDataSource(source, idx))}</div>
+            <div className="mt-2 w-100">{dataSources?.map((source, idx) => renderDataSource(source, idx))}</div>
           )}
         </div>
       </div>

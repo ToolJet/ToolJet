@@ -121,11 +121,11 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   }
 
   return (
-    <div className="components-container mx-3 mt-3">
+    <div className="components-container mx-3">
       <div className="input-icon">
         <input
           type="text"
-          className="form-control mb-2"
+          className="form-control mt-3 mb-2"
           placeholder="Search…"
           value={searchQuery}
           onChange={(e) => handleSearchQueryChange(e)}

@@ -1,10 +1,20 @@
 ---
-sidebar_position: 12
+id: minio
+title: MinIO
 ---
 
 # MinIO
 
 ToolJet can connect to minio and perform various operation on them.
+
+## Supported operations
+
+- **Read object**
+- **Put object**
+- **List buckets**
+- **List objects in a bucket**
+- **Presigned url for download**
+- **Presigned url for upload**
 
 ## Connection
 
