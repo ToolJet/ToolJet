@@ -10,7 +10,7 @@ export class FileService {
     private fileRepository: Repository<File>
   ) {}
 
-  async uploadFile(dataBuffer: Buffer, filename: string, queryRunner: QueryRunner) {
+  async uploadFile(dataBuffer: any, filename: string, queryRunner: QueryRunner) {
     const newFile = await queryRunner.manager.create(File, {
       filename,
       data: dataBuffer,

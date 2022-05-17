@@ -23,6 +23,8 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
 import { FileService } from '@services/file.service';
+import { Extension } from 'src/entities/extension.entity';
+import { ExtensionsService } from '@services/extensions.service';
 
 @Module({
   imports: [
@@ -40,6 +42,7 @@ import { FileService } from '@services/file.service';
       User,
       OrganizationUser,
       Organization,
+      Extension,
     ]),
     CaslModule,
   ],
@@ -52,6 +55,7 @@ import { FileService } from '@services/file.service';
     UsersService,
     AppImportExportService,
     FileService,
+    ExtensionsService,
   ],
   controllers: [DataQueriesController],
 })

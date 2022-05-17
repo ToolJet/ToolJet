@@ -14,6 +14,10 @@ export class MaybeCreateExtension1625814801415 implements MigrationInterface {
             isPrimary: true,
           },
           {
+            name: 'name',
+            type: 'varchar',
+          },
+          {
             name: 'file_id',
             type: 'varchar',
           },

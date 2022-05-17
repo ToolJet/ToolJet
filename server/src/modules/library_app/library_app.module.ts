@@ -10,15 +10,21 @@ import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { CaslModule } from '../casl/casl.module';
+import { FileService } from '@services/file.service';
+import { File } from 'src/entities/file.entity';
+import { ExtensionsService } from '@services/extensions.service';
+import { Extension } from 'src/entities/extension.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([App, Credential, DataSource]), CaslModule],
+  imports: [TypeOrmModule.forFeature([App, Credential, File, Extension, DataSource]), CaslModule],
   providers: [
     EncryptionService,
     CredentialsService,
     DataSourcesService,
     LibraryAppCreationService,
     AppImportExportService,
+    FileService,
+    ExtensionsService,
   ],
   controllers: [LibraryAppsController],
 })
