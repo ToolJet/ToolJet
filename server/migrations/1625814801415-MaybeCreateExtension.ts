@@ -1,12 +1,31 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export class  MaybeCreateExtension1625814801415 implements MigrationInterface {
-
+export class MaybeCreateExtension1625814801415 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query('CREATE EXTENSION IF NOT EXISTS pgcrypto;')   
+    await queryRunner.createTable(
+      new Table({
+        name: 'extension',
+        columns: [
+          {
+            name: 'id',
+            type: 'uuid',
+            isGenerated: true,
+            default: 'gen_random_uuid()',
+            isPrimary: true,
+          },
+          {
+            name: 'file_id',
+            type: 'varchar',
+          },
+          {
+            name: 'organization_id',
+            type: 'varchar',
+          },
+        ],
+      }),
+      true
+    );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-  }
-
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }

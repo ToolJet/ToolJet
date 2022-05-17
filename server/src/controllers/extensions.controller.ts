@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ExtensionsService } from './extensions.service';
-import { CreateExtensionDto } from './dto/create-extension.dto';
-import { UpdateExtensionDto } from './dto/update-extension.dto';
+import { ExtensionsService } from '../services/extensions.service';
+import { CreateExtensionDto } from '../dto/create-extension.dto';
+import { UpdateExtensionDto } from '../dto/update-extension.dto';
 
 @Controller('extensions')
 export class ExtensionsController {

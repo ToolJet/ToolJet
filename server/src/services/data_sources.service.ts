@@ -25,7 +25,7 @@ export class DataSourcesService {
   async findOne(dataSourceId: string): Promise<DataSource> {
     return await this.dataSourcesRepository.findOne({
       where: { id: dataSourceId },
-      relations: ['app'],
+      relations: ['app', 'extension'],
     });
   }
 

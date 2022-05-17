@@ -8,10 +8,16 @@ import { CredentialsService } from './credentials.service';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
 import got from 'got';
+import { FileService } from './file.service';
+import { decode } from 'js-base64';
+
+const _eval = require('eval');
+const extensions = {};
 
 @Injectable()
 export class DataQueriesService {
   constructor(
+    private readonly fileService: FileService,
     private credentialsService: CredentialsService,
     private dataSourcesService: DataSourcesService,
     @InjectRepository(DataQuery)
@@ -21,7 +27,7 @@ export class DataQueriesService {
   async findOne(dataQueryId: string): Promise<DataQuery> {
     return await this.dataQueriesRepository.findOne({
       where: { id: dataQueryId },
-      relations: ['dataSource', 'app'],
+      relations: ['dataSource', 'extension', 'app'],
     });
   }
 
@@ -77,7 +83,22 @@ export class DataQueriesService {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
     const kind = dataQuery.kind;
-    const service = new allPlugins[kind]();
+    let service: any;
+    if (dataQuery.extensionId) {
+      let decoded: string;
+      if (extensions[dataQuery.extensionId]) {
+        decoded = decode(extensions[dataQuery.extensionId]);
+      } else {
+        const file = await this.fileService.getFileById(dataQuery.extension.fileId);
+        const buff = Buffer.from(file.data, 'base64').toString('utf8');
+        decoded = decode(buff);
+        extensions[dataQuery.extensionId] = decoded;
+      }
+      const module = _eval(decoded);
+      service = new module();
+    } else {
+      service = new allPlugins[kind]();
+    }
     return { service, sourceOptions, parsedQueryOptions };
   }
 
