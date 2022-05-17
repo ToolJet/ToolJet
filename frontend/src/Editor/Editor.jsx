@@ -1175,9 +1175,7 @@ class Editor extends React.Component {
                   <a
                     href={appVersionPreviewLink}
                     target="_blank"
-                    className={`btn btn-sm font-500 color-primary border-0  ${
-                      app?.current_version_id ? '' : 'disabled'
-                    }`}
+                    className="btn btn-sm font-500 color-primary border-0"
                     rel="noreferrer"
                   >
                     Preview
