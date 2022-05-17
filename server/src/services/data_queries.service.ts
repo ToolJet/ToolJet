@@ -1,5 +1,5 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -112,6 +112,9 @@ export class DataQueriesService {
     let result;
 
     try {
+      if (!service?.run) {
+        throw new NotImplementedException('run method not implemented');
+      }
       return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
     } catch (error) {
       const statusCode = error?.data?.responseObject?.statusCode;
