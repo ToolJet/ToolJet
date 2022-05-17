@@ -9,6 +9,7 @@ export const ConfigHandle = function ConfigHandle({
   position,
   widgetTop,
   widgetHeight,
+  isMultipleComponentsSelected = false,
 }) {
   return (
     <div
@@ -24,7 +25,7 @@ export const ConfigHandle = function ConfigHandle({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            setSelectedComponent(id, component);
+            setSelectedComponent(id, component, e.shiftKey);
           }}
           role="button"
         >
@@ -37,17 +38,19 @@ export const ConfigHandle = function ConfigHandle({
           />
           <span>{component.name}</span>
         </div>
-        <div className="delete-part">
-          <img
-            style={{ cursor: 'pointer', marginLeft: '5px' }}
-            src="/assets/images/icons/trash-light.svg"
-            width="12"
-            role="button"
-            height="12"
-            draggable="false"
-            onClick={() => removeComponent({ id })}
-          />
-        </div>
+        {!isMultipleComponentsSelected && (
+          <div className="delete-part">
+            <img
+              style={{ cursor: 'pointer', marginLeft: '5px' }}
+              src="/assets/images/icons/trash-light.svg"
+              width="12"
+              role="button"
+              height="12"
+              draggable="false"
+              onClick={() => removeComponent({ id })}
+            />
+          </div>
+        )}
       </span>
     </div>
   );

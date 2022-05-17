@@ -5,9 +5,9 @@ sidebar_label: Password Login
 
 # Password Login
 
-Password login is enabled by default for all organizations. User with admin privilege can enable/disable it. 
+Password login is enabled by default for all workspaces. User with admin privilege can enable/disable it. 
 
-Select `Manage SSO` from organization options
+Select `Manage SSO` from workspace options
 
 <div style={{textAlign: 'center'}}>
 

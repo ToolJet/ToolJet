@@ -30,7 +30,7 @@ export class SeedsService {
             sso: 'form',
           },
         ],
-        name: 'My organization',
+        name: 'My workspace',
       });
 
       await manager.save(organization);

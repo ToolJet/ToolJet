@@ -805,6 +805,9 @@ export const componentTypes = [
     },
     properties: {
       source: { type: 'code', displayName: 'URL' },
+      loadingState: { type: 'toggle', displayName: 'Loading state' },
+      alternativeText: { type: 'code', displayName: 'Alternative text' },
+      zoomButtons: { type: 'toggle', displayName: 'Zoom button' },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -824,6 +827,16 @@ export const componentTypes = [
       padding: { type: 'code', displayName: 'Padding' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
+      imageFit: {
+        type: 'select',
+        displayName: 'Image fit',
+        options: [
+          { name: 'fill', value: 'fill' },
+          { name: 'contain', value: 'contain' },
+          { name: 'cover', value: 'cover' },
+          { name: 'scale-down', value: 'scale-down' },
+        ],
+      },
     },
     exposedVariables: {},
     definition: {
@@ -834,6 +847,9 @@ export const componentTypes = [
       properties: {
         source: { value: 'https://www.svgrepo.com/show/34217/image.svg' },
         visible: { value: '{{true}}' },
+        loadingState: { value: '{{false}}' },
+        alternativeText: { value: '' },
+        zoomButtons: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -841,6 +857,7 @@ export const componentTypes = [
         padding: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        imageFit: { value: 'contain' },
       },
     },
   },
@@ -1252,7 +1269,7 @@ export const componentTypes = [
     properties: {
       enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
       enablePicker: { type: 'code', displayName: 'Use File Picker' },
-      enableMultiple: { type: 'code', displayName: 'Pick mulitple files' },
+      enableMultiple: { type: 'code', displayName: 'Pick multiple files' },
       maxFileCount: { type: 'code', displayName: 'Max file count' },
       fileType: { type: 'code', displayName: 'Accept file types' },
       maxSize: { type: 'code', displayName: 'Max size limit (Bytes)' },
@@ -2114,6 +2131,52 @@ const MyCustomComponent = ({data, updateData, runQuery}) => (
 );
 const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
 ReactDOM.render(<ConnectedComponent />, document.body);`,
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'PDF',
+    displayName: 'PDF',
+    description: 'Embed PDF file',
+    component: 'PDF',
+    properties: {
+      url: { type: 'code', displayName: 'File URL' },
+      scale: { type: 'toggle', displayName: 'Scale page to width' },
+      pageControls: { type: 'toggle', displayName: 'Show page controls' },
+    },
+    defaultSize: {
+      width: 20,
+      height: 640,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        url: {
+          value:
+            'https://upload.wikimedia.org/wikipedia/commons/e/ee/Guideline_No._GD-Ed-2214_Marman_Clamp_Systems_Design_Guidelines.pdf',
+        },
+        scale: {
+          value: '{{true}}',
+        },
+        pageControls: {
+          value: `{{true}}`,
         },
       },
       events: [],

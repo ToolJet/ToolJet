@@ -100,7 +100,7 @@ export class EmailService {
           <p>Hi ${name || ''},</p>
           <br>
           <span>
-          ${sender} has invited you to use ToolJet organisation ${organisationName}. Use the link below to set up your account and get started.
+          ${sender} has invited you to use ToolJet workspace ${organisationName}. Use the link below to set up your account and get started.
           </span>
           <br>
           <a href="${inviteUrl}">${inviteUrl}</a>

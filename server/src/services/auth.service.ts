@@ -51,7 +51,7 @@ export class AuthService {
       if (!organizationId) {
         // Global login
         // Determine the organization to be loaded
-        if (this.configService.get<string>('MULTI_ORGANIZATION') !== 'true') {
+        if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
           // Single organization
           organization = await this.organizationsService.getSingleOrganization();
           if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
@@ -72,7 +72,7 @@ export class AuthService {
             organization = organizationList[0];
           } else {
             // no form login enabled organization available for user - creating new one
-            organization = await this.organizationsService.create('Untitled organization', user);
+            organization = await this.organizationsService.create('Untitled workspace', user);
           }
         }
         user.organizationId = organization.id;
@@ -122,7 +122,7 @@ export class AuthService {
     if (!(isNewOrganization || user.isPasswordLogin)) {
       throw new UnauthorizedException();
     }
-    if (this.configService.get<string>('MULTI_ORGANIZATION') !== 'true') {
+    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       throw new UnauthorizedException();
     }
     const newUser = await this.usersService.findByEmail(user.email, newOrganizationId);
@@ -174,7 +174,7 @@ export class AuthService {
 
     let organization: Organization;
     // Check if the configs allows user signups
-    if (this.configService.get<string>('MULTI_ORGANIZATION') !== 'true') {
+    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       // Single organization checking if organization exist
       organization = await this.organizationsService.getSingleOrganization();
 
@@ -188,7 +188,7 @@ export class AuthService {
       }
     }
     // Create default organization
-    organization = await this.organizationsService.create('Untitled organization');
+    organization = await this.organizationsService.create('Untitled workspace');
     const user = await this.usersService.create({ email }, organization.id, ['all_users', 'admin'], existingUser, true);
     await this.organizationUsersService.create(user, organization, true);
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);

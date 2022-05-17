@@ -73,14 +73,14 @@ You can specify a different server for backend if it is hosted on another server
 | -------- | ---------------------- |
 | SERVER_HOST  | Configure a hostname for the server as a proxy pass. If no value is set, it defaults to `server`. |
 
-#### Enable multiple organizations ( optional )
+#### Disable Multi-Workspace ( optional )
 
-If you want to enable multiple environments, set the environment variable `MULTI_ORGANIZATION` to `true`.
+If you want to disable Multi-Workspace feature, set the environment variable `DISABLE_MULTI_WORKSPACE` to `true`.
 
 
 #### Disabling signups ( optional )
 
-Sign up is enabled only for multiple organization environment. If you want to restrict the signups and allow new users only by invitations, set the environment variable `DISABLE_SIGNUPS` to `true`.
+Sign up is enabled only if Multi-Workspace is enabled. If you want to restrict the signups and allow new users only by invitations, set the environment variable `DISABLE_SIGNUPS` to `true`.
 
 :::tip
 You will still be able to see the signup page but won't be able to successfully submit the form.
@@ -93,7 +93,7 @@ You can set `SERVE_CLIENT` to `true` and the server will attempt to serve the cl
 
 #### SMTP configuration ( optional )
 
-ToolJet uses SMTP services to send emails ( Eg: invitation email when you add new users to your organization ).
+ToolJet uses SMTP services to send emails ( Eg: invitation email when you add new users to your workspace ).
 
 | variable           | description                               |
 | ------------------ | ----------------------------------------- |
