@@ -13,7 +13,7 @@ import { OrgEnvironmentVariablesService } from '@services/org_environment_variab
 export class OrgEnvironmentVariablesController {
   constructor(private orgEnvironmentVariablesService: OrgEnvironmentVariablesService) {}
 
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   async get(@User() user) {
     const result = await this.orgEnvironmentVariablesService.fetchVariables(user);
@@ -26,7 +26,7 @@ export class OrgEnvironmentVariablesController {
   @Post()
   async create(@User() user, @Body() environmentVariableDto: EnvironmentVariableDto) {
     const result = await this.orgEnvironmentVariablesService.create(user, environmentVariableDto);
-    return decamelizeKeys({ users: result });
+    return decamelizeKeys({ variable: result });
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -37,7 +37,7 @@ export class OrgEnvironmentVariablesController {
     return {};
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('deleteOrgEnvironmentVariables', UserEntity))
   @Delete(':id')
   async delete(@User() user, @Param('id') variableId) {
