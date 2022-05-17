@@ -40,25 +40,10 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
     multiSelection && setDefaultActive([]);
   }, [multiSelection]);
 
-  useEffect(() => {
-    return () => {
-      console.log('fed', defaultActive, data);
-    };
-  }, [defaultActive, data]);
-
-  useEffect(() => {
-    console.log('value len', values.length);
-    if (values.length == 0) {
-      setData([]);
-    }
-  }, [values]);
-
   const buttonClick = (index) => {
     if (defaultActive?.includes(values[index]) && multiSelection) {
       const copyDefaultActive = defaultActive;
-      console.log('copy', copyDefaultActive);
       copyDefaultActive?.splice(copyDefaultActive?.indexOf(values[index]), 1);
-      console.log('copy', copyDefaultActive);
       setDefaultActive(copyDefaultActive);
       setExposedVariable('selected', copyDefaultActive.join(',')).then(() => fireEvent('onClick'));
     } else if (multiSelection) {
@@ -69,7 +54,6 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
       setDefaultActive([values[index]]);
     }
     if (values?.length == 0) {
-      console.log('running');
       setExposedVariable('selected', []).then(() => fireEvent('onClick'));
     }
   };
