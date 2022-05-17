@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Extension } from 'src/entities/extension.entity';
 import { Repository } from 'typeorm';
@@ -19,8 +19,12 @@ export class ExtensionsService {
     return await this.extensionsRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} extension`;
+  async findOne(id: number) {
+    const extension = await this.extensionsRepository.findOne({ where: { id } });
+    if (!extension) {
+      throw new NotFoundException('Thread not found');
+    }
+    return extension;
   }
 
   update(id: number, updateExtensionDto: UpdateExtensionDto) {

@@ -1,15 +1,23 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getManager, Repository } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
 import { cleanObject } from 'src/helpers/utils.helper';
+import { decode } from 'js-base64';
+import { FileService } from './file.service';
+import { ExtensionsService } from './extensions.service';
+
+const _eval = require('eval');
+const extensions = {};
 
 @Injectable()
 export class DataSourcesService {
   constructor(
+    private readonly fileService: FileService,
+    private readonly extensionsService: ExtensionsService,
     private credentialsService: CredentialsService,
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
@@ -82,7 +90,7 @@ export class DataSourcesService {
     });
   }
 
-  async testConnection(kind: string, options: object): Promise<object> {
+  async testConnection(kind: string, options: object, extension_id: string): Promise<object> {
     let result = {};
     try {
       const sourceOptions = {};
@@ -91,7 +99,10 @@ export class DataSourcesService {
         sourceOptions[key] = options[key]['value'];
       }
 
-      const service = new allPlugins[kind]();
+      const service = await this.getService(kind, extension_id);
+      if (!service?.testConnection) {
+        throw new NotImplementedException('testConnection method not implemented');
+      }
       result = await service.testConnection(sourceOptions);
     } catch (error) {
       result = {
@@ -101,6 +112,27 @@ export class DataSourcesService {
     }
 
     return result;
+  }
+
+  async getService(kind: string, extensionId: any) {
+    let service: any;
+    if (extensionId) {
+      let decoded: string;
+      if (extensions[extensionId]) {
+        decoded = decode(extensions[extensionId]);
+      } else {
+        const extension = await this.extensionsService.findOne(extensionId);
+        const file = await this.fileService.getFileById(extension.fileId);
+        const buff = Buffer.from(file.data, 'base64').toString('utf8');
+        decoded = decode(buff);
+        extensions[extensionId] = decoded;
+      }
+      const module = _eval(decoded);
+      service = new module();
+    } else {
+      service = new allPlugins[kind]();
+    }
+    return service;
   }
 
   async parseOptionsForOauthDataSource(options: Array<object>) {

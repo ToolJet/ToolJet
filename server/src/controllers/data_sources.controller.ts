@@ -110,8 +110,8 @@ export class DataSourcesController {
   @UseGuards(JwtAuthGuard)
   @Post('test_connection')
   async testConnection(@User() user, @Body() testDataSourceDto: TestDataSourceDto) {
-    const { kind, options } = testDataSourceDto;
-    return await this.dataSourcesService.testConnection(kind, options);
+    const { kind, options, extension_id } = testDataSourceDto;
+    return await this.dataSourcesService.testConnection(kind, options, extension_id);
   }
 
   @UseGuards(JwtAuthGuard)
