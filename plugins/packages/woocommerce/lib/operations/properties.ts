@@ -93,7 +93,7 @@ export default {
           name: 'Create a customer',
         },
         {
-          value: 'retreive_customer',
+          value: 'retrieve_customer',
           name: 'Retrieve a customer',
         },
       ],
@@ -124,7 +124,7 @@ export default {
     create_customer: {
       body,
     },
-    retreive_customer: {
+    retrieve_customer: {
       customer_id,
     },
   },
@@ -156,7 +156,7 @@ export default {
           name: 'Create a product',
         },
         {
-          value: 'retreive_product',
+          value: 'retrieve_product',
           name: 'Retrieve a product',
         },
       ],
@@ -204,7 +204,7 @@ export default {
     create_product: {
       body,
     },
-    retreive_product: {
+    retrieve_product: {
       product_id,
     },
   },
@@ -236,7 +236,7 @@ export default {
           name: 'Create a order',
         },
         {
-          value: 'retreive_order',
+          value: 'retrieve_order',
           name: 'Retrieve a order',
         },
       ],
@@ -273,7 +273,7 @@ export default {
     create_order: {
       body,
     },
-    retreive_order: {
+    retrieve_order: {
       order_id,
     },
   },

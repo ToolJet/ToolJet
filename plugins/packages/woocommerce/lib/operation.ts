@@ -79,7 +79,7 @@ export async function customerOpeations(WooCommerce, queryOptions: QueryOptions,
           return error.response.data;
         });
     }
-    case 'retreive_customer': {
+    case 'retrieve_customer': {
       return await WooCommerce.get(`customers/${customer_id}`)
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
@@ -212,7 +212,7 @@ export async function productOperations(WooCommerce, queryOptions: QueryOptions,
           return error.response.data;
         });
     }
-    case 'retreive_product': {
+    case 'retrieve_product': {
       return await WooCommerce.get(`products/${product_id}`)
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
@@ -323,7 +323,7 @@ export async function orderOperations(WooCommerce, queryOptions: QueryOptions, o
           return error.response.data;
         });
     }
-    case 'retreive_order': {
+    case 'retrieve_order': {
       return await WooCommerce.get(`orders/${order_id}`)
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
