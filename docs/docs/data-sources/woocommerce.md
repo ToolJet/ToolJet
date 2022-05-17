@@ -30,7 +30,7 @@ NOTE: For generating keys visit admin dashboard of woocommerce , more info: http
 - delete customer
 - batch update customer
 - create customer
-- retreive customer
+- retrieve customer
 
 **PRODUCT**
 
@@ -39,7 +39,7 @@ NOTE: For generating keys visit admin dashboard of woocommerce , more info: http
 - delete product
 - batch update product
 - create product
-- retreive product
+- retrieve product
 
 **ORDER**
 
@@ -48,7 +48,7 @@ NOTE: For generating keys visit admin dashboard of woocommerce , more info: http
 - delete order
 - batch update order
 - create order
-- retreive order
+- retrieve order
 
 **Coupon**
 
