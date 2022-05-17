@@ -252,12 +252,7 @@ export const FilePicker = ({
         <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
 
         {showSelectedFiles ? (
-          <FilePicker.AcceptedFiles
-            width={width - 10}
-            height={height}
-            showFilezone={setShowSelectedFiles}
-            bgThemeColor={bgThemeColor}
-          >
+          <FilePicker.AcceptedFiles width={width - 10} height={height} showFilezone={setShowSelectedFiles}>
             {selectedFiles.map((acceptedFile, index) => (
               <>
                 <div key={index} className="col-10">
@@ -305,7 +300,7 @@ FilePicker.Signifiers = ({ signifier, feedback, cls }) => {
   return null;
 };
 
-FilePicker.AcceptedFiles = ({ children, width, height, showFilezone, bgThemeColor }) => {
+FilePicker.AcceptedFiles = ({ children, width, height, showFilezone }) => {
   const styles = {
     color: '#bdbdbd',
     outline: 'none',

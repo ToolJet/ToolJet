@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import React, { useCallback, useState, useEffect } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { v4 as uuidv4 } from 'uuid';
@@ -416,7 +417,7 @@ export const SubContainer = ({
           currentLayout={currentLayout}
           selectedComponent={selectedComponent}
           deviceWindowWidth={deviceWindowWidth}
-          isSelectedComponent={selectedComponents.find((component) => component.id === key)}
+          isSelectedComponent={mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false}
           removeComponent={customRemoveComponent}
           canvasWidth={_containerCanvasWidth}
           readOnly={readOnly}
