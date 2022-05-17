@@ -17,10 +17,9 @@ export const LeftSidebarGlobalSettings = ({
   currentState,
 }) => {
   const [open, trigger, content] = usePopover(false);
-  const { hideHeader, canvasMaxWidth, canvasMaxHeight, canvasBackgroundColor } = globalSettings;
+  const { hideHeader, canvasMaxWidth, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } = globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
-  const [localCanvasValue, setLocalCanvasValue] = React.useState(canvasBackgroundColor);
   const [realState, setRealState] = React.useState(currentState);
   const [showConfirmation, setConfirmationShow] = React.useState(false);
   const coverStyles = {
@@ -32,11 +31,9 @@ export const LeftSidebarGlobalSettings = ({
   };
 
   React.useEffect(() => {
-    setLocalCanvasValue(canvasBackgroundColor);
-  }, [canvasBackgroundColor]);
-
-  React.useEffect(() => {
+    console.log('realstate', currentState, canvasBackgroundColor, backgroundFxQuery);
     setRealState(currentState);
+    globalSettingsChanged('canvasBackgroundColor', resolveReferences(backgroundFxQuery, currentState));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState.components]);
 
@@ -132,7 +129,7 @@ export const LeftSidebarGlobalSettings = ({
                       color={canvasBackgroundColor}
                       onChangeComplete={(color) => {
                         globalSettingsChanged('canvasBackgroundColor', [color.hex, color.rgb]);
-                        setLocalCanvasValue(color.hex);
+                        globalSettingsChanged('backgroundFxQuery', null);
                       }}
                     />
                   </div>
@@ -157,23 +154,22 @@ export const LeftSidebarGlobalSettings = ({
                     <div className="col">{canvasBackgroundColor}</div>
                   </div>
                 )}
-                <div className="canvas-codehinter-container">
+                <div className={`hinter-canvas-input ${!darkMode && 'hinter-canvas-input-light'} `}>
                   {!forceCodeBox && (
                     <CodeHinter
                       currentState={realState}
-                      initialValue={localCanvasValue}
-                      value={resolveReferences(localCanvasValue, currentState)}
+                      initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
+                      value={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
                       theme={darkMode ? 'monokai' : 'duotone-light'}
                       mode="javascript"
                       lineNumbers={false}
-                      className={`hinter-canvas-input ${!darkMode && 'hinter-canvas-input-light'} `}
                       onChange={(color) => {
                         globalSettingsChanged('canvasBackgroundColor', resolveReferences(color, realState));
-                        setLocalCanvasValue(color);
+                        globalSettingsChanged('backgroundFxQuery', color);
                       }}
                     />
                   )}
-                  <div className={`col-auto fx-canvas ${!darkMode && 'fx-canvas-light'} `}>
+                  <div className={`fx-canvas ${!darkMode && 'fx-canvas-light'} `}>
                     <FxButton
                       active={!forceCodeBox ? true : false}
                       onPress={() => {
