@@ -37,8 +37,8 @@
     "ts-node": "^10.1.0"
   },
   "scripts": {
-    "build:plugins": "NODE_ENV=production && node build-plugins.js",
-    "build:plugins:dev": "node build-plugins.js",
+    "install:plugins": "npm --prefix plugins install",
+    "build:plugins": "npm --prefix plugins run build",
     "prebuild:frontend": "npm --prefix frontend install",
     "build:frontend": "NODE_ENV=production npm --prefix frontend run build",
     "prebuild:server": "npm --prefix server install",
