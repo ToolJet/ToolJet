@@ -1,7 +1,7 @@
 [build]
   base = "/"
   publish = "frontend/build/"
-  command = "npm run install:plugins && NODE_ENV=production npm run build:plugins && npm --prefix plugins prune --production && npm run build:frontend"
+  command = "npm run build:plugins:prod && npm run build:frontend"
 
 [template.environment]
   NODE_ENV = "production"  

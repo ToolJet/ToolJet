@@ -39,6 +39,7 @@
   "scripts": {
     "install:plugins": "npm --prefix plugins install",
     "build:plugins": "npm --prefix plugins run build",
+    "build:plugins:prod": "npm run install:plugins && NODE_ENV=production npm run build:plugins && npm --prefix plugins prune --production",
     "prebuild:frontend": "npm --prefix frontend install",
     "build:frontend": "NODE_ENV=production npm --prefix frontend run build",
     "prebuild:server": "npm --prefix server install",
