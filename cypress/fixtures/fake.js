@@ -2,12 +2,18 @@ import faker from 'faker'
 export let fake ={};
 
 function email(){
-    return (`${faker.name.findName()}@example.com`)
+  return (`${faker.name.findName()}@example.com`);
 }
-
 function password(){
-    return(faker.internet.password())
+  return(faker.internet.password());
 }
-
+function firstName(){
+  return (faker.name.firstName());
+}
+function lastName(){
+  return (faker.name.lastName());
+}
 Object.defineProperty(fake, "email", {get:email});
 Object.defineProperty(fake, "password", {get:password});
+Object.defineProperty(fake, "firstName", {get:firstName});
+Object.defineProperty(fake, "lastName", {get:lastName});
