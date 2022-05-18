@@ -34,13 +34,13 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
           {/* <span className="navbar-toggler-icon"></span> */}
         </button>
         <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0" data-cy="home-page-logo">
-          <Link to={'/'}>
+          <Link to={'/'} data-cy="home-page-logo">
             <LogoIcon />
           </Link>
         </h1>
 
         <div className="navbar-nav flex-row order-md-last">
-          <div className="p-1 m-1 d-flex align-items-center">
+          <div className="p-1 m-1 d-flex align-items-center" data-cy="mode-toggle">
             <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />
           </div>
           <div>
@@ -54,7 +54,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               aria-label="Open user menu"
               data-testid="userAvatarHeader"
             >
-              <div className="d-xl-block">
+              <div className="d-xl-block" data-cy="user-menu">
                 <span className="avatar bg-secondary-lt">
                   {first_name ? first_name[0] : ''}
                   {last_name ? last_name[0] : ''}
@@ -62,10 +62,16 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               </div>
             </a>
             <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow end-0">
-              <Link data-testid="settingsBtn" to="#" onClick={openSettings} className="dropdown-item">
+              <Link
+                data-testid="settingsBtn"
+                to="#"
+                onClick={openSettings}
+                className="dropdown-item"
+                data-cy="profile-link"
+              >
                 Profile
               </Link>
-              <Link data-testid="logoutBtn" to="#" onClick={logout} className="dropdown-item">
+              <Link data-testid="logoutBtn" to="#" onClick={logout} className="dropdown-item" data-cy="logout-link">
                 Logout
               </Link>
             </div>
