@@ -1,11 +1,17 @@
 import { resolveReferences } from '@/_helpers/utils';
 
+const skipResolves = (component, entry) => component === 'CustomComponent' && entry === 'code';
+
 export const resolveProperties = (component, currentState, defaultValue, customResolvables) => {
   if (currentState) {
     return Object.entries(component.definition.properties).reduce(
       (properties, entry) => ({
         ...properties,
-        ...{ [entry[0]]: resolveReferences(entry[1].value, currentState, defaultValue, customResolvables) },
+        ...{
+          [entry[0]]: skipResolves(component.component, entry[0])
+            ? entry[1].value
+            : resolveReferences(entry[1].value, currentState, defaultValue, customResolvables),
+        },
       }),
       {}
     );

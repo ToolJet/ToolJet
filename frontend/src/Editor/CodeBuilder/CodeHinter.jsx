@@ -59,6 +59,7 @@ export function CodeHinter({
   fieldMeta,
   onFxPress,
   fxActive,
+  hideSuggestion = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -91,6 +92,7 @@ export function CodeHinter({
   }, [currentState.components]);
 
   let suggestions = useMemo(() => {
+    if (hideSuggestion) return [];
     return getSuggestionKeys(realState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [realState.components, realState.queries]);
