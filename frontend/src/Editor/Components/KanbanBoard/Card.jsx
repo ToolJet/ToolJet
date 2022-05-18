@@ -1,54 +1,39 @@
 import React from 'react';
-import { DragSource, DropTarget } from 'react-dnd';
-import cn from 'classnames';
-import _ from 'lodash';
+import { Droppable, Draggable } from 'react-beautiful-dnd';
 
-export function Card(props) {
-  return _.flowRight(
-    props.connectDragSource,
-    props.connectDropTarget
-  )(
-    <div
-      className={cn('Card', {
-        'Card--dragging': props.isDragging,
-        'Card--spacer': props.isSpacer,
-      })}
-    >
-      <div className="Card__title">{props.title}</div>
+export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) => {
+  return (
+    <div className="dnd-card">
+      <Draggable key={item.id} draggableId={item.id} index={index}>
+        {(dndProps, dndState) => (
+          <div
+            ref={dndProps.innerRef}
+            {...dndProps.draggableProps}
+            {...dndProps.dragHandleProps}
+            style={getItemStyle(dndState.isDragging, dndProps.draggableProps.style)}
+          >
+            {console.log('dndProps => ', dndProps, 'snapshot =>', dndState)}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-around',
+              }}
+            >
+              {item.content}
+              <button
+                type="button"
+                onClick={() => {
+                  const newState = [...state];
+                  newState[keyIndex].splice(index, 1);
+                  updateCb(newState.filter((group) => group.length));
+                }}
+              >
+                delete
+              </button>
+            </div>
+          </div>
+        )}
+      </Draggable>
     </div>
   );
-}
-
-export const DraggableCard = _.flowRight([
-  DropTarget(
-    'Card',
-    {
-      hover(props, monitor) {
-        const { columnId, columnIndex } = props;
-        const draggingItem = monitor.getItem();
-        if (draggingItem.id !== props.id) {
-          props.moveCard(draggingItem.id, columnId, columnIndex);
-        }
-      },
-    },
-    (connect) => ({
-      connectDropTarget: connect.dropTarget(),
-    })
-  ),
-  DragSource(
-    'Card',
-    {
-      beginDrag(props) {
-        return { id: props.id };
-      },
-
-      isDragging(props, monitor) {
-        return props.id === monitor.getItem().id;
-      },
-    },
-    (connect, monitor) => ({
-      connectDragSource: connect.dragSource(),
-      isDragging: monitor.isDragging(),
-    })
-  ),
-])(Card);
+};

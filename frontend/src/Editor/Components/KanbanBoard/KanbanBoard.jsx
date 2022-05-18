@@ -1,93 +1,122 @@
-import React, { Component } from 'react';
-// import { DndContext } from 'react-dnd';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import _ from 'lodash';
-import { Board } from './Board';
-import './styles.scss';
-import { useDragLayer } from 'react-dnd';
+import React, { useState } from 'react';
+import { DragDropContext } from 'react-beautiful-dnd';
+import Column from './Column';
 
-function DragLayerComponent({ children }) {
-  const collectedProps = useDragLayer((monitor) => console.log('monitor', monitor));
-  return <div>{children}</div>;
-}
+// fake data generator
+const getItems = (count, offset = 0) =>
+  Array.from({ length: count }, (v, k) => k).map((k) => ({
+    id: `item-${k + offset}-${new Date().getTime()}`,
+    content: `item ${k + offset}`,
+  }));
 
-let _columnId = 0;
-let _cardId = 0;
+const reorder = (list, startIndex, endIndex) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
 
-const initialCards = Array.from({ length: 9 }).map(() => ({
-  id: ++_cardId,
-  title: `Card ${_cardId}`,
-}));
+  return result;
+};
 
-const initialColumns = ['TODO', 'Doing', 'Done'].map((title, i) => ({
-  id: _columnId++,
-  title,
-  cardIds: initialCards.slice(i * 3, i * 3 + 3).map((card) => card.id),
-}));
+/**
+ * Moves an item from one list to another list.
+ */
+const move = (source, destination, droppableSource, droppableDestination) => {
+  const sourceClone = Array.from(source);
+  const destClone = Array.from(destination);
+  const [removed] = sourceClone.splice(droppableSource.index, 1);
 
-class KanbanBoard extends Component {
-  state = {
-    cards: initialCards,
-    columns: initialColumns,
-  };
+  destClone.splice(droppableDestination.index, 0, removed);
 
-  addColumn = (_title) => {
-    const title = _title.trim();
-    if (!title) return;
+  const result = {};
+  result[droppableSource.droppableId] = sourceClone;
+  result[droppableDestination.droppableId] = destClone;
 
-    const newColumn = {
-      id: ++_columnId,
-      title,
-      cardIds: [],
-    };
-    this.setState((state) => ({
-      columns: [...state.columns, newColumn],
-    }));
-  };
+  return result;
+};
+const grid = 8;
 
-  addCard = (columnId, _title) => {
-    const title = _title.trim();
-    if (!title) return;
+const getItemStyle = (isDragging, draggableStyle) => ({
+  // some basic styles to make the items look a bit nicer
+  userSelect: 'none',
+  padding: grid * 2,
+  margin: `0 0 ${grid}px 0`,
 
-    const newCard = { id: ++_cardId, title };
-    this.setState((state) => ({
-      cards: [...state.cards, newCard],
-      columns: state.columns.map((column) =>
-        column.id === columnId ? { ...column, cardIds: [...column.cardIds, newCard.id] } : column
-      ),
-    }));
-  };
+  // change background colour if dragging
+  background: isDragging ? 'lightgreen' : 'grey',
 
-  moveCard = (cardId, destColumnId, index) => {
-    this.setState((state) => ({
-      columns: state.columns.map((column) => ({
-        ...column,
-        cardIds: _.flowRight(
-          // 2) If this is the destination column, insert the cardId.
-          (ids) => (column.id === destColumnId ? [...ids.slice(0, index), cardId, ...ids.slice(index)] : ids),
-          // 1) Remove the cardId for all columns
-          (ids) => ids.filter((id) => id !== cardId)
-        )(column.cardIds),
-      })),
-    }));
-  };
+  // styles we need to apply on draggables
+  ...draggableStyle,
+});
+const getListStyle = (isDraggingOver) => ({
+  background: isDraggingOver ? 'lightblue' : 'lightgrey',
+  padding: grid,
+  width: 250,
+});
 
-  render() {
-    return (
-      <>
-        <DragLayerComponent>
-          <Board
-            cards={this.state.cards}
-            columns={this.state.columns}
-            moveCard={this.moveCard}
-            addCard={this.addCard}
-            addColumn={this.addColumn}
-          />
-        </DragLayerComponent>
-      </>
-    );
+function Kanban() {
+  const [state, setState] = useState([getItems(10), getItems(5, 10)]);
+
+  function onDragEnd(result) {
+    const { source, destination } = result;
+
+    // dropped outside the list
+    if (!destination) {
+      return;
+    }
+    const sInd = +source.droppableId;
+    const dInd = +destination.droppableId;
+
+    if (sInd === dInd) {
+      const items = reorder(state[sInd], source.index, destination.index);
+      const newState = [...state];
+      newState[sInd] = items;
+      setState(newState);
+    } else {
+      const result = move(state[sInd], state[dInd], source, destination);
+      const newState = [...state];
+      newState[sInd] = result[sInd];
+      newState[dInd] = result[dInd];
+
+      //   setState(newState.filter((group) => group.length));
+      setState(newState);
+    }
   }
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => {
+          setState([...state, []]);
+        }}
+      >
+        Add new group
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          setState([...state, getItems(1)]);
+        }}
+      >
+        Add new item
+      </button>
+      <div style={{ display: 'flex' }}>
+        <DragDropContext onDragEnd={onDragEnd}>
+          {state.map((el, ind) => (
+            <Column
+              key={ind}
+              state={state}
+              keyIndex={ind}
+              getListStyle={getListStyle}
+              getItemStyle={getItemStyle}
+              cards={el}
+              updateCb={setState}
+            />
+          ))}
+        </DragDropContext>
+      </div>
+    </div>
+  );
 }
 
-export default KanbanBoard;
+export default Kanban;
