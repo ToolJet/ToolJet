@@ -64,9 +64,9 @@ const Column = ({ state, keyIndex, getListStyle, getItemStyle, cards, updateCb }
                 keyIndex={keyIndex}
               />
             ))}
-          </div>
 
-          {dndProps.placeholder}
+            {dndProps.placeholder}
+          </div>
         </div>
       )}
     </Droppable>

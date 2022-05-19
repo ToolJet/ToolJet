@@ -1,5 +1,5 @@
 import React from 'react';
-import { Droppable, Draggable } from 'react-beautiful-dnd';
+import { Draggable } from 'react-beautiful-dnd';
 
 export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) => {
   const [isHovered, setIsHovered] = React.useState(false);

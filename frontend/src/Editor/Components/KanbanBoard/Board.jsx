@@ -49,9 +49,9 @@ const getItemStyle = (isDragging, draggableStyle) => {
   };
 };
 const getListStyle = (isDraggingOver) => ({
-  backgroundColor: isDraggingOver ? 'lightblue' : 'lightgrey',
   padding: grid,
   width: 250,
+  borderColor: isDraggingOver && '#c0ccf8',
 });
 
 function Board({ height }) {
