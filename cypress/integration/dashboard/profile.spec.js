@@ -54,8 +54,12 @@ describe("Profile Settings",()=>{
   it("Should verify the password reset functionality",()=>{
    cy.get(profileSelector.changePasswordButton).click();
    cy.verifyToastMessage(commonSelectors.toastMessage, profileText.passwordErrorToast);
+   cy.get(profileSelector.currentPasswordField).should("have.value", "");
+   cy.get(profileSelector.newPasswordField).should("have.value", "");
 
    cy.clearAndType(profileSelector.currentPasswordField, user.password);
+   cy.get(profileSelector.currentPasswordField).should("have.value", user.password);
+   cy.get(profileSelector.newPasswordField).should("have.value", "");
    cy.get(profileSelector.changePasswordButton).click();
    cy.verifyToastMessage(commonSelectors.toastMessage,profileText.passwordSuccessToast);
 
