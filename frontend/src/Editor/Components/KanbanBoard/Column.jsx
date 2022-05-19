@@ -2,7 +2,7 @@ import React from 'react';
 import { Droppable } from 'react-beautiful-dnd';
 import { Card } from './Card';
 
-const Column = ({ state, keyIndex, getListStyle, getItemStyle, cards, updateCb, addNewItem }) => {
+const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, addNewItem }) => {
   const CardHeader = ({ title }) => {
     return (
       <div className="card-header d-flex">
@@ -37,10 +37,12 @@ const Column = ({ state, keyIndex, getListStyle, getItemStyle, cards, updateCb, 
   };
 
   const styles = {
-    overflowX: 'auto',
+    overflowX: 'hidden',
     overflowY: 'hidden',
     maxHeight: 350,
   };
+
+  const cards = group['cards'];
 
   return (
     <Droppable key={keyIndex} droppableId={`${keyIndex}`}>
@@ -51,9 +53,9 @@ const Column = ({ state, keyIndex, getListStyle, getItemStyle, cards, updateCb, 
           style={getListStyle(dndState.isDraggingOver)}
           {...dndProps.droppableProps}
         >
-          <CardHeader title={'Column A'} />
+          <CardHeader title={group.title} />
           <div style={{ ...styles }} className="card-body">
-            {cards.map((item, index) => (
+            {cards?.map((item, index) => (
               <Card
                 key={index}
                 item={item}

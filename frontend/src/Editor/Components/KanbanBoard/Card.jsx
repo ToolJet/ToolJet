@@ -19,15 +19,15 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
           {console.log('dndProps => ', dndProps, 'snapshot =>', dndState)}
 
           <div className="card-body d-flex">
-            <span className="text-muted flex-grow-1"> {item.content}</span>
+            <span className="text-muted flex-grow-1"> {item.title}</span>
             {isHovered && (
               <span
                 className="cursor-pointer"
                 type="btn btn-sm btn-danger"
                 onClick={() => {
                   const newState = [...state];
-                  newState[keyIndex].splice(index, 1);
-                  updateCb(newState.filter((group) => group.length));
+                  newState[keyIndex]['cards'].splice(index, 1);
+                  updateCb(newState);
                 }}
               >
                 <img className="mx-1" src={`/assets/images/icons/trash.svg`} width={12} height={12} />

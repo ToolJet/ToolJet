@@ -1,13 +1,7 @@
 import React, { useState } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
+import { v4 as uuidv4 } from 'uuid';
 import Column from './Column';
-
-// fake data generator
-const getItems = (count, offset = 0) =>
-  Array.from({ length: count }, (v, k) => k).map((k) => ({
-    id: `item-${k + offset}-${new Date().getTime()}`,
-    content: `item ${k + offset}`,
-  }));
 
 const reorder = (list, startIndex, endIndex) => {
   const result = Array.from(list);
@@ -16,6 +10,58 @@ const reorder = (list, startIndex, endIndex) => {
 
   return result;
 };
+
+const generateColumnData = () => {
+  return {
+    id: uuidv4(),
+    title: 'New column',
+    color: '#fefefe',
+    cards: [
+      {
+        id: uuidv4(),
+        title: 'New card',
+        description: '',
+      },
+    ],
+  };
+};
+
+const defaultColumns = [
+  {
+    id: '01',
+    title: 'New column-1',
+    accentColor: '#fefefe',
+    cards: [
+      {
+        id: '1',
+        title: 'New card 1',
+        description: '',
+      },
+      {
+        id: '2',
+        title: 'New card',
+        description: '',
+      },
+      {
+        id: '3',
+        title: 'New card2',
+        description: '',
+      },
+    ],
+  },
+  {
+    id: '02',
+    title: 'New column-2',
+    accentColor: '#fefefe',
+    cards: [
+      {
+        id: '4',
+        title: 'New card',
+        description: '',
+      },
+    ],
+  },
+];
 
 /**
  * Moves an item from one list to another list.
@@ -55,33 +101,39 @@ const getListStyle = (isDraggingOver) => ({
 });
 
 function Board({ height }) {
-  const [state, setState] = useState([getItems(7), getItems(2, 7)]);
+  const [state, setState] = useState(() => defaultColumns);
 
-  const addNewItem = (state, keyIndex, newItem = { id: `item-${new Date().getTime()}`, content: 'new card' }) => {
+  state.map((col, ind) => console.log(' state board =>  state', col, ind));
+
+  const addNewItem = (state, keyIndex) => {
+    const newItem = {
+      id: uuidv4(),
+      title: 'New card',
+      description: '',
+    };
     const newState = [...state];
-    newState[keyIndex].push(newItem);
+    newState[keyIndex]['cards'].push(newItem);
     setState(newState);
   };
 
   function onDragEnd(result) {
     const { source, destination } = result;
+
     // dropped outside the list
     if (destination && destination !== null) {
       const sInd = +source.droppableId;
       const dInd = +destination.droppableId;
 
       if (sInd === dInd) {
-        const items = reorder(state[sInd], source.index, destination.index);
+        const items = reorder(state[sInd]['cards'], source.index, destination.index);
         const newState = [...state];
-        newState[sInd] = items;
+        newState[sInd]['cards'] = items;
         setState(newState);
       } else {
-        const result = move(state[sInd], state[dInd], source, destination);
+        const result = move(state[sInd]['cards'], state[dInd].cards, source, destination);
         const newState = [...state];
-        newState[sInd] = result[sInd];
-        newState[dInd] = result[dInd];
-
-        //   setState(newState.filter((group) => group.length));
+        newState[sInd]['cards'] = result[sInd];
+        newState[dInd]['cards'] = result[dInd];
         setState(newState);
       }
     }
@@ -94,14 +146,14 @@ function Board({ height }) {
       className="container d-flex"
     >
       <DragDropContext onDragEnd={onDragEnd}>
-        {state.map((el, ind) => (
+        {state.map((col, ind) => (
           <Column
             key={ind}
             state={state}
+            group={col}
             keyIndex={ind}
             getListStyle={getListStyle}
             getItemStyle={getItemStyle}
-            cards={el}
             updateCb={setState}
             addNewItem={addNewItem}
           />
@@ -111,7 +163,7 @@ function Board({ height }) {
         className="kanban-board-add-group"
         type="button"
         onClick={() => {
-          setState([...state, []]);
+          setState([...state, generateColumnData()]);
         }}
       >
         Add new group
