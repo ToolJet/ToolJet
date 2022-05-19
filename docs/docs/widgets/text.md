@@ -1,3 +1,7 @@
+---
+id: text
+title: Text
+---
 # Text
 
 Text widget can be used to display text.

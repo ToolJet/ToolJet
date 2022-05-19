@@ -1,6 +1,6 @@
 ---
-sidebar_position: 2
-sidebar_label: Appwrite
+id: appwrite
+title: Appwrite Database
 ---
 
 # Appwrite Database

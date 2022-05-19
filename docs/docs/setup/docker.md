@@ -1,6 +1,6 @@
 ---
-sidebar_position: 2
-sidebar_label: Docker
+id: docker
+title: Docker
 ---
 
 # Deploying ToolJet using docker-compose

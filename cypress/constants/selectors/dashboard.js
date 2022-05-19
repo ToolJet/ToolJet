@@ -1,0 +1,18 @@
+export const emptyDashboardSelector={
+  emptyPageImage: "[data-cy=empty-img]",
+  emptyPageHeader: "[data-cy=empty-welcome-header]",
+  emptyPageDescription: "[data-cy=empty-description]",
+  createAppButton: "[data-cy=create-new-application]",
+  importAppButton: "[data-cy=import-an-application]",
+  chooseFromTemplate: "[data-cy=choose-from-template]",
+  modeToggle: "[data-cy=mode-toggle]>svg",
+  dropdownText: "[data-cy=dropdown-organization-list]>>:eq(0)",
+  dropdown: "[data-cy=dropdown-organization-list]",
+  editButton: "[data-cy=edit-workspace-name]",
+  manageUsers: "[data-cy=manage-users]",
+  manageGroups: "[data-cy=manage-groups]",
+  ManageSSO: "[data-cy=manage-sso]",
+  userMenu: "[data-cy=user-menu]",
+  profileLink: "[data-cy=profile-link]",
+  logoutLink: "[data-cy=logout-link]",
+}

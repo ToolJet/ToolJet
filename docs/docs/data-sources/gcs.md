@@ -1,10 +1,20 @@
 ---
-sidebar_position: 8
+id: gcs
+title: Google Cloud Storage
 ---
 
 # Google Cloud Storage
 
 ToolJet can connect to GCS buckets and perform various operation on them.
+
+## Supported operations
+
+-**Read file**
+-**Upload file**
+-**List buckets**
+-**List files in a bucket**
+-**Signed url for download**
+-**Signed url for upload**
 
 ## Connection
 

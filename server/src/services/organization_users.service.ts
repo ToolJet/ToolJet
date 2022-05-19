@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { getManager, Repository } from 'typeorm';
-import { Organization } from 'src/entities/organization.entity';
+import { createQueryBuilder, getManager, Repository } from 'typeorm';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
+import { Organization } from 'src/entities/organization.entity';
+import { GroupPermission } from 'src/entities/group_permission.entity';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 const uuid = require('uuid');
 
@@ -19,7 +20,7 @@ export class OrganizationUsersService {
     private emailService: EmailService
   ) {}
 
-  async findOne(id: string): Promise<OrganizationUser> {
+  async findOrganization(id: string): Promise<OrganizationUser> {
     return await this.organizationUsersRepository.findOne({ where: { id } });
   }
 
@@ -30,40 +31,55 @@ export class OrganizationUsersService {
       email: inviteNewUserDto.email,
     };
 
-    const existingUser = await this.usersService.findByEmail(userParams.email);
-    if (existingUser) {
+    let user = await this.usersService.findByEmail(userParams.email);
+
+    if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
       throw new BadRequestException('User with such email already exists.');
     }
-    const user = await this.usersService.create(userParams, currentUser.organization, ['all_users']);
-    const organizationUser = await this.create(user, currentUser.organization);
+
+    if (user?.invitationToken) {
+      // user sign up not completed, name will be empty - updating name
+      await this.usersService.update(user.id, { firstName: userParams.firstName, lastName: userParams.lastName });
+    }
+
+    user = await this.usersService.create(userParams, currentUser.organizationId, ['all_users'], user);
+
+    const currentOrganization: Organization = (
+      await this.organizationUsersRepository.findOne({
+        where: { userId: currentUser.id, organizationId: currentUser.organizationId },
+        relations: ['organization'],
+      })
+    )?.organization;
+
+    const organizationUser: OrganizationUser = await this.create(user, currentOrganization, true);
 
     await this.emailService.sendOrganizationUserWelcomeEmail(
       user.email,
       user.firstName,
       currentUser.firstName,
-      user.invitationToken
+      organizationUser.invitationToken,
+      currentOrganization.name
     );
 
     return organizationUser;
   }
 
-  async create(user: User, organization: Organization): Promise<OrganizationUser> {
+  async create(user: User, organization: Organization, isInvite?: boolean): Promise<OrganizationUser> {
     return await this.organizationUsersRepository.save(
       this.organizationUsersRepository.create({
         user,
         organization,
-        role: 'all_users',
+        invitationToken: isInvite ? uuid.v4() : null,
+        status: isInvite ? 'invited' : 'active',
+        role: 'all-users',
         createdAt: new Date(),
         updatedAt: new Date(),
       })
     );
   }
 
-  async changeRole(user: User, id: string, role: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const organizationUser = await this.organizationUsersRepository.findOne({
-      where: { id },
-    });
+  async changeRole(id: string, role: string) {
+    const organizationUser = await this.organizationUsersRepository.findOne({ where: { id } });
     if (organizationUser.role == 'admin') {
       const lastActiveAdmin = await this.lastActiveAdmin(organizationUser.organizationId);
 
@@ -83,10 +99,9 @@ export class OrganizationUsersService {
         where: { id: organizationUser.userId },
       });
 
-      await this.usersService.throwErrorIfRemovingLastActiveAdmin(user);
+      await this.usersService.throwErrorIfRemovingLastActiveAdmin(user, undefined, organizationUser.organizationId);
 
-      await manager.update(User, user.id, { invitationToken: null });
-      await manager.update(OrganizationUser, id, { status: 'archived' });
+      await manager.update(OrganizationUser, id, { status: 'archived', invitationToken: null });
     });
 
     return true;
@@ -98,23 +113,31 @@ export class OrganizationUsersService {
     });
     if (organizationUser.status !== 'archived') return false;
 
+    const invitationToken = uuid.v4();
+
     await getManager().transaction(async (manager) => {
       await manager.update(OrganizationUser, organizationUser.id, {
         status: 'invited',
+        invitationToken,
       });
-      await manager.update(User, organizationUser.userId, {
-        invitationToken: uuid.v4(),
-        password: uuid.v4(),
-      });
+      await manager.update(User, organizationUser.userId, { password: uuid.v4() });
     });
 
     const updatedUser = await this.usersService.findOne(organizationUser.userId);
+
+    const currentOrganization: Organization = (
+      await this.organizationUsersRepository.findOne({
+        where: { userId: user.id, organizationId: user.organizationId },
+        relations: ['organization'],
+      })
+    )?.organization;
 
     await this.emailService.sendOrganizationUserWelcomeEmail(
       updatedUser.email,
       updatedUser.firstName,
       user.firstName,
-      updatedUser.invitationToken
+      invitationToken,
+      currentOrganization.name
     );
 
     return true;
@@ -133,12 +156,10 @@ export class OrganizationUsersService {
   }
 
   async activeAdminCount(organizationId: string) {
-    return await this.organizationUsersRepository.count({
-      where: {
-        organizationId: organizationId,
-        role: 'admin',
-        status: 'active',
-      },
-    });
+    return await createQueryBuilder(GroupPermission, 'group_permissions')
+      .innerJoin('group_permissions.userGroupPermission', 'user_group_permission')
+      .where('group_permissions.group = :admin', { admin: 'admin' })
+      .andWhere('group_permissions.organization = :organizationId', { organizationId })
+      .getCount();
   }
 }

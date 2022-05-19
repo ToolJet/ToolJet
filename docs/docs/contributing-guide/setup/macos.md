@@ -1,5 +1,6 @@
 ---
-sidebar_position: 1
+id: macos 
+title: Mac OS
 ---
 
 # Mac OS

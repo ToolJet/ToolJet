@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FolderApp } from '../../src/entities/folder_app.entity';
@@ -11,6 +11,14 @@ export class FolderAppsService {
   ) {}
 
   async create(folderId: string, appId: string): Promise<FolderApp> {
+    const existingFolderApp = await this.folderAppsRepository.findOne({
+      where: { appId, folderId },
+    });
+
+    if (existingFolderApp) {
+      throw new BadRequestException('App has been already added to the folder');
+    }
+
     const newFolderApp = this.folderAppsRepository.create({
       folderId,
       appId,
