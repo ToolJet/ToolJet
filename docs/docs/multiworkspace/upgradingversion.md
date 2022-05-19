@@ -11,7 +11,7 @@ User can create their own workspaces, user who created workspace will be having 
 </div>
 
 
-- You have Enabled/Disabled (show based on **DISABLE_MULTI_WORKSPACE** env variable) Multi-Workspace([here](https://docs.tooljet.com/docs/sso/Multiworkspace))
+- You have Enabled/Disabled (show based on **DISABLE_MULTI_WORKSPACE** env variable) Multi-Workspace([here](https://docs.tooljet.com/docs/sso/multiworkspace))
 - if (enabled)
 Please login with password and you can setup sso using workspace Manage SSO menu
 else
