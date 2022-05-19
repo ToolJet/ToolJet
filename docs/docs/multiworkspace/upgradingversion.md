@@ -15,7 +15,7 @@ User can create their own workspaces, user who created workspace will be having 
 - if (enabled)
 Please login with password and you can setup sso using workspace Manage SSO menu
 else
-- if (sso enabled)
+- if (sso is disabled) follow the below steps.
 
 Google SSO
 please configure redirect URL([here](https://docs.tooljet.com/docs/sso/google)).
