@@ -5,7 +5,7 @@ import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '.
 
 const createVariable = async (app: INestApplication, adminUserData: any, body: any) => {
   return await request(app.getHttpServer())
-    .post(`/api/organization_variables/`)
+    .post(`/api/organization-variables/`)
     .set('Authorization', authHeaderForUser(adminUserData.user))
     .send(body);
 };
@@ -21,9 +21,9 @@ describe('organization environment variables controller', () => {
     app = await createNestAppInstance();
   });
 
-  describe('GET /api/organization_variables', () => {
+  describe('GET /api/organization-variables', () => {
     it('should allow only authenticated users to list org users', async () => {
-      await request(app.getHttpServer()).get('/api/organization_variables/').expect(401);
+      await request(app.getHttpServer()).get('/api/organization-variables/').expect(401);
     });
 
     it('should list decrypted organization environment variables', async () => {
@@ -66,19 +66,19 @@ describe('organization environment variables controller', () => {
       }
 
       await request(app.getHttpServer())
-        .get(`/api/organization_variables/`)
+        .get(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .send()
         .expect(200);
 
       await request(app.getHttpServer())
-        .get(`/api/organization_variables/`)
+        .get(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send()
         .expect(200);
 
       const listResponse = await request(app.getHttpServer())
-        .get(`/api/organization_variables/`)
+        .get(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send()
         .expect(200);
@@ -94,7 +94,7 @@ describe('organization environment variables controller', () => {
     });
   });
 
-  describe('POST /api/organization_variables/', () => {
+  describe('POST /api/organization-variables/', () => {
     it('should allow only admin to be able to create new variable', async () => {
       // setup a pre existing user of different organization
       await createUser(app, {
@@ -123,26 +123,26 @@ describe('organization environment variables controller', () => {
       });
 
       await request(app.getHttpServer())
-        .post(`/api/organization_variables/`)
+        .post(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({ variable_name: 'email', value: 'test@tooljet.io', encrypted: true })
         .expect(201);
 
       await request(app.getHttpServer())
-        .post(`/api/organization_variables/`)
+        .post(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .send({ variable_name: 'email', value: 'test@tooljet.io', encrypted: true })
         .expect(403);
 
       await request(app.getHttpServer())
-        .post(`/api/organization_variables/`)
+        .post(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send({ variable_name: 'email', value: 'test@tooljet.io', encrypted: true })
         .expect(403);
     });
   });
 
-  describe('PATCH /api/organization_variables/:id', () => {
+  describe('PATCH /api/organization-variables/:id', () => {
     it('should allow only admin to be able to update a variable', async () => {
       // setup organization and user setup to test against
       const adminUserData = await createUser(app, {
@@ -171,26 +171,26 @@ describe('organization environment variables controller', () => {
       });
 
       await request(app.getHttpServer())
-        .patch(`/api/organization_variables/${response.body.variable.id}`)
+        .patch(`/api/organization-variables/${response.body.variable.id}`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({ variable_name: 'email', value: 'test1@tooljet.io' })
         .expect(200);
 
       await request(app.getHttpServer())
-        .patch(`/api/organization_variables/${response.body.variable.id}`)
+        .patch(`/api/organization-variables/${response.body.variable.id}`)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .send({ variable_name: 'email', value: 'test2@tooljet.io' })
         .expect(403);
 
       await request(app.getHttpServer())
-        .patch(`/api/organization_variables/${response.body.variable.id}`)
+        .patch(`/api/organization-variables/${response.body.variable.id}`)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send({ variable_name: 'email', value: 'test3@tooljet.io' })
         .expect(403);
     });
   });
 
-  describe('DELETE /api/organization_variables/:id', () => {
+  describe('DELETE /api/organization-variables/:id', () => {
     it('should allow only admin to be able to delete a variable', async () => {
       // setup organization and user setup to test against
       const adminUserData = await createUser(app, {
@@ -219,7 +219,7 @@ describe('organization environment variables controller', () => {
       });
 
       await request(app.getHttpServer())
-        .delete(`/api/organization_variables/${response1.body.variable.id}`)
+        .delete(`/api/organization-variables/${response1.body.variable.id}`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send()
         .expect(200);
@@ -231,13 +231,13 @@ describe('organization environment variables controller', () => {
       });
 
       await request(app.getHttpServer())
-        .delete(`/api/organization_variables/${response2.body.variable.id}`)
+        .delete(`/api/organization-variables/${response2.body.variable.id}`)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .send()
         .expect(403);
 
       await request(app.getHttpServer())
-        .delete(`/api/organization_variables/${response2.body.variable.id}`)
+        .delete(`/api/organization-variables/${response2.body.variable.id}`)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send()
         .expect(403);

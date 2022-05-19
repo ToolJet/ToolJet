@@ -9,7 +9,7 @@ import { User } from 'src/decorators/user.decorator';
 import { EnvironmentVariableDto } from '@dto/environment-variable.dto';
 import { OrgEnvironmentVariablesService } from '@services/org_environment_variables.service';
 
-@Controller('organization_variables')
+@Controller('organization-variables')
 export class OrgEnvironmentVariablesController {
   constructor(private orgEnvironmentVariablesService: OrgEnvironmentVariablesService) {}
 
