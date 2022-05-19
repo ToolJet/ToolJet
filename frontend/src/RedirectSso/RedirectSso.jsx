@@ -1,31 +1,23 @@
-import React from 'react';
-import { authenticationService } from '@/_services';
+import React, { useState, useEffect } from 'react';
+import { organizationService } from '@/_services';
 
-class RedirectSso extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isLoading: false,
-      isGettingConfigs: true,
-      configs: undefined,
-    };
-    // this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
-  }
-  componentDidMount() {
-    // authenticationService.getOrganizationConfigs("organizationId").then(
-    //   (configs) => {
-    //     this.setState({ isGettingConfigs: false, configs });
-    //   },
-    //   () => this.props.history.push({ pathname: '/', state: { errorMessage: 'Error' } })
-    // );
-  }
+export const RedirectSso = function RedirectSso() {
+  // const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
+  const [organization, setOrganization] = useState();
 
-  copyFunction = (input) => {
+  const copyFunction = (input) => {
     let text = document.getElementById(input).innerHTML;
     navigator.clipboard.writeText(text);
   };
-  render() {
-    return (
+
+  useEffect(() => {
+    organizationService.getSSODetails().then((data) => {
+      setOrganization(data.organization_details);
+    });
+  }, []);
+
+  return (
+    <div>
       <div className="page page-center">
         <div className=" py-2">
           <div className="text-center mb-4">
@@ -43,12 +35,10 @@ class RedirectSso extends React.Component {
               </p>
               <div className="flexer">
                 <span> Redirect URL : </span>
-                <p id="google-url">
-                  {`${window.location.protocol}//${window.location.host}/sso/google/${this.state.configs?.google?.config_id}`}
-                </p>
+                <p id="google-url">{`${window.location.protocol}//${window.location.host}/sso/google/${organization?.sso_configs?.[1]?.id}`}</p>
 
                 <img
-                  onClick={() => this.copyFunction('google-url')}
+                  onClick={() => copyFunction('google-url')}
                   src={`/assets/images/icons/copy.svg`}
                   width="16"
                   height="16"
@@ -64,24 +54,20 @@ class RedirectSso extends React.Component {
               </p>
               <div className="flexer">
                 <span> Redirect URL :</span>
-                <p id="git-url">
-                  {`${window.location.protocol}//${window.location.host}/sso/git/${this.state.configs?.google?.config_id}`}
-                </p>
+                <p id="git-url">{`${window.location.protocol}//${window.location.host}/sso/git/${organization?.sso_configs?.[0]?.id}`}</p>
 
                 <img
-                  onClick={() => this.copyFunction('git-url')}
+                  onClick={() => copyFunction('git-url')}
                   src={`/assets/images/icons/copy.svg`}
                   width="16"
                   height="16"
                   className="sso-copy"
                 />
-              </div>{' '}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    );
-  }
-}
-
-export { RedirectSso };
+    </div>
+  );
+};
