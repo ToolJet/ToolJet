@@ -16,7 +16,7 @@ COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
 ENV NODE_ENV=production
-RUN npm run build:plugins
+RUN npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
 # Building ToolJet server
