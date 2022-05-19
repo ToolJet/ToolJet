@@ -14,14 +14,12 @@ export const RedirectSso = function RedirectSso() {
   };
 
   useEffect(() => {
-    console.log('env', isSingleOrganization);
     organizationService.getSSODetails().then((data) => {
       setOrganization(data.organization_details);
     });
   }, []);
 
   useEffect(() => {
-    console.log(organization);
     organization?.sso_configs.map((item) => {
       console.log('item is', item);
       if (item.enabled == true) {
