@@ -82,7 +82,11 @@ function Board({ height }) {
   }
 
   return (
-    <div style={{ height: height }} onMouseDown={(e) => e.stopPropagation()} className="container d-flex">
+    <div
+      style={{ height: height, overflowX: 'auto' }}
+      onMouseDown={(e) => e.stopPropagation()}
+      className="container d-flex"
+    >
       <DragDropContext onDragEnd={onDragEnd}>
         {state.map((el, ind) => (
           <Column

@@ -5211,7 +5211,7 @@ div#driver-page-overlay {
 .kanban-container {
   background-color: #fefefe;
   .kanban-column {
-    width: 350px !important;
+    min-width: 350px !important;
     background-color: #f4f4f4 !important;
     padding: 0 !important;
     height: fit-content !important;
@@ -5260,7 +5260,7 @@ div#driver-page-overlay {
     outline: none;
     margin: 10px;
     border-radius: 5px;
-    width: 350px;
+    min-width: 350px;
     height: 200px;
     font-size: 1em;
   }
