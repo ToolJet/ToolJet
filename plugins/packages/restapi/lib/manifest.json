@@ -127,6 +127,14 @@
           ""
         ]
       ]
+    },
+    "access_token_custom_headers": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
     }
   },
   "properties": {
