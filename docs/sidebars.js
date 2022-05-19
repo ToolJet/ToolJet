@@ -223,7 +223,23 @@ const sidebars = {
         'contributing-guide/slackcoc',
       ],
     },
-  ]
+    {
+      type: 'category',
+      label: 'multi workspace',
+      link: {
+        type: 'generated-index',
+        title: 'multi workspace',
+        description:
+          "Guide for enabling available Multi Workspaces on ToolJet",
+        keywords: ['multi workspace','SSO'],
+      },
+      items: [
+        'multiworkspace/multiworkspace',
+        'multiworkspace/upgradingversion',
+      ],
+    },
+  ],
+  
 };
 
 module.exports = sidebars;
