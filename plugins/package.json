@@ -46,6 +46,7 @@
     "@tooljet-plugins/restapi": "file:packages/restapi",
     "@tooljet-plugins/rethinkdb": "file:packages/rethinkdb",
     "@tooljet-plugins/s3": "file:packages/s3",
+    "@tooljet-plugins/saphana": "file:packages/saphana",
     "@tooljet-plugins/sendgrid": "file:packages/sendgrid",
     "@tooljet-plugins/slack": "file:packages/slack",
     "@tooljet-plugins/smtp": "file:packages/smtp",
