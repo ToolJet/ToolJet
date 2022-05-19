@@ -2191,8 +2191,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     description: 'Kanban Board',
     component: 'KanbanBoard',
     defaultSize: {
-      width: 830,
-      height: 300,
+      width: 40,
+      height: 490,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },

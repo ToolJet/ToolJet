@@ -3,10 +3,6 @@ import { Droppable, Draggable } from 'react-beautiful-dnd';
 
 export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) => {
   const [isHovered, setIsHovered] = React.useState(false);
-  const styles = {
-    overflowX: 'hidden',
-    overflowY: 'hidden',
-  };
 
   return (
     <Draggable key={item.id} draggableId={item.id} index={index}>
@@ -18,11 +14,11 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
           ref={dndProps.innerRef}
           {...dndProps.draggableProps}
           {...dndProps.dragHandleProps}
-          style={getItemStyle(dndState.isDragging, dndProps.draggableProps.style)}
+          style={{ ...getItemStyle(dndState.isDragging, dndProps.draggableProps.style) }}
         >
           {console.log('dndProps => ', dndProps, 'snapshot =>', dndState)}
 
-          <div style={styles} className="card-body d-flex">
+          <div className="card-body d-flex">
             <span className="text-muted flex-grow-1"> {item.content}</span>
             {isHovered && (
               <span

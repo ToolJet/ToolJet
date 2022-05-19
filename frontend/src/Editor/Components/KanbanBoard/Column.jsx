@@ -38,7 +38,7 @@ const Column = ({ state, keyIndex, getListStyle, getItemStyle, cards, updateCb }
 
   const styles = {
     overflowX: 'auto',
-    overflowY: 'auto',
+    overflowY: 'hidden',
     maxHeight: 350,
   };
 
@@ -48,11 +48,11 @@ const Column = ({ state, keyIndex, getListStyle, getItemStyle, cards, updateCb }
         <div
           className="card text-dark bg-light mb-3 m-2 kanban-column"
           ref={dndProps.innerRef}
-          style={{ ...styles, ...getListStyle(dndState.isDraggingOver) }}
+          style={getListStyle(dndState.isDraggingOver)}
           {...dndProps.droppableProps}
         >
           <CardHeader title={'Column A'} />
-          <div className="card-body">
+          <div style={{ ...styles }} className="card-body">
             {cards.map((item, index) => (
               <Card
                 key={index}

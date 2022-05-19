@@ -37,7 +37,7 @@ const grid = 8;
 
 const getItemStyle = (isDragging, draggableStyle) => {
   const _draggableStyle = isDragging
-    ? { ...draggableStyle, left: draggableStyle.left - 150, top: draggableStyle.top - 150 }
+    ? { ...draggableStyle, left: draggableStyle.left - 200, top: draggableStyle.top - 100 }
     : draggableStyle;
 
   return {
@@ -82,8 +82,21 @@ function Board({ height }) {
   }
 
   return (
-    <div onMouseDown={(e) => e.stopPropagation()} className="container">
-      {/* <button
+    <div style={{ height: height }} onMouseDown={(e) => e.stopPropagation()} className="container d-flex">
+      <DragDropContext onDragEnd={onDragEnd}>
+        {state.map((el, ind) => (
+          <Column
+            key={ind}
+            state={state}
+            keyIndex={ind}
+            getListStyle={getListStyle}
+            getItemStyle={getItemStyle}
+            cards={el}
+            updateCb={setState}
+          />
+        ))}
+      </DragDropContext>
+      <button
         type="button"
         onClick={() => {
           setState([...state, []]);
@@ -91,29 +104,6 @@ function Board({ height }) {
       >
         Add new group
       </button>
-      <button
-        type="button"
-        onClick={() => {
-          setState([...state, getItems(1)]);
-        }}
-      >
-        Add new item
-      </button> */}
-      <div className="container d-flex" style={{ display: 'flex' }}>
-        <DragDropContext onDragEnd={onDragEnd}>
-          {state.map((el, ind) => (
-            <Column
-              key={ind}
-              state={state}
-              keyIndex={ind}
-              getListStyle={getListStyle}
-              getItemStyle={getItemStyle}
-              cards={el}
-              updateCb={setState}
-            />
-          ))}
-        </DragDropContext>
-      </div>
     </div>
   );
 }
