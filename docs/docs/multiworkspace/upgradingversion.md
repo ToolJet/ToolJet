@@ -16,9 +16,13 @@ User can create their own workspaces, user who created workspace will be having 
 Please login with password and you can setup sso using workspace Manage SSO menu
 else
 - if (sso enabled)
-- Google SSO
+
+Google SSO
 please configure redirect URL([here](https://docs.tooljet.com/docs/sso/google)).
-Redirect URL: fsdf/sdfsd/sdf(generated)
-- Git SSO
+
+Redirect URL: **`<domain>/sso/google/<config_id>` ** (generated)
+
+Git SSO
 please configure redirect URL([here](https://docs.tooljet.com/docs/sso/github)).
-Redirect URL: fsdf/sdfsd/sdf(generated)
+
+Redirect URL: **`<domain>/sso/google/<config_id>`**(generated)
