@@ -5204,3 +5204,23 @@ div#driver-page-overlay {
     }
   }
 }
+// sso-helper-page
+.sso-helper-container{
+  width: 60vw;
+  padding: 30px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  margin: 0 auto;
+}
+.flexer{
+  display: flex;
+}
+.sso-copy{
+  margin-left: 10px;
+  cursor: pointer;
+}
+#git-url , #google-url
+{
+color: #0565ff;
+margin-left: 4px;
+}
+// sso end
