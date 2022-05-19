@@ -383,7 +383,12 @@ class ManageOrgUsers extends React.Component {
                                 )}
                               </td>
                               <td>
-                                <a
+                                <button
+                                  type="button"
+                                  className={`btn btn-${user.status === 'archived' ? 'success' : 'danger'} ${
+                                    unarchivingUser === user.id || archivingUser === user.id ? 'btn-loading' : ''
+                                  }`}
+                                  disabled={unarchivingUser === user.id || archivingUser === user.id}
                                   onClick={() => {
                                     user.status === 'archived'
                                       ? this.unarchiveOrgUser(user.id)
@@ -391,9 +396,7 @@ class ManageOrgUsers extends React.Component {
                                   }}
                                 >
                                   {user.status === 'archived' ? 'Unarchive' : 'Archive'}
-
-                                  {unarchivingUser === user.id || archivingUser === user.id ? '...' : ''}
-                                </a>
+                                </button>
                               </td>
                             </tr>
                           ))}
