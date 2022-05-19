@@ -1,9 +1,9 @@
 ---
 id: multiworkspace
-title: Multiworkspace
+title: Multi-Workspace
 ---
 
-# Multiworkspace
+# Multi-Workspace
 
 User can create their own workspaces, user who created workspace will be having admin privileges for the workspace.
 

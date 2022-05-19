@@ -225,17 +225,16 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'multi workspace',
+      label: 'Multi-Workspace',
       link: {
         type: 'generated-index',
-        title: 'multi workspace',
+        title: 'Multi-Workspace',
         description:
-          "Guide for enabling available Multi Workspaces on ToolJet",
+          "Guide for enabling available Multi-Workspace on ToolJet",
         keywords: ['multi workspace','SSO'],
       },
       items: [
         'multiworkspace/multiworkspace',
-        'multiworkspace/upgradingversion',
       ],
     },
   ],
