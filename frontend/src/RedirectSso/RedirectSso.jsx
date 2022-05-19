@@ -26,11 +26,18 @@ export const RedirectSso = function RedirectSso() {
             </a>
           </div>
           <div className="sso-helper-container">
-            <h2>SSO Login Information</h2>
+            <h2>Upgrade to version 1.30.0 and above.</h2>
+            <p>
+              You have Enabled/Disabled (show based on DISABLE_MULTI_WORKSPACE env variable) Multi-Workspace
+              <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
+                here
+              </a>
+              .If enabled, Please login with password and you can setup sso using workspace Manage SSO menu.
+            </p>
             <div>
               <h3>Google SSO</h3>
               <p>
-                Please verify Google SSO configuration here :{' '}
+                Please configure redirect URL
                 <a href="https://docs.tooljet.com/docs/sso/google">Google SSO configuratios</a>
               </p>
               <div className="flexer">
@@ -49,7 +56,7 @@ export const RedirectSso = function RedirectSso() {
             <div>
               <h3>GitHub SSO</h3>
               <p>
-                Please verify GitHub SSO configuration here :{' '}
+                Please configure redirect URL
                 <a href="https://docs.tooljet.com/docs/sso/github">Git SSO configuratios</a>
               </p>
               <div className="flexer">
