@@ -121,13 +121,14 @@ export const EventManager = ({
         id="popover-basic"
         style={{ width: '350px', maxWidth: '350px' }}
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow`}
+        data-cy="popover-card"
       >
         <Popover.Content>
           <div className="row">
             <div className="col-3 p-2">
-              <span>Event</span>
+              <span data-cy="event-label">Event</span>
             </div>
-            <div className="col-9">
+            <div className="col-9" data-cy="event-selection">
               <SelectSearch
                 className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 options={possibleEvents}
@@ -141,9 +142,9 @@ export const EventManager = ({
           </div>
           <div className="row mt-3">
             <div className="col-3 p-2">
-              <span>Action</span>
+              <span data-cy="action-label">Action</span>
             </div>
-            <div className="col-9 popover-action-select-search">
+            <div className="col-9 popover-action-select-search" data-cy="action-selection">
               <SelectSearch
                 className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 options={actionOptions}
@@ -156,13 +157,17 @@ export const EventManager = ({
             </div>
           </div>
 
-          <div className="hr-text">Action options</div>
+          <div className="hr-text" data-cy="action-option">
+            Action options
+          </div>
           <div>
             {event.actionId === 'show-alert' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">Message</div>
-                  <div className="col-9">
+                  <div className="col-3 p-2" data-cy="message-label">
+                    Message
+                  </div>
+                  <div className="col-9" data-cy="message-text">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
                       currentState={currentState}
@@ -173,8 +178,10 @@ export const EventManager = ({
                   </div>
                 </div>
                 <div className="row mt-3">
-                  <div className="col-3 p-2">Alert Type</div>
-                  <div className="col-9">
+                  <div className="col-3 p-2" data-cy="alert-type-label">
+                    Alert Type
+                  </div>
+                  <div className="col-9" data-cy="alert-message-type">
                     <SelectSearch
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={alertOptions}
@@ -468,10 +475,12 @@ export const EventManager = ({
             }}
           >
             <div className="card mb-1">
-              <div className="card-body p-0">
+              <div className="card-body p-0" data-cy="event-handler-card">
                 <div className={rowClassName} role="button">
-                  <div className="col">{componentMeta.events[event.eventId]['displayName']}</div>
-                  <div className="col">
+                  <div className="col" data-cy="event-handler">
+                    {componentMeta.events[event.eventId]['displayName']}
+                  </div>
+                  <div className="col" data-cy="event-name">
                     <small className="event-action font-weight-light">{actionMeta.name}</small>
                   </div>
                   <div className="col-auto">
@@ -481,6 +490,7 @@ export const EventManager = ({
                         e.stopPropagation();
                         removeHandler(index);
                       }}
+                      data-cy="delete-button"
                     >
                       <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -509,12 +519,13 @@ export const EventManager = ({
           <button
             className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
             onClick={addHandler}
+            data-cy="add-event-handler"
           >
             + Add event handler
           </button>
         </div>
         <div className="text-center">
-          <small className="color-disabled">
+          <small className="color-disabled" data-cy="no-event-handler-message">
             This {componentName.toLowerCase()} doesn&apos;t have any event handlers
           </small>
         </div>
@@ -528,6 +539,7 @@ export const EventManager = ({
         <button
           className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
           onClick={addHandler}
+          data-cy="add-more-event-handler"
         >
           + Add handler
         </button>

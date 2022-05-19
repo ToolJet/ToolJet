@@ -34,6 +34,12 @@ export class GroupPermissionsService {
       throw new BadRequestException('Cannot create group without name');
     }
 
+    const reservedGroups = ['All Users', 'Admin'];
+
+    if (reservedGroups.includes(group)) {
+      throw new BadRequestException('Group name already exist');
+    }
+
     const groupToFind = await this.groupPermissionsRepository.findOne({
       where: {
         organizationId: user.organizationId,

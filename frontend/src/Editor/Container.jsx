@@ -48,9 +48,8 @@ export const Container = ({
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
-    height: '100%',
     maxWidth: `${canvasWidth}px`,
-    maxHeight: `${canvasHeight}px`,
+    height: `${canvasHeight}px`,
     position: 'absolute',
     backgroundSize: `${canvasWidth / 43}px 10px`,
   };
@@ -410,6 +409,7 @@ export const Container = ({
         'show-grid': isDragging || isResizing,
       })}
       id="real-canvas"
+      data-cy="real-canvas"
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>

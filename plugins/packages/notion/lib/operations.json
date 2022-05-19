@@ -49,7 +49,7 @@
           },
           {
             "value": "create_database",
-            "name": "Create a Database"
+            "name": "Create a database"
           },
           {
             "value": "update_database",

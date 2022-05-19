@@ -111,7 +111,7 @@ class OnboardingModal extends React.Component {
               </button>
             </div>
             <div className="col-auto">
-              <a onClick={this.skipOnboard} className="mt-3 text-muted">
+              <a onClick={this.skipOnboard} className="mt-3 text-muted" data-cy="skip-button">
                 Skip
               </a>
             </div>

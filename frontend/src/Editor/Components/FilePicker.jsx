@@ -219,12 +219,7 @@ export const FilePicker = ({
   return (
     <section>
       {showSelectdFiles ? (
-        <FilePicker.AcceptedFiles
-          width={width}
-          height={height}
-          showFilezone={setShowSelectedFiles}
-          bgThemeColor={bgThemeColor}
-        >
+        <FilePicker.AcceptedFiles showFilezone={setShowSelectedFiles} style={style}>
           {selectedFiles.map((acceptedFile, index) => (
             <>
               <div key={index} className="col-10">
@@ -280,24 +275,12 @@ FilePicker.Signifiers = ({ signifier, feedback, cls }) => {
   return null;
 };
 
-FilePicker.AcceptedFiles = ({ children, width, height, showFilezone, bgThemeColor }) => {
-  const styles = {
-    borderWidth: 1.5,
-    borderRadius: 2,
-    borderColor: '#42536A',
-    borderStyle: 'dashed',
-    color: '#bdbdbd',
-    outline: 'none',
-    padding: '5px',
-    overflowX: 'hidden',
-    overflowY: 'auto',
-    scrollbarWidth: 'none',
-    width,
-    height,
-    backgroundColor: bgThemeColor,
-  };
+FilePicker.AcceptedFiles = ({ children, showFilezone, style }) => {
   return (
-    <aside style={styles} onClick={() => showFilezone(false)}>
+    <aside
+      style={{ ...style, overflowX: 'hidden', overflowY: 'auto', scrollbarWidth: 'none', display: 'block' }}
+      onClick={() => showFilezone(false)}
+    >
       <span className="text-info">Files</span>
       <div className="row accepted-files">{children}</div>
     </aside>
