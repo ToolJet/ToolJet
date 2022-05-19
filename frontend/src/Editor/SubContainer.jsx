@@ -442,7 +442,7 @@ export const SubContainer = ({
             removeComponent,
             currentLayout,
             deviceWindowWidth,
-            selectedComponents,
+            selectedComponent,
             darkMode,
             readOnly,
             onComponentHover,
