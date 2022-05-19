@@ -41,7 +41,7 @@ import { SvgImage } from './Components/SvgImage';
 import { CustomComponent } from './Components/CustomComponent/CustomComponent';
 import { VerticalDivider } from './Components/verticalDivider';
 import { PDF } from './Components/PDF';
-import KanbanBoard from './Components/KanbanBoard/KanbanBoard';
+import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { resolveProperties, resolveStyles } from './component-properties-resolution';

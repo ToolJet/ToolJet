@@ -5181,3 +5181,33 @@ div#driver-page-overlay {
     }
   }
 }
+
+
+//Kanban board
+
+.kanban-container {
+  margin: 2px;
+  background-color: #fefefe;
+  .kanban-column {
+    min-width: 350px !important;
+    background-color: #f4f4f4 !important;
+    padding: 0 !important;
+    height: fit-content !important;
+
+    .card-header {
+      background-color: #fefefe !important;
+      
+      .badge {
+        font-size: 12px !important;
+      }
+    }
+
+    .card-body .dnd-card {
+      border-radius: 5px !important;
+    }
+    .dnd-card.card {
+      height: 52px !important;
+      padding: 5px !important;
+    }
+  }
+}
