@@ -164,11 +164,6 @@ class ManageOrgVars extends React.Component {
       });
   };
 
-  logout = () => {
-    authenticationService.logout();
-    history.push('/login');
-  };
-
   render() {
     const { isLoading, showVariableForm, addingVar, variables } = this.state;
     return (
