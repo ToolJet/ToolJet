@@ -2,8 +2,9 @@ import React from 'react';
 import { authenticationService, orgEnvironmentVariableService } from '@/_services';
 import { Header, ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
-import { history } from '@/_helpers';
 import ReactTooltip from 'react-tooltip';
+import VariableForm from './VariableForm';
+import VariablesTable from './VariablesTable';
 
 class ManageOrgVars extends React.Component {
   constructor(props) {
@@ -34,6 +35,37 @@ class ManageOrgVars extends React.Component {
     const elementHeight = this.tableRef.current.getBoundingClientRect().top;
     return window.innerHeight - elementHeight;
   }
+
+  onEditBtnClicked = (variable) => {
+    this.setState({
+      showVariableForm: true,
+      fields: {
+        ...variable,
+        encryption: variable.encrypted,
+      },
+      selectedVariableId: variable.id,
+    });
+  };
+
+  onCreationFailed() {
+    this.setState({ addingVar: false, selectedVariableId: null });
+  }
+
+  onCancelBtnClicked = () => {
+    this.setState({
+      showVariableForm: false,
+      newVariable: {},
+      fields: { encryption: false },
+      selectedVariableId: null,
+    });
+  };
+
+  onDeleteBtnClicked = (variable) => {
+    this.setState({
+      selectedVariableId: variable.id,
+      showVariableDeleteConfirmation: true,
+    });
+  };
 
   fetchVariables = () => {
     this.setState({
@@ -112,7 +144,7 @@ class ManageOrgVars extends React.Component {
           })
           .catch(({ error }) => {
             toast.error(error, { position: 'top-center' });
-            this.setState({ addingVar: false, selectedVariableId: null });
+            this.onCreationFailed();
           });
       } else {
         orgEnvironmentVariableService
@@ -131,11 +163,11 @@ class ManageOrgVars extends React.Component {
           })
           .catch(({ error }) => {
             toast.error(error, { position: 'top-center' });
-            this.setState({ addingVar: false, selectedVariableId: null });
+            this.onCreationFailed();
           });
       }
     } else {
-      this.setState({ addingVar: false, showVariableForm: true, selectedVariableId: null });
+      this.setState({ addingVar: false, showVariableForm: true });
     }
   };
 
@@ -205,194 +237,24 @@ class ManageOrgVars extends React.Component {
           </div>
 
           <div className="page-body">
-            {showVariableForm && (
-              <div className="container-xl">
-                <div className="card">
-                  <div className="card-header">
-                    <h3 className="card-title">
-                      {!this.state.selectedVariableId ? 'Add new variable' : 'Update variable'}
-                    </h3>
-                  </div>
-                  <div className="card-body">
-                    <form onSubmit={this.createOrUpdate} noValidate>
-                      <div className="form-group mb-3 ">
-                        <div className="row">
-                          <div className="col">
-                            <label className="form-label">Name</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              placeholder="Enter Variable Name"
-                              name="variable_name"
-                              onChange={this.changeNewVariableOption.bind(this, 'variable_name')}
-                              value={this.state.fields['variable_name']}
-                            />
-                            <span className="text-danger">{this.state.errors['variable_name']}</span>
-                          </div>
-                          <div className="col">
-                            <label className="form-label">Value</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              placeholder="Enter Value"
-                              name="value"
-                              onChange={this.changeNewVariableOption.bind(this, 'value')}
-                              value={this.state.fields['value']}
-                            />
-                            <span className="text-danger">{this.state.errors['value']}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="form-group mb-3 ">
-                        <label className="form-check form-switch">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            disabled={this.state.selectedVariableId ? true : false}
-                            onChange={(e) => this.handleEncryptionToggle(e)}
-                            checked={this.state.fields['encryption']}
-                          />
-                          <span className="form-check-label">Enable encryption</span>
-                        </label>
-                      </div>
-                      <div className="form-footer">
-                        <button
-                          type="button"
-                          className="btn btn-light mr-2"
-                          onClick={() =>
-                            this.setState({
-                              showVariableForm: false,
-                              newVariable: {},
-                              fields: { encryption: false },
-                              selectedVariableId: null,
-                            })
-                          }
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          className={`btn mx-2 btn-primary ${addingVar ? 'btn-loading' : ''}`}
-                          disabled={addingVar}
-                        >
-                          {!this.state.selectedVariableId ? 'Create variable ' : 'Save'}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {!showVariableForm && (
-              <div className="container-xl">
-                <div className="card">
-                  <div
-                    className="card-table fixedHeader table-responsive table-bordered"
-                    ref={this.tableRef}
-                    style={{ maxHeight: this.tableRef.current && this.calculateOffset() }}
-                  >
-                    <table data-testid="variablesTable" className="table table-vcenter" disabled={true}>
-                      <thead>
-                        <tr>
-                          <th>Name</th>
-                          <th>Value</th>
-                          <th>Encrypted</th>
-                          <th className="w-1"></th>
-                        </tr>
-                      </thead>
-                      {isLoading ? (
-                        <tbody className="w-100" style={{ minHeight: '300px' }}>
-                          {Array.from(Array(4)).map((_item, index) => (
-                            <tr key={index}>
-                              <td className="col-4 p-3">
-                                <div className="skeleton-line w-10"></div>
-                              </td>
-                              <td className="col-2 p-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                              <td className="text-muted col-auto col-1 pt-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                              <td className="text-muted col-auto col-1 pt-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      ) : (
-                        <tbody>
-                          {variables.map((variable) => (
-                            <tr key={variable.id}>
-                              <td>
-                                <span>{variable.variable_name}</span>
-                              </td>
-                              <td className="text-muted">
-                                <a className="text-reset user-email">{variable.value}</a>
-                              </td>
-                              <td className="text-muted">
-                                <small className="user-status">{variable.encrypted.toString()}</small>
-                              </td>
-                              <td>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}>
-                                  <button
-                                    className="btn btn-sm btn-org-env"
-                                    onClick={() =>
-                                      this.setState({
-                                        showVariableForm: true,
-                                        fields: {
-                                          ...variable,
-                                          encryption: variable.encrypted,
-                                        },
-                                        selectedVariableId: variable.id,
-                                      })
-                                    }
-                                  >
-                                    <div>
-                                      <img
-                                        data-tip="Update"
-                                        className="svg-icon"
-                                        src="/assets/images/icons/edit.svg"
-                                        width="15"
-                                        height="15"
-                                        style={{
-                                          cursor: 'pointer',
-                                        }}
-                                      ></img>
-                                    </div>
-                                  </button>
-                                  <button
-                                    className="btn btn-sm btn-org-env"
-                                    onClick={() =>
-                                      this.setState({
-                                        selectedVariableId: variable.id,
-                                        showVariableDeleteConfirmation: true,
-                                      })
-                                    }
-                                  >
-                                    <div>
-                                      <img
-                                        data-tip="Delete"
-                                        className="svg-icon"
-                                        src="/assets/images/icons/query-trash-icon.svg"
-                                        width="15"
-                                        height="15"
-                                        style={{
-                                          cursor: 'pointer',
-                                        }}
-                                      />
-                                    </div>
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      )}
-                    </table>
-                  </div>
-                </div>
-              </div>
+            {showVariableForm ? (
+              <VariableForm
+                fields={this.state.fields}
+                errors={this.state.errors}
+                selectedVariableId={this.state.selectedVariableId}
+                createOrUpdate={this.createOrUpdate}
+                changeNewVariableOption={this.changeNewVariableOption}
+                handleEncryptionToggle={this.handleEncryptionToggle}
+                onCancelBtnClicked={this.onCancelBtnClicked}
+                addingVar={addingVar}
+              />
+            ) : (
+              <VariablesTable
+                isLoading={isLoading}
+                variables={variables}
+                onEditBtnClicked={this.onEditBtnClicked}
+                onDeleteBtnClicked={this.onDeleteBtnClicked}
+              />
             )}
           </div>
         </div>
