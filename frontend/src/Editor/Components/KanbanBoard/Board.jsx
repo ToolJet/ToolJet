@@ -36,8 +36,10 @@ const move = (source, destination, droppableSource, droppableDestination) => {
 const grid = 8;
 
 const getItemStyle = (isDragging, draggableStyle) => {
-  console.log('draggableStyle => ', JSON.stringify(draggableStyle));
-  const _draggableStyle = { ...draggableStyle, left: draggableStyle.left - 150, top: draggableStyle.top - 150 };
+  const _draggableStyle = isDragging
+    ? { ...draggableStyle, left: draggableStyle.left - 150, top: draggableStyle.top - 150 }
+    : draggableStyle;
+
   return {
     userSelect: 'none',
     padding: grid * 2,
@@ -57,27 +59,25 @@ function Board({ height }) {
 
   function onDragEnd(result) {
     const { source, destination } = result;
-
     // dropped outside the list
-    if (!destination) {
-      return;
-    }
-    const sInd = +source.droppableId;
-    const dInd = +destination.droppableId;
+    if (destination && destination !== null) {
+      const sInd = +source.droppableId;
+      const dInd = +destination.droppableId;
 
-    if (sInd === dInd) {
-      const items = reorder(state[sInd], source.index, destination.index);
-      const newState = [...state];
-      newState[sInd] = items;
-      setState(newState);
-    } else {
-      const result = move(state[sInd], state[dInd], source, destination);
-      const newState = [...state];
-      newState[sInd] = result[sInd];
-      newState[dInd] = result[dInd];
+      if (sInd === dInd) {
+        const items = reorder(state[sInd], source.index, destination.index);
+        const newState = [...state];
+        newState[sInd] = items;
+        setState(newState);
+      } else {
+        const result = move(state[sInd], state[dInd], source, destination);
+        const newState = [...state];
+        newState[sInd] = result[sInd];
+        newState[dInd] = result[dInd];
 
-      //   setState(newState.filter((group) => group.length));
-      setState(newState);
+        //   setState(newState.filter((group) => group.length));
+        setState(newState);
+      }
     }
   }
 
