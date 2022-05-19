@@ -21,10 +21,8 @@ export const RedirectSso = function RedirectSso() {
 
   useEffect(() => {
     organization?.sso_configs.map((item) => {
-      console.log('item is', item);
       if (item.enabled == true) {
         if (item.sso == 'google') setGoogleSsoEnabled(true);
-
         if (item.sso == 'git') setGitSsoEnabled(true);
       }
     });
