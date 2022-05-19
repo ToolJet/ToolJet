@@ -97,6 +97,7 @@ function Board({ height }) {
         ))}
       </DragDropContext>
       <button
+        className="kanban-board-add-btn"
         type="button"
         onClick={() => {
           setState([...state, []]);

@@ -10,7 +10,7 @@ const Column = ({ state, keyIndex, getListStyle, getItemStyle, cards, updateCb }
           <span className="badge bg-cyan-lt">{title}</span>
         </div>
         <div>
-          <span>
+          <span className="cursor-pointer">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon-tabler icon-tabler-dots-vertical"
@@ -30,7 +30,7 @@ const Column = ({ state, keyIndex, getListStyle, getItemStyle, cards, updateCb }
             </svg>
           </span>
 
-          <img className="mx-1" src={`/assets/images/icons/trash.svg`} width={12} height={12} />
+          <img className="mx-1 cursor-pointer" src={`/assets/images/icons/trash.svg`} width={12} height={12} />
         </div>
       </div>
     );

@@ -22,6 +22,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
             <span className="text-muted flex-grow-1"> {item.content}</span>
             {isHovered && (
               <span
+                className="cursor-pointer"
                 type="btn btn-sm btn-danger"
                 onClick={() => {
                   const newState = [...state];

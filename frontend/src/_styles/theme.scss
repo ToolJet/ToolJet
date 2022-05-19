@@ -5242,4 +5242,30 @@ div#driver-page-overlay {
       padding: 5px !important;
     }
   }
+
+  .kanban-board-add-btn {
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.5);
+    background-color: transparent;
+    border-style: dashed;
+    border-color: rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    grid-auto-rows: max-content;
+    overflow: hidden;
+    box-sizing: border-box;
+    appearance: none;
+    outline: none;
+    margin: 10px;
+    border-radius: 5px;
+    width: 350px;
+    height: 200px;
+    font-size: 1em;
+  }
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
