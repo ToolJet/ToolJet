@@ -5243,7 +5243,7 @@ div#driver-page-overlay {
     }
   }
 
-  .kanban-board-add-btn {
+  .kanban-board-add-group {
     justify-content: center;
     align-items: center;
     cursor: pointer;
@@ -5263,6 +5263,22 @@ div#driver-page-overlay {
     min-width: 350px;
     height: 200px;
     font-size: 1em;
+  }
+  .add-card-btn {
+    font-size: 1em;
+    font-weight: 400;
+    color: #3e525b;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 5px;
+    background-color: transparent;
+    border-style: dashed;
+    border-color: rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    &:hover {
+      background-color: #e6e6e6;
+    }
   }
 }
 

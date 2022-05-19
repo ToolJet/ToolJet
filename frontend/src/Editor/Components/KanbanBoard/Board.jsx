@@ -57,6 +57,12 @@ const getListStyle = (isDraggingOver) => ({
 function Board({ height }) {
   const [state, setState] = useState([getItems(7), getItems(2, 7)]);
 
+  const addNewItem = (state, keyIndex, newItem = { id: `item-${new Date().getTime()}`, content: 'new card' }) => {
+    const newState = [...state];
+    newState[keyIndex].push(newItem);
+    setState(newState);
+  };
+
   function onDragEnd(result) {
     const { source, destination } = result;
     // dropped outside the list
@@ -97,11 +103,12 @@ function Board({ height }) {
             getItemStyle={getItemStyle}
             cards={el}
             updateCb={setState}
+            addNewItem={addNewItem}
           />
         ))}
       </DragDropContext>
       <button
-        className="kanban-board-add-btn"
+        className="kanban-board-add-group"
         type="button"
         onClick={() => {
           setState([...state, []]);

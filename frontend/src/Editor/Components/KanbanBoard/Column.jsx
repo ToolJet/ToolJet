@@ -2,7 +2,7 @@ import React from 'react';
 import { Droppable } from 'react-beautiful-dnd';
 import { Card } from './Card';
 
-const Column = ({ state, keyIndex, getListStyle, getItemStyle, cards, updateCb }) => {
+const Column = ({ state, keyIndex, getListStyle, getItemStyle, cards, updateCb, addNewItem }) => {
   const CardHeader = ({ title }) => {
     return (
       <div className="card-header d-flex">
@@ -66,6 +66,9 @@ const Column = ({ state, keyIndex, getListStyle, getItemStyle, cards, updateCb }
             ))}
 
             {dndProps.placeholder}
+            <button className="btn btn-primary w-100 add-card-btn" onClick={() => addNewItem(state, keyIndex)}>
+              add +
+            </button>
           </div>
         </div>
       )}
