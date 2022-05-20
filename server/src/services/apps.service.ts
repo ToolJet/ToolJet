@@ -503,11 +503,11 @@ export class AppsService {
     }
   }
 
-  async updateVersion(user: User, version: AppVersion, definition: any) {
+  async updateVersion(user: User, version: AppVersion, body: any) {
     if (version.id === version.app.currentVersionId)
       throw new BadRequestException('You cannot update a released version');
 
-    return await this.appVersionsRepository.update(version.id, { definition });
+    return await this.appVersionsRepository.update(version.id, body);
   }
 
   convertToArrayOfKeyValuePairs(options): Array<object> {

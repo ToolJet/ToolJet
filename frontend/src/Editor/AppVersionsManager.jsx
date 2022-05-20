@@ -14,14 +14,16 @@ export const AppVersionsManager = function AppVersionsManager({
   closeCreateVersionModalPrompt,
 }) {
   const [showDropDown, setShowDropDown] = useState(false);
-  const [showModal, setShowModal] = useState(showCreateVersionModalPrompt);
+  const [showModal, setShowModal] = useState(false);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [deletingVersionId, setDeletingVersionId] = useState(null);
+  const [updatingVersionId, setUpdatingVersionId] = useState(null);
   const [isDeletingVersion, setIsDeletingVersion] = useState(false);
   const [editingAppVersion, setEditingAppVersion] = useState(editingVersion);
   const [versionName, setVersionName] = useState('');
   const [appVersions, setAppVersions] = useState([]);
   const [showVersionDeletionConfirmation, setShowVersionDeletionConfirmation] = useState(false);
+  const [showVersionUpdateModal, setShowVersionUpdateModal] = useState(false);
   const [mouseHoveredOnVersion, setMouseHoveredOnVersion] = useState(null);
   const [createAppVersionFrom, setCreateAppVersionFrom] = useState(editingAppVersion);
 
@@ -29,6 +31,12 @@ export const AppVersionsManager = function AppVersionsManager({
     setCreateAppVersionFrom(editingAppVersion);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appVersions]);
+
+  useEffect(() => {
+    setVersionName('');
+    setShowModal(showCreateVersionModalPrompt);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showCreateVersionModalPrompt]);
 
   useEffect(() => {
     appVersionService.getAll(appId).then((data) => {
@@ -130,6 +138,40 @@ export const AppVersionsManager = function AppVersionsManager({
     });
   };
 
+  const fetchVersions = () => {
+    appVersionService.getAll(appId).then((data) => {
+      const versions = data.versions;
+      setAppVersions(versions);
+      versions.map((appVersion) => {
+        if (appVersion.id === updatingVersionId) {
+          setEditingAppVersion(appVersion);
+        }
+      });
+    });
+  };
+
+  const editVersionName = () => {
+    if (versionName.trim() !== '') {
+      setIsCreatingVersion(true);
+      appVersionService
+        .save(appId, updatingVersionId, { name: versionName })
+        .then(() => {
+          toast.success('Version name updated');
+          fetchVersions();
+          setIsCreatingVersion(false);
+          setShowVersionUpdateModal(false);
+        })
+        .catch((_error) => {
+          setIsCreatingVersion(false);
+          setShowVersionDeletionConfirmation(false);
+          toast.error('Oops, something went wrong');
+        });
+    } else {
+      toast.error('The name of version should not be empty');
+      setIsCreatingVersion(false);
+    }
+  };
+
   return (
     <div ref={wrapperRef} className="input-group app-version-menu">
       <span className="input-group-text app-version-menu-sm">Version</span>
@@ -174,7 +216,28 @@ export const AppVersionsManager = function AppVersionsManager({
                       >
                         <div className="col-md-4">{version.name}</div>
 
-                        <div className="col-md-2 offset-md-6">
+                        <div className="col-md-2 offset-md-6 d-flex" style={{ gap: 5 }}>
+                          <button
+                            className="btn badge bg-azure-lt"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setUpdatingVersionId(version.id);
+                              setVersionName(version.name);
+                              setShowVersionUpdateModal(true);
+                            }}
+                            style={{
+                              display: mouseHoveredOnVersion === version.id ? 'flex' : 'none',
+                            }}
+                          >
+                            <img
+                              src="/assets/images/icons/edit.svg"
+                              width="12"
+                              height="12"
+                              className="mx-1"
+                              style={{ paddingLeft: '0.6px' }}
+                            />
+                          </button>
+
                           <button
                             className="btn badge bg-azure-lt"
                             onClick={(e) => {
@@ -202,7 +265,13 @@ export const AppVersionsManager = function AppVersionsManager({
                   )
                 )}
               </div>
-              <div className="dropdown-item" onClick={() => setShowModal(true)}>
+              <div
+                className="dropdown-item"
+                onClick={() => {
+                  setVersionName('');
+                  setShowModal(true);
+                }}
+              >
                 <span className="color-primary create-link">Create Version</span>
               </div>
               <Confirm
@@ -229,6 +298,31 @@ export const AppVersionsManager = function AppVersionsManager({
           showCreateVersionModalPrompt={showCreateVersionModalPrompt}
         />
       </span>
+      <Modal show={showVersionUpdateModal} closeModal={() => setShowVersionUpdateModal(false)} title="Edit version">
+        <div className="row">
+          <div className="col modal-main">
+            <input
+              type="text"
+              onChange={(e) => setVersionName(e.target.value)}
+              className="form-control"
+              placeholder="version name"
+              disabled={isCreatingVersion}
+              value={versionName}
+              maxLength={25}
+            />
+          </div>
+        </div>
+        <div className="row">
+          <div className="col d-flex modal-footer-btn">
+            <button className="btn btn-light" onClick={() => setShowVersionUpdateModal(false)}>
+              Cancel
+            </button>
+            <button className={`btn btn-primary ${isCreatingVersion ? 'btn-loading' : ''}`} onClick={editVersionName}>
+              Save
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
