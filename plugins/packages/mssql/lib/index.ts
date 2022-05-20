@@ -28,10 +28,15 @@ export default class MssqlQueryService implements QueryService {
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
     let result = {};
-    const query = queryOptions.query;
+    let query = queryOptions.query;
     const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
 
     try {
+      if (queryOptions.mode === 'gui') {
+        if (queryOptions.operation === 'bulk_update_pkey') {
+          query = this.buildBulkUpdateQuery(queryOptions);
+        }
+      }
       result = await knexInstance.raw(query);
     } catch (err) {
       throw new QueryError('Query could not be completed', err.message, {});
@@ -88,5 +93,30 @@ export default class MssqlQueryService implements QueryService {
     } else {
       return await this.buildConnection(sourceOptions);
     }
+  }
+
+  buildBulkUpdateQuery(queryOptions: QueryOptions): string {
+    let queryText = '';
+
+    const tableName = queryOptions['table'];
+    const primaryKey = queryOptions['primary_key_column'];
+    const records = queryOptions['records'];
+
+    for (const record of records) {
+      const primaryKeyValue = typeof record[primaryKey] === 'string' ? `'${record[primaryKey]}'` : record[primaryKey];
+
+      queryText = `${queryText} UPDATE ${tableName} SET`;
+
+      for (const key of Object.keys(record)) {
+        if (key !== primaryKey) {
+          queryText = ` ${queryText} ${key} = '${record[key]}',`;
+        }
+      }
+
+      queryText = queryText.slice(0, -1);
+      queryText = `${queryText} WHERE ${primaryKey} = ${primaryKeyValue};`;
+    }
+
+    return queryText.trim();
   }
 }
