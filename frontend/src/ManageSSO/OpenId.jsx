@@ -119,12 +119,12 @@ export function OpenId({ settings, updateData }) {
             </div>
           </div>
           <div className="form-group mb-3">
-            <label className="form-label">Well known URL</label>
+            <label className="form-label">Well Known URL</label>
             <div>
               <input
                 type="text"
                 className="form-control"
-                placeholder="Enter Well known URL"
+                placeholder="Enter Well Known URL"
                 value={wellKnownUrl}
                 onChange={(e) => setWellKnownUrl(e.target.value)}
               />
