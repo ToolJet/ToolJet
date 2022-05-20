@@ -13,12 +13,21 @@ function SettingsPage(props) {
   const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
 
   const updateDetails = async () => {
-    if (!firstName || !lastName) {
-      toast.error("Name can't be empty!", {
+    if (firstName.match(/^ *$/) !== null && lastName.match(/^ *$/) !== null) {
+      toast.error("First name and last name can't be empty!", {
         position: 'top-left',
       });
       return;
     }
+    if (firstName.match(/^ *$/) !== null || lastName.match(/^ *$/) !== null) {
+      const errorMsg =
+        (firstName.match(/^ *$/) !== null && 'First name') || (lastName.match(/^ *$/) !== null && 'Last name');
+      toast.error(errorMsg + " can't be empty!", {
+        position: 'top-left',
+      });
+      return;
+    }
+
     setUpdateInProgress(true);
     const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
     authenticationService.updateCurrentUserDetails(updatedDetails);
@@ -30,17 +39,40 @@ function SettingsPage(props) {
 
   const changePassword = async () => {
     setPasswordChangeInProgress(true);
-    try {
-      await userService.changePassword(currentpassword, newPassword);
-      toast.success('Password updated successfully', {
+    if (currentpassword.match(/^ *$/) !== null && newPassword.match(/^ *$/) !== null) {
+      toast.error("Current password and new password can't be empty!", {
         duration: 3000,
       });
-      setCurrentPassword('');
-      setNewPassword('');
-    } catch (error) {
-      toast.error('Please verify that you have entered the correct password', {
+      setPasswordChangeInProgress(false);
+      return;
+    }
+    if (currentpassword.match(/^ *$/) !== null || newPassword.match(/^ *$/) !== null) {
+      const errorMsg =
+        (currentpassword.match(/^ *$/) !== null && 'Current password') ||
+        (newPassword.match(/^ *$/) !== null && 'New password');
+      toast.error(errorMsg + " can't be empty!", {
         duration: 3000,
       });
+      setPasswordChangeInProgress(false);
+      return;
+    }
+    if (currentpassword === newPassword && currentpassword.length > 0 && newPassword.length > 0) {
+      toast.error("New password can't be the same as the current one!", {
+        duration: 3000,
+      });
+    } else {
+      try {
+        await userService.changePassword(currentpassword, newPassword);
+        toast.success('Password updated successfully', {
+          duration: 3000,
+        });
+        setCurrentPassword('');
+        setNewPassword('');
+      } catch (error) {
+        toast.error('Please verify that you have entered the correct password!', {
+          duration: 3000,
+        });
+      }
     }
     setPasswordChangeInProgress(false);
   };
@@ -85,6 +117,7 @@ function SettingsPage(props) {
                         placeholder="Enter first name"
                         value={firstName}
                         onChange={(event) => setFirstName(event.target.value)}
+                        onKeyPress={(event) => !/^[A-Za-z]+$/.test(event.key) && event.preventDefault(true)}
                       />
                     </div>
                   </div>
@@ -98,6 +131,7 @@ function SettingsPage(props) {
                         placeholder="Enter last name"
                         value={lastName}
                         onChange={(event) => setLastName(event.target.value)}
+                        onKeyPress={(event) => !/^[A-Za-z]+$/.test(event.key) && event.preventDefault(true)}
                       />
                     </div>
                   </div>
