@@ -7,6 +7,7 @@ import { Google } from './Google';
 import { Loader } from './Loader';
 import { Git } from './Git';
 import { Form } from './Form';
+import { OpenId } from './OpenId';
 
 export function ManageSSO({ switchDarkMode, darkMode }) {
   const menuItems = [
@@ -14,6 +15,7 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
     { id: 'google', label: 'Google' },
     { id: 'git', label: 'Git' },
     { id: 'form', label: 'Password Login' },
+    { id: 'openId', label: 'Open ID' },
   ];
   const changePage = useCallback(
     (page) => {
@@ -35,6 +37,8 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
         return <Git updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'git')} />;
       case 'form':
         return <Form updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'form')} />;
+      case 'openId':
+        return <OpenId updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'openId')} />;
       default:
         return <Loader />;
     }
