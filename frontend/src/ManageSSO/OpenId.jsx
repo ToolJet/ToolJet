@@ -4,16 +4,16 @@ import { toast } from 'react-hot-toast';
 
 export function OpenId({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
-  const [clientId, setClientId] = useState(settings?.configs?.clientId || '');
-  const [clientSecret, setClientSecret] = useState(settings?.configs?.clientSecret || '');
+  const [clientId, setClientId] = useState(settings?.configs?.client_id || '');
+  const [clientSecret, setClientSecret] = useState(settings?.configs?.client_secret || '');
   const [name, setName] = useState(settings?.configs?.name || '');
   const [wellKnownUrl, setWellKnownUrl] = useState(settings?.configs?.wellKnownUrl || '');
   const [isSaving, setSaving] = useState(false);
   const [configId, setConfigId] = useState(settings?.id);
 
   const reset = () => {
-    setClientId(settings?.configs?.clientId || '');
-    setClientSecret(settings?.configs?.clientSecret || '');
+    setClientId(settings?.configs?.client_id || '');
+    setClientSecret(settings?.configs?.client_secret || '');
     setName(settings?.configs?.name || '');
     setWellKnownUrl(settings?.configs?.wellKnownUrl || '');
   };
@@ -28,7 +28,7 @@ export function OpenId({ settings, updateData }) {
           data.id && setConfigId(data.id);
           updateData('openId', {
             id: data.id,
-            configs: { clientId: clientId },
+            configs: { client_id: clientId, client_secret: clientSecret, name: name, wellKnownUrl: wellKnownUrl },
           });
           toast.success('updated SSO configurations', {
             position: 'top-center',
