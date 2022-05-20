@@ -2216,7 +2216,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       properties: {
         data: {
-          value: '{{[]}}',
+          value:
+            '{{[{"id":"01","title":"New column-1","accentColor":"#fefefe","cards":[{"id":"1","title":"New card 1","description":""},{"id":"2","title":"New card","description":""},{"id":"3","title":"New card2","description":""}]},{"id":"02","title":"New column-2","accentColor":"#fefefe","cards":[{"id":"4","title":"New card","description":""}]}]}}',
         },
       },
       events: [],

@@ -26,56 +26,19 @@ const generateColumnData = () => {
   };
 };
 
-const defaultColumns = [
-  {
-    id: '01',
-    title: 'New column-1',
-    accentColor: '#fefefe',
-    cards: [
-      {
-        id: '1',
-        title: 'New card 1',
-        description: '',
-      },
-      {
-        id: '2',
-        title: 'New card',
-        description: '',
-      },
-      {
-        id: '3',
-        title: 'New card2',
-        description: '',
-      },
-    ],
-  },
-  {
-    id: '02',
-    title: 'New column-2',
-    accentColor: '#fefefe',
-    cards: [
-      {
-        id: '4',
-        title: 'New card',
-        description: '',
-      },
-    ],
-  },
-];
-
 /**
  * Moves an item from one list to another list.
  */
 const move = (source, destination, droppableSource, droppableDestination) => {
   const sourceClone = Array.from(source);
-  const destClone = Array.from(destination);
+  const destinationClone = Array.from(destination);
   const [removed] = sourceClone.splice(droppableSource.index, 1);
 
-  destClone.splice(droppableDestination.index, 0, removed);
+  destinationClone.splice(droppableDestination.index, 0, removed);
 
   const result = {};
   result[droppableSource.droppableId] = sourceClone;
-  result[droppableDestination.droppableId] = destClone;
+  result[droppableDestination.droppableId] = destinationClone;
 
   return result;
 };
@@ -100,8 +63,8 @@ const getListStyle = (isDraggingOver) => ({
   borderColor: isDraggingOver && '#c0ccf8',
 });
 
-function Board({ height }) {
-  const [state, setState] = useState(() => defaultColumns);
+function Board({ height, data }) {
+  const [state, setState] = useState(() => data);
 
   state.map((col, ind) => console.log(' state board =>  state', col, ind));
 
