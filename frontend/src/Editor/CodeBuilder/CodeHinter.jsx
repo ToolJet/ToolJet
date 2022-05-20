@@ -101,13 +101,17 @@ export function CodeHinter({
   }
 
   const getPreviewContent = (content, type) => {
-    switch (type) {
-      case 'object':
-        return JSON.stringify(content);
-      case 'boolean':
-        return content.toString();
-      default:
-        return content;
+    try {
+      switch (type) {
+        case 'object':
+          return JSON.stringify(content);
+        case 'boolean':
+          return content.toString();
+        default:
+          return content;
+      }
+    } catch (e) {
+      return undefined;
     }
   };
 
