@@ -476,4 +476,15 @@ export class UsersService {
       .andWhere('user_group_permissions.user_id = :userId', { userId: user.id })
       .getMany();
   }
+
+  removeSensitiveData(user: User): User {
+    user.password = undefined;
+    user.invitationToken = undefined;
+    user.forgotPasswordToken = undefined;
+    user.email = undefined;
+    user.role = undefined;
+    user.createdAt = undefined;
+    user.updatedAt = undefined;
+    return user;
+  }
 }
