@@ -7,7 +7,7 @@ export function OpenId({ settings, updateData }) {
   const [clientId, setClientId] = useState(settings?.configs?.client_id || '');
   const [clientSecret, setClientSecret] = useState(settings?.configs?.client_secret || '');
   const [name, setName] = useState(settings?.configs?.name || '');
-  const [wellKnownUrl, setWellKnownUrl] = useState(settings?.configs?.wellKnownUrl || '');
+  const [wellKnownUrl, setWellKnownUrl] = useState(settings?.configs?.well_known_url || '');
   const [isSaving, setSaving] = useState(false);
   const [configId, setConfigId] = useState(settings?.id);
 
@@ -15,7 +15,7 @@ export function OpenId({ settings, updateData }) {
     setClientId(settings?.configs?.client_id || '');
     setClientSecret(settings?.configs?.client_secret || '');
     setName(settings?.configs?.name || '');
-    setWellKnownUrl(settings?.configs?.wellKnownUrl || '');
+    setWellKnownUrl(settings?.configs?.well_known_url || '');
   };
 
   const saveSettings = () => {
@@ -28,7 +28,7 @@ export function OpenId({ settings, updateData }) {
           data.id && setConfigId(data.id);
           updateData('openId', {
             id: data.id,
-            configs: { client_id: clientId, client_secret: clientSecret, name: name, wellKnownUrl: wellKnownUrl },
+            configs: { client_id: clientId, client_secret: clientSecret, name: name, well_known_url: wellKnownUrl },
           });
           toast.success('updated SSO configurations', {
             position: 'top-center',
@@ -70,7 +70,7 @@ export function OpenId({ settings, updateData }) {
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
           <div className="card-title">
-            openId
+            Open ID
             <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`}>{enabled ? 'Enabled' : 'Disabled'}</span>
           </div>
           <div>
