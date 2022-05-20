@@ -1,4 +1,4 @@
-export const widgets = [
+export const componentTypes = [
   {
     name: 'Table',
     displayName: 'Table',
@@ -214,30 +214,30 @@ export const widgets = [
         loadingState: { value: `{{false}}` },
         jsonDescription: {
           value: `{
-              "data": [
-                  {
-                      "x": [
-                          "Jan",
-                          "Feb",
-                          "Mar"
-                      ],
-                      "y": [
-                          100,
-                          80,
-                          40
-                      ],
-                      "type": "bar"
-                  }
-              ]
-          }`,
+            "data": [
+                {
+                    "x": [
+                        "Jan",
+                        "Feb",
+                        "Mar"
+                    ],
+                    "y": [
+                        100,
+                        80,
+                        40
+                    ],
+                    "type": "bar"
+                }
+            ]
+        }`,
         },
         type: { value: `line` },
         data: {
           value: `[
-    { "x": "Jan", "y": 100},
-    { "x": "Feb", "y": 80},
-    { "x": "Mar", "y": 40}
-  ]`,
+  { "x": "Jan", "y": 100},
+  { "x": "Feb", "y": 80},
+  { "x": "Mar", "y": 40}
+]`,
         },
       },
       events: [],
@@ -2115,22 +2115,22 @@ export const widgets = [
         },
         code: {
           value: `import React from 'https://cdn.skypack.dev/react';
-  import ReactDOM from 'https://cdn.skypack.dev/react-dom';
-  import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
-  const MyCustomComponent = ({data, updateData, runQuery}) => (
-    <Container>
-        <h1>{data.title}</h1>
-        <Button
-          color="primary"
-          variant="outlined"
-          onClick={() => {updateData({title: 'Hello World!!'})}}
-        >
-          {data.buttonText}
-        </Button>
-      </Container>
-  );
-  const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
-  ReactDOM.render(<ConnectedComponent />, document.body);`,
+import ReactDOM from 'https://cdn.skypack.dev/react-dom';
+import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
+const MyCustomComponent = ({data, updateData, runQuery}) => (
+  <Container>
+      <h1>{data.title}</h1>
+      <Button
+        color="primary"
+        variant="outlined"
+        onClick={() => {updateData({title: 'Hello World!!'})}}
+      >
+        {data.buttonText}
+      </Button>
+    </Container>
+);
+const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
+ReactDOM.render(<ConnectedComponent />, document.body);`,
         },
       },
       events: [],
@@ -2153,10 +2153,20 @@ export const widgets = [
       width: 20,
       height: 640,
     },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
     events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
     exposedVariables: {},
     definition: {
-      others: {},
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
       properties: {
         url: {
           value:
@@ -2170,6 +2180,9 @@ export const widgets = [
         },
       },
       events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
     },
   },
 ];
