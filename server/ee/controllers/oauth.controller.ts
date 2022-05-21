@@ -18,7 +18,7 @@ export class OauthController {
     const { codeVerifier, authorizationUrl } = await this.oidcOAuthService.getConfigs(configId);
     response.cookie('oidc_code_verifier', codeVerifier, {
       httpOnly: true,
-      expires: new Date(new Date().getTime() + 30 * 1000), // cookie expiry 30 seconds
+      expires: new Date(new Date().getTime() + 60 * 5 * 1000), // cookie expiry 5 minutes
       sameSite: 'strict',
     });
     return { authorizationUrl };

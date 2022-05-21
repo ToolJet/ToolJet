@@ -41,7 +41,6 @@ export class OidcOAuthService {
 
     const authorizationUrl = this.oidcClient.authorizationUrl({
       scope: 'openid email profile',
-      resource: this.tooljetHost,
       code_challenge: codeChallenge,
       code_challenge_method: 'S256',
       state: uuid.v4(),
@@ -53,9 +52,23 @@ export class OidcOAuthService {
     };
   }
 
-  async #getUserDetails({ access_token }: TokenSet): Promise<UserResponse> {
-    const response: any = await this.oidcClient.userinfo(access_token);
-    const { name, email } = response;
+  async #getUserDetails({ access_token, id_token }: TokenSet): Promise<UserResponse> {
+    let email, name;
+    if (id_token) {
+      const data = this.#parseJwt(id_token);
+      email = data?.email;
+      name = data?.name;
+    }
+
+    if (!(email || name)) {
+      const response: any = await this.oidcClient.userinfo(access_token);
+      const emailData = email;
+      ({ name, email } = response);
+      if (!email && emailData) {
+        // id_token cintains email, userinfo don't
+        email = emailData;
+      }
+    }
 
     const words = name?.split(' ');
     const firstName = words?.[0] || '';
@@ -76,6 +89,25 @@ export class OidcOAuthService {
         code_verifier: configs.codeVerifier,
       }
     );
+
     return await this.#getUserDetails(tokenSet);
+  }
+
+  #parseJwt(token) {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      Buffer.from(base64, 'base64')
+        .toString()
+        .split('')
+        .map(function (c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join('')
+    );
+
+    console.log(jsonPayload);
+
+    return JSON.parse(jsonPayload);
   }
 }

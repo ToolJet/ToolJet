@@ -136,7 +136,7 @@ export class OauthService {
     }
 
     // If name not found
-    if (!(userResponse.firstName && userResponse.lastName)) {
+    if (!userResponse.firstName) {
       userResponse.firstName = userResponse.email?.split('@')?.[0];
     }
     const user: User = await (!enableSignUp
