@@ -95,18 +95,6 @@ export function OpenId({ settings, updateData }) {
             </div>
           </div>
           <div className="form-group mb-3">
-            <label className="form-label"> Client Secret</label>
-            <div>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter Client Secret"
-                value={clientSecret}
-                onChange={(e) => setClientSecret(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="form-group mb-3">
             <label className="form-label">Client Id</label>
             <div>
               <input
@@ -115,6 +103,24 @@ export function OpenId({ settings, updateData }) {
                 placeholder="Enter Client Id"
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="form-group mb-3">
+            <label className="form-label">
+              Client Secret
+              <small className="text-green mx-2">
+                <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+                Encrypted
+              </small>
+            </label>
+            <div>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Enter Client Secret"
+                value={clientSecret}
+                onChange={(e) => setClientSecret(e.target.value)}
               />
             </div>
           </div>
