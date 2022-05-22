@@ -21,12 +21,12 @@ export function OpenId({ settings, updateData }) {
   const saveSettings = () => {
     setSaving(true);
     organizationService
-      .editOrganizationConfigs({ type: 'openId', configs: { name, clientId, clientSecret, wellKnownUrl } })
+      .editOrganizationConfigs({ type: 'openid', configs: { name, clientId, clientSecret, wellKnownUrl } })
       .then(
         (data) => {
           setSaving(false);
           data.id && setConfigId(data.id);
-          updateData('openId', {
+          updateData('openid', {
             id: data.id,
             configs: { client_id: clientId, client_secret: clientSecret, name: name, well_known_url: wellKnownUrl },
           });
@@ -45,13 +45,13 @@ export function OpenId({ settings, updateData }) {
 
   const changeStatus = () => {
     setSaving(true);
-    organizationService.editOrganizationConfigs({ type: 'openId', enabled: !enabled }).then(
+    organizationService.editOrganizationConfigs({ type: 'openid', enabled: !enabled }).then(
       (data) => {
         setSaving(false);
         const enabled_tmp = !enabled;
         setEnabled(enabled_tmp);
         data.id && setConfigId(data.id);
-        updateData('openId', { id: data.id, enabled: enabled_tmp });
+        updateData('openid', { id: data.id, enabled: enabled_tmp });
         toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} OpenId SSO`, {
           position: 'top-center',
         });
@@ -139,7 +139,7 @@ export function OpenId({ settings, updateData }) {
           {configId && (
             <div className="form-group mb-3">
               <label className="form-label">Redirect URL</label>
-              <div>{`${window.location.protocol}//${window.location.host}/sso/open-id/${configId}`}</div>
+              <div>{`${window.location.protocol}//${window.location.host}/sso/openid/${configId}`}</div>
             </div>
           )}
           <div className="form-footer">

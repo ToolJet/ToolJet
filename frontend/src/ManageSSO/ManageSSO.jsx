@@ -14,8 +14,8 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
     { id: 'general-settings', label: 'General Settings' },
     { id: 'google', label: 'Google' },
     { id: 'git', label: 'Git' },
+    { id: 'openid', label: 'Open ID' },
     { id: 'form', label: 'Password Login' },
-    { id: 'openId', label: 'Open ID' },
   ];
   const changePage = useCallback(
     (page) => {
@@ -37,8 +37,8 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
         return <Git updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'git')} />;
       case 'form':
         return <Form updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'form')} />;
-      case 'openId':
-        return <OpenId updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'openId')} />;
+      case 'openid':
+        return <OpenId updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'openid')} />;
       default:
         return <Loader />;
     }

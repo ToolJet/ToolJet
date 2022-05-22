@@ -7,6 +7,7 @@ import { UsersService } from '@services/users.service';
 import { GoogleOAuthService } from './google_oauth.service';
 import { decamelizeKeys } from 'humps';
 import { GitOAuthService } from './git_oauth.service';
+import { OidcOAuthService } from './oidc_auth.service';
 import UserResponse from './models/user_response';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
@@ -20,7 +21,8 @@ export class OauthService {
     private readonly jwtService: JwtService,
     private readonly organizationUsersService: OrganizationUsersService,
     private readonly googleOAuthService: GoogleOAuthService,
-    private readonly gitOAuthService: GitOAuthService
+    private readonly gitOAuthService: GitOAuthService,
+    private readonly oidcOAuthService: OidcOAuthService
   ) {}
 
   #isValidDomain(email: string, restrictedDomain: string): boolean {
@@ -92,7 +94,7 @@ export class OauthService {
     });
   }
 
-  async signIn(ssoResponse: SSOResponse, configId: string): Promise<any> {
+  async signIn(ssoResponse: SSOResponse, configId: string, cookies?: object): Promise<any> {
     const ssoConfigs: SSOConfigs = await this.organizationService.getConfigs(configId);
 
     if (!(ssoConfigs && ssoConfigs?.organization)) {
@@ -114,6 +116,14 @@ export class OauthService {
         userResponse = await this.gitOAuthService.signIn(token, configs);
         break;
 
+      case 'openid':
+        userResponse = await this.oidcOAuthService.signIn(token, {
+          ...configs,
+          configId,
+          codeVerifier: cookies['oidc_code_verifier'],
+        });
+        break;
+
       default:
         break;
     }
@@ -126,7 +136,7 @@ export class OauthService {
     }
 
     // If name not found
-    if (!(userResponse.firstName && userResponse.lastName)) {
+    if (!userResponse.firstName) {
       userResponse.firstName = userResponse.email?.split('@')?.[0];
     }
     const user: User = await (!enableSignUp
@@ -144,6 +154,7 @@ export class OauthService {
 interface SSOResponse {
   token: string;
   state?: string;
+  codeVerifier?: string;
 }
 
 interface JWTPayload {
