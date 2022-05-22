@@ -53,6 +53,7 @@ const sidebars = {
         'tutorial/sharing-and-deploying',
         'tutorial/manage-users-groups',
         'tutorial/keyboard-shortcuts',
+        'tutorial/multiworkspace',
       ],
     },
     {
@@ -221,21 +222,6 @@ const sidebars = {
         },
         'contributing-guide/code-of-conduct',
         'contributing-guide/slackcoc',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'multi workspace',
-      link: {
-        type: 'generated-index',
-        title: 'multi workspace',
-        description:
-          "Guide for enabling available Multi Workspaces on ToolJet",
-        keywords: ['multi workspace','SSO'],
-      },
-      items: [
-        'multiworkspace/multiworkspace',
-        'multiworkspace/upgradingversion',
       ],
     },
   ],
