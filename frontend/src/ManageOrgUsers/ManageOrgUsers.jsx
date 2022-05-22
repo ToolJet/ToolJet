@@ -290,7 +290,9 @@ class ManageOrgUsers extends React.Component {
                   <div
                     className="card-table fixedHeader table-responsive table-bordered"
                     ref={this.tableRef}
-                    style={{ maxHeight: this.tableRef.current && this.calculateOffset() }}
+                    style={{
+                      maxHeight: this.tableRef.current && this.calculateOffset(),
+                    }}
                   >
                     <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
                       <thead>
@@ -385,7 +387,8 @@ class ManageOrgUsers extends React.Component {
                               <td>
                                 <button
                                   type="button"
-                                  className={`btn btn-${user.status === 'archived' ? 'success' : 'danger'} ${
+                                  style={{ minWidth: '100px' }}
+                                  className={`btn btn-sm btn-${user.status === 'archived' ? 'success' : 'danger'} ${
                                     unarchivingUser === user.id || archivingUser === user.id ? 'btn-loading' : ''
                                   }`}
                                   disabled={unarchivingUser === user.id || archivingUser === user.id}
