@@ -129,6 +129,7 @@ class App extends React.Component {
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/reset-password" component={ResetPassword} />
+            <Route path="/multiworkpsace" component={RedirectSso} />
             <Route
               path="/invitations/:token"
               render={(props) => (
@@ -143,8 +144,6 @@ class App extends React.Component {
               )}
             />
             <Route path="/confirm" component={ConfirmationPage} />
-            <Route path="/multiworkpsace" exact component={RedirectSso} />
-
             <Route
               path="/organization-invitations/:token"
               render={(props) => (
