@@ -36,11 +36,10 @@ export const LeftSidebarGlobalSettings = ({
   }, [currentState.components]);
 
   React.useEffect(() => {
-    console.log('check', realState);
     backgroundFxQuery &&
       globalSettingsChanged('canvasBackgroundColor', resolveReferences(backgroundFxQuery, realState));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [realState]);
+  }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
 
   return (
     <>
