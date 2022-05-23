@@ -279,11 +279,11 @@ export const Organization = function Organization() {
             <Link data-tesid="settingsBtn" to="/manage-sso" className="dropdown-item" data-cy="manage-sso">
               Manage SSO
             </Link>
-            <Link data-tesid="settingsBtn" to="/manage-environment-vars" className="dropdown-item">
-              Manage Environment Variables
-            </Link>
           </>
         )}
+        <Link data-tesid="settingsBtn" to="/manage-environment-vars" className="dropdown-item">
+          {admin ? 'Manage Environment Variables' : 'Environment Variables'}
+        </Link>
       </div>
     );
   };

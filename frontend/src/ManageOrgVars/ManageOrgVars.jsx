@@ -226,7 +226,7 @@ class ManageOrgVars extends React.Component {
                   <h2 className="page-title">Environment Variables</h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
-                  {!showVariableForm && (
+                  {!showVariableForm && this.state.currentUser.admin && (
                     <div className="btn btn-primary" onClick={() => this.setState({ showVariableForm: true })}>
                       Add new variable
                     </div>
@@ -252,6 +252,7 @@ class ManageOrgVars extends React.Component {
               <VariablesTable
                 isLoading={isLoading}
                 variables={variables}
+                admin={this.state.currentUser.admin}
                 onEditBtnClicked={this.onEditBtnClicked}
                 onDeleteBtnClicked={this.onDeleteBtnClicked}
               />
