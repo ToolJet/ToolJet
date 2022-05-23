@@ -138,18 +138,6 @@ export const AppVersionsManager = function AppVersionsManager({
     });
   };
 
-  const fetchVersions = () => {
-    appVersionService.getAll(appId).then((data) => {
-      const versions = data.versions;
-      setAppVersions(versions);
-      versions.map((appVersion) => {
-        if (appVersion.id === updatingVersionId) {
-          setEditingAppVersion(appVersion);
-        }
-      });
-    });
-  };
-
   const editVersionName = () => {
     if (versionName.trim() !== '') {
       setIsCreatingVersion(true);
@@ -157,7 +145,17 @@ export const AppVersionsManager = function AppVersionsManager({
         .save(appId, updatingVersionId, { name: versionName })
         .then(() => {
           toast.success('Version name updated');
-          fetchVersions();
+          appVersionService.getAll(appId).then((data) => {
+            const versions = data.versions;
+            setAppVersions(versions);
+            updatingVersionId === editingAppVersion.id &&
+              versions.map((appVersion) => {
+                if (appVersion.id === updatingVersionId) {
+                  setEditingAppVersion(appVersion);
+                  setUpdatingVersionId(null);
+                }
+              });
+          });
           setIsCreatingVersion(false);
           setShowVersionUpdateModal(false);
         })
