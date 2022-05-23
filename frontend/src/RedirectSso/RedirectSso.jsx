@@ -14,7 +14,7 @@ export const RedirectSso = function RedirectSso() {
   };
 
   useEffect(() => {
-    organizationService.getSSODetails().then((data) => {
+    organizationService.getPublicSSODetails().then((data) => {
       setOrganization(data.organization_details);
     });
   }, []);
@@ -42,9 +42,9 @@ export const RedirectSso = function RedirectSso() {
             {!isSingleOrganization ? (
               <>
                 <p>
-                  You have Enabled Multi-Workspace{' '}
+                  You have Enabled
                   <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
-                    Link
+                    Multi-Workspace
                   </a>
                 </p>
                 <p>Please login with password and you can setup sso using workspace Manage SSO menu. </p>
@@ -62,15 +62,15 @@ export const RedirectSso = function RedirectSso() {
             )}
             {!isSingleOrganization && (
               <>
+                <p>If You have enabled SSO for your workspaces, please re-configure</p>
                 <div>
-                  <h3>Google SSO</h3>
                   <p>
-                    Please configure redirect URL :
-                    <a href="https://docs.tooljet.com/docs/sso/google"> Google SSO configurations</a>
+                    <span className="sso-type"> Google:</span>
+                    <a href="https://docs.tooljet.com/docs/sso/google"> Link</a>
                   </p>
                   {googlessoEnabled && (
                     <div className="flexer">
-                      <span> Redirect URL: </span>
+                      <span> Google: </span>
                       <p id="google-url">{`${window.location.protocol}//${window.location.host}/sso/google/${organization?.sso_configs?.[1]?.id}`}</p>
 
                       <img
@@ -84,14 +84,13 @@ export const RedirectSso = function RedirectSso() {
                   )}
                 </div>
                 <div>
-                  <h3>GitHub SSO</h3>
                   <p>
-                    Please configure redirect URL :
-                    <a href="https://docs.tooljet.com/docs/sso/github"> Git SSO configurations</a>
+                    <span className="sso-type"> Git:</span>
+                    <a href="https://docs.tooljet.com/docs/sso/github"> Link</a>
                   </p>
                   {gitSsoEnabled && (
                     <div className="flexer">
-                      <span> Redirect URL :</span>
+                      <span> Git :</span>
                       <p id="git-url">{`${window.location.protocol}//${window.location.host}/sso/git/${organization?.sso_configs?.[0]?.id}`}</p>
 
                       <img
