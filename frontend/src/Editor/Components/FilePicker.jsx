@@ -162,6 +162,7 @@ export const FilePicker = ({
       }
       return acc;
     }, []);
+    setShowSelectedFiles(true);
     uniqueFileRejecetd.map((rejectedMessag) => toast.error(rejectedMessag));
   };
 
