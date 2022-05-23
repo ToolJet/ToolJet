@@ -98,23 +98,22 @@ export default class MssqlQueryService implements QueryService {
   buildBulkUpdateQuery(queryOptions: QueryOptions): string {
     let queryText = '';
 
-    const tableName = queryOptions['table'];
-    const primaryKey = queryOptions['primary_key_column'];
-    const records = queryOptions['records'];
+    const { table, primary_key_column, records } = queryOptions;
 
     for (const record of records) {
-      const primaryKeyValue = typeof record[primaryKey] === 'string' ? `'${record[primaryKey]}'` : record[primaryKey];
+      const primaryKeyValue =
+        typeof record[primary_key_column] === 'string' ? `'${record[primary_key_column]}'` : record[primary_key_column];
 
-      queryText = `${queryText} UPDATE ${tableName} SET`;
+      queryText = `${queryText} UPDATE ${table} SET`;
 
       for (const key of Object.keys(record)) {
-        if (key !== primaryKey) {
+        if (key !== primary_key_column) {
           queryText = ` ${queryText} ${key} = '${record[key]}',`;
         }
       }
 
       queryText = queryText.slice(0, -1);
-      queryText = `${queryText} WHERE ${primaryKey} = ${primaryKeyValue};`;
+      queryText = `${queryText} WHERE ${primary_key_column} = ${primaryKeyValue};`;
     }
 
     return queryText.trim();
