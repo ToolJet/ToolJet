@@ -3,7 +3,6 @@ import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { PasswordRevalidateGuard } from 'src/modules/auth/password-revalidate.guard';
 import { UsersService } from 'src/services/users.service';
 import { User } from 'src/decorators/user.decorator';
-import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
 import { CreateUserDto, UpdateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
@@ -12,7 +11,7 @@ import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @UseGuards(MultiOrganizationGuard, SignupDisableGuard)
+  @UseGuards(SignupDisableGuard)
   @Post('set_password_from_token')
   async create(@Body() userCreateDto: CreateUserDto) {
     await this.usersService.setupAccountFromInvitationToken(userCreateDto);
