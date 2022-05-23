@@ -129,7 +129,7 @@ describe('users controller', () => {
       ]);
     });
 
-    it('should not allow users to setup account for single organization', async () => {
+    it('should allow users to setup account for single organization only once', async () => {
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
         switch (key) {
           case 'DISABLE_MULTI_WORKSPACE':
@@ -145,9 +145,26 @@ describe('users controller', () => {
         status: 'invited',
       });
 
-      const response = await request(app.getHttpServer()).post('/api/users/set_password_from_token').send({
+      let response = await request(app.getHttpServer()).post('/api/users/set_password_from_token').send({
         first_name: 'signupuser',
         last_name: 'user',
+        organization: 'org1',
+        password: uuidv4(),
+        token: invitationToken,
+        role: 'developer',
+      });
+
+      expect(response.statusCode).toBe(201);
+
+      await createUser(app, {
+        email: 'signup2@tooljet.io',
+        invitationToken,
+        status: 'invited',
+      });
+
+      response = await request(app.getHttpServer()).post('/api/users/set_password_from_token').send({
+        first_name: 'signupuser2',
+        last_name: 'user2',
         organization: 'org1',
         password: uuidv4(),
         token: invitationToken,

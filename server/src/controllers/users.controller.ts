@@ -6,12 +6,13 @@ import { User } from 'src/decorators/user.decorator';
 import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
 import { CreateUserDto, UpdateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
+import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @UseGuards(SignupDisableGuard)
+  @UseGuards(MultiOrganizationGuard, SignupDisableGuard)
   @Post('set_password_from_token')
   async create(@Body() userCreateDto: CreateUserDto) {
     await this.usersService.setupAccountFromInvitationToken(userCreateDto);
