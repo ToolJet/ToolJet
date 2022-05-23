@@ -4737,10 +4737,17 @@ div#driver-page-overlay {
   display: flex;
   flex-direction: row;
 }
+.hinter-canvas-input {
+  .canvas-hinter-wrap{
+  width: 135px;
+  height: 42px !important;
+}
+}
 .hinter-canvas-input{
-  width: 120px !important;
+  width: 180px !important;
+  display: flex;
   padding: 4px; 
-  height: 39.8px !important;
+  height: 41.2px !important;
   margin-top: 1px;
   .CodeMirror-sizer{
     border-right-width: 1px !important;
@@ -4771,9 +4778,6 @@ div#driver-page-overlay {
     align-items: center;
     height: 36px;
   }
-}
-.hinter-canvas-input-light{
-  background-color: #faf8f4 !important;
 }
 .fx-canvas-light{
   background: #f4f6fa !important;

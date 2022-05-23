@@ -158,7 +158,9 @@ export const LeftSidebarGlobalSettings = ({
                     <div className="col">{canvasBackgroundColor}</div>
                   </div>
                 )}
-                <div className={`hinter-canvas-input ${!darkMode && 'hinter-canvas-input-light'} `}>
+                <div
+                  className={`${!forceCodeBox && 'hinter-canvas-input'} ${!darkMode && 'hinter-canvas-input-light'} `}
+                >
                   {!forceCodeBox && (
                     <CodeHinter
                       currentState={realState}
@@ -166,6 +168,7 @@ export const LeftSidebarGlobalSettings = ({
                       value={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
                       theme={darkMode ? 'monokai' : 'duotone-light'}
                       mode="javascript"
+                      className="canvas-hinter-wrap"
                       lineNumbers={false}
                       onChange={(color) => {
                         globalSettingsChanged('canvasBackgroundColor', resolveReferences(color, realState));
