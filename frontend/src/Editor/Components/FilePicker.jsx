@@ -88,6 +88,7 @@ export const FilePicker = ({
       maxSize: parsedMaxSize,
       multiple: parsedEnableMultiple,
       disabled: parsedDisabledState,
+      onFileDialogCancel: () => (selectedFiles.length > 0 ? setShowSelectedFiles(true) : setShowSelectedFiles(false)),
     });
 
   const style = useMemo(
