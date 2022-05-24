@@ -78,6 +78,8 @@ export const FilePicker = ({
     borderColor: '#ff1744',
   };
 
+  const [disablePicker, setDisablePicker] = React.useState(false);
+
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles, fileRejections } =
     useDropzone({
       accept: parsedFileType,
@@ -88,7 +90,7 @@ export const FilePicker = ({
       minSize: parsedMinSize,
       maxSize: parsedMaxSize,
       multiple: parsedEnableMultiple,
-      disabled: parsedDisabledState,
+      disabled: disablePicker,
       validator: validateFileExists,
       onDropRejected: () => setShowSelectedFiles(true),
     });
@@ -107,9 +109,11 @@ export const FilePicker = ({
   const [accepted, setAccepted] = React.useState(false);
   const [showSelectdFiles, setShowSelectedFiles] = React.useState(false);
   const [selectedFiles, setSelectedFiles] = React.useState([]);
+
   //* custom validator
   function validateFileExists(file) {
     const isValid = selectedFiles.some((selectedFile) => selectedFile.filePath === file.path);
+    const selectedFilesCount = selectedFiles.length;
 
     if (isValid) {
       return {
@@ -118,8 +122,25 @@ export const FilePicker = ({
       };
     }
 
+    if (selectedFilesCount === parsedMaxFileCount) {
+      return {
+        code: 'max_file_count_reached',
+        message: `Max file count reached`,
+      };
+    }
+
     return null;
   }
+
+  useEffect(() => {
+    if (parsedDisabledState) setDisablePicker(true);
+
+    if (selectedFiles.length === parsedMaxFileCount) {
+      setDisablePicker(true);
+    } else {
+      setDisablePicker(false);
+    }
+  }, [selectedFiles.length, parsedDisabledState, parsedMaxFileCount]);
 
   /**
    * *getFileData()
