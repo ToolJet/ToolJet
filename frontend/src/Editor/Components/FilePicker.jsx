@@ -83,7 +83,7 @@ export const FilePicker = ({
     useDropzone({
       accept: parsedFileType,
       noClick: !parsedEnablePicker || disablePicker,
-      noDrag: !parsedEnableDropzone,
+      noDrag: !parsedEnableDropzone || disablePicker,
       noKeyboard: true,
       maxFiles: parsedMaxFileCount,
       minSize: parsedMinSize,
@@ -239,7 +239,9 @@ export const FilePicker = ({
       acceptedFiles.map((acceptedFile) => {
         const acceptedFileData = fileReader(acceptedFile);
         acceptedFileData.then((data) => {
-          fileData.push(data);
+          if (fileData.length < parsedMaxFileCount) {
+            fileData.push(data);
+          }
         });
       });
       setSelectedFiles(fileData);
