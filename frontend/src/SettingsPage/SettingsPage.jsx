@@ -13,16 +13,11 @@ function SettingsPage(props) {
   const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
 
   const updateDetails = async () => {
-    if (firstName.match(/^ *$/) !== null && lastName.match(/^ *$/) !== null) {
-      toast.error("First name and last name can't be empty!", {
-        position: 'top-left',
-      });
-      return;
-    }
-    if (firstName.match(/^ *$/) !== null || lastName.match(/^ *$/) !== null) {
-      const errorMsg =
-        (firstName.match(/^ *$/) !== null && 'First name') || (lastName.match(/^ *$/) !== null && 'Last name');
-      toast.error(errorMsg + " can't be empty!", {
+    const firstNameMatch = firstName.match(/^ *$/);
+    const lastNameMatch = lastName.match(/^ *$/);
+    if (firstNameMatch !== null || lastNameMatch !== null) {
+      toast.error(`${firstNameMatch !== null ? 'First name' : ''}${lastNameMatch !== null ? 
+      (firstNameMatch !== null ? ' and last name' : 'Last name') : ''} can't be empty!`, {
         position: 'top-left',
       });
       return;
