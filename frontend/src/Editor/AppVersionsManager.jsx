@@ -16,6 +16,7 @@ export const AppVersionsManager = function AppVersionsManager({
   const [showDropDown, setShowDropDown] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
+  const [isEditingVersion, setIsEditingVersion] = useState(false);
   const [deletingVersionId, setDeletingVersionId] = useState(null);
   const [updatingVersionId, setUpdatingVersionId] = useState(null);
   const [isDeletingVersion, setIsDeletingVersion] = useState(false);
@@ -140,7 +141,7 @@ export const AppVersionsManager = function AppVersionsManager({
 
   const editVersionName = () => {
     if (versionName.trim() !== '') {
-      setIsCreatingVersion(true);
+      setIsEditingVersion(true);
       appVersionService
         .save(appId, updatingVersionId, { name: versionName })
         .then(() => {
@@ -156,17 +157,17 @@ export const AppVersionsManager = function AppVersionsManager({
                 }
               });
           });
-          setIsCreatingVersion(false);
+          setIsEditingVersion(false);
           setShowVersionUpdateModal(false);
         })
         .catch((_error) => {
-          setIsCreatingVersion(false);
+          setIsEditingVersion(false);
           setShowVersionDeletionConfirmation(false);
           toast.error('Oops, something went wrong');
         });
     } else {
       toast.error('The name of version should not be empty');
-      setIsCreatingVersion(false);
+      setIsEditingVersion(false);
     }
   };
 
@@ -304,7 +305,7 @@ export const AppVersionsManager = function AppVersionsManager({
               onChange={(e) => setVersionName(e.target.value)}
               className="form-control"
               placeholder="version name"
-              disabled={isCreatingVersion}
+              disabled={isEditingVersion}
               value={versionName}
               maxLength={25}
             />
@@ -315,7 +316,7 @@ export const AppVersionsManager = function AppVersionsManager({
             <button className="btn btn-light" onClick={() => setShowVersionUpdateModal(false)}>
               Cancel
             </button>
-            <button className={`btn btn-primary ${isCreatingVersion ? 'btn-loading' : ''}`} onClick={editVersionName}>
+            <button className={`btn btn-primary ${isEditingVersion ? 'btn-loading' : ''}`} onClick={editVersionName}>
               Save
             </button>
           </div>
