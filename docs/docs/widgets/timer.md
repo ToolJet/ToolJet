@@ -1,3 +1,7 @@
+---
+id: timer
+title: Timer
+---
 # Timer
 
 Timer widget lets users to count timer both upward and downward

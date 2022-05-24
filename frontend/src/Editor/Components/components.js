@@ -859,7 +859,9 @@ export const componentTypes = [
         },
       },
     },
-    events: {},
+    events: {
+      onSelect: { displayName: 'On select' },
+    },
     styles: {
       visibility: {
         type: 'toggle',
@@ -898,11 +900,11 @@ export const componentTypes = [
         customRule: { value: null },
       },
       properties: {
-        defaultValue: { value: '{{[]}}' },
+        defaultValue: { value: '01/01/2022' },
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
         enableDate: { value: '{{true}}' },
-        disabledDates: { value: ['1/09/2021'] },
+        disabledDates: { value: '{{[]}}' },
       },
       events: [],
       styles: {
@@ -1021,6 +1023,7 @@ export const componentTypes = [
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
+      defaultValue: { type: 'toggle', displayName: 'Default Status' },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -1041,6 +1044,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Toggle label' },
+        defaultValue: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -1165,6 +1169,7 @@ export const componentTypes = [
     },
     events: [],
     styles: {
+      textSize: { type: 'number', displayName: 'Text Size' },
       textColor: { type: 'color', displayName: 'Text Color' },
       textAlign: { type: 'alignButtons', displayName: 'Align Text' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
@@ -1184,6 +1189,7 @@ export const componentTypes = [
       events: [],
       styles: {
         groupActions: { value: 'left' },
+        textSize: { value: 14 },
         textColor: { value: '#000' },
         textAlign: { value: 'left' },
         visibility: { value: '{{true}}' },
@@ -1206,6 +1212,9 @@ export const componentTypes = [
     },
     properties: {
       source: { type: 'code', displayName: 'URL' },
+      loadingState: { type: 'toggle', displayName: 'Loading state' },
+      alternativeText: { type: 'code', displayName: 'Alternative text' },
+      zoomButtons: { type: 'toggle', displayName: 'Zoom button' },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -1225,6 +1234,16 @@ export const componentTypes = [
       padding: { type: 'code', displayName: 'Padding' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
+      imageFit: {
+        type: 'select',
+        displayName: 'Image fit',
+        options: [
+          { name: 'fill', value: 'fill' },
+          { name: 'contain', value: 'contain' },
+          { name: 'cover', value: 'cover' },
+          { name: 'scale-down', value: 'scale-down' },
+        ],
+      },
     },
     exposedVariables: {},
     definition: {
@@ -1235,6 +1254,9 @@ export const componentTypes = [
       properties: {
         source: { value: 'https://www.svgrepo.com/show/34217/image.svg' },
         visible: { value: '{{true}}' },
+        loadingState: { value: '{{false}}' },
+        alternativeText: { value: '' },
+        zoomButtons: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -1242,6 +1264,7 @@ export const componentTypes = [
         padding: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        imageFit: { value: 'contain' },
       },
     },
   },
@@ -1319,7 +1342,7 @@ export const componentTypes = [
       justifyContent: { type: 'alignButtons', displayName: 'Align Text' },
     },
     exposedVariables: {
-      value: null,
+      value: 2,
       searchText: '',
     },
     definition: {
@@ -1653,7 +1676,7 @@ export const componentTypes = [
     properties: {
       enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
       enablePicker: { type: 'code', displayName: 'Use File Picker' },
-      enableMultiple: { type: 'code', displayName: 'Pick mulitple files' },
+      enableMultiple: { type: 'code', displayName: 'Pick multiple files' },
       maxFileCount: { type: 'code', displayName: 'Max file count' },
       fileType: { type: 'code', displayName: 'Accept file types' },
       maxSize: { type: 'code', displayName: 'Max size limit (Bytes)' },
@@ -2260,6 +2283,7 @@ export const componentTypes = [
       secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
       secondaryValue: { type: 'code', displayName: 'Secondary value' },
       secondarySignDisplay: { type: 'code', displayName: 'Secondary sign display' },
+      loadingState: { type: 'toggle', displayName: 'Loading State' },
     },
     events: {},
     styles: {
@@ -2280,6 +2304,7 @@ export const componentTypes = [
         secondaryValueLabel: { value: 'Last month' },
         secondaryValue: { value: '2.85' },
         secondarySignDisplay: { value: 'positive' },
+        loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
@@ -2421,6 +2446,147 @@ export const componentTypes = [
         data: {
           value:
             '<svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="4" y="4" width="6" height="6" rx="1" /><rect x="4" y="14" width="6" height="6" rx="1" /><rect x="14" y="14" width="6" height="6" rx="1" /><line x1="14" y1="7" x2="20" y2="7" /><line x1="17" y1="4" x2="17" y2="10" /></svg>',
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'VerticalDivider',
+    displayName: 'Vertical Divider',
+    description: 'Vertical Separator between components',
+    component: 'VerticalDivider',
+    defaultSize: {
+      width: 2,
+      height: 100,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {},
+    events: {},
+    styles: {
+      dividerColor: { type: 'color', displayName: 'Divider Color' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      value: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {},
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        dividerColor: { value: '#E7E8EA' },
+      },
+    },
+  },
+  {
+    name: 'CustomComponent',
+    displayName: 'Custom Component',
+    description: 'Visual representation of a sequence of events',
+    component: 'CustomComponent',
+    properties: {
+      data: { type: 'code', displayName: 'Data' },
+      code: { type: 'code', displayName: 'Code' },
+    },
+    defaultSize: {
+      width: 20,
+      height: 140,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      data: { value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}` },
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        visible: { value: '{{true}}' },
+        data: {
+          value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}`,
+        },
+        code: {
+          value: `import React from 'https://cdn.skypack.dev/react';
+import ReactDOM from 'https://cdn.skypack.dev/react-dom';
+import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
+const MyCustomComponent = ({data, updateData, runQuery}) => (
+  <Container>
+      <h1>{data.title}</h1>
+      <Button
+        color="primary"
+        variant="outlined"
+        onClick={() => {updateData({title: 'Hello World!!'})}}
+      >
+        {data.buttonText}
+      </Button>
+    </Container>
+);
+const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
+ReactDOM.render(<ConnectedComponent />, document.body);`,
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'PDF',
+    displayName: 'PDF',
+    description: 'Embed PDF file',
+    component: 'PDF',
+    properties: {
+      url: { type: 'code', displayName: 'File URL' },
+      scale: { type: 'toggle', displayName: 'Scale page to width' },
+      pageControls: { type: 'toggle', displayName: 'Show page controls' },
+    },
+    defaultSize: {
+      width: 20,
+      height: 640,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        url: {
+          value:
+            'https://upload.wikimedia.org/wikipedia/commons/e/ee/Guideline_No._GD-Ed-2214_Marman_Clamp_Systems_Design_Guidelines.pdf',
+        },
+        scale: {
+          value: '{{true}}',
+        },
+        pageControls: {
+          value: `{{true}}`,
         },
       },
       events: [],

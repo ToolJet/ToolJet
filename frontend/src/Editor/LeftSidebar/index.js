@@ -20,24 +20,39 @@ export const LeftSidebar = ({
   toggleComments,
   dataSources = [],
   dataSourcesChanged,
+  dataQueriesChanged,
   errorLogs,
   appVersionsId,
   globalSettingsChanged,
   globalSettings,
   currentState,
   debuggerActions,
+  appDefinition,
+  setSelectedComponent,
+  removeComponent,
+  runQuery,
+  toggleAppMaintenance,
+  is_maintenance_on,
 }) => {
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   return (
     <div className="left-sidebar">
-      <LeftSidebarInspector darkMode={darkMode} currentState={currentState} />
+      <LeftSidebarInspector
+        darkMode={darkMode}
+        currentState={currentState}
+        appDefinition={appDefinition}
+        setSelectedComponent={setSelectedComponent}
+        removeComponent={removeComponent}
+        runQuery={runQuery}
+      />
       <LeftSidebarDataSources
         darkMode={darkMode}
         appId={appId}
         editingVersionId={appVersionsId}
         dataSources={dataSources}
         dataSourcesChanged={dataSourcesChanged}
+        dataQueriesChanged={dataQueriesChanged}
       />
       <LeftSidebarDebugger
         darkMode={darkMode}
@@ -48,7 +63,13 @@ export const LeftSidebar = ({
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
       )}
-      <LeftSidebarGlobalSettings globalSettingsChanged={globalSettingsChanged} globalSettings={globalSettings} />
+      <LeftSidebarGlobalSettings
+        globalSettingsChanged={globalSettingsChanged}
+        globalSettings={globalSettings}
+        darkMode={darkMode}
+        toggleAppMaintenance={toggleAppMaintenance}
+        is_maintenance_on={is_maintenance_on}
+      />
       <LeftSidebarItem
         onClick={() => setShowLeaveDialog(true)}
         tip="Back to home"

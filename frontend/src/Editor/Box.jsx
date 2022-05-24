@@ -38,6 +38,9 @@ import { renderTooltip, getComponentName } from '@/_helpers/appUtils';
 import { RangeSlider } from './Components/RangeSlider';
 import { Timeline } from './Components/Timeline';
 import { SvgImage } from './Components/SvgImage';
+import { CustomComponent } from './Components/CustomComponent/CustomComponent';
+import { VerticalDivider } from './Components/verticalDivider';
+import { PDF } from './Components/PDF';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { resolveProperties, resolveStyles } from './component-properties-resolution';
@@ -84,6 +87,9 @@ const AllComponents = {
   RangeSlider,
   Timeline,
   SvgImage,
+  CustomComponent,
+  VerticalDivider,
+  PDF,
 };
 
 export const Box = function Box({
@@ -111,6 +117,7 @@ export const Box = function Box({
   allComponents,
   extraProps,
   sideBarDebugger,
+  dataQueries,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -237,12 +244,14 @@ export const Box = function Box({
             validate={validate}
             parentId={parentId}
             customResolvables={customResolvables}
+            dataQueries={dataQueries}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
             <div
               className="component-image-holder p-2 d-flex flex-column justify-content-center"
               style={{ height: '100%' }}
+              data-cy="widget-list"
             >
               <center>
                 <div

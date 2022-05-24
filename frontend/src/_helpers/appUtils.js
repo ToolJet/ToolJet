@@ -323,6 +323,26 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
 
   const { customVariables } = options;
 
+  if (eventName === 'onTrigger') {
+    const { component, queryId, queryName } = options;
+    _self.setState(
+      {
+        currentState: {
+          ..._self.state.currentState,
+          components: {
+            ..._self.state.currentState.components,
+            [component.name]: {
+              ..._self.state.currentState.components[component.name],
+            },
+          },
+        },
+      },
+      () => {
+        runQuery(_ref, queryId, queryName, true, mode);
+      }
+    );
+  }
+
   if (eventName === 'onRowClicked') {
     const { component, data, rowId } = options;
     _self.setState(

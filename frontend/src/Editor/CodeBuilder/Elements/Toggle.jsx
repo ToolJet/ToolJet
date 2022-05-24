@@ -13,6 +13,7 @@ export const Toggle = ({ value, onChange, forceCodeBox }) => {
               type="checkbox"
               onClick={() => onChange(`{{${!value}}}`)}
               checked={value}
+              data-cy="toggle-button"
             />
             {/* <ToolTip label={paramLabel} meta={{}} labelClass="form-check-label" /> */}
           </label>

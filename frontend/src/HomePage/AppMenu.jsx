@@ -43,7 +43,7 @@ export const AppMenu = function AppMenu({
       overlay={
         <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'}>
           <Popover.Content bsPrefix="popover-body">
-            <div>
+            <div data-cy="card-options">
               {canUpdateApp && <Field text="Change icon" onClick={() => openAppActionModal('change-icon')} />}
               {canCreateApp && (
                 <>
@@ -63,7 +63,7 @@ export const AppMenu = function AppMenu({
       }
     >
       <div className={`d-grid menu-ico menu-ico${isMenuOpen ? '__open' : ''}`}>
-        <img className="svg-icon" src="/assets/images/icons/three-dots.svg" />
+        <img className="svg-icon" src="/assets/images/icons/three-dots.svg" data-cy="app-card-menu-icon" />
       </div>
     </OverlayTrigger>
   );

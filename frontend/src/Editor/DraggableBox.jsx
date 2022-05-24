@@ -96,6 +96,8 @@ export const DraggableBox = function DraggableBox({
   hoveredComponent,
   onComponentHover,
   sideBarDebugger,
+  isMultipleComponentsSelected,
+  dataQueries,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -220,7 +222,7 @@ export const DraggableBox = function DraggableBox({
               mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
             } `}
             onResize={() => setResizing(true)}
-            onDrag={(e) => {
+            onDrag={(e, direction) => {
               e.preventDefault();
               e.stopImmediatePropagation();
               if (!isDragging2) {
@@ -252,7 +254,10 @@ export const DraggableBox = function DraggableBox({
                   position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
                   widgetTop={currentLayoutOptions.top}
                   widgetHeight={currentLayoutOptions.height}
-                  setSelectedComponent={(id, component) => setSelectedComponent(id, component)}
+                  setSelectedComponent={(id, component, multiSelect) =>
+                    setSelectedComponent(id, component, multiSelect)
+                  }
+                  isMultipleComponentsSelected={isMultipleComponentsSelected}
                 />
               )}
               <ErrorBoundary showFallback={mode === 'edit'}>
@@ -280,6 +285,7 @@ export const DraggableBox = function DraggableBox({
                   allComponents={allComponents}
                   extraProps={extraProps}
                   sideBarDebugger={sideBarDebugger}
+                  dataQueries={dataQueries}
                 />
               </ErrorBoundary>
             </div>

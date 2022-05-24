@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import React from 'react';
 import config from 'config';
 import { PresenceProvider } from 'y-presence';

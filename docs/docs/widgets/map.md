@@ -1,3 +1,7 @@
+---
+id: map
+title: Map
+---
 # Map
 
 The map widget can be used to pick or select locations on the Google map with the location's coordinates.

@@ -1,6 +1,6 @@
 ---
-sidebar_position: 5
-sidebar_label: Kubernetes
+id: kubernetes
+title: Kubernetes
 ---
 
 # Deploying ToolJet on Kubernetes

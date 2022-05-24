@@ -103,6 +103,17 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins"
+      },
+      "encoding": {
+        "label": "Encoding",
+        "key": "encoding",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter upload data",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "utf8"
       }
     },
     "list_objects": {

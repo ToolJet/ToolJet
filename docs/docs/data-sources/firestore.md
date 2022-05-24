@@ -1,5 +1,6 @@
 ---
-sidebar_position: 4
+id: firestore
+title: Cloud Firestore
 ---
 
 # Cloud Firestore

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import React from 'react';
 import Avatar from '@/_ui/Avatar';
 import { useOthers } from 'y-presence';
@@ -32,7 +33,7 @@ const RealtimeAvatars = ({ self, updatePresence, editingVersionId }) => {
               <Avatar
                 key={id}
                 borderColor={presence.color}
-                title={getAvatarTitle(self?.presence)}
+                title={getAvatarTitle(presence)}
                 text={getAvatarText(presence)}
               />
             );

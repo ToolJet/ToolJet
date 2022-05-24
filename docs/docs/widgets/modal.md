@@ -1,3 +1,7 @@
+---
+id: modal
+title: Modal
+---
 # Modal
 
 Modal widget renders in front of a backdrop, and it blocks interaction with the rest of the application until the modal is closed. It can be used to add dialog boxes to your app for lightboxes, user notifications, forms, etc.
