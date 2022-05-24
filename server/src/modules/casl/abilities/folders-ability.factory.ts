@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { UsersService } from 'src/services/users.service';
 import { Folder } from 'src/entities/folder.entity';
 
-type Actions = 'createFolder';
+type Actions = 'createFolder' | 'deleteFolder';
 
 type Subjects = InferSubjects<typeof User | typeof Folder> | 'all';
 
@@ -19,6 +19,10 @@ export class FoldersAbilityFactory {
 
     if (await this.usersService.userCan(user, 'create', 'Folder')) {
       can('createFolder', Folder);
+    }
+
+    if (await this.usersService.userCan(user, 'delete', 'Folder')) {
+      can('deleteFolder', Folder);
     }
 
     return build({
