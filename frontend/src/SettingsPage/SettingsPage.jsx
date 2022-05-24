@@ -16,10 +16,14 @@ function SettingsPage(props) {
     const firstNameMatch = firstName.match(/^ *$/);
     const lastNameMatch = lastName.match(/^ *$/);
     if (firstNameMatch !== null || lastNameMatch !== null) {
-      toast.error(`${firstNameMatch !== null ? 'First name' : ''}${lastNameMatch !== null ? 
-      (firstNameMatch !== null ? ' and last name' : 'Last name') : ''} can't be empty!`, {
-        position: 'top-left',
-      });
+      toast.error(
+        `${firstNameMatch !== null ? 'First name' : ''}${
+          lastNameMatch !== null ? (firstNameMatch !== null ? ' and last name' : 'Last name') : ''
+        } can't be empty!`,
+        {
+          position: 'top-left',
+        }
+      );
       return;
     }
 
