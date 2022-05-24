@@ -9,7 +9,6 @@ export const organizationService = {
   switchOrganization,
   getSSODetails,
   editOrganizationConfigs,
-  getPublicSSODetails,
 };
 
 function getUsers() {
@@ -40,10 +39,6 @@ function switchOrganization(organizationId) {
 function getSSODetails() {
   const requestOptions = { method: 'GET', headers: authHeader() };
   return fetch(`${config.apiUrl}/organizations/configs`, requestOptions).then(handleResponse);
-}
-function getPublicSSODetails() {
-  const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/organizations/public-configs`, requestOptions).then(handleResponse);
 }
 
 function editOrganizationConfigs(params) {

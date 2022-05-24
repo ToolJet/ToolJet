@@ -5225,5 +5225,15 @@ div#driver-page-overlay {
 {
 color: #0565ff;
 margin-left: 4px;
+word-break: break-all;
 }
+@media only screen and (max-width: 768px) {
+  .sso-helper-container{
+    width: 96vw;
+    padding: 20px;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    margin: 0 auto;
+  }
+}
+
 // sso end

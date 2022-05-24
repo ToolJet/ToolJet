@@ -10,20 +10,18 @@ export const RedirectSso = function RedirectSso() {
 
   const copyFunction = (input) => {
     let text = document.getElementById(input).innerHTML;
-    // navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(text);
   };
 
   useEffect(() => {
     if (isSingleOrganization) {
       authenticationService.getOrganizationConfigs().then((data) => {
-        console.log('xx', data);
         setOrganization(data);
       });
     }
   }, []);
 
   useEffect(() => {
-    console.log('check', organization);
     organization &&
       Object.keys(organization).map((item) => {
         if (item == 'google') setGoogleSsoEnabled(true);
