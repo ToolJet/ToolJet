@@ -135,12 +135,12 @@ export const FilePicker = ({
   useEffect(() => {
     if (parsedDisabledState) setDisablePicker(true);
 
-    if (selectedFiles.length === parsedMaxFileCount) {
+    if (selectedFiles.length === parsedMaxFileCount && parsedEnableMultiple) {
       setDisablePicker(true);
     } else {
       setDisablePicker(false);
     }
-  }, [selectedFiles.length, parsedDisabledState, parsedMaxFileCount]);
+  }, [selectedFiles.length, parsedDisabledState, parsedMaxFileCount, parsedEnableMultiple]);
 
   /**
    * *getFileData()
