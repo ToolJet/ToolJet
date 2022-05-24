@@ -49,7 +49,10 @@ export const RedirectSso = function RedirectSso() {
                     Multi-Workspace
                   </a>
                 </p>
-                <p>Please login with password and you can setup sso using workspace Manage SSO menu. </p>
+                <p>
+                  Please login with password and you can setup sso using workspace{' '}
+                  <a href="https://docs.tooljet.com/docs/category/single-sign-on">Manage SSO menu.</a>{' '}
+                </p>
               </>
             ) : (
               <>
@@ -59,49 +62,53 @@ export const RedirectSso = function RedirectSso() {
                     Link
                   </a>
                 </p>
-                <p> Please configure SSO using Manage SSO menu.</p>
               </>
             )}
             {isSingleOrganization && (
               <>
                 <div>
-                  <p>If You have enabled SSO for your workspaces, please re-configure</p> {/* <h3>Google SSO</h3> */}
-                  <p className="sso-type">
-                    Google:
-                    <a href="https://docs.tooljet.com/docs/sso/google"> Link</a>
-                  </p>
+                  <p>Please configure redirect url.</p>
                   {googlessoEnabled && (
-                    <div className="flexer">
-                      <span> Redirect URL: </span>
-                      <p id="google-url">{`${window.location.protocol}//${window.location.host}/sso/google/${organization?.sso_configs?.[1]?.id}`}</p>
+                    <>
+                      <p className="sso-type">
+                        Google:
+                        <a href="https://docs.tooljet.com/docs/sso/google"> Link</a>
+                      </p>
+                      <div className="flexer">
+                        <span> Redirect URL: </span>
+                        <p id="google-url">{`${window.location.protocol}//${window.location.host}/sso/google/${organization?.sso_configs?.[1]?.id}`}</p>
 
-                      <img
-                        onClick={() => copyFunction('google-url')}
-                        src={`/assets/images/icons/copy.svg`}
-                        width="16"
-                        height="16"
-                        className="sso-copy"
-                      />
-                    </div>
+                        <img
+                          onClick={() => copyFunction('google-url')}
+                          src={`/assets/images/icons/copy.svg`}
+                          width="16"
+                          height="16"
+                          className="sso-copy"
+                        />
+                      </div>
+                    </>
                   )}
                 </div>
                 <div>
-                  <p className="sso-type">
-                    Git :<a href="https://docs.tooljet.com/docs/sso/github"> Link</a>
-                  </p>
                   {gitSsoEnabled && (
-                    <div className="flexer">
-                      <span> Redirect URL :</span>
-                      <p id="git-url">{`${window.location.protocol}//${window.location.host}/sso/git/${organization?.sso_configs?.[0]?.id}`}</p>
+                    <>
+                      <p className="sso-type">
+                        Git :<a href="https://docs.tooljet.com/docs/sso/github"> Link</a>
+                      </p>
 
-                      <img
-                        onClick={() => copyFunction('git-url')}
-                        src={`/assets/images/icons/copy.svg`}
-                        width="16"
-                        height="16"
-                        className="sso-copy"
-                      />
-                    </div>
+                      <div className="flexer">
+                        <span> Redirect URL :</span>
+                        <p id="git-url">{`${window.location.protocol}//${window.location.host}/sso/git/${organization?.sso_configs?.[0]?.id}`}</p>
+
+                        <img
+                          onClick={() => copyFunction('git-url')}
+                          src={`/assets/images/icons/copy.svg`}
+                          width="16"
+                          height="16"
+                          className="sso-copy"
+                        />
+                      </div>
+                    </>
                   )}
                 </div>
               </>
