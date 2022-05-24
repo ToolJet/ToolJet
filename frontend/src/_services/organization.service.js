@@ -42,7 +42,7 @@ function getSSODetails() {
   return fetch(`${config.apiUrl}/organizations/configs`, requestOptions).then(handleResponse);
 }
 function getPublicSSODetails() {
-  const requestOptions = { method: 'GET', headers: authHeader() };
+  const requestOptions = { method: 'GET' };
   return fetch(`${config.apiUrl}/organizations/public-configs`, requestOptions).then(handleResponse);
 }
 

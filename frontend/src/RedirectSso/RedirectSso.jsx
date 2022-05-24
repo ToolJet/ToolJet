@@ -4,7 +4,7 @@ import { organizationService } from '@/_services';
 export const RedirectSso = function RedirectSso() {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
 
-  const [organization, setOrganization] = useState();
+  const [organization, setOrganization] = useState([]);
   const [googlessoEnabled, setGoogleSsoEnabled] = useState(false);
   const [gitSsoEnabled, setGitSsoEnabled] = useState(false);
 
@@ -14,17 +14,19 @@ export const RedirectSso = function RedirectSso() {
   };
 
   useEffect(() => {
-    organizationService.getPublicSSODetails().then((data) => {
-      setOrganization(data.organization_details);
-    });
+    if (isSingleOrganization) {
+      organizationService.getPublicSSODetails().then((data) => {
+        setOrganization(data?.sso_configs);
+      });
+    }
   }, []);
 
   useEffect(() => {
-    organization?.sso_configs.map((item) => {
-      if (item.enabled == true) {
-        if (item.sso == 'google') setGoogleSsoEnabled(true);
-        if (item.sso == 'git') setGitSsoEnabled(true);
-      }
+    console.log('org', organization);
+    Object.keys(organization).map((item) => {
+      console.log(item);
+      if (item == 'google') setGoogleSsoEnabled(true);
+      if (item == 'git') setGitSsoEnabled(true);
     });
   }, [organization]);
 
@@ -60,17 +62,17 @@ export const RedirectSso = function RedirectSso() {
                 <p> Please configure SSO using Manage SSO menu.</p>
               </>
             )}
-            {!isSingleOrganization && (
+            {isSingleOrganization && (
               <>
-                <p>If You have enabled SSO for your workspaces, please re-configure</p>
                 <div>
-                  <p>
-                    <span className="sso-type"> Google:</span>
+                  <p>If You have enabled SSO for your workspaces, please re-configure</p> {/* <h3>Google SSO</h3> */}
+                  <p className="sso-type">
+                    Google:
                     <a href="https://docs.tooljet.com/docs/sso/google"> Link</a>
                   </p>
                   {googlessoEnabled && (
                     <div className="flexer">
-                      <span> Google: </span>
+                      <span> Redirect URL: </span>
                       <p id="google-url">{`${window.location.protocol}//${window.location.host}/sso/google/${organization?.sso_configs?.[1]?.id}`}</p>
 
                       <img
@@ -84,13 +86,12 @@ export const RedirectSso = function RedirectSso() {
                   )}
                 </div>
                 <div>
-                  <p>
-                    <span className="sso-type"> Git:</span>
-                    <a href="https://docs.tooljet.com/docs/sso/github"> Link</a>
+                  <p className="sso-type">
+                    Git :<a href="https://docs.tooljet.com/docs/sso/github"> Link</a>
                   </p>
                   {gitSsoEnabled && (
                     <div className="flexer">
-                      <span> Git :</span>
+                      <span> Redirect URL :</span>
                       <p id="git-url">{`${window.location.protocol}//${window.location.host}/sso/git/${organization?.sso_configs?.[0]?.id}`}</p>
 
                       <img
