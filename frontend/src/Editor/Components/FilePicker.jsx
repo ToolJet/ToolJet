@@ -180,10 +180,10 @@ export const FilePicker = ({
     const fileSize = formatFileSize(rejectedFileSize);
 
     if (code === errorType.MIN_SIZE) {
-      return `File size is too small. Minimum size is ${fileSize}`;
+      return `File size ${fileSize} is too small. Minimum size is ${formatFileSize(parsedMinSize)}`;
     }
     if (code === errorType.MAX_SIZE) {
-      return `File size is too large. Maximum size is ${fileSize}`;
+      return `File size ${fileSize} is too large. Maximum size is ${formatFileSize(parsedMaxSize)}`;
     }
 
     return message;
@@ -391,5 +391,6 @@ function formatFileSize(bytes) {
     dm = 2,
     sizes = ['Bytes', 'KB', 'MB'],
     i = Math.floor(Math.log(bytes) / Math.log(k));
+  console.log('formatFileSize ==>', i, 'provieded', bytes);
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
