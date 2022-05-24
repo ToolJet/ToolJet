@@ -11,6 +11,7 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
+import { App } from './app.entity';
 import { GroupPermission } from './group_permission.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
@@ -76,6 +77,9 @@ export class User extends BaseEntity {
 
   @OneToMany(() => UserGroupPermission, (userGroupPermission) => userGroupPermission.user, { onDelete: 'CASCADE' })
   userGroupPermissions: UserGroupPermission[];
+
+  @OneToMany(() => App, (app) => app.user)
+  apps: App[];
 
   organizationId: string;
   isPasswordLogin: boolean;

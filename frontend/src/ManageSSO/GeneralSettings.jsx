@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { organizationService } from '@/_services';
+import { organizationService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 
 export function GeneralSettings({ settings, updateData }) {
+  const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const [enableSignUp, setEnableSignUp] = useState(settings?.enable_sign_up || false);
   const [domain, setDomain] = useState(settings?.domain || '');
   const [isSaving, setSaving] = useState(false);
@@ -49,7 +50,7 @@ export function GeneralSettings({ settings, updateData }) {
               <span className="form-check-label">Enable signup</span>
             </label>
             <div className="help-text">
-              <div>New account will be created for user&apos;s first time sso sign in</div>
+              <div>New account will be created for user&apos;s first time SSO sign in</div>
             </div>
           </div>
           <div className="form-group mb-3">
@@ -65,6 +66,15 @@ export function GeneralSettings({ settings, updateData }) {
               />
             </div>
           </div>
+          {!isSingleOrganization && (
+            <div className="form-group mb-3">
+              <label className="form-label">Login URL</label>
+              <div>{`${window.location.protocol}//${window.location.host}/login/${authenticationService?.currentUserValue?.organization_id}`}</div>
+              <div className="help-text mt-1">
+                <div>Use this URL to login directly to this workspace</div>
+              </div>
+            </div>
+          )}
           <div className="form-footer">
             <button type="button" className="btn btn-light mr-2" onClick={reset}>
               Cancel
