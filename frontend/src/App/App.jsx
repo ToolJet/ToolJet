@@ -129,7 +129,7 @@ class App extends React.Component {
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/reset-password" component={ResetPassword} />
-            <Route path="/multiworkpsace" component={RedirectSso} />
+            <Route path="/multiworkspace" component={RedirectSso} />
             <Route
               path="/invitations/:token"
               render={(props) => (
