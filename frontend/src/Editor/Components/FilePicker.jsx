@@ -327,7 +327,18 @@ export const FilePicker = ({
           />
         )}
 
-        <FilePicker.Signifiers signifier={isDragAccept} feedback={'All files will be accepted'} cls="text-lime mt-3" />
+        {/* <FilePicker.Signifiers signifier={isDragAccept} feedback={'All files will be accepted'} cls="text-lime mt-3" /> */}
+
+        <FilePicker.Signifiers
+          signifier={isDragAccept && !selectedFiles.length === parsedMaxFileCount}
+          feedback={'All files will be accepted'}
+          cls="text-lime mt-3"
+        />
+        <FilePicker.Signifiers
+          signifier={isDragAccept && selectedFiles.length === parsedMaxFileCount}
+          feedback={'Max file reached!'}
+          cls="text-red mt-3"
+        />
 
         <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
       </div>
