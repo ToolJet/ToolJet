@@ -91,7 +91,7 @@ export const FilePicker = ({
       multiple: parsedEnableMultiple,
       disabled: disablePicker,
       validator: validateFileExists,
-      onDropRejected: () => setShowSelectedFiles(true),
+      onDropRejected: () => (selectedFiles.length > 0 ? setShowSelectedFiles(true) : setShowSelectedFiles(false)),
       onFileDialogCancel: () => (selectedFiles.length > 0 ? setShowSelectedFiles(true) : setShowSelectedFiles(false)),
     });
 
@@ -327,10 +327,8 @@ export const FilePicker = ({
           />
         )}
 
-        {/* <FilePicker.Signifiers signifier={isDragAccept} feedback={'All files will be accepted'} cls="text-lime mt-3" /> */}
-
         <FilePicker.Signifiers
-          signifier={isDragAccept && !selectedFiles.length === parsedMaxFileCount}
+          signifier={isDragAccept && !(selectedFiles.length === parsedMaxFileCount)}
           feedback={'All files will be accepted'}
           cls="text-lime mt-3"
         />
