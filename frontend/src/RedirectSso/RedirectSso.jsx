@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { organizationService } from '@/_services';
+import { authenticationService } from '@/_services';
 
 export const RedirectSso = function RedirectSso() {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
@@ -15,17 +15,20 @@ export const RedirectSso = function RedirectSso() {
 
   useEffect(() => {
     if (isSingleOrganization) {
-      organizationService.getPublicSSODetails().then((data) => {
-        setOrganization(data?.sso_configs);
+      authenticationService.getOrganizationConfigs().then((data) => {
+        console.log('xx', data);
+        setOrganization(data);
       });
     }
   }, []);
 
   useEffect(() => {
-    Object.keys(organization).map((item) => {
-      if (item == 'google') setGoogleSsoEnabled(true);
-      if (item == 'git') setGitSsoEnabled(true);
-    });
+    console.log('check', organization);
+    organization &&
+      Object.keys(organization).map((item) => {
+        if (item == 'google') setGoogleSsoEnabled(true);
+        if (item == 'git') setGitSsoEnabled(true);
+      });
   }, [organization]);
 
   return (
