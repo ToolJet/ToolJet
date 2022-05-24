@@ -22,6 +22,7 @@ export const RedirectSso = function RedirectSso() {
   }, []);
 
   useEffect(() => {
+    console.log(organization);
     organization &&
       Object.keys(organization).map((item) => {
         if (item == 'google') setGoogleSsoEnabled(true);
@@ -75,7 +76,7 @@ export const RedirectSso = function RedirectSso() {
                       </p>
                       <div className="flexer">
                         <span> Redirect URL: </span>
-                        <p id="google-url">{`${window.location.protocol}//${window.location.host}/sso/google/${organization?.sso_configs?.[1]?.id}`}</p>
+                        <p id="google-url">{`${window.location.protocol}//${window.location.host}/sso/google/${organization?.google?.config_id}`}</p>
 
                         <img
                           onClick={() => copyFunction('google-url')}
@@ -97,7 +98,7 @@ export const RedirectSso = function RedirectSso() {
 
                       <div className="flexer">
                         <span> Redirect URL :</span>
-                        <p id="git-url">{`${window.location.protocol}//${window.location.host}/sso/git/${organization?.sso_configs?.[0]?.id}`}</p>
+                        <p id="git-url">{`${window.location.protocol}//${window.location.host}/sso/git/${organization?.git?.config_id}`}</p>
 
                         <img
                           onClick={() => copyFunction('git-url')}
