@@ -289,28 +289,14 @@ export const FilePicker = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
 
-  // useEffect(() => {
-  //   // if (selectedFiles.length === parsedMaxFileCount && disablePicker) {
-  //   //   setShowSelectedFiles(true);
-  //   // }
-  //   console.log(
-  //     'selectedFiles ==>',
-  //     showSelectedFiles,
-  //     'disablePicker',
-  //     disablePicker,
-  //     'parsedMaxFileCount',
-  //     parsedMaxFileCount
-  //   );
-  // }, [disablePicker, parsedMaxFileCount, selectedFiles.length]);
-
   return (
     <section>
       <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
         <input {...getInputProps()} />
         <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
 
-        {showSelectedFiles ? (
-          <FilePicker.AcceptedFiles width={width - 10} height={height} showFilezone={setShowSelectedFiles}>
+        {showSelectedFiles && !accepted ? (
+          <FilePicker.AcceptedFiles width={width - 10} height={height}>
             {selectedFiles.map((acceptedFile, index) => (
               <>
                 <div key={index} className="col-10">
@@ -358,7 +344,7 @@ FilePicker.Signifiers = ({ signifier, feedback, cls }) => {
   return null;
 };
 
-FilePicker.AcceptedFiles = ({ children, width, height, showFilezone }) => {
+FilePicker.AcceptedFiles = ({ children, width, height }) => {
   const styles = {
     color: '#bdbdbd',
     outline: 'none',
