@@ -10,7 +10,7 @@ export const RedirectSso = function RedirectSso() {
 
   const copyFunction = (input) => {
     let text = document.getElementById(input).innerHTML;
-    navigator.clipboard.writeText(text);
+    // navigator.clipboard.writeText(text);
   };
 
   useEffect(() => {
@@ -22,9 +22,7 @@ export const RedirectSso = function RedirectSso() {
   }, []);
 
   useEffect(() => {
-    console.log('org', organization);
     Object.keys(organization).map((item) => {
-      console.log(item);
       if (item == 'google') setGoogleSsoEnabled(true);
       if (item == 'git') setGitSsoEnabled(true);
     });
