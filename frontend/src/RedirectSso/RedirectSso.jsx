@@ -57,9 +57,9 @@ export const RedirectSso = function RedirectSso() {
             ) : (
               <>
                 <p>
-                  You have Disabled Multi-Workspace.
+                  You have Disabled
                   <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
-                    Link
+                    Multi-Workspace.
                   </a>
                 </p>
               </>
