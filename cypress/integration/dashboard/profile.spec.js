@@ -1,5 +1,6 @@
 import { profileSelector } from "Selectors/profile";
 import * as profile from "Support/utils/profile"
+import * as common from "Support/utils/common"
 import { profileText } from "Texts/profile";
 import {commonSelectors} from "Selectors/common";
 import { fake } from "Fixtures/fake";
@@ -14,7 +15,7 @@ describe("Profile Settings",()=>{
    user = login;
   });
   cy.appUILogin();   
-  profile.navigateToProfile();
+  common.navigateToProfile();
  });
 
   it("Should verify the elements on profile settings page and name reset functionality",()=>{
@@ -48,7 +49,7 @@ describe("Profile Settings",()=>{
    cy.verifyToastMessage(commonSelectors.toastMessage, profileText.nameSuccessToast);
    cy.get(profileSelector.firstNameInput).should("be.visible").and("have.value", profileText.firstName);
    cy.get(profileSelector.lastNameInput).should("be.visible").and("have.value", profileText.lastName);
-   profile.logout();
+   common.logout();
   })
 
   it("Should verify the password reset functionality",()=>{
@@ -95,22 +96,22 @@ describe("Profile Settings",()=>{
    cy.get(profileSelector.changePasswordButton).click();
    cy.verifyToastMessage(commonSelectors.toastMessage,profileText.passwordSuccessToast);
 
-   profile.logout();
+   common.logout();
    cy.clearAndType(commonSelectors.emailField, commonText.email);
    cy.clearAndType(commonSelectors.passwordField, commonText.password);
    cy.verifyToastMessage(commonSelectors.toastMessage,profileText.loginErrorToast);
 
    cy.clearAndType(commonSelectors.passwordField, profileText.newPassword);
    cy.get(commonSelectors.signInButton).click();
-   profile.navigateToProfile();
+   common.navigateToProfile();
 
    cy.clearAndType(profileSelector.currentPasswordField,profileText.newPassword);
    cy.clearAndType(profileSelector.newPasswordField, user.password);
    cy.get(profileSelector.changePasswordButton).click();
    cy.verifyToastMessage(commonSelectors.toastMessage,profileText.passwordSuccessToast);
-   profile.logout();
+   common.logout();
 
    cy.login(user.email,user.password);
-   profile.logout();
+   common.logout();
   })
 });
