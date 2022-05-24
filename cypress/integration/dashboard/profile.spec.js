@@ -64,26 +64,34 @@ describe("Profile Settings",()=>{
    cy.verifyToastMessage(commonSelectors.toastMessage,profileText.passwordSuccessToast);
 
    cy.clearAndType(profileSelector.currentPasswordField, profileText.newPassword);
+   cy.get(profileSelector.currentPasswordField).should("have.value", profileText.newPassword )
    cy.get(profileSelector.changePasswordButton).click();
    cy.verifyToastMessage(commonSelectors.toastMessage,profileText.passwordErrorToast);
 
    cy.get(profileSelector.currentPasswordField).clear();
    cy.clearAndType(profileSelector.newPasswordField,profileText.newPassword);
+   cy.get(profileSelector.newPasswordField).should("have.value", profileText.newPassword )
    cy.get(profileSelector.changePasswordButton).click();
    cy.verifyToastMessage(commonSelectors.toastMessage,profileText.passwordErrorToast);
 
    cy.clearAndType(profileSelector.currentPasswordField, profileText.newPassword);
+   cy.get(profileSelector.currentPasswordField).should("have.value", profileText.newPassword)
    cy.clearAndType(profileSelector.newPasswordField, user.password);
+   cy.get(profileSelector.newPasswordField).should("have.value", user.password )
    cy.get(profileSelector.changePasswordButton).click();
    cy.verifyToastMessage(commonSelectors.toastMessage,profileText.passwordErrorToast);
 
    cy.clearAndType(profileSelector.currentPasswordField, user.password);
+   cy.get(profileSelector.currentPasswordField).should("have.value", user.password)
    cy.clearAndType(profileSelector.newPasswordField,profileText.newPassword);
+   cy.get(profileSelector.newPasswordField).should("have.value", profileText.newPassword )
    cy.get(profileSelector.changePasswordButton).click();
    cy.verifyToastMessage(commonSelectors.toastMessage,profileText.passwordSuccessToast);
 
    cy.clearAndType(profileSelector.currentPasswordField, user.password);
+   cy.get(profileSelector.currentPasswordField).should("have.value", user.password)
    cy.clearAndType(profileSelector.newPasswordField,profileText.newPassword);
+   cy.get(profileSelector.newPasswordField).should("have.value", profileText.newPassword )
    cy.get(profileSelector.changePasswordButton).click();
    cy.verifyToastMessage(commonSelectors.toastMessage,profileText.passwordSuccessToast);
 
