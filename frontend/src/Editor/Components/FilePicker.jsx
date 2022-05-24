@@ -111,16 +111,8 @@ export const FilePicker = ({
   const [selectedFiles, setSelectedFiles] = React.useState([]);
 
   //* custom validator
-  function validateFileExists(file) {
-    const isValid = selectedFiles.some((selectedFile) => selectedFile.filePath === file.path);
+  function validateFileExists(_file) {
     const selectedFilesCount = selectedFiles.length;
-
-    if (isValid) {
-      return {
-        code: 'same_file_exists',
-        message: `File ${file.name} already exists`,
-      };
-    }
 
     if (selectedFilesCount === parsedMaxFileCount) {
       return {
