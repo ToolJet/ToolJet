@@ -292,4 +292,8 @@ export class FoldersService {
 
     return viewableAppsInFolder;
   }
+
+  async delete(id: string) {
+    return await this.foldersRepository.delete({ id });
+  }
 }
