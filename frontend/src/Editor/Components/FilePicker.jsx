@@ -232,7 +232,7 @@ export const FilePicker = ({
     }
 
     if (acceptedFiles.length !== 0) {
-      const fileData = [...selectedFiles];
+      const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
       if (parseContent) {
         onComponentOptionChanged(component, 'isParsing', true);
       }
