@@ -391,6 +391,5 @@ function formatFileSize(bytes) {
     dm = 2,
     sizes = ['Bytes', 'KB', 'MB'],
     i = Math.floor(Math.log(bytes) / Math.log(k));
-  console.log('formatFileSize ==>', i, 'provieded', bytes);
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
