@@ -3,15 +3,15 @@ import { loginSelectors} from "Selectors/login";
 import { commonText } from "Texts/common";
 
 Cypress.Commands.add("login",(email,password)=>{
-    cy.visit("/");
-    cy.clearAndType(loginSelectors.emailField, email);
-    cy.clearAndType(loginSelectors.passwordField, password);
-    cy.get(loginSelectors.signInButton).click();
-    cy.get(loginSelectors.homePage).should("be.visible");
+  cy.visit("/");
+  cy.clearAndType(loginSelectors.emailField, email);
+  cy.clearAndType(loginSelectors.passwordField, password);
+  cy.get(loginSelectors.signInButton).click();
+  cy.get(loginSelectors.homePage).should("be.visible");
 })
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
-    cy.get(selector).clear().type(text);
+  cy.get(selector).clear().type(text);
   });
 
   Cypress.Commands.add("verifyToastMessage", (selector,message) => {
@@ -61,3 +61,20 @@ Cypress.Commands.add("dragAndDropWidget" , (widgetName, position = "top") => {
   cy.get(commonSelectors.canvas).trigger("drop", position, { dataTransfer, force: true });
   cy.get(commonSelectors.autoSave, { timeout: 9000 }).should("have.text", commonText.autoSave);
 });
+
+Cypress.Commands.add("appUILogin",()=>{
+  cy.visit("/");
+  cy.clearAndType(loginSelectors.emailField, 'dev@tooljet.io');
+  cy.clearAndType(loginSelectors.passwordField, 'password');
+  cy.get(loginSelectors.signInButton).click();
+  cy.get(commonSelectors.homePageLogo).should("be.visible");
+  cy.wait(1000)
+  cy.get('body').then($el =>{
+  if ($el.text().includes('Skip')){ 
+    cy.get(commonSelectors.skipInstallationModal).click();
+   }
+   else{
+     cy.log("Installation is Finished")
+  }
+})
+})

@@ -96,6 +96,7 @@ export const Organization = function Organization() {
           position: 'top-center',
         });
         setOrganization(newOrgName);
+        getOrganizations();
       },
       () => {
         toast.error('Error while editing workspace', {
@@ -109,11 +110,10 @@ export const Organization = function Organization() {
 
   const switchOrganization = (orgId) => {
     organizationService.switchOrganization(orgId).then((response) => {
-      response.text().then((text) => {
-        if (!response.ok) {
-          return (window.location.href = `/login/${orgId}`);
-        }
-        const data = text && JSON.parse(text);
+      if (!response.ok) {
+        return (window.location.href = `/login/${orgId}`);
+      }
+      response.json().then((data) => {
         authenticationService.updateCurrentUserDetails(data);
         window.location.href = '/';
       });
@@ -124,7 +124,7 @@ export const Organization = function Organization() {
     return (
       organizationList &&
       organizationList
-        .filter((org) => org.name.toLowerCase().includes(searchText ? searchText.toLowerCase() : ''))
+        .filter((org) => org.name?.toLowerCase().includes(searchText ? searchText.toLowerCase() : ''))
         .map((org) => {
           return (
             <div
@@ -232,7 +232,9 @@ export const Organization = function Organization() {
               </div>
               {admin && (
                 <div className="org-edit">
-                  <span onClick={showEditModal}>Edit</span>
+                  <span onClick={showEditModal} data-cy="edit-workspace-name">
+                    Edit
+                  </span>
                 </div>
               )}
             </div>
@@ -267,13 +269,13 @@ export const Organization = function Organization() {
         {admin && (
           <>
             <div className="dropdown-divider"></div>
-            <Link data-testid="settingsBtn" to="/users" className="dropdown-item">
+            <Link data-testid="settingsBtn" to="/users" className="dropdown-item" data-cy="manage-users">
               Manage Users
             </Link>
-            <Link data-tesid="settingsBtn" to="/groups" className="dropdown-item">
+            <Link data-tesid="settingsBtn" to="/groups" className="dropdown-item" data-cy="manage-groups">
               Manage Groups
             </Link>
-            <Link data-tesid="settingsBtn" to="/manage-sso" className="dropdown-item">
+            <Link data-tesid="settingsBtn" to="/manage-sso" className="dropdown-item" data-cy="manage-sso">
               Manage SSO
             </Link>
           </>
@@ -284,7 +286,7 @@ export const Organization = function Organization() {
 
   return (
     <div>
-      <div className="dropdown organization-list">
+      <div className="dropdown organization-list" data-cy="dropdown-organization-list">
         <a
           href="#"
           className={`btn ${!isSingleOrganization || admin ? 'dropdown-toggle' : ''}`}
