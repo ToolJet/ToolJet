@@ -28,10 +28,10 @@ export const resolveStyles = (component, currentState, defaultValue, customResol
   }
 };
 
-export const resolveGeneral = (component, currentState, defaultValue, customResolvables) => {
+export const resolveGeneralProperties = (component, currentState, defaultValue, customResolvables) => {
   if (currentState) {
-    const general = component.definition.general;
-    return Object.entries(general).reduce((resolvedGeneral, entry) => {
+    const generalProperties = component.definition?.general ?? {};
+    return Object.entries(generalProperties).reduce((resolvedGeneral, entry) => {
       const key = entry[0];
       const value = resolveReferences(entry[1].value, currentState, defaultValue, customResolvables);
       return {
