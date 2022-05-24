@@ -61,6 +61,7 @@ describe("Profile Settings",()=>{
    cy.clearAndType(profileSelector.currentPasswordField, user.password);
    cy.get(profileSelector.currentPasswordField).should("have.value", user.password);
    cy.get(profileSelector.newPasswordField).should("have.value", "");
+   cy.wait(500);
    cy.get(profileSelector.changePasswordButton).click();
    cy.verifyToastMessage(commonSelectors.toastMessage,profileText.passwordSuccessToast);
 
