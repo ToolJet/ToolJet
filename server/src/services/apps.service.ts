@@ -507,7 +507,11 @@ export class AppsService {
     if (version.id === version.app.currentVersionId)
       throw new BadRequestException('You cannot update a released version');
 
-    return await this.appVersionsRepository.update(version.id, body);
+    const editableParams = {};
+    if (body.definition) editableParams['definition'] = body.definition;
+    if (body.name) editableParams['name'] = body.name;
+
+    return await this.appVersionsRepository.update(version.id, editableParams);
   }
 
   convertToArrayOfKeyValuePairs(options): Array<object> {
