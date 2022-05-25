@@ -46,15 +46,15 @@ const grid = 8;
 
 const getItemStyle = (isDragging, draggableStyle) => {
   const _draggableStyle = isDragging
-    ? { ...draggableStyle, left: draggableStyle.left - 200, top: draggableStyle.top - 100 }
+    ? { ...draggableStyle, left: draggableStyle.left - 100, top: draggableStyle.top - 100 }
     : draggableStyle;
 
   return {
+    ..._draggableStyle,
     userSelect: 'none',
     padding: grid * 2,
     margin: `0 0 ${grid}px 0`,
     background: isDragging ? '#c2cfff' : '#fefefe',
-    ..._draggableStyle,
   };
 };
 const getListStyle = (isDraggingOver) => ({
