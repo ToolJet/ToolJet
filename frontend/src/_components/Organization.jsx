@@ -295,7 +295,7 @@ export const Organization = function Organization() {
           <div>{organization}</div>
         </a>
         {(!isSingleOrganization || admin) && (
-          <div className="dropdown-menu end-0">
+          <div className="dropdown-menu end-0" data-cy="workspace-dropdown">
             {isListOrganizations ? getListOrganizations() : getOrganizationMenu()}
           </div>
         )}
