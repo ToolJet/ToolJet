@@ -52,6 +52,7 @@ const sidebars = {
         'tutorial/versioning-and-release',
         'tutorial/sharing-and-deploying',
         'tutorial/manage-users-groups',
+        'password-login/password-login',
         'tutorial/keyboard-shortcuts',
       ],
     },

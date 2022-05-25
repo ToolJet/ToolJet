@@ -6,6 +6,7 @@ const OAuth = ({
   auth_type,
   grant_type,
   access_token_url,
+  access_token_custom_headers,
   client_id,
   client_secret,
   client_auth,
@@ -38,6 +39,7 @@ const OAuth = ({
         add_token_to={add_token_to}
         header_prefix={header_prefix}
         access_token_url={access_token_url}
+        access_token_custom_headers={access_token_custom_headers}
         auth_type={auth_type}
         grant_type={grant_type}
         optionchanged={optionchanged}

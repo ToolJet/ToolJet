@@ -33,7 +33,11 @@ export const Color = ({ value, onChange, forceCodeBox }) => {
             </div>
           )}
 
-          <div className="row mx-0 form-control color-picker-input" onClick={() => setShowPicker(true)}>
+          <div
+            className="row mx-0 form-control color-picker-input"
+            onClick={() => setShowPicker(true)}
+            data-cy="color-picker-input"
+          >
             <div
               className="col-auto"
               style={{

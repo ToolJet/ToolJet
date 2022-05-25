@@ -29,6 +29,7 @@ export const Button = function Button({ height, properties, styles, fireEvent })
           event.stopPropagation();
           fireEvent('onClick');
         }}
+        data-cy="button-widget"
       >
         {text}
       </button>

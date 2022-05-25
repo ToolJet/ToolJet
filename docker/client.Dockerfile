@@ -15,10 +15,11 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
-RUN npm run build:plugins
+ENV NODE_ENV=production
+RUN npm --prefix plugins run build
+RUN npm --prefix plugins prune --production
 
 # Build frontend
-ENV NODE_ENV=production
 COPY ./frontend/package.json ./frontend/package-lock.json  ./frontend/
 RUN npm --prefix frontend install --only=production
 COPY ./frontend ./frontend
