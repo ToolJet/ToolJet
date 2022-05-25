@@ -45,6 +45,7 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
                   type="text"
                   className="form-control"
                   defaultValue={group['title']}
+                  autoFocus={true}
                   onBlur={(e) => {
                     updateGroupTitle(e.target.value);
                     flipTitleToEditMode(keyIndex);
@@ -57,7 +58,7 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
                   }}
                 />
               ) : (
-                <span onClick={() => flipTitleToEditMode(keyIndex)} className="badge bg-cyan-lt cursor-pointer">
+                <span onClick={() => flipTitleToEditMode(keyIndex)} className="badge bg-cyan-lt cursor-text">
                   {group.title}
                 </span>
               )}

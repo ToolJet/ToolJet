@@ -44,6 +44,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
                 className="form-control form-control-flush flex-grow-1"
                 name="Form control flush"
                 defaultValue={item.title}
+                autoFocus={true}
                 onBlur={(e) => {
                   updateCardTitle(e.target.value, keyIndex, index);
                   flipTitleToEditMode(keyIndex, index);
@@ -56,11 +57,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
                 }}
               />
             ) : (
-              <span
-                onClick={() => flipTitleToEditMode(keyIndex, index)}
-                className="text-muted flex-grow-1 cursor-pointer"
-              >
-                {' '}
+              <span onClick={() => flipTitleToEditMode(keyIndex, index)} className="text-muted flex-grow-1 cursor-text">
                 {item.title}
               </span>
             )}
