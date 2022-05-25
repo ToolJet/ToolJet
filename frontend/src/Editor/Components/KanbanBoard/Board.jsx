@@ -79,12 +79,6 @@ function Board({ height, data }) {
     setState(newState);
   };
 
-  const deleteGroup = (state, keyIndex) => {
-    const newState = [...state];
-    newState.splice(keyIndex, 1);
-    setState(newState);
-  };
-
   function onDragEnd(result) {
     const { source, destination } = result;
 
@@ -125,7 +119,6 @@ function Board({ height, data }) {
             getItemStyle={getItemStyle}
             updateCb={setState}
             addNewItem={addNewItem}
-            deleteGroup={deleteGroup}
           />
         ))}
       </DragDropContext>

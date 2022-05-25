@@ -2,7 +2,7 @@ import React from 'react';
 import { Droppable } from 'react-beautiful-dnd';
 import { Card } from './Card';
 
-const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, addNewItem, deleteGroup }) => {
+const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, addNewItem }) => {
   const styles = {
     overflowX: 'hidden',
     overflowY: 'hidden',
@@ -26,6 +26,12 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
     } else {
       newState[index]['isEditing'] = true;
     }
+    updateCb(newState);
+  };
+
+  const deleteGroupHandler = (state, keyIndex) => {
+    const newState = [...state];
+    newState.splice(keyIndex, 1);
     updateCb(newState);
   };
 
@@ -87,7 +93,7 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
               <img
                 onClick={(e) => {
                   e.stopPropagation();
-                  deleteGroup(state, keyIndex);
+                  deleteGroupHandler(state, keyIndex);
                 }}
                 className="mx-1 cursor-pointer"
                 src={`/assets/images/icons/trash.svg`}

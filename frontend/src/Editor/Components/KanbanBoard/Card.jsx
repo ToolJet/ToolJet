@@ -22,6 +22,12 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
     updateCb(newState);
   };
 
+  const removeCardHandler = (colIndex, cardIndex) => {
+    const newState = [...state];
+    newState[colIndex]['cards'].splice(cardIndex, 1);
+    updateCb(newState);
+  };
+
   return (
     <Draggable key={item.id} draggableId={item.id} index={index}>
       {(dndProps, dndState) => (
@@ -65,11 +71,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
               <span
                 className="cursor-pointer"
                 type="btn btn-sm btn-danger"
-                onClick={() => {
-                  const newState = [...state];
-                  newState[keyIndex]['cards'].splice(index, 1);
-                  updateCb(newState);
-                }}
+                onClick={() => removeCardHandler(keyIndex, index)}
               >
                 <img className="mx-1" src={`/assets/images/icons/trash.svg`} width={12} height={12} />
               </span>
