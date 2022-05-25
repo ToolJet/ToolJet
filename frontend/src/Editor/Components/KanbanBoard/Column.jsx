@@ -11,6 +11,24 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
 
   const cards = group['cards'];
 
+  const updateGroupTitle = (newTitle) => {
+    const newState = [...state];
+    newState[keyIndex]['title'] = newTitle;
+    updateCb(newState);
+  };
+
+  const flipTitleToEditMode = (index) => {
+    const newState = [...state];
+    const isEditing = newState[index]['isEditing'];
+
+    if (isEditing === true) {
+      newState[index]['isEditing'] = false;
+    } else {
+      newState[index]['isEditing'] = true;
+    }
+    updateCb(newState);
+  };
+
   return (
     <Droppable key={keyIndex} droppableId={`${keyIndex}`}>
       {(dndProps, dndState) => (
@@ -21,8 +39,28 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
           {...dndProps.droppableProps}
         >
           <div className="card-header d-flex">
-            <div className="flex-grow-1">
-              <span className="badge bg-cyan-lt">{group.title}</span>
+            <div className="flex-grow-1 ">
+              {group['isEditing'] ? (
+                <input
+                  type="text"
+                  className="form-control"
+                  defaultValue={group['title']}
+                  onBlur={(e) => {
+                    updateGroupTitle(e.target.value);
+                    flipTitleToEditMode(keyIndex);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      updateGroupTitle(e.target.value);
+                      flipTitleToEditMode(keyIndex);
+                    }
+                  }}
+                />
+              ) : (
+                <span onClick={() => flipTitleToEditMode(keyIndex)} className="badge bg-cyan-lt cursor-pointer">
+                  {group.title}
+                </span>
+              )}
             </div>
             <div>
               <span className="cursor-pointer">
