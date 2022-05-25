@@ -1,3 +1,7 @@
+---
+id: container
+title: Container
+---
 # Container
 
 Containers are used to group widgets together. You can move the desired number of widgets inside a container to organize your app better.

@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@/_components';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
+import { CustomComponent } from './Components/CustomComponent';
 import useFocus from '@/_hooks/use-Focus';
 
 export const Inspector = ({
@@ -50,7 +51,7 @@ export const Inspector = ({
 
     let childComponents = [];
 
-    if (component.component.component === 'Tabs') {
+    if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
       childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent?.startsWith(component.id));
     } else {
       childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
@@ -60,7 +61,7 @@ export const Inspector = ({
       let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
       childComponent.id = uuidv4();
 
-      if (component.component.component === 'Tabs') {
+      if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
         const childTabId = childComponent.parent.split('-').at(-1);
         childComponent.parent = `${clonedComponent.id}-${childTabId}`;
       } else {
@@ -112,18 +113,27 @@ export const Inspector = ({
     }
   }
 
+  const getDefaultValue = (val) => {
+    if (componentMeta?.definition?.defaults) {
+      return componentMeta.definition.defaults.find((el) => el.type === val);
+    }
+    return null;
+  };
+
   function paramUpdated(param, attr, value, paramType) {
     let newDefinition = { ...component.component.definition };
-
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
-
     if (!paramObject) {
       allParams[param.name] = {};
     }
 
     if (attr) {
       allParams[param.name][attr] = value;
+      const defaultValue = getDefaultValue(value);
+      if (param.type === 'select' && defaultValue) {
+        allParams[defaultValue.paramName]['value'] = defaultValue.value;
+      }
     } else {
       allParams[param.name] = value;
     }
@@ -279,6 +289,22 @@ export const Inspector = ({
           />
         );
 
+      case 'CustomComponent':
+        return (
+          <CustomComponent
+            layoutPropertyChanged={layoutPropertyChanged}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            darkMode={darkMode}
+            eventsChanged={eventsChanged}
+            apps={apps}
+            allComponents={allComponents}
+          />
+        );
+
       default: {
         return (
           <DefaultComponent
@@ -325,6 +351,7 @@ export const Inspector = ({
                     className="w-100 form-control-plaintext form-control-plaintext-sm mt-1"
                     value={newComponentName}
                     ref={inputRef}
+                    data-cy="edit-widget-name"
                   />
                   <span className="input-icon-addon">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -389,6 +416,7 @@ export const Inspector = ({
           href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
           target="_blank"
           rel="noreferrer"
+          data-cy="widget-documentation-link"
         >
           <small>{componentMeta.name} documentation</small>
         </a>

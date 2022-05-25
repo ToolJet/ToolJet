@@ -1,10 +1,9 @@
 import 'codemirror/theme/duotone-light.css';
 
 import React from 'react';
-import Select from 'react-select';
 import { isEmpty, defaults } from 'lodash';
 import Tabs from './Tabs';
-
+import Select from '@/_ui/Select';
 import { changeOption } from '../utils';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { BaseUrl } from './BaseUrl';
@@ -12,7 +11,10 @@ import { BaseUrl } from './BaseUrl';
 class Restapi extends React.Component {
   constructor(props) {
     super(props);
-    const options = defaults({ ...props.options }, { headers: [], url_params: [], body: [] });
+    const options = defaults(
+      { ...props.options },
+      { headers: [], url_params: [], body: [], json_body: null, body_toggle: false }
+    );
     this.state = {
       options,
     };
@@ -38,6 +40,14 @@ class Restapi extends React.Component {
     }
   }
 
+  onBodyToggleChanged = (value) => {
+    const { options } = this.state;
+    options['body_toggle'] = value;
+    this.setState({ options }, () => {
+      this.props.optionsChanged(options);
+    });
+  };
+
   addNewKeyValuePair = (option) => {
     const { options } = this.state;
     const newOptions = { ...options, [option]: [...options[option], ['', '']] };
@@ -52,14 +62,23 @@ class Restapi extends React.Component {
     options[option].splice(index, 1);
 
     this.setState({ options }, () => {
-      this.props.optionsChanged(options);
+      this.props.optionsChanged({ ...options, arrayValuesChanged: true });
     });
   };
 
   keyValuePairValueChanged = (value, keyIndex, option, index) => {
     const { options } = this.state;
-
+    const prevValue = options[option][index][keyIndex];
     options[option][index][keyIndex] = value;
+
+    this.setState({ options }, () => {
+      this.props.optionsChanged({ ...options, arrayValuesChanged: prevValue !== value });
+    });
+  };
+
+  handleJsonBodyChanged = (jsonBody) => {
+    const { options } = this.state;
+    options['json_body'] = jsonBody;
 
     this.setState({ options }, () => {
       this.props.optionsChanged(options);
@@ -67,7 +86,8 @@ class Restapi extends React.Component {
   };
 
   handleChange = (key, keyIndex, idx) => (value) => {
-    if (this.state.options[key].length - 1 === idx) this.addNewKeyValuePair(key);
+    const lastPair = this.state.options[key][idx];
+    if (this.state.options[key].length - 1 === idx && (lastPair[0] || lastPair[1])) this.addNewKeyValuePair(key);
     this.keyValuePairValueChanged(value, keyIndex, key, idx);
   };
 
@@ -75,62 +95,6 @@ class Restapi extends React.Component {
     const { options } = this.state;
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
     const queryName = this.props.queryName;
-
-    const selectStyles = {
-      container: (provided) => ({
-        ...provided,
-        width: 100,
-        height: 32,
-      }),
-      control: (provided) => ({
-        ...provided,
-        borderColor: 'hsl(0, 0%, 80%)',
-        boxShadow: 'none',
-        '&:hover': {
-          borderColor: 'hsl(0, 0%, 80%)',
-        },
-        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
-        height: '32px!important',
-        minHeight: '32px!important',
-      }),
-      valueContainer: (provided, _state) => ({
-        ...provided,
-        height: 32,
-        marginBottom: '4px',
-      }),
-      indicatorsContainer: (provided, _state) => ({
-        ...provided,
-        height: 32,
-      }),
-      indicatorSeparator: (_state) => ({
-        display: 'none',
-      }),
-      input: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-      }),
-      menu: (provided) => ({
-        ...provided,
-        zIndex: 2,
-        backgroundColor: this.props.darkMode ? 'rgb(31,40,55)' : 'white',
-      }),
-      option: (provided) => ({
-        ...provided,
-        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-        ':hover': {
-          backgroundColor: this.props.darkMode ? '#323C4B' : '#d8dce9',
-        },
-      }),
-      placeholder: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#808080',
-      }),
-      singleValue: (provided) => ({
-        ...provided,
-        color: this.props.darkMode ? '#fff' : '#232e3c',
-      }),
-    };
 
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
     return (
@@ -145,14 +109,14 @@ class Restapi extends React.Component {
                 { label: 'PATCH', value: 'patch' },
                 { label: 'DELETE', value: 'delete' },
               ]}
-              onChange={(object) => {
-                changeOption(this, 'method', object.value);
+              onChange={(value) => {
+                changeOption(this, 'method', value);
               }}
               value={currentValue}
               defaultValue={{ label: 'GET', value: 'get' }}
               placeholder="Method"
-              styles={selectStyles}
-              isSearchable={false}
+              width={100}
+              height={32}
             />
           </div>
 
@@ -184,10 +148,13 @@ class Restapi extends React.Component {
             options={this.state.options}
             currentState={this.props.currentState}
             onChange={this.handleChange}
+            onJsonBodyChange={this.handleJsonBodyChanged}
             removeKeyValuePair={this.removeKeyValuePair}
             addNewKeyValuePair={this.addNewKeyValuePair}
             darkMode={this.props.darkMode}
             componentName={queryName}
+            bodyToggle={this.state.options.body_toggle}
+            setBodyToggle={this.onBodyToggleChanged}
           />
         </div>
       </div>

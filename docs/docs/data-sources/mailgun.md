@@ -1,5 +1,6 @@
 ---
-sidebar_position: 11
+id: mailgun
+title: Mailgun
 ---
 
 # Mailgun

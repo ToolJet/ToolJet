@@ -1,5 +1,6 @@
 ---
-sidebar_position: 1
+id: docker 
+title: Docker
 ---
 
 # Docker
@@ -36,7 +37,7 @@ Please find more information [here](https://docs.docker.com/desktop/windows/wsl/
    git clone https://github.com/tooljet/tooljet.git
    ```
 
-2. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/deployment/env-vars)
+2. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/setup/env-vars)
    ```bash
    cp .env.example .env
    cp .env.example .env.test

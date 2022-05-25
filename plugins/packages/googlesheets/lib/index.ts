@@ -130,7 +130,7 @@ export default class GooglesheetsQueryService implements QueryService {
     } catch (error) {
       console.log(error.response);
 
-      if (error.response.statusCode === 401) {
+      if (error?.response?.statusCode === 401) {
         throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, { ...error });
       }
       throw new QueryError('Query could not be completed', error.message, {});

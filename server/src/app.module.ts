@@ -77,6 +77,7 @@ const imports = [
   MetaModule,
   LibraryAppModule,
   GroupPermissionsModule,
+  EventsModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {
@@ -98,7 +99,7 @@ if (process.env.APM_VENDOR == 'sentry') {
 }
 
 if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
-  imports.unshift(CommentModule, ThreadModule, EventsModule);
+  imports.unshift(CommentModule, ThreadModule);
 }
 
 @Module({

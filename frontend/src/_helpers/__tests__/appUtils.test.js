@@ -7,6 +7,7 @@ jest.mock(
       apiUrl: `http://localhost:3000/api`,
       SERVER_IP: process.env.SERVER_IP,
       COMMENT_FEATURE_ENABLE: true,
+      ENABLE_MULTIPLAYER_EDITING: true,
     };
   },
   { virtual: true }

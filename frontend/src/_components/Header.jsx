@@ -5,6 +5,7 @@ import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
 
 import LogoIcon from '../Editor/Icons/logo.svg';
+import { Organization } from './Organization';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
   // eslint-disable-next-line no-unused-vars
@@ -32,15 +33,18 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
           {/* <span className="navbar-toggler-icon"></span> */}
         </button>
-        <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-          <Link to={'/'}>
+        <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0" data-cy="home-page-logo">
+          <Link to={'/'} data-cy="home-page-logo">
             <LogoIcon />
           </Link>
         </h1>
 
         <div className="navbar-nav flex-row order-md-last">
-          <div className="p-1 m-1 d-flex align-items-center">
+          <div className="p-1 m-1 d-flex align-items-center" data-cy="mode-toggle">
             <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />
+          </div>
+          <div>
+            <Organization admin={admin} />
           </div>
           <div className="nav-item dropdown ms-2 user-avatar-nav-item">
             <a
@@ -50,28 +54,24 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               aria-label="Open user menu"
               data-testid="userAvatarHeader"
             >
-              <div className="d-xl-block">
+              <div className="d-xl-block" data-cy="user-menu">
                 <span className="avatar bg-secondary-lt">
                   {first_name ? first_name[0] : ''}
                   {last_name ? last_name[0] : ''}
                 </span>
               </div>
             </a>
-            <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-              {admin && (
-                <Link data-testid="settingsBtn" to="/users" className="dropdown-item">
-                  Manage Users
-                </Link>
-              )}
-              {admin && (
-                <Link data-tesid="settingsBtn" to="/groups" className="dropdown-item">
-                  Manage Groups
-                </Link>
-              )}
-              <Link data-testid="settingsBtn" to="#" onClick={openSettings} className="dropdown-item">
+            <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow end-0">
+              <Link
+                data-testid="settingsBtn"
+                to="#"
+                onClick={openSettings}
+                className="dropdown-item"
+                data-cy="profile-link"
+              >
                 Profile
               </Link>
-              <Link data-testid="logoutBtn" to="#" onClick={logout} className="dropdown-item">
+              <Link data-testid="logoutBtn" to="#" onClick={logout} className="dropdown-item" data-cy="logout-link">
                 Logout
               </Link>
             </div>

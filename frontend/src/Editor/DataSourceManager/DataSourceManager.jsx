@@ -270,7 +270,7 @@ class DataSourceManager extends React.Component {
                     ))}
                   </>
                 )}
-                {this.state.queryString && this.state.filteredDatasources.length === 0 && (
+                {!suggestingDatasources && this.state.queryString && this.state.filteredDatasources.length === 0 && (
                   <div className="empty-state-wrapper row">
                     <EmptyStateContainer
                       queryString={this.state.queryString}
@@ -343,7 +343,7 @@ class DataSourceManager extends React.Component {
         <ListGroup className="datasource-lists-modal" variant="flush">
           {dataSourceList.map((datasource) => (
             <ListGroup.Item key={datasource.key} eventKey={datasource.key}>
-              {datasource.type}
+              {`${datasource.type} (${datasource.list.length})`}
             </ListGroup.Item>
           ))}
         </ListGroup>

@@ -323,10 +323,11 @@ export function Table({
       columnType === 'badges' ||
       columnType === 'radio'
     ) {
-      const values = resolveReferences(column.values, currentState) || [];
-      const labels = resolveReferences(column.labels, currentState, []) || [];
+      columnOptions.selectOptions = [];
+      const values = resolveReferences(column.values, currentState, []);
+      const labels = resolveReferences(column.labels, currentState, []);
 
-      if (Array.isArray(labels)) {
+      if (Array.isArray(labels) && Array.isArray(values)) {
         columnOptions.selectOptions = labels.map((label, index) => {
           return { name: label, value: values[index] };
         });
@@ -581,6 +582,7 @@ export function Table({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
+                  tableRef={tableRef}
                 />
               </div>
             );
@@ -832,6 +834,8 @@ export function Table({
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
       ['currentData', currentData],
+      ['selectedRow', []],
+      ['selectedRowId', null],
     ]);
   }, [tableData.length, componentState.changeSet]);
 
@@ -850,6 +854,8 @@ export function Table({
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
   }, [pageCount]);
 
+  const tableRef = React.useRef();
+
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -865,6 +871,7 @@ export function Table({
         event.stopPropagation();
         onComponentClick(id, component, event);
       }}
+      ref={tableRef}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
       {displaySearchBox && (

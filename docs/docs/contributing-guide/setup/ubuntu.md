@@ -1,5 +1,6 @@
 ---
-sidebar_position: 1
+id: ubuntu
+title: Ubuntu
 ---
 
 # Ubuntu
@@ -26,7 +27,7 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
 
 2. Set up environment variables
 
-    Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/deployment/env-vars)
+    Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/setup/env-vars)
     ```bash
     cp .env.example .env
     ```
