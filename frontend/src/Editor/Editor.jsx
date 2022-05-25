@@ -998,7 +998,7 @@ class Editor extends React.Component {
       this.setState({ isSaving: false, showCreateVersionModalPrompt: true });
     } else if (!isEmpty(this.state.editingVersion)) {
       appVersionService
-        .save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition)
+        .save(this.state.appId, this.state.editingVersion.id, { definition: this.state.appDefinition })
         .then(() => {
           this.setState(
             {
