@@ -67,7 +67,7 @@ export const RedirectSso = function RedirectSso() {
             {isSingleOrganization && (
               <>
                 <div>
-                  <p>Please configure redirect url.</p>
+                  {(googlessoEnabled || gitSsoEnabled) && <p>Please configure redirect url.</p>}
                   {googlessoEnabled && (
                     <>
                       <p className="sso-type">
