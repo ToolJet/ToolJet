@@ -139,7 +139,7 @@ Loading state shows a loading skeleton for the table. This property can be used 
 
 ### Client-side pagination
 
-Client-side pagination is enabled by default. The number of records per page is 10 by default and can be changed to upto 50.
+Client-side pagination is enabled by default. When the client-side pagination is enabled(`{{true}}`) the number of records per page is 10 and if it is disabled(`{{false}}`) then it will show all the records in the single page.
 
 ## Event
 

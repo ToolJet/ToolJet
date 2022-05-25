@@ -618,6 +618,7 @@ export const componentTypes = [
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
+      defaultValue: { type: 'toggle', displayName: 'Default Status' },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -638,6 +639,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Toggle label' },
+        defaultValue: { value: '{{false}}' },
       },
       events: [],
       styles: {

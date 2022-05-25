@@ -1,13 +1,13 @@
 ---
-sidebar_position: 1
-sidebar_label: Password Login
+id: password-login
+title: Password Login
 ---
 
 # Password Login
 
 Password login is enabled by default for all workspaces. User with admin privilege can enable/disable it. 
 
-Select `Manage SSO` from workspace options
+- Select `Manage SSO` from workspace options
 
 <div style={{textAlign: 'center'}}>
 
@@ -15,7 +15,7 @@ Select `Manage SSO` from workspace options
 
 </div>
 
-Select `Password Login`. You can enable/disable it
+- Select `Password Login`. You can enable/disable it
 
 <div style={{textAlign: 'center'}}>
 
