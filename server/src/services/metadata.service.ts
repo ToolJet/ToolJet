@@ -66,7 +66,7 @@ export class MetadataService {
         total_editors: totalEditorCount,
         total_viewers: totalViewerCount,
         tooljet_version: globalThis.TOOLJET_VERSION,
-        deployment_platform: process.env.DEPLOYMENT_PLATFORM,
+        deployment_platform: this.configService.get<string>('DEPLOYMENT_PLATFORM'),
       },
     });
   }
