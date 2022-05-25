@@ -550,7 +550,7 @@ export function previewQuery(_ref, query) {
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref.state.currentState, query.options.code);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, true);
     } else {
       queryExecutionPromise = dataqueryService.preview(query, options);
     }
@@ -639,7 +639,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
         console.log('here');
-        queryExecutionPromise = executeMultilineJS(_self.state.currentState, query.options.code);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, false, confirmed, mode);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }

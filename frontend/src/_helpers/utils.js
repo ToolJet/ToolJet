@@ -3,6 +3,7 @@ import moment from 'moment';
 import _ from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
+import { previewQuery, runQuery } from '@/_helpers/appUtils';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -269,13 +270,64 @@ export function validateEmail(email) {
   return emailRegex.test(email);
 }
 
-export async function executeMultilineJS(currentState, code) {
+export async function executeMultilineJS(_ref, code, isPreview, confirmed = undefined, mode = '') {
+  const { currentState } = _ref.state;
   let result = {},
     error = null;
 
+  const query = {
+    runQuery: function (queryName = '') {
+      const query = _ref.state.dataQueries.find((query) => query.name === queryName);
+      if (_.isEmpty(query)) return;
+      if (isPreview) {
+        previewQuery(_ref, query);
+      } else {
+        runQuery(_ref, query.id, query.name, confirmed, mode);
+      }
+    },
+    setVariable: function (object = {}) {
+      if (typeof object !== 'object') return;
+      const customAppVariables = { ..._ref.state.currentState.variables };
+      for (let [key, value] of Object.entries(object)) {
+        const objKey = resolveReferences(key, _ref.state.currentState, undefined, {});
+        const objValue = resolveReferences(value, _ref.state.currentState, undefined, {});
+        customAppVariables[objKey] = objValue;
+      }
+
+      return _ref.setState({
+        currentState: {
+          ..._ref.state.currentState,
+          variables: customAppVariables,
+        },
+      });
+    },
+    unSetVariable: function (key = '') {
+      const objKey = resolveReferences(key, _ref.state.currentState, undefined, {});
+      const customAppVariables = { ..._ref.state.currentState.variables };
+      delete customAppVariables[objKey];
+
+      return _ref.setState({
+        currentState: {
+          ..._ref.state.currentState,
+          variables: customAppVariables,
+        },
+      });
+    },
+  };
+
   try {
     const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
-    var evalFn = new AsyncFunction('moment', '_', 'components', 'queries', 'globals', 'axios', 'variables', code);
+    var evalFn = new AsyncFunction(
+      'moment',
+      '_',
+      'components',
+      'queries',
+      'globals',
+      'axios',
+      'variables',
+      'query',
+      code
+    );
     result = {
       status: 'ok',
       data: await evalFn(
@@ -285,7 +337,8 @@ export async function executeMultilineJS(currentState, code) {
         currentState.queries,
         currentState.globals,
         axios,
-        currentState.variables
+        currentState.variables,
+        query
       ),
     };
   } catch (err) {
