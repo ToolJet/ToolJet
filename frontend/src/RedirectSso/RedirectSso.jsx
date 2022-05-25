@@ -67,7 +67,14 @@ export const RedirectSso = function RedirectSso() {
             {isSingleOrganization && (
               <>
                 <div>
-                  {(googlessoEnabled || gitSsoEnabled) && <p>Please configure redirect url.</p>}
+                  {googlessoEnabled || gitSsoEnabled ? (
+                    <p>Please configure redirect url.</p>
+                  ) : (
+                    <p>
+                      Please login with password and you can setup sso using workspace
+                      <a href="https://docs.tooljet.com/docs/category/single-sign-on">Manage SSO menu.</a>
+                    </p>
+                  )}
                   {googlessoEnabled && (
                     <>
                       <p className="sso-type">
