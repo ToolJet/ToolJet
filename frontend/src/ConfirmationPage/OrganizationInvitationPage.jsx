@@ -1,5 +1,5 @@
 import React from 'react';
-import { userService } from '@/_services';
+import { appService } from '@/_services';
 import { toast } from 'react-hot-toast';
 
 class OrganizationInvitationPage extends React.Component {
@@ -42,7 +42,7 @@ class OrganizationInvitationPage extends React.Component {
       }
     }
 
-    userService
+    appService
       .acceptInvite({
         token,
         password,

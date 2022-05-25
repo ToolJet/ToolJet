@@ -1,5 +1,5 @@
 import React from 'react';
-import { userService } from '@/_services';
+import { appService } from '@/_services';
 import { toast } from 'react-hot-toast';
 
 class ConfirmationPage extends React.Component {
@@ -43,7 +43,7 @@ class ConfirmationPage extends React.Component {
       return;
     }
 
-    userService
+    appService
       .setPasswordFromToken({
         token,
         password,

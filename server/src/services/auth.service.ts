@@ -1,4 +1,10 @@
-import { Injectable, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { OrganizationsService } from './organizations.service';
 import { JwtService } from '@nestjs/jwt';
@@ -9,12 +15,22 @@ import { decamelizeKeys } from 'humps';
 import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
+import { CreateUserDto } from '@dto/user.dto';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+    @InjectRepository(OrganizationUser)
+    private organizationUsersRepository: Repository<OrganizationUser>,
+    @InjectRepository(Organization)
+    private organizationsRepository: Repository<Organization>,
     private usersService: UsersService,
     private jwtService: JwtService,
     private organizationsService: OrganizationsService,
@@ -213,5 +229,82 @@ export class AuthService {
         forgotPasswordToken: null,
       });
     }
+  }
+
+  async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
+    const { organization, password, token, role, first_name: firstName, last_name: lastName } = userCreateDto;
+
+    console.log('--->>>', userCreateDto);
+
+    if (!token) {
+      throw new BadRequestException('Invalid token');
+    }
+
+    const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
+
+    if (!user?.organizationUsers) {
+      throw new BadRequestException('Invalid invitation link');
+    }
+    const organizationUser: OrganizationUser = user.organizationUsers.find(
+      (ou) => ou.organizationId === user.defaultOrganizationId
+    );
+
+    if (!organizationUser) {
+      throw new BadRequestException('Invalid invitation link');
+    }
+
+    await this.usersRepository.save(
+      Object.assign(user, {
+        firstName,
+        lastName,
+        password,
+        role,
+        invitationToken: null,
+      })
+    );
+
+    await this.organizationUsersRepository.save(
+      Object.assign(organizationUser, {
+        invitationToken: null,
+        status: 'active',
+      })
+    );
+
+    if (organization) {
+      await this.organizationsRepository.update(user.defaultOrganizationId, {
+        name: organization,
+      });
+    }
+  }
+
+  async acceptOrganizationInvite(params: any) {
+    const { token } = params;
+
+    const organizationUser = await this.organizationUsersRepository.findOne({
+      where: { invitationToken: token },
+      relations: ['user'],
+    });
+
+    if (!organizationUser?.user) {
+      throw new BadRequestException('Invalid invitation link');
+    }
+    const user: User = organizationUser.user;
+
+    if (user.invitationToken) {
+      // User sign up link send - not activated account
+      this.emailService
+        .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
+        .catch((err) => console.error('Error while sending welcome mail', err));
+      throw new UnauthorizedException(
+        'User not exist in the workspace, Please setup your account using link shared via email'
+      );
+    }
+
+    await this.organizationUsersRepository.save(
+      Object.assign(organizationUser, {
+        invitationToken: null,
+        status: 'active',
+      })
+    );
   }
 }

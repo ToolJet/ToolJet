@@ -9,6 +9,8 @@ import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
+import { ConfigService } from '@nestjs/config';
+import { OrganizationsService } from './organizations.service';
 const uuid = require('uuid');
 
 @Injectable()
@@ -17,7 +19,9 @@ export class OrganizationUsersService {
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
     private usersService: UsersService,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private configService: ConfigService,
+    private organizationsService: OrganizationsService
   ) {}
 
   async findOrganization(id: string): Promise<OrganizationUser> {
@@ -32,6 +36,8 @@ export class OrganizationUsersService {
     };
 
     let user = await this.usersService.findByEmail(userParams.email);
+    let defaultOrganisationId,
+      shouldCreateUser = false;
 
     if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
       throw new BadRequestException('User with such email already exists.');
@@ -42,7 +48,28 @@ export class OrganizationUsersService {
       await this.usersService.update(user.id, { firstName: userParams.firstName, lastName: userParams.lastName });
     }
 
-    user = await this.usersService.create(userParams, currentUser.organizationId, ['all_users'], user);
+    if (!user) {
+      // User not exist
+      shouldCreateUser = true;
+      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
+        // Create default organization
+        defaultOrganisationId = (await this.organizationsService.create('Untitled workspace'))?.id;
+      }
+    }
+    user = await this.usersService.create(
+      userParams,
+      currentUser.organizationId,
+      ['all_users'],
+      user,
+      true,
+      defaultOrganisationId
+    );
+
+    if (shouldCreateUser) {
+      this.emailService
+        .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
+        .catch((err) => console.error('Error while sending welcome mail', err));
+    }
 
     const currentOrganization: Organization = (
       await this.organizationUsersRepository.findOne({
