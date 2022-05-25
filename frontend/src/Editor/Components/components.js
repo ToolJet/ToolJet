@@ -2229,7 +2229,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        label: { value: `Button` },
+        label: { value: `Button group` },
         defaultSelected: { value: '[1]' },
         values: { value: '{{[1,2,3]}}' },
         labels: { value: '{{[]}}' },
