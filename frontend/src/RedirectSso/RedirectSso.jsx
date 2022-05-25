@@ -72,7 +72,9 @@ export const RedirectSso = function RedirectSso() {
                   ) : (
                     <p>
                       Please login with password and you can setup sso using workspace
-                      <a href="https://docs.tooljet.com/docs/category/single-sign-on">Manage SSO menu.</a>
+                      <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/category/single-sign-on">
+                        Manage SSO menu.
+                      </a>
                     </p>
                   )}
                   {googlessoEnabled && (
