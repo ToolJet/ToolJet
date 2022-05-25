@@ -91,12 +91,16 @@ export const Folders = function Folders({
                 className={`list-group-item list-group-item-action d-flex align-items-center ${
                   activeFolder.id === folder.id ? 'active' : ''
                 } ${darkMode && 'dark'}`}
-                onClick={() => handleFolderChange(folder)}
               >
-                <span className="me-2">
-                  <img src="/assets/images/icons/folder.svg" alt="" width="14" height="14" className="folder-ico" />
-                </span>
-                {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
+                <div onClick={() => handleFolderChange(folder)} className="flex-grow-1">
+                  <span className="me-2">
+                    <img src="/assets/images/icons/folder.svg" alt="" width="14" height="14" className="folder-ico" />
+                  </span>
+                  {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
+                </div>
+                <div className="d-grid menu-ico menu-ico">
+                  <img className="svg-icon" src="/assets/images/icons/three-dots.svg" data-cy="folder-item-menu-icon" />
+                </div>
               </a>
             ))
           : !isLoading && (
