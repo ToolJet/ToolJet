@@ -40,88 +40,122 @@ export const RedirectSso = function RedirectSso() {
             </a>
           </div>
           <div className="sso-helper-container">
-            <h2>Upgrade to version 1.30.0 and above.</h2>
-            {!isSingleOrganization ? (
-              <>
-                <p>
-                  You have Enabled
-                  <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
-                    Multi-Workspace
-                  </a>
-                </p>
-                <p>
-                  Please login with password and you can setup sso using workspace{' '}
-                  <a href="https://docs.tooljet.com/docs/category/single-sign-on">Manage SSO menu.</a>{' '}
-                </p>
-              </>
-            ) : (
-              <>
-                <p>
-                  You have Disabled
-                  <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
-                    Multi-Workspace.
-                  </a>
-                </p>
-              </>
-            )}
-            {isSingleOrganization && (
-              <>
-                <div>
-                  {googlessoEnabled || gitSsoEnabled ? (
-                    <p>Please configure redirect url.</p>
-                  ) : (
+            <h2>Upgrading to v1.30.0 and above.</h2>
+            <p className="sso-helper-doc">
+              From v1.30.0 we have introduced
+              <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
+                Multi-Workspace
+              </a>
+              . The Single Sign-On related configurations are moved from environment variables to database. Please refer
+              this
+              <a
+                style={{ marginLeft: '4px', marginRight: '4px' }}
+                href="https://docs.tooljet.com/docs/category/single-sign-on"
+              >
+                Link
+              </a>
+              to configure SSO.
+              <br />
+              <li>
+                If you have Google or Git SSO configurations before upgrade and disabled Multi-Workspace, then the SSO
+                configurations will be migrated while upgrade but you have to re-configure the redirect URL in the SSO
+                provider side. Redirect URLs for each SSO will be given below.
+                <br />
+              </li>
+              <li>
+                If you have enabled Multi-Workspace, then the SSO configurations will not be migrated while upgrade so
+                you have to re-configure the SSO under the respective workspace.
+              </li>
+            </p>
+            <div className="sso-content-wrapper">
+              {!isSingleOrganization ? (
+                <>
+                  <div>
                     <p>
-                      Please login with password and you can setup sso using workspace
-                      <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/category/single-sign-on">
-                        Manage SSO menu.
+                      You have Enabled
+                      <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
+                        Multi-Workspace
                       </a>
                     </p>
-                  )}
-                  {googlessoEnabled && (
-                    <>
-                      <p className="sso-type">
-                        Google:
-                        <a href="https://docs.tooljet.com/docs/sso/google"> Link</a>
-                      </p>
-                      <div className="flexer">
-                        <span> Redirect URL: </span>
-                        <p id="google-url">{`${window.location.protocol}//${window.location.host}/sso/google/${organization?.google?.config_id}`}</p>
+                    <p>
+                      Please login with password and you can setup sso using workspace
+                      <a href="https://docs.tooljet.com/docs/category/single-sign-on">Manage SSO menu.</a>
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <p>
+                      You have Disabled
+                      <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
+                        Multi-Workspace.
+                      </a>
+                    </p>
+                  </div>
+                </>
+              )}
+              <div>
+                {isSingleOrganization && (
+                  <>
+                    <div>
+                      {googlessoEnabled || gitSsoEnabled ? (
+                        <p>Please configure redirect url.</p>
+                      ) : (
+                        <p>
+                          Please login with password and you can setup sso using workspace
+                          <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/category/single-sign-on">
+                            Manage SSO menu.
+                          </a>
+                        </p>
+                      )}
+                      {googlessoEnabled && (
+                        <>
+                          <p className="sso-type">
+                            Google:
+                            <a href="https://docs.tooljet.com/docs/sso/google"> Link</a>
+                          </p>
+                          <div className="flexer">
+                            <span> Redirect URL: </span>
+                            <p id="google-url">{`${window.location.protocol}//${window.location.host}/sso/google/${organization?.google?.config_id}`}</p>
 
-                        <img
-                          onClick={() => copyFunction('google-url')}
-                          src={`/assets/images/icons/copy.svg`}
-                          width="16"
-                          height="16"
-                          className="sso-copy"
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
-                <div>
-                  {gitSsoEnabled && (
-                    <>
-                      <p className="sso-type">
-                        Git :<a href="https://docs.tooljet.com/docs/sso/github"> Link</a>
-                      </p>
+                            <img
+                              onClick={() => copyFunction('google-url')}
+                              src={`/assets/images/icons/copy.svg`}
+                              width="16"
+                              height="16"
+                              className="sso-copy"
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div>
+                      {gitSsoEnabled && (
+                        <>
+                          <p className="sso-type">
+                            Git :<a href="https://docs.tooljet.com/docs/sso/github"> Link</a>
+                          </p>
 
-                      <div className="flexer">
-                        <span> Redirect URL :</span>
-                        <p id="git-url">{`${window.location.protocol}//${window.location.host}/sso/git/${organization?.git?.config_id}`}</p>
+                          <div className="flexer">
+                            <span> Redirect URL :</span>
+                            <p id="git-url">{`${window.location.protocol}//${window.location.host}/sso/git/${organization?.git?.config_id}`}</p>
 
-                        <img
-                          onClick={() => copyFunction('git-url')}
-                          src={`/assets/images/icons/copy.svg`}
-                          width="16"
-                          height="16"
-                          className="sso-copy"
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
-              </>
-            )}
+                            <img
+                              onClick={() => copyFunction('git-url')}
+                              src={`/assets/images/icons/copy.svg`}
+                              width="16"
+                              height="16"
+                              className="sso-copy"
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
