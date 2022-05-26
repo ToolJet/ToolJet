@@ -7,7 +7,7 @@ import { Connection } from 'typeorm';
 
 @Controller('extensions')
 export class ExtensionsController {
-  constructor(private readonly extensionsService: ExtensionsService, private connection: Connection) {}
+  constructor(private readonly extensionsService: ExtensionsService, private connection: Connection) { }
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))

@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsUUID, IsString, IsNotEmpty, IsDefined } from 'class-validator';
+import { IsUUID, IsString, IsOptional, IsNotEmpty, IsDefined } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
 
@@ -11,6 +11,7 @@ export class CreateDataSourceDto {
   app_version_id: string;
 
   @IsUUID()
+  @IsOptional()
   extension_id: string;
 
   @IsString()
@@ -27,8 +28,8 @@ export class CreateDataSourceDto {
   options: any;
 }
 
-export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) {}
-export class TestDataSourceDto extends PartialType(CreateDataSourceDto) {}
+export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) { }
+export class TestDataSourceDto extends PartialType(CreateDataSourceDto) { }
 
 export class GetDataSourceOauthUrlDto {
   @IsString()

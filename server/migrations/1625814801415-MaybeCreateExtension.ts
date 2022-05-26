@@ -4,7 +4,7 @@ export class MaybeCreateExtension1625814801415 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'extension',
+        name: 'extensions',
         columns: [
           {
             name: 'id',
@@ -31,5 +31,5 @@ export class MaybeCreateExtension1625814801415 implements MigrationInterface {
     );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> { }
 }

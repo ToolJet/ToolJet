@@ -13,12 +13,12 @@ export class ExtensionsService {
     private readonly fileService: FileService,
     @InjectRepository(Extension)
     private extensionsRepository: Repository<Extension>
-  ) {}
+  ) { }
   async create(createExtensionDto: CreateExtensionDto, file: Express.Multer.File, queryRunner: QueryRunner) {
     const str = file.buffer.toString('utf8');
     const uploadedFile = await this.fileService.uploadFile(encode(str), file.originalname, queryRunner);
     createExtensionDto.file_id = uploadedFile.id;
-    return this.extensionsRepository.create(createExtensionDto);
+    return await this.extensionsRepository.create(createExtensionDto);
   }
 
   async findAll() {

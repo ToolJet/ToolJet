@@ -12,6 +12,10 @@ export class CreateDataQueryDto {
 
   @IsUUID()
   @IsOptional()
+  extension_id: string;
+
+  @IsUUID()
+  @IsOptional()
   data_source_id: string;
 
   @IsUUID()
@@ -36,4 +40,4 @@ export class CreateDataQueryDto {
   options: object;
 }
 
-export class UpdateDataQueryDto extends PartialType(CreateDataQueryDto) {}
+export class UpdateDataQueryDto extends PartialType(CreateDataQueryDto) { }

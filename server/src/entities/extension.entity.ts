@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn
 import { File } from 'src/entities//file.entity';
 import { Organization } from 'src/entities/organization.entity';
 
-@Entity()
+@Entity({ name: 'extensions' })
 export class Extension {
   @PrimaryGeneratedColumn()
   public id: string;
