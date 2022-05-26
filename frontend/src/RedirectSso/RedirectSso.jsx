@@ -100,7 +100,7 @@ export const RedirectSso = function RedirectSso() {
                   <>
                     <div>
                       {googlessoEnabled || gitSsoEnabled ? (
-                        <p>Please configure redirect url.</p>
+                        <p>Please configure redirect url in SSO provider side.</p>
                       ) : (
                         <p>
                           Please login with password and you can setup sso using workspace
