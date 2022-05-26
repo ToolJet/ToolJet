@@ -7,6 +7,7 @@ export const folderService = {
   getAll,
   addToFolder,
   removeAppFromFolder,
+  updateFolder,
 };
 
 function getAll(searchKey = '') {
@@ -25,6 +26,19 @@ function create(name) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/folders`, requestOptions).then(handleResponse);
+}
+
+function updateFolder(name, id) {
+  const body = {
+    name,
+  };
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/folders/${id}`, requestOptions).then(handleResponse);
 }
 
 function deleteFolder(id) {

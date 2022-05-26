@@ -42,18 +42,16 @@ export const Folders = function Folders({
   const [showForm, setShowForm] = useState(false);
   const [isCreating, setCreationStatus] = useState(false);
   const [isDeleting, setDeletionStatus] = useState(false);
+  const [isUpdating, setUpdationStatus] = useState(false);
   const [deletingFolder, setDeletingFolder] = useState(null);
+  const [updatingFolder, setUpdatingFolder] = useState(null);
   const [newFolderName, setNewFolderName] = useState('');
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [activeFolder, setActiveFolder] = useState(currentFolder || {});
 
   function saveFolder() {
-    if (!newFolderName || !newFolderName.trim()) {
-      toast.error("folder name can't be empty.", {
-        position: 'top-center',
-      });
-      return;
-    }
+    validateName();
     setCreationStatus(true);
     folderService.create(newFolderName).then(() => {
       toast.success('folder created.', {
@@ -72,9 +70,14 @@ export const Folders = function Folders({
   }
 
   function deleteFolder(folder) {
-    console.log(folder);
     setShowDeleteConfirmation(true);
     setDeletingFolder(folder);
+  }
+
+  function updateFolder(folder) {
+    setNewFolderName(folder.name);
+    setShowUpdateForm(true);
+    setUpdatingFolder(folder);
   }
 
   function executeDeletion() {
@@ -98,6 +101,35 @@ export const Folders = function Folders({
   function cancelDeleteDialog() {
     setShowDeleteConfirmation(false);
     setDeletingFolder(null);
+  }
+
+  function validateName() {
+    if (!newFolderName || !newFolderName.trim()) {
+      toast.error("folder name can't be empty.", {
+        position: 'top-center',
+      });
+      return;
+    }
+  }
+
+  function executeEditFolder() {
+    validateName();
+    setUpdationStatus(true);
+    folderService
+      .updateFolder(newFolderName, updatingFolder.id)
+      .then(() => {
+        toast.success('folder has been updated.', {
+          position: 'top-center',
+        });
+        setUpdationStatus(false);
+        setShowUpdateForm(false);
+        setNewFolderName('');
+        foldersChanged();
+      })
+      .catch(() => {
+        setNewFolderName('');
+        setUpdationStatus(false);
+      });
   }
 
   return (
@@ -135,7 +167,13 @@ export const Folders = function Folders({
         <div className="d-flex justify-content-between mb-3">
           <div className="folder-info">Folders</div>
           {canCreateFolder && (
-            <div className="folder-create-btn" onClick={() => setShowForm(true)}>
+            <div
+              className="folder-create-btn"
+              onClick={() => {
+                setNewFolderName('');
+                setShowForm(true);
+              }}
+            >
               + Create new folder
             </div>
           )}
@@ -176,6 +214,7 @@ export const Folders = function Folders({
                       canDeleteFolder={canDeleteFolder}
                       canUpdateFolder={canUpdateFolder}
                       deleteFolder={() => deleteFolder(folder)}
+                      editFolder={() => updateFolder(folder)}
                       isMenuOpen={isMenuOpen}
                       darkMode={darkMode}
                       currentFolder={currentFolder}
@@ -188,7 +227,11 @@ export const Folders = function Folders({
               <div className="folder-info">You haven&apos;t created any folders. Use folders to organize your apps</div>
             )}
 
-        <Modal show={showForm} closeModal={() => setShowForm(false)} title="Create folder">
+        <Modal
+          show={showForm || showUpdateForm}
+          closeModal={() => (showUpdateForm ? setShowUpdateForm(false) : setShowForm(false))}
+          title={showUpdateForm ? 'Update Folder' : 'Create folder'}
+        >
           <div className="row">
             <div className="col modal-main">
               <input
@@ -196,18 +239,25 @@ export const Folders = function Folders({
                 onChange={(e) => setNewFolderName(e.target.value)}
                 className="form-control"
                 placeholder="folder name"
-                disabled={isCreating}
+                disabled={isCreating || isUpdating}
+                value={newFolderName}
                 maxLength={25}
               />
             </div>
           </div>
           <div className="row">
             <div className="col d-flex modal-footer-btn">
-              <button className="btn btn-light" onClick={() => setShowForm(false)}>
+              <button
+                className="btn btn-light"
+                onClick={() => (showUpdateForm ? setShowUpdateForm(false) : setShowForm(false))}
+              >
                 Cancel
               </button>
-              <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={saveFolder}>
-                Create folder
+              <button
+                className={`btn btn-primary ${isCreating || isUpdating ? 'btn-loading' : ''}`}
+                onClick={showUpdateForm ? executeEditFolder : saveFolder}
+              >
+                {showUpdateForm ? 'Update folder' : 'Create folder'}
               </button>
             </div>
           </div>
