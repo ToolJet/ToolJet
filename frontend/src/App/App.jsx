@@ -55,7 +55,7 @@ class App extends React.Component {
 
   componentDidMount() {
     authenticationService.currentUser.subscribe((x) => {
-      this.setState({ currentUser: x });
+      this.setState({ currentUser: x }, this.fetchMetadata);
 
       function initFreshChat() {
         window.fcWidget.init({
