@@ -13,14 +13,14 @@ import { ThreadsAbilityFactory } from './abilities/threads-ability.factory';
 import { CommentsAbilityFactory } from './abilities/comments-ability.factory';
 import { CaslAbilityFactory } from './casl-ability.factory';
 import { FoldersAbilityFactory } from './abilities/folders-ability.factory';
-import { FileService } from '@services/file.service';
+import { FilesService } from '@services/files.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App])],
   providers: [
     CaslAbilityFactory,
     OrganizationUsersService,
-    FileService,
+    FilesService,
     UsersService,
     EmailService,
     AppsAbilityFactory,

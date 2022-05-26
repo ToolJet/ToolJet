@@ -346,6 +346,25 @@ describe('users controller', () => {
     });
   });
 
+  describe('POST /api/users/avatar', () => {
+    it('should allow users to add a avatar', async () => {
+      const userData = await createUser(app, { email: 'admin@tooljet.io' });
+
+      const { user } = userData;
+
+      const formData = new FormData();
+
+      formData.append('file', new Blob([]));
+
+      const response = await request(app.getHttpServer())
+        .post('/api/users/avatar')
+        .set('Authorization', authHeaderForUser(user))
+        .send(formData);
+
+      expect(response.statusCode).toBe(201);
+    });
+  });
+
   afterAll(async () => {
     await app.close();
   });

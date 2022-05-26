@@ -18,7 +18,7 @@ import { MetaModule } from './modules/meta/meta.module';
 import { AppController } from './controllers/app.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
-import { FileModule } from './modules/file/file.module';
+import { FilesModule } from './modules/files/files.module';
 import { AppConfigModule } from './modules/app_config/app_config.module';
 import { AppsModule } from './modules/apps/apps.module';
 import { FoldersModule } from './modules/folders/folders.module';
@@ -32,7 +32,6 @@ import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
-import { ExtensionsModule } from './extensions/extensions.module';
 
 const imports = [
   ConfigModule.forRoot({
@@ -79,9 +78,8 @@ const imports = [
   MetaModule,
   LibraryAppModule,
   GroupPermissionsModule,
-  FileModule,
+  FilesModule,
   EventsModule,
-  ExtensionsModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {

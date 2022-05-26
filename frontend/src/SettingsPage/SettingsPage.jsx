@@ -22,20 +22,25 @@ function SettingsPage(props) {
       return;
     }
     setUpdateInProgress(true);
-    const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
-    authenticationService.updateCurrentUserDetails(updatedDetails);
+    try {
+      const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
+      authenticationService.updateCurrentUserDetails(updatedDetails);
 
-    if (selectedFile) {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      const avatarData = await userService.updateAvatar(formData, token);
-      authenticationService.updateCurrentUserDetails({ avatar_id: avatarData.id });
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        const avatarData = await userService.updateAvatar(formData, token);
+        authenticationService.updateCurrentUserDetails({ avatar_id: avatarData.id });
+      }
+
+      toast.success('Details updated!', {
+        duration: 3000,
+      });
+      setUpdateInProgress(false);
+    } catch (error) {
+      toast.error('Something went wrong');
+      setUpdateInProgress(false);
     }
-
-    toast.success('Details updated!', {
-      duration: 3000,
-    });
-    setUpdateInProgress(false);
   };
 
   const changePassword = async () => {

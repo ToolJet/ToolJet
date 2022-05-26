@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'files' })
 export class File {
   @PrimaryGeneratedColumn()
   public id: string;
@@ -11,5 +11,5 @@ export class File {
   @Column({
     type: 'bytea',
   })
-  data: Uint8Array;
+  data: Uint8Array | Buffer | string;
 }

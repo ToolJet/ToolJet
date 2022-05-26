@@ -21,10 +21,13 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     async function fetchAvatar() {
-      const avatar = await userService.getAvatar(avatar_id);
-      setAvatar(avatar);
+      const blob = await userService.getAvatar(avatar_id);
+      setAvatar(URL.createObjectURL(blob));
     }
     if (avatar_id) fetchAvatar();
+
+    () => avatar && URL.revokeObjectURL(avatar);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatar_id]);
 
   function logout() {

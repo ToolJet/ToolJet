@@ -22,7 +22,7 @@ import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
-import { FileService } from '@services/file.service';
+import { FilesService } from '@services/files.service';
 
 @Module({
   imports: [
@@ -51,7 +51,7 @@ import { FileService } from '@services/file.service';
     DataQueriesService,
     UsersService,
     AppImportExportService,
-    FileService,
+    FilesService,
   ],
   controllers: [DataSourcesController],
 })

@@ -10,7 +10,7 @@ import { OrganizationUsersController } from '@controllers/organization_users.con
 import { UsersService } from 'src/services/users.service';
 import { CaslModule } from '../casl/casl.module';
 import { EmailService } from '@services/email.service';
-import { FileService } from '@services/file.service';
+import { FilesService } from '@services/files.service';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
 import { File } from 'src/entities/file.entity';
@@ -54,7 +54,7 @@ import { EncryptionService } from '@services/encryption.service';
     OrganizationUsersService,
     UsersService,
     EmailService,
-    FileService,
+    FilesService,
     AuthService,
     GroupPermissionsService,
     EncryptionService,
