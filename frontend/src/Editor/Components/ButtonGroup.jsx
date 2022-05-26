@@ -38,7 +38,7 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
   }, [labels, values]);
 
   useEffect(() => {
-    multiSelection && setDefaultActive(defaultSelected);
+    setDefaultActive(defaultSelected);
   }, [multiSelection]);
 
   const buttonClick = (index) => {
