@@ -77,9 +77,6 @@ button {
     }
   }
 }
-.sso-type{
-  font-weight: 600;
-}
 
 .emoji-mart-scroll {
   border-bottom: 0;
@@ -5250,7 +5247,9 @@ word-break: break-all;
   font-weight: 800;
   margin-bottom: 6px;
 }
+
 .sso-type{
+  font-weight: 600;
   margin-bottom: 4px !important;
   display: flex;
   span{
