@@ -321,6 +321,8 @@ describe('Authentication', () => {
             'updated_at',
             'created_at',
             'folder_create',
+            'folder_delete',
+            'folder_update',
           ].sort()
         );
         expect(app_group_permissions).toHaveLength(0);
@@ -382,6 +384,8 @@ describe('Authentication', () => {
             'updated_at',
             'created_at',
             'folder_create',
+            'folder_delete',
+            'folder_update',
           ].sort()
         );
         expect(app_group_permissions).toHaveLength(0);
