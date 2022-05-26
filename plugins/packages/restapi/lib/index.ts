@@ -1,7 +1,7 @@
 const urrl = require('url');
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
-import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, cleanSensitiveData } from '@tooljet-plugins/common';
 const JSON5 = require('json5');
 import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
 
@@ -186,13 +186,16 @@ export default class RestapiQueryService implements QueryService {
       throw new QueryError('Query could not be completed', error.message, result);
     }
 
-    return {
+    const queryResponse: RestAPIResult = {
       status: 'ok',
       data: result,
       request: requestObject,
       response: responseObject,
       responseHeaders,
     };
+
+    cleanSensitiveData(queryResponse.request['headers'], ['authorization']);
+    return queryResponse;
   }
 
   /* This function fetches the access token from the token url set in REST API (oauth) datasource */

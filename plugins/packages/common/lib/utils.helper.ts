@@ -31,3 +31,15 @@ export function getCachedConnection(dataSourceId: string | number, dataSourceUpd
     }
   }
 }
+
+export function cleanSensitiveData(data, keys) {
+  if (!data || typeof data !== 'object') return;
+
+  for (const key in data) {
+    if (keys.includes(key)) {
+      delete data[key];
+    } else {
+      cleanSensitiveData(data[key], keys);
+    }
+  }
+}
