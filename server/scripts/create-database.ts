@@ -60,7 +60,7 @@ if (fs.existsSync(nodeEnvPath)) {
 } else if (fs.existsSync(fallbackPath)) {
   createDatabaseFromFile(fallbackPath);
 } else {
-  console.log(`${nodeEnvPath} file not found to create database\n` + 'Picking up config from the environment');
+  console.log('Picking up config from the environment');
 
   createDatabase();
 }
