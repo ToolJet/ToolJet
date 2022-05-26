@@ -34,12 +34,16 @@
       "value": "--max-old-space-size=4096"
     },
     "DISABLE_SIGNUPS": {
-      "description": "Disable sign up in login page only applicable if MULTI_ORGANIZATION=true",
+      "description": "Disable sign up in login page only applicable if Multi-Workspace feature is turned on",
       "value": "false"
     },
-    "MULTI_ORGANIZATION": {
-      "description": "Enables multi organization feature",
+    "DISABLE_MULTI_WORKSPACE": {
+      "description": "Disables Multi-Workspace feature",
       "value": "false"
+    },
+    "DEPLOYMENT_PLATFORM": {
+      "description": "Platform ToolJet is deployed on",
+      "value": "heroku"
     }
   },
   "formation": {

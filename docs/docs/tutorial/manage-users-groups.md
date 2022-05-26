@@ -7,7 +7,7 @@ title: Managing Users and Groups
 
 ## Managing Users
 
-Admin of an organization can add users to the organization. To manage the users in your organization, just go to the **Account menu** on top right corner and click on the **Manage Users**.
+Admin of a workspace can add users to the workspace. To manage the users in your workspace, just go to the **Workspace menu** on top right corner and click on the **Manage Users**.
 
 <div style={{textAlign: 'center'}}>
 
@@ -17,7 +17,7 @@ Admin of an organization can add users to the organization. To manage the users 
 
 ### Inviting users
 
-Admins can invite anyone to a ToolJet organization using the email address. To invite a user:
+Admins can invite anyone to a workspace using the email address. To invite a user:
 
 - On the **Manage Users** page click on the `Invite new user` button.
 
@@ -35,7 +35,7 @@ Admins can invite anyone to a ToolJet organization using the email address. To i
 
 </div>
 
-- An email including the **Invite Link** to join your organization will be send to the created user. The status will turn from **invited** to **active** after the user successfully joins your organization using the invite link.
+- An email including the **Invite Link** to join your workspace will be send to the created user. The status will turn from **invited** to **active** after the user successfully joins your workspace using the invite link.
 
 :::tip
 
@@ -51,7 +51,7 @@ You can also copy the invitation url by clicking on the copy icon next to `invit
 
 ### Disabling a user's access
 
-You can disable any active user's access to your organization by clicking on the **Archive** and then the status of the user will change from **active** to **archived**.
+You can disable any active user's access to your workspace by clicking on the **Archive** and then the status of the user will change from **active** to **archived**.
 
 <div style={{textAlign: 'center'}}>
 
@@ -71,7 +71,7 @@ Similar to archiving a user's access, you can enable it again by clicking on **U
 
 ## Managing Groups
 
-On ToolJet, Admins can create groups for users added in an organization and grant them access to particular app(s) with specific permissions. To manage groups, just go to the **Account menu** on top right corner and click on the **Manage Groups**.
+On ToolJet, Admins can create groups for users added in a workspace and grant them access to particular app(s) with specific permissions. To manage groups, just go to the **Account menu** on top right corner and click on the **Manage Groups**.
 
 <div style={{textAlign: 'center'}}>
 
@@ -115,13 +115,13 @@ Admins can set granular permission like creating/deleting apps or creating folde
 
 :::tip
 
-All the activities performed by any Admin or any user in a ToolJet organization is logged in `Audit logs` - including any activity related with managing users and groups.
+All the activities performed by any Admin or any user in a workspace is logged in `Audit logs` - including any activity related with managing users and groups.
 
 :::
 
 ### Predefined Groups
 
-By default, every organization will have two User Groups:
+By default, every workspace will have two User Groups:
 
 **1. All Users**
 
@@ -129,7 +129,7 @@ This group contains all the users and admins.
 
 | Apps | Users | Permissions |
 | ----------- | ----------- | ----------- |
-| You can add or remove apps. | Modification is disabled. This group will have all the users and admins added in an organization. | You can edit permissions for all the users globally. |
+| You can add or remove apps. | Modification is disabled. This group will have all the users and admins added in a workspace. | You can edit permissions for all the users globally. |
 
 <div style={{textAlign: 'center'}}>
 
@@ -143,7 +143,7 @@ This group contains admins by default. Admins can add more admins or remove the 
 
 | Apps | Users | Permissions |
 | ----------- | ----------- | ----------- |
-| Modification is disabled. By default, this group has `Edit` permission for all the apps in an organization  | Admins can add or remove users in this group. | Modification is disabled. By default, all the admins can create and delete apps or create folders. |
+| Modification is disabled. By default, this group has `Edit` permission for all the apps in a workspace  | Admins can add or remove users in this group. | Modification is disabled. By default, all the admins can create and delete apps or create folders. |
 
 <div style={{textAlign: 'center'}}>
 

@@ -13,14 +13,6 @@ describe('organizations controller', () => {
 
   beforeEach(async () => {
     await clearDB();
-    jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-      switch (key) {
-        case 'MULTI_ORGANIZATION':
-          return 'false';
-        default:
-          return process.env[key];
-      }
-    });
   });
 
   beforeAll(async () => {
@@ -65,28 +57,20 @@ describe('organizations controller', () => {
 
     describe('create organization', () => {
       it('should allow only authenticated users to create organization', async () => {
-        await request(app.getHttpServer()).post('/api/organizations').send({ name: 'My organization' }).expect(401);
+        await request(app.getHttpServer()).post('/api/organizations').send({ name: 'My workspace' }).expect(401);
       });
-      it('should create new organization if multi organization supported', async () => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-          switch (key) {
-            case 'MULTI_ORGANIZATION':
-              return 'true';
-            default:
-              return process.env[key];
-          }
-        });
+      it('should create new organization if Multi-Workspace supported', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
         });
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
-          .send({ name: 'My organization' })
+          .send({ name: 'My workspace' })
           .set('Authorization', authHeaderForUser(user));
 
         expect(response.statusCode).toBe(201);
         expect(response.body.organization_id).not.toBe(organization.id);
-        expect(response.body.organization).toBe('My organization');
+        expect(response.body.organization).toBe('My workspace');
         expect(response.body.admin).toBeTruthy();
 
         const newUser = await userRepository.findOneOrFail({ where: { id: user.id } });
@@ -94,14 +78,6 @@ describe('organizations controller', () => {
       });
 
       it('should throw error if name is empty', async () => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-          switch (key) {
-            case 'MULTI_ORGANIZATION':
-              return 'true';
-            default:
-              return process.env[key];
-          }
-        });
         const { user } = await createUser(app, { email: 'admin@tooljet.io' });
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
@@ -111,35 +87,35 @@ describe('organizations controller', () => {
         expect(response.statusCode).toBe(400);
       });
 
-      it('should not create new organization if multi organization not supported', async () => {
-        const { user } = await createUser(app, { email: 'admin@tooljet.io' });
-        await request(app.getHttpServer())
-          .post('/api/organizations')
-          .send({ name: 'My organization' })
-          .set('Authorization', authHeaderForUser(user))
-          .expect(403);
-      });
-
-      it('should create new organization if multi organization supported and user logged in via SSO', async () => {
+      it('should not create new organization if Multi-Workspace not supported', async () => {
         jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
           switch (key) {
-            case 'MULTI_ORGANIZATION':
+            case 'DISABLE_MULTI_WORKSPACE':
               return 'true';
             default:
               return process.env[key];
           }
         });
+        const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+        await request(app.getHttpServer())
+          .post('/api/organizations')
+          .send({ name: 'My workspace' })
+          .set('Authorization', authHeaderForUser(user))
+          .expect(401);
+      });
+
+      it('should create new organization if Multi-Workspace supported and user logged in via SSO', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
         });
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
-          .send({ name: 'My organization' })
+          .send({ name: 'My workspace' })
           .set('Authorization', authHeaderForUser(user, null, false));
 
         expect(response.statusCode).toBe(201);
         expect(response.body.organization_id).not.toBe(organization.id);
-        expect(response.body.organization).toBe('My organization');
+        expect(response.body.organization).toBe('My workspace');
         expect(response.body.admin).toBeTruthy();
       });
     });
@@ -252,6 +228,14 @@ describe('organizations controller', () => {
 
     describe('get public organization configs', () => {
       it('should get organization details for all users for single organization', async () => {
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'DISABLE_MULTI_WORKSPACE':
+              return 'true';
+            default:
+              return process.env[key];
+          }
+        });
         const { user } = await createUser(app, {
           email: 'admin@tooljet.io',
         });
@@ -291,14 +275,6 @@ describe('organizations controller', () => {
       });
 
       it('should get organization specific details for all users for multiple organization deployment', async () => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-          switch (key) {
-            case 'MULTI_ORGANIZATION':
-              return 'true';
-            default:
-              return process.env[key];
-          }
-        });
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
         });

@@ -270,7 +270,7 @@ class DataSourceManager extends React.Component {
                     ))}
                   </>
                 )}
-                {this.state.queryString && this.state.filteredDatasources.length === 0 && (
+                {!suggestingDatasources && this.state.queryString && this.state.filteredDatasources.length === 0 && (
                   <div className="empty-state-wrapper row">
                     <EmptyStateContainer
                       queryString={this.state.queryString}

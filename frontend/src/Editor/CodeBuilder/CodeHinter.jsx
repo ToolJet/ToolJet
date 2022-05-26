@@ -101,17 +101,22 @@ export function CodeHinter({
   }
 
   const getPreviewContent = (content, type) => {
-    switch (type) {
-      case 'object':
-        return JSON.stringify(content);
-      case 'boolean':
-        return content.toString();
-      default:
-        return content;
+    try {
+      switch (type) {
+        case 'object':
+          return JSON.stringify(content);
+        case 'boolean':
+          return content.toString();
+        default:
+          return content;
+      }
+    } catch (e) {
+      return undefined;
     }
   };
 
   const getPreview = () => {
+    if (!enablePreview) return;
     const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
 
@@ -181,7 +186,8 @@ export function CodeHinter({
   };
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
-  const defaultClassName = className === 'query-hinter' || undefined ? '' : 'code-hinter';
+  const defaultClassName =
+    className === 'query-hinter' || className === 'custom-component' || undefined ? '' : 'code-hinter';
 
   const ElementToRender = AllElements[TypeMapping[type]];
 
@@ -192,7 +198,7 @@ export function CodeHinter({
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
-          <div className={`mb-2 field ${options.className}`}>
+          <div className={`mb-2 field ${options.className}`} data-cy="accordion-components">
             <ToolTip label={paramLabel} meta={fieldMeta} />
           </div>
         )}
@@ -224,6 +230,7 @@ export function CodeHinter({
                 overflow: 'auto',
                 fontSize: ' .875rem',
               }}
+              data-cy="accordion-input"
             >
               {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
               <CodeHinter.Portal
