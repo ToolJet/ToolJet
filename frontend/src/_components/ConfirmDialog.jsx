@@ -38,6 +38,7 @@ export function ConfirmDialog({ show, message, onConfirm, onCancel, confirmButto
             autoFocus
             className={`${confirmButtonLoading ? 'btn-loading' : ''}`}
             onClick={handleConfirm}
+            data-cy="confirm-yes-button"
           >
             Yes
           </Button>

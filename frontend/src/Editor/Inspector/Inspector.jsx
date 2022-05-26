@@ -351,6 +351,7 @@ export const Inspector = ({
                     className="w-100 form-control-plaintext form-control-plaintext-sm mt-1"
                     value={newComponentName}
                     ref={inputRef}
+                    data-cy="edit-widget-name"
                   />
                   <span className="input-icon-addon">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -415,6 +416,7 @@ export const Inspector = ({
           href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
           target="_blank"
           rel="noreferrer"
+          data-cy="widget-documentation-link"
         >
           <small>{componentMeta.name} documentation</small>
         </a>

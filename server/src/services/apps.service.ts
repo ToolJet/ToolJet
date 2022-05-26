@@ -503,11 +503,15 @@ export class AppsService {
     }
   }
 
-  async updateVersion(user: User, version: AppVersion, definition: any) {
+  async updateVersion(user: User, version: AppVersion, body: any) {
     if (version.id === version.app.currentVersionId)
       throw new BadRequestException('You cannot update a released version');
 
-    return await this.appVersionsRepository.update(version.id, { definition });
+    const editableParams = {};
+    if (body.definition) editableParams['definition'] = body.definition;
+    if (body.name) editableParams['name'] = body.name;
+
+    return await this.appVersionsRepository.update(version.id, editableParams);
   }
 
   convertToArrayOfKeyValuePairs(options): Array<object> {

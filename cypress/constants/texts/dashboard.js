@@ -1,0 +1,16 @@
+export const emptyDashboardText={
+  emptyPageHeader: "Welcome to ToolJet!",
+  emptyPageDescription: "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
+  createAppButton: "Create new application",
+  importAppButton: "Import an application",
+  chooseFromTemplate: "Choose from template",
+  darkMode: "#808080",
+  lightMode: "#fff",
+  dropdownText: "My workspace",
+  editButton: "Edit",
+  manageUsers: "Manage Users",
+  manageGroups: "Manage Groups",
+  manageSSO: "Manage SSO",
+  profileLink: "Profile",
+  logoutLink: "Logout",
+}

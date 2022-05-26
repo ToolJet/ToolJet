@@ -126,14 +126,20 @@ export class DataQueriesService {
     return contentType === 'application/x-www-form-urlencoded';
   }
 
+  private sanitizeCustomParams(customArray: any) {
+    const params = Object.fromEntries(customArray ?? []);
+    Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
+    return params;
+  }
+
   /* This function fetches the access token from the token url set in REST API (oauth) datasource */
   async fetchOAuthToken(sourceOptions: any, code: string): Promise<any> {
     const tooljetHost = process.env.TOOLJET_HOST;
     const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['headers']);
     const accessTokenUrl = sourceOptions['access_token_url'];
 
-    const customParams = Object.fromEntries(sourceOptions['custom_auth_params']);
-    Object.keys(customParams).forEach((key) => (customParams[key] === '' ? delete customParams[key] : {}));
+    const customParams = this.sanitizeCustomParams(sourceOptions['custom_auth_params']);
+    const customAccessTokenHeaders = this.sanitizeCustomParams(sourceOptions['access_token_custom_headers']);
 
     const bodyData = {
       code,
@@ -148,6 +154,7 @@ export class DataQueriesService {
       method: 'post',
       headers: {
         'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
+        ...customAccessTokenHeaders,
       },
       form: isUrlEncoded ? bodyData : undefined,
       json: !isUrlEncoded ? bodyData : undefined,

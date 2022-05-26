@@ -101,13 +101,17 @@ export function CodeHinter({
   }
 
   const getPreviewContent = (content, type) => {
-    switch (type) {
-      case 'object':
-        return JSON.stringify(content);
-      case 'boolean':
-        return content.toString();
-      default:
-        return content;
+    try {
+      switch (type) {
+        case 'object':
+          return JSON.stringify(content);
+        case 'boolean':
+          return content.toString();
+        default:
+          return content;
+      }
+    } catch (e) {
+      return undefined;
     }
   };
 
@@ -194,7 +198,7 @@ export function CodeHinter({
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
-          <div className={`mb-2 field ${options.className}`}>
+          <div className={`mb-2 field ${options.className}`} data-cy="accordion-components">
             <ToolTip label={paramLabel} meta={fieldMeta} />
           </div>
         )}
@@ -226,6 +230,7 @@ export function CodeHinter({
                 overflow: 'auto',
                 fontSize: ' .875rem',
               }}
+              data-cy="accordion-input"
             >
               {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
               <CodeHinter.Portal
