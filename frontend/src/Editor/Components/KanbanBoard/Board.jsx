@@ -66,8 +66,6 @@ const getListStyle = (isDraggingOver) => ({
 function Board({ height, data }) {
   const [state, setState] = useState(() => data);
 
-  state.map((col, ind) => console.log(' state board =>  state', col, ind));
-
   const addNewItem = (state, keyIndex) => {
     const newItem = {
       id: uuidv4(),
