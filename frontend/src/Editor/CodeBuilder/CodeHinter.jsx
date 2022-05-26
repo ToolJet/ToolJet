@@ -198,7 +198,7 @@ export function CodeHinter({
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
-          <div className={`mb-2 field ${options.className}`}>
+          <div className={`mb-2 field ${options.className}`} data-cy="accordion-components">
             <ToolTip label={paramLabel} meta={fieldMeta} />
           </div>
         )}
@@ -230,6 +230,7 @@ export function CodeHinter({
                 overflow: 'auto',
                 fontSize: ' .875rem',
               }}
+              data-cy="accordion-input"
             >
               {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
               <CodeHinter.Portal

@@ -409,6 +409,7 @@ export const Container = ({
         'show-grid': isDragging || isResizing,
       })}
       id="real-canvas"
+      data-cy="real-canvas"
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>

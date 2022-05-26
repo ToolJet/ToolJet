@@ -79,3 +79,5 @@ spec:
                   key: tj_host
             - name: REDIS_HOST
               value: tooljet-redis-service.default.svc.cluster.local
+            - name: DEPLOYMENT_PLATFORM
+              value: "k8s"

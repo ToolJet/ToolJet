@@ -60,6 +60,24 @@ describe('group permissions controller', () => {
       expect(auditLog.createdAt).toBeDefined();
     });
 
+    it('should not allow to create system defined group names', async () => {
+      const {
+        organization: { adminUser },
+      } = await setupOrganizations(nestApp);
+
+      const reservedGroups = ['All Users', 'Admin'];
+
+      for (let i = 0; i < reservedGroups.length; i += 1) {
+        const response = await request(nestApp.getHttpServer())
+          .post('/api/group_permissions')
+          .set('Authorization', authHeaderForUser(adminUser))
+          .send({ group: reservedGroups[i] });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toBe('Group name already exist');
+      }
+    });
+
     it('should validate uniqueness of group permission group name', async () => {
       const {
         organization: { adminUser },

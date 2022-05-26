@@ -4,7 +4,6 @@ import { PasswordRevalidateGuard } from 'src/modules/auth/password-revalidate.gu
 import { UsersService } from 'src/services/users.service';
 import { User } from 'src/decorators/user.decorator';
 import { User as UserEntity } from 'src/entities/user.entity';
-import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
 import { CreateUserDto, UpdateUserDto } from '@dto/user.dto';
 import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
@@ -12,6 +11,7 @@ import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { decamelizeKeys } from 'humps';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
+import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 
 @Controller('users')
 export class UsersController {
