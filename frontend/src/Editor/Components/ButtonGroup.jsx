@@ -26,7 +26,8 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
   // data is used as state to show what to display , club of label+values / values
   useEffect(() => {
     setDefaultActive(defaultSelected);
-  }, [defaultSelected]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(defaultSelected)]);
 
   useEffect(() => {
     if (labels?.length < values?.length) {
@@ -37,7 +38,7 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
   }, [labels, values]);
 
   useEffect(() => {
-    multiSelection && setDefaultActive([]);
+    multiSelection && setDefaultActive(defaultSelected);
   }, [multiSelection]);
 
   const buttonClick = (index) => {

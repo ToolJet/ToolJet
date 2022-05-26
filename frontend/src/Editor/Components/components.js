@@ -2230,7 +2230,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       properties: {
         label: { value: `Button group` },
-        defaultSelected: { value: '[1]' },
+        defaultSelected: { value: '{{[1]}}' },
         values: { value: '{{[1,2,3]}}' },
         labels: { value: '{{[]}}' },
         multiSelection: { value: '{{false}}' },
