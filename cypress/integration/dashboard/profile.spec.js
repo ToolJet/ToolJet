@@ -98,8 +98,10 @@ describe("Profile Settings",()=>{
    cy.verifyToastMessage(commonSelectors.toastMessage,profileText.passwordSuccessToast);
 
    common.logout();
+   cy.wait(1000);
    cy.clearAndType(commonSelectors.emailField, commonText.email);
    cy.clearAndType(commonSelectors.passwordField, commonText.password);
+   cy.get(commonSelectors.signInButton).click();
    cy.verifyToastMessage(commonSelectors.toastMessage,profileText.loginErrorToast);
 
    cy.clearAndType(commonSelectors.passwordField, profileText.newPassword);

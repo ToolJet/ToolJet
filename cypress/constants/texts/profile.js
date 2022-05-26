@@ -19,5 +19,5 @@ export const profileText={
   changePasswordButton: "Change password",
   passwordErrorToast: "Please verify that you have entered the correct password",
   passwordSuccessToast: "Password updated successfully",
-  loginErrorToast:"Please verify that you have entered the correct password",
+  loginErrorToast:"Invalid email or password",
 }
