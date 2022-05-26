@@ -687,12 +687,13 @@ class Editor extends React.Component {
   // TODO: create common fn for inspector clone function and editor clone fn
   cloneComponents = () => {
     for (let selectedComponent of this.state.selectedComponents) {
-      selectedComponent.id = uuidv4();
-      this.cloneComponent(selectedComponent);
+      let clonedComponent = JSON.parse(JSON.stringify(selectedComponent));
+      clonedComponent.id = uuidv4();
+      this.cloneComponent(clonedComponent);
 
       let childComponents = [];
 
-      if ((selectedComponent.component.component === 'Tabs') | (selectedComponent.component.component === 'Calendar')) {
+      if ((clonedComponent.component.component === 'Tabs') | (clonedComponent.component.component === 'Calendar')) {
         childComponents = Object.keys(this.state.appDefinition.components).filter((key) =>
           this.state.appDefinition.components[key].parent?.startsWith(selectedComponent.id)
         );
@@ -706,14 +707,11 @@ class Editor extends React.Component {
         let childComponent = JSON.parse(JSON.stringify(this.state.appDefinition.components[componentId]));
         childComponent.id = uuidv4();
 
-        if (
-          (selectedComponent.component.component === 'Tabs') |
-          (selectedComponent.component.component === 'Calendar')
-        ) {
+        if ((clonedComponent.component.component === 'Tabs') | (clonedComponent.component.component === 'Calendar')) {
           const childTabId = childComponent.parent.split('-').at(-1);
-          childComponent.parent = `${selectedComponent.id}-${childTabId}`;
+          childComponent.parent = `${clonedComponent.id}-${childTabId}`;
         } else {
-          childComponent.parent = selectedComponent.id;
+          childComponent.parent = clonedComponent.id;
         }
         this.cloneComponent(childComponent);
       });
@@ -725,9 +723,11 @@ class Editor extends React.Component {
 
     newComponent.component.name = computeComponentName(newComponent.component.component, appDefinition.components);
 
-    Object.keys(newComponent.layouts).map((layout) => {
-      newComponent.layouts[layout].top = newComponent.layouts[layout].top + newComponent.layouts[layout].height;
-    });
+    if (!newComponent.parent) {
+      Object.keys(newComponent.layouts).map((layout) => {
+        newComponent.layouts[layout].top = newComponent.layouts[layout].top + newComponent.layouts[layout].height;
+      });
+    }
 
     appDefinition.components[newComponent.id] = JSON.parse(JSON.stringify(newComponent));
     this.appDefinitionChanged(appDefinition);
