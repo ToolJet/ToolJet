@@ -51,17 +51,18 @@ export const Folders = function Folders({
   const [activeFolder, setActiveFolder] = useState(currentFolder || {});
 
   function saveFolder() {
-    validateName();
-    setCreationStatus(true);
-    folderService.create(newFolderName).then(() => {
-      toast.success('folder created.', {
-        position: 'top-center',
+    if (validateName()) {
+      setCreationStatus(true);
+      folderService.create(newFolderName).then(() => {
+        toast.success('folder created.', {
+          position: 'top-center',
+        });
+        setCreationStatus(false);
+        setShowForm(false);
+        setNewFolderName('');
+        foldersChanged();
       });
-      setCreationStatus(false);
-      setShowForm(false);
-      setNewFolderName('');
-      foldersChanged();
-    });
+    }
   }
 
   function handleFolderChange(folder) {
@@ -108,28 +109,30 @@ export const Folders = function Folders({
       toast.error("folder name can't be empty.", {
         position: 'top-center',
       });
-      return;
+      return false;
     }
+    return true;
   }
 
   function executeEditFolder() {
-    validateName();
-    setUpdationStatus(true);
-    folderService
-      .updateFolder(newFolderName, updatingFolder.id)
-      .then(() => {
-        toast.success('folder has been updated.', {
-          position: 'top-center',
+    if (validateName()) {
+      setUpdationStatus(true);
+      folderService
+        .updateFolder(newFolderName, updatingFolder.id)
+        .then(() => {
+          toast.success('folder has been updated.', {
+            position: 'top-center',
+          });
+          setUpdationStatus(false);
+          setShowUpdateForm(false);
+          setNewFolderName('');
+          foldersChanged();
+        })
+        .catch(() => {
+          setNewFolderName('');
+          setUpdationStatus(false);
         });
-        setUpdationStatus(false);
-        setShowUpdateForm(false);
-        setNewFolderName('');
-        foldersChanged();
-      })
-      .catch(() => {
-        setNewFolderName('');
-        setUpdationStatus(false);
-      });
+    }
   }
 
   return (

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { Brackets, createQueryBuilder, Repository } from 'typeorm';
+import { Brackets, createQueryBuilder, Repository, UpdateResult } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { Folder } from '../entities/folder.entity';
 import { UsersService } from './users.service';
@@ -29,6 +29,10 @@ export class FoldersService {
         organizationId: user.organizationId,
       })
     );
+  }
+
+  async update(folderId: string, folderName: string): Promise<UpdateResult> {
+    return this.foldersRepository.update({ id: folderId }, { name: folderName });
   }
 
   async allFolders(user: User): Promise<Folder[]> {

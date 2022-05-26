@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Request, UseGuards, Body, Delete, Param } from '@nestjs/common';
+import { Controller, Get, Post, Query, Request, UseGuards, Body, Delete, Param, Put } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { FoldersService } from '../services/folders.service';
@@ -30,6 +30,20 @@ export class FoldersController {
     const folderName = req.body.name;
 
     const folder = await this.foldersService.create(req.user, folderName);
+    return decamelizeKeys(folder);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  async update(@Request() req, @Param('id') id, @Body() body: any) {
+    const ability = await this.foldersAbilityFactory.folderActions(req.user, {});
+
+    if (!ability.can('updateFolder', Folder)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+    const folderName = body.name;
+
+    const folder = await this.foldersService.update(id, folderName);
     return decamelizeKeys(folder);
   }
 
