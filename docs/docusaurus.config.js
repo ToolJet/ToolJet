@@ -99,6 +99,13 @@ module.exports = {
       ],
       copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc.`,
     },
+    algolia: {
+      appId: 'O8HQRLI0WA',
+      apiKey: 'a41971935db60dbf21b21fcda1d130d0', // Public API key: it is safe to commit it
+      indexName: 'tooljet',
+      contextualSearch: true,
+      externalUrlRegex: 'external\\.com|domain\\.com',
+    },
   },
   presets: [
     [
