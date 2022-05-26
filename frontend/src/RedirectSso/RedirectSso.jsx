@@ -61,7 +61,7 @@ export const RedirectSso = function RedirectSso() {
               <li>
                 If you have Google or Git SSO configurations before upgrade and disabled Multi-Workspace, then the SSO
                 configurations will be migrated while upgrade but you have to re-configure the redirect URL in the SSO
-                provider side. Redirect URLs for each SSO will be given below.
+                provider side. Redirect URLs for each SSO are given below.
                 <br />
               </li>
               <li>
