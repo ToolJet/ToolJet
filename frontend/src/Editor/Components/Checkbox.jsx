@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 
 export const Checkbox = function Checkbox({ height, properties, styles, fireEvent, setExposedVariable }) {
-  const defaultValue = properties.defaultValue ?? false;
-  const [checked, setChecked] = React.useState(defaultValue);
+  const defaultValueFromProperties = properties.defaultValue ?? false;
+  const [defaultValue, setDefaultvalue] = React.useState(defaultValueFromProperties);
+  const [checked, setChecked] = React.useState(defaultValueFromProperties);
   const { label } = properties;
   const { visibility, disabledState, checkboxColor, textColor } = styles;
 
@@ -17,10 +18,11 @@ export const Checkbox = function Checkbox({ height, properties, styles, fireEven
     }
   }
   useEffect(() => {
-    setExposedVariable('value', defaultValue);
-    setChecked(defaultValue);
+    setExposedVariable('value', defaultValueFromProperties);
+    setDefaultvalue(defaultValueFromProperties);
+    setChecked(defaultValueFromProperties);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultValue]);
+  }, [defaultValueFromProperties]);
 
   return (
     <div data-disabled={disabledState} className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>
@@ -32,6 +34,8 @@ export const Checkbox = function Checkbox({ height, properties, styles, fireEven
             onClick={(e) => {
               toggleValue(e);
             }}
+            defaultChecked={defaultValue}
+            checked={checked}
             style={{ backgroundColor: checked ? `${checkboxColor}` : 'white', marginTop: '1px' }}
           />
           <span className="form-check-label" style={{ color: textColor }}>
