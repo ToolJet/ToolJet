@@ -165,6 +165,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -235,6 +237,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -295,6 +299,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -372,6 +378,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -538,6 +546,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -623,6 +633,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -705,6 +717,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -777,6 +791,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -869,6 +885,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -959,6 +977,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1090,6 +1110,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1160,6 +1182,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1220,6 +1244,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1297,6 +1323,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1463,6 +1491,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1548,6 +1578,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1630,6 +1662,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1702,6 +1736,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1794,6 +1830,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1884,6 +1922,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);

@@ -294,6 +294,51 @@ describe('folders controller', () => {
     });
   });
 
+  describe('PUT /api/folders/:id', () => {
+    it('should update the specific folder in an organization', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+      });
+      const { user } = adminUserData;
+
+      const folder = await getManager().save(Folder, {
+        name: 'Folder1',
+        organizationId: adminUserData.organization.id,
+      });
+
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/folders/${folder.id}`)
+        .set('Authorization', authHeaderForUser(user))
+        .send({ name: 'My folder' });
+
+      const updatedFolder = await getManager().findOne(Folder, folder.id);
+
+      expect(response.statusCode).toBe(200);
+      expect(updatedFolder.name).toEqual('My folder');
+    });
+  });
+
+  describe('DELETE /api/folders/:id', () => {
+    it('should delete the specific folder in an organization', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+      });
+      const { user } = adminUserData;
+
+      const folder = await getManager().save(Folder, {
+        name: 'Folder1',
+        organizationId: adminUserData.organization.id,
+      });
+
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/folders/${folder.id}`)
+        .set('Authorization', authHeaderForUser(user))
+        .send();
+
+      expect(response.statusCode).toBe(200);
+    });
+  });
+
   afterAll(async () => {
     await nestApp.close();
   });
