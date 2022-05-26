@@ -41,11 +41,13 @@ export function cleanSensitiveData(data, keys) {
 }
 
 function clearData(data, keys) {
+  if (!data || typeof data !== 'object') return;
+
   for (const key in data) {
     if (keys.includes(key)) {
       delete data[key];
     } else {
-      cleanSensitiveData(data[key], keys);
+      clearData(data[key], keys);
     }
   }
 }
