@@ -23,6 +23,7 @@
     "@tooljet-plugins/appwrite": "file:packages/appwrite",
     "@tooljet-plugins/baserow": "file:packages/baserow",
     "@tooljet-plugins/bigquery": "file:packages/bigquery",
+    "@tooljet-plugins/cloudrunapi": "file:packages/cloudrunapi",
     "@tooljet-plugins/common": "file:packages/common",
     "@tooljet-plugins/couchdb": "file:packages/couchdb",
     "@tooljet-plugins/dynamodb": "file:packages/dynamodb",

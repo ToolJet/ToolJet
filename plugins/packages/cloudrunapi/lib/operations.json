@@ -1,0 +1,9 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Cloudrunapi datasource",
+  "description": "A schema defining Cloudrunapi datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {}
+}
