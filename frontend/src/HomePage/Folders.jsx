@@ -218,9 +218,7 @@ export const Folders = function Folders({
                       canUpdateFolder={canUpdateFolder}
                       deleteFolder={() => deleteFolder(folder)}
                       editFolder={() => updateFolder(folder)}
-                      isMenuOpen={isMenuOpen}
                       darkMode={darkMode}
-                      currentFolder={currentFolder}
                     />
                   )}
                 </div>

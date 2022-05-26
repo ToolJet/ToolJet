@@ -8,7 +8,6 @@ export const FolderMenu = function FolderMenu({
   canDeleteApp = true,
   canUpdateApp = true,
   onMenuOpen,
-  isMenuOpen,
   darkMode,
 }) {
   const closeMenu = () => {
@@ -47,7 +46,7 @@ export const FolderMenu = function FolderMenu({
         </Popover>
       }
     >
-      <div className={`d-grid menu-ico menu-ico${isMenuOpen ? '__open' : ''}`}>
+      <div className={`d-grid menu-ico menu-ico`}>
         <img className="svg-icon" src="/assets/images/icons/three-dots.svg" data-cy="folder-item-menu-icon" />
       </div>
     </OverlayTrigger>
