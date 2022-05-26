@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { Organization } from 'src/entities/organization.entity';
 import { App } from 'src/entities/app.entity';
 import { createQueryBuilder, EntityManager, getManager, getRepository, In, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
@@ -20,8 +19,6 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
-    @InjectRepository(Organization)
-    private organizationsRepository: Repository<Organization>,
     @InjectRepository(App)
     private appsRepository: Repository<App>
   ) {}

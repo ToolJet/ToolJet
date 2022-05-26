@@ -184,8 +184,17 @@ export class AuthService {
 
   async signup(email: string) {
     const existingUser = await this.usersService.findByEmail(email);
-    if (existingUser?.invitationToken || existingUser?.organizationUsers?.some((ou) => ou.status === 'active')) {
+    if (existingUser?.organizationUsers?.some((ou) => ou.status === 'active')) {
       throw new NotAcceptableException('Email already exists');
+    }
+
+    if (existingUser?.invitationToken) {
+      await this.emailService.sendWelcomeEmail(
+        existingUser.email,
+        existingUser.firstName,
+        existingUser.invitationToken
+      );
+      return;
     }
 
     let organization: Organization;
@@ -233,8 +242,6 @@ export class AuthService {
 
   async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
     const { organization, password, token, role, first_name: firstName, last_name: lastName } = userCreateDto;
-
-    console.log('--->>>', userCreateDto);
 
     if (!token) {
       throw new BadRequestException('Invalid token');
