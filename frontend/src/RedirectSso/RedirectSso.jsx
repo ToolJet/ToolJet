@@ -40,7 +40,9 @@ export const RedirectSso = function RedirectSso() {
             </a>
           </div>
           <div className="sso-helper-container">
-            <h2>Upgrading to v1.30.0 and above.</h2>
+            <h2 className="sso-helper-header">
+              <span className="gg-album"></span>Upgrading to v1.30.0 and above.
+            </h2>
             <p className="sso-helper-doc">
               From v1.30.0 we have introduced
               <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
@@ -71,7 +73,7 @@ export const RedirectSso = function RedirectSso() {
               {!isSingleOrganization ? (
                 <>
                   <div>
-                    <p>
+                    <p className="workspace-status">
                       You have Enabled
                       <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
                         Multi-Workspace
@@ -86,7 +88,12 @@ export const RedirectSso = function RedirectSso() {
               ) : (
                 <>
                   <div>
-                    <p>
+                    <p className="workspace-status">
+                      {' '}
+                      <span
+                        className="gg-border-all
+"
+                      ></span>
                       You have Disabled
                       <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
                         Multi-Workspace.
@@ -112,8 +119,8 @@ export const RedirectSso = function RedirectSso() {
                       {googlessoEnabled && (
                         <>
                           <p className="sso-type">
-                            Google:
-                            <a href="https://docs.tooljet.com/docs/sso/google"> Link</a>
+                            <span className="">-</span>
+                            Google : <a href="https://docs.tooljet.com/docs/sso/google"> Link</a>
                           </p>
                           <div className="flexer">
                             <span> Redirect URL: </span>
@@ -133,8 +140,9 @@ export const RedirectSso = function RedirectSso() {
                     <div>
                       {gitSsoEnabled && (
                         <>
-                          <p className="sso-type">
-                            Git :<a href="https://docs.tooljet.com/docs/sso/github"> Link</a>
+                          <p className="sso-type ">
+                            <span className="">-</span>
+                            Git : <a href="https://docs.tooljet.com/docs/sso/github"> Link</a>
                           </p>
 
                           <div className="flexer">

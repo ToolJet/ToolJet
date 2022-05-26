@@ -5245,5 +5245,63 @@ word-break: break-all;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
   border-radius: 4px;
 }
-// sso end
+.workspace-status{
+  display: flex;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.sso-type{
+  margin-bottom: 4px !important;
+  display: flex;
+  span{
+   margin-right: 10px;
+  }
+  a{
+   margin-left: 6px;
 
+  }
+}
+
+.gg-album {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+  transform: scale(var(--ggs,1));
+  border-left: 7px solid transparent;
+  border-right: 3px solid transparent;
+  border-bottom: 8px solid transparent;
+  box-shadow: 0 0 0 2px,
+  inset 6px 4px 0 -4px,
+  inset -6px 4px 0 -4px;
+  border-radius: 3px
+ }
+ 
+ .gg-album::after,
+ .gg-album::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+  width: 2px;
+  height: 5px;
+  background: currentColor;
+  transform: rotate(46deg);
+  top: 5px;
+  right: 4px
+ }
+ 
+ .gg-album::after {
+  transform: rotate(-46deg);
+  right: 2px
+ } 
+ .sso-helper-header{
+   display: flex;
+   align-items: center;
+   span{
+    margin-right: 10px;
+   }
+ }
+
+// sso end
