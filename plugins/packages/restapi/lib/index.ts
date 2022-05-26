@@ -186,16 +186,15 @@ export default class RestapiQueryService implements QueryService {
       throw new QueryError('Query could not be completed', error.message, result);
     }
 
-    const queryResponse: RestAPIResult = {
+    requestObject['headers'] = cleanSensitiveData(requestObject['headers'], ['authorization']);
+
+    return {
       status: 'ok',
       data: result,
       request: requestObject,
       response: responseObject,
       responseHeaders,
     };
-
-    cleanSensitiveData(queryResponse.request['headers'], ['authorization']);
-    return queryResponse;
   }
 
   /* This function fetches the access token from the token url set in REST API (oauth) datasource */
