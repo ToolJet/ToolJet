@@ -1060,6 +1060,8 @@ class Editor extends React.Component {
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
+  runQuery = (queryId, queryName) => runQuery(this, queryId, queryName);
+
   render() {
     const {
       currentSidebarTab,
@@ -1460,6 +1462,7 @@ class Editor extends React.Component {
                             allComponents={appDefinition.components}
                             isSourceSelected={this.state.isSourceSelected}
                             isQueryPaneDragging={this.state.isQueryPaneDragging}
+                            runQuery={this.runQuery}
                           />
                         </div>
                       </div>
