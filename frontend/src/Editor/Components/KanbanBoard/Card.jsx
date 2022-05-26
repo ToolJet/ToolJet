@@ -90,7 +90,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
       id="popover-trigger-click-root-close popover-basic popover-positioned-left"
       className={`shadow ${darkMode && 'popover-dark-themed'}`}
       style={{ width: '350px', padding: '12px', height: 300 }}
-      title="Popover bottom"
+      title="Click to edit"
     >
       <div style={{ border: 'none', boxShadow: 'none', backgroundColor: 'inherit' }} className="card h-100">
         <div className="card-status-start bg-green"></div>
@@ -149,7 +149,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
 
           <div className="card-body d-flex">
             <OverlayTrigger trigger="click" rootClose placement="right" overlay={popoverClickRootClose}>
-              <span className="text-muted flex-grow-1 cursor-text">{item.title}</span>
+              <span className="text-muted flex-grow-1 cursor-pointer fw-bold">{item.title}</span>
             </OverlayTrigger>
             {isHovered && !item.isEditing && (
               <span
