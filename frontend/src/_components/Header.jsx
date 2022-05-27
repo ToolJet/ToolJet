@@ -69,7 +69,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               <div className="d-xl-block" data-cy="user-menu">
                 {avatar_id ? (
                   <span
-                    className="avatar"
+                    className="avatar avatar-sm"
                     style={{
                       backgroundImage: `url(${avatar})`,
                     }}
