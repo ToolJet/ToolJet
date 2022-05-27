@@ -1,7 +1,7 @@
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
-
+const fs = require('fs');
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
 const API_URL = {
@@ -10,6 +10,8 @@ const API_URL = {
 };
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
+const filePath = path.join(__dirname, '../.version');
+const version = fs.readFileSync(filePath, { encoding: 'utf8' });
 
 module.exports = {
   mode: environment,
@@ -115,6 +117,7 @@ module.exports = {
       SERVER_IP: process.env.SERVER_IP,
       COMMENT_FEATURE_ENABLE: true,
       ENABLE_MULTIPLAYER_EDITING: true,
+      TOOLJET_VERSION: version,
     }),
   },
 };

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
-
+import config from 'config';
 import LogoIcon from '../Editor/Icons/logo.svg';
 import { Organization } from './Organization';
 
@@ -74,6 +74,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               <Link data-testid="logoutBtn" to="#" onClick={logout} className="dropdown-item" data-cy="logout-link">
                 Logout
               </Link>
+              <Link to="#">{config.TOOLJET_VERSION}</Link>
             </div>
           </div>
         </div>
