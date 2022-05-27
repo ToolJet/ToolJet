@@ -451,7 +451,7 @@ export async function createFile(nestApp: any) {
   const createFileDto = new CreateFileDto();
   createFileDto.filename = 'testfile';
   createFileDto.data = Buffer.from([1, 2, 3, 4]);
-  return await fileRepository.create(createFileDto);
+  return await fileRepository.save(fileRepository.create(createFileDto));
 }
 
 export async function createThread(_nestApp, { appId, x, y, userId, organizationId, appVersionsId }: any) {
