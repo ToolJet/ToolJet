@@ -18,6 +18,7 @@ import queryString from 'query-string';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import LogoIcon from './Icons/logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
+import { resolveReferences } from '@/_helpers/utils';
 
 class Viewer extends React.Component {
   constructor(props) {
@@ -188,6 +189,7 @@ class Viewer extends React.Component {
       canvasWidth,
       dataQueries,
     } = this.state;
+    console.log(':::xxx', appDefinition, resolveReferences(appDefinition.globalSettings?.backgroundFxQuery));
 
     if (this.state.app?.is_maintenance_on) {
       return (
@@ -237,7 +239,7 @@ class Viewer extends React.Component {
                       minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                       maxWidth: +appDefinition.globalSettings?.canvasMaxWidth || 1292,
                       maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
-                      backgroundColor: appDefinition.globalSettings?.canvasBackgroundColor || '#edeff5',
+                      backgroundColor: resolveReferences(appDefinition.globalSettings?.backgroundFxQuery) || '#edeff5',
                     }}
                   >
                     {defaultComponentStateComputed && (
