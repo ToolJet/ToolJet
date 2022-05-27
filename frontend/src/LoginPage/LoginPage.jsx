@@ -33,7 +33,22 @@ class LoginPage extends React.Component {
         (configs) => {
           this.setState({ isGettingConfigs: false, configs });
         },
-        () => this.props.history.push({ pathname: '/', state: { errorMessage: 'Error while login, please try again' } })
+        (response) => {
+          if (response.data.statusCode !== 404) {
+            this.props.history.push({ pathname: '/', state: { errorMessage: 'Error while login, please try again' } });
+          }
+          // If there is no organization found for single organization setup
+          // show form to sign up
+          this.setState({
+            isGettingConfigs: false,
+            configs: {
+              form: {
+                enable_sign_up: true,
+                enabled: true,
+              },
+            },
+          });
+        }
       );
     } else {
       // Not single organization login page and not an organization login page => Multi organization common login page
@@ -216,17 +231,14 @@ class LoginPage extends React.Component {
               </div>
             )}
           </form>
-          {!this.props.match.params.organisationId &&
-            !this.single_organization &&
-            configs?.form?.enabled &&
-            configs?.form?.enable_sign_up && (
-              <div className="text-center text-secondary mt-3" data-cy="sign-up-message">
-                Don&apos;t have account yet? &nbsp;
-                <Link to={'/signup'} tabIndex="-1" data-cy="sign-up-link">
-                  Sign up
-                </Link>
-              </div>
-            )}
+          {!this.props.match.params.organisationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
+            <div className="text-center text-secondary mt-3" data-cy="sign-up-message">
+              Don&apos;t have account yet? &nbsp;
+              <Link to={'/signup'} tabIndex="-1" data-cy="sign-up-link">
+                Sign up
+              </Link>
+            </div>
+          )}
           {authenticationService?.currentUserValue?.organization && (
             <div className="text-center mt-3">
               back to <a href="/">{authenticationService?.currentUserValue?.organization}</a>
