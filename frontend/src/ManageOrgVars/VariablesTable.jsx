@@ -28,7 +28,6 @@ export default class VariablesTable extends React.Component {
                   <th>Name</th>
                   <th>Value</th>
                   <th>Type</th>
-                  <th>Encrypted</th>
                   {this.props.admin && <th className="w-1"></th>}
                 </tr>
               </thead>
@@ -48,9 +47,6 @@ export default class VariablesTable extends React.Component {
                       <td className="text-muted col-auto col-1 pt-3">
                         <div className="skeleton-line"></div>
                       </td>
-                      <td className="text-muted col-auto col-1 pt-3">
-                        <div className="skeleton-line"></div>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -62,13 +58,24 @@ export default class VariablesTable extends React.Component {
                         <span>{variable.variable_name}</span>
                       </td>
                       <td className="text-muted">
-                        <a className="text-reset user-email">{variable.value}</a>
+                        <a className="text-reset user-email">
+                          {variable.encrypted ? (
+                            <small className="text-green">
+                              <img
+                                className="encrypted-icon"
+                                src="/assets/images/icons/padlock.svg"
+                                width="12"
+                                height="12"
+                              />
+                              <span className="text-success mx-2">secret</span>
+                            </small>
+                          ) : (
+                            variable.value
+                          )}
+                        </a>
                       </td>
                       <td className="text-muted">
                         <small className="user-status">{variable.variable_type}</small>
-                      </td>
-                      <td className="text-muted">
-                        <small className="user-status">{variable.encrypted.toString()}</small>
                       </td>
                       {this.props.admin && (
                         <td>

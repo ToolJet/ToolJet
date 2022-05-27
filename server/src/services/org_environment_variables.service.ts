@@ -22,7 +22,9 @@ export class OrgEnvironmentVariablesService {
 
     await Promise.all(
       variables.map(async (variable: OrgEnvironmentVariable) => {
-        if (variable.encrypted) {
+        if (variable.encrypted && variable.variableType === 'server') {
+          delete variable.value;
+        } else {
           variable['value'] = await this.decryptSecret(variable.value);
         }
       })

@@ -126,7 +126,7 @@ class Editor extends React.Component {
           currentUser: userVars,
           theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
-          environment_variables: {},
+          environmentVariables: {},
         },
         errors: {},
         variables: {},
@@ -184,16 +184,24 @@ class Editor extends React.Component {
 
   fetchOrgEnvironmentVariables = () => {
     orgEnvironmentVariableService.getVariables().then((data) => {
-      const variables = {};
+      const client_variables = {};
+      const server_variables = {};
       data.variables.map((variable) => {
-        variables[variable.variable_name] = variable.value;
+        if (variable.variable_type === 'server') {
+          server_variables[variable.variable_name] = 'SecureValue';
+        } else {
+          client_variables[variable.variable_name] = variable.value;
+        }
       });
       this.setState({
         currentState: {
           ...this.state.currentState,
           globals: {
             ...this.state.currentState.globals,
-            environment_variables: variables,
+            environmentVariables: {
+              server: server_variables,
+              client: client_variables,
+            },
           },
         },
       });
