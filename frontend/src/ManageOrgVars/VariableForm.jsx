@@ -1,4 +1,5 @@
 import React from 'react';
+import Select from '@/_ui/Select';
 
 export default class VariableForm extends React.Component {
   constructor(props) {
@@ -43,16 +44,40 @@ export default class VariableForm extends React.Component {
                 </div>
               </div>
               <div className="form-group mb-3 ">
-                <label className="form-check form-switch">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    disabled={this.props.selectedVariableId ? true : false}
-                    onChange={(e) => this.props.handleEncryptionToggle(e)}
-                    checked={this.props.fields['encryption']}
-                  />
-                  <span className="form-check-label">Enable encryption</span>
-                </label>
+                <div className="row">
+                  <div className="col">
+                    <label className="form-label">Type</label>
+
+                    <Select
+                      options={[
+                        { name: 'Client', value: 'client' },
+                        { name: 'Server', value: 'server' },
+                      ]}
+                      hasSearch={false}
+                      value={this.props.fields['variable_type'] ?? 'client'}
+                      onChange={(value) => this.props.handleVariableTypeSelect(value)}
+                      useMenuPortal={false}
+                    />
+                  </div>
+                  <div className="col">
+                    <label className="form-check form-switch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        disabled={
+                          this.props.selectedVariableId || this.props.fields['variable_type'] === 'server'
+                            ? true
+                            : false
+                        }
+                        onChange={(e) => this.props.handleEncryptionToggle(e)}
+                        checked={
+                          this.props.fields['variable_type'] === 'server' ? true : this.props.fields['encryption']
+                        }
+                      />
+                      <span className="form-check-label">Enable encryption</span>
+                    </label>
+                  </div>
+                </div>
               </div>
               <div className="form-footer">
                 <button type="button" className="btn btn-light mr-2" onClick={() => this.props.onCancelBtnClicked()}>

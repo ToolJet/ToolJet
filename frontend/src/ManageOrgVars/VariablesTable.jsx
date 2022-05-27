@@ -27,6 +27,7 @@ export default class VariablesTable extends React.Component {
                 <tr>
                   <th>Name</th>
                   <th>Value</th>
+                  <th>Type</th>
                   <th>Encrypted</th>
                   {this.props.admin && <th className="w-1"></th>}
                 </tr>
@@ -37,6 +38,9 @@ export default class VariablesTable extends React.Component {
                     <tr key={index}>
                       <td className="col-4 p-3">
                         <div className="skeleton-line w-10"></div>
+                      </td>
+                      <td className="col-2 p-3">
+                        <div className="skeleton-line"></div>
                       </td>
                       <td className="col-2 p-3">
                         <div className="skeleton-line"></div>
@@ -59,6 +63,9 @@ export default class VariablesTable extends React.Component {
                       </td>
                       <td className="text-muted">
                         <a className="text-reset user-email">{variable.value}</a>
+                      </td>
+                      <td className="text-muted">
+                        <small className="user-status">{variable.variable_type}</small>
                       </td>
                       <td className="text-muted">
                         <small className="user-status">{variable.encrypted.toString()}</small>

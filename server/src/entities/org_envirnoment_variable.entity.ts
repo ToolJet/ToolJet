@@ -22,6 +22,9 @@ export class OrgEnvironmentVariable extends BaseEntity {
   @Column({ name: 'value' })
   value: string;
 
+  @Column({ name: 'variable_type' })
+  variableType: string;
+
   @Column({ name: 'encrypted' })
   encrypted: boolean;
 

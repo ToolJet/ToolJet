@@ -14,6 +14,11 @@ export class EnvironmentVariableDto {
   @IsOptional()
   value: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  variable_type: string;
+
   @IsBoolean()
   @IsOptional()
   encrypted: boolean;

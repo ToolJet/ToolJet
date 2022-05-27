@@ -32,8 +32,9 @@ export class OrgEnvironmentVariablesService {
   }
 
   async create(currentUser: User, environmentVariableDto: EnvironmentVariableDto): Promise<OrgEnvironmentVariable> {
+    const encrypted = environmentVariableDto.variable_type === 'server' ? true : environmentVariableDto.encrypted;
     let value: string;
-    if (environmentVariableDto.encrypted && environmentVariableDto.value) {
+    if (encrypted && environmentVariableDto.value) {
       value = await this.encryptSecret(environmentVariableDto.value);
     } else {
       value = environmentVariableDto.value;
@@ -42,7 +43,8 @@ export class OrgEnvironmentVariablesService {
       this.orgEnvironmentVariablesRepository.create({
         variableName: environmentVariableDto.variable_name,
         value,
-        encrypted: environmentVariableDto.encrypted,
+        variableType: environmentVariableDto.variable_type,
+        encrypted,
         organizationId: currentUser.organizationId,
         createdAt: new Date(),
         updatedAt: new Date(),

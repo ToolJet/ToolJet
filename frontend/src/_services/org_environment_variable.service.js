@@ -13,10 +13,11 @@ function getVariables() {
   return fetch(`${config.apiUrl}/organization-variables`, requestOptions).then(handleResponse);
 }
 
-function create(variable_name, value, encrypted) {
+function create(variable_name, value, variable_type, encrypted) {
   const body = {
     variable_name,
     value,
+    variable_type,
     encrypted,
   };
 

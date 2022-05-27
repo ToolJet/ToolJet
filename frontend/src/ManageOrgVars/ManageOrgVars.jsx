@@ -19,6 +19,7 @@ class ManageOrgVars extends React.Component {
       newVariable: {},
       fields: {
         encryption: false,
+        variable_type: 'client',
       },
       errors: {},
       showVariableDeleteConfirmation: false,
@@ -148,7 +149,12 @@ class ManageOrgVars extends React.Component {
           });
       } else {
         orgEnvironmentVariableService
-          .create(this.state.fields.variable_name, this.state.fields.value, this.state.fields.encryption)
+          .create(
+            this.state.fields.variable_name,
+            this.state.fields.value,
+            this.state.fields.variable_type,
+            this.state.fields.encryption
+          )
           .then(() => {
             toast.success('Variable has been created', {
               position: 'top-center',
@@ -194,6 +200,16 @@ class ManageOrgVars extends React.Component {
           isLoading: false,
         });
       });
+  };
+
+  handleVariableTypeSelect = (value) => {
+    console.log(value);
+    let fields = this.state.fields;
+    fields['variable_type'] = value;
+
+    this.setState({
+      fields,
+    });
   };
 
   render() {
@@ -245,6 +261,7 @@ class ManageOrgVars extends React.Component {
                 createOrUpdate={this.createOrUpdate}
                 changeNewVariableOption={this.changeNewVariableOption}
                 handleEncryptionToggle={this.handleEncryptionToggle}
+                handleVariableTypeSelect={this.handleVariableTypeSelect}
                 onCancelBtnClicked={this.onCancelBtnClicked}
                 addingVar={addingVar}
               />

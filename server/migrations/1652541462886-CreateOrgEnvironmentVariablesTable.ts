@@ -29,6 +29,11 @@ export class CreateOrgEnvironmentVariablesTable1652541462886 implements Migratio
             isNullable: false,
           },
           {
+            name: 'variable_type',
+            type: 'varchar',
+            isNullable: false,
+          },
+          {
             name: 'encrypted',
             type: 'boolean',
             default: false,
