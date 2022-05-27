@@ -40,6 +40,10 @@
     "DISABLE_MULTI_WORKSPACE": {
       "description": "Disables Multi-Workspace feature",
       "value": "false"
+    },
+    "DEPLOYMENT_PLATFORM": {
+      "description": "Platform ToolJet is deployed on",
+      "value": "heroku"
     }
   },
   "formation": {
