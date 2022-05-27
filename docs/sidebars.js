@@ -46,13 +46,12 @@ const sidebars = {
         'tutorial/building-queries',
         'tutorial/transformations',
         'tutorial/adding-widget',
-        'tutorial/actions',
+       'tutorial/actions',
         'tutorial/debugger',
         'tutorial/mobile-layout',
         'tutorial/versioning-and-release',
         'tutorial/sharing-and-deploying',
         'tutorial/manage-users-groups',
-        'password-login/password-login',
         'tutorial/keyboard-shortcuts',
         'tutorial/multiworkspace',
       ],
@@ -190,7 +189,7 @@ const sidebars = {
       collapsed: true,
       items: [
         'user-authentication/general-settings',
-//        'user-authentication/password-login',
+        'user-authentication/password-login',
         {
           type: 'category',
           label: 'SSO',
