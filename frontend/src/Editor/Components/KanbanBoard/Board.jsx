@@ -57,13 +57,8 @@ const getItemStyle = (isDragging, draggableStyle) => {
     background: isDragging ? '#c2cfff' : '#fefefe',
   };
 };
-const getListStyle = (isDraggingOver) => ({
-  padding: grid,
-  width: 250,
-  borderColor: isDraggingOver && '#c0ccf8',
-});
 
-function Board({ height, data, updateExposedVariable }) {
+function Board({ height, data, updateExposedVariable, colStyles }) {
   const [state, setState] = useState(() => data);
 
   const addNewItem = (state, keyIndex) => {
@@ -104,6 +99,12 @@ function Board({ height, data, updateExposedVariable }) {
     updateExposedVariable(state);
   }, [state]);
 
+  const getListStyle = (isDraggingOver) => ({
+    ...colStyles,
+    padding: grid,
+    borderColor: isDraggingOver && '#c0ccf8',
+  });
+
   return (
     <div
       style={{ height: height, overflowX: 'auto' }}
@@ -121,6 +122,7 @@ function Board({ height, data, updateExposedVariable }) {
             getItemStyle={getItemStyle}
             updateCb={setState}
             addNewItem={addNewItem}
+            colStyles={colStyles}
           />
         ))}
       </DragDropContext>

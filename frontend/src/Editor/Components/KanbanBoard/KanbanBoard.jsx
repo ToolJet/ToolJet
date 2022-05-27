@@ -14,14 +14,19 @@ const getData = (columns, cards) => {
 
 export const BoardContext = React.createContext({});
 
-export const KanbanBoard = ({ height, properties, styles, currentState, exposedVariable, setExposedVariable }) => {
+export const KanbanBoard = ({ height, properties, styles, currentState, setExposedVariable }) => {
   const { columns, cardData } = properties;
 
-  const { visibility, disabledState } = styles;
+  const { visibility, disabledState, width, minWidth } = styles;
   const boardData = getData(columns, cardData) ?? [];
 
   const updateExposedVariable = (data) => {
     setExposedVariable('data', data);
+  };
+
+  const colStyles = {
+    width: !width ? '100%' : width,
+    minWidth: !minWidth ? '350px' : minWidth,
   };
 
   return (
@@ -32,6 +37,7 @@ export const KanbanBoard = ({ height, properties, styles, currentState, exposedV
           data={boardData}
           isDisable={disabledState}
           updateExposedVariable={updateExposedVariable}
+          colStyles={colStyles}
         />
       </div>
     </BoardContext.Provider>

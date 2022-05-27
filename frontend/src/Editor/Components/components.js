@@ -2206,6 +2206,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       disabledState: { type: 'toggle', displayName: 'Disable' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
+      width: { type: 'number', displayName: 'Width' },
+      minWidth: { type: 'number', displayName: 'Min Width' },
     },
     exposedVariables: {
       data: {},
@@ -2228,6 +2230,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        width: { value: '{{}}' },
+        minWidth: { value: '{{}}' },
       },
     },
   },
