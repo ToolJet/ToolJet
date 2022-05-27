@@ -10,9 +10,7 @@ ToolJet can connect to Google Sheet using OAuth 2.0, which helps us to limit an 
 ## How to integrate Google Sheets
 
 <div style={{textAlign: 'left'}}>
-    <figure class="video_container">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/3PO41waW2CQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    </figure>
+    <iframe width="375" height="500" src="https://www.youtube.com/embed/3PO41waW2CQ" title="ToolJet Googlsheet Integration" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen width="100%"></iframe>
 </div>
 
 ## Self-Hosted Configuration

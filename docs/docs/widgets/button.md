@@ -7,9 +7,7 @@ title: Button
 Button widget can be used to take actions.
 
 <div style={{textAlign: 'left'}}>
-    <figure class="video_container">
-    <iframe width="630" height="400" src="https://www.youtube.com/embed/zw3yxC7WUOg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    </figure>
+    <iframe width="375" height="500" src="https://www.youtube.com/embed/zw3yxC7WUOg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen width="100%"></iframe>
 </div>
 
 ## Properties
