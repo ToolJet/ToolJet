@@ -2207,7 +2207,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       visibility: { type: 'toggle', displayName: 'Visibility' },
     },
     exposedVariables: {
-      value: {},
+      data: {},
     },
     definition: {
       others: {

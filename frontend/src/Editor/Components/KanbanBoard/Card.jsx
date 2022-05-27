@@ -40,7 +40,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
         updateCb(newState);
       }
     }
-    flipTitleToEditMode(colIndex, cardIndex, 'title');
+    flipTitleToEditMode(colIndex, cardIndex, null);
   };
 
   const updateCardDescription = (newDescription, colIndex, cardIndex) => {
@@ -57,7 +57,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
       }
     }
 
-    flipTitleToEditMode(colIndex, cardIndex, 'description');
+    flipTitleToEditMode(colIndex, cardIndex, null);
   };
 
   const flipTitleToEditMode = (colIndex, cardIndex, field) => {
@@ -124,7 +124,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
           ) : (
             <p
               onClick={() => flipTitleToEditMode(keyIndex, index, 'description')}
-              className={darkMode ? 'text-white-50' : 'text-muted'}
+              className={`${darkMode ? 'text-white-50' : 'text-muted'} w-100 h-100`}
             >
               {item.description}
             </p>

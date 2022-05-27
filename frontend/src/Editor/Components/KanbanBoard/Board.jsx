@@ -63,7 +63,7 @@ const getListStyle = (isDraggingOver) => ({
   borderColor: isDraggingOver && '#c0ccf8',
 });
 
-function Board({ height, data }) {
+function Board({ height, data, updateExposedVariable }) {
   const [state, setState] = useState(() => data);
 
   const addNewItem = (state, keyIndex) => {
@@ -99,6 +99,10 @@ function Board({ height, data }) {
       }
     }
   }
+
+  React.useEffect(() => {
+    updateExposedVariable(state);
+  }, [state]);
 
   return (
     <div
