@@ -47,17 +47,20 @@ export default class VariableForm extends React.Component {
                 <div className="row">
                   <div className="col">
                     <label className="form-label">Type</label>
-
-                    <Select
-                      options={[
-                        { name: 'Client', value: 'client' },
-                        { name: 'Server', value: 'server' },
-                      ]}
-                      hasSearch={false}
-                      value={this.props.fields['variable_type'] ?? 'client'}
-                      onChange={(value) => this.props.handleVariableTypeSelect(value)}
-                      useMenuPortal={false}
-                    />
+                    {this.props.selectedVariableId ? (
+                      <span>{this.props.fields['variable_type']}</span>
+                    ) : (
+                      <Select
+                        options={[
+                          { name: 'Client', value: 'client' },
+                          { name: 'Server', value: 'server' },
+                        ]}
+                        hasSearch={false}
+                        value={this.props.fields['variable_type'] ?? 'client'}
+                        onChange={(value) => this.props.handleVariableTypeSelect(value)}
+                        useMenuPortal={false}
+                      />
+                    )}
                   </div>
                   <div className="col">
                     <label className="form-check form-switch">
