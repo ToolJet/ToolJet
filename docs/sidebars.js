@@ -178,17 +178,26 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Single Sign-on',
+      label: 'User Authentication',
       link: {
         type: 'generated-index',
-        title: 'Single Sign-on',
+        title: 'User Authentication',
         description:
-          "Guide for enabling available Single Sign-ons on ToolJet",
-        keywords: ['single sign-on','SSO'],
+          "Guides for setting up User Authentication and managing Single Sign-On",
+        keywords: ['SSO','authentication'],
       },
+      collapsed: true,
       items: [
-        'sso/github',
-        'sso/google',
+        'user-authentication/general-settings',
+//        'user-authentication/password-login',
+        {
+          type: 'category',
+          label: 'SSO',
+          items: [
+            'user-authentication/sso/github',
+            'user-authentication/sso/google',
+          ],
+        },
       ],
     },
     {
