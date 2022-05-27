@@ -54,6 +54,7 @@
     "db:create": "npm --prefix server run db:create",
     "db:migrate": "npm --prefix server run db:migrate",
     "db:seed": "npm --prefix server run db:seed",
+    "db:setup": "npm --prefix server run db:setup",
     "db:reset": "npm --prefix server run db:reset",
     "db:drop": "npm --prefix server run db:drop",
     "deploy": "cp -a frontend/build/. public/",

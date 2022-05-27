@@ -43,7 +43,7 @@ function createDatabase(): void {
       const errorMessage = `database "${envVars.PG_DB}" already exists`;
 
       if (err.message.includes(errorMessage)) {
-        console.log(errorMessage);
+        console.log(`Using database: ${envVars.PG_DB}`);
       } else {
         console.error(err);
       }

@@ -19,7 +19,7 @@ export class SeedsService {
       });
 
       if (defaultUser) {
-        console.log('Default user already present. Skipping seed.');
+        console.log('Default user already present.');
         return;
       }
 
@@ -58,7 +58,9 @@ export class SeedsService {
 
       await this.createDefaultUserGroups(manager, user);
 
-      console.log('Seeding complete. Use default credentials to login.');
+      console.log(
+        'Seeding complete. Use default credentials to login.\n' + 'email: dev@tooljet.io\n' + 'password: password'
+      );
     });
   }
 
