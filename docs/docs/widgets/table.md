@@ -6,9 +6,7 @@ title: Table
 
 Tables can be used for both displaying and editing data.
 
-<div style={{textAlign: 'left'}}>
-    <iframe width="375" height="500" src="https://www.youtube.com/embed/hTrdkUtz3aA" title="ToolJet Table Widget" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen width="100%"></iframe>
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/hTrdkUtz3aA" title="ToolJet Table Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Table data
 
