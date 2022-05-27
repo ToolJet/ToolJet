@@ -18,10 +18,7 @@ export class SeedsService {
         },
       });
 
-      if (defaultUser) {
-        console.log('Default user already present.');
-        return;
-      }
+      if (defaultUser) return;
 
       const organization = manager.create(Organization, {
         ssoConfigs: [

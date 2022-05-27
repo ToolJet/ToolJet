@@ -57,18 +57,9 @@ function determineFilePathForEnv(env: string | undefined): string {
   }
 }
 
-function logIfFileNotPresent(filePath: string, env: string): void {
-  if (!fs.existsSync(filePath)) {
-    console.log(
-        `Picking up config from the environment for: ${env}`
-    );
-  }
-}
-
 function fetchConnectionOptions(): TypeOrmModuleOptions {
   const env: string | undefined = process.env.NODE_ENV;
   const filePath: string = determineFilePathForEnv(env);
-  logIfFileNotPresent(filePath, env);
 
   return buildConnectionOptions(filePath, env);
 }

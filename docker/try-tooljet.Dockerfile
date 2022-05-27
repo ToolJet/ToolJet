@@ -83,12 +83,13 @@ ENV TOOLJET_HOST=http://localhost:3000 \
     PG_USER=tooljet \
     PG_PASS=postgres \
     PG_HOST=localhost \
-    ORM_LOGGING=all \
+    ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local
 
 # Prepare DB and start application
 CMD service postgresql start 1> /dev/null && \
     echo "Setting up the database.." && \
-    npm run db:setup --silent && \
+    npm run db:setup:prod --silent && \
+    npm run db:seed:prod --silent && \
     echo "Starting ToolJet server.." && \
     npm run start:prod --silent
