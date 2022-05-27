@@ -89,7 +89,20 @@
   margin: 0 calc(-1 * var(--ifm-pre-padding));
   padding: 0 var(--ifm-pre-padding);
 }
-/* 
+
+.navbar__link  {
+  color: var(--ifm-color-primary);
+}
+
+.navbar__link:hover {
+  text-decoration: underline;
+}
+
+svg[class^='iconExternalLink'] {
+  display: none;
+}
+
+/*
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 
 body {
