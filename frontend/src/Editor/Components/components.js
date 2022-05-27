@@ -2199,7 +2199,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      data: { type: 'code', displayName: 'Data' },
+      columns: { type: 'code', displayName: 'Columns' },
+      cardData: { type: 'code', displayName: 'Card Data' },
     },
     events: {},
     styles: {
@@ -2215,9 +2216,12 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        data: {
+        columns: {
+          value: '{{[{ "id": "1", "title": "to do" },{ "id": "2", "title": "in progress" }]}}',
+        },
+        cardData: {
           value:
-            '{{[{"id":"01","title":"New column-1","accentColor":"#fefefe","cards":[{"id":"1","title":"New card 1","description":""},{"id":"2","title":"New card","description":""},{"id":"3","title":"New card2","description":""}]},{"id":"02","title":"New column-2","accentColor":"#fefefe","cards":[{"id":"4","title":"New card","description":""}]}]}}',
+            '{{[{ id: "01", title: "col-1/c1", description: "Something@col1", columnId: "1" },{ id: "02", title: "col-1/c2", description: "Something@col-1", columnId: "1" },{ id: "03", title: "col-2/c1", description: "Something@col-2", columnId: "2" }]}}',
         },
       },
       events: [],
