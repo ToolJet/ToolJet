@@ -4,6 +4,7 @@ import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { BoardContext } from './KanbanBoard';
 import { resolveReferences } from '@/_helpers/utils';
+import { v4 as uuidv4 } from 'uuid';
 
 const getContent = (content, type) => {
   switch (type) {
@@ -133,8 +134,15 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
       </div>
     </Popover>
   );
+
+  const draggableId = item.id ?? uuidv4();
+
   return (
-    <Draggable key={item.id} draggableId={String(item.id)} index={index}>
+    <Draggable
+      key={item.id}
+      draggableId={typeof draggableId !== String ? String(draggableId) : draggableId}
+      index={index}
+    >
       {(dndProps, dndState) => (
         <div
           onMouseEnter={() => setIsHovered(true)}
