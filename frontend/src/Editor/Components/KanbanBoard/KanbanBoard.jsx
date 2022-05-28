@@ -36,6 +36,14 @@ export const KanbanBoard = ({ height, properties, styles, currentState, setExpos
     minWidth: !minWidth ? '350px' : minWidth,
   };
 
+  if (boardData.length === 0) {
+    return (
+      <div className="mx-auto w-50 p-5 bg-light no-components-box" style={{ marginTop: '15%' }}>
+        <center className="text-muted">Board is empty.</center>
+      </div>
+    );
+  }
+
   return (
     <BoardContext.Provider value={{ currentState }}>
       <div style={{ display: visibility ? '' : 'none' }} data-disabled={disabledState} className="kanban-container p-0">
