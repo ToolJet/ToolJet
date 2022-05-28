@@ -29,11 +29,11 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
     updateCb(newState);
   };
 
-  const deleteGroupHandler = (state, keyIndex) => {
-    const newState = [...state];
-    newState.splice(keyIndex, 1);
-    updateCb(newState);
-  };
+  // const deleteGroupHandler = (state, keyIndex) => {
+  //   const newState = [...state];
+  //   newState.splice(keyIndex, 1);
+  //   updateCb(newState);
+  // };
 
   return (
     <Droppable key={keyIndex} droppableId={String(keyIndex)}>

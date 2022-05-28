@@ -84,10 +84,12 @@ function Board({ height, data, updateExposedVariable, colStyles }) {
     if (state.length !== data.length) {
       setState(data);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   React.useEffect(() => {
     updateExposedVariable(state);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   const getListStyle = (isDraggingOver) => ({
