@@ -69,7 +69,7 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
                 </span>
               )}
             </div>
-            <div>
+            {/* <div>
               <span className="cursor-pointer">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -100,7 +100,7 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
                 width={12}
                 height={12}
               />
-            </div>
+            </div> */}
           </div>
           <div style={{ ...styles }} className="card-body">
             {cards?.map((item, index) => (

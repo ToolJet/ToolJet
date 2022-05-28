@@ -11,26 +11,10 @@ const reorder = (list, startIndex, endIndex) => {
   return result;
 };
 
-const generateColumnData = () => {
-  return {
-    id: uuidv4(),
-    title: 'New column',
-    color: '#fefefe',
-    cards: [
-      {
-        id: uuidv4(),
-        title: 'New card',
-        description: '',
-      },
-    ],
-  };
-};
-
 /**
  * Moves an item from one list to another list.
  */
 const move = (source, destination, droppableSource, droppableDestination) => {
-  console.log('moveing DND block ==>', source, destination, droppableSource, droppableDestination);
   const sourceClone = Array.from(source);
   const destinationClone = Array.from(destination);
   const [removed] = sourceClone.splice(droppableSource.index, 1);
@@ -133,15 +117,6 @@ function Board({ height, data, updateExposedVariable, colStyles }) {
           />
         ))}
       </DragDropContext>
-      <button
-        className="kanban-board-add-group"
-        type="button"
-        onClick={() => {
-          setState([...state, generateColumnData()]);
-        }}
-      >
-        Add new group
-      </button>
     </div>
   );
 }
