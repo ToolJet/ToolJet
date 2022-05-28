@@ -323,7 +323,7 @@ export class OrganizationsService {
 
     let user = await this.usersService.findByEmail(userParams.email);
     let defaultOrganisation: Organization,
-      shouldCreateUser = false;
+      shouldSendWelcomeMail = false;
 
     if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
       throw new BadRequestException('User with such email already exists.');
@@ -334,14 +334,11 @@ export class OrganizationsService {
       await this.usersService.update(user.id, { firstName: userParams.firstName, lastName: userParams.lastName });
     }
 
-    if (!user) {
+    if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
       // User not exist
-      shouldCreateUser = true;
-
-      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
-        // Create default organization
-        defaultOrganisation = await this.create('Untitled workspace');
-      }
+      shouldSendWelcomeMail = true;
+      // Create default organization
+      defaultOrganisation = await this.create('Untitled workspace');
     }
     user = await this.usersService.create(
       userParams,
@@ -358,7 +355,7 @@ export class OrganizationsService {
       await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganisation.id, user.id);
     }
 
-    if (shouldCreateUser) {
+    if (shouldSendWelcomeMail) {
       this.emailService
         .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
         .catch((err) => console.error('Error while sending welcome mail', err));
@@ -380,7 +377,7 @@ export class OrganizationsService {
     await this.emailService.sendOrganizationUserWelcomeEmail(
       user.email,
       user.firstName,
-      currentUser.firstName,
+      `${currentUser.firstName} ${currentUser.lastName}`,
       organizationUser.invitationToken,
       currentOrganization.name
     );

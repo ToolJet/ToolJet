@@ -150,5 +150,5 @@ function acceptInvite({ token, password }) {
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/accept-invite`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/accept-invite`, requestOptions);
 }

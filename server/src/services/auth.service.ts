@@ -19,6 +19,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateUserDto } from '@dto/user.dto';
+import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -284,9 +285,12 @@ export class AuthService {
     }
   }
 
-  async acceptOrganizationInvite(params: any) {
-    const { token } = params;
+  async acceptOrganizationInvite(acceptInviteDto: AcceptInviteDto) {
+    const { password, token } = acceptInviteDto;
 
+    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true' && !password) {
+      throw new BadRequestException('Please enter password');
+    }
     const organizationUser = await this.organizationUsersRepository.findOne({
       where: { invitationToken: token },
       relations: ['user'],
@@ -297,13 +301,23 @@ export class AuthService {
     }
     const user: User = organizationUser.user;
 
-    if (user.invitationToken) {
+    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && user.invitationToken) {
       // User sign up link send - not activated account
       this.emailService
-        .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
+        .sendWelcomeEmail(user.email, `${user.firstName} ${user.lastName}`, user.invitationToken)
         .catch((err) => console.error('Error while sending welcome mail', err));
       throw new UnauthorizedException(
         'User not exist in the workspace, Please setup your account using link shared via email'
+      );
+    }
+
+    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+      // set new password
+      await this.usersRepository.save(
+        Object.assign(user, {
+          ...(password ? { password } : {}),
+          invitationToken: null,
+        })
       );
     }
 

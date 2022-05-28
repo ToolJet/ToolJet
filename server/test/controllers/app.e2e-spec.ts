@@ -644,7 +644,6 @@ describe('Authentication', () => {
 
       const acceptInviteResponse = await request(app.getHttpServer()).post('/api/accept-invite').send({
         token: organizationUser.invitationToken,
-        password: uuidv4(),
       });
 
       expect(acceptInviteResponse.statusCode).toBe(201);
@@ -708,75 +707,100 @@ describe('Authentication', () => {
   });
 
   describe('POST /api/accept-invite', () => {
-    it('should allow users to accept invitation when Multi-Workspace is enabled', async () => {
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        switch (key) {
-          case 'DISABLE_MULTI_WORKSPACE':
-            return 'false';
-          default:
-            return process.env[key];
-        }
-      });
-      const userData = await createUser(app, {
-        email: 'organizationUser@tooljet.io',
-        status: 'invited',
+    describe('Multi-Worlspace Enabled', () => {
+      beforeEach(() => {
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'DISABLE_MULTI_WORKSPACE':
+              return 'false';
+            default:
+              return process.env[key];
+          }
+        });
       });
 
-      const { user, orgUser } = userData;
+      it('should allow users to accept invitation when Multi-Workspace is enabled', async () => {
+        const userData = await createUser(app, {
+          email: 'organizationUser@tooljet.io',
+          status: 'invited',
+        });
 
-      const response = await request(app.getHttpServer()).post('/api/accept-invite').send({
-        token: orgUser.invitationToken,
+        const { user, orgUser } = userData;
+
+        const response = await request(app.getHttpServer()).post('/api/accept-invite').send({
+          token: orgUser.invitationToken,
+        });
+
+        expect(response.statusCode).toBe(201);
+
+        const organizationUser = await getManager().findOneOrFail(OrganizationUser, { where: { userId: user.id } });
+        expect(organizationUser.status).toEqual('active');
       });
 
-      expect(response.statusCode).toBe(201);
+      it('should not allow users to accept invitation when user sign up is not completed', async () => {
+        const userData = await createUser(app, {
+          email: 'organizationUser@tooljet.io',
+          invitationToken: uuidv4(),
+          status: 'invited',
+        });
+        const { user, orgUser } = userData;
 
-      const organizationUser = await getManager().findOneOrFail(OrganizationUser, { where: { userId: user.id } });
-      expect(organizationUser.status).toEqual('active');
+        const response = await request(app.getHttpServer()).post('/api/accept-invite').send({
+          token: orgUser.invitationToken,
+        });
+
+        expect(response.statusCode).toBe(401);
+        expect(response.body.message).toBe(
+          'User not exist in the workspace, Please setup your account using link shared via email'
+        );
+      });
     });
 
-    it('should allow users to accept invitation when Multi-Workspace is disabled', async () => {
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        switch (key) {
-          case 'DISABLE_MULTI_WORKSPACE':
-            return 'true';
-          default:
-            return process.env[key];
-        }
-      });
-      const userData = await createUser(app, {
-        email: 'organizationUser@tooljet.io',
-        status: 'invited',
-      });
-      const { user, orgUser } = userData;
-
-      const response = await request(app.getHttpServer()).post('/api/accept-invite').send({
-        token: orgUser.invitationToken,
-        password: uuidv4(),
+    describe('Multi-Worlspace Disabled', () => {
+      beforeEach(() => {
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'DISABLE_MULTI_WORKSPACE':
+              return 'true';
+            default:
+              return process.env[key];
+          }
+        });
       });
 
-      expect(response.statusCode).toBe(201);
+      it('should allow users to accept invitation when Multi-Workspace is disabled', async () => {
+        const userData = await createUser(app, {
+          email: 'organizationUser@tooljet.io',
+          status: 'invited',
+        });
+        const { user, orgUser } = userData;
 
-      const organizationUser = await getManager().findOneOrFail(OrganizationUser, { where: { userId: user.id } });
-      expect(organizationUser.status).toEqual('active');
-    });
+        const response = await request(app.getHttpServer()).post('/api/accept-invite').send({
+          token: orgUser.invitationToken,
+          password: uuidv4(),
+        });
 
-    it('should not allow users to accept invitation when user sign up is not completed', async () => {
-      const userData = await createUser(app, {
-        email: 'organizationUser@tooljet.io',
-        invitationToken: uuidv4(),
-        status: 'invited',
+        expect(response.statusCode).toBe(201);
+
+        const organizationUser = await getManager().findOneOrFail(OrganizationUser, { where: { userId: user.id } });
+        expect(organizationUser.status).toEqual('active');
       });
-      const { user, orgUser } = userData;
 
-      const response = await request(app.getHttpServer()).post('/api/accept-invite').send({
-        token: orgUser.invitationToken,
-        password: uuidv4(),
+      it('should not allow users to accept invitation when user not entered password for single workspace', async () => {
+        const userData = await createUser(app, {
+          email: 'organizationUser@tooljet.io',
+          invitationToken: uuidv4(),
+          status: 'invited',
+        });
+        const { orgUser } = userData;
+
+        const response = await request(app.getHttpServer()).post('/api/accept-invite').send({
+          token: orgUser.invitationToken,
+        });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message).toBe('Please enter password');
       });
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe(
-        'User not exist in the workspace, Please setup your account using link shared via email'
-      );
     });
   });
 
