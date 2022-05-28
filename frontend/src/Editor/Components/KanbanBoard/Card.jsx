@@ -134,7 +134,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
     </Popover>
   );
   return (
-    <Draggable key={item.id} draggableId={item.id} index={index}>
+    <Draggable key={item.id} draggableId={String(item.id)} index={index}>
       {(dndProps, dndState) => (
         <div
           onMouseEnter={() => setIsHovered(true)}

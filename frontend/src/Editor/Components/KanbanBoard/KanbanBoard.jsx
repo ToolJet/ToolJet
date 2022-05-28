@@ -1,15 +1,22 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Board from './Board';
 
 const getData = (columns, cards) => {
-  const clonedColumns = [...columns];
+  if (
+    Object.prototype.toString.call(cards).slice(8, -1) === 'Array' &&
+    Object.prototype.toString.call(columns).slice(8, -1) === 'Array'
+  ) {
+    const clonedColumns = [...columns];
+    cards.forEach((card) => {
+      const column = clonedColumns.find((column) => column.id === card.columnid);
+      if (column) {
+        column['cards'] = column?.cards ? [...column.cards, card] : [card];
+      }
+    });
 
-  cards.forEach((card) => {
-    const column = clonedColumns.find((column) => column.id === card.columnId);
-    column.cards = column?.cards ? [...column.cards, card] : [card];
-  });
-
-  return columns;
+    return clonedColumns;
+  }
+  return null;
 };
 
 export const BoardContext = React.createContext({});
@@ -18,7 +25,7 @@ export const KanbanBoard = ({ height, properties, styles, currentState, setExpos
   const { columns, cardData } = properties;
 
   const { visibility, disabledState, width, minWidth } = styles;
-  const boardData = getData(columns, cardData) ?? [];
+  const boardData = useMemo(() => getData(columns, cardData), [columns, cardData]) ?? [];
 
   const updateExposedVariable = (data) => {
     setExposedVariable('data', data);

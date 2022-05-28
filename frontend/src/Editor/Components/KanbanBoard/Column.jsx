@@ -36,7 +36,7 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
   };
 
   return (
-    <Droppable key={keyIndex} droppableId={`${keyIndex}`}>
+    <Droppable key={keyIndex} droppableId={String(keyIndex)}>
       {(dndProps, dndState) => (
         <div
           className="card text-dark bg-light mb-3 m-2 kanban-column"
