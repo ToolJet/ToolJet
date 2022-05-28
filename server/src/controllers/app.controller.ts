@@ -39,6 +39,7 @@ export class AppController {
     return {};
   }
 
+  @UseGuards(MultiOrganizationGuard, SignupDisableGuard)
   @Post('signup')
   async signup(@Body() appAuthDto: AppAuthenticationDto) {
     return this.authService.signup(appAuthDto.email);
