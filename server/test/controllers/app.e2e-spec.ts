@@ -173,7 +173,7 @@ describe('Authentication', () => {
       });
       it('should not create new users', async () => {
         const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
-        expect(response.statusCode).toBe(406);
+        expect(response.statusCode).toBe(403);
       });
     });
     describe('sign up enabled and authorization', () => {

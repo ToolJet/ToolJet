@@ -81,25 +81,6 @@ export class UsersService {
       } else {
         user = existingUser;
       }
-
-      for (const group of groups) {
-        const orgGroupPermission = await manager.findOne(GroupPermission, {
-          where: {
-            organizationId: organizationId,
-            group: group,
-          },
-        });
-
-        if (orgGroupPermission) {
-          const userGroupPermission = manager.create(UserGroupPermission, {
-            groupPermissionId: orgGroupPermission.id,
-            userId: user.id,
-          });
-          await manager.save(userGroupPermission);
-        } else {
-          throw new BadRequestException(`${group} group does not exist for current organization`);
-        }
-      }
     });
 
     await this.attachUserGroup(groups, organizationId, user.id);
