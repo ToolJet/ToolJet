@@ -8,7 +8,7 @@ const getData = (columns, cards) => {
   ) {
     const clonedColumns = [...columns];
     cards.forEach((card) => {
-      const column = clonedColumns.find((column) => column.id === card.columnId);
+      const column = clonedColumns.find((column) => column.id === card.column_id);
       if (column) {
         column['cards'] = column?.cards ? [...column.cards, card] : [card];
       }
