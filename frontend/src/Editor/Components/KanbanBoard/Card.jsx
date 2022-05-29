@@ -94,7 +94,6 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
       title="Click to edit"
     >
       <div style={{ border: 'none', boxShadow: 'none', backgroundColor: 'inherit' }} className="card h-100">
-        <div className="card-status-start bg-green"></div>
         <div onClick={handleClick} className="card-body">
           <h3 className="card-title">
             {editType === 'title' && item.isEditing ? (
