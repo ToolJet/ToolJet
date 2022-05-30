@@ -24,7 +24,8 @@ export const BoardContext = React.createContext({});
 export const KanbanBoard = ({ height, properties, styles, currentState, setExposedVariable }) => {
   const { columns, cardData, enableAddCard } = properties;
 
-  const { visibility, disabledState, width, minWidth, accentColor } = styles;
+  const { visibility, disabledState, width, minWidth } = styles;
+  const accentColor = properties.accentColor ?? '#4d72fa';
   const boardData = useMemo(() => getData(columns, cardData), [columns, cardData]) ?? [];
 
   const updateExposedVariable = (data) => {
