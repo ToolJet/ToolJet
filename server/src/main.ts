@@ -69,7 +69,7 @@ async function bootstrap() {
 
   await app.listen(port, '0.0.0.0', function () {
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
-    console.log(`ToolJet ready to use at ${tooljetHost} 🚀`);
+    console.log(`Ready to use at ${tooljetHost} 🚀`);
   });
 }
 
