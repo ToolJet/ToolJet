@@ -10,7 +10,7 @@ import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { CaslModule } from '../casl/casl.module';
-import { FileService } from '@services/file.service';
+import { FilesService } from '@services/files.service';
 import { File } from 'src/entities/file.entity';
 import { ExtensionsService } from '@services/extensions.service';
 import { Extension } from 'src/entities/extension.entity';
@@ -23,7 +23,7 @@ import { Extension } from 'src/entities/extension.entity';
     DataSourcesService,
     LibraryAppCreationService,
     AppImportExportService,
-    FileService,
+    FilesService,
     ExtensionsService,
   ],
   controllers: [LibraryAppsController],

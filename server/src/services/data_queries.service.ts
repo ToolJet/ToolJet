@@ -97,7 +97,7 @@ export class DataQueriesService {
         decoded = decode(file.data.toString());
         extensions[dataQuery.extensionId] = decoded;
       }
-      const code = requireFromString(decoded, { globals: { process } });
+      const code = requireFromString(decoded, { globals: { process, Buffer, Promise } });
       try {
         service = new code.default();
       } catch (error) {
