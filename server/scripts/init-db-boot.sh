@@ -1,7 +1,9 @@
 #!/bin/bash
+set -e
 
 echo "Initializing database.."
 echo "This may take a couple of minutes"
+echo -ne "                          (0%)\r"
 npm run db:create:prod --silent 1> /dev/null
 echo -ne "#####                     (33%)\r"
 npm run db:migrate:prod --silent 1> /dev/null
@@ -9,7 +11,6 @@ echo -ne "#############             (66%)\r"
 npm run db:seed:prod --silent
 echo -ne "#######################   (100%)\r"
 echo -ne "\n\n"
-clear
 
 
 echo "
