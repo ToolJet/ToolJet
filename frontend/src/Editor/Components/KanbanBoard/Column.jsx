@@ -47,8 +47,8 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
   };
 
   const colAccentColor = {
-    color: accentColor,
-    backgroundColor: hexaCodeToRgb(accentColor),
+    color: accentColor ?? '#4d72fa',
+    backgroundColor: accentColor ? hexaCodeToRgb(accentColor) : hexaCodeToRgb('#4d72fa'),
   };
 
   return (
