@@ -1,0 +1,22 @@
+
+.card {
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    position: relative;
+    word-wrap: break-word;
+    margin-top: 1rem;
+}
+
+.card-body {
+    display: flex;
+    flex: 1 1 auto;
+    padding: 1.5rem;
+}
+
+.card-info {
+    margin-left: 1.5rem;
+}
