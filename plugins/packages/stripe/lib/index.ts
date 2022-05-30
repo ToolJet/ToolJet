@@ -1,7 +1,19 @@
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import got, { Headers } from 'got';
 import { SourceOptions } from './types';
-
+import Stripe from 'stripe';
+const stripe = new Stripe(
+  'sk_test_51KPPFsSIMIhrzXWAUfJ82xsqvqFYBaTT9tyqX75ji2j5Hp8fGm4G7dxL40k6vhH7W9vnJBXffhRw43FFDKa3TjFU00Yt7oEwoo',
+  {
+    apiVersion: '2020-08-27',
+  }
+);
+// const stripe = new Stripe(
+//   'sk_test_51KPPFsSIMIhrzXWAUfJ82xsqvqFYBaTT9tyqX75ji2j5Hp8fGm4G7dxL40k6vhH7W9vnJBXffhRw43FFDKa3TjFU00Yt7oEwoo',
+//   {
+//     apiVersion: '2020-08-27',
+//   }
+// );
 export default class StripeQueryService implements QueryService {
   authHeader(token: string): Headers {
     return { Authorization: `Bearer ${token}` };
@@ -34,7 +46,10 @@ export default class StripeQueryService implements QueryService {
           headers: this.authHeader(apiKey),
           searchParams: queryParams,
         });
+        console.log('***', response);
       } else {
+        const refund = await stripe.refunds.retrieve('re_3L4rLk2eZvKYlo2C1enubJKW');
+        console.log('_____&&&&!!!!!!!!', refund);
         response = await got(url, {
           method: operation,
           headers: this.authHeader(apiKey),
