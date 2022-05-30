@@ -8,15 +8,16 @@ import { CredentialsService } from './credentials.service';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
 import got from 'got';
+import { ExtensionsService } from './extensions.service';
 import { FileService } from './file.service';
 import { decode } from 'js-base64';
-
-const _eval = require('eval');
+import { requireFromString } from 'module-from-string';
 const extensions = {};
 
 @Injectable()
 export class DataQueriesService {
   constructor(
+    private readonly extensionsService: ExtensionsService,
     private readonly fileService: FileService,
     private credentialsService: CredentialsService,
     private dataSourcesService: DataSourcesService,
@@ -48,7 +49,8 @@ export class DataQueriesService {
     options: object,
     appId: string,
     dataSourceId: string,
-    appVersionId?: string // TODO: Make this non optional when autosave is implemented
+    appVersionId?: string, // TODO: Make this non optional when autosave is implemented
+    extensionId?: string
   ): Promise<DataQuery> {
     const newDataQuery = this.dataQueriesRepository.create({
       name,
@@ -57,6 +59,7 @@ export class DataQueriesService {
       appId,
       dataSourceId,
       appVersionId,
+      extensionId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -87,15 +90,19 @@ export class DataQueriesService {
     if (dataQuery.extensionId) {
       let decoded: string;
       if (extensions[dataQuery.extensionId]) {
-        decoded = decode(extensions[dataQuery.extensionId]);
+        decoded = extensions[dataQuery.extensionId];
       } else {
-        const file = await this.fileService.getFileById(dataQuery.extension.fileId);
-        const buff = Buffer.from(file.data, 'base64').toString('utf8');
-        decoded = decode(buff);
+        const extension = await this.extensionsService.findOne(dataQuery.extensionId);
+        const file = await this.fileService.getFileById(extension.fileId);
+        decoded = decode(file.data.toString());
         extensions[dataQuery.extensionId] = decoded;
       }
-      const module = _eval(decoded);
-      service = new module();
+      const code = requireFromString(decoded, { globals: { process } });
+      try {
+        service = new code.default();
+      } catch (error) {
+        console.log('error', error);
+      }
     } else {
       service = new allPlugins[kind]();
     }

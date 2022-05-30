@@ -58,10 +58,11 @@ export class DataQueriesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@User() user, @Body() dataQueryDto: CreateDataQueryDto): Promise<object> {
-    const { kind, name, options, app_id, app_version_id, data_source_id } = dataQueryDto;
+    const { kind, name, options, app_id, app_version_id, data_source_id, extension_id } = dataQueryDto;
     const appId = app_id;
     const appVersionId = app_version_id;
     const dataSourceId = data_source_id;
+    const extensionId = extension_id;
 
     const app = await this.appsService.find(appId);
     const ability = await this.appsAbilityFactory.appsActions(user, appId);
@@ -78,6 +79,7 @@ export class DataQueriesController {
       }
     }
 
+    // todo: pass the whole dto instead of indv. values
     const dataQuery = await this.dataQueriesService.create(
       user,
       name,
@@ -85,7 +87,8 @@ export class DataQueriesController {
       options,
       appId,
       dataSourceId,
-      appVersionId
+      appVersionId,
+      extensionId
     );
     return decamelizeKeys(dataQuery);
   }

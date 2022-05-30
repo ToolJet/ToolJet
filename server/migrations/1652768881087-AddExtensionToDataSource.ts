@@ -1,12 +1,12 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddExtensionToDataSource1652768881086 implements MigrationInterface {
+export class AddExtensionToDataSource1652768881087 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumn(
       'data_sources',
       new TableColumn({
         name: 'extension_id',
-        type: 'varchar',
+        type: 'uuid',
         isNullable: true,
       })
     );

@@ -7,7 +7,7 @@ import { Connection } from 'typeorm';
 
 @Controller('extensions')
 export class ExtensionsController {
-  constructor(private readonly extensionsService: ExtensionsService, private connection: Connection) { }
+  constructor(private readonly extensionsService: ExtensionsService, private connection: Connection) {}
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
@@ -23,16 +23,16 @@ export class ExtensionsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.extensionsService.findOne(+id);
+    return this.extensionsService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateExtensionDto: UpdateExtensionDto) {
-    return this.extensionsService.update(+id, updateExtensionDto);
+    return this.extensionsService.update(id, updateExtensionDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.extensionsService.remove(+id);
+    return this.extensionsService.remove(id);
   }
 }

@@ -3,18 +3,13 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CreateExtensionDto {
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
   name: string;
 
   @IsString()
   @IsOptional()
-  file_id: string;
+  organizationId: string;
 
   @IsString()
   @IsOptional()
-  organization_id: string;
-
-  @IsString()
-  @IsOptional()
-  file: Express.Multer.File;
+  fileId: string;
 }

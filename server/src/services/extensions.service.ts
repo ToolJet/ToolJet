@@ -13,19 +13,19 @@ export class ExtensionsService {
     private readonly fileService: FileService,
     @InjectRepository(Extension)
     private extensionsRepository: Repository<Extension>
-  ) { }
+  ) {}
   async create(createExtensionDto: CreateExtensionDto, file: Express.Multer.File, queryRunner: QueryRunner) {
     const str = file.buffer.toString('utf8');
     const uploadedFile = await this.fileService.uploadFile(encode(str), file.originalname, queryRunner);
-    createExtensionDto.file_id = uploadedFile.id;
-    return await this.extensionsRepository.create(createExtensionDto);
+    createExtensionDto.fileId = uploadedFile.id;
+    return this.extensionsRepository.save(this.extensionsRepository.create(createExtensionDto));
   }
 
   async findAll() {
     return await this.extensionsRepository.find();
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const extension = await this.extensionsRepository.findOne({ where: { id } });
     if (!extension) {
       throw new NotFoundException('Extension not found');
@@ -33,11 +33,11 @@ export class ExtensionsService {
     return extension;
   }
 
-  update(id: number, updateExtensionDto: UpdateExtensionDto) {
+  update(id: string, updateExtensionDto: UpdateExtensionDto) {
     return `This action updates a #${id} extension`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} extension`;
   }
 }
