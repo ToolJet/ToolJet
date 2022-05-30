@@ -24,7 +24,7 @@ export const BoardContext = React.createContext({});
 export const KanbanBoard = ({ height, properties, styles, currentState, setExposedVariable }) => {
   const { columns, cardData, enableAddCard } = properties;
 
-  const { visibility, disabledState, width, minWidth } = styles;
+  const { visibility, disabledState, width, minWidth, accentColor } = styles;
   const boardData = useMemo(() => getData(columns, cardData), [columns, cardData]) ?? [];
 
   const updateExposedVariable = (data) => {
@@ -45,7 +45,7 @@ export const KanbanBoard = ({ height, properties, styles, currentState, setExpos
   }
 
   return (
-    <BoardContext.Provider value={{ currentState, enableAddCard }}>
+    <BoardContext.Provider value={{ currentState, enableAddCard, accentColor }}>
       <div style={{ display: visibility ? '' : 'none' }} data-disabled={disabledState} className="kanban-container p-0">
         <Board
           height={height}

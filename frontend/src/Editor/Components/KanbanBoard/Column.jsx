@@ -36,7 +36,20 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
   //   updateCb(newState);
   // };
 
-  const { enableAddCard } = React.useContext(BoardContext);
+  const { enableAddCard, accentColor } = React.useContext(BoardContext);
+
+  const hexaCodeToRgb = (hex) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+
+    return `rgba(${r},${g},${b},0.2)`;
+  };
+
+  const colAccentColor = {
+    color: accentColor,
+    backgroundColor: hexaCodeToRgb(accentColor),
+  };
 
   return (
     <Droppable key={keyIndex} droppableId={String(keyIndex)}>
@@ -67,7 +80,11 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
                   }}
                 />
               ) : (
-                <span onClick={() => flipTitleToEditMode(keyIndex)} className="badge bg-cyan-lt cursor-text">
+                <span
+                  style={colAccentColor}
+                  onClick={() => flipTitleToEditMode(keyIndex)}
+                  className="bade-component cursor-text"
+                >
                   {group.title}
                 </span>
               )}

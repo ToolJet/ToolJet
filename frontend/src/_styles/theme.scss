@@ -5287,3 +5287,21 @@ div#driver-page-overlay {
 .cursor-text {
   cursor: text;
 }
+
+.bade-component {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    user-select: none;
+    padding: calc(0.25rem - 1px) 0.25rem;
+    height: 1.25rem;
+    border: 1px solid transparent;
+    min-width: 1.25rem;
+    font-weight: 600;
+    font-size: .625rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    vertical-align: bottom;
+    border-radius: 4px;
+}
