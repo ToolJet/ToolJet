@@ -237,9 +237,14 @@ class Viewer extends React.Component {
                       minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                       maxWidth: +appDefinition.globalSettings?.canvasMaxWidth || 1292,
                       maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
-                      backgroundColor:
-                        resolveReferences(appDefinition.globalSettings?.backgroundFxQuery, this.state.currentState) ||
-                        '#edeff5',
+                      backgroundColor: resolveReferences(
+                        appDefinition.globalSettings?.backgroundFxQuery,
+                        this.state.currentState
+                      )
+                        ? resolveReferences(appDefinition.globalSettings?.backgroundFxQuery, this.state.currentState)
+                        : appDefinition.globalSettings?.canvasBackgroundColor
+                        ? appDefinition.globalSettings?.canvasBackgroundColor
+                        : '#edeff5',
                     }}
                   >
                     {defaultComponentStateComputed && (
