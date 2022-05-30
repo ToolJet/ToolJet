@@ -87,4 +87,4 @@ ENV TOOLJET_HOST=http://localhost:3000 \
     DEPLOYMENT_PLATFORM=docker:local
 
 # Prepare DB and start application
-CMD service postgresql start 1> /dev/null && bash /server/scripts/init-db-boot.sh
+CMD service postgresql start 1> /dev/null && bash /app/server/scripts/init-db-boot.sh
