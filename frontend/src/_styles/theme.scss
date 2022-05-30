@@ -3786,6 +3786,15 @@ input[type="text"] {
   }
 }
 
+.popup-btn {
+  cursor: pointer !important;
+  display: block;
+}
+.preview-icons {
+  margin-top: -5px;
+  width: 12px;
+}
+
 .modal-portal-wrapper {
   justify-content: center;
   align-items: center;
