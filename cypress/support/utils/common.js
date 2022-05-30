@@ -1,6 +1,7 @@
 import { path } from "Texts/common";
 import { usersSelector } from "Selectors/manageUsers";
 import { profileSelector } from "Selectors/profile";
+import { commonSelectors } from "Selectors/common";
 
 
 export const navigateToProfile=()=>{
@@ -20,3 +21,9 @@ export const navigateToManageUsers=()=>{
  cy.contains("Manage Users").click();
  cy.url().should("include",path.manageUsers );
 };
+
+export const navigateToManageGroups=()=>{
+    cy.get(commonSelectors.dropdown).invoke("show");
+    cy.contains("Manage Groups").click();
+    cy.url().should("include",path.manageGroups );
+   };
