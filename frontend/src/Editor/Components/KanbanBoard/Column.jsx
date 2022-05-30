@@ -1,6 +1,7 @@
 import React from 'react';
 import { Droppable } from 'react-beautiful-dnd';
 import { Card } from './Card';
+import { BoardContext } from './KanbanBoard';
 
 const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, addNewItem }) => {
   const styles = {
@@ -34,6 +35,8 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
   //   newState.splice(keyIndex, 1);
   //   updateCb(newState);
   // };
+
+  const { enableAddCard } = React.useContext(BoardContext);
 
   return (
     <Droppable key={keyIndex} droppableId={String(keyIndex)}>
@@ -116,9 +119,11 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
             ))}
 
             {dndProps.placeholder}
-            <button className="btn btn-primary w-100 add-card-btn" onClick={() => addNewItem(state, keyIndex)}>
-              add +
-            </button>
+            {enableAddCard && (
+              <button className="btn btn-primary w-100 add-card-btn" onClick={() => addNewItem(state, keyIndex)}>
+                add +
+              </button>
+            )}
           </div>
         </div>
       )}
