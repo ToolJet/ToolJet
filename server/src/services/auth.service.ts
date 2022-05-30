@@ -55,7 +55,7 @@ export class AuthService {
       // Determine the organization to be loaded
       if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
         // Single organization
-        if ((await this.usersService.status(user)) !== 'active') {
+        if (user?.organizationUsers?.[0].status !== 'active') {
           throw new UnauthorizedException('Your account is not active');
         }
         organization = await this.organizationsService.getSingleOrganization();
@@ -83,11 +83,8 @@ export class AuthService {
       user.organizationId = organization.id;
     } else {
       // organization specific login
+      // No need to validate user status, validateUser() already covers it
       user.organizationId = organizationId;
-
-      if (user?.organizationUsers?.[0]?.status !== 'active') {
-        throw new UnauthorizedException('Your account is not active');
-      }
 
       organization = await this.organizationsService.get(user.organizationId);
       const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');

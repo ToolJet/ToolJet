@@ -120,11 +120,6 @@ export class UsersService {
     return user;
   }
 
-  async status(user: User) {
-    const orgUser = await this.organizationUsersRepository.findOne({ where: { user } });
-    return orgUser.status;
-  }
-
   async findOrCreateByEmail(userParams: any, organizationId: string): Promise<{ user: User; newUserCreated: boolean }> {
     let user: User;
     let newUserCreated = false;

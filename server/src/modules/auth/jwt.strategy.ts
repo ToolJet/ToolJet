@@ -23,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     user.organizationId = payload.organizationId;
     user.isPasswordLogin = payload.isPasswordLogin;
 
-    if (user && (await this.usersService.status(user)) !== 'archived') return user;
+    if (user && user?.organizationUsers?.[0].status === 'active') return user;
     else return false;
   }
 }
