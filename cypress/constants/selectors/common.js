@@ -15,4 +15,5 @@ export const commonSelectors={
   emailField: "[data-cy=email-text-field]",
   passwordField: "[data-cy=password-text-field]",
   signInButton: "[data-cy=login-button]",
+  dropdown: "[data-cy=workspace-dropdown]",
 }
