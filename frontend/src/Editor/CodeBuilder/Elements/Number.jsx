@@ -14,7 +14,7 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
     <>
       <div className="row fx-container">
         <div className="col">
-          <div className="field form-control" style={{ padding: '0.225rem 0.35rem' }}>
+          <div className="field form-control" style={{ padding: '0.225rem 0.35rem' }} data-cy="border-radius-input">
             <input
               style={numberTheme}
               type="text"

@@ -63,12 +63,12 @@ export class OauthService {
   async #findAndActivateUser(email: string, organizationId: string): Promise<User> {
     const user = await this.usersService.findByEmail(email, organizationId);
     if (!user) {
-      throw new UnauthorizedException('User not exist in the organization');
+      throw new UnauthorizedException('User not exist in the workspace');
     }
     const organizationUser: OrganizationUser = user.organizationUsers?.[0];
 
     if (!organizationUser) {
-      throw new UnauthorizedException('User not exist in the organization');
+      throw new UnauthorizedException('User not exist in the workspace');
     }
     if (organizationUser.status != 'active') await this.organizationUsersService.activate(organizationUser);
     return user;
@@ -125,8 +125,8 @@ export class OauthService {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
     }
 
-    // If name not found
-    if (!(userResponse.firstName && userResponse.lastName)) {
+    // If firstName not found
+    if (!userResponse.firstName) {
       userResponse.firstName = userResponse.email?.split('@')?.[0];
     }
     const user: User = await (!enableSignUp

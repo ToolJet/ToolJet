@@ -11,5 +11,5 @@ export class File {
   @Column({
     type: 'bytea',
   })
-  data: any;
+  data: Uint8Array | Buffer | string;
 }

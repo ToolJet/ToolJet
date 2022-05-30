@@ -12,7 +12,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { App } from 'src/entities/app.entity';
 import { File } from 'src/entities/file.entity';
-import { FileService } from '@services/file.service';
+import { FilesService } from '@services/files.service';
 
 @Module({
   controllers: [GroupPermissionsController],
@@ -29,6 +29,6 @@ import { FileService } from '@services/file.service';
     ]),
     CaslModule,
   ],
-  providers: [GroupPermissionsService, FileService, UsersService],
+  providers: [GroupPermissionsService, FilesService, UsersService],
 })
 export class GroupPermissionsModule {}

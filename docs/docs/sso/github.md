@@ -5,7 +5,7 @@ title: GitHub
 
 # GitHub Single Sign-on
 
-Select `Manage SSO` from organization options
+Select `Manage SSO` from workspace options
 
 <div style={{textAlign: 'center'}}>
 
@@ -55,4 +55,4 @@ Go to [GitHub Developer settings](https://github.com/settings/developers) and na
 
 Lastly, enter `Client Id` and `Client Secret` in Git manage SSO page and save.
 
-The GitHub sign-in button will now be available in your ToolJet login screen if you have not enabled multiple organization.
+The GitHub sign-in button will now be available in your ToolJet login screen if you have not enabled Multi-Workspace.

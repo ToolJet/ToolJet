@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { FileService } from '../services/file.service';
+import { FilesService } from '../services/files.service';
 import { Organization } from 'src/entities/organization.entity';
 import { App } from 'src/entities/app.entity';
 import { Connection, createQueryBuilder, EntityManager, getManager, getRepository, In, Repository } from 'typeorm';
@@ -12,13 +12,14 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
 import { cleanObject } from 'src/helpers/utils.helper';
 import { CreateUserDto } from '@dto/user.dto';
+import { CreateFileDto } from '@dto/create-file.dto';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
 @Injectable()
 export class UsersService {
   constructor(
-    private readonly fileService: FileService,
+    private readonly filesService: FilesService,
     private connection: Connection,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -434,14 +435,17 @@ export class UsersService {
     try {
       const user = await queryRunner.manager.findOne(User, userId);
       const currentAvatarId = user.avatarId;
-      const avatar = await this.fileService.uploadFile(imageBuffer, filename, queryRunner);
+      const createFileDto = new CreateFileDto();
+      createFileDto.filename = filename;
+      createFileDto.data = imageBuffer;
+      const avatar = await this.filesService.create(createFileDto, queryRunner);
 
       await queryRunner.manager.update(User, userId, {
         avatarId: avatar.id,
       });
 
       if (currentAvatarId) {
-        await this.fileService.deleteFile(currentAvatarId, queryRunner);
+        await this.filesService.remove(currentAvatarId, queryRunner);
       }
 
       await queryRunner.commitTransaction();

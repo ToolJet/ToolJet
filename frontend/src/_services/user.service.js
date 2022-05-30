@@ -22,7 +22,7 @@ function getAvatar(id) {
   const requestOptions = { method: 'GET', headers: authHeader() };
   return fetch(`${config.apiUrl}/files/${id}`, requestOptions)
     .then((response) => response.blob())
-    .then((blob) => URL.createObjectURL(blob));
+    .then((blob) => blob);
 }
 
 function updateAvatar(formData, token) {

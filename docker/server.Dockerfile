@@ -15,9 +15,10 @@ COPY ./package.json ./package.json
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
-RUN npm run build:plugins
-
 ENV NODE_ENV=production
+RUN npm --prefix plugins run build
+RUN npm --prefix plugins prune --production
+
 # Building ToolJet server
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install --only=production

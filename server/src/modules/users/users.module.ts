@@ -8,11 +8,11 @@ import { File } from '../../entities/file.entity';
 import { UsersController } from 'src/controllers/users.controller';
 import { OrganizationsModule } from '../organizations/organizations.module';
 import { App } from 'src/entities/app.entity';
-import { FileService } from '@services/file.service';
+import { FilesService } from '@services/files.service';
 
 @Module({
   imports: [OrganizationsModule, TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App])],
-  providers: [UsersService, FileService],
+  providers: [UsersService, FilesService],
   controllers: [UsersController],
 })
 export class UsersModule {}

@@ -77,7 +77,7 @@ export function Google({ settings, updateData }) {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Enter Client Secret"
+                placeholder="Enter Client Id"
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
               />

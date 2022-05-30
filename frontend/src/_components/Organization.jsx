@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { SearchBox } from './SearchBox';
 
 export const Organization = function Organization() {
-  const isSingleOrganization = window.public_config?.MULTI_ORGANIZATION !== 'true';
+  const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const { admin, organization_id } = authenticationService.currentUserValue;
   const [organization, setOrganization] = useState(authenticationService.currentUserValue?.organization);
   const [showCreateOrg, setShowCreateOrg] = useState(false);
@@ -21,11 +21,13 @@ export const Organization = function Organization() {
   const getAvatar = (organization) => {
     if (!organization) return;
 
-    const orgName = organization.split(' ');
+    const orgName = organization.split(' ').filter((e) => e && !!e.trim());
     if (orgName.length > 1) {
       return `${orgName[0]?.[0]}${orgName[1]?.[0]}`;
-    } else {
+    } else if (organization.length >= 2) {
       return `${organization[0]}${organization[1]}`;
+    } else {
+      return `${organization[0]}${organization[0]}`;
     }
   };
 
@@ -58,7 +60,7 @@ export const Organization = function Organization() {
 
   const createOrganization = () => {
     if (!(newOrgName && newOrgName.trim())) {
-      toast.error("organization name can't be empty.", {
+      toast.error('Workspace name can not be empty.', {
         position: 'top-center',
       });
       return;
@@ -66,21 +68,22 @@ export const Organization = function Organization() {
     setIsCreating(true);
     organizationService.createOrganization(newOrgName).then(
       (data) => {
+        setIsCreating(false);
         authenticationService.updateCurrentUserDetails(data);
         window.location.href = '/';
       },
       () => {
-        toast.error('Error while creating organization', {
+        setIsCreating(false);
+        toast.error('Error while creating workspace', {
           position: 'top-center',
         });
       }
     );
-    setIsCreating(false);
   };
 
   const editOrganization = () => {
     if (!(newOrgName && newOrgName.trim())) {
-      toast.error("organization name can't be empty.", {
+      toast.error('Workspace name can not be empty.', {
         position: 'top-center',
       });
       return;
@@ -89,13 +92,14 @@ export const Organization = function Organization() {
     organizationService.editOrganization({ name: newOrgName }).then(
       () => {
         authenticationService.updateCurrentUserDetails({ organization: newOrgName });
-        toast.success('Organization updated', {
+        toast.success('Workspace updated', {
           position: 'top-center',
         });
         setOrganization(newOrgName);
+        getOrganizations();
       },
       () => {
-        toast.error('Error while editing organization', {
+        toast.error('Error while editing workspace', {
           position: 'top-center',
         });
       }
@@ -106,11 +110,10 @@ export const Organization = function Organization() {
 
   const switchOrganization = (orgId) => {
     organizationService.switchOrganization(orgId).then((response) => {
-      response.text().then((text) => {
-        if (!response.ok) {
-          return (window.location.href = `/login/${orgId}`);
-        }
-        const data = text && JSON.parse(text);
+      if (!response.ok) {
+        return (window.location.href = `/login/${orgId}`);
+      }
+      response.json().then((data) => {
         authenticationService.updateCurrentUserDetails(data);
         window.location.href = '/';
       });
@@ -121,7 +124,7 @@ export const Organization = function Organization() {
     return (
       organizationList &&
       organizationList
-        .filter((org) => org.name.toLowerCase().includes(searchText ? searchText.toLowerCase() : ''))
+        .filter((org) => org.name?.toLowerCase().includes(searchText ? searchText.toLowerCase() : ''))
         .map((org) => {
           return (
             <div
@@ -229,7 +232,9 @@ export const Organization = function Organization() {
               </div>
               {admin && (
                 <div className="org-edit">
-                  <span onClick={showEditModal}>Edit</span>
+                  <span onClick={showEditModal} data-cy="edit-workspace-name">
+                    Edit
+                  </span>
                 </div>
               )}
             </div>
@@ -258,19 +263,19 @@ export const Organization = function Organization() {
         </div>
         {!isSingleOrganization && (
           <div className="dropdown-item org-actions">
-            <div onClick={showCreateModal}>Add Organizations</div>
+            <div onClick={showCreateModal}>Add workspace</div>
           </div>
         )}
         {admin && (
           <>
             <div className="dropdown-divider"></div>
-            <Link data-testid="settingsBtn" to="/users" className="dropdown-item">
+            <Link data-testid="settingsBtn" to="/users" className="dropdown-item" data-cy="manage-users">
               Manage Users
             </Link>
-            <Link data-tesid="settingsBtn" to="/groups" className="dropdown-item">
+            <Link data-tesid="settingsBtn" to="/groups" className="dropdown-item" data-cy="manage-groups">
               Manage Groups
             </Link>
-            <Link data-tesid="settingsBtn" to="/manage-sso" className="dropdown-item">
+            <Link data-tesid="settingsBtn" to="/manage-sso" className="dropdown-item" data-cy="manage-sso">
               Manage SSO
             </Link>
           </>
@@ -281,8 +286,12 @@ export const Organization = function Organization() {
 
   return (
     <div>
-      <div className="dropdown organization-list" onMouseEnter={() => setIsListOrganizations(false)}>
-        <a href="#" className={`btn ${!isSingleOrganization || admin ? 'dropdown-toggle' : ''}`}>
+      <div className="dropdown organization-list" data-cy="dropdown-organization-list">
+        <a
+          href="#"
+          className={`btn ${!isSingleOrganization || admin ? 'dropdown-toggle' : ''}`}
+          onMouseOver={() => setIsListOrganizations(false)}
+        >
           <div>{organization}</div>
         </a>
         {(!isSingleOrganization || admin) && (
@@ -291,14 +300,14 @@ export const Organization = function Organization() {
           </div>
         )}
       </div>
-      <Modal show={showCreateOrg} closeModal={() => setShowCreateOrg(false)} title="Create organization">
+      <Modal show={showCreateOrg} closeModal={() => setShowCreateOrg(false)} title="Create workspace">
         <div className="row">
           <div className="col modal-main">
             <input
               type="text"
               onChange={(e) => setNewOrgName(e.target.value)}
               className="form-control"
-              placeholder="organization name"
+              placeholder="workspace name"
               disabled={isCreating}
               maxLength={25}
             />
@@ -314,19 +323,19 @@ export const Organization = function Organization() {
               className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`}
               onClick={createOrganization}
             >
-              Create organization
+              Create workspace
             </button>
           </div>
         </div>
       </Modal>
-      <Modal show={showEditOrg} closeModal={() => setShowEditOrg(false)} title="Edit organization">
+      <Modal show={showEditOrg} closeModal={() => setShowEditOrg(false)} title="Edit workspace">
         <div className="row">
           <div className="col modal-main">
             <input
               type="text"
               onChange={(e) => setNewOrgName(e.target.value)}
               className="form-control"
-              placeholder="organization name"
+              placeholder="workspace name"
               disabled={isCreating}
               value={newOrgName}
               maxLength={25}

@@ -327,10 +327,10 @@ export const JSONNode = ({ data, ...restProps }) => {
       <div
         style={{ width: 'inherit' }}
         className={`${shouldDisplayIntendedBlock && 'group-border'} ${applySelectedNodeStyles && 'selected-node'}`}
+        onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
+        onMouseLeave={() => updateHoveredNode(null)}
       >
         <div
-          onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
-          onMouseLeave={() => updateHoveredNode(null)}
           className={cx('d-flex', {
             'group-object-container': shouldDisplayIntendedBlock,
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',

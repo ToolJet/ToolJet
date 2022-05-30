@@ -14,7 +14,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { UsersService } from '@services/users.service';
 import { User } from 'src/entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
-import { FileService } from '@services/file.service';
+import { FilesService } from '@services/files.service';
 import { FoldersService } from '@services/folders.service';
 import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
@@ -61,7 +61,7 @@ import { Extension } from 'src/entities/extension.entity';
     DataSourcesService,
     CredentialsService,
     EncryptionService,
-    FileService,
+    FilesService,
     ExtensionsService,
   ],
   controllers: [AppsController, AppUsersController],

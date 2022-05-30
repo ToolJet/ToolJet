@@ -5,6 +5,7 @@ import { getManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
+const path = require('path');
 
 describe('users controller', () => {
   let app: INestApplication;
@@ -12,20 +13,15 @@ describe('users controller', () => {
 
   beforeEach(async () => {
     await clearDB();
-    jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-      switch (key) {
-        case 'DISABLE_SIGNUPS':
-          return 'false';
-        case 'MULTI_ORGANIZATION':
-          return 'false';
-        default:
-          return process.env[key];
-      }
-    });
   });
 
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('PATCH /api/users/change_password', () => {
@@ -87,17 +83,7 @@ describe('users controller', () => {
   });
 
   describe('POST /api/users/set_password_from_token', () => {
-    it('should allow users to setup account after sign up using  multi organization', async () => {
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        switch (key) {
-          case 'DISABLE_SIGNUPS':
-            return 'false';
-          case 'MULTI_ORGANIZATION':
-            return 'true';
-          default:
-            return process.env[key];
-        }
-      });
+    it('should allow users to setup account after sign up using  Multi-Workspace', async () => {
       const invitationToken = uuidv4();
       const userData = await createUser(app, {
         email: 'signup@tooljet.io',
@@ -125,17 +111,7 @@ describe('users controller', () => {
       expect(organizationUser.status).toEqual('active');
     });
 
-    it('should return error if required params are not present - multi organization', async () => {
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        switch (key) {
-          case 'DISABLE_SIGNUPS':
-            return 'false';
-          case 'MULTI_ORGANIZATION':
-            return 'true';
-          default:
-            return process.env[key];
-        }
-      });
+    it('should return error if required params are not present - Multi-Workspace', async () => {
       const invitationToken = uuidv4();
       await createUser(app, {
         email: 'signup@tooljet.io',
@@ -154,7 +130,15 @@ describe('users controller', () => {
       ]);
     });
 
-    it('should not allow users to setup account for single organization', async () => {
+    it('should allow users to setup account for single organization only once', async () => {
+      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        switch (key) {
+          case 'DISABLE_MULTI_WORKSPACE':
+            return 'true';
+          default:
+            return process.env[key];
+        }
+      });
       const invitationToken = uuidv4();
       await createUser(app, {
         email: 'signup@tooljet.io',
@@ -162,9 +146,26 @@ describe('users controller', () => {
         status: 'invited',
       });
 
-      const response = await request(app.getHttpServer()).post('/api/users/set_password_from_token').send({
+      let response = await request(app.getHttpServer()).post('/api/users/set_password_from_token').send({
         first_name: 'signupuser',
         last_name: 'user',
+        organization: 'org1',
+        password: uuidv4(),
+        token: invitationToken,
+        role: 'developer',
+      });
+
+      expect(response.statusCode).toBe(201);
+
+      await createUser(app, {
+        email: 'signup2@tooljet.io',
+        invitationToken,
+        status: 'invited',
+      });
+
+      response = await request(app.getHttpServer()).post('/api/users/set_password_from_token').send({
+        first_name: 'signupuser2',
+        last_name: 'user2',
         organization: 'org1',
         password: uuidv4(),
         token: invitationToken,
@@ -174,12 +175,10 @@ describe('users controller', () => {
       expect(response.statusCode).toBe(403);
     });
 
-    it('should not allow users to setup account for multi organization and sign up disabled', async () => {
+    it('should not allow users to setup account for Multi-Workspace and sign up disabled', async () => {
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
         switch (key) {
           case 'DISABLE_SIGNUPS':
-            return 'true';
-          case 'MULTI_ORGANIZATION':
             return 'true';
           default:
             return process.env[key];
@@ -214,15 +213,6 @@ describe('users controller', () => {
         email: 'invited@tooljet.io',
         status: 'invited',
         organization: org,
-      });
-
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        switch (key) {
-          case 'MULTI_ORGANIZATION':
-            return 'true';
-          default:
-            return process.env[key];
-        }
       });
 
       const signUpResponse = await request(app.getHttpServer())
@@ -269,15 +259,6 @@ describe('users controller', () => {
         organization: org,
       });
 
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        switch (key) {
-          case 'MULTI_ORGANIZATION':
-            return 'true';
-          default:
-            return process.env[key];
-        }
-      });
-
       const signUpResponse = await request(app.getHttpServer())
         .post('/api/signup')
         .send({ email: 'invited@tooljet.io' });
@@ -321,10 +302,28 @@ describe('users controller', () => {
   });
 
   describe('POST /api/users/accept-invite', () => {
-    it('should allow users to accept invitation when multi organization is enabled', async () => {
+    it('should allow users to accept invitation when Multi-Workspace is enabled', async () => {
+      const userData = await createUser(app, {
+        email: 'organizationUser@tooljet.io',
+        status: 'invited',
+      });
+      const { user, orgUser } = userData;
+
+      const response = await request(app.getHttpServer()).post('/api/users/accept-invite').send({
+        token: orgUser.invitationToken,
+        password: uuidv4(),
+      });
+
+      expect(response.statusCode).toBe(201);
+
+      const organizationUser = await getManager().findOneOrFail(OrganizationUser, { where: { userId: user.id } });
+      expect(organizationUser.status).toEqual('active');
+    });
+
+    it('should allow users to accept invitation when Multi-Workspace is disabled', async () => {
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
         switch (key) {
-          case 'MULTI_ORGANIZATION':
+          case 'DISABLE_MULTI_WORKSPACE':
             return 'true';
           default:
             return process.env[key];
@@ -346,31 +345,21 @@ describe('users controller', () => {
       const organizationUser = await getManager().findOneOrFail(OrganizationUser, { where: { userId: user.id } });
       expect(organizationUser.status).toEqual('active');
     });
+  });
 
-    it('should allow users to accept invitation when multi organization is disabled', async () => {
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        switch (key) {
-          case 'MULTI_ORGANIZATION':
-            return 'false';
-          default:
-            return process.env[key];
-        }
-      });
-      const userData = await createUser(app, {
-        email: 'organizationUser@tooljet.io',
-        status: 'invited',
-      });
-      const { user, orgUser } = userData;
+  describe('POST /api/users/avatar', () => {
+    it('should allow users to add a avatar', async () => {
+      const userData = await createUser(app, { email: 'admin@tooljet.io' });
 
-      const response = await request(app.getHttpServer()).post('/api/users/accept-invite').send({
-        token: orgUser.invitationToken,
-        password: uuidv4(),
-      });
+      const { user } = userData;
+      const filePath = path.join(__dirname, '../__mocks__/avatar.png');
+
+      const response = await request(app.getHttpServer())
+        .post('/api/users/avatar')
+        .set('Authorization', authHeaderForUser(user))
+        .attach('file', filePath);
 
       expect(response.statusCode).toBe(201);
-
-      const organizationUser = await getManager().findOneOrFail(OrganizationUser, { where: { userId: user.id } });
-      expect(organizationUser.status).toEqual('active');
     });
   });
 

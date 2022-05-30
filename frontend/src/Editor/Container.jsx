@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import cx from 'classnames';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,6 +15,7 @@ import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
+import produce from 'immer';
 
 export const Container = ({
   canvasWidth,
@@ -33,7 +35,7 @@ export const Container = ({
   currentLayout,
   removeComponent,
   deviceWindowWidth,
-  selectedComponent,
+  selectedComponents,
   darkMode,
   showComments,
   appVersionsId,
@@ -42,12 +44,12 @@ export const Container = ({
   handleRedo,
   onComponentHover,
   hoveredComponent,
+  dataQueries,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
-    height: '100%',
     maxWidth: `${canvasWidth}px`,
-    maxHeight: `${canvasHeight}px`,
+    height: `${canvasHeight}px`,
     position: 'absolute',
     backgroundSize: `${canvasWidth / 43}px 10px`,
   };
@@ -210,7 +212,7 @@ export const Container = ({
   );
 
   function onDragStop(e, componentId, direction, currentLayout) {
-    const id = componentId ? componentId : uuidv4();
+    // const id = componentId ? componentId : uuidv4();
 
     // Get the width of the canvas
     const canvasBounds = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
@@ -219,25 +221,24 @@ export const Container = ({
 
     // Computing the left offset
     const leftOffset = nodeBounds.x - canvasBounds.x;
-    const left = convertXToPercentage(leftOffset, canvasWidth);
+    const currentLeftOffset = boxes[componentId].layouts[currentLayout].left;
+    const leftDiff = currentLeftOffset - convertXToPercentage(leftOffset, canvasWidth);
 
     // Computing the top offset
-    const top = nodeBounds.y - canvasBounds.y;
+    // const currentTopOffset = boxes[componentId].layouts[currentLayout].top;
+    const topDiff = boxes[componentId].layouts[currentLayout].top - (nodeBounds.y - canvasBounds.y);
 
-    let newBoxes = {
-      ...boxes,
-      [id]: {
-        ...boxes[id],
-        layouts: {
-          ...boxes[id]['layouts'],
-          [currentLayout]: {
-            ...boxes[id]['layouts'][currentLayout],
-            top: top,
-            left: left,
-          },
-        },
-      },
-    };
+    let newBoxes = { ...boxes };
+
+    for (const selectedComponent of selectedComponents) {
+      newBoxes = produce(newBoxes, (draft) => {
+        const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
+        const leftOffset = draft[selectedComponent.id].layouts[currentLayout].left;
+
+        draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
+        draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
+      });
+    }
 
     setBoxes(newBoxes);
   }
@@ -309,7 +310,7 @@ export const Container = ({
     }
   }
 
-  React.useEffect(() => {}, [selectedComponent]);
+  React.useEffect(() => {}, [selectedComponents]);
 
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
@@ -408,6 +409,7 @@ export const Container = ({
         'show-grid': isDragging || isResizing,
       })}
       id="real-canvas"
+      data-cy="real-canvas"
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
@@ -465,10 +467,14 @@ export const Container = ({
               removeComponent={removeComponent}
               currentLayout={currentLayout}
               deviceWindowWidth={deviceWindowWidth}
-              isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
+              isSelectedComponent={
+                mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false
+              }
               darkMode={darkMode}
               onComponentHover={onComponentHover}
               hoveredComponent={hoveredComponent}
+              isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+              dataQueries={dataQueries}
               containerProps={{
                 mode,
                 snapToGrid,
@@ -485,10 +491,11 @@ export const Container = ({
                 removeComponent,
                 currentLayout,
                 deviceWindowWidth,
-                selectedComponent,
+                selectedComponents,
                 darkMode,
                 onComponentHover,
                 hoveredComponent,
+                dataQueries,
               }}
             />
           );
