@@ -81,7 +81,7 @@ function Board({ height, data, updateExposedVariable, colStyles }) {
   }
 
   React.useEffect(() => {
-    if (JSON.stringify(state) !== JSON.stringify(data)) {
+    if (state.length !== data.length) {
       setState(data);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
