@@ -1,19 +1,8 @@
 import React from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { BoardContext } from './KanbanBoard';
-import { resolveReferences } from '@/_helpers/utils';
 import { v4 as uuidv4 } from 'uuid';
-
-const getContent = (content, type) => {
-  switch (type) {
-    case 'object':
-      return JSON.stringify(content);
-    default:
-      return content.toString();
-  }
-};
 
 const isStringEqual = (string1, string2) => {
   const pattern = new RegExp(string1, 'gi');
@@ -24,66 +13,26 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const [isHovered, setIsHovered] = React.useState(false);
-  const [editType, setEditType] = React.useState(null);
+
+  const [eventPopoverOptions, setEventPopoverOptions] = React.useState({ show: false });
+
+  function popoverClosed() {
+    setEventPopoverOptions({
+      ...eventPopoverOptions,
+      show: false,
+    });
+  }
+
   const { currentState } = React.useContext(BoardContext);
 
-  const updateCardTitle = (newTitle, colIndex, cardIndex) => {
-    if (!isStringEqual(newTitle, item.title)) {
-      const [preview, error] = resolveReferences(newTitle, currentState, null, {}, true);
-      if (!error) {
-        const newState = [...state];
-        newState[colIndex]['cards'][cardIndex].unresolved = {
-          ...newState[colIndex]['cards'][cardIndex].unresolved,
-          __title__: newTitle,
-        };
-        newState[colIndex]['cards'][cardIndex]['title'] = getContent(preview, typeof preview);
+  const updateCardTitle = (newTitle, colIndex, cardIndex) => {};
 
-        updateCb(newState);
-      }
-    }
-    flipTitleToEditMode(colIndex, cardIndex, null);
-  };
-
-  const updateCardDescription = (newDescription, colIndex, cardIndex) => {
-    if (!isStringEqual(newDescription, item.description)) {
-      const [preview, error] = resolveReferences(newDescription, currentState, null, {}, true);
-      if (!error) {
-        const newState = [...state];
-        newState[colIndex]['cards'][cardIndex].unresolved = {
-          ...newState[colIndex]['cards'][cardIndex].unresolved,
-          __description__: newDescription,
-        };
-        newState[colIndex]['cards'][cardIndex]['description'] = getContent(preview, typeof preview);
-        updateCb(newState);
-      }
-    }
-
-    flipTitleToEditMode(colIndex, cardIndex, null);
-  };
-
-  const flipTitleToEditMode = (colIndex, cardIndex, field) => {
-    setEditType(field);
-    const newState = [...state];
-    const isEditing = newState[colIndex]['cards'][cardIndex]['isEditing'];
-
-    if (isEditing === true) {
-      newState[colIndex]['cards'][cardIndex]['isEditing'] = false;
-    } else {
-      newState[colIndex]['cards'][cardIndex]['isEditing'] = true;
-    }
-    updateCb(newState);
-  };
+  const updateCardDescription = (newDescription, colIndex, cardIndex) => {};
 
   const removeCardHandler = (colIndex, cardIndex) => {
     const newState = [...state];
     newState[colIndex]['cards'].splice(cardIndex, 1);
     updateCb(newState);
-  };
-
-  const handleClick = (e) => {
-    if (e.target.className === 'card-body') {
-      flipTitleToEditMode(keyIndex, index, null);
-    }
   };
 
   const popoverClickRootClose = (
@@ -94,41 +43,14 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
       title="Click to edit"
     >
       <div style={{ border: 'none', boxShadow: 'none', backgroundColor: 'inherit' }} className="card h-100">
-        <div onClick={handleClick} className="card-body">
+        <div className="card-body">
           <h3 className="card-title">
-            {editType === 'title' && item.isEditing ? (
-              <div>
-                <CodeHinter
-                  theme={darkMode ? 'monokai' : 'default'}
-                  currentState={currentState}
-                  initialValue={item?.unresolved?.__title__ ?? item.title}
-                  onChange={(value) => updateCardTitle(value, keyIndex, index)}
-                  usePortalEditor={false}
-                />
-              </div>
-            ) : (
-              <span onClick={() => flipTitleToEditMode(keyIndex, index, 'title')}>
-                <code>{item.title}</code>
-              </span>
-            )}
+            <span>
+              <code>{item.title}</code>
+            </span>
           </h3>
 
-          {editType === 'description' && item.isEditing ? (
-            <CodeHinter
-              theme={darkMode ? 'monokai' : 'default'}
-              currentState={currentState}
-              initialValue={item?.unresolved?.__description__ ?? item.description}
-              onChange={(value) => updateCardDescription(value, keyIndex, index)}
-              usePortalEditor={false}
-            />
-          ) : (
-            <p
-              onClick={() => flipTitleToEditMode(keyIndex, index, 'description')}
-              className={`${darkMode ? 'text-white-50' : 'text-muted'} w-100 h-100`}
-            >
-              {item.description}
-            </p>
-          )}
+          <p className={`${darkMode ? 'text-white-50' : 'text-muted'} w-100 h-100`}>{item.description}</p>
         </div>
       </div>
     </Popover>
