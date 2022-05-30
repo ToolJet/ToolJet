@@ -5204,3 +5204,103 @@ div#driver-page-overlay {
     }
   }
 }
+// sso-helper-page
+.sso-helper-container{
+  width: 60vw;
+  padding: 30px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  margin: 0 auto;
+}
+.flexer{
+  display: flex;
+}
+.sso-copy{
+  margin-left: 10px;
+  cursor: pointer;
+}
+#git-url , #google-url
+{
+color: #0565ff;
+margin-left: 4px;
+word-break: break-all;
+}
+@media only screen and (max-width: 768px) {
+  .sso-helper-container{
+    width: 96vw;
+    padding: 20px;
+  }
+}
+.sso-helper-doc{
+  line-height: 24px;
+}
+.sso-content-wrapper{
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: self-start;
+  padding: 20px;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  border-radius: 4px;
+}
+.workspace-status{
+  display: flex;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.sso-type{
+  font-weight: 600;
+  margin-bottom: 4px !important;
+  display: flex;
+  span{
+   margin-right: 10px;
+  }
+  a{
+   margin-left: 6px;
+
+  }
+}
+
+.gg-album {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+  transform: scale(var(--ggs,1));
+  border-left: 7px solid transparent;
+  border-right: 3px solid transparent;
+  border-bottom: 8px solid transparent;
+  box-shadow: 0 0 0 2px,
+  inset 6px 4px 0 -4px,
+  inset -6px 4px 0 -4px;
+  border-radius: 3px
+ }
+ 
+ .gg-album::after,
+ .gg-album::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+  width: 2px;
+  height: 5px;
+  background: currentColor;
+  transform: rotate(46deg);
+  top: 5px;
+  right: 4px
+ }
+ 
+ .gg-album::after {
+  transform: rotate(-46deg);
+  right: 2px
+ } 
+ .sso-helper-header{
+   display: flex;
+   align-items: center;
+   span{
+    margin-right: 10px;
+   }
+ }
+
+// sso end
