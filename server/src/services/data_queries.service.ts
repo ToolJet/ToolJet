@@ -9,7 +9,7 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
 import got from 'got';
 import { ExtensionsService } from './extensions.service';
-import { FileService } from './file.service';
+import { FilesService } from './files.service';
 import { decode } from 'js-base64';
 import { requireFromString } from 'module-from-string';
 const extensions = {};
@@ -18,7 +18,7 @@ const extensions = {};
 export class DataQueriesService {
   constructor(
     private readonly extensionsService: ExtensionsService,
-    private readonly fileService: FileService,
+    private readonly filesService: FilesService,
     private credentialsService: CredentialsService,
     private dataSourcesService: DataSourcesService,
     @InjectRepository(DataQuery)
@@ -93,7 +93,7 @@ export class DataQueriesService {
         decoded = extensions[dataQuery.extensionId];
       } else {
         const extension = await this.extensionsService.findOne(dataQuery.extensionId);
-        const file = await this.fileService.getFileById(extension.fileId);
+        const file = await this.filesService.findOne(extension.fileId);
         decoded = decode(file.data.toString());
         extensions[dataQuery.extensionId] = decoded;
       }

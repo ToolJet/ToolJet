@@ -7,7 +7,7 @@ import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
 import { cleanObject } from 'src/helpers/utils.helper';
 import { decode } from 'js-base64';
-import { FileService } from './file.service';
+import { FilesService } from './files.service';
 import { ExtensionsService } from './extensions.service';
 
 const _eval = require('eval');
@@ -16,7 +16,7 @@ const extensions = {};
 @Injectable()
 export class DataSourcesService {
   constructor(
-    private readonly fileService: FileService,
+    private readonly filesService: FilesService,
     private readonly extensionsService: ExtensionsService,
     private credentialsService: CredentialsService,
     @InjectRepository(DataSource)
@@ -122,9 +122,8 @@ export class DataSourcesService {
         decoded = decode(extensions[extensionId]);
       } else {
         const extension = await this.extensionsService.findOne(extensionId);
-        const file = await this.fileService.getFileById(extension.fileId);
-        const buff = Buffer.from(file.data, 'base64').toString('utf8');
-        decoded = decode(buff);
+        const file = await this.filesService.findOne(extension.fileId);
+        decoded = decode(file.data.toString());
         extensions[extensionId] = decoded;
       }
       const module = _eval(decoded);
