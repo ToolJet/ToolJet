@@ -1,6 +1,6 @@
 ---
-sidebar_position: 6
-sidebar_label: General Settings
+id: general-settings
+title: General Settings
 ---
 
 # Single Sign-On General Settings
