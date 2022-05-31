@@ -45,7 +45,7 @@ export class UsersService {
           'organization_users.organizationId = :organisationId',
           { organisationId }
         )
-        .where('organization_users.status = IN(:...statusList)', {
+        .where('organization_users.status IN(:...statusList)', {
           statusList,
         })
         .andWhere('users.email = :email', { email })
