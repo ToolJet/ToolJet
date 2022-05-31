@@ -33,15 +33,16 @@ export const updateColumnData = (currentData, column, newData) => {
   return nextState;
 };
 
-const cardDiffExits = (currentCards, newCards) => {
+const cardDiffExits = (currentCards, newCards, state) => {
   const diff = [];
   newCards.forEach((card) => {
     const index = currentCards.findIndex((c) => c.id === card.id);
+    const updatedColumnId = findCard(state, card.id)?.columnId;
 
     if (index !== -1) {
       const newCard = {
-        ...currentCards[index],
         ...card,
+        columnId: updatedColumnId,
       };
       diff.push(newCard);
     }
@@ -50,7 +51,7 @@ const cardDiffExits = (currentCards, newCards) => {
 };
 
 export const updateCardData = (currentData, cards, newData) => {
-  const diffing = cardDiffExits(cards, newData);
+  const diffing = cardDiffExits(cards, newData, currentData);
   if (diffing.length === 0) return null;
 
   const newState = [...currentData];
@@ -60,4 +61,14 @@ export const updateCardData = (currentData, cards, newData) => {
     newState[colIndex].cards[cardIndex] = card;
   });
   return newState;
+};
+
+const findCard = (state, cardId) => {
+  for (let i = 0; i < state.length; i++) {
+    for (let j = 0; j < state[i].cards.length; j++) {
+      if (state[i].cards[j].id === cardId) {
+        return state[i].cards[j];
+      }
+    }
+  }
 };

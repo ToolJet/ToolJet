@@ -73,6 +73,8 @@ function Board({ height, state, colStyles, setState }) {
         const newState = [...state];
         newState[sInd]['cards'] = result[sInd];
         newState[dInd]['cards'] = result[dInd];
+        newState[dInd]['cards'][destination.index].columnId = newState[dInd].id;
+
         setState(newState);
       }
     }
