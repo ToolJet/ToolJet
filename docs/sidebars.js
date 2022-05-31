@@ -91,6 +91,7 @@ const sidebars = {
         'data-sources/snowflake',
         'data-sources/rethinkdb',
         'data-sources/typesense',
+        'data-sources/saphana',
       ],
     },
     {
