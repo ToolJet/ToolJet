@@ -246,9 +246,11 @@ let QueryManager = class QueryManager extends React.Component {
           toast.success('Query Updated');
           this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
           this.props.dataQueriesChanged();
+          this.props.setStateOfUnsavedQueries(false);
         })
         .catch(({ error }) => {
           this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+          this.props.setStateOfUnsavedQueries(false);
           toast.error(error);
         });
     } else {
@@ -259,24 +261,45 @@ let QueryManager = class QueryManager extends React.Component {
           toast.success('Query Added');
           this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });
           this.props.dataQueriesChanged();
+          this.props.setStateOfUnsavedQueries(false);
         })
         .catch(({ error }) => {
           this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+          this.props.setStateOfUnsavedQueries(false);
           toast.error(error);
         });
     }
   };
 
-  optionchanged = (option, value) => {
-    this.setState({ options: { ...this.state.options, [option]: value }, isFieldsChanged: true });
-  };
-
-  optionsChanged = (newOptions) => {
+  validateNewOptions = (newOptions) => {
+    const headersChanged = newOptions.arrayValuesChanged ?? false;
+    if (this.state.selectedQuery) {
+      const isQueryChanged = !_.isEqual(
+        this.removeRestKey(newOptions),
+        this.removeRestKey(this.state.selectedQuery.options)
+      );
+      if (isQueryChanged) {
+        this.props.setStateOfUnsavedQueries(true);
+      } else if (this.state.selectedQuery.kind === 'restapi' && headersChanged) {
+        this.props.setStateOfUnsavedQueries(true);
+      }
+    } else if (this.props.mode === 'create') {
+      this.props.setStateOfUnsavedQueries(true);
+    }
     this.setState({
       options: newOptions,
       isFieldsChanged: true,
-      restArrayValuesChanged: newOptions.arrayValuesChanged,
+      restArrayValuesChanged: headersChanged,
     });
+  };
+
+  optionchanged = (option, value) => {
+    const newOptions = { ...this.state.options, [option]: value };
+    this.validateNewOptions(newOptions);
+  };
+
+  optionsChanged = (newOptions) => {
+    this.validateNewOptions(newOptions);
   };
 
   toggleOption = (option) => {
