@@ -1,14 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  Patch,
-  UseGuards,
-  UseInterceptors,
-  Req,
-  UploadedFile,
-  BadRequestException,
-} from '@nestjs/common';
+import { Body, Controller, Post, Patch, UseGuards, UseInterceptors, Req, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { PasswordRevalidateGuard } from 'src/modules/auth/password-revalidate.guard';
@@ -52,7 +42,6 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async addAvatar(@Req() req, @UploadedFile() file: Express.Multer.File) {
-    if (!file || !file?.buffer) throw new BadRequestException('File cannot be empty');
     return this.usersService.addAvatar(req.user.id, file.buffer, file.originalname);
   }
 

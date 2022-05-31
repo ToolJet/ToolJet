@@ -130,7 +130,6 @@ function SettingsPage(props) {
                       <input
                         onChange={(e) => {
                           const file = e.target.files[0];
-                          console.log(file);
                           if (Math.round(file.size / 1024) > 2048) {
                             toast.error('File size cannot exceed more than 2MB');
                             e.target.value = null;
