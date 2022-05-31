@@ -36,3 +36,5 @@
 /frontend/cypress/videos
 
 .idea/*
+
+now-circular-*-services-sa.json

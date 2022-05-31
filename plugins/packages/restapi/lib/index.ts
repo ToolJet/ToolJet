@@ -4,6 +4,7 @@ import * as tls from 'tls';
 import { QueryError, QueryResult, QueryService, cleanSensitiveData } from '@tooljet-plugins/common';
 const JSON5 = require('json5');
 import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
+import { GCPIdToken } from './gcp-token';
 
 function isEmpty(value: number | null | undefined | string) {
   return (
@@ -132,6 +133,13 @@ export default class RestapiQueryService implements QueryService {
 
     if (authType === 'bearer') {
       headers['Authorization'] = `Bearer ${sourceOptions.bearer_token}`;
+    }
+
+    // Get Cloud Run token
+    if (url.includes('run.app')) {
+      const authKey = await GCPIdToken(url);
+
+      headers['Authorization'] = authKey;
     }
 
     const requestOptions: OptionsOfTextResponseBody = {

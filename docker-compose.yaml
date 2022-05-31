@@ -42,11 +42,13 @@ services:
       - /app/server/node_modules/
       - ./.env:/app/.env
       - ./.env.test:/app/.env.test
+      - ./now-circular-dev-services-sa.json:/app/now-circular-dev-services-sa.json
     ports:
       - 3000:3000
     environment:
       - SERVE_CLIENT=false
       - FORCE_COLOR=1
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/now-circular-dev-services-sa.json
     command: npm run --prefix server start:dev
 
   postgres:
