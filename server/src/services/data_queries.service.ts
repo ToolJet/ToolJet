@@ -8,14 +8,19 @@ import { CredentialsService } from './credentials.service';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
 import got from 'got';
+import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
+import { EncryptionService } from './encryption.service';
 
 @Injectable()
 export class DataQueriesService {
   constructor(
     private credentialsService: CredentialsService,
     private dataSourcesService: DataSourcesService,
+    private encryptionService: EncryptionService,
     @InjectRepository(DataQuery)
-    private dataQueriesRepository: Repository<DataQuery>
+    private dataQueriesRepository: Repository<DataQuery>,
+    @InjectRepository(OrgEnvironmentVariable)
+    private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>
   ) {}
 
   async findOne(dataQueryId: string): Promise<DataQuery> {
@@ -201,6 +206,11 @@ export class DataQueriesService {
     return parsedOptions;
   }
 
+  returnVariableName(str: string) {
+    const tempStr: string = str.replace(/{|}/g, '');
+    return tempStr.substring(tempStr.lastIndexOf('.') + 1);
+  }
+
   async parseQueryOptions(object: any, options: object): Promise<object> {
     if (typeof object === 'object' && object !== null) {
       for (const key of Object.keys(object)) {
@@ -210,17 +220,25 @@ export class DataQueriesService {
     } else if (typeof object === 'string') {
       object = object.replace(/\n/g, ' ');
       if (object.startsWith('{{') && object.endsWith('}}') && (object.match(/{{/g) || []).length === 1) {
-        object = options[object];
+        if (object.includes(`globals.environmentVariables.server`)) {
+          object = await this.getSecretValue(this.returnVariableName(object));
+        } else {
+          object = options[object];
+        }
         return object;
       } else {
         const variables = object.match(/\{\{(.*?)\}\}/g);
 
         if (variables?.length > 0) {
           for (const variable of variables) {
-            object = object.replace(variable, options[variable]);
+            if (variable.includes(`globals.environmentVariables.server`)) {
+              const secret_value = await this.getSecretValue(this.returnVariableName(variable));
+              object = object.replace(variable, secret_value);
+            } else {
+              object = object.replace(variable, options[variable]);
+            }
           }
         }
-
         return object;
       }
     } else if (Array.isArray(object)) {
@@ -232,5 +250,10 @@ export class DataQueriesService {
       return object;
     }
     return object;
+  }
+
+  async getSecretValue(variable_name: string) {
+    const variable = await this.orgEnvironmentVariablesRepository.findOne({ variableName: variable_name });
+    return await this.encryptionService.decryptColumnValue('org_environment_variables', 'value', variable.value);
   }
 }
