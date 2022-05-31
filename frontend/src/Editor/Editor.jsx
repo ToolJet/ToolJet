@@ -408,8 +408,11 @@ class Editor extends React.Component {
     this.initComponentVersioning();
   };
 
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState
+   */
   dataSourcesChanged = () => {
-    if (this.socket instanceof WebSocket) {
+    if (this.socket instanceof WebSocket && this.socket?.readyState === WebSocket.OPEN) {
       this.socket?.send(
         JSON.stringify({
           event: 'events',
@@ -421,9 +424,12 @@ class Editor extends React.Component {
     }
   };
 
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState
+   */
   dataQueriesChanged = () => {
     this.setState({ addingQuery: false }, () => {
-      if (this.socket instanceof WebSocket) {
+      if (this.socket instanceof WebSocket && this.socket?.readyState === WebSocket.OPEN) {
         this.socket?.send(
           JSON.stringify({
             event: 'events',
