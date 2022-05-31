@@ -45,7 +45,7 @@ export default class StripeQueryService implements QueryService {
 
       result = JSON.parse(response.body);
     } catch (error) {
-      throw new QueryError('Query could not be completed', error.message, {});
+      throw new QueryError('Query could not be completed', error.response.body, {});
     }
 
     return {
