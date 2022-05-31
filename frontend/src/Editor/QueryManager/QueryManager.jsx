@@ -125,24 +125,9 @@ let QueryManager = class QueryManager extends React.Component {
       if (this.props.mode === 'create' && this.state.isFieldsChanged) {
         this.setState({ showSaveConfirmation: true, nextProps });
         return;
-      } else if (this.props.mode === 'edit') {
-        if (this.state.selectedQuery) {
-          const isQueryChanged = !_.isEqual(
-            this.removeRestKey(this.state.options),
-            this.removeRestKey(this.state.selectedQuery.options)
-          );
-          if (this.state.isFieldsChanged && isQueryChanged) {
-            this.setState({ showSaveConfirmation: true, nextProps });
-            return;
-          } else if (
-            !isQueryChanged &&
-            this.state.selectedQuery.kind === 'restapi' &&
-            this.state.restArrayValuesChanged
-          ) {
-            this.setState({ showSaveConfirmation: true, nextProps });
-            return;
-          }
-        }
+      } else if (this.props.mode === 'edit' && this.state.isFieldsChanged) {
+        this.setState({ showSaveConfirmation: true, nextProps });
+        return;
       }
     }
     this.setStateFromProps(nextProps);
@@ -273,22 +258,24 @@ let QueryManager = class QueryManager extends React.Component {
 
   validateNewOptions = (newOptions) => {
     const headersChanged = newOptions.arrayValuesChanged ?? false;
+    let isFieldsChanged = false;
     if (this.state.selectedQuery) {
       const isQueryChanged = !_.isEqual(
         this.removeRestKey(newOptions),
         this.removeRestKey(this.state.selectedQuery.options)
       );
       if (isQueryChanged) {
-        this.props.setStateOfUnsavedQueries(true);
+        isFieldsChanged = true;
       } else if (this.state.selectedQuery.kind === 'restapi' && headersChanged) {
-        this.props.setStateOfUnsavedQueries(true);
+        isFieldsChanged = true;
       }
     } else if (this.props.mode === 'create') {
-      this.props.setStateOfUnsavedQueries(true);
+      isFieldsChanged = true;
     }
+    if (isFieldsChanged) this.props.setStateOfUnsavedQueries(true);
     this.setState({
       options: newOptions,
-      isFieldsChanged: true,
+      isFieldsChanged,
       restArrayValuesChanged: headersChanged,
     });
   };
