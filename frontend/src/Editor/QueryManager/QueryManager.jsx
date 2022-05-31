@@ -368,6 +368,7 @@ let QueryManager = class QueryManager extends React.Component {
           onCancel={() => {
             this.setState({ showSaveConfirmation: false, isFieldsChanged: false });
             this.setStateFromProps(this.state.nextProps);
+            this.props.setStateOfUnsavedQueries(false);
           }}
           queryConfirmationData={this.state.queryConfirmationData}
         />
