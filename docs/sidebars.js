@@ -18,6 +18,7 @@ const sidebars = {
       items: [
         'setup/introduction',
         'setup/docker',
+        'setup/docker-local',
         'setup/heroku',
         'setup/ec2',
         'setup/kubernetes',
