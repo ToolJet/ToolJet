@@ -35,11 +35,11 @@ export class AuthService {
   private async validateUser(email: string, password: string, organisationId?: string): Promise<User> {
     const user = await this.usersService.findByEmail(email, organisationId, 'active');
 
-    if (!user) return null;
+    if (!(user && (await bcrypt.compare(password, user.password)))) {
+      return;
+    }
 
-    const isVerified = await bcrypt.compare(password, user.password);
-
-    return isVerified ? user : null;
+    return user;
   }
 
   async login(email: string, password: string, organizationId?: string) {
