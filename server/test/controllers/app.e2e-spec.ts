@@ -125,6 +125,24 @@ describe('Authentication', () => {
           .set('Authorization', authHeaderForUser(adminUser))
           .expect(401);
       });
+      it('throw 401 if user is invited', async () => {
+        await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'user@tooljet.io', password: 'password' })
+          .expect(401);
+
+        const adminUser = await userRepository.findOneOrFail({
+          email: 'admin@tooljet.io',
+        });
+        await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
+
+        await request(app.getHttpServer())
+          .get('/api/organizations/users')
+          .set('Authorization', authHeaderForUser(adminUser))
+          .expect(401);
+      });
       it('throw 401 if invalid credentials', async () => {
         await request(app.getHttpServer())
           .post('/api/authenticate')
@@ -237,6 +255,24 @@ describe('Authentication', () => {
           email: 'admin@tooljet.io',
         });
         await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
+
+        await request(app.getHttpServer())
+          .get('/api/organizations/users')
+          .set('Authorization', authHeaderForUser(adminUser))
+          .expect(401);
+      });
+      it('throw 401 if user is invited', async () => {
+        await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'user@tooljet.io', password: 'password' })
+          .expect(401);
+
+        const adminUser = await userRepository.findOneOrFail({
+          email: 'admin@tooljet.io',
+        });
+        await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
 
         await request(app.getHttpServer())
           .get('/api/organizations/users')
