@@ -7,6 +7,9 @@ title: Docker
 
 Follow the steps below to deploy ToolJet on a server using docker-compose. This setup will deploy both **ToolJet server** and **ToolJet client**.
 
+:::info
+If you rather want to try out ToolJet locally with docker, you can follow the steps [here](https://docs.tooljet.com/docs/setup/docker-local).
+:::
 
 1. Make sure that the server can receive traffic on port 80, 443 and 22.
    For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
