@@ -21,13 +21,13 @@ function dropDatabase(): void {
     throw new Error(`Config validation error: ${error.message}`);
   }
 
-  const connectivityCheck = exec('command -v createdb')
-  connectivityCheck.on('exit', function(signal) {
-    if(signal === 1) {
-      console.error('Unable to connect to database')
-      process.exit(1)
+  const connectivityCheck = exec('command -v createdb');
+  connectivityCheck.on('exit', function (signal) {
+    if (signal === 1) {
+      console.error('Unable to connect to database');
+      process.exit(1);
     }
-  })
+  });
 
   const dropdb =
     `PGPASSWORD=${envVars.PG_PASS} dropdb ` +
@@ -48,7 +48,7 @@ function dropDatabase(): void {
       console.log(errorMessage);
     } else {
       console.error(err);
-      process.exit(1)
+      process.exit(1);
     }
   });
 }

@@ -21,14 +21,14 @@ function createDatabase(): void {
     throw new Error(`Config validation error: ${error.message}`);
   }
 
-  const connectivityCheck = exec('command -v createdb')
+  const connectivityCheck = exec('command -v createdb');
 
-  connectivityCheck.on('exit', function(signal) {
+  connectivityCheck.on('exit', function (signal) {
     if (signal === 1) {
-      console.error('Unable to connect to database')
-      process.exit(1)
+      console.error('Unable to connect to database');
+      process.exit(1);
     }
-  })
+  });
 
   const createdb =
     `PGPASSWORD=${envVars.PG_PASS} createdb ` +
@@ -49,7 +49,7 @@ function createDatabase(): void {
       console.log(`Using database: ${envVars.PG_DB}`);
     } else {
       console.error(err);
-      process.exit(1)
+      process.exit(1);
     }
   });
 }
