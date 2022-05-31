@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { v4 as uuidv4 } from 'uuid';
 import Column from './Column';
@@ -43,9 +43,7 @@ const getItemStyle = (isDragging, draggableStyle) => {
   };
 };
 
-function Board({ height, data, updateExposedVariable, colStyles }) {
-  const [state, setState] = useState(() => data);
-
+function Board({ height, state, colStyles, setState }) {
   const addNewItem = (state, keyIndex) => {
     const newItem = {
       id: uuidv4(),
@@ -79,11 +77,6 @@ function Board({ height, data, updateExposedVariable, colStyles }) {
       }
     }
   }
-
-  React.useEffect(() => {
-    updateExposedVariable(state);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
 
   const getListStyle = (isDraggingOver) => ({
     ...colStyles,
