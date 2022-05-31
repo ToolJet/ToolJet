@@ -144,13 +144,8 @@ export function CodeHinter({
   const unFocusPreview = () => (isPreviewFocused.current = false);
 
   const copyToClipboard = (text) => {
-    var textArea = document.createElement('textarea');
-    textArea.value = text;
-    document.body.appendChild(textArea);
-    textArea.select();
-    document.execCommand('copy');
-    toast.success('Text Copied');
-    textArea.remove();
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard');
   };
 
   const getPreview = () => {
