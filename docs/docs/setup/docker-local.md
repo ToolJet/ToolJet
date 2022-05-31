@@ -3,9 +3,9 @@ id: docker-local
 title: Docker Local
 ---
 
-# Try ToolJet locally with Docker
+# Try ToolJet with Docker
 
-You can run the command below to have tooljet running locally.
+You can run the command below to have tooljet up and running right away.
 
 ```bash
 docker run \
