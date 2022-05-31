@@ -388,9 +388,9 @@ class ManageOrgUsers extends React.Component {
                                 <button
                                   type="button"
                                   style={{ minWidth: '100px' }}
-                                  className={`btn btn-sm btn-${user.status === 'archived' ? 'success' : 'danger'} ${
-                                    unarchivingUser === user.id || archivingUser === user.id ? 'btn-loading' : ''
-                                  }`}
+                                  className={`btn btn-sm btn-outline-${
+                                    user.status === 'archived' ? 'success' : 'danger'
+                                  } ${unarchivingUser === user.id || archivingUser === user.id ? 'btn-loading' : ''}`}
                                   disabled={unarchivingUser === user.id || archivingUser === user.id}
                                   onClick={() => {
                                     user.status === 'archived'
