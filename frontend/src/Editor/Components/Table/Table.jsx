@@ -86,7 +86,9 @@ export function Table({
 
   if (typeof clientSidePagination !== 'boolean') clientSidePagination = true;
 
-  const tableType = component.definition.styles.tableType?.value;
+  const tableTypeProperty = component.definition.styles.tableType;
+  let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
+  tableType = tableType === '' ? 'table-bordered' : tableType;
 
   const cellSizeType = component.definition.styles.cellSize?.value;
   const borderRadius = component.definition.styles.borderRadius?.value;
