@@ -120,7 +120,7 @@ export const Folders = function Folders({
       folderService
         .updateFolder(newFolderName, updatingFolder.id)
         .then(() => {
-          toast.success('folder has been updated.', {
+          toast.success('Folder has been updated.', {
             position: 'top-center',
           });
           setUpdationStatus(false);
@@ -139,15 +139,8 @@ export const Folders = function Folders({
     <div className="w-100 px-3 pe-lg-4 folder-list">
       <ConfirmDialog
         show={showDeleteConfirmation}
-        message={`${
-          deletingFolder
-            ? `${
-                deletingFolder.folder_apps.length > 0
-                  ? `the folder ${deletingFolder.name} has ${deletingFolder.folder_apps.length} apps in it, by deleting the apps contain the folder will moved to uncategoried section.`
-                  : 'Are you sure, do you want to delete this folder ?'
-              } `
-            : ''
-        }`}
+        message={`Are you sure you want to delete the folder? 
+        Apps within the folder will not be deleted.`}
         confirmButtonLoading={isDeleting}
         onConfirm={() => executeDeletion()}
         onCancel={() => cancelDeleteDialog()}
