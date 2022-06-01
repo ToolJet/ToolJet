@@ -5115,6 +5115,33 @@ div#driver-page-overlay {
 .list-timeline:not(.list-timeline-simple) .list-timeline-time {
   top: auto;
 }
+.widget-buttongroup{
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  overflow: hidden !important;
+}
+.group-button{
+  margin: 0px 10px 10px 0px;
+  line-height: 1.499;
+  font-weight: 400;
+  white-space: nowrap;
+  text-align: center;
+  cursor: pointer;
+  padding: 0 15px;
+  font-size: 12px;
+  border-radius: 4px;
+  color: rgba(0,0,0,.65) ;
+  background-color: #fff ;
+  border: 1px solid #d9d9d9;
+  min-width: 40px;
+  width: auto !important;
+  height: 30px,
+}
+.widget-buttongroup-label{
+  font-weight: 600;
+  margin-right: 10px;
+}
 .editor-actions {
   border-bottom: 1px solid #eee;
   padding: 5px;
