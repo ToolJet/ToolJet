@@ -56,6 +56,6 @@ export class FoldersController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    return await this.foldersService.delete(id);
+    return await this.foldersService.delete(user, id);
   }
 }
