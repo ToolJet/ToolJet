@@ -313,6 +313,16 @@ function executeAction(_ref, event, mode, customVariables) {
           },
         });
       }
+
+      case 'control-component': {
+        const component = Object.values(_ref.state.currentState?.components ?? {}).filter(
+          (component) => component.id === event.componentId
+        )[0];
+        const action = component[event.action];
+        const actionArguments = action.paramHandles.map((paramHandle) => event[paramHandle]);
+        action(...actionArguments);
+        return Promise.resolve();
+      }
     }
   }
 }
