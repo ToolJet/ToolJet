@@ -43,7 +43,7 @@ export class OrgEnvironmentVariablesService {
 
     if (variableToFind) {
       throw new ConflictException(
-        `Variable name already existed in ${environmentVariableDto.variable_type ?? 'environment'} variables`
+        `Variable name already exists in ${environmentVariableDto.variable_type ?? 'environment'} variables`
       );
     }
 
@@ -88,7 +88,7 @@ export class OrgEnvironmentVariablesService {
       });
 
       if (variableToFind && variableToFind.id !== variableId) {
-        throw new ConflictException(`Variable name already existed in ${variable.variableType} variables`);
+        throw new ConflictException(`Variable name already exists in ${variable.variableType} variables`);
       }
     }
 
