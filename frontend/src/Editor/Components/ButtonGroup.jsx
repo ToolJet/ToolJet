@@ -60,7 +60,7 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
   };
   return (
     <div className="widget-buttongroup" style={{ height }}>
-      <p className="widget-buttongroup-label">{label}</p>
+      {label && <p className="widget-buttongroup-label">{label}</p>}
       <div>
         {data?.map((item, index) => (
           <button
