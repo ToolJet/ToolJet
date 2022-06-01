@@ -246,9 +246,11 @@ let QueryManager = class QueryManager extends React.Component {
           toast.success('Query Updated');
           this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
           this.props.dataQueriesChanged();
+          this.props.setStateOfUnsavedQueries(false);
         })
         .catch(({ error }) => {
           this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+          this.props.setStateOfUnsavedQueries(false);
           toast.error(error);
         });
     } else {
@@ -259,24 +261,47 @@ let QueryManager = class QueryManager extends React.Component {
           toast.success('Query Added');
           this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });
           this.props.dataQueriesChanged();
+          this.props.setStateOfUnsavedQueries(false);
         })
         .catch(({ error }) => {
           this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+          this.props.setStateOfUnsavedQueries(false);
           toast.error(error);
         });
     }
   };
 
+  validateNewOptions = (newOptions) => {
+    const headersChanged = newOptions.arrayValuesChanged ?? false;
+    let isFieldsChanged = false;
+    if (this.state.selectedQuery) {
+      const isQueryChanged = !_.isEqual(
+        this.removeRestKey(newOptions),
+        this.removeRestKey(this.state.selectedQuery.options)
+      );
+      if (isQueryChanged) {
+        isFieldsChanged = true;
+      } else if (this.state.selectedQuery.kind === 'restapi' && headersChanged) {
+        isFieldsChanged = true;
+      }
+    } else if (this.props.mode === 'create') {
+      isFieldsChanged = true;
+    }
+    if (isFieldsChanged) this.props.setStateOfUnsavedQueries(true);
+    this.setState({
+      options: newOptions,
+      isFieldsChanged,
+      restArrayValuesChanged: headersChanged,
+    });
+  };
+
   optionchanged = (option, value) => {
-    this.setState({ options: { ...this.state.options, [option]: value }, isFieldsChanged: true });
+    const newOptions = { ...this.state.options, [option]: value };
+    this.validateNewOptions(newOptions);
   };
 
   optionsChanged = (newOptions) => {
-    this.setState({
-      options: newOptions,
-      isFieldsChanged: true,
-      restArrayValuesChanged: newOptions.arrayValuesChanged,
-    });
+    this.validateNewOptions(newOptions);
   };
 
   toggleOption = (option) => {
@@ -345,6 +370,7 @@ let QueryManager = class QueryManager extends React.Component {
           onCancel={() => {
             this.setState({ showSaveConfirmation: false, isFieldsChanged: false });
             this.setStateFromProps(this.state.nextProps);
+            this.props.setStateOfUnsavedQueries(false);
           }}
           queryConfirmationData={this.state.queryConfirmationData}
         /> */}
