@@ -49,11 +49,13 @@ describe('organization environment variables controller', () => {
       const bodyArray = [
         {
           variable_name: 'email',
+          variable_type: 'server',
           value: 'test@tooljet.io',
           encrypted: true,
         },
         {
           variable_name: 'name',
+          variable_type: 'client',
           value: 'demo_user',
           encrypted: false,
         },
@@ -87,6 +89,7 @@ describe('organization environment variables controller', () => {
         expect(variable).toStrictEqual({
           variableName: variableArray[index].variableName,
           value: bodyArray[0].value,
+          variableType: bodyArray[0].variable_type,
           id: variableArray[index].id,
           encrypted: variableArray[index].encrypted,
         });
@@ -125,19 +128,19 @@ describe('organization environment variables controller', () => {
       await request(app.getHttpServer())
         .post(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
-        .send({ variable_name: 'email', value: 'test@tooljet.io', encrypted: true })
+        .send({ variable_name: 'email', variable_type: 'server', value: 'test@tooljet.io', encrypted: true })
         .expect(201);
 
       await request(app.getHttpServer())
         .post(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(developerUserData.user))
-        .send({ variable_name: 'email', value: 'test@tooljet.io', encrypted: true })
+        .send({ variable_name: 'email', variable_type: 'server', value: 'test@tooljet.io', encrypted: true })
         .expect(403);
 
       await request(app.getHttpServer())
         .post(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
-        .send({ variable_name: 'email', value: 'test@tooljet.io', encrypted: true })
+        .send({ variable_name: 'email', variable_type: 'server', value: 'test@tooljet.io', encrypted: true })
         .expect(403);
     });
   });
@@ -166,6 +169,7 @@ describe('organization environment variables controller', () => {
 
       const response = await createVariable(app, adminUserData, {
         variable_name: 'email',
+        variable_type: 'server',
         value: 'test@tooljet.io',
         encrypted: true,
       });
@@ -215,6 +219,7 @@ describe('organization environment variables controller', () => {
       const response1 = await createVariable(app, adminUserData, {
         variable_name: 'email',
         value: 'test@tooljet.io',
+        variable_type: 'server',
         encrypted: true,
       });
 
@@ -227,6 +232,7 @@ describe('organization environment variables controller', () => {
       const response2 = await createVariable(app, adminUserData, {
         variable_name: 'email',
         value: 'test1@tooljet.io',
+        variable_type: 'client',
         encrypted: true,
       });
 
