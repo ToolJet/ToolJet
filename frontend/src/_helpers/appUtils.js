@@ -99,7 +99,7 @@ export function runTransformation(_ref, rawData, transformation, query) {
 }
 
 export async function executeActionsForEventId(_ref, eventId, component, mode, customVariables) {
-  const events = component?.definition?.events || [];
+  const events = component.definition.events || [];
   const filteredEvents = events.filter((event) => event.eventId === eventId);
 
   for (const event of filteredEvents) {
