@@ -1,4 +1,4 @@
-import { Module, OnApplicationBootstrap, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs/common';
+import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs/common';
 
 import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -107,7 +107,7 @@ if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
   controllers: [AppController],
   providers: [EmailService, SeedsService],
 })
-export class AppModule implements OnModuleInit, OnApplicationBootstrap {
+export class AppModule implements OnModuleInit {
   constructor(private connection: Connection) {}
 
   configure(consumer: MiddlewareConsumer): void {
@@ -118,10 +118,7 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
   }
 
   onModuleInit(): void {
-    console.log(`Initializing ToolJet server modules 📡 `);
-  }
-
-  onApplicationBootstrap(): void {
-    console.log(`Initialized ToolJet server, waiting for requests 🚀`);
+    console.log(`Version: ${globalThis.TOOLJET_VERSION}`);
+    console.log(`Initializing server modules 📡 `);
   }
 }

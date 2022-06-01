@@ -42,7 +42,7 @@ export const componentTypes = [
         type: 'select',
         displayName: 'Table type',
         options: [
-          { name: 'Bordered', value: '' },
+          { name: 'Bordered', value: 'table-bordered' },
           { name: 'Borderless', value: 'table-borderless' },
           { name: 'Classic', value: 'table-classic' },
           { name: 'Striped', value: 'table-striped' },
@@ -106,6 +106,7 @@ export const componentTypes = [
         disabledState: { value: '{{false}}' },
         cellSize: { value: 'compact' },
         borderRadius: { value: '0' },
+        tableType: { value: 'table-bordered' },
       },
     },
   },
