@@ -1,9 +1,12 @@
 export const path={
-    loginPath:"/login",
+    loginPath: "/login",
+    profilePath: "/settings"
 }
 
 export const commonText={
-    autoSave:"All changes are saved"
+    autoSave: "All changes are saved",
+    email: "dev@tooljet.io",
+    password: "password"
 }
 
 
