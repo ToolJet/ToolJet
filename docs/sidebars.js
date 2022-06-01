@@ -18,6 +18,7 @@ const sidebars = {
       items: [
         'setup/introduction',
         'setup/docker',
+        'setup/docker-local',
         'setup/heroku',
         'setup/ec2',
         'setup/kubernetes',
@@ -46,7 +47,7 @@ const sidebars = {
         'tutorial/building-queries',
         'tutorial/transformations',
         'tutorial/adding-widget',
-       'tutorial/actions',
+        'tutorial/actions',
         'tutorial/debugger',
         'tutorial/mobile-layout',
         'tutorial/versioning-and-release',
@@ -86,6 +87,7 @@ const sidebars = {
         'data-sources/postgresql',
         'data-sources/redis',
         'data-sources/restapi',
+        'data-sources/saphana',
         'data-sources/sendgrid',
         'data-sources/smtp',
         'data-sources/snowflake',
@@ -98,6 +100,7 @@ const sidebars = {
       label: 'Widget Reference',
       items: [
         'widgets/button',
+        'widgets/button-group',
         'widgets/calendar',
         'widgets/chart',
         'widgets/checkbox',
