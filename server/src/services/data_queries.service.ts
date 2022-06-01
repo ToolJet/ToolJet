@@ -206,9 +206,27 @@ export class DataQueriesService {
     return parsedOptions;
   }
 
-  returnVariableName(str: string) {
+  async resolveVariable(str: string) {
     const tempStr: string = str.replace(/{|}/g, '');
-    return tempStr.substring(tempStr.lastIndexOf('.') + 1);
+    const variablesResult = await this.orgEnvironmentVariablesRepository.find({ variableType: 'server' });
+    const serverVariables = {};
+    await Promise.all(
+      variablesResult.map(async (variable) => {
+        serverVariables[variable.variableName] = await this.encryptionService.decryptColumnValue(
+          'org_environment_variables',
+          'value',
+          variable.value
+        );
+      })
+    );
+    const evalFunction = Function('globals', `return ${tempStr}`);
+    const result = evalFunction({
+      environmentVariables: {
+        server: { ...serverVariables },
+      },
+    });
+
+    return result;
   }
 
   async parseQueryOptions(object: any, options: object): Promise<object> {
@@ -221,7 +239,7 @@ export class DataQueriesService {
       object = object.replace(/\n/g, ' ');
       if (object.startsWith('{{') && object.endsWith('}}') && (object.match(/{{/g) || []).length === 1) {
         if (object.includes(`globals.environmentVariables.server`)) {
-          object = await this.getSecretValue(this.returnVariableName(object));
+          object = await this.resolveVariable(object);
         } else {
           object = options[object];
         }
@@ -232,7 +250,7 @@ export class DataQueriesService {
         if (variables?.length > 0) {
           for (const variable of variables) {
             if (variable.includes(`globals.environmentVariables.server`)) {
-              const secret_value = await this.getSecretValue(this.returnVariableName(variable));
+              const secret_value = await this.resolveVariable(variable);
               object = object.replace(variable, secret_value);
             } else {
               object = object.replace(variable, options[variable]);
@@ -250,10 +268,5 @@ export class DataQueriesService {
       return object;
     }
     return object;
-  }
-
-  async getSecretValue(variable_name: string) {
-    const variable = await this.orgEnvironmentVariablesRepository.findOne({ variableName: variable_name });
-    return await this.encryptionService.decryptColumnValue('org_environment_variables', 'value', variable.value);
   }
 }
