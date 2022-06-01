@@ -40,6 +40,7 @@ class ManageOrgVars extends React.Component {
   onEditBtnClicked = (variable) => {
     this.setState({
       showVariableForm: true,
+      errors: {},
       fields: {
         ...variable,
         encryption: variable.encrypted,
@@ -49,7 +50,7 @@ class ManageOrgVars extends React.Component {
   };
 
   onCreationFailed() {
-    this.setState({ addingVar: false, selectedVariableId: null });
+    this.setState({ addingVar: false });
   }
 
   onCancelBtnClicked = () => {
@@ -243,7 +244,10 @@ class ManageOrgVars extends React.Component {
                 </div>
                 <div className="col-auto ms-auto d-print-none">
                   {!showVariableForm && this.state.currentUser.admin && (
-                    <div className="btn btn-primary" onClick={() => this.setState({ showVariableForm: true })}>
+                    <div
+                      className="btn btn-primary"
+                      onClick={() => this.setState({ showVariableForm: true, errors: {} })}
+                    >
                       Add new variable
                     </div>
                   )}
