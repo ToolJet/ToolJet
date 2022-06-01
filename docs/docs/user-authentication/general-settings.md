@@ -28,3 +28,7 @@ You can enable/disable `Enable signup`. If it is enabled, new account will be cr
 ## Allowed domains
 
 You can set allowed domains for SSO login, can add multiple domains comma separated. Allowed all domains by default.
+
+## Login URL
+
+You can use the login URL to login directly to the workspace.This will be hidden if Multi-Workspace is disabled.
