@@ -620,6 +620,20 @@ class ManageGroupPermissionResources extends React.Component {
                                             type="checkbox"
                                             onChange={() => {
                                               this.updateGroupPermission(groupPermission.id, {
+                                                folder_update: !groupPermission.folder_update,
+                                              });
+                                            }}
+                                            checked={groupPermission.folder_update}
+                                            disabled={groupPermission.group === 'admin'}
+                                          />
+                                          <span className="form-check-label">Update</span>
+                                        </label>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            onChange={() => {
+                                              this.updateGroupPermission(groupPermission.id, {
                                                 folder_delete: !groupPermission.folder_delete,
                                               });
                                             }}
