@@ -88,24 +88,36 @@ export const Tabs = function Tabs({
           </li>
         ))}
       </ul>
-      <div className="tab-content" ref={parentRef} id={`${id}-${currentTab}`}>
-        <div className="tab-pane active show">
-          <SubContainer
-            parent={`${id}-${currentTab}`}
-            {...containerProps}
-            parentRef={parentRef}
-            removeComponent={removeComponent}
-            containerCanvasWidth={width}
-            parentComponent={component}
-          />
-          <SubCustomDragLayer
-            parent={id}
-            parentRef={parentRef}
-            currentLayout={containerProps.currentLayout}
-            containerCanvasWidth={width}
-          />
+      {parsedTabs.map((tab) => (
+        <div
+          className="tab-content"
+          ref={(newCurrent) => {
+            if (currentTab === tab.id) {
+              parentRef.current = newCurrent;
+            }
+          }}
+          id={`${id}-${tab.id}`}
+          key={tab.id}
+        >
+          <div className={`tab-pane ${tab.id === currentTab ? 'active' : ''}`}>
+            {tab.id}
+            <SubContainer
+              parent={`${id}-${tab.id}`}
+              {...containerProps}
+              parentRef={parentRef}
+              removeComponent={removeComponent}
+              containerCanvasWidth={width}
+              parentComponent={component}
+            />
+            <SubCustomDragLayer
+              parent={`${id}-${tab.id}`}
+              parentRef={parentRef}
+              currentLayout={containerProps.currentLayout}
+              containerCanvasWidth={width}
+            />
+          </div>
         </div>
-      </div>
+      ))}
     </div>
   );
 };
