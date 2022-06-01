@@ -58,6 +58,7 @@ export const LeftSidebar = ({
         <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
       )}
       <LeftSidebarGlobalSettings
+        currentState={currentState}
         globalSettingsChanged={globalSettingsChanged}
         globalSettings={globalSettings}
         darkMode={darkMode}

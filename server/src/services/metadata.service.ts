@@ -5,12 +5,14 @@ import { Metadata } from 'src/entities/metadata.entity';
 import { gt } from 'semver';
 import got from 'got';
 import { User } from 'src/entities/user.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MetadataService {
   constructor(
     @InjectRepository(Metadata)
-    private metadataRepository: Repository<Metadata>
+    private metadataRepository: Repository<Metadata>,
+    private configService: ConfigService
   ) {}
 
   async getMetaData() {
@@ -64,6 +66,7 @@ export class MetadataService {
         total_editors: totalEditorCount,
         total_viewers: totalViewerCount,
         tooljet_version: globalThis.TOOLJET_VERSION,
+        deployment_platform: this.configService.get<string>('DEPLOYMENT_PLATFORM'),
       },
     });
   }
