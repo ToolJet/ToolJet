@@ -14,8 +14,8 @@ const RealtimeCursors = (props) => {
   const availableColors = xorWith(USER_COLORS, unavailableColors, isEqual);
 
   const { self, updatePresence } = useSelf({
-    firstName: currentUser.first_name,
-    lastName: currentUser.last_name,
+    firstName: currentUser?.first_name,
+    lastName: currentUser?.last_name,
     image: '', // todo: add image feature for a user avatar
     editingVersionId: '',
     x: 0,
