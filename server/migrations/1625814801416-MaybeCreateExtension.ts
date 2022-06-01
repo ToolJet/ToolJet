@@ -19,11 +19,11 @@ export class MaybeCreateExtension1625814801416 implements MigrationInterface {
           },
           {
             name: 'file_id',
-            type: 'varchar',
+            type: 'uuid',
           },
           {
             name: 'organization_id',
-            type: 'varchar',
+            type: 'uuid',
           },
         ],
       }),

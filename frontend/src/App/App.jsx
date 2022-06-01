@@ -18,6 +18,7 @@ import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
+import { MarketplacePage } from '@/MarketplacePage';
 import { ManageSSO } from '@/ManageSSO';
 import { lt } from 'semver';
 import { Toaster } from 'react-hot-toast';
@@ -215,6 +216,13 @@ class App extends React.Component {
               exact
               path="/settings"
               component={SettingsPage}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/marketplace"
+              component={MarketplacePage}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />

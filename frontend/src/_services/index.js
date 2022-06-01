@@ -11,3 +11,4 @@ export * from './folder.service';
 export * from './tooljet.service';
 export * from './comments.service';
 export * from './library-app.service';
+export * from './extensions.service';
