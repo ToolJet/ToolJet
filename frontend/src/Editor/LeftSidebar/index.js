@@ -32,6 +32,8 @@ export const LeftSidebar = ({
   runQuery,
   toggleAppMaintenance,
   is_maintenance_on,
+  isSaving,
+  isUnsavedQueriesAvailable,
 }) => {
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -66,7 +68,13 @@ export const LeftSidebar = ({
         is_maintenance_on={is_maintenance_on}
       />
       <LeftSidebarItem
-        onClick={() => setShowLeaveDialog(true)}
+        onClick={() => {
+          if (isSaving || isUnsavedQueriesAvailable) {
+            setShowLeaveDialog(true);
+          } else {
+            router.push('/');
+          }
+        }}
         tip="Back to home"
         icon="back"
         className="left-sidebar-item no-border left-sidebar-layout"
