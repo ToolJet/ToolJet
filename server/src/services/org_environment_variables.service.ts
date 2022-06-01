@@ -1,5 +1,5 @@
 import { EnvironmentVariableDto } from '@dto/environment-variable.dto';
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { Repository } from 'typeorm';
@@ -22,10 +22,10 @@ export class OrgEnvironmentVariablesService {
 
     await Promise.all(
       variables.map(async (variable: OrgEnvironmentVariable) => {
-        if (variable.encrypted && variable.variableType === 'server') {
+        if (variable.variableType === 'server') {
           delete variable.value;
         } else {
-          variable['value'] = await this.decryptSecret(variable.value);
+          if (variable.encrypted) variable['value'] = await this.decryptSecret(variable.value);
         }
       })
     );
@@ -34,6 +34,19 @@ export class OrgEnvironmentVariablesService {
   }
 
   async create(currentUser: User, environmentVariableDto: EnvironmentVariableDto): Promise<OrgEnvironmentVariable> {
+    const variableToFind = await this.orgEnvironmentVariablesRepository.findOne({
+      where: {
+        variableName: environmentVariableDto.variable_name,
+        variableType: environmentVariableDto.variable_type,
+      },
+    });
+
+    if (variableToFind) {
+      throw new ConflictException(
+        `Variable name already existed in ${environmentVariableDto.variable_type ?? 'environment'} variables`
+      );
+    }
+
     const encrypted = environmentVariableDto.variable_type === 'server' ? true : environmentVariableDto.encrypted;
     let value: string;
     if (encrypted && environmentVariableDto.value) {
@@ -65,6 +78,19 @@ export class OrgEnvironmentVariablesService {
     const { variable_name } = params;
     let value = params.value;
     const variable = await this.fetch(organizationId, variableId);
+
+    if (variable_name) {
+      const variableToFind = await this.orgEnvironmentVariablesRepository.findOne({
+        where: {
+          variableName: variable_name,
+          variableType: variable.variableType,
+        },
+      });
+
+      if (variableToFind && variableToFind.id !== variableId) {
+        throw new ConflictException(`Variable name already existed in ${variable.variableType} variables`);
+      }
+    }
 
     if (variable.encrypted && value) {
       value = await this.encryptSecret(value);

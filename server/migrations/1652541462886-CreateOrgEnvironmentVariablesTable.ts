@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableUnique } from 'typeorm';
 
 export class CreateOrgEnvironmentVariablesTable1652541462886 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -62,6 +62,13 @@ export class CreateOrgEnvironmentVariablesTable1652541462886 implements Migratio
         referencedColumnNames: ['id'],
         referencedTableName: 'organizations',
         onDelete: 'CASCADE',
+      })
+    );
+
+    await queryRunner.createUniqueConstraint(
+      'org_environment_variables',
+      new TableUnique({
+        columnNames: ['variable_name', 'variable_type'],
       })
     );
   }
