@@ -1,4 +1,5 @@
 import { Body, Controller, Post, Patch, UseGuards, UseInterceptors, Req, UploadedFile } from '@nestjs/common';
+import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { PasswordRevalidateGuard } from 'src/modules/auth/password-revalidate.guard';
