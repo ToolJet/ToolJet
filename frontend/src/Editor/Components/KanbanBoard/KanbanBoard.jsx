@@ -1,6 +1,6 @@
 import React from 'react';
 import Board from './Board';
-import { updateCardData, updateColumnData } from './utils';
+import { isCardColoumnIdUpdated, updateCardData, updateColumnData } from './utils';
 
 const getData = (columns, cards) => {
   if (
@@ -51,11 +51,22 @@ export const KanbanBoard = ({ height, properties, styles, currentState, setExpos
 
   React.useEffect(() => {
     if (JSON.stringify(cardData) !== JSON.stringify(rawCardData)) {
-      const newData = updateCardData(state, rawCardData, cardData);
+      const isColumnIdUpdated = isCardColoumnIdUpdated(rawCardData, cardData);
 
-      if (newData && Object.prototype.toString.call(newData).slice(8, -1) === 'Array') {
-        setState(newData);
+      if (isColumnIdUpdated) {
+        const newData = getData(columns, cardData);
+        if (newData && Object.prototype.toString.call(newData).slice(8, -1) === 'Array') {
+          setState(newData);
+        }
       }
+
+      if (!isColumnIdUpdated) {
+        const newData = updateCardData(state, rawCardData, cardData);
+        if (newData && Object.prototype.toString.call(newData).slice(8, -1) === 'Array') {
+          setState(newData);
+        }
+      }
+
       setRawCardData(cardData);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
