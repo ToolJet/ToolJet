@@ -230,8 +230,8 @@ export const Container = ({
 
     for (const selectedComponent of selectedComponents) {
       newBoxes = produce(newBoxes, (draft) => {
-        const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
-        const leftOffset = draft[selectedComponent.id].layouts[currentLayout].left;
+        const topOffset = draft[selectedComponent.id]?.layouts[currentLayout].top;
+        const leftOffset = draft[selectedComponent.id]?.layouts[currentLayout].left;
 
         draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
         draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
