@@ -2900,7 +2900,7 @@ input:focus-visible {
   .DateRangePickerInput__withBorder {
     border: 1px solid #1f2936;
   }
-
+  
   .main .canvas-container .canvas-area {
     background: #2f3c4c;
   }
@@ -4732,6 +4732,59 @@ div#driver-page-overlay {
 #transformation-popover-container {
   margin-left: 80px !important;
   margin-bottom: -2px !important;
+}
+.canvas-codehinter-container{
+  display: flex;
+  flex-direction: row;
+}
+.hinter-canvas-input {
+  .canvas-hinter-wrap{
+  width: 135px;
+  height: 42px !important;
+}
+}
+.hinter-canvas-input{
+  width: 180px !important;
+  display: flex;
+  padding: 4px; 
+  height: 41.2px !important;
+  margin-top: 1px;
+  .CodeMirror-sizer{
+    border-right-width: 1px !important;
+  }
+  .cm-propert{
+    color: #ffffff !important;
+  }
+}
+.canvas-codehinter-container{
+  .code-hinter-col{
+    margin-bottom: 1px !important;
+  }
+}
+.fx-canvas{
+  background: #1c252f;
+  padding: 2px;
+  display: flex;
+  height: 41px;
+  border: solid 1px rgba(255, 255, 255, 0.09) !important;
+  border-radius: 4px;
+  justify-content: center;
+  font-weight: 400;
+  div{
+    background: #1c252f !important;
+    width: 35px !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 36px;
+  }
+}
+.fx-canvas-light{
+  background: #f4f6fa !important;
+  border: 1px solid #dadcde !important;
+  div{
+    background: #f4f6fa !important;
+  }
 }
 
 .organization-list {
