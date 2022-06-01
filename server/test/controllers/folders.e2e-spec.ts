@@ -330,12 +330,15 @@ describe('folders controller', () => {
         organizationId: adminUserData.organization.id,
       });
 
+      const preCount = await getManager().count(Folder);
       const response = await request(nestApp.getHttpServer())
         .delete(`/api/folders/${folder.id}`)
         .set('Authorization', authHeaderForUser(user))
         .send();
+      const postCount = await getManager().count(Folder);
 
       expect(response.statusCode).toBe(200);
+      expect(postCount).toEqual(preCount - 1);
     });
   });
 

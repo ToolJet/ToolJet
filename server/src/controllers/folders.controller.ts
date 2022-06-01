@@ -49,7 +49,7 @@ export class FoldersController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async deleteVersion(@User() user, @Param('id') id) {
+  async delete(@User() user, @Param('id') id) {
     const ability = await this.foldersAbilityFactory.folderActions(user, {});
 
     if (!ability.can('deleteFolder', Folder)) {
