@@ -618,6 +618,59 @@ class ManageGroupPermissionResources extends React.Component {
                                     </td>
                                     <td></td>
                                   </tr>
+                                  <tr>
+                                    <td>Environment variables</td>
+                                    <td className="text-muted">
+                                      <div>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            onChange={() => {
+                                              this.updateGroupPermission(groupPermission.id, {
+                                                org_environment_variable_create:
+                                                  !groupPermission.org_environment_variable_create,
+                                              });
+                                            }}
+                                            checked={groupPermission.org_environment_variable_create}
+                                            disabled={groupPermission.group === 'admin'}
+                                          />
+                                          <span className="form-check-label">Create</span>
+                                        </label>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            onChange={() => {
+                                              this.updateGroupPermission(groupPermission.id, {
+                                                org_environment_variable_update:
+                                                  !groupPermission.org_environment_variable_update,
+                                              });
+                                            }}
+                                            checked={groupPermission.org_environment_variable_update}
+                                            disabled={groupPermission.group === 'admin'}
+                                          />
+                                          <span className="form-check-label">Update</span>
+                                        </label>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            onChange={() => {
+                                              this.updateGroupPermission(groupPermission.id, {
+                                                org_environment_variable_delete:
+                                                  !groupPermission.org_environment_variable_delete,
+                                              });
+                                            }}
+                                            checked={groupPermission.org_environment_variable_delete}
+                                            disabled={groupPermission.group === 'admin'}
+                                          />
+                                          <span className="form-check-label">Delete</span>
+                                        </label>
+                                      </div>
+                                    </td>
+                                    <td></td>
+                                  </tr>
                                 </>
                               )}
                             </tbody>
