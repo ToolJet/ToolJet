@@ -39,12 +39,27 @@ export const KanbanBoard = ({
   const [rawColumnData, setRawColumnData] = React.useState([]);
   const [rawCardData, setRawCardData] = React.useState([]);
 
-  const [state, setState] = React.useState(() => getData(columns, cardData) ?? []);
+  const [state, setState] = React.useState([]);
 
   React.useEffect(() => {
     setExposedVariable('data', state);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
+
+  React.useEffect(() => {
+    if (
+      JSON.stringify(columns) !== JSON.stringify(rawColumnData) ||
+      JSON.stringify(cardData) !== JSON.stringify(rawCardData)
+    ) {
+      const colData = JSON.parse(JSON.stringify(columns));
+      const _cardData = JSON.parse(JSON.stringify(cardData));
+      setRawColumnData(colData);
+      setRawCardData(_cardData);
+      const data = getData(colData, _cardData);
+      setState(data);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   React.useEffect(() => {
     if (JSON.stringify(columns) !== JSON.stringify(rawColumnData)) {
