@@ -61,11 +61,6 @@ export const Tabs = function Tabs({
     setCurrentTab(parsedDefaultTab);
   }, [parsedDefaultTab]);
 
-  useEffect(() => {
-    setExposedVariable('currentTab', currentTab);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab]);
-
   return (
     <div data-disabled={parsedDisabledState} className="jet-tabs card" style={computedStyles}>
       <ul className="nav nav-tabs" data-bs-toggle="tabs" style={{ display: parsedHideTabs && 'none' }}>
@@ -74,7 +69,7 @@ export const Tabs = function Tabs({
             className="nav-item"
             onClick={() => {
               setCurrentTab(tab.id);
-              fireEvent('onClick');
+              setExposedVariable('currentTab', tab.id).then(() => fireEvent('onClick'));
             }}
             key={tab.id}
           >
