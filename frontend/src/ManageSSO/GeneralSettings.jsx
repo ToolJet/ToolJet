@@ -54,7 +54,7 @@ export function GeneralSettings({ settings, updateData }) {
             </div>
           </div>
           <div className="form-group mb-3">
-            <label className="form-label">Allowed domain</label>
+            <label className="form-label">Allowed domains</label>
             <div>
               <input
                 type="text"

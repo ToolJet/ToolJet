@@ -3,6 +3,9 @@ import { INestApplication } from '@nestjs/common';
 import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
 import { getManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
+import { v4 as uuidv4 } from 'uuid';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
+const path = require('path');
 
 describe('users controller', () => {
   let app: INestApplication;
@@ -75,6 +78,22 @@ describe('users controller', () => {
       const updatedUser = await getManager().findOneOrFail(User, { where: { email: user.email } });
       expect(updatedUser.firstName).toEqual(firstName);
       expect(updatedUser.lastName).toEqual(lastName);
+    });
+  });
+
+  describe('POST /api/users/avatar', () => {
+    it('should allow users to add a avatar', async () => {
+      const userData = await createUser(app, { email: 'admin@tooljet.io' });
+
+      const { user } = userData;
+      const filePath = path.join(__dirname, '../__mocks__/avatar.png');
+
+      const response = await request(app.getHttpServer())
+        .post('/api/users/avatar')
+        .set('Authorization', authHeaderForUser(user))
+        .attach('file', filePath);
+
+      expect(response.statusCode).toBe(201);
     });
   });
 

@@ -41,10 +41,10 @@ function del(appId, versionId) {
   return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function save(appId, versionId, definition) {
-  const body = {
-    definition,
-  };
+function save(appId, versionId, values) {
+  const body = {};
+  if (values.definition) body['definition'] = values.definition;
+  if (values.name) body['name'] = values.name;
 
   const requestOptions = {
     method: 'PUT',
