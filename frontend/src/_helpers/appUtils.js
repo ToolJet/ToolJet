@@ -319,7 +319,9 @@ function executeAction(_ref, event, mode, customVariables) {
           (component) => component.id === event.componentId
         )[0];
         const action = component[event.action];
-        const actionArguments = action.paramHandles.map((paramHandle) => event[paramHandle]);
+        const actionArguments = action.paramHandles.map((paramHandle) =>
+          resolveReferences(event[paramHandle], _ref.state.currentState, undefined, customVariables)
+        );
         action(...actionArguments);
         return Promise.resolve();
       }
