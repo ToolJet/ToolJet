@@ -679,7 +679,7 @@ describe('Authentication', () => {
         organization: 'org1',
         password: uuidv4(),
         token: invitedUserDetails.invitationToken,
-        inviteToken: organizationUserBeforeUpdate.invitationToken,
+        organizationToken: organizationUserBeforeUpdate.invitationToken,
         role: 'developer',
       });
 
