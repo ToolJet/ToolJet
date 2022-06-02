@@ -53,7 +53,7 @@ export const CardEventPopover = function ({
     const canvasElement = document.getElementsByClassName('canvas-container')[0];
     canvasBounds = canvasElement.getBoundingClientRect();
   }
-
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <div>
       {showPopover && (
@@ -83,7 +83,8 @@ export const CardEventPopover = function ({
         }}
         role="tooltip"
         x-placement="left"
-        className="popover bs-popover-left shadow-lg"
+        // className="popover bs-popover-left shadow-lg"
+        className={`popover bs-popover-left shadow-lg ${darkMode && 'popover-dark-themed theme-dark'}`}
         ref={parentRef}
         id={`${kanbanCardWidgetId}-popover`}
       >

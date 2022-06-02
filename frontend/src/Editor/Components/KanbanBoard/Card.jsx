@@ -6,8 +6,6 @@ import { CardEventPopover } from './CardPopover';
 import { ReactPortal } from '@/_components/Portal/ReactPortal';
 
 export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) => {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-
   const [isHovered, setIsHovered] = React.useState(false);
 
   const [eventPopoverOptions, setEventPopoverOptions] = React.useState({ show: false });
@@ -19,7 +17,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
     });
   }
 
-  const { id, containerProps, removeComponent } = React.useContext(BoardContext);
+  const { id, containerProps, removeComponent, darkMode } = React.useContext(BoardContext);
 
   const removeCardHandler = (colIndex, cardIndex) => {
     const newState = [...state];
@@ -55,7 +53,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
         <div
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          className="dnd-card card card-sm"
+          className={`dnd-card card card-sm ${darkMode && 'card-dark'}`}
           ref={dndProps.innerRef}
           {...dndProps.draggableProps}
           {...dndProps.dragHandleProps}

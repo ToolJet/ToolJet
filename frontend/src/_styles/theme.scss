@@ -5208,10 +5208,20 @@ div#driver-page-overlay {
 
 //Kanban board
 
+.kanban-container.dark-themed {
+  background-color: $bg-dark-light !important;
+  .kanban-column {
+    .card-header {
+      background-color: #324156 !important;
+    }
+  }
+}
+
 .kanban-container {
   background-color: #fefefe;
+  
   .kanban-column {
-    background-color: #f4f4f4 !important;
+    background-color: #f4f4f4;
     padding: 0 !important;
     height: fit-content !important;
     
@@ -5224,9 +5234,9 @@ div#driver-page-overlay {
       }
     }
    }
-
+    
     .card-header {
-      background-color: #fefefe !important;
+      background-color: #fefefe;
       
       .badge {
         font-size: 12px !important;
@@ -5239,6 +5249,9 @@ div#driver-page-overlay {
     .dnd-card.card {
       height: 52px !important;
       padding: 5px !important;
+    }
+    .dnd-card.card.card-dark {
+      background-color: $bg-dark !important;
     }
   }
 

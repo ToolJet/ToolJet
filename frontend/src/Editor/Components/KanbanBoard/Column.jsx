@@ -36,7 +36,7 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
   //   updateCb(newState);
   // };
 
-  const { enableAddCard, accentColor } = React.useContext(BoardContext);
+  const { enableAddCard, accentColor, darkMode } = React.useContext(BoardContext);
 
   const hexaCodeToRgb = (hex) => {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -55,7 +55,7 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
     <Droppable key={keyIndex} droppableId={String(keyIndex)}>
       {(dndProps, dndState) => (
         <div
-          className="card text-dark bg-light mb-3 m-2 kanban-column"
+          className={`card text-dark mb-3 m-2 kanban-column ${darkMode ? 'bg-dark' : 'bg-light'}`}
           ref={dndProps.innerRef}
           style={getListStyle(dndState.isDraggingOver)}
           {...dndProps.droppableProps}

@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Board from './Board';
-import { CardEventPopover } from './CardPopover';
 import { isCardColoumnIdUpdated, updateCardData, updateColumnData } from './utils';
 
 const getData = (columns, cards) => {
@@ -94,14 +93,16 @@ export const KanbanBoard = ({
       </div>
     );
   }
-
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
-    <BoardContext.Provider value={{ id, currentState, enableAddCard, accentColor, containerProps, removeComponent }}>
+    <BoardContext.Provider
+      value={{ id, currentState, enableAddCard, accentColor, containerProps, removeComponent, darkMode }}
+    >
       <div
         id={id}
         style={{ display: visibility ? '' : 'none' }}
         data-disabled={disabledState}
-        className="kanban-container p-0"
+        className={`kanban-container p-0 ${darkMode ? 'dark-themed' : ''}`}
       >
         <Board height={height} state={state} isDisable={disabledState} colStyles={colStyles} setState={setState} />
       </div>
