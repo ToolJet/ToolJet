@@ -64,7 +64,7 @@ Users can be added to different workspaces. Users can create their own workspace
 
 </div>
 
-Existing user in active state for a workspace can be invited and on boarded to other workspaces, User will receive an invitation mail with join link. If user not exist in the system, user will receive welcome mail to setup account. It is mandatory to setup account before following the invitation link
+Existing user in active state for a workspace can be invited and on boarded to other workspaces, User will receive an invitation mail with join link. If user not exist in the system, user will receive welcome mail to setup account, user can follow the link and on setup the account, once its done user will be assigned to new workspace created for the user and invited workspace.
 
 <div style={{textAlign: 'center'}}>
 
