@@ -13,7 +13,7 @@ import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import { allSvgs } from '@tooljet/plugins/client';
 // import { Confirm } from '../Viewer/Confirm';
-import _, { isEmpty } from 'lodash';
+import _, { isEmpty, isEqual } from 'lodash';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -145,7 +145,11 @@ let QueryManager = class QueryManager extends React.Component {
     //     }
     //   }
     // }
-    if (!isEmpty(this.state.updatedQuery)) {
+
+    if (
+      !isEmpty(this.state.updatedQuery) &&
+      !isEqual(this.state.selectedQuery.options, nextProps.selectedQuery.options)
+    ) {
       const query = nextProps.dataQueries.find((q) => q.id === this.state.updatedQuery.id);
       if (query) {
         this.state.updatedQuery.updateQuery
