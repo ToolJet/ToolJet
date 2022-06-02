@@ -1,7 +1,11 @@
 #!/bin/sh
 set -e
 
-npm run db:create
-npm run db:migrate
+if [ -d "./server/dist" ]
+then
+    npm run db:setup:prod
+else
+    npm run db:setup
+fi
 
 exec "$@"

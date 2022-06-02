@@ -1,4 +1,15 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
 import { decamelizeKeys } from 'humps';
 import { User } from 'src/decorators/user.decorator';
@@ -51,10 +62,10 @@ export class OrganizationsController {
   async getOrganizationDetails(@Param('organizationId') organizationId: string) {
     if (!organizationId && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       // Request from single organization login page - find one from organization and setting
-      organizationId = (await this.organizationsService.getSingleOrganization()).id;
+      organizationId = (await this.organizationsService.getSingleOrganization())?.id;
     }
     if (!organizationId) {
-      throw new BadRequestException();
+      throw new NotFoundException();
     }
 
     const result = await this.organizationsService.fetchOrganisationDetails(organizationId, [true], true);
