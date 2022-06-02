@@ -7,99 +7,105 @@ title: User Lifecycle
 
 ## Single-Workspace
 
-If no users present in the system, there will be `sign up` option in the login page. User can sign up by entering their email id. Tooljet will be sending a welcome mail with activation URL to the mail id. User can follow the link and onboard to Tooljet.
+- If no user is present in the system, there will be `Sign-up` option in the login page. User can sign up by entering their email address. Tooljet will be sending a welcome email with activation URL to the email address. User can follow the activation URL and onboard to ToolJet.
 
-<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-![ToolJet - Single-Workspace sign up](/img/user-lifecycle/single-ws-signup.png)
+  ![ToolJet - Single-Workspace sign up](/img/user-lifecycle/single-ws-signup.png)
 
-</div>
+  </div>
 
-User with admin privilege can invite members
+- User with admin privileges can invite members
 
-<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-![ToolJet - Single-Workspace invite user](/img/user-lifecycle/user-invite-sw.png)
+  ![ToolJet - Single-Workspace invite user](/img/user-lifecycle/user-invite-sw.png)
 
-</div>
+  </div>
 
-Invited user will receive welcome email with activation URL, unregistered user can follow the link and setup Tooljet account
+- Invited user will receive welcome email with activation URL, unregistered user can follow the link and setup Tooljet account
 
-<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-![ToolJet - Single-Workspace accept invite](/img/user-lifecycle/accept-invite-sw.png)
+  ![ToolJet - Single-Workspace accept invite](/img/user-lifecycle/accept-invite-sw.png)
 
-</div>
+  </div>
 
-Invited user can onboard through SSO login, without using an invitation link
+- Invited user can onboard through SSO login, without using an invitation link
 
-<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-![ToolJet - Single-Workspace accept invite](/img/user-lifecycle/sso-onboard-sw.png)
+  ![ToolJet - Single-Workspace accept invite](/img/user-lifecycle/sso-onboard-sw.png)
 
-</div>
+  </div>
 
-If `enable signup` option in enabled in SSO general settings, user can setup account through SSO login without an invite
+- If `enable signup` option in enabled in SSO general settings, user can setup account through SSO login without an invite
 
-<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-![ToolJet - Single-Workspace sign up using SSO](/img/user-lifecycle/sso-enable-signup-sw.png)
+  ![ToolJet - Single-Workspace sign up using SSO](/img/user-lifecycle/sso-enable-signup-sw.png)
 
-</div>
+  </div>
 
 ## Multi-Workspace
-User can sign up using sign up link provided in the login page, user will receive a welcome email with activation link. New workspace will be created for the user.
 
-<div style={{textAlign: 'center'}}>
+:::info
+Check Multi-workspace docs [here](/docs/tutorial/multiworkspace).
+:::
 
-![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/signup-mw.png)
+- User can sign up using the sign up link provided on the login page, user will receive a welcome email with activation link. New workspace will be created for the user.
 
-</div>
+  <div style={{textAlign: 'center'}}>
 
-Users can be added to different workspaces. Users can create their own workspaces and manage
+  ![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/signup-mw.png)
 
-<div style={{textAlign: 'center'}}>
+  </div>
 
-![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/user-mw.png)
+- Users can be added to multiple workspaces. Users can create their own workspaces and manage them.
 
-</div>
+  <div style={{textAlign: 'center'}}>
 
-Existing user in active state for a workspace can be invited and on boarded to other workspaces, User will receive an invitation mail with join link. If user not exist in the system, user will receive welcome mail to setup account, user can follow the link and on setup the account, once its done user will be assigned to new workspace created for the user and invited workspace.
+  ![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/user-mw.png)
 
-<div style={{textAlign: 'center'}}>
+  </div>
 
-![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/invite-link-mw.png)
+- Existing user in active state for a workspace can be invited and on boarded to other workspaces, User will receive an invitation email with join link. If a user does not exist in the system, then they will receive a welcome email to setup the account, user can follow the link and on setup the account, once its done the user will be assigned to the new workspace created for the user.
 
-</div>
+  <div style={{textAlign: 'center'}}>
 
-Invited user can onboard through SSO login,  without using an invitation link from the workspace [login page](https://docs.tooljet.com/docs/user-authentication/general-settings#login-url)
+  ![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/invite-link-mw.png)
 
-<div style={{textAlign: 'center'}}>
+  </div>
 
-![ToolJet - Single-Workspace accept invite](/img/user-lifecycle/sso-onboard-sw.png)
+- Invited user can onboard through SSO login,  without using an invitation link from the workspace [login page](/docs/user-authentication/general-settings#login-url)
 
-</div>
+  <div style={{textAlign: 'center'}}>
 
-If `enable sign up` option in enabled in SSO [general settings](https://docs.tooljet.com/docs/user-authentication/general-settings#enable-signup) for the workspace, user can setup account through SSO login without an invite from the workspace [login page](https://docs.tooljet.com/docs/user-authentication/general-settings#login-url)
+  ![ToolJet - Single-Workspace accept invite](/img/user-lifecycle/sso-onboard-sw.png)
 
-<div style={{textAlign: 'center'}}>
+  </div>
 
-![ToolJet - Single-Workspace sign up using SSO](/img/user-lifecycle/sso-enable-signup-sw.png)
+- If `enable sign up` option in enabled in SSO [general settings](/docs/user-authentication/general-settings#enable-signup) for the workspace, user can setup account through SSO login without an invite from the workspace [login page](/docs/user-authentication/general-settings#login-url)
 
-</div>
+  <div style={{textAlign: 'center'}}>
+
+  ![ToolJet - Single-Workspace sign up using SSO](/img/user-lifecycle/sso-enable-signup-sw.png)
+
+  </div>
 
 ### Switch between workspaces
 
-<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-![ToolJet - Single-Workspace sign up using SSO](/img/user-lifecycle/switch.png)
+  ![ToolJet - Single-Workspace sign up using SSO](/img/user-lifecycle/switch.png)
 
-</div>
+  </div>
 
 
 ## User status
+
 | Status   | Able to log in   | How to activate                      |
 | -------- | ---------------- | ------------------------------------ |
 | active   | Yes              |                                      |
 | invited  | No (Yes with SSO)| Login through SSO or invitation link |
-| archived | No               | Not able to activate. Invite from `Manage Users` page, status will be changed to invited     |
+| archived | No               | Not able to activate. Invite from `Manage Users` page, status will be changed to invited |

@@ -5,21 +5,21 @@ title: General Settings
 
 # Single Sign-On General Settings
 
-Select `Manage SSO` from workspace options
+- Select `Manage SSO` from workspace options
 
-<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-![ToolJet - SSO configs](/img/password-login/organization-menu.png)
+  ![ToolJet - SSO configs](/img/password-login/organization-menu.png)
 
-</div>
+  </div>
 
-Select `General Settings`
+- Select `General Settings`
 
-<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-![ToolJet - SSO configs](/img/sso/general/general-settings.png)
+  ![ToolJet - SSO configs](/img/sso/general/general-settings.png)
 
-</div>
+  </div>
 
 ## Enable Signup
 
@@ -31,4 +31,4 @@ You can set allowed domains for SSO login, can add multiple domains comma separa
 
 ## Login URL
 
-You can use the login URL to login directly to the workspace.This will be hidden if Multi-Workspace is disabled.
+You can use the login URL to login directly to the workspace. This will be hidden if Multi-Workspace is disabled.
