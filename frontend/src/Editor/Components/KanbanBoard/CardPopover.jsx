@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { SubCustomDragLayer } from '../../SubCustomDragLayer';
 import { SubContainer } from '../../SubContainer';
 
-export const CalendarEventPopover = function ({
+export const CardEventPopover = function ({
   show,
   offset,
   kanbanCardWidgetId,
@@ -62,8 +62,8 @@ export const CalendarEventPopover = function ({
             // backgroundColor: 'rgba(0, 0, 0, 0.6)', // This can be used for testing the overlay
             top: -(calendarBounds.y + top),
             left: -calendarBounds.x,
-            zIndex: 10,
-            position: 'fixed',
+            zIndex: 109,
+            position: 'relative',
             height: canvasBounds.height + top,
             width: canvasBounds.width,
           }}

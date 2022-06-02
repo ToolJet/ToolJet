@@ -1,13 +1,9 @@
 import React from 'react';
 import { Draggable } from 'react-beautiful-dnd';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { BoardContext } from './KanbanBoard';
 import { v4 as uuidv4 } from 'uuid';
-
-const isStringEqual = (string1, string2) => {
-  const pattern = new RegExp(string1, 'gi');
-  return pattern.test(string2);
-};
+import { CardEventPopover } from './CardPopover';
+import { ReactPortal } from '@/_components/Portal/ReactPortal';
 
 export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -23,11 +19,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
     });
   }
 
-  const { currentState } = React.useContext(BoardContext);
-
-  const updateCardTitle = (newTitle, colIndex, cardIndex) => {};
-
-  const updateCardDescription = (newDescription, colIndex, cardIndex) => {};
+  const { id, containerProps, removeComponent } = React.useContext(BoardContext);
 
   const removeCardHandler = (colIndex, cardIndex) => {
     const newState = [...state];
@@ -35,28 +27,23 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
     updateCb(newState);
   };
 
-  const popoverClickRootClose = (
-    <Popover
-      id="popover-trigger-click-root-close popover-basic popover-positioned-left"
-      className={`shadow ${darkMode && 'popover-dark-themed'}`}
-      style={{ width: '350px', padding: '12px', height: 300 }}
-      title="Click to edit"
-    >
-      <div style={{ border: 'none', boxShadow: 'none', backgroundColor: 'inherit' }} className="card h-100">
-        <div className="card-body">
-          <h3 className="card-title">
-            <span>
-              <code>{item.title}</code>
-            </span>
-          </h3>
-
-          <p className={`${darkMode ? 'text-white-50' : 'text-muted'} w-100 h-100`}>{item.description}</p>
-        </div>
-      </div>
-    </Popover>
-  );
-
   const draggableId = item.id ?? uuidv4();
+
+  const handleEventPopoverOptions = (e) => {
+    setEventPopoverOptions({
+      ...eventPopoverOptions,
+      show: true,
+      offset: {
+        left: e.target.getBoundingClientRect().x,
+        top: e.target.getBoundingClientRect().y,
+        width: e.target.getBoundingClientRect().width,
+        height: e.target.getBoundingClientRect().height,
+      },
+    });
+  };
+
+  const target = React.useRef(null);
+  const el = document.getElementById(id);
 
   return (
     <Draggable
@@ -77,9 +64,13 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
           {console.log('dndProps => ', dndProps, 'snapshot =>', dndState)}
 
           <div className="card-body d-flex">
-            <OverlayTrigger trigger="click" rootClose placement="right" overlay={popoverClickRootClose}>
-              <span className="text-muted flex-grow-1 cursor-pointer fw-bold">{item.title}</span>
-            </OverlayTrigger>
+            <span
+              ref={target}
+              onClick={handleEventPopoverOptions}
+              className="text-muted flex-grow-1 cursor-pointer fw-bold"
+            >
+              {item.title}
+            </span>
             {isHovered && !item.isEditing && (
               <span
                 className="cursor-pointer"
@@ -88,6 +79,18 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
               >
                 <img className="mx-1" src={`/assets/images/icons/trash.svg`} width={12} height={12} />
               </span>
+            )}
+            {eventPopoverOptions.show && (
+              <ReactPortal parent={el} className="kanban-portal" componentName="kanban">
+                <CardEventPopover
+                  kanbanCardWidgetId={id}
+                  show={eventPopoverOptions.show}
+                  offset={eventPopoverOptions.offset}
+                  containerProps={containerProps}
+                  removeComponent={removeComponent}
+                  popoverClosed={popoverClosed}
+                />
+              </ReactPortal>
             )}
           </div>
         </div>

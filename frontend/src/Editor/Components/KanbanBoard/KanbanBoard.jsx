@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Board from './Board';
+import { CardEventPopover } from './CardPopover';
 import { isCardColoumnIdUpdated, updateCardData, updateColumnData } from './utils';
 
 const getData = (columns, cards) => {
@@ -22,7 +23,16 @@ const getData = (columns, cards) => {
 
 export const BoardContext = React.createContext({});
 
-export const KanbanBoard = ({ height, properties, styles, currentState, setExposedVariable }) => {
+export const KanbanBoard = ({
+  id,
+  height,
+  properties,
+  styles,
+  currentState,
+  setExposedVariable,
+  containerProps,
+  removeComponent,
+}) => {
   const { columns, cardData, enableAddCard } = properties;
 
   const { visibility, disabledState, width, minWidth, accentColor } = styles;
@@ -86,8 +96,13 @@ export const KanbanBoard = ({ height, properties, styles, currentState, setExpos
   }
 
   return (
-    <BoardContext.Provider value={{ currentState, enableAddCard, accentColor }}>
-      <div style={{ display: visibility ? '' : 'none' }} data-disabled={disabledState} className="kanban-container p-0">
+    <BoardContext.Provider value={{ id, currentState, enableAddCard, accentColor, containerProps, removeComponent }}>
+      <div
+        id={id}
+        style={{ display: visibility ? '' : 'none' }}
+        data-disabled={disabledState}
+        className="kanban-container p-0"
+      >
         <Board height={height} state={state} isDisable={disabledState} colStyles={colStyles} setState={setState} />
       </div>
     </BoardContext.Provider>
