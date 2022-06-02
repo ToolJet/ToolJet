@@ -1,31 +1,15 @@
-import { Body, Controller, Post, Patch, UseGuards, UseInterceptors, Req, UploadedFile } from '@nestjs/common';
+import { Body, Controller, Post, Patch, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { PasswordRevalidateGuard } from 'src/modules/auth/password-revalidate.guard';
 import { UsersService } from 'src/services/users.service';
 import { User } from 'src/decorators/user.decorator';
-import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
-import { CreateUserDto, UpdateUserDto } from '@dto/user.dto';
-import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
+import { UpdateUserDto } from '@dto/user.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
-
-  @UseGuards(MultiOrganizationGuard, SignupDisableGuard)
-  @Post('set_password_from_token')
-  async create(@Body() userCreateDto: CreateUserDto) {
-    await this.usersService.setupAccountFromInvitationToken(userCreateDto);
-    return {};
-  }
-
-  @Post('accept-invite')
-  async acceptInvite(@Body() acceptInviteDto: AcceptInviteDto) {
-    await this.usersService.acceptOrganizationInvite(acceptInviteDto);
-    return {};
-  }
 
   @UseGuards(JwtAuthGuard)
   @Patch('update')
@@ -42,8 +26,8 @@ export class UsersController {
   @Post('avatar')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
-  async addAvatar(@Req() req, @UploadedFile() file: Express.Multer.File) {
-    return this.usersService.addAvatar(req.user.id, file.buffer, file.originalname);
+  async addAvatar(@User() user, @UploadedFile() file: Express.Multer.File) {
+    return this.usersService.addAvatar(user.id, file.buffer, file.originalname);
   }
 
   @UseGuards(JwtAuthGuard, PasswordRevalidateGuard)

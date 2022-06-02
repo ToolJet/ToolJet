@@ -540,7 +540,8 @@ let QueryManager = class QueryManager extends React.Component {
                       isEditMode={this.props.mode === 'edit'}
                       queryName={this.state.queryName}
                     />
-                    {!dataSourceMeta?.disableTransformations && (
+
+                    {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
                       <div>
                         <div className="mb-3 mt-4">
                           <Transformation

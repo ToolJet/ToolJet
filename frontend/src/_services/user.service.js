@@ -5,10 +5,8 @@ export const userService = {
   getAll,
   createUser,
   deleteUser,
-  setPasswordFromToken,
   updateCurrentUser,
   changePassword,
-  acceptInvite,
   getAvatar,
   updateAvatar,
 };
@@ -51,30 +49,6 @@ function createUser(first_name, last_name, email, role) {
 function deleteUser(id) {
   const requestOptions = { method: 'DELETE', headers: authHeader(), body: JSON.stringify({}) };
   return fetch(`${config.apiUrl}/users/${id}`, requestOptions).then(handleResponse);
-}
-
-function setPasswordFromToken({ token, password, organization, role, firstName, lastName }) {
-  const body = {
-    token,
-    password,
-    organization,
-    role,
-    first_name: firstName,
-    last_name: lastName,
-  };
-
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/users/set_password_from_token`, requestOptions).then(handleResponse);
-}
-
-function acceptInvite({ token, password }) {
-  const body = {
-    token,
-    password,
-  };
-
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/users/accept-invite`, requestOptions).then(handleResponse);
 }
 
 function updateCurrentUser(firstName, lastName) {
