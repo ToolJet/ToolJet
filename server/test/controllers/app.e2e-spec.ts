@@ -380,6 +380,9 @@ describe('Authentication', () => {
             'updated_at',
             'created_at',
             'folder_create',
+            'org_environment_variable_create',
+            'org_environment_variable_update',
+            'org_environment_variable_delete',
           ].sort()
         );
         expect(app_group_permissions).toHaveLength(0);
@@ -441,6 +444,9 @@ describe('Authentication', () => {
             'updated_at',
             'created_at',
             'folder_create',
+            'org_environment_variable_create',
+            'org_environment_variable_update',
+            'org_environment_variable_delete',
           ].sort()
         );
         expect(app_group_permissions).toHaveLength(0);

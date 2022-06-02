@@ -90,11 +90,10 @@ describe('organization environment variables controller', () => {
 
       listResponse.body.variables.map((variable: any, index: any) => {
         expect(variable).toStrictEqual({
-          variableName: variableArray[index].variableName,
-          value: bodyArray[0].value,
-          variableType: bodyArray[0].variable_type,
-          id: variableArray[index].id,
-          encrypted: variableArray[index].encrypted,
+          variableName: bodyArray[index].variable_name,
+          value: variable.variableType === 'server' ? undefined : bodyArray[index].value,
+          variableType: bodyArray[index].variable_type,
+          encrypted: bodyArray[index].encrypted,
         });
       });
     });
@@ -174,22 +173,22 @@ describe('organization environment variables controller', () => {
 
       const response = await createVariable(app, adminUserData, {
         variable_name: 'email',
-        variable_type: 'server',
         value: 'test@tooljet.io',
+        variable_type: 'server',
         encrypted: true,
       });
 
-      await request(app.getHttpServer())
-        .patch(`/api/organization-variables/${response.body.variable.id}`)
-        .set('Authorization', authHeaderForUser(adminUserData.user))
-        .send({ variable_name: 'email', value: 'test1@tooljet.io' })
-        .expect(200);
+      for (const userData of [adminUserData, developerUserData]) {
+        await request(app.getHttpServer())
+          .patch(`/api/organization-variables/${response.body.variable.id}`)
+          .set('Authorization', authHeaderForUser(userData.user))
+          .send({ variable_name: 'secret_email' })
+          .expect(200);
 
-      await request(app.getHttpServer())
-        .patch(`/api/organization-variables/${response.body.variable.id}`)
-        .set('Authorization', authHeaderForUser(developerUserData.user))
-        .send({ variable_name: 'email', value: 'test2@tooljet.io' })
-        .expect(200);
+        const updatedVariable = await getManager().findOne(OrgEnvironmentVariable, response.body.variable.id);
+
+        expect(updatedVariable.variableName).toEqual('secret_email');
+      }
 
       await request(app.getHttpServer())
         .patch(`/api/organization-variables/${response.body.variable.id}`)
