@@ -18,6 +18,7 @@ import { MetaModule } from './modules/meta/meta.module';
 import { AppController } from './controllers/app.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { FilesModule } from './modules/files/files.module';
 import { AppConfigModule } from './modules/app_config/app_config.module';
 import { AppsModule } from './modules/apps/apps.module';
 import { FoldersModule } from './modules/folders/folders.module';
@@ -77,6 +78,7 @@ const imports = [
   MetaModule,
   LibraryAppModule,
   GroupPermissionsModule,
+  FilesModule,
   EventsModule,
 ];
 

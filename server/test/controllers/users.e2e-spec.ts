@@ -5,6 +5,7 @@ import { getManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
+const path = require('path');
 
 describe('users controller', () => {
   let app: INestApplication;
@@ -343,6 +344,22 @@ describe('users controller', () => {
 
       const organizationUser = await getManager().findOneOrFail(OrganizationUser, { where: { userId: user.id } });
       expect(organizationUser.status).toEqual('active');
+    });
+  });
+
+  describe('POST /api/users/avatar', () => {
+    it('should allow users to add a avatar', async () => {
+      const userData = await createUser(app, { email: 'admin@tooljet.io' });
+
+      const { user } = userData;
+      const filePath = path.join(__dirname, '../__mocks__/avatar.png');
+
+      const response = await request(app.getHttpServer())
+        .post('/api/users/avatar')
+        .set('Authorization', authHeaderForUser(user))
+        .attach('file', filePath);
+
+      expect(response.statusCode).toBe(201);
     });
   });
 
