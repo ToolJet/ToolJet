@@ -87,6 +87,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
                   containerProps={containerProps}
                   removeComponent={removeComponent}
                   popoverClosed={popoverClosed}
+                  customResolvables={item}
                 />
               </ReactPortal>
             )}

@@ -9,6 +9,7 @@ export const CardEventPopover = function ({
   containerProps,
   removeComponent,
   popoverClosed,
+  customResolvables,
 }) {
   const parentRef = useRef(null);
   const [showPopover, setShow] = useState(show);
@@ -97,6 +98,7 @@ export const CardEventPopover = function ({
                 {...containerProps}
                 parentRef={parentRef}
                 removeComponent={removeComponent}
+                customResolvables={{ card: customResolvables }}
               />
               <SubCustomDragLayer
                 parent={kanbanCardWidgetId}
