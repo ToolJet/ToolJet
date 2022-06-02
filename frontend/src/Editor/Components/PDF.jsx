@@ -46,46 +46,45 @@ export const PDF = React.memo(({ styles, properties, width, height }) => {
     [pageNumber]
   );
 
+  const renderPDF = () => (
+    <Document file={url} onLoadSuccess={onDocumentLoadSuccess} className="pdf-document">
+      {Array.from(new Array(numPages), (el, index) => (
+        <Page
+          pageNumber={index + 1}
+          width={scale ? width - 12 : undefined}
+          height={scale ? undefined : height}
+          key={`page_${index + 1}`}
+          inputRef={(el) => (pageRef.current[index] = el)}
+        />
+      ))}
+      {pageControls && (
+        <>
+          <div className="pdf-page-controls">
+            <button disabled={pageNumber <= 1} onClick={() => updatePage(-1)} type="button" aria-label="Previous page">
+              ‹
+            </button>
+            <span>
+              {pageNumber} of {numPages}
+            </span>
+            <button
+              disabled={pageNumber >= numPages}
+              onClick={() => updatePage(1)}
+              type="button"
+              aria-label="Next page"
+            >
+              ›
+            </button>
+          </div>
+        </>
+      )}
+    </Document>
+  );
+
   return (
     <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height }}>
       <div className="d-flex position-relative h-100" style={{ margin: '0 auto', overflow: 'hidden' }}>
         <div className="scrollable h-100 col position-relative" id="pdf-wrapper">
-          <Document file={url} onLoadSuccess={onDocumentLoadSuccess} className="pdf-document">
-            {Array.from(new Array(numPages), (el, index) => (
-              <Page
-                pageNumber={index + 1}
-                width={scale ? width - 12 : undefined}
-                height={scale ? undefined : height}
-                key={`page_${index + 1}`}
-                inputRef={(el) => (pageRef.current[index] = el)}
-              />
-            ))}
-            {pageControls && (
-              <>
-                <div className="pdf-page-controls">
-                  <button
-                    disabled={pageNumber <= 1}
-                    onClick={() => updatePage(-1)}
-                    type="button"
-                    aria-label="Previous page"
-                  >
-                    ‹
-                  </button>
-                  <span>
-                    {pageNumber} of {numPages}
-                  </span>
-                  <button
-                    disabled={pageNumber >= numPages}
-                    onClick={() => updatePage(1)}
-                    type="button"
-                    aria-label="Next page"
-                  >
-                    ›
-                  </button>
-                </div>
-              </>
-            )}
-          </Document>
+          {url === '' ? 'No PDF file specified' : renderPDF()}
         </div>
       </div>
     </div>
