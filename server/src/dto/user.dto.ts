@@ -29,7 +29,7 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   @IsNotEmpty()
-  inviteToken: string;
+  organizationToken: string;
 
   @IsString()
   @IsNotEmpty()

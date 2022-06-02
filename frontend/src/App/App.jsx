@@ -129,14 +129,27 @@ class App extends React.Component {
             <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/reset-password" component={ResetPassword} />
             <Route
-              path="/invitations/:token/:inviteToken?"
+              path="/invitations/:token"
               render={(props) => (
                 <Redirect
                   to={{
                     pathname: '/confirm',
                     state: {
                       token: props.match.params.token,
-                      inviteToken: props.match.params.inviteToken,
+                    },
+                  }}
+                />
+              )}
+            />
+            <Route
+              path="/invitations/:token/workspaces/:organizationToken"
+              render={(props) => (
+                <Redirect
+                  to={{
+                    pathname: '/confirm',
+                    state: {
+                      token: props.match.params.token,
+                      organizationToken: props.match.params.organizationToken,
                     },
                   }}
                 />

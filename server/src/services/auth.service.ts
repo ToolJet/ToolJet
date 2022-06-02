@@ -249,7 +249,7 @@ export class AuthService {
       role,
       first_name: firstName,
       last_name: lastName,
-      inviteToken,
+      organizationToken,
     } = userCreateDto;
 
     if (!token) {
@@ -292,9 +292,9 @@ export class AuthService {
       });
     }
 
-    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && inviteToken) {
+    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && organizationToken) {
       const organizationUser = await this.organizationUsersRepository.findOne({
-        where: { invitationToken: inviteToken },
+        where: { invitationToken: organizationToken },
       });
 
       if (organizationUser) {
