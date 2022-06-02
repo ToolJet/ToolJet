@@ -9,11 +9,31 @@ export const userService = {
   updateCurrentUser,
   changePassword,
   acceptInvite,
+  getAvatar,
+  updateAvatar,
 };
 
 function getAll() {
   const requestOptions = { method: 'GET', headers: authHeader() };
   return fetch(`${config.apiUrl}/users`, requestOptions).then(handleResponse);
+}
+
+function getAvatar(id) {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/files/${id}`, requestOptions)
+    .then((response) => response.blob())
+    .then((blob) => blob);
+}
+
+function updateAvatar(formData, token) {
+  const requestOptions = {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  };
+  return fetch(`${config.apiUrl}/users/avatar`, requestOptions).then(handleResponse);
 }
 
 function createUser(first_name, last_name, email, role) {
