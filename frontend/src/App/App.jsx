@@ -142,6 +142,20 @@ class App extends React.Component {
                 />
               )}
             />
+            <Route
+              path="/invitations/:token/workspaces/:organizationToken"
+              render={(props) => (
+                <Redirect
+                  to={{
+                    pathname: '/confirm',
+                    state: {
+                      token: props.match.params.token,
+                      organizationToken: props.match.params.organizationToken,
+                    },
+                  }}
+                />
+              )}
+            />
             <Route path="/confirm" component={ConfirmationPage} />
             <Route
               path="/organization-invitations/:token"
