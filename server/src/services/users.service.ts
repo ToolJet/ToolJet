@@ -1,28 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { Organization } from 'src/entities/organization.entity';
+import { FilesService } from '../services/files.service';
 import { App } from 'src/entities/app.entity';
-import { createQueryBuilder, EntityManager, getManager, getRepository, In, Repository } from 'typeorm';
+import { Connection, createQueryBuilder, EntityManager, getManager, getRepository, In, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
 import { cleanObject } from 'src/helpers/utils.helper';
-import { CreateUserDto } from '@dto/user.dto';
+import { CreateFileDto } from '@dto/create-file.dto';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
 @Injectable()
 export class UsersService {
   constructor(
+    private readonly filesService: FilesService,
+    private connection: Connection,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
-    @InjectRepository(Organization)
-    private organizationsRepository: Repository<Organization>,
     @InjectRepository(App)
     private appsRepository: Repository<App>
   ) {}
@@ -61,7 +61,8 @@ export class UsersService {
     organizationId: string,
     groups?: string[],
     existingUser?: User,
-    isInvite?: boolean
+    isInvite?: boolean,
+    defaultOrganizationId?: string
   ): Promise<User> {
     const password = uuid.v4();
 
@@ -76,24 +77,23 @@ export class UsersService {
           lastName,
           password,
           invitationToken: isInvite ? uuid.v4() : null,
-          defaultOrganizationId: organizationId,
+          defaultOrganizationId: defaultOrganizationId || organizationId,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
         await manager.save(user);
       } else {
-        if (isInvite) {
-          // user already invited to an organization, but not active - user tries to sign up
-          await manager.save(
-            Object.assign(existingUser, {
-              invitationToken: uuid.v4(),
-              defaultOrganizationId: organizationId,
-            })
-          );
-        }
         user = existingUser;
       }
+    });
 
+    await this.attachUserGroup(groups, organizationId, user.id);
+
+    return user;
+  }
+
+  async attachUserGroup(groups, organizationId, userId) {
+    await getManager().transaction(async (manager) => {
       for (const group of groups) {
         const orgGroupPermission = await manager.findOne(GroupPermission, {
           where: {
@@ -105,7 +105,7 @@ export class UsersService {
         if (orgGroupPermission) {
           const userGroupPermission = manager.create(UserGroupPermission, {
             groupPermissionId: orgGroupPermission.id,
-            userId: user.id,
+            userId: userId,
           });
           await manager.save(userGroupPermission);
         } else {
@@ -113,8 +113,6 @@ export class UsersService {
         }
       }
     });
-
-    return user;
   }
 
   async status(user: User) {
@@ -138,95 +136,6 @@ export class UsersService {
     newUserCreated = true;
 
     return { user, newUserCreated };
-  }
-
-  async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
-    const { organization, password, token, role, first_name: firstName, last_name: lastName } = userCreateDto;
-
-    if (!token) {
-      throw new BadRequestException('Invalid token');
-    }
-
-    const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
-
-    if (!user?.organizationUsers) {
-      throw new BadRequestException('Invalid invitation link');
-    }
-    const organizationUser: OrganizationUser = user.organizationUsers.find(
-      (ou) => ou.organizationId === user.defaultOrganizationId
-    );
-
-    if (!organizationUser) {
-      throw new BadRequestException('Invalid invitation link');
-    }
-
-    await this.usersRepository.save(
-      Object.assign(user, {
-        firstName,
-        lastName,
-        password,
-        role,
-        invitationToken: null,
-      })
-    );
-
-    await this.organizationUsersRepository.save(
-      Object.assign(organizationUser, {
-        invitationToken: null,
-        status: 'active',
-      })
-    );
-
-    if (organization) {
-      await this.organizationsRepository.update(user.defaultOrganizationId, {
-        name: organization,
-      });
-    }
-  }
-
-  async acceptOrganizationInvite(params: any) {
-    const { password, token } = params;
-
-    const organizationUser = await this.organizationUsersRepository.findOne({
-      where: { invitationToken: token },
-      relations: ['user'],
-    });
-
-    if (!organizationUser?.user) {
-      throw new BadRequestException('Invalid invitation link');
-    }
-    const user: User = organizationUser.user;
-
-    if (user.invitationToken) {
-      // User sign up link send - not activated account
-      const defaultOrganizationUser = await this.organizationUsersRepository.findOne({
-        where: { organizationId: user.defaultOrganizationId, status: 'invited' },
-      });
-
-      if (defaultOrganizationUser) {
-        await this.organizationUsersRepository.save(
-          Object.assign(defaultOrganizationUser, {
-            invitationToken: null,
-            status: 'active',
-          })
-        );
-      }
-    }
-
-    // set new password if entered
-    await this.usersRepository.save(
-      Object.assign(user, {
-        ...(password ? { password } : {}),
-        invitationToken: null,
-      })
-    );
-
-    await this.organizationUsersRepository.save(
-      Object.assign(organizationUser, {
-        invitationToken: null,
-        status: 'active',
-      })
-    );
   }
 
   async updateDefaultOrganization(user: User, organizationId: string) {
@@ -420,6 +329,39 @@ export class UsersService {
       },
     });
     return !!app && app.organizationId === user.organizationId;
+  }
+
+  async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const user = await queryRunner.manager.findOne(User, userId);
+      const currentAvatarId = user.avatarId;
+      const createFileDto = new CreateFileDto();
+      createFileDto.filename = filename;
+      createFileDto.data = imageBuffer;
+      const avatar = await this.filesService.create(createFileDto, queryRunner);
+
+      await queryRunner.manager.update(User, userId, {
+        avatarId: avatar.id,
+      });
+
+      if (currentAvatarId) {
+        await this.filesService.remove(currentAvatarId, queryRunner);
+      }
+
+      await queryRunner.commitTransaction();
+
+      return avatar;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(error);
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[] | GroupPermission[]): boolean {

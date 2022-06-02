@@ -44,7 +44,7 @@ import { VerticalDivider } from './Components/verticalDivider';
 import { PDF } from './Components/PDF';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
-import { resolveProperties, resolveStyles } from './component-properties-resolution';
+import { resolveProperties, resolveStyles, resolveGeneralProperties } from './component-properties-resolution';
 import { validateWidget, resolveReferences } from '@/_helpers/utils';
 
 const AllComponents = {
@@ -137,6 +137,7 @@ export const Box = function Box({
 
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
+  const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
   resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
 
   useEffect(() => {
@@ -189,10 +190,12 @@ export const Box = function Box({
 
   return (
     <OverlayTrigger
-      placement="top"
+      placement={inCanvas ? 'auto' : 'top'}
       delay={{ show: 500, hide: 0 }}
-      trigger={!inCanvas ? ['hover', 'focus'] : null}
-      overlay={(props) => renderTooltip({ props, text: `${component.description}` })}
+      trigger={inCanvas && !resolvedGeneralProperties.tooltip?.trim() ? null : ['hover', 'focus']}
+      overlay={(props) =>
+        renderTooltip({ props, text: inCanvas ? `${resolvedGeneralProperties.tooltip}` : `${component.description}` })
+      }
     >
       <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
         {inCanvas ? (
