@@ -28,7 +28,7 @@ export default class VariablesTable extends React.Component {
                   <th>Name</th>
                   <th>Value</th>
                   <th>Type</th>
-                  {this.props.admin && <th className="w-1"></th>}
+                  {(this.props.canUpdateVariable || this.props.canDeleteVariable) && <th className="w-1"></th>}
                 </tr>
               </thead>
               {isLoading ? (
@@ -77,43 +77,47 @@ export default class VariablesTable extends React.Component {
                       <td className="text-muted">
                         <small className="user-status">{variable.variable_type}</small>
                       </td>
-                      {this.props.admin && (
+                      {(this.props.canUpdateVariable || this.props.canDeleteVariable) && (
                         <td>
                           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}>
-                            <button
-                              className="btn btn-sm btn-org-env"
-                              onClick={() => this.props.onEditBtnClicked(variable)}
-                            >
-                              <div>
-                                <img
-                                  data-tip="Update"
-                                  className="svg-icon"
-                                  src="/assets/images/icons/edit.svg"
-                                  width="15"
-                                  height="15"
-                                  style={{
-                                    cursor: 'pointer',
-                                  }}
-                                ></img>
-                              </div>
-                            </button>
-                            <button
-                              className="btn btn-sm btn-org-env"
-                              onClick={() => this.props.onDeleteBtnClicked(variable)}
-                            >
-                              <div>
-                                <img
-                                  data-tip="Delete"
-                                  className="svg-icon"
-                                  src="/assets/images/icons/query-trash-icon.svg"
-                                  width="15"
-                                  height="15"
-                                  style={{
-                                    cursor: 'pointer',
-                                  }}
-                                />
-                              </div>
-                            </button>
+                            {this.props.canUpdateVariable && (
+                              <button
+                                className="btn btn-sm btn-org-env"
+                                onClick={() => this.props.onEditBtnClicked(variable)}
+                              >
+                                <div>
+                                  <img
+                                    data-tip="Update"
+                                    className="svg-icon"
+                                    src="/assets/images/icons/edit.svg"
+                                    width="15"
+                                    height="15"
+                                    style={{
+                                      cursor: 'pointer',
+                                    }}
+                                  ></img>
+                                </div>
+                              </button>
+                            )}
+                            {this.props.canDeleteVariable && (
+                              <button
+                                className="btn btn-sm btn-org-env"
+                                onClick={() => this.props.onDeleteBtnClicked(variable)}
+                              >
+                                <div>
+                                  <img
+                                    data-tip="Delete"
+                                    className="svg-icon"
+                                    src="/assets/images/icons/query-trash-icon.svg"
+                                    width="15"
+                                    height="15"
+                                    style={{
+                                      cursor: 'pointer',
+                                    }}
+                                  />
+                                </div>
+                              </button>
+                            )}
                           </div>
                         </td>
                       )}

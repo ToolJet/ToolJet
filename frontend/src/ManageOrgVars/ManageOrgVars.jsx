@@ -213,6 +213,26 @@ class ManageOrgVars extends React.Component {
     });
   };
 
+  canAnyGroupPerformAction(action, permissions) {
+    if (!permissions) {
+      return false;
+    }
+
+    return permissions.some((p) => p[action]);
+  }
+
+  canCreateVariable = () => {
+    return this.canAnyGroupPerformAction('org_environment_variable_create', this.state.currentUser.group_permissions);
+  };
+
+  canUpdateVariable = () => {
+    return this.canAnyGroupPerformAction('org_environment_variable_update', this.state.currentUser.group_permissions);
+  };
+
+  canDeleteVariable = () => {
+    return this.canAnyGroupPerformAction('org_environment_variable_delete', this.state.currentUser.group_permissions);
+  };
+
   render() {
     const { isLoading, showVariableForm, addingVar, variables } = this.state;
     return (
@@ -243,7 +263,7 @@ class ManageOrgVars extends React.Component {
                   <h2 className="page-title">Environment Variables</h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
-                  {!showVariableForm && this.state.currentUser.admin && (
+                  {!showVariableForm && this.canCreateVariable() && (
                     <div
                       className="btn btn-primary"
                       onClick={() => this.setState({ showVariableForm: true, errors: {} })}
@@ -273,6 +293,8 @@ class ManageOrgVars extends React.Component {
               <VariablesTable
                 isLoading={isLoading}
                 variables={variables}
+                canUpdateVariable={this.canUpdateVariable()}
+                canDeleteVariable={this.canDeleteVariable()}
                 admin={this.state.currentUser.admin}
                 onEditBtnClicked={this.onEditBtnClicked}
                 onDeleteBtnClicked={this.onDeleteBtnClicked}
