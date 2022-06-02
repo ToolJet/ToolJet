@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import React, { useCallback, useState, useEffect } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { v4 as uuidv4 } from 'uuid';
@@ -5,7 +6,7 @@ import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
-import { componentTypes } from './Components/components';
+import { componentTypes } from './WidgetManager/components';
 import { computeComponentName } from '@/_helpers/utils';
 import produce from 'immer';
 

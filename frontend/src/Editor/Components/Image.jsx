@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import React, { useRef, useEffect, useState } from 'react';
 import LazyLoad from 'react-lazyload';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
