@@ -23,7 +23,7 @@ class ConfirmationPage extends React.Component {
 
   setPassword = (e) => {
     e.preventDefault();
-    const token = this.props.location.state.token;
+    const { token, organizationToken } = this.props.location.state;
     const { password, organization, role, firstName, lastName, password_confirmation } = this.state;
     this.setState({ isLoading: true });
 
@@ -46,6 +46,7 @@ class ConfirmationPage extends React.Component {
     appService
       .setPasswordFromToken({
         token,
+        organizationToken,
         password,
         organization,
         role,
