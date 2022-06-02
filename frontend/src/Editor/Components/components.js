@@ -2212,7 +2212,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       accentColor: { type: 'color', displayName: 'Accent color' },
     },
     exposedVariables: {
-      data: {},
+      lists: {},
     },
     definition: {
       others: {

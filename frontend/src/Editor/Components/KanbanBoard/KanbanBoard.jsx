@@ -42,7 +42,7 @@ export const KanbanBoard = ({
   const [state, setState] = React.useState([]);
 
   React.useEffect(() => {
-    setExposedVariable('data', state);
+    setExposedVariable('lists', state);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
