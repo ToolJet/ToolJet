@@ -98,7 +98,7 @@ export const AlignButtons = ({ value, onChange, forceCodeBox, meta }) => {
           </div>
         </div>
       </div>
-      <div className="col-auto pt-1">
+      <div className="col-auto pt-0">
         <FxButton active={false} onPress={forceCodeBox} />
       </div>
     </div>

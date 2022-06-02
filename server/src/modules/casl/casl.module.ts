@@ -4,6 +4,7 @@ import { EmailService } from '@services/email.service';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { UsersService } from '@services/users.service';
 import { App } from 'src/entities/app.entity';
+import { File } from 'src/entities/file.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
@@ -14,12 +15,14 @@ import { CaslAbilityFactory } from './casl-ability.factory';
 import { FoldersAbilityFactory } from './abilities/folders-ability.factory';
 import { AuditLoggerService } from '@services/audit_logger.service';
 import { AuditLog } from 'src/entities/audit_log.entity';
+import { FilesService } from '@services/files.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Organization, OrganizationUser, App, AuditLog])],
+  imports: [TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App, AuditLog])],
   providers: [
     CaslAbilityFactory,
     OrganizationUsersService,
+    FilesService,
     UsersService,
     EmailService,
     AppsAbilityFactory,

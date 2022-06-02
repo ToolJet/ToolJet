@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { App } from '../../entities/app.entity';
+import { File } from '../../entities/file.entity';
 import { AppsController } from '../../controllers/apps.controller';
 import { AppsService } from '../../services/apps.service';
 import { AppVersion } from '../../../src/entities/app_version.entity';
@@ -13,6 +14,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { UsersService } from '@services/users.service';
 import { User } from 'src/entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
+import { FilesService } from '@services/files.service';
 import { FoldersService } from '@services/folders.service';
 import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
@@ -46,6 +48,7 @@ import { AuditLoggerService } from '@services/audit_logger.service';
       UserGroupPermission,
       Credential,
       AuditLog,
+      File,
     ]),
     CaslModule,
   ],
@@ -59,6 +62,7 @@ import { AuditLoggerService } from '@services/audit_logger.service';
     CredentialsService,
     EncryptionService,
     AuditLoggerService,
+    FilesService,
   ],
   controllers: [AppsController, AppUsersController],
 })

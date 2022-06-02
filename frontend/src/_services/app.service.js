@@ -19,6 +19,8 @@ export const appService = {
   setVisibility,
   setMaintenance,
   setSlug,
+  setPasswordFromToken,
+  acceptInvite,
 };
 
 function getConfig() {
@@ -125,4 +127,29 @@ function setMaintenance(appId, value) {
 function setSlug(appId, slug) {
   const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify({ app: { slug: slug } }) };
   return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
+}
+
+function setPasswordFromToken({ token, password, organization, role, firstName, lastName, organizationToken }) {
+  const body = {
+    token,
+    organizationToken,
+    password,
+    organization,
+    role,
+    first_name: firstName,
+    last_name: lastName,
+  };
+
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/set-password-from-token`, requestOptions).then(handleResponse);
+}
+
+function acceptInvite({ token, password }) {
+  const body = {
+    token,
+    password,
+  };
+
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/accept-invite`, requestOptions);
 }

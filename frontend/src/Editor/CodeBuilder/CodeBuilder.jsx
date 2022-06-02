@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
-import { componentTypes } from '../Components/components';
+import { componentTypes } from '../WidgetManager/components';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import { debounce } from 'lodash';
 import Fuse from 'fuse.js';
