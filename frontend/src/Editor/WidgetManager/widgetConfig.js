@@ -1,4 +1,4 @@
-export const componentTypes = [
+export const widgets = [
   {
     name: 'Table',
     displayName: 'Table',
