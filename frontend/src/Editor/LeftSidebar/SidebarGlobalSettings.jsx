@@ -4,6 +4,9 @@ import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
 
 import { LeftSidebarItem } from './SidebarItem';
+import FxButton from '../CodeBuilder/Elements/FxButton';
+import { CodeHinter } from '../CodeBuilder/CodeHinter';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const LeftSidebarGlobalSettings = ({
   globalSettings,
@@ -11,10 +14,13 @@ export const LeftSidebarGlobalSettings = ({
   darkMode,
   toggleAppMaintenance,
   is_maintenance_on,
+  currentState,
 }) => {
   const [open, trigger, content] = usePopover(false);
-  const { hideHeader, canvasMaxWidth, canvasMaxHeight, canvasBackgroundColor } = globalSettings;
+  const { hideHeader, canvasMaxWidth, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } = globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
+  const [forceCodeBox, setForceCodeBox] = React.useState(true);
+  const [realState, setRealState] = React.useState(currentState);
   const [showConfirmation, setConfirmationShow] = React.useState(false);
   const coverStyles = {
     position: 'fixed',
@@ -23,6 +29,18 @@ export const LeftSidebarGlobalSettings = ({
     bottom: '0px',
     left: '0px',
   };
+
+  React.useEffect(() => {
+    setRealState(currentState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentState.components]);
+
+  React.useEffect(() => {
+    backgroundFxQuery &&
+      globalSettingsChanged('canvasBackgroundColor', resolveReferences(backgroundFxQuery, realState));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
+
   return (
     <>
       <Confirm
@@ -104,8 +122,8 @@ export const LeftSidebarGlobalSettings = ({
               </div>
             </div>
             <div className="d-flex">
-              <span className="w-full m-auto">Background color of canvas</span>
-              <div>
+              <span className="w-full">Background color of canvas</span>
+              <div className="canvas-codehinter-container">
                 {showPicker && (
                   <div>
                     <div style={coverStyles} onClick={() => setShowPicker(false)} />
@@ -113,28 +131,59 @@ export const LeftSidebarGlobalSettings = ({
                       className="canvas-background-picker"
                       onFocus={() => setShowPicker(true)}
                       color={canvasBackgroundColor}
-                      onChangeComplete={(color) => globalSettingsChanged('canvasBackgroundColor', color.hex)}
+                      onChangeComplete={(color) => {
+                        globalSettingsChanged('canvasBackgroundColor', [color.hex, color.rgb]);
+                        globalSettingsChanged('backgroundFxQuery', null);
+                      }}
                     />
                   </div>
                 )}
-
-                <div
-                  className="row mx-0 form-control form-control-sm canvas-background-holder"
-                  onClick={() => setShowPicker(true)}
-                >
+                {forceCodeBox && (
                   <div
-                    className="col-auto"
-                    style={{
-                      float: 'right',
-                      width: '20px',
-                      height: '20px',
-                      backgroundColor: canvasBackgroundColor,
-                      border: `0.25px solid ${
-                        ['#ffffff', '#fff', '#1f2936'].includes(canvasBackgroundColor) && '#c5c8c9'
-                      }`,
-                    }}
-                  ></div>
-                  <div className="col">{canvasBackgroundColor}</div>
+                    className="row mx-0 form-control form-control-sm canvas-background-holder"
+                    onClick={() => setShowPicker(true)}
+                  >
+                    <div
+                      className="col-auto"
+                      style={{
+                        float: 'right',
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: canvasBackgroundColor,
+                        border: `0.25px solid ${
+                          ['#ffffff', '#fff', '#1f2936'].includes(canvasBackgroundColor) && '#c5c8c9'
+                        }`,
+                      }}
+                    ></div>
+                    <div className="col">{canvasBackgroundColor}</div>
+                  </div>
+                )}
+                <div
+                  className={`${!forceCodeBox && 'hinter-canvas-input'} ${!darkMode && 'hinter-canvas-input-light'} `}
+                >
+                  {!forceCodeBox && (
+                    <CodeHinter
+                      currentState={realState}
+                      initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
+                      value={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
+                      theme={darkMode ? 'monokai' : 'duotone-light'}
+                      mode="javascript"
+                      className="canvas-hinter-wrap"
+                      lineNumbers={false}
+                      onChange={(color) => {
+                        globalSettingsChanged('canvasBackgroundColor', resolveReferences(color, realState));
+                        globalSettingsChanged('backgroundFxQuery', color);
+                      }}
+                    />
+                  )}
+                  <div className={`fx-canvas ${!darkMode && 'fx-canvas-light'} `}>
+                    <FxButton
+                      active={!forceCodeBox ? true : false}
+                      onPress={() => {
+                        setForceCodeBox(!forceCodeBox);
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

@@ -86,6 +86,7 @@ class Editor extends React.Component {
         canvasMaxWidth: 1292,
         canvasMaxHeight: 2400,
         canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
+        backgroundFxQuery: '',
       },
     };
 
@@ -130,7 +131,7 @@ class Editor extends React.Component {
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
       isSaving: false,
-      saveError: false,
+      isUnsavedQueriesAvailable: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -381,7 +382,6 @@ class Editor extends React.Component {
           });
 
           computeComponentState(this, this.state.appDefinition.components).then(() => {
-            console.log('Default component state computed and set');
             this.runQueries(data.data_queries);
           });
           this.setWindowTitle(data.name);
@@ -408,8 +408,11 @@ class Editor extends React.Component {
     this.initComponentVersioning();
   };
 
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState
+   */
   dataSourcesChanged = () => {
-    if (this.socket instanceof WebSocket) {
+    if (this.socket instanceof WebSocket && this.socket?.readyState === WebSocket.OPEN) {
       this.socket?.send(
         JSON.stringify({
           event: 'events',
@@ -421,9 +424,12 @@ class Editor extends React.Component {
     }
   };
 
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState
+   */
   dataQueriesChanged = () => {
     this.setState({ addingQuery: false }, () => {
-      if (this.socket instanceof WebSocket) {
+      if (this.socket instanceof WebSocket && this.socket?.readyState === WebSocket.OPEN) {
         this.socket?.send(
           JSON.stringify({
             event: 'events',
@@ -691,10 +697,15 @@ class Editor extends React.Component {
     appDefinition.components[newComponent.id] = newComponent;
     this.appDefinitionChanged(appDefinition);
   };
+  decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
   globalSettingsChanged = (key, value) => {
     const appDefinition = { ...this.state.appDefinition };
-    appDefinition.globalSettings[key] = value;
+    if (value?.[1]?.a == undefined) appDefinition.globalSettings[key] = value;
+    else {
+      const hexCode = `${value?.[0]}${this.decimalToHex(value?.[1]?.a)}`;
+      appDefinition.globalSettings[key] = hexCode;
+    }
     this.setState(
       {
         isSaving: true,
@@ -1058,6 +1069,12 @@ class Editor extends React.Component {
     this.props.switchDarkMode(newMode);
   };
 
+  setStateOfUnsavedQueries = (state) => {
+    this.setState({
+      isUnsavedQueriesAvailable: state,
+    });
+  };
+
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
   render() {
@@ -1236,6 +1253,8 @@ class Editor extends React.Component {
               runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
               toggleAppMaintenance={this.toggleAppMaintenance}
               is_maintenance_on={this.state.app.is_maintenance_on}
+              isSaving={this.state.isSaving}
+              isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
@@ -1461,6 +1480,7 @@ class Editor extends React.Component {
                             allComponents={appDefinition.components}
                             isSourceSelected={this.state.isSourceSelected}
                             isQueryPaneDragging={this.state.isQueryPaneDragging}
+                            setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
                           />
                         </div>
                       </div>

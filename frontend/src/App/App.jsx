@@ -23,6 +23,7 @@ import { lt } from 'semver';
 import { Toaster } from 'react-hot-toast';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import { Editor } from '@/Editor/Editor';
+import { RedirectSso } from '@/RedirectSso/RedirectSso';
 
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
@@ -127,6 +128,7 @@ class App extends React.Component {
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/reset-password" component={ResetPassword} />
+            <Route path="/multiworkspace" component={RedirectSso} />
             <Route
               path="/invitations/:token"
               render={(props) => (

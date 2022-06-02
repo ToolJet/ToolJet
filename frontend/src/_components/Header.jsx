@@ -82,7 +82,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
                 )}
               </div>
             </a>
-            <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow end-0">
+            <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow end-0" data-cy="dropdown-menu">
               <Link
                 data-testid="settingsBtn"
                 to="#"
