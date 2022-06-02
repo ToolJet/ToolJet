@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -26,6 +26,7 @@ import { TypeMapping } from './TypeMapping';
 import { Number } from './Elements/Number';
 import FxButton from './Elements/FxButton';
 import { ToolTip } from '../Inspector/Elements/Components/ToolTip';
+import { toast } from 'react-hot-toast';
 
 const AllElements = {
   Color,
@@ -77,6 +78,8 @@ export function CodeHinter({
   const [currentValue, setCurrentValue] = useState(initialValue);
   const [isFocused, setFocused] = useState(false);
   const [heightRef, currentHeight] = useHeight();
+  const isPreviewFocused = useRef(false);
+  const wrapperRef = useRef(null);
   const slideInStyles = useSpring({
     config: { ...config.stiff },
     from: { opacity: 0, height: 0 },
@@ -85,10 +88,32 @@ export function CodeHinter({
       height: isFocused ? currentHeight : 0,
     },
   });
+
+  const prevCountRef = useRef(false);
+
   useEffect(() => {
     setRealState(currentState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState.components]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen) {
+        return;
+      }
+      if (wrapperRef.current && isFocused && !wrapperRef.current.contains(event.target) && prevCountRef.current) {
+        isPreviewFocused.current = false;
+        setFocused(false);
+        prevCountRef.current = false;
+      } else if (isFocused) {
+        prevCountRef.current = true;
+      } else if (!isFocused && prevCountRef.current) prevCountRef.current = false;
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
   let suggestions = useMemo(() => {
     return getSuggestionKeys(realState);
@@ -113,6 +138,14 @@ export function CodeHinter({
     } catch (e) {
       return undefined;
     }
+  };
+
+  const focusPreview = () => (isPreviewFocused.current = true);
+  const unFocusPreview = () => (isPreviewFocused.current = false);
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard');
   };
 
   const getPreview = () => {
@@ -145,11 +178,23 @@ export function CodeHinter({
     const content = getPreviewContent(previewContent, previewType);
 
     return (
-      <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
+      <animated.div
+        className={isOpen ? themeCls : null}
+        style={{ ...slideInStyles, overflow: 'hidden' }}
+        onMouseEnter={() => focusPreview()}
+        onMouseLeave={() => unFocusPreview()}
+      >
         <div ref={heightRef} className="dynamic-variable-preview bg-green-lt px-1 py-1">
           <div>
-            <div className="heading my-1">
-              <span>{previewType}</span>
+            <div className="d-flex my-1">
+              <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
+                {previewType}
+              </div>
+              {isFocused && (
+                <div className="preview-icons">
+                  <CodeHinter.PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="Copy to clipboard" />
+                </div>
+              )}
             </div>
             {content}
           </div>
@@ -195,7 +240,7 @@ export function CodeHinter({
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
 
   return (
-    <>
+    <div ref={wrapperRef}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy="accordion-components">
@@ -232,7 +277,13 @@ export function CodeHinter({
               }}
               data-cy="accordion-input"
             >
-              {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
+              {usePortalEditor && (
+                <CodeHinter.PopupIcon
+                  callback={handleToggle}
+                  icon="portal-open"
+                  tip="Pop out code editor into a new window"
+                />
+              )}
               <CodeHinter.Portal
                 isOpen={isOpen}
                 callback={setIsOpen}
@@ -253,7 +304,9 @@ export function CodeHinter({
                   onBlur={(editor) => {
                     const value = editor.getValue();
                     onChange(value);
-                    setFocused(false);
+                    if (!isPreviewFocused.current) {
+                      setFocused(false);
+                    }
                   }}
                   onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
                   onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
@@ -281,22 +334,22 @@ export function CodeHinter({
           />
         </div>
       )}
-    </>
+    </div>
   );
 }
 
-const PopupIcon = ({ callback }) => {
+const PopupIcon = ({ callback, icon, tip }) => {
   return (
     <div className="d-flex justify-content-end" style={{ position: 'relative' }}>
       <OverlayTrigger
         trigger={['hover', 'focus']}
         placement="top"
         delay={{ show: 800, hide: 100 }}
-        overlay={<Tooltip id="button-tooltip">{'Pop out code editor into a new window'}</Tooltip>}
+        overlay={<Tooltip id="button-tooltip">{tip}</Tooltip>}
       >
         <img
           className="svg-icon m-2 popup-btn"
-          src="/assets/images/icons/portal-open.svg"
+          src={`/assets/images/icons/${icon}.svg`}
           width="12"
           height="12"
           onClick={(e) => {

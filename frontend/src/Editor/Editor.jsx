@@ -10,7 +10,7 @@ import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
-import { componentTypes } from './Components/components';
+import { componentTypes } from './WidgetManager/components';
 import { Inspector } from './Inspector/Inspector';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
@@ -1177,6 +1177,7 @@ class Editor extends React.Component {
                   updatePresence={this.props.updatePresence}
                   editingVersionId={this.state?.editingVersion?.id}
                   self={this.props.self}
+                  othersOnSameVersion={this.props.othersOnSameVersion}
                 />
               )}
               {editingVersion && (
