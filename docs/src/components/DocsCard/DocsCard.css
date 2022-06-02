@@ -6,18 +6,19 @@
     position: relative;
     word-wrap: break-word;
     margin-top: 1rem;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 1px 1px;
+
 }
 .card:hover{
     transition-delay: 2s;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 10px 10px;
    
 }
-.card-body{
-    padding: 1.5rem;  
-}
+
 .card-body {
     display: flex;
-    /* flex: 1 1 auto; */
+    padding: 1.5rem;  
+    flex: 1 1 auto;
     align-items: start;
 }
 
@@ -27,7 +28,7 @@
 }
 .card-icon{
     width: 20%;
-    align-self: baseline;
+    /* align-self: baseline; */
 }
 .card-container-setup{
     display:grid;
@@ -39,5 +40,18 @@
 @media all and (max-width: 768px){
     .card-container-setup{
         grid-template-columns: 1fr !important;
+    }
+    .card-body{
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .card-info{
+        padding: 0.25rem 0;
+        width: 100%;
+        margin: 0 auto;
+    }
+    .card-info h3{
+        text-align: center;
     }
 }
