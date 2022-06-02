@@ -89,6 +89,8 @@ class Editor extends React.Component {
       },
     };
 
+    this.dataSourceModalRef = React.createRef();
+
     this.state = {
       currentUser: authenticationService.currentUserValue,
       app: {},
@@ -1066,6 +1068,10 @@ class Editor extends React.Component {
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
+  dataSourceModalHandler = () => {
+    this.dataSourceModalRef.current.logger();
+  };
+
   render() {
     const {
       currentSidebarTab,
@@ -1241,6 +1247,7 @@ class Editor extends React.Component {
               runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
               toggleAppMaintenance={this.toggleAppMaintenance}
               is_maintenance_on={this.state.app.is_maintenance_on}
+              ref={this.dataSourceModalRef}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
@@ -1466,6 +1473,7 @@ class Editor extends React.Component {
                             allComponents={appDefinition.components}
                             isSourceSelected={this.state.isSourceSelected}
                             isQueryPaneDragging={this.state.isQueryPaneDragging}
+                            dataSourceModalHandler={this.dataSourceModalHandler}
                           />
                         </div>
                       </div>
