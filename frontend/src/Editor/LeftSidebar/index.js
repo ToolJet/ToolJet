@@ -41,7 +41,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
 
   useImperativeHandle(ref, () => ({
-    dataSourceModaltoggleHandler() {
+    dataSourceModalToggleStateHandler() {
       toggleDataSourceManagerModal(true);
     },
   }));
