@@ -1080,7 +1080,7 @@ class Editor extends React.Component {
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
   dataSourceModalHandler = () => {
-    this.dataSourceModalRef.current.logger();
+    this.dataSourceModalRef.current.dataSourceModaltoggleHandler();
   };
 
   render() {
