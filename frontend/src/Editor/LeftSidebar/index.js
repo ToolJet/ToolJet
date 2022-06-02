@@ -34,6 +34,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
     runQuery,
     toggleAppMaintenance,
     is_maintenance_on,
+    isSaving,
+    isUnsavedQueriesAvailable,
   } = props;
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
@@ -68,6 +70,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
       )}
       <LeftSidebarGlobalSettings
+        currentState={currentState}
         globalSettingsChanged={globalSettingsChanged}
         globalSettings={globalSettings}
         darkMode={darkMode}
@@ -75,7 +78,13 @@ export const LeftSidebar = forwardRef((props, ref) => {
         is_maintenance_on={is_maintenance_on}
       />
       <LeftSidebarItem
-        onClick={() => setShowLeaveDialog(true)}
+        onClick={() => {
+          if (isSaving || isUnsavedQueriesAvailable) {
+            setShowLeaveDialog(true);
+          } else {
+            router.push('/');
+          }
+        }}
         tip="Back to home"
         icon="back"
         className="left-sidebar-item no-border left-sidebar-layout"

@@ -6,9 +6,17 @@
   "defaults": {},
   "properties": {
     "query": {
+      "label": "Query",
       "key": "query",
       "type": "codehinter",
       "description": "Enter query",
+      "height": "150px"
+    },
+    "variables": {
+      "label": "Variables",
+      "key": "variables",
+      "type": "codehinter",
+      "description": "Enter Variables",
       "height": "150px"
     }
   },

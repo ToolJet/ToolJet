@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@nestjs/cli": "^8.1.0",
+    "@nestjs/mapped-types": "*",
     "cypress": "^8.3.1",
     "ts-node": "^10.1.0"
   },

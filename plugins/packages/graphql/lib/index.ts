@@ -8,7 +8,7 @@ export default class GraphqlQueryService implements QueryService {
     let result = {};
 
     const url = sourceOptions.url;
-    const query = queryOptions.query;
+    const { query, variables } = queryOptions;
     const headers = Object.fromEntries(sourceOptions['headers']);
     const searchParams = Object.fromEntries(sourceOptions['url_params']);
 
@@ -17,6 +17,7 @@ export default class GraphqlQueryService implements QueryService {
 
     const json = {
       query,
+      variables: variables || {},
     };
 
     try {

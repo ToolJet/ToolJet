@@ -10,7 +10,7 @@ import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
-import { componentTypes } from './Components/components';
+import { componentTypes } from './WidgetManager/components';
 import { Inspector } from './Inspector/Inspector';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
@@ -86,6 +86,7 @@ class Editor extends React.Component {
         canvasMaxWidth: 1292,
         canvasMaxHeight: 2400,
         canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
+        backgroundFxQuery: '',
       },
     };
 
@@ -132,7 +133,7 @@ class Editor extends React.Component {
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
       isSaving: false,
-      saveError: false,
+      isUnsavedQueriesAvailable: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -383,7 +384,6 @@ class Editor extends React.Component {
           });
 
           computeComponentState(this, this.state.appDefinition.components).then(() => {
-            console.log('Default component state computed and set');
             this.runQueries(data.data_queries);
           });
           this.setWindowTitle(data.name);
@@ -699,10 +699,15 @@ class Editor extends React.Component {
     appDefinition.components[newComponent.id] = newComponent;
     this.appDefinitionChanged(appDefinition);
   };
+  decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
   globalSettingsChanged = (key, value) => {
     const appDefinition = { ...this.state.appDefinition };
-    appDefinition.globalSettings[key] = value;
+    if (value?.[1]?.a == undefined) appDefinition.globalSettings[key] = value;
+    else {
+      const hexCode = `${value?.[0]}${this.decimalToHex(value?.[1]?.a)}`;
+      appDefinition.globalSettings[key] = hexCode;
+    }
     this.setState(
       {
         isSaving: true,
@@ -1066,6 +1071,12 @@ class Editor extends React.Component {
     this.props.switchDarkMode(newMode);
   };
 
+  setStateOfUnsavedQueries = (state) => {
+    this.setState({
+      isUnsavedQueriesAvailable: state,
+    });
+  };
+
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
   dataSourceModalHandler = () => {
@@ -1170,6 +1181,7 @@ class Editor extends React.Component {
                   updatePresence={this.props.updatePresence}
                   editingVersionId={this.state?.editingVersion?.id}
                   self={this.props.self}
+                  othersOnSameVersion={this.props.othersOnSameVersion}
                 />
               )}
               {editingVersion && (
@@ -1248,6 +1260,8 @@ class Editor extends React.Component {
               toggleAppMaintenance={this.toggleAppMaintenance}
               is_maintenance_on={this.state.app.is_maintenance_on}
               ref={this.dataSourceModalRef}
+              isSaving={this.state.isSaving}
+              isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
@@ -1474,6 +1488,7 @@ class Editor extends React.Component {
                             isSourceSelected={this.state.isSourceSelected}
                             isQueryPaneDragging={this.state.isQueryPaneDragging}
                             dataSourceModalHandler={this.dataSourceModalHandler}
+                            setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
                           />
                         </div>
                       </div>
