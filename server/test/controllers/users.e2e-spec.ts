@@ -3,8 +3,6 @@ import { INestApplication } from '@nestjs/common';
 import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
 import { getManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { v4 as uuidv4 } from 'uuid';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
 const path = require('path');
 
 describe('users controller', () => {

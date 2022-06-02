@@ -129,10 +129,10 @@ function setSlug(appId, slug) {
   return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
 }
 
-function setPasswordFromToken({ token, password, organization, role, firstName, lastName, inviteToken }) {
+function setPasswordFromToken({ token, password, organization, role, firstName, lastName, organizationToken }) {
   const body = {
     token,
-    inviteToken,
+    organizationToken,
     password,
     organization,
     role,
