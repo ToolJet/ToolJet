@@ -12,6 +12,7 @@ export const Tabs = function Tabs({
   currentState,
   removeComponent,
   setExposedVariable,
+  fireEvent,
 }) {
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -69,7 +70,14 @@ export const Tabs = function Tabs({
     <div data-disabled={parsedDisabledState} className="jet-tabs card" style={computedStyles}>
       <ul className="nav nav-tabs" data-bs-toggle="tabs" style={{ display: parsedHideTabs && 'none' }}>
         {parsedTabs.map((tab) => (
-          <li className="nav-item" onClick={() => setCurrentTab(tab.id)} key={tab.id}>
+          <li
+            className="nav-item"
+            onClick={() => {
+              setCurrentTab(tab.id);
+              fireEvent('onClick');
+            }}
+            key={tab.id}
+          >
             <a
               className={`nav-link ${currentTab == tab.id ? 'active' : ''}`}
               style={

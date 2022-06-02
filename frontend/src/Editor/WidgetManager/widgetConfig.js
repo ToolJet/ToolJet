@@ -1570,7 +1570,7 @@ export const widgets = [
       defaultTab: { type: 'code', displayName: 'Default tab' },
       hideTabs: { type: 'toggle', displayName: 'Hide Tabs' },
     },
-    events: {},
+    events: { onClick: { displayName: 'On click' } },
     styles: {
       highlightColor: { type: 'color', displayName: 'Highlight Color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
