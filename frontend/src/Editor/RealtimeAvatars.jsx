@@ -1,13 +1,9 @@
 /* eslint-disable import/no-unresolved */
 import React from 'react';
 import Avatar from '@/_ui/Avatar';
-import { useOthers } from 'y-presence';
 
 const MAX_DISPLAY_USERS = 3;
-const RealtimeAvatars = ({ self, updatePresence, editingVersionId }) => {
-  const others = useOthers();
-  const othersOnSameVersion = others.filter((other) => other?.presence?.editingVersionId === editingVersionId);
-
+const RealtimeAvatars = ({ self, othersOnSameVersion, updatePresence, editingVersionId }) => {
   React.useEffect(() => {
     updatePresence({ editingVersionId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -26,6 +22,7 @@ const RealtimeAvatars = ({ self, updatePresence, editingVersionId }) => {
               borderColor={self?.presence?.color}
               title={getAvatarTitle(self?.presence)}
               text={getAvatarText(self?.presence)}
+              image={self?.presence?.image}
             />
           )}
           {othersOnSameVersion.slice(0, MAX_DISPLAY_USERS).map(({ id, presence }) => {
@@ -35,6 +32,7 @@ const RealtimeAvatars = ({ self, updatePresence, editingVersionId }) => {
                 borderColor={presence.color}
                 title={getAvatarTitle(presence)}
                 text={getAvatarText(presence)}
+                image={presence?.image}
               />
             );
           })}

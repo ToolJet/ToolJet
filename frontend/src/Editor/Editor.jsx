@@ -1175,6 +1175,7 @@ class Editor extends React.Component {
                   updatePresence={this.props.updatePresence}
                   editingVersionId={this.state?.editingVersion?.id}
                   self={this.props.self}
+                  othersOnSameVersion={this.props.othersOnSameVersion}
                 />
               )}
               {editingVersion && (

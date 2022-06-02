@@ -552,6 +552,7 @@ export const widgets = [
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
+      defaultValue: { type: 'toggle', displayName: 'Default Status' },
     },
     events: {
       onCheck: { displayName: 'On check' },
@@ -563,7 +564,9 @@ export const widgets = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      value: false,
+    },
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -571,6 +574,7 @@ export const widgets = [
       },
       properties: {
         label: { value: 'Checkbox label' },
+        defaultValue: { value: '{{false}}' },
       },
       events: [],
       styles: {

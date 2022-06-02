@@ -6,11 +6,13 @@ import { toast } from 'react-hot-toast';
 function SettingsPage(props) {
   const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
   const email = authenticationService.currentUserValue.email;
+  const token = authenticationService.currentUserValue.auth_token;
   const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
   const [currentpassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
   const [updateInProgress, setUpdateInProgress] = React.useState(false);
   const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
+  const [selectedFile, setSelectedFile] = React.useState(null);
 
   const updateDetails = async () => {
     if (!firstName || !lastName) {
@@ -20,12 +22,25 @@ function SettingsPage(props) {
       return;
     }
     setUpdateInProgress(true);
-    const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
-    authenticationService.updateCurrentUserDetails(updatedDetails);
-    toast.success('Details updated!', {
-      duration: 3000,
-    });
-    setUpdateInProgress(false);
+    try {
+      const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
+      authenticationService.updateCurrentUserDetails(updatedDetails);
+
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        const avatarData = await userService.updateAvatar(formData, token);
+        authenticationService.updateCurrentUserDetails({ avatar_id: avatarData.id });
+      }
+
+      toast.success('Details updated!', {
+        duration: 3000,
+      });
+      setUpdateInProgress(false);
+    } catch (error) {
+      toast.error('Something went wrong');
+      setUpdateInProgress(false);
+    }
   };
 
   const changePassword = async () => {
@@ -111,26 +126,44 @@ function SettingsPage(props) {
                       />
                     </div>
                   </div>
-                  <div className="row">
-                    <div className="col-6">
-                      <div className="mb-3">
-                        <label className="form-label" data-cy="email-label">
-                          Email{' '}
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="email"
-                          value={email}
-                          readOnly
-                          disabled
-                          data-cy="email-input"
-                        />
-                      </div>
+                </div>
+                <div className="row">
+                  <div className="col">
+                    <div className="mb-3">
+                      <label className="form-label" data-cy="email-label">
+                        Email{' '}
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="email"
+                        value={email}
+                        readOnly
+                        disabled
+                        data-cy="email-input"
+                      />
+                    </div>
+                  </div>
+                  <div className="col">
+                    <div className="mb-3">
+                      <div className="form-label">Avatar</div>
+                      <input
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (Math.round(file.size / 1024) > 2048) {
+                            toast.error('File size cannot exceed more than 2MB');
+                            e.target.value = null;
+                          } else {
+                            setSelectedFile(file);
+                          }
+                        }}
+                        accept="image/*"
+                        type="file"
+                        className="form-control"
+                      />
                     </div>
                   </div>
                 </div>
-
                 <a
                   href="#"
                   className={'btn btn-primary' + (updateInProgress ? '  btn-loading' : '')}
