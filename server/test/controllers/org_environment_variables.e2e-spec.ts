@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
+import { authHeaderForUser, clearDB, createUser, createNestAppInstance, createGroupPermission } from '../test.helper';
+import { getManager } from 'typeorm';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 
 const createVariable = async (app: INestApplication, adminUserData: any, body: any) => {
   return await request(app.getHttpServer())
@@ -98,31 +101,29 @@ describe('organization environment variables controller', () => {
   });
 
   describe('POST /api/organization-variables/', () => {
-    it('should allow only admin to be able to create new variable', async () => {
-      // setup a pre existing user of different organization
-      await createUser(app, {
-        email: 'someUser@tooljet.io',
-        groups: ['admin', 'all_users'],
-      });
-
-      // setup organization and user setup to test against
+    it('should be able to create a new variable if group is admin or has create permission in the same organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['admin', 'all_users'],
+        groups: ['all_users', 'admin'],
       });
-
-      const organization = adminUserData.organization;
-
       const developerUserData = await createUser(app, {
-        email: 'developer@tooljet.io',
-        groups: ['developer', 'all_users'],
-        organization,
+        email: 'dev@tooljet.io',
+        groups: ['all_users', 'developer'],
+        organization: adminUserData.organization,
       });
 
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
         groups: ['viewer', 'all_users'],
-        organization,
+        organization: adminUserData.organization,
+      });
+
+      const developerGroup = await getManager().findOneOrFail(GroupPermission, {
+        where: { group: 'developer' },
+      });
+
+      await getManager().update(GroupPermission, developerGroup.id, {
+        orgEnvironmentVariableCreate: true,
       });
 
       await request(app.getHttpServer())
@@ -134,37 +135,41 @@ describe('organization environment variables controller', () => {
       await request(app.getHttpServer())
         .post(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(developerUserData.user))
-        .send({ variable_name: 'email', variable_type: 'server', value: 'test@tooljet.io', encrypted: true })
-        .expect(403);
+        .send({ variable_name: 'name', variable_type: 'client', value: 'demo user', encrypted: false })
+        .expect(201);
 
       await request(app.getHttpServer())
         .post(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
-        .send({ variable_name: 'email', variable_type: 'server', value: 'test@tooljet.io', encrypted: true })
+        .send({ variable_name: 'pi', variable_type: 'server', value: '3.14', encrypted: true })
         .expect(403);
     });
   });
 
   describe('PATCH /api/organization-variables/:id', () => {
-    it('should allow only admin to be able to update a variable', async () => {
-      // setup organization and user setup to test against
+    it('should be able to update an existing variable if group is admin or has update permission in the same organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['admin', 'all_users'],
+        groups: ['all_users', 'admin'],
       });
-
-      const organization = adminUserData.organization;
-
       const developerUserData = await createUser(app, {
-        email: 'developer@tooljet.io',
-        groups: ['developer', 'all_users'],
-        organization,
+        email: 'dev@tooljet.io',
+        groups: ['all_users', 'developer'],
+        organization: adminUserData.organization,
       });
 
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
         groups: ['viewer', 'all_users'],
-        organization,
+        organization: adminUserData.organization,
+      });
+
+      const developerGroup = await getManager().findOneOrFail(GroupPermission, {
+        where: { group: 'developer' },
+      });
+
+      await getManager().update(GroupPermission, developerGroup.id, {
+        orgEnvironmentVariableUpdate: true,
       });
 
       const response = await createVariable(app, adminUserData, {
@@ -184,7 +189,7 @@ describe('organization environment variables controller', () => {
         .patch(`/api/organization-variables/${response.body.variable.id}`)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .send({ variable_name: 'email', value: 'test2@tooljet.io' })
-        .expect(403);
+        .expect(200);
 
       await request(app.getHttpServer())
         .patch(`/api/organization-variables/${response.body.variable.id}`)
@@ -195,28 +200,52 @@ describe('organization environment variables controller', () => {
   });
 
   describe('DELETE /api/organization-variables/:id', () => {
-    it('should allow only admin to be able to delete a variable', async () => {
-      // setup organization and user setup to test against
+    it('should be able to delete an existing variable if group is admin or has delete permission in the same organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        groups: ['admin', 'all_users'],
+        groups: ['all_users', 'admin'],
       });
-
-      const organization = adminUserData.organization;
-
       const developerUserData = await createUser(app, {
-        email: 'developer@tooljet.io',
-        groups: ['developer', 'all_users'],
-        organization,
+        email: 'dev@tooljet.io',
+        groups: ['all_users', 'developer'],
+        organization: adminUserData.organization,
       });
 
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
         groups: ['viewer', 'all_users'],
-        organization,
+        organization: adminUserData.organization,
       });
 
-      const response1 = await createVariable(app, adminUserData, {
+      const developerGroup = await getManager().findOneOrFail(GroupPermission, {
+        where: { group: 'developer' },
+      });
+
+      await getManager().update(GroupPermission, developerGroup.id, {
+        orgEnvironmentVariableDelete: true,
+      });
+
+      for (const userData of [adminUserData, developerUserData]) {
+        const response = await createVariable(app, adminUserData, {
+          variable_name: 'email',
+          value: 'test@tooljet.io',
+          variable_type: 'server',
+          encrypted: true,
+        });
+
+        const preCount = await getManager().count(OrgEnvironmentVariable);
+
+        await request(app.getHttpServer())
+          .delete(`/api/organization-variables/${response.body.variable.id}`)
+          .set('Authorization', authHeaderForUser(userData.user))
+          .send()
+          .expect(200);
+
+        const postCount = await getManager().count(OrgEnvironmentVariable);
+        expect(postCount).toEqual(preCount - 1);
+      }
+
+      const response = await createVariable(app, adminUserData, {
         variable_name: 'email',
         value: 'test@tooljet.io',
         variable_type: 'server',
@@ -224,26 +253,7 @@ describe('organization environment variables controller', () => {
       });
 
       await request(app.getHttpServer())
-        .delete(`/api/organization-variables/${response1.body.variable.id}`)
-        .set('Authorization', authHeaderForUser(adminUserData.user))
-        .send()
-        .expect(200);
-
-      const response2 = await createVariable(app, adminUserData, {
-        variable_name: 'email',
-        value: 'test1@tooljet.io',
-        variable_type: 'client',
-        encrypted: true,
-      });
-
-      await request(app.getHttpServer())
-        .delete(`/api/organization-variables/${response2.body.variable.id}`)
-        .set('Authorization', authHeaderForUser(developerUserData.user))
-        .send()
-        .expect(403);
-
-      await request(app.getHttpServer())
-        .delete(`/api/organization-variables/${response2.body.variable.id}`)
+        .delete(`/api/organization-variables/${response.body.variable.id}`)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send()
         .expect(403);
