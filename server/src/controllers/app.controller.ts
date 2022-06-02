@@ -3,6 +3,10 @@ import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppAuthenticationDto, AppForgotPasswordDto, AppPasswordResetDto } from '@dto/app-authentication.dto';
 import { AuthService } from '../services/auth.service';
+import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
+import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
+import { CreateUserDto } from '@dto/user.dto';
+import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 
 @Controller()
 export class AppController {
@@ -22,6 +26,20 @@ export class AppController {
     return await this.authService.switchOrganization(organizationId, user);
   }
 
+  @UseGuards(MultiOrganizationGuard, SignupDisableGuard)
+  @Post('set-password-from-token')
+  async create(@Request() req, @Body() userCreateDto: CreateUserDto) {
+    await this.authService.setupAccountFromInvitationToken(req, userCreateDto);
+    return {};
+  }
+
+  @Post('accept-invite')
+  async acceptInvite(@Request() req, @Body() acceptInviteDto: AcceptInviteDto) {
+    await this.authService.acceptOrganizationInvite(req, acceptInviteDto);
+    return {};
+  }
+
+  @UseGuards(MultiOrganizationGuard, SignupDisableGuard)
   @Post('signup')
   async signup(@Request() req, @Body() appAuthDto: AppAuthenticationDto) {
     return this.authService.signup(req, appAuthDto.email);

@@ -33,7 +33,7 @@ async function bootstrap() {
       useDefaults: true,
       directives: {
         upgradeInsecureRequests: null,
-        'img-src': ['*', 'data:'],
+        'img-src': ['*', 'data:', 'blob:'],
         'script-src': [
           'maps.googleapis.com',
           'apis.google.com',

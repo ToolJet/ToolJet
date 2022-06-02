@@ -95,11 +95,8 @@
         "label": "Rows",
         "key": "rows",
         "type": "codehinter",
-        "lineNumbers": false,
         "description": "Enter rows",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
+        "height": "150px",
         "placeholder": "Enter rows"
       }
     },
@@ -220,10 +217,8 @@
         "label": "Body",
         "key": "body",
         "type": "codehinter",
-        "description": "Enter body",
-        "lineNumbers": false,
-        "height": "36px",
-        "className": "codehinter-plugins"
+        "height": "150px",
+        "description": "Enter body"
       }
     }
   }

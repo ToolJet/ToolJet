@@ -13,6 +13,8 @@ import { Organization } from 'src/entities/organization.entity';
 import { App } from 'src/entities/app.entity';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from '@services/audit_logger.service';
+import { File } from 'src/entities/file.entity';
+import { FilesService } from '@services/files.service';
 
 @Module({
   controllers: [GroupPermissionsController],
@@ -25,10 +27,11 @@ import { AuditLoggerService } from '@services/audit_logger.service';
       OrganizationUser,
       Organization,
       App,
+      File,
       AuditLog,
     ]),
     CaslModule,
   ],
-  providers: [GroupPermissionsService, UsersService, AuditLoggerService],
+  providers: [GroupPermissionsService, UsersService, FilesService, AuditLoggerService],
 })
 export class GroupPermissionsModule {}
