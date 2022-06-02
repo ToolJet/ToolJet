@@ -1,4 +1,4 @@
-export const componentTypes = [
+export const widgets = [
   {
     name: 'Table',
     displayName: 'Table',
@@ -552,6 +552,7 @@ export const componentTypes = [
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
+      defaultValue: { type: 'toggle', displayName: 'Default Status' },
     },
     events: {
       onCheck: { displayName: 'On check' },
@@ -563,7 +564,9 @@ export const componentTypes = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      value: false,
+    },
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -571,6 +574,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Checkbox label' },
+        defaultValue: { value: '{{false}}' },
       },
       events: [],
       styles: {

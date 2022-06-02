@@ -53,9 +53,18 @@ export class EmailService {
     return hostname?.endsWith('/') ? hostname.slice(0, -1) : hostname;
   }
 
-  async sendWelcomeEmail(to: string, name: string, invitationtoken: string) {
+  async sendWelcomeEmail(
+    to: string,
+    name: string,
+    invitationtoken: string,
+    organizationInvitationToken?: string,
+    organizationName?: string,
+    sender?: string
+  ) {
     const subject = 'Welcome to ToolJet';
-    const inviteUrl = `${this.TOOLJET_HOST}/invitations/${invitationtoken}`;
+    const inviteUrl = `${this.TOOLJET_HOST}/invitations/${invitationtoken}${
+      organizationInvitationToken ? `/workspaces/${organizationInvitationToken}` : ''
+    }`;
     const html = `
       <!DOCTYPE html>
       <html>
@@ -64,6 +73,13 @@ export class EmailService {
         </head>
         <body>
           <p>Hi ${name || ''},</p>
+          ${
+            organizationInvitationToken && sender && organizationName
+              ? `<span>
+              ${sender} has invited you to use ToolJet workspace: ${organizationName}.
+            </span>`
+              : ''
+          }
           <span>
             Please use the link below to set up your account and get started.
           </span>
@@ -86,7 +102,7 @@ export class EmailService {
     name: string,
     sender: string,
     invitationtoken: string,
-    organisationName: string
+    organizationName: string
   ) {
     const subject = 'Welcome to ToolJet';
     const inviteUrl = `${this.TOOLJET_HOST}/organization-invitations/${invitationtoken}`;
@@ -100,7 +116,7 @@ export class EmailService {
           <p>Hi ${name || ''},</p>
           <br>
           <span>
-          ${sender} has invited you to use ToolJet workspace ${organisationName}. Use the link below to set up your account and get started.
+          ${sender} has invited you to use ToolJet workspace: ${organizationName}. Use the link below to set up your account and get started.
           </span>
           <br>
           <a href="${inviteUrl}">${inviteUrl}</a>

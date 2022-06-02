@@ -3786,6 +3786,15 @@ input[type="text"] {
   }
 }
 
+.popup-btn {
+  cursor: pointer !important;
+  display: block;
+}
+.preview-icons {
+  margin-top: -5px;
+  width: 12px;
+}
+
 .modal-portal-wrapper {
   justify-content: center;
   align-items: center;
@@ -3932,7 +3941,7 @@ input[type="text"] {
 .close-icon {
   position: fixed;
   top: 84px;
-  right: 0;
+  right: 3px;
   width: 60px;
   height: 22;
   border-bottom: 1px solid #e7eaef;
@@ -5194,6 +5203,7 @@ div#driver-page-overlay {
 .widget-buttongroup-label{
   font-weight: 600;
   margin-right: 10px;
+  color: #3e525b;
 }
 .editor-actions {
   border-bottom: 1px solid #eee;

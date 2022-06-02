@@ -41,10 +41,10 @@ export const RedirectSso = function RedirectSso() {
           </div>
           <div className="sso-helper-container">
             <h2 className="sso-helper-header">
-              <span className="gg-album"></span>Upgrading to v1.30.0 and above.
+              <span className="gg-album"></span>Upgrading to v1.13.0 and above.
             </h2>
             <p className="sso-helper-doc">
-              From v1.30.0 we have introduced
+              From v1.13.0 we have introduced
               <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
                 Multi-Workspace
               </a>
