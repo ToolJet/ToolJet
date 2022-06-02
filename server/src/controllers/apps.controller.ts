@@ -284,7 +284,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id/versions/:versionId')
-  async updateVersion(@User() user, @Param('id') id, @Param('versionId') versionId, @Body('definition') definition) {
+  async updateVersion(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
     const version = await this.appsService.findVersion(versionId);
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
@@ -292,7 +292,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const appUser = await this.appsService.updateVersion(user, version, definition);
+    const appUser = await this.appsService.updateVersion(user, version, body);
     return decamelizeKeys(appUser);
   }
 

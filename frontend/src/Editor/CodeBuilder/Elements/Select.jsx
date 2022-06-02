@@ -17,7 +17,7 @@ export const Select = ({ value, onChange, forceCodeBox, meta }) => {
           />
         </div>
       </div>
-      <div className="col-auto pt-2 style-fx fx-common">
+      <div className="col-auto pt-0 style-fx fx-common">
         <FxButton active={false} onPress={forceCodeBox} />
       </div>
     </div>

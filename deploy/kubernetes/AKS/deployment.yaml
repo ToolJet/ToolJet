@@ -69,3 +69,5 @@ spec:
                 key: secret_key_base
           - name: TOOLJET_HOST
             value: "https://tooljet.your-domain.com"
+          - name: DEPLOYMENT_PLATFORM
+            value: "k8s:aks"
