@@ -62,7 +62,10 @@ export const KanbanBoard = ({
   }, []);
 
   React.useEffect(() => {
-    if (JSON.stringify(columns) !== JSON.stringify(rawColumnData)) {
+    if (
+      JSON.stringify(columns) !== JSON.stringify(rawColumnData) &&
+      Object.prototype.toString.call(columns).slice(8, -1) === 'Array'
+    ) {
       const newData = updateColumnData(state, rawColumnData, columns);
 
       if (newData && Object.prototype.toString.call(newData).slice(8, -1) === 'Array') {
@@ -74,7 +77,10 @@ export const KanbanBoard = ({
   }, [columns]);
 
   React.useEffect(() => {
-    if (JSON.stringify(cardData) !== JSON.stringify(rawCardData)) {
+    if (
+      JSON.stringify(cardData) !== JSON.stringify(rawCardData) &&
+      Object.prototype.toString.call(cardData).slice(8, -1) === 'Array'
+    ) {
       const isColumnIdUpdated = isCardColoumnIdUpdated(rawCardData, cardData);
 
       if (isColumnIdUpdated) {
