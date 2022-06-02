@@ -4,15 +4,7 @@ import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectTyp
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '@services/users.service';
 
-type Actions =
-  | 'changeRole'
-  | 'archiveUser'
-  | 'inviteUser'
-  | 'accessGroupPermission'
-  | 'updateOrganizations'
-  | 'addOrgEnvironmentVariables'
-  | 'updateOrgEnvironmentVariables'
-  | 'deleteOrgEnvironmentVariables';
+type Actions = 'changeRole' | 'archiveUser' | 'inviteUser' | 'accessGroupPermission' | 'updateOrganizations';
 
 type Subjects = InferSubjects<typeof OrganizationUser | typeof User> | 'all';
 
@@ -28,9 +20,6 @@ export class CaslAbilityFactory {
     const isAdmin = await this.usersService.hasGroup(user, 'admin');
     if (isAdmin) {
       can('inviteUser', User);
-      can('addOrgEnvironmentVariables', User);
-      can('updateOrgEnvironmentVariables', User);
-      can('deleteOrgEnvironmentVariables', User);
       can('archiveUser', User);
       can('changeRole', User);
       can('accessGroupPermission', User);
