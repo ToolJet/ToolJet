@@ -355,12 +355,6 @@ export class OrganizationsService {
       await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganisation.id, user.id);
     }
 
-    if (shouldSendWelcomeMail) {
-      this.emailService
-        .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
-        .catch((err) => console.error('Error while sending welcome mail', err));
-    }
-
     const currentOrganization: Organization = (
       await this.organizationUsersRepository.findOne({
         where: { userId: currentUser.id, organizationId: currentUser.organizationId },
@@ -374,14 +368,28 @@ export class OrganizationsService {
       true
     );
 
-    await this.emailService.sendOrganizationUserWelcomeEmail(
-      user.email,
-      user.firstName,
-      `${currentUser.firstName} ${currentUser.lastName}`,
-      organizationUser.invitationToken,
-      currentOrganization.name
-    );
-
+    if (shouldSendWelcomeMail) {
+      this.emailService
+        .sendWelcomeEmail(
+          user.email,
+          user.firstName,
+          user.invitationToken,
+          organizationUser.invitationToken,
+          currentOrganization.name,
+          `${currentUser.firstName} ${currentUser.lastName}`
+        )
+        .catch((err) => console.error('Error while sending welcome mail', err));
+    } else {
+      this.emailService
+        .sendOrganizationUserWelcomeEmail(
+          user.email,
+          user.firstName,
+          `${currentUser.firstName} ${currentUser.lastName}`,
+          organizationUser.invitationToken,
+          currentOrganization.name
+        )
+        .catch((err) => console.error('Error while sending welcome mail', err));
+    }
     return organizationUser;
   }
 }

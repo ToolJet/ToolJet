@@ -23,7 +23,7 @@ class ConfirmationPage extends React.Component {
 
   setPassword = (e) => {
     e.preventDefault();
-    const token = this.props.location.state.token;
+    const { token, inviteToken } = this.props.location.state;
     const { password, organization, role, firstName, lastName, password_confirmation } = this.state;
     this.setState({ isLoading: true });
 
@@ -46,6 +46,7 @@ class ConfirmationPage extends React.Component {
     appService
       .setPasswordFromToken({
         token,
+        inviteToken,
         password,
         organization,
         role,
@@ -183,7 +184,7 @@ class ConfirmationPage extends React.Component {
                   onClick={this.setPassword}
                   disabled={isLoading}
                 >
-                  Finish account setup
+                  Finish account setup{this.props.location.state.inviteToken ? ' and accept invite' : ''}
                 </button>
               </div>
             </div>

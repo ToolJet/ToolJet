@@ -129,13 +129,14 @@ class App extends React.Component {
             <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/reset-password" component={ResetPassword} />
             <Route
-              path="/invitations/:token"
+              path="/invitations/:token/:inviteToken?"
               render={(props) => (
                 <Redirect
                   to={{
                     pathname: '/confirm',
                     state: {
                       token: props.match.params.token,
+                      inviteToken: props.match.params.inviteToken,
                     },
                   }}
                 />

@@ -49,8 +49,8 @@ export class AuthService {
     }
   }
 
-  private async validateUser(email: string, password: string, organisationId?: string): Promise<User> {
-    const user = await this.usersService.findByEmail(email, organisationId);
+  private async validateUser(email: string, password: string, organizationId?: string): Promise<User> {
+    const user = await this.usersService.findByEmail(email, organizationId);
 
     if (!user) return null;
 
@@ -242,7 +242,15 @@ export class AuthService {
   }
 
   async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
-    const { organization, password, token, role, first_name: firstName, last_name: lastName } = userCreateDto;
+    const {
+      organization,
+      password,
+      token,
+      role,
+      first_name: firstName,
+      last_name: lastName,
+      inviteToken,
+    } = userCreateDto;
 
     if (!token) {
       throw new BadRequestException('Invalid token');
@@ -283,6 +291,21 @@ export class AuthService {
         name: organization,
       });
     }
+
+    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && inviteToken) {
+      const organizationUser = await this.organizationUsersRepository.findOne({
+        where: { invitationToken: inviteToken },
+      });
+
+      if (organizationUser) {
+        await this.organizationUsersRepository.save(
+          Object.assign(organizationUser, {
+            invitationToken: null,
+            status: 'active',
+          })
+        );
+      }
+    }
   }
 
   async acceptOrganizationInvite(acceptInviteDto: AcceptInviteDto) {
@@ -304,7 +327,12 @@ export class AuthService {
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && user.invitationToken) {
       // User sign up link send - not activated account
       this.emailService
-        .sendWelcomeEmail(user.email, `${user.firstName} ${user.lastName}`, user.invitationToken)
+        .sendWelcomeEmail(
+          user.email,
+          `${user.firstName} ${user.lastName}`,
+          user.invitationToken,
+          organizationUser.invitationToken
+        )
         .catch((err) => console.error('Error while sending welcome mail', err));
       throw new UnauthorizedException(
         'User not exist in the workspace, Please setup your account using link shared via email'
