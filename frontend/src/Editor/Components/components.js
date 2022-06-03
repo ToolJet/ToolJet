@@ -2225,7 +2225,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         },
         cardData: {
           value:
-            '{{[{ id: "01", title: "col-1/c1", description: "Something@col1", columnId: "1" },{ id: "02", title: "col-1/c2", description: "Something@col-1", columnId: "1" },{ id: "03", title: "col-2/c1", description: "Something@col-2", columnId: "2" }]}}',
+            '{{[{ id: "01", title: "one", description: "Something@col1", columnId: "1" },{ id: "02", title: "two", description: "Something@col-1", columnId: "1" },{ id: "03", title: "three", description: "Something@col-2", columnId: "2" }]}}',
         },
         enableAddCard: {
           value: `{{true}}`,
