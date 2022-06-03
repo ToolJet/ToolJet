@@ -685,7 +685,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
                 },
               },
               () => {
-                resolve();
+                resolve(data);
                 onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
               }
             );
@@ -719,7 +719,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
                   },
                 },
                 () => {
-                  resolve();
+                  resolve(finalData);
                   onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
                 }
               );
@@ -758,7 +758,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
               },
             },
             () => {
-              resolve();
+              resolve({ status: 'ok', data: finalData });
               onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
             }
           );
@@ -778,7 +778,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
               },
             },
             () => {
-              resolve();
+              resolve({ status: 'failed', message: error });
             }
           );
         });

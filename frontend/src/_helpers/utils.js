@@ -275,45 +275,52 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
   let result = {},
     error = null;
 
-  const query = {
+  const actions = {
     runQuery: function (queryName = '') {
       const query = _ref.state.dataQueries.find((query) => query.name === queryName);
       if (_.isEmpty(query)) return;
       if (isPreview) {
-        previewQuery(_ref, query);
+        return previewQuery(_ref, query);
       } else {
-        runQuery(_ref, query.id, query.name, confirmed, mode);
+        return runQuery(_ref, query.id, query.name, confirmed, mode);
       }
     },
-    setVariable: function (object = {}) {
-      if (typeof object !== 'object') return;
-      const customAppVariables = { ..._ref.state.currentState.variables };
-      for (let [key, value] of Object.entries(object)) {
+    setVariable: function (key = '', value = '') {
+      if (key) {
+        const customAppVariables = { ..._ref.state.currentState.variables };
         const objKey = resolveReferences(key, _ref.state.currentState, undefined, {});
         const objValue = resolveReferences(value, _ref.state.currentState, undefined, {});
         customAppVariables[objKey] = objValue;
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            variables: customAppVariables,
+          },
+        });
       }
-
-      return _ref.setState({
-        currentState: {
-          ..._ref.state.currentState,
-          variables: customAppVariables,
-        },
-      });
     },
     unSetVariable: function (key = '') {
-      const objKey = resolveReferences(key, _ref.state.currentState, undefined, {});
-      const customAppVariables = { ..._ref.state.currentState.variables };
-      delete customAppVariables[objKey];
+      if (key) {
+        const objKey = resolveReferences(key, _ref.state.currentState, undefined, {});
+        const customAppVariables = { ..._ref.state.currentState.variables };
+        delete customAppVariables[objKey];
 
-      return _ref.setState({
-        currentState: {
-          ..._ref.state.currentState,
-          variables: customAppVariables,
-        },
-      });
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            variables: customAppVariables,
+          },
+        });
+      }
     },
   };
+
+  for (const key of Object.keys(currentState.queries)) {
+    currentState.queries[key] = {
+      ...currentState.queries[key],
+      run: () => actions.runQuery(key),
+    };
+  }
 
   try {
     const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
@@ -325,7 +332,7 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
       'globals',
       'axios',
       'variables',
-      'query',
+      'actions',
       code
     );
     result = {
@@ -338,7 +345,7 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
         currentState.globals,
         axios,
         currentState.variables,
-        query
+        actions
       ),
     };
   } catch (err) {
