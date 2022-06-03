@@ -28,6 +28,7 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
             data-bs-toggle="tooltip"
             title={item?.tooltip}
             onClick={() => stepsSelectable && activeStepHandler(item.id)}
+            style={{ color: '#656d77' }}
           >
             {theme == 'titles' && item.name}
           </a>

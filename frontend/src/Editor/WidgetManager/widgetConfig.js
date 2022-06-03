@@ -2329,7 +2329,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       stepsSelectable: { type: 'toggle', displayName: 'steps selectable' },
     },
     defaultSize: {
-      width: 12,
+      width: 22,
       height: 80,
     },
     others: {
@@ -2381,7 +2381,6 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
         theme: { value: 'titles' },
         color: { value: 'blue' },
       },
