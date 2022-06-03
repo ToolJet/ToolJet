@@ -4,7 +4,7 @@ export const Steps = function Button({ height, properties, styles, fireEvent, se
   const { currentStep, stepsSelectable, steps } = properties;
   const { color, theme, visibility, disabledState } = styles;
 
-  const [activeStep, setActiveStep] = useState();
+  const [activeStep, setActiveStep] = useState(null);
 
   const activeStepHandler = (id) => {
     const active = steps.filter((item) => item.id == id);
@@ -13,7 +13,7 @@ export const Steps = function Button({ height, properties, styles, fireEvent, se
   };
 
   useEffect(() => {
-    console.log('step', activeStep);
+    console.log('step', activeStep, currentStep);
   }, [activeStep]);
 
   return (
@@ -22,7 +22,7 @@ export const Steps = function Button({ height, properties, styles, fireEvent, se
         <a
           key={item.id}
           href="#"
-          className={`step-item ${item.id == activeStep && 'active'}`}
+          className={`step-item ${activeStep ? item.id == activeStep : item.id == currentStep && 'active'}`}
           data-bs-toggle="tooltip"
           title="Step 1 description"
           onClick={() => stepsSelectable && activeStepHandler(item.id)}
