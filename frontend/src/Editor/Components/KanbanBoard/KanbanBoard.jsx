@@ -92,8 +92,12 @@ export const KanbanBoard = ({
 
       if (!isColumnIdUpdated) {
         const newData = updateCardData(state, rawCardData, cardData);
+
         if (newData && Object.prototype.toString.call(newData).slice(8, -1) === 'Array') {
           setState(newData);
+        }
+        if (newData === null) {
+          return setState(() => getData(columns, cardData));
         }
       }
 
@@ -107,7 +111,7 @@ export const KanbanBoard = ({
     minWidth: !minWidth ? '350px' : minWidth,
   };
 
-  if (state.length === 0) {
+  if (!state || state.length === 0) {
     return (
       <div className="mx-auto w-50 p-5 bg-light no-components-box" style={{ marginTop: '15%' }}>
         <center className="text-muted">Board is empty.</center>

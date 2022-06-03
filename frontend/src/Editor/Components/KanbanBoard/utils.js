@@ -35,6 +35,9 @@ export const updateColumnData = (currentData, column, newData) => {
 
 const cardDiffExits = (currentCards, newCards, state) => {
   const diff = [];
+
+  if (!currentCards) return null;
+
   newCards.forEach((card) => {
     const index = currentCards.findIndex((c) => c.id === card.id);
     const updatedColumnId = findCard(state, card.id)?.columnId;
@@ -52,7 +55,7 @@ const cardDiffExits = (currentCards, newCards, state) => {
 
 export const updateCardData = (currentData, cards, newData) => {
   const diffing = cardDiffExits(cards, newData, currentData);
-  if (diffing.length === 0) return null;
+  if (!diffing || diffing.length === 0) return null;
 
   const newState = [...currentData];
   diffing.forEach((card) => {

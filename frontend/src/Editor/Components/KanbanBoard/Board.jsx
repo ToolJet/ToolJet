@@ -16,7 +16,7 @@ const reorder = (list, startIndex, endIndex) => {
  */
 const move = (source, destination, droppableSource, droppableDestination) => {
   const sourceClone = Array.from(source);
-  const destinationClone = Array.from(destination);
+  const destinationClone = destination ? Array.from(destination) : [];
   const [removed] = sourceClone.splice(droppableSource.index, 1);
 
   destinationClone.splice(droppableDestination.index, 0, removed);
