@@ -17,10 +17,10 @@ export const CardEventPopover = function ({
   const [left, setLeft] = useState(0);
 
   const minHeight = 400;
-  let calendarBounds;
+  let kanbanBounds;
   let canvasBounds;
 
-  const calendarElement = document.getElementById(kanbanCardWidgetId);
+  const kanbanElement = document.getElementById(kanbanCardWidgetId);
 
   const handleClickOutside = (event) => {
     if (parentRef.current && !parentRef.current.contains(event.target)) {
@@ -41,16 +41,16 @@ export const CardEventPopover = function ({
 
   useEffect(() => {
     if (offset?.top && showPopover) {
-      const _left = offset.left - calendarBounds.x + offset.width;
-      const _top = ((offset.top - calendarBounds.y) * 100) / calendarBounds.height;
+      const _left = offset.left - kanbanBounds.x + offset.width;
+      const _top = ((offset.top - kanbanBounds.y) * 100) / kanbanBounds.height;
       setTop(_top);
       setLeft(_left);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offset?.top, showPopover]);
 
-  if (calendarElement && showPopover) {
-    calendarBounds = calendarElement.getBoundingClientRect();
+  if (kanbanElement && showPopover) {
+    kanbanBounds = kanbanElement.getBoundingClientRect();
     const canvasElement = document.getElementsByClassName('canvas-container')[0];
     canvasBounds = canvasElement.getBoundingClientRect();
   }
@@ -60,9 +60,8 @@ export const CardEventPopover = function ({
       {showPopover && (
         <div
           style={{
-            // backgroundColor: 'rgba(0, 0, 0, 0.6)', // This can be used for testing the overlay
-            top: -(calendarBounds.y + top),
-            left: -calendarBounds.x,
+            top: -(kanbanBounds.y + top),
+            left: -kanbanBounds.x,
             zIndex: 109,
             position: 'relative',
             height: canvasBounds.height + top,
@@ -84,7 +83,6 @@ export const CardEventPopover = function ({
         }}
         role="tooltip"
         x-placement="left"
-        // className="popover bs-popover-left shadow-lg"
         className={`popover bs-popover-left shadow-lg ${darkMode && 'popover-dark-themed theme-dark'}`}
         ref={parentRef}
         id={`${kanbanCardWidgetId}-popover`}

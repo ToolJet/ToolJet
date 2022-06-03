@@ -30,12 +30,6 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
     updateCb(newState);
   };
 
-  // const deleteGroupHandler = (state, keyIndex) => {
-  //   const newState = [...state];
-  //   newState.splice(keyIndex, 1);
-  //   updateCb(newState);
-  // };
-
   const { enableAddCard, accentColor, darkMode } = React.useContext(BoardContext);
 
   const hexaCodeToRgb = (hex) => {
@@ -89,38 +83,6 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
                 </span>
               )}
             </div>
-            {/* <div>
-              <span className="cursor-pointer">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="icon-tabler icon-tabler-dots-vertical"
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  stroke="#2c3e50"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                  <circle cx="12" cy="12" r="1" />
-                  <circle cx="12" cy="19" r="1" />
-                  <circle cx="12" cy="5" r="1" />
-                </svg>
-              </span>
-
-              <img
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteGroupHandler(state, keyIndex);
-                }}
-                className="mx-1 cursor-pointer"
-                src={`/assets/images/icons/trash.svg`}
-                width={12}
-                height={12}
-              />
-            </div> */}
           </div>
           <div style={{ ...styles }} className="card-body">
             {cards?.map((item, index) => (

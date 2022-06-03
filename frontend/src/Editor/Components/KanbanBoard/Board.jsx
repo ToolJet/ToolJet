@@ -2,31 +2,8 @@ import React from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { v4 as uuidv4 } from 'uuid';
 import Column from './Column';
+import { reorderCards, moveCards } from './utils';
 
-const reorder = (list, startIndex, endIndex) => {
-  const result = Array.from(list);
-  const [removed] = result.splice(startIndex, 1);
-  result.splice(endIndex, 0, removed);
-
-  return result;
-};
-
-/**
- * Moves an item from one list to another list.
- */
-const move = (source, destination, droppableSource, droppableDestination) => {
-  const sourceClone = Array.from(source);
-  const destinationClone = destination ? Array.from(destination) : [];
-  const [removed] = sourceClone.splice(droppableSource.index, 1);
-
-  destinationClone.splice(droppableDestination.index, 0, removed);
-
-  const result = {};
-  result[droppableSource.droppableId] = sourceClone;
-  result[droppableDestination.droppableId] = destinationClone;
-
-  return result;
-};
 const grid = 8;
 
 const getItemStyle = (isDragging, draggableStyle) => {
@@ -64,12 +41,12 @@ function Board({ height, state, colStyles, setState }) {
       const dInd = +destination.droppableId;
 
       if (sInd === dInd) {
-        const items = reorder(state[sInd]['cards'], source.index, destination.index);
+        const items = reorderCards(state[sInd]['cards'], source.index, destination.index);
         const newState = [...state];
         newState[sInd]['cards'] = items;
         setState(newState);
       } else {
-        const result = move(state[sInd]['cards'], state[dInd].cards, source, destination);
+        const result = moveCards(state[sInd]['cards'], state[dInd].cards, source, destination);
         const newState = [...state];
         newState[sInd]['cards'] = result[sInd];
         newState[dInd]['cards'] = result[dInd];

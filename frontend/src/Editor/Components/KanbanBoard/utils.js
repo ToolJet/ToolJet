@@ -1,3 +1,40 @@
+export const getData = (columns, cards) => {
+  if (isArray(cards) && isArray(columns)) {
+    const clonedColumns = [...columns];
+    cards.forEach((card) => {
+      const column = clonedColumns.find((column) => column.id === card.columnId);
+      if (column) {
+        column['cards'] = column?.cards ? [...column.cards, card] : [card];
+      }
+    });
+
+    return clonedColumns;
+  }
+  return null;
+};
+
+export const reorderCards = (list, startIndex, endIndex) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+
+  return result;
+};
+
+export const moveCards = (source, destination, droppableSource, droppableDestination) => {
+  const sourceClone = Array.from(source);
+  const destinationClone = destination ? Array.from(destination) : [];
+  const [removed] = sourceClone.splice(droppableSource.index, 1);
+
+  destinationClone.splice(droppableDestination.index, 0, removed);
+
+  const result = {};
+  result[droppableSource.droppableId] = sourceClone;
+  result[droppableDestination.droppableId] = destinationClone;
+
+  return result;
+};
+
 const diffCol = (next, current) => {
   const nextState = [...next];
   const currentState = [...current];
@@ -91,3 +128,5 @@ export const isCardColoumnIdUpdated = (currentCardData, nextCardData) => {
   });
   return isColoumnIdUpdated;
 };
+
+export const isArray = (value) => Object.prototype.toString.call(value).slice(8, -1) === 'Array';

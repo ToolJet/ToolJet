@@ -1,24 +1,6 @@
 import React from 'react';
 import Board from './Board';
-import { isCardColoumnIdUpdated, updateCardData, updateColumnData } from './utils';
-
-const getData = (columns, cards) => {
-  if (
-    Object.prototype.toString.call(cards).slice(8, -1) === 'Array' &&
-    Object.prototype.toString.call(columns).slice(8, -1) === 'Array'
-  ) {
-    const clonedColumns = [...columns];
-    cards.forEach((card) => {
-      const column = clonedColumns.find((column) => column.id === card.columnId);
-      if (column) {
-        column['cards'] = column?.cards ? [...column.cards, card] : [card];
-      }
-    });
-
-    return clonedColumns;
-  }
-  return null;
-};
+import { isCardColoumnIdUpdated, updateCardData, updateColumnData, getData, isArray } from './utils';
 
 export const BoardContext = React.createContext({});
 
@@ -47,10 +29,7 @@ export const KanbanBoard = ({
   }, [state]);
 
   React.useEffect(() => {
-    if (
-      JSON.stringify(columns) !== JSON.stringify(rawColumnData) ||
-      JSON.stringify(cardData) !== JSON.stringify(rawCardData)
-    ) {
+    if (isArray(rawColumnData) || isArray(rawCardData)) {
       const colData = JSON.parse(JSON.stringify(columns));
       const _cardData = JSON.parse(JSON.stringify(cardData));
       setRawColumnData(colData);
@@ -62,13 +41,10 @@ export const KanbanBoard = ({
   }, []);
 
   React.useEffect(() => {
-    if (
-      JSON.stringify(columns) !== JSON.stringify(rawColumnData) &&
-      Object.prototype.toString.call(columns).slice(8, -1) === 'Array'
-    ) {
+    if (JSON.stringify(columns) !== JSON.stringify(rawColumnData) && isArray(columns)) {
       const newData = updateColumnData(state, rawColumnData, columns);
 
-      if (newData && Object.prototype.toString.call(newData).slice(8, -1) === 'Array') {
+      if (newData && isArray(newData)) {
         setState(newData);
       }
       setRawColumnData(columns);
@@ -77,15 +53,12 @@ export const KanbanBoard = ({
   }, [columns]);
 
   React.useEffect(() => {
-    if (
-      JSON.stringify(cardData) !== JSON.stringify(rawCardData) &&
-      Object.prototype.toString.call(cardData).slice(8, -1) === 'Array'
-    ) {
+    if (JSON.stringify(cardData) !== JSON.stringify(rawCardData) && isArray(cardData)) {
       const isColumnIdUpdated = isCardColoumnIdUpdated(rawCardData, cardData);
 
       if (isColumnIdUpdated) {
         const newData = getData(columns, cardData);
-        if (newData && Object.prototype.toString.call(newData).slice(8, -1) === 'Array') {
+        if (newData && isArray(newData)) {
           setState(newData);
         }
       }
@@ -93,7 +66,7 @@ export const KanbanBoard = ({
       if (!isColumnIdUpdated) {
         const newData = updateCardData(state, rawCardData, cardData);
 
-        if (newData && Object.prototype.toString.call(newData).slice(8, -1) === 'Array') {
+        if (newData && isArray(newData)) {
           setState(newData);
         }
         if (newData === null) {
