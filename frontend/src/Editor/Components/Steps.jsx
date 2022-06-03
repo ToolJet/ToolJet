@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 export const Steps = function Button({ properties, styles, fireEvent, setExposedVariable }) {
   const { currentStep, stepsSelectable, steps } = properties;
-  const { color, theme, visibility, disabledState } = styles;
+  const { color, theme, visibility } = styles;
 
   const [activeStep, setActiveStep] = useState(null);
 
@@ -14,7 +14,7 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
   };
 
   useEffect(() => {
-    console.log('step', activeStep, currentStep);
+    console.log('step', activeStep);
   }, [activeStep]);
 
   return (
@@ -24,7 +24,9 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
           <a
             key={item.id}
             href="#"
-            className={`step-item ${(activeStep ? item.id == activeStep : item.id == currentStep) && 'active'}`}
+            className={`step-item ${(activeStep ? item.id == activeStep : item.id == currentStep) && 'active'}  ${
+              color && `step-${color}`
+            }`}
             data-bs-toggle="tooltip"
             title={item?.tooltip}
             onClick={() => stepsSelectable && activeStepHandler(item.id)}
