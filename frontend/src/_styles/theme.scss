@@ -5396,22 +5396,28 @@ word-break: break-all;
 // sso end
 
 // steps-widget
-.steps .step-blue:after, .steps .step-blue:before{
-  background: #4d72fa !important;
-}
-.steps .step-item:after, .steps .step-item:before{
-  background: #4d72fa !important;
-}
-.steps .step-red:after, .steps .step-red:before{
-  background: #ef3838 !important;
-}
-.steps .step-black:after, .steps .step-black:before{
-  background: #000000 !important;
-}
-.steps .step-green:after, .steps .step-green:before{
-  background: #20c48b !important;
-}
-.steps .step-gray:after, .steps .step-gray:before{
-  background: #9b9b9b !important;
-}
+// .steps .step-blue:after, .steps .step-blue:before{
+//   color: #fff !important;
+//   background: #4d72fa !important;
+// }
+// .steps .step-item:after, .steps .step-item:before{
+//   background: #4d72fa !important;
+// }
+// .steps .step-red:after, .steps .step-red:before{
+//   background: #ef3838 !important;
+// }
+// .steps .step-black:after, .steps .step-black:before{
+//   background: #000000 !important;
+// }
+// .steps .step-green:after, .steps .step-green:before{
+//   background: #20c48b !important;
+// }
+// .steps .step-gray:after, .steps .step-gray:before{
+//   background: #9b9b9b !important;
+// }
+
+// .steps .step-item.active:before {
+//     color: inherit;
+//     border-color: #9b9b9b;
+// }
 // steps-widget end

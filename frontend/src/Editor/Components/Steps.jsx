@@ -8,14 +8,14 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
 
   const activeStepHandler = (id) => {
     const active = steps.filter((item) => item.id == id);
-    console.log(active);
     setExposedVariable('currentStepId', active[0].id).then(() => fireEvent('onSelect'));
     setActiveStep(active[0].id);
   };
 
   useEffect(() => {
-    console.log('step', activeStep);
-  }, [activeStep]);
+    setActiveStep(currentStep);
+    setExposedVariable('currentStepId', currentStep).then(() => fireEvent('onSelect'));
+  }, [currentStep]);
 
   return (
     visibility && (
@@ -24,9 +24,7 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
           <a
             key={item.id}
             href="#"
-            className={`step-item ${(activeStep ? item.id == activeStep : item.id == currentStep) && 'active'}  ${
-              color && `step-${color}`
-            }`}
+            className={`step-item ${item.id == activeStep && 'active'}  ${color && `step-${color}`}`}
             data-bs-toggle="tooltip"
             title={item?.tooltip}
             onClick={() => stepsSelectable && activeStepHandler(item.id)}
