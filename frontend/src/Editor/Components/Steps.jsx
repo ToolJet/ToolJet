@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export const Steps = function Button({ height, properties, styles, fireEvent, setExposedVariable }) {
+export const Steps = function Button({ properties, styles, fireEvent, setExposedVariable }) {
   const { currentStep, stepsSelectable, steps } = properties;
   const { color, theme, visibility, disabledState } = styles;
 
@@ -9,6 +9,7 @@ export const Steps = function Button({ height, properties, styles, fireEvent, se
   const activeStepHandler = (id) => {
     const active = steps.filter((item) => item.id == id);
     console.log(active);
+    setExposedVariable('currentStepId', active[0].id).then(() => fireEvent('onSelect'));
     setActiveStep(active[0].id);
   };
 

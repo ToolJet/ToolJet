@@ -2337,7 +2337,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     events: {
-      onClick: { displayName: 'On click' },
+      onSelect: { displayName: 'On onSelect' },
     },
     styles: {
       color: { type: 'color', displayName: 'color' },
@@ -2354,7 +2354,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
-      selected: [1],
+      currentStepId: '',
     },
     definition: {
       others: {
