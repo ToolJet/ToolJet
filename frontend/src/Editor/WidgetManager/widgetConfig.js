@@ -2324,9 +2324,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     description: 'Steps',
     component: 'Steps',
     properties: {
-      steps: { type: 'code', displayName: 'steps' },
-      currentStep: { type: 'code', displayName: 'currentStep' },
-      stepsSelectable: { type: 'toggle', displayName: 'steps selectable' },
+      steps: { type: 'code', displayName: 'Steps' },
+      currentStep: { type: 'code', displayName: 'Current step' },
+      stepsSelectable: { type: 'toggle', displayName: 'Steps selectable' },
     },
     defaultSize: {
       width: 22,
@@ -2342,7 +2342,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       color: {
         type: 'select',
-        displayName: 'color',
+        displayName: 'Color',
         options: [
           { name: 'blue', value: 'blue' },
           { name: 'red', value: 'red' },
@@ -2361,10 +2361,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         ],
       },
       visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
-      currentStepId: '',
+      currentStepId: '3',
     },
     definition: {
       others: {
