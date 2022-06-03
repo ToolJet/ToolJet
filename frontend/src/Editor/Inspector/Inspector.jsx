@@ -2,7 +2,7 @@ import React, { useState, useRef, useLayoutEffect } from 'react';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
 import { v4 as uuidv4 } from 'uuid';
-import { componentTypes } from '../Components/components';
+import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
 import { renderElement } from './Utils';

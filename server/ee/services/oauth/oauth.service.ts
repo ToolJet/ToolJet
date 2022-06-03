@@ -125,8 +125,8 @@ export class OauthService {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
     }
 
-    // If name not found
-    if (!(userResponse.firstName && userResponse.lastName)) {
+    // If firstName not found
+    if (!userResponse.firstName) {
       userResponse.firstName = userResponse.email?.split('@')?.[0];
     }
     const user: User = await (!enableSignUp

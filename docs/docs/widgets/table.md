@@ -6,11 +6,7 @@ title: Table
 
 Tables can be used for both displaying and editing data.
 
-<div style={{textAlign: 'left'}}>
-    <figure class="video_container">
-    <iframe width="630" height="400" src="https://www.youtube.com/embed/hTrdkUtz3aA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    </figure>
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/hTrdkUtz3aA" title="ToolJet Table Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Table data
 
@@ -139,7 +135,7 @@ Loading state shows a loading skeleton for the table. This property can be used 
 
 ### Client-side pagination
 
-Client-side pagination is enabled by default. The number of records per page is 10 by default and can be changed to upto 50.
+Client-side pagination is enabled by default. When the client-side pagination is enabled(`{{true}}`) the number of records per page is 10 and if it is disabled(`{{false}}`) then it will show all the records in the single page.
 
 ## Event
 
