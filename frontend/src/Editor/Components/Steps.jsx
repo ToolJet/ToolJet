@@ -20,7 +20,7 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
   return (
     visibility && (
       <div className={`steps steps-widget ${theme == 'numbers' && 'steps-counter '}`}>
-        {steps.map((item) => (
+        {steps?.map((item) => (
           <a
             key={item.id}
             href="#"
