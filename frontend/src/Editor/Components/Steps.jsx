@@ -17,19 +17,21 @@ export const Steps = function Button({ height, properties, styles, fireEvent, se
   }, [activeStep]);
 
   return (
-    <div className={`steps steps-widget`}>
-      {steps.map((item) => (
-        <a
-          key={item.id}
-          href="#"
-          className={`step-item ${activeStep ? item.id == activeStep : item.id == currentStep && 'active'}`}
-          data-bs-toggle="tooltip"
-          title="Step 1 description"
-          onClick={() => stepsSelectable && activeStepHandler(item.id)}
-        >
-          {item.name}
-        </a>
-      ))}
-    </div>
+    visibility && (
+      <div className={`steps steps-widget ${theme == 'numbers' && 'steps-counter '}`}>
+        {steps.map((item) => (
+          <a
+            key={item.id}
+            href="#"
+            className={`step-item ${(activeStep ? item.id == activeStep : item.id == currentStep) && 'active'}`}
+            data-bs-toggle="tooltip"
+            title="Step 1 description"
+            onClick={() => stepsSelectable && activeStepHandler(item.id)}
+          >
+            {theme == 'titles' && item.name}
+          </a>
+        ))}
+      </div>
+    )
   );
 };
