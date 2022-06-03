@@ -2317,4 +2317,62 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
   },
+
+  {
+    name: 'Steps',
+    displayName: 'Steps',
+    description: 'Steps',
+    component: 'Steps',
+    properties: {
+      steps: { type: 'code', displayName: 'steps' },
+      currentStep: { type: 'code', displayName: 'currentStep' },
+      stepsSelectable: { type: 'toggle', displayName: 'steps selectable' },
+    },
+    defaultSize: {
+      width: 12,
+      height: 80,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {
+      onClick: { displayName: 'On click' },
+    },
+    styles: {
+      color: { type: 'color', displayName: 'color' },
+      theme: {
+        type: 'select',
+        displayName: 'Theme',
+        options: [
+          { name: 'titles', value: 'titles' },
+          { name: 'numbers', value: 'numbers' },
+          { name: 'plain', value: 'plain' },
+        ],
+      },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      selected: [1],
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        steps: { value: `{{ [{ name: 'step 1', tooltip: 'some tooltip', id: 0}]}}` },
+        currentStep: { value: '{{1}}' },
+        stepsSelectable: { value: true },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+        theme: { type: 'color', value: ` {{ 'plain'}}` },
+        color: { type: 'color', value: '#000' },
+      },
+    },
+  },
 ];
