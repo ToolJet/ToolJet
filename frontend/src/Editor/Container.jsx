@@ -7,7 +7,7 @@ import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
-import { componentTypes } from './Components/components';
+import { componentTypes } from './WidgetManager/components';
 import { computeComponentName, resolveReferences } from '@/_helpers/utils';
 import useRouter from '@/_hooks/use-router';
 import Comments from './Comments';
@@ -48,9 +48,8 @@ export const Container = ({
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
-    height: '100%',
     maxWidth: `${canvasWidth}px`,
-    maxHeight: `${canvasHeight}px`,
+    height: `${canvasHeight}px`,
     position: 'absolute',
     backgroundSize: `${canvasWidth / 43}px 10px`,
   };
@@ -233,11 +232,13 @@ export const Container = ({
 
     for (const selectedComponent of selectedComponents) {
       newBoxes = produce(newBoxes, (draft) => {
-        const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
-        const leftOffset = draft[selectedComponent.id].layouts[currentLayout].left;
+        if (draft[selectedComponent.id]) {
+          const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
+          const leftOffset = draft[selectedComponent.id].layouts[currentLayout].left;
 
-        draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
-        draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
+          draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
+          draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
+        }
       });
     }
 
@@ -410,6 +411,7 @@ export const Container = ({
         'show-grid': isDragging || isResizing,
       })}
       id="real-canvas"
+      data-cy="real-canvas"
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>

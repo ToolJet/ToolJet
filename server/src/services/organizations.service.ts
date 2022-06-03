@@ -7,10 +7,13 @@ import { User } from 'src/entities/user.entity';
 import { cleanObject } from 'src/helpers/utils.helper';
 import { createQueryBuilder, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
+import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
 import { GroupPermissionsService } from './group_permissions.service';
 import { OrganizationUsersService } from './organization_users.service';
 import { UsersService } from './users.service';
+import { InviteNewUserDto } from '@dto/invite-new-user.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class OrganizationsService {
@@ -26,7 +29,9 @@ export class OrganizationsService {
     private usersService: UsersService,
     private organizationUserService: OrganizationUsersService,
     private groupPermissionService: GroupPermissionsService,
-    private encryptionService: EncryptionService
+    private encryptionService: EncryptionService,
+    private emailService: EmailService,
+    private configService: ConfigService
   ) {}
 
   async create(name: string, user?: User): Promise<Organization> {
@@ -307,5 +312,84 @@ export class OrganizationsService {
     });
     await this.decryptSecret(result?.configs);
     return result;
+  }
+
+  async inviteNewUser(currentUser: User, inviteNewUserDto: InviteNewUserDto): Promise<OrganizationUser> {
+    const userParams = <User>{
+      firstName: inviteNewUserDto.first_name,
+      lastName: inviteNewUserDto.last_name,
+      email: inviteNewUserDto.email,
+    };
+
+    let user = await this.usersService.findByEmail(userParams.email);
+    let defaultOrganisation: Organization,
+      shouldSendWelcomeMail = false;
+
+    if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
+      throw new BadRequestException('User with such email already exists.');
+    }
+
+    if (user?.invitationToken) {
+      // user sign up not completed, name will be empty - updating name
+      await this.usersService.update(user.id, { firstName: userParams.firstName, lastName: userParams.lastName });
+    }
+
+    if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
+      // User not exist
+      shouldSendWelcomeMail = true;
+      // Create default organization
+      defaultOrganisation = await this.create('Untitled workspace');
+    }
+    user = await this.usersService.create(
+      userParams,
+      currentUser.organizationId,
+      ['all_users'],
+      user,
+      true,
+      defaultOrganisation?.id
+    );
+
+    if (defaultOrganisation) {
+      // Setting up default organization
+      await this.organizationUserService.create(user, defaultOrganisation, true);
+      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganisation.id, user.id);
+    }
+
+    const currentOrganization: Organization = (
+      await this.organizationUsersRepository.findOne({
+        where: { userId: currentUser.id, organizationId: currentUser.organizationId },
+        relations: ['organization'],
+      })
+    )?.organization;
+
+    const organizationUser: OrganizationUser = await this.organizationUserService.create(
+      user,
+      currentOrganization,
+      true
+    );
+
+    if (shouldSendWelcomeMail) {
+      this.emailService
+        .sendWelcomeEmail(
+          user.email,
+          user.firstName,
+          user.invitationToken,
+          organizationUser.invitationToken,
+          currentOrganization.name,
+          `${currentUser.firstName} ${currentUser.lastName}`
+        )
+        .catch((err) => console.error('Error while sending welcome mail', err));
+    } else {
+      this.emailService
+        .sendOrganizationUserWelcomeEmail(
+          user.email,
+          user.firstName,
+          `${currentUser.firstName} ${currentUser.lastName}`,
+          organizationUser.invitationToken,
+          currentOrganization.name
+        )
+        .catch((err) => console.error('Error while sending welcome mail', err));
+    }
+    return organizationUser;
   }
 }

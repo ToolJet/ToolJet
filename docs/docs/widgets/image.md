@@ -34,6 +34,11 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 
 Enter the URL of the image to display it on the widget.
 
+### Zoom buttons
+Toggle this to enable zoom options inside image.
+
+### Alternative text
+Used for alt text of images.
 ## Layout
 
 ### Show on desktop
@@ -53,6 +58,13 @@ Choose a border type for the image from available options:
 - Circle
 - Thumbnail
 
+### Image fit
+
+Choose a image fit - similar to object fit for the image from available options:
+- fill
+- cover
+- contain
+- scale-down
 ### Background color
 
 Add a background color to widget by providing the `HEX color code` or choosing the color of your choice from the color-picker.
