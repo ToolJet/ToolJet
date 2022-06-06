@@ -1,31 +1,42 @@
-name: Review app deploy
+name: Heroku Review App on label
 on:
   pull_request:
-    types: [opened, reopened, closed, synchronize, labeled, pull_request_target]
-  pull_request_target:
-    types: [opened, reopened, closed, synchronize, labeled, pull_request_target]
+    types: [labeled]
 
 jobs:
-  deploy-review-app:
+  create-review-app:
+    if: ${{ github.event.label.name == 'create-review-app' }}
     runs-on: ubuntu-latest
-    name: Deploy review app
-    if: contains(github.event.pull_request.labels.*.name, 'deploy-heroku')
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Deploy Heroku app
-        uses: pmbanugo/heroku-review-app-actions@v2.0.0
-        id: deploy
+      - uses: fastruby/manage-heroku-review-app@v1.2
         with:
-          api-key: ${{ secrets.HEROKU_API_KEY }}
-          pipeline-id: ${{ secrets.HEROKU_PIPELINE_ID }}
-          base-name: tooljet
-      - name: Get the review app url
-        run: echo "The URL is ${{ steps.deploy.outputs.url }}"
-      - name: Comment on commit
-        uses: phulsechinmay/rewritable-pr-comment@v0.2.1
-        with:
+          action: create
+        env:
+          HEROKU_API_TOKEN: ${{ secrets.HEROKU_API_TOKEN }}
+          HEROKU_PIPELINE_ID: ${{ secrets.HEROKU_PIPELINE_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMMENT_IDENTIFIER: "Deploy"
-          message: |
-            Heroku App deployed here: ${{ steps.deploy.outputs.url }}
+
+      - uses: fastruby/pr-unlabeler@v1
+        with:
+          label-to-remove: "create-review-app"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  destroy-review-app:
+    if: ${{ github.event.label.name == 'destroy-review-app' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: fastruby/manage-heroku-review-app@v1.2
+        with:
+          action: destroy
+        env:
+          HEROKU_API_TOKEN: ${{ secrets.HEROKU_API_TOKEN }}
+          HEROKU_PIPELINE_ID: ${{ secrets.HEROKU_PIPELINE_ID }}
+
+      - uses: fastruby/pr-unlabeler@v1
+        with:
+          label-to-remove: "destroy-review-app"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
