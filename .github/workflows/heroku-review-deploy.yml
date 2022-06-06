@@ -6,21 +6,27 @@ on:
     types: [opened, reopened, closed, synchronize, labeled, pull_request_target]
 
 jobs:
-  deploy:
-    name: Heroku review application deploy
+  automate-review-app:
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.labels.*.name, 'deploy-heroku')
+    name: A job to create and delete review a review app
     steps:
-      - name: Heroku Review Application
-        uses: mheap/github-action-pr-heroku-review-app@master
-        env:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Deploy Heroku app
+        uses: pmbanugo/heroku-review-app-actions@v2.0.0 # Uses the action
+        id: deploy
+        with:
+          api-key: ${{ secrets.HEROKU_API_KEY }}
+          pipeline-id: ${{ secrets.HEROKU_PIPELINE_ID }}
+          base-name: tooljet
+      - name: Get the review app url # Use the output from the `deploy` step
+        run: echo "The URL is ${{ steps.deploy.outputs.url }}"
+      - name: Comment on commit # Optional: You can use any action to comment on the PR
+        uses: phulsechinmay/rewritable-pr-comment@v0.2.1
+        with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HEROKU_API_TOKEN: ${{ secrets.HEROKU_API_TOKEN }}
-          HEROKU_PIPELINE_ID: ${{ secrets.HEROKU_PIPELINE_ID }}
-          LOCKBOX_MASTER_KEY: ${{secrets.LOCKBOX_MASTER_KEY}}
-          NODE_ENV: "production"
-          NODE_OPTIONS: "--max-old-space-size=4096"
-          SECRET_KEY_BASE: ${{secrets.SECRET_KEY_BASE}}
-          TOOLJET_HOST: "https://tooljet-pr-${{github.event.number}}.herokuapp.com"
-          TOOLJET_SERVER_URL: "https://tooljet-pr-${{github.event.number}}.herokuapp.com"
-          DISABLE_TOOLJET_TELEMETRY: true
+          COMMENT_IDENTIFIER: "Deploy"
+          message: |
+            I deployed a review app for you to try out this pull request 👇🏽
+
+            Heroku App: ${{ steps.deploy.outputs.url }}
