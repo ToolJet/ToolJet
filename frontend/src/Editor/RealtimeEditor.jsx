@@ -1,9 +1,10 @@
 /* eslint-disable import/no-unresolved */
 import React from 'react';
 import config from 'config';
-import { PresenceProvider } from 'y-presence';
-import RealtimeCursors from '@/Editor/RealtimeCursors';
+import { RoomProvider } from '@y-presence/react';
 import Spinner from '@/_ui/Spinner';
+import { Editor } from '@/Editor';
+
 const Y = require('yjs');
 const { WebsocketProvider } = require('y-websocket');
 
@@ -40,9 +41,21 @@ export const RealtimeEditor = (props) => {
 
   if (!provider) return <Spinner />;
 
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+  const initialPresence = {
+    firstName: currentUser.first_name,
+    lastName: currentUser.last_name,
+    image: '',
+    editingVersionId: '',
+    x: 0,
+    y: 0,
+    color: '',
+  };
+
   return (
-    <PresenceProvider awareness={provider.awareness}>
-      <RealtimeCursors ymap={ydoc.getMap('appDef')} {...props} />
-    </PresenceProvider>
+    <RoomProvider awareness={provider.awareness} initialPresence={initialPresence}>
+      <Editor provider={provider} ymap={ydoc.getMap('appDef')} {...props} />
+    </RoomProvider>
   );
 };
