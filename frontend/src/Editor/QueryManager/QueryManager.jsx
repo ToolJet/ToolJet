@@ -145,17 +145,22 @@ let QueryManager = class QueryManager extends React.Component {
     //     }
     //   }
     // }
-
-    if (
-      !isEmpty(this.state.updatedQuery) &&
-      !isEqual(this.state.selectedQuery.options, nextProps.selectedQuery.options)
-    ) {
+    if (!isEmpty(this.state.updatedQuery)) {
       const query = nextProps.dataQueries.find((q) => q.id === this.state.updatedQuery.id);
-      if (query) {
+      const isLoading = nextProps.currentState?.queries[query.name]
+        ? nextProps.currentState?.queries[query.name]?.isLoading
+        : false;
+      const prevLoading = this.state.currentState?.queries[query.name]
+        ? this.state.currentState?.queries[query.name]?.isLoading
+        : false;
+      if (!isEqual(this.state.selectedQuery, nextProps.selectedQuery)) {
+        if (query && !isLoading && !prevLoading) {
+          this.props.runQuery(query.id, query.name);
+        }
+      } else if (!isLoading && prevLoading) {
         this.state.updatedQuery.updateQuery
           ? this.setState({ updatedQuery: {}, isUpdating: false })
           : this.setState({ updatedQuery: {}, isCreating: false });
-        this.props.runQuery(query.id, query.name);
       }
     }
     this.setStateFromProps(nextProps);
