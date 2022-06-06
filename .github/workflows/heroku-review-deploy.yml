@@ -9,7 +9,6 @@ jobs:
   deploy-review-app:
     runs-on: ubuntu-latest
     name: Deploy review app
-    if: contains(github.evert.pull_request.labels.*.name, 'deploy-heroku')
     steps:
       - name: Checkout
         uses: actions/checkout@v3
