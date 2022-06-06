@@ -17,7 +17,7 @@ jobs:
         uses: pmbanugo/heroku-review-app-actions@v2.0.0
         id: deploy
         with:
-          api-key: ${{ secrets.HEROKU_API_KEY }}
+          api-key: ${{ secrets.HEROKU_API_TOKEN }}
           pipeline-id: ${{ secrets.HEROKU_PIPELINE_ID }}
           base-name: "tooljet-pr-${{github.event.number}}"
       - name: Get the review app url # Use the output from the `deploy` step
