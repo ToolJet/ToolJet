@@ -542,7 +542,7 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query) {
+export function previewQuery(_ref, query, calledFromQuery = false) {
   const options = getQueryVariables(query.options, _ref.props.currentState);
 
   _ref.setState({ previewLoading: true });
@@ -563,7 +563,11 @@ export function previewQuery(_ref, query) {
           finalData = runTransformation(_ref, finalData, query.options.transformation, query);
         }
 
-        _ref.setState({ previewLoading: false, queryPreviewData: finalData });
+        if (calledFromQuery) {
+          _ref.setState({ previewLoading: false });
+        } else {
+          _ref.setState({ previewLoading: false, queryPreviewData: finalData });
+        }
         switch (data.status) {
           case 'failed': {
             toast.error(`${data.message}: ${data.description}`);
@@ -582,7 +586,7 @@ export function previewQuery(_ref, query) {
           }
         }
 
-        resolve();
+        resolve({ status: data.status, data: finalData });
       })
       .catch(({ error, data }) => {
         _ref.setState({ previewLoading: false, queryPreviewData: data });

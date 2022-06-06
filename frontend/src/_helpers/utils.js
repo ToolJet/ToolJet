@@ -280,7 +280,7 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
       const query = _ref.state.dataQueries.find((query) => query.name === queryName);
       if (_.isEmpty(query)) return;
       if (isPreview) {
-        return previewQuery(_ref, query);
+        return previewQuery(_ref, query, true);
       } else {
         return runQuery(_ref, query.id, query.name, confirmed, mode);
       }
