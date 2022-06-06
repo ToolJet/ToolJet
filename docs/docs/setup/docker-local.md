@@ -1,11 +1,11 @@
 ---
 id: docker-local
-title: Docker Local
+title: Try ToolJet locally
 ---
 
 # Try ToolJet with Docker
 
-You can run the command below to have tooljet up and running right away.
+You can run the command below to have ToolJet up and running right away.
 
 ```bash
 docker run \
@@ -18,8 +18,8 @@ docker run \
 
 ## Setup information
 
-- Runs the tooljet server on your port 3000.
-- Container has posgres already configured within. All the data will be available in the docker volume `tooljet_data`.
+- Runs the ToolJet server on the port 3000 on your machine.
+- Container has postgres already configured within. All the data will be available in the docker volume `tooljet_data`.
 - Default user credentials to login (email: `dev@tooljet.io`, password: `password`).
 - You can make use of `--env` or `--env-file` flag to test against various env configurables mentioned [here](https://docs.tooljet.com/docs/setup/env-vars).
 - Use `docker stop tooljet` to stop the container and `docker start tooljet` to start the container thereafter.

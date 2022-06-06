@@ -2198,6 +2198,7 @@ const MyCustomComponent = ({data, updateData, runQuery}) => (
 );
 const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
 ReactDOM.render(<ConnectedComponent />, document.body);`,
+          skipResolve: true,
         },
       },
       events: [],
