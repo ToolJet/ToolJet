@@ -9,6 +9,7 @@ jobs:
   deploy-review-app:
     runs-on: ubuntu-latest
     name: Deploy review app
+    if: contains(github.event.pull_request.labels.*.name, 'deploy-heroku')
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -27,6 +28,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMENT_IDENTIFIER: "Deploy"
           message: |
-            I deployed a review app for you to try out this pull request 👇🏽
-
-            Heroku App: ${{ steps.deploy.outputs.url }}
+            Heroku App deploked here: ${{ steps.deploy.outputs.url }}
