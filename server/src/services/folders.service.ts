@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
@@ -298,6 +298,32 @@ export class FoldersService {
   }
 
   async delete(user: User, id: string) {
+    const folder = await this.foldersRepository.findOneOrFail({ id, organizationId: user.organizationId });
+    const allViewableApps = await createQueryBuilder(App, 'apps')
+      .select('apps.id')
+      .innerJoin('apps.groupPermissions', 'group_permissions')
+      .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
+      .innerJoin(
+        UserGroupPermission,
+        'user_group_permissions',
+        'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+      )
+      .where('user_group_permissions.user_id = :userId', { userId: user.id })
+      .andWhere('app_group_permissions.read = :value', { value: true })
+      .orWhere('apps.user_id = :userId', {
+        value: true,
+        organizationId: user.organizationId,
+        userId: user.id,
+      })
+      .getMany();
+
+    const allViewableAppIds = allViewableApps.map((app) => app.id);
+
+    folder.folderApps.map((folderApp: FolderApp) => {
+      if (!allViewableAppIds.includes(folderApp.appId)) {
+        throw new ForbiddenException('You do not have permissions to perform this action');
+      }
+    });
     return await this.foldersRepository.delete({ id, organizationId: user.organizationId });
   }
 }
