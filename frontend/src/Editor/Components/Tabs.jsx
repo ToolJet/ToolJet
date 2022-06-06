@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, createRef } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
@@ -99,8 +99,12 @@ export const Tabs = function Tabs({
           id={`${id}-${tab.id}`}
           key={tab.id}
         >
-          <div className={`tab-pane ${tab.id === currentTab ? 'active' : ''}`}>
-            {tab.id}
+          <div
+            className={`tab-pane active`}
+            style={{
+              opacity: tab.id === currentTab ? 1 : 0,
+            }}
+          >
             <SubContainer
               parent={`${id}-${tab.id}`}
               {...containerProps}
@@ -109,13 +113,15 @@ export const Tabs = function Tabs({
               containerCanvasWidth={width}
               parentComponent={component}
             />
+          </div>
+          {tab.id === currentTab && (
             <SubCustomDragLayer
               parent={`${id}-${tab.id}`}
               parentRef={parentRef}
               currentLayout={containerProps.currentLayout}
               containerCanvasWidth={width}
             />
-          </div>
+          )}
         </div>
       ))}
     </div>
