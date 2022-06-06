@@ -28,4 +28,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMENT_IDENTIFIER: "Deploy"
           message: |
-            Heroku App deploked here: ${{ steps.deploy.outputs.url }}
+            Heroku App deployed here: ${{ steps.deploy.outputs.url }}
