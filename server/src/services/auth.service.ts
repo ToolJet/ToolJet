@@ -185,6 +185,7 @@ export class AuthService {
   }
 
   async signup(email: string) {
+    email = email ? email.toLowerCase() : '';
     const existingUser = await this.usersService.findByEmail(email);
     if (existingUser?.organizationUsers?.some((ou) => ou.status === 'active')) {
       throw new NotAcceptableException('Email already exists');
