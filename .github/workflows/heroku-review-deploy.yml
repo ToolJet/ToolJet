@@ -6,22 +6,23 @@ on:
     types: [opened, reopened, closed, synchronize, labeled, pull_request_target]
 
 jobs:
-  automate-review-app:
+  deploy-review-app:
     runs-on: ubuntu-latest
-    name: A job to create and delete review a review app
+    name: Deploy review app
+    if: contains(github.evert.pull_request.labels.*.name, 'deploy-heroku')
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Deploy Heroku app
-        uses: pmbanugo/heroku-review-app-actions@v2.0.0 # Uses the action
+        uses: pmbanugo/heroku-review-app-actions@v2.0.0
         id: deploy
         with:
           api-key: ${{ secrets.HEROKU_API_KEY }}
           pipeline-id: ${{ secrets.HEROKU_PIPELINE_ID }}
           base-name: tooljet
-      - name: Get the review app url # Use the output from the `deploy` step
+      - name: Get the review app url
         run: echo "The URL is ${{ steps.deploy.outputs.url }}"
-      - name: Comment on commit # Optional: You can use any action to comment on the PR
+      - name: Comment on commit
         uses: phulsechinmay/rewritable-pr-comment@v0.2.1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
