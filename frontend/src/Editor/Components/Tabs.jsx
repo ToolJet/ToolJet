@@ -103,9 +103,9 @@ export const Tabs = function Tabs({
             className={`tab-pane active`}
             style={{
               opacity: tab.id === currentTab ? 1 : 0,
-              height: height - 41,
+              height: parsedHideTabs ? height : height - 41,
               position: 'absolute',
-              top: '41px',
+              top: parsedHideTabs ? '0px' : '41px',
               width: '100%',
             }}
           >
