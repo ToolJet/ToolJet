@@ -1,6 +1,6 @@
 ---
 id: docker-local
-title: Docker Local
+title: Try ToolJet locally
 ---
 
 # Try ToolJet with Docker
