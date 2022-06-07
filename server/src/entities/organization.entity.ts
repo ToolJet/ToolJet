@@ -7,10 +7,12 @@ import {
   OneToMany,
   JoinColumn,
   BaseEntity,
+  ManyToOne,
 } from 'typeorm';
 import { GroupPermission } from './group_permission.entity';
 import { SSOConfigs } from './sso_config.entity';
 import { OrganizationUser } from './organization_user.entity';
+import { Extension } from './extension.entity';
 
 @Entity({ name: 'organizations' })
 export class Organization extends BaseEntity {
@@ -41,4 +43,8 @@ export class Organization extends BaseEntity {
 
   @OneToMany(() => OrganizationUser, (organizationUser) => organizationUser.organization)
   organizationUsers: OrganizationUser[];
+
+  @ManyToOne(() => Extension, (ext) => ext.id)
+  @JoinColumn()
+  extension: Extension;
 }

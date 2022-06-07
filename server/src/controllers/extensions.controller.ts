@@ -1,19 +1,41 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+  UploadedFiles,
+} from '@nestjs/common';
+import { Express } from 'express';
 import { ExtensionsService } from '../services/extensions.service';
 import { CreateExtensionDto } from '../dto/create-extension.dto';
 import { UpdateExtensionDto } from '../dto/update-extension.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Connection } from 'typeorm';
 
 @Controller('extensions')
+@UseInterceptors(ClassSerializerInterceptor)
 export class ExtensionsController {
   constructor(private readonly extensionsService: ExtensionsService, private connection: Connection) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  create(@Body() createExtensionDto: CreateExtensionDto, @UploadedFile() file: Express.Multer.File) {
-    const queryRunner = this.connection.createQueryRunner();
-    return this.extensionsService.create(createExtensionDto, file, queryRunner);
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'operations', maxCount: 1 },
+      { name: 'icon', maxCount: 1 },
+      { name: 'manifest', maxCount: 1 },
+    ])
+  )
+  create(
+    @Body() createExtensionDto: CreateExtensionDto,
+    @UploadedFiles()
+    files: { operations: Express.Multer.File[]; icon: Express.Multer.File[]; manifest: Express.Multer.File[] }
+  ) {
+    return this.extensionsService.create(createExtensionDto, files);
   }
 
   @Get()

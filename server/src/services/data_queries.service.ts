@@ -93,7 +93,7 @@ export class DataQueriesService {
         decoded = extensions[dataQuery.extensionId];
       } else {
         const extension = await this.extensionsService.findOne(dataQuery.extensionId);
-        const file = await this.filesService.findOne(extension.fileId);
+        const file = await this.filesService.findOne(extension.operationsFileId);
         decoded = decode(file.data.toString());
         extensions[dataQuery.extensionId] = decoded;
       }

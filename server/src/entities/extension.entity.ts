@@ -1,4 +1,13 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { File } from 'src/entities//file.entity';
 import { Organization } from 'src/entities/organization.entity';
 
@@ -10,17 +19,33 @@ export class Extension {
   @Column({ name: 'name' })
   name: string;
 
-  @Column({ name: 'file_id' })
-  fileId: string;
+  @Column({ name: 'operations_file_id' })
+  operationsFileId: string;
 
-  @Column({ name: 'organization_id' })
-  organizationId: string;
+  @Column({ name: 'icon_file_id' })
+  iconFileId: string;
 
-  @JoinColumn({ name: 'file_id' })
-  @OneToOne(() => File)
-  file?: File;
+  @Column({ name: 'manifest_file_id' })
+  manifestFileId: string;
 
-  @ManyToOne(() => Organization, (organization) => organization.id)
-  @JoinColumn({ name: 'organization_id' })
-  organization: Organization;
+  @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
+  updatedAt: Date;
+
+  @OneToOne(() => File, (file) => file.id)
+  @JoinColumn({ name: 'operations_file_id' })
+  operationsFile?: File;
+
+  @OneToOne(() => File, (file) => file.id)
+  @JoinColumn({ name: 'icon_file_id' })
+  iconFile?: File;
+
+  @OneToOne(() => File, (file) => file.id)
+  @JoinColumn({ name: 'manifest_file_id' })
+  manifestFile?: File;
+
+  @OneToMany(() => Organization, (organization) => organization.id)
+  organizations: Organization[];
 }

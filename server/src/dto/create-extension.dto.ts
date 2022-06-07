@@ -1,15 +1,11 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID, IsOptional } from 'class-validator';
 
 export class CreateExtensionDto {
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @IsString()
+  @IsUUID()
   @IsOptional()
   organizationId: string;
-
-  @IsString()
-  @IsOptional()
-  fileId: string;
 }

@@ -10,7 +10,7 @@ import { decode } from 'js-base64';
 import { FilesService } from './files.service';
 import { ExtensionsService } from './extensions.service';
 
-const _eval = require('eval');
+// const _eval = require('eval');
 const extensions = {};
 
 @Injectable()
@@ -122,12 +122,12 @@ export class DataSourcesService {
         decoded = decode(extensions[extensionId]);
       } else {
         const extension = await this.extensionsService.findOne(extensionId);
-        const file = await this.filesService.findOne(extension.fileId);
+        const file = await this.filesService.findOne(extension.operationsFileId);
         decoded = decode(file.data.toString());
         extensions[extensionId] = decoded;
       }
-      const module = _eval(decoded);
-      service = new module();
+      // const module = _eval(decoded);
+      // service = new module();
     } else {
       service = new allPlugins[kind]();
     }
