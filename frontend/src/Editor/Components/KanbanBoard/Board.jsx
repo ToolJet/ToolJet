@@ -28,6 +28,7 @@ function Board({ height, state, colStyles, setState }) {
       description: '',
     };
     const newState = [...state];
+    if (!newState[keyIndex]['cards']) [(newState[keyIndex]['cards'] = [])];
     newState[keyIndex]['cards'].push(newItem);
     setState(newState);
   };
