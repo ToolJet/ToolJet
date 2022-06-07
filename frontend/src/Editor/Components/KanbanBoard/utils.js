@@ -120,10 +120,12 @@ export const isCardColoumnIdUpdated = (currentCardData, nextCardData) => {
   let isColoumnIdUpdated = false;
 
   currentState.forEach((card, index) => {
-    const prevColId = card.columnId;
-    const newColId = nextState[index].columnId;
-    if (prevColId !== newColId) {
-      isColoumnIdUpdated = true;
+    if (nextState[index]) {
+      const prevColId = card.columnId;
+      const newColId = nextState[index].columnId;
+      if (prevColId !== newColId) {
+        isColoumnIdUpdated = true;
+      }
     }
   });
   return isColoumnIdUpdated;

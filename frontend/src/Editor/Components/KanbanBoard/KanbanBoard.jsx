@@ -51,14 +51,15 @@ export const KanbanBoard = ({
       if (!newData && columns.length !== rawColumnData.length) {
         setState(() => getData(columns, rawCardData));
       }
-
       setRawColumnData(columns);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columns]);
 
   React.useEffect(() => {
-    if (JSON.stringify(cardData) !== JSON.stringify(rawCardData) && isArray(cardData)) {
+    if (cardData.length !== rawCardData.length) {
+      setState(() => getData(columns, cardData));
+    } else if (JSON.stringify(cardData) !== JSON.stringify(rawCardData) && isArray(cardData)) {
       if (cardData.length === 0) {
         return;
       }
@@ -81,14 +82,10 @@ export const KanbanBoard = ({
         if (newData === null) {
           return setState(() => getData(columns, cardData));
         }
-
-        if (cardData.length !== rawCardData.length) {
-          setState(() => getData(rawColumnData, cardData));
-        }
       }
-
-      setRawCardData(cardData);
     }
+
+    setRawCardData(cardData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cardData]);
 
