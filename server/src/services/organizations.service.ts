@@ -318,7 +318,7 @@ export class OrganizationsService {
     const userParams = <User>{
       firstName: inviteNewUserDto.first_name,
       lastName: inviteNewUserDto.last_name,
-      email: inviteNewUserDto.email ? inviteNewUserDto.email.toLowerCase() : '',
+      email: inviteNewUserDto.email,
     };
 
     let user = await this.usersService.findByEmail(userParams.email);
