@@ -54,7 +54,6 @@ export const KanbanBoard = ({
 
   React.useEffect(() => {
     if (JSON.stringify(cardData) !== JSON.stringify(rawCardData) && isArray(cardData)) {
-      console.log('--from kanban board--', cardData);
       if (cardData.length === 0) {
         return;
       }
@@ -76,6 +75,10 @@ export const KanbanBoard = ({
         }
         if (newData === null) {
           return setState(() => getData(columns, cardData));
+        }
+
+        if (cardData.length !== rawCardData.length) {
+          setState(() => getData(rawColumnData, cardData));
         }
       }
 
