@@ -7,28 +7,28 @@ export default class Athena implements QueryService {
     const AthenaExpress = require('athena-express'),
       AWS = require('aws-sdk'),
       awsCredentials = {
-        region: 'YOUR_AWS_REGION',
-        accessKeyId: 'YOUR_AWS_ACCESS_KEY_ID',
-        secretAccessKey: 'YOUR_AWS_SECRET_ACCESS_KEY',
+        region: sourceOptions.region,
+        accessKeyId: sourceOptions.access_key,
+        secretAccessKey: sourceOptions.secret_key,
       };
 
     AWS.config.update(awsCredentials);
 
     const athenaExpressConfig = {
       aws: AWS,
-      s3: 's3://my-bucket-for-storing-athena-results-us-east-1',
+      s3: sourceOptions.output_location,
       getStats: true,
     };
 
     const athenaExpress = new AthenaExpress(athenaExpressConfig);
     const myQuery = {
-      sql: 'SELECT elb_name, request_port, request_ip FROM elb_logs LIMIT 3',
-      db: 'sampledb',
+      sql: queryOptions.query,
+      db: sourceOptions.database,
     };
 
     try {
       result = await athenaExpress.query(myQuery);
-      console.log(result);
+      console.log('result ::: ', result);
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
     }
@@ -44,12 +44,29 @@ export default class Athena implements QueryService {
       status: 'ok',
     };
   }
+  async getConnection(sourceOptions: SourceOptions, queryOptions?: QueryOptions): Promise<any> {
+    const AthenaExpress = require('athena-express'),
+      AWS = require('aws-sdk'),
+      awsCredentials = {
+        region: sourceOptions.region,
+        accessKeyId: sourceOptions.access_key,
+        secretAccessKey: sourceOptions.secret_key,
+      };
 
-  async getConnection(sourceOptions: SourceOptions, options?: object): Promise<any> {
-    const credentials = {
-      accessKeyId: sourceOptions['access_key'],
-      secretAccessKey: sourceOptions['secret_key'],
+    AWS.config.update(awsCredentials);
+    const athenaExpress = new AthenaExpress(awsCredentials);
+    const myQuery = {
+      sql: 'SELECT * FROM Customers',
+      db: sourceOptions.database,
     };
-    return { region: sourceOptions['region'], credentials };
+    const client = athenaExpress
+      .query(myQuery)
+      .then((results) => {
+        return results;
+      })
+      .catch((error) => {
+        throw new Error('Invalid credentials');
+      });
+    return { client };
   }
 }
