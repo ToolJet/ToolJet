@@ -69,7 +69,7 @@ export const Tabs = function Tabs({
             className="nav-item"
             onClick={() => {
               setCurrentTab(tab.id);
-              setExposedVariable('currentTab', tab.id).then(() => fireEvent('onClick'));
+              setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
             }}
             key={tab.id}
           >
