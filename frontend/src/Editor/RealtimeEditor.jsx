@@ -44,8 +44,8 @@ export const RealtimeEditor = (props) => {
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
   const initialPresence = {
-    firstName: currentUser.first_name,
-    lastName: currentUser.last_name,
+    firstName: currentUser?.first_name ?? '',
+    lastName: currentUser?.last_name ?? '',
     image: '',
     editingVersionId: '',
     x: 0,

@@ -19,9 +19,7 @@ const RealtimeAvatars = () => {
   // i.e. when others on the same version changes, tooltip
   // ref: https://github.com/wwayne/react-tooltip#3-tooltip-not-binding-to-dynamic-content
   React.useEffect(() => {
-    if (config.ENABLE_MULTIPLAYER_EDITING) {
-      ReactTooltip.rebuild();
-    }
+    ReactTooltip.rebuild();
   }, [othersOnSameVersion?.length]);
 
   return (
