@@ -47,6 +47,11 @@ export const KanbanBoard = ({
       if (newData && isArray(newData)) {
         setState(newData);
       }
+
+      if (!newData && columns.length !== rawColumnData.length) {
+        setState(() => getData(columns, rawCardData));
+      }
+
       setRawColumnData(columns);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
