@@ -10,11 +10,17 @@ import {
   BaseEntity,
   ManyToMany,
   JoinTable,
+  OneToOne,
+  JoinColumn,
+  ManyToOne,
 } from 'typeorm';
+import { App } from './app.entity';
 import { GroupPermission } from './group_permission.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
 import { UserGroupPermission } from './user_group_permission.entity';
+import { File } from './file.entity';
+import { Organization } from './organization.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -37,6 +43,9 @@ export class User extends BaseEntity {
 
   @Column()
   email: string;
+
+  @Column({ name: 'avatar_id', nullable: true, default: null })
+  avatarId?: string;
 
   @Column({ name: 'invitation_token' })
   invitationToken: string;
@@ -62,6 +71,16 @@ export class User extends BaseEntity {
   @OneToMany(() => OrganizationUser, (organizationUser) => organizationUser.user, { eager: true })
   organizationUsers: OrganizationUser[];
 
+  @ManyToOne(() => Organization, (organization) => organization.id)
+  @JoinColumn({ name: 'organization_id' })
+  organization: Organization;
+
+  @JoinColumn({ name: 'avatar_id' })
+  @OneToOne(() => File, {
+    nullable: true,
+  })
+  avatar?: File;
+
   @ManyToMany(() => GroupPermission)
   @JoinTable({
     name: 'user_group_permissions',
@@ -76,6 +95,9 @@ export class User extends BaseEntity {
 
   @OneToMany(() => UserGroupPermission, (userGroupPermission) => userGroupPermission.user, { onDelete: 'CASCADE' })
   userGroupPermissions: UserGroupPermission[];
+
+  @OneToMany(() => App, (app) => app.user)
+  apps: App[];
 
   organizationId: string;
   isPasswordLogin: boolean;

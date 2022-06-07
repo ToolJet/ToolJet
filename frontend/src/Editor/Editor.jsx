@@ -10,7 +10,7 @@ import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
-import { componentTypes } from './Components/components';
+import { componentTypes } from './WidgetManager/components';
 import { Inspector } from './Inspector/Inspector';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
@@ -86,6 +86,7 @@ class Editor extends React.Component {
         canvasMaxWidth: 1292,
         canvasMaxHeight: 2400,
         canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
+        backgroundFxQuery: '',
       },
     };
 
@@ -130,7 +131,7 @@ class Editor extends React.Component {
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
       isSaving: false,
-      saveError: false,
+      isUnsavedQueriesAvailable: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -381,7 +382,6 @@ class Editor extends React.Component {
           });
 
           computeComponentState(this, this.state.appDefinition.components).then(() => {
-            console.log('Default component state computed and set');
             this.runQueries(data.data_queries);
           });
           this.setWindowTitle(data.name);
@@ -408,8 +408,11 @@ class Editor extends React.Component {
     this.initComponentVersioning();
   };
 
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState
+   */
   dataSourcesChanged = () => {
-    if (this.socket instanceof WebSocket) {
+    if (this.socket instanceof WebSocket && this.socket?.readyState === WebSocket.OPEN) {
       this.socket?.send(
         JSON.stringify({
           event: 'events',
@@ -421,9 +424,12 @@ class Editor extends React.Component {
     }
   };
 
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState
+   */
   dataQueriesChanged = () => {
     this.setState({ addingQuery: false }, () => {
-      if (this.socket instanceof WebSocket) {
+      if (this.socket instanceof WebSocket && this.socket?.readyState === WebSocket.OPEN) {
         this.socket?.send(
           JSON.stringify({
             event: 'events',
@@ -691,10 +697,15 @@ class Editor extends React.Component {
     appDefinition.components[newComponent.id] = newComponent;
     this.appDefinitionChanged(appDefinition);
   };
+  decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
   globalSettingsChanged = (key, value) => {
     const appDefinition = { ...this.state.appDefinition };
-    appDefinition.globalSettings[key] = value;
+    if (value?.[1]?.a == undefined) appDefinition.globalSettings[key] = value;
+    else {
+      const hexCode = `${value?.[0]}${this.decimalToHex(value?.[1]?.a)}`;
+      appDefinition.globalSettings[key] = hexCode;
+    }
     this.setState(
       {
         isSaving: true,
@@ -998,7 +1009,7 @@ class Editor extends React.Component {
       this.setState({ isSaving: false, showCreateVersionModalPrompt: true });
     } else if (!isEmpty(this.state.editingVersion)) {
       appVersionService
-        .save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition)
+        .save(this.state.appId, this.state.editingVersion.id, { definition: this.state.appDefinition })
         .then(() => {
           this.setState(
             {
@@ -1056,6 +1067,12 @@ class Editor extends React.Component {
       showQuerySearchField: false,
     });
     this.props.switchDarkMode(newMode);
+  };
+
+  setStateOfUnsavedQueries = (state) => {
+    this.setState({
+      isUnsavedQueriesAvailable: state,
+    });
   };
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
@@ -1149,6 +1166,7 @@ class Editor extends React.Component {
                   'text-danger': this.state.saveError,
                   'd-none': this.isVersionReleased(),
                 })}
+                data-cy="autosave-indicator"
               >
                 {this.state.isSaving ? <Spinner size="small" /> : 'All changes are saved'}
               </span>
@@ -1157,6 +1175,7 @@ class Editor extends React.Component {
                   updatePresence={this.props.updatePresence}
                   editingVersionId={this.state?.editingVersion?.id}
                   self={this.props.self}
+                  othersOnSameVersion={this.props.othersOnSameVersion}
                 />
               )}
               {editingVersion && (
@@ -1174,9 +1193,7 @@ class Editor extends React.Component {
                   <a
                     href={appVersionPreviewLink}
                     target="_blank"
-                    className={`btn btn-sm font-500 color-primary border-0  ${
-                      app?.current_version_id ? '' : 'disabled'
-                    }`}
+                    className="btn btn-sm font-500 color-primary border-0"
                     rel="noreferrer"
                   >
                     Preview
@@ -1236,6 +1253,8 @@ class Editor extends React.Component {
               runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
               toggleAppMaintenance={this.toggleAppMaintenance}
               is_maintenance_on={this.state.app.is_maintenance_on}
+              isSaving={this.state.isSaving}
+              isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
@@ -1460,6 +1479,8 @@ class Editor extends React.Component {
                             apps={apps}
                             allComponents={appDefinition.components}
                             isSourceSelected={this.state.isSourceSelected}
+                            isQueryPaneDragging={this.state.isQueryPaneDragging}
+                            setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
                           />
                         </div>
                       </div>

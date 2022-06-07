@@ -6,11 +6,13 @@ import { toast } from 'react-hot-toast';
 function SettingsPage(props) {
   const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
   const email = authenticationService.currentUserValue.email;
+  const token = authenticationService.currentUserValue.auth_token;
   const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
   const [currentpassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
   const [updateInProgress, setUpdateInProgress] = React.useState(false);
   const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
+  const [selectedFile, setSelectedFile] = React.useState(null);
 
   const updateDetails = async () => {
     const firstNameMatch = firstName.match(/^ *$/);
@@ -28,12 +30,25 @@ function SettingsPage(props) {
     }
 
     setUpdateInProgress(true);
-    const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
-    authenticationService.updateCurrentUserDetails(updatedDetails);
-    toast.success('Details updated!', {
-      duration: 3000,
-    });
-    setUpdateInProgress(false);
+    try {
+      const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
+      authenticationService.updateCurrentUserDetails(updatedDetails);
+
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        const avatarData = await userService.updateAvatar(formData, token);
+        authenticationService.updateCurrentUserDetails({ avatar_id: avatarData.id });
+      }
+
+      toast.success('Details updated!', {
+        duration: 3000,
+      });
+      setUpdateInProgress(false);
+    } catch (error) {
+      toast.error('Something went wrong');
+      setUpdateInProgress(false);
+    }
   };
 
   const changePassword = async () => {
@@ -92,7 +107,9 @@ function SettingsPage(props) {
             <div className="row align-items-center">
               <div className="col">
                 <div className="page-pretitle"></div>
-                <h2 className="page-title">Profile Settings</h2>
+                <h2 className="page-title" data-cy="page-title">
+                  Profile Settings
+                </h2>
               </div>
             </div>
           </div>
@@ -102,13 +119,17 @@ function SettingsPage(props) {
           <div className="container-xl">
             <div className="card">
               <div className="card-header">
-                <h3 className="card-title">Profile</h3>
+                <h3 className="card-title" data-cy="card-title-profile">
+                  Profile
+                </h3>
               </div>
               <div className="card-body">
                 <div className="row">
                   <div className="col">
                     <div className="mb-3">
-                      <label className="form-label">First name </label>
+                      <label className="form-label" data-cy="first-name-label">
+                        First name{' '}
+                      </label>
                       <input
                         type="text"
                         className="form-control"
@@ -117,12 +138,15 @@ function SettingsPage(props) {
                         value={firstName}
                         onChange={(event) => setFirstName(event.target.value)}
                         onKeyPress={(event) => !/^[A-Za-z]+$/.test(event.key) && event.preventDefault(true)}
+                        data-cy="first-name-input"
                       />
                     </div>
                   </div>
                   <div className="col">
                     <div className="mb-3">
-                      <label className="form-label">Last name</label>
+                      <label className="form-label" data-cy="last-name-label">
+                        Last name
+                      </label>
                       <input
                         type="text"
                         className="form-control"
@@ -131,23 +155,53 @@ function SettingsPage(props) {
                         value={lastName}
                         onChange={(event) => setLastName(event.target.value)}
                         onKeyPress={(event) => !/^[A-Za-z]+$/.test(event.key) && event.preventDefault(true)}
+                        data-cy="last-name-input"
                       />
                     </div>
                   </div>
-                  <div className="row">
-                    <div className="col-6">
-                      <div className="mb-3">
-                        <label className="form-label">Email </label>
-                        <input type="text" className="form-control" name="email" value={email} readOnly disabled />
-                      </div>
+                </div>
+                <div className="row">
+                  <div className="col">
+                    <div className="mb-3">
+                      <label className="form-label" data-cy="email-label">
+                        Email{' '}
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="email"
+                        value={email}
+                        readOnly
+                        disabled
+                        data-cy="email-input"
+                      />
+                    </div>
+                  </div>
+                  <div className="col">
+                    <div className="mb-3">
+                      <div className="form-label">Avatar</div>
+                      <input
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (Math.round(file.size / 1024) > 2048) {
+                            toast.error('File size cannot exceed more than 2MB');
+                            e.target.value = null;
+                          } else {
+                            setSelectedFile(file);
+                          }
+                        }}
+                        accept="image/*"
+                        type="file"
+                        className="form-control"
+                      />
                     </div>
                   </div>
                 </div>
-
                 <a
                   href="#"
                   className={'btn btn-primary' + (updateInProgress ? '  btn-loading' : '')}
                   onClick={updateDetails}
+                  data-cy="update-button"
                 >
                   Update
                 </a>
@@ -159,13 +213,17 @@ function SettingsPage(props) {
             <br />
             <div className="card">
               <div className="card-header">
-                <h3 className="card-title">Change password</h3>
+                <h3 className="card-title" data-cy="card-title-change-password">
+                  Change password
+                </h3>
               </div>
               <div className="card-body">
                 <div className="row">
                   <div className="col">
                     <div className="mb-3">
-                      <label className="form-label">Current password</label>
+                      <label className="form-label" data-cy="current-password-label">
+                        Current password
+                      </label>
                       <input
                         type="password"
                         className="form-control"
@@ -173,12 +231,15 @@ function SettingsPage(props) {
                         placeholder="Enter current password"
                         value={currentpassword}
                         onChange={(event) => setCurrentPassword(event.target.value)}
+                        data-cy="current-password-input"
                       />
                     </div>
                   </div>
                   <div className="col">
                     <div className="mb-3">
-                      <label className="form-label">New password</label>
+                      <label className="form-label" data-cy="new-password-label">
+                        New password
+                      </label>
                       <input
                         type="password"
                         className="form-control"
@@ -187,6 +248,7 @@ function SettingsPage(props) {
                         value={newPassword}
                         onChange={(event) => setNewPassword(event.target.value)}
                         onKeyPress={newPasswordKeyPressHandler}
+                        data-cy="new-password-input"
                       />
                     </div>
                   </div>
@@ -195,6 +257,7 @@ function SettingsPage(props) {
                   href="#"
                   className={'btn btn-primary' + (passwordChangeInProgress ? '  btn-loading' : '')}
                   onClick={changePassword}
+                  data-cy="change-password-button"
                 >
                   Change password
                 </a>

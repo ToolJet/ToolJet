@@ -1,5 +1,5 @@
 import React from 'react';
-import { userService } from '@/_services';
+import { appService } from '@/_services';
 import { toast } from 'react-hot-toast';
 
 class ConfirmationPage extends React.Component {
@@ -23,7 +23,7 @@ class ConfirmationPage extends React.Component {
 
   setPassword = (e) => {
     e.preventDefault();
-    const token = this.props.location.state.token;
+    const { token, organizationToken } = this.props.location.state;
     const { password, organization, role, firstName, lastName, password_confirmation } = this.state;
     this.setState({ isLoading: true });
 
@@ -43,9 +43,10 @@ class ConfirmationPage extends React.Component {
       return;
     }
 
-    userService
+    appService
       .setPasswordFromToken({
         token,
+        organizationToken,
         password,
         organization,
         role,

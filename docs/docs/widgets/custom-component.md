@@ -1,3 +1,8 @@
+---
+id: custom-component
+title: Custom Component
+---
+
 # Custom Component
 
 Custom Component can be used to do create your own React component when the needed functionality isn't available in other components.

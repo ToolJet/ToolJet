@@ -10,7 +10,7 @@ import { Server } from 'ws';
 import { AuthService } from 'src/services/auth.service';
 import { isEmpty } from 'lodash';
 
-@WebSocketGateway()
+@WebSocketGateway({ path: '/ws' })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private authService: AuthService) {}
   @WebSocketServer()

@@ -18,6 +18,7 @@ const sidebars = {
       items: [
         'setup/introduction',
         'setup/docker',
+        'setup/docker-local',
         'setup/heroku',
         'setup/ec2',
         'setup/kubernetes',
@@ -53,6 +54,7 @@ const sidebars = {
         'tutorial/sharing-and-deploying',
         'tutorial/manage-users-groups',
         'tutorial/keyboard-shortcuts',
+        'tutorial/multiworkspace',
       ],
     },
     {
@@ -85,6 +87,7 @@ const sidebars = {
         'data-sources/postgresql',
         'data-sources/redis',
         'data-sources/restapi',
+        'data-sources/saphana',
         'data-sources/sendgrid',
         'data-sources/smtp',
         'data-sources/snowflake',
@@ -97,12 +100,14 @@ const sidebars = {
       label: 'Widget Reference',
       items: [
         'widgets/button',
+        'widgets/button-group',
         'widgets/calendar',
         'widgets/chart',
         'widgets/checkbox',
         'widgets/circular-progress-bar',
         'widgets/code-editor',
         'widgets/container',
+        'widgets/custom-component',
         'widgets/date-range-picker',
         'widgets/datepicker',
         'widgets/divider',
@@ -176,17 +181,26 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Single Sign-on',
+      label: 'User Authentication',
       link: {
         type: 'generated-index',
-        title: 'Single Sign-on',
+        title: 'User Authentication',
         description:
-          "Guide for enabling available Single Sign-ons on ToolJet",
-        keywords: ['single sign-on','SSO'],
+          "Guides for setting up User Authentication and managing Single Sign-On",
+        keywords: ['SSO','authentication'],
       },
+      collapsed: true,
       items: [
-        'sso/github',
-        'sso/google',
+        'user-authentication/general-settings',
+        'user-authentication/password-login',
+        {
+          type: 'category',
+          label: 'SSO',
+          items: [
+            'user-authentication/sso/github',
+            'user-authentication/sso/google',
+          ],
+        },
       ],
     },
     {
@@ -222,7 +236,7 @@ const sidebars = {
         'contributing-guide/slackcoc',
       ],
     },
-  ]
+  ],
 };
 
 module.exports = sidebars;

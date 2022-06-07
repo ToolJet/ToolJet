@@ -13,12 +13,13 @@ export const Toggle = ({ value, onChange, forceCodeBox }) => {
               type="checkbox"
               onClick={() => onChange(`{{${!value}}}`)}
               checked={value}
+              data-cy="toggle-button"
             />
             {/* <ToolTip label={paramLabel} meta={{}} labelClass="form-check-label" /> */}
           </label>
         </div>
       </div>
-      <div className="col-auto pt-2 style-fx fx-common">
+      <div className="col-auto pt-0 style-fx fx-common">
         <FxButton active={false} onPress={forceCodeBox} />
       </div>
     </div>

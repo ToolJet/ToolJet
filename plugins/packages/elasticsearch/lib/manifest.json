@@ -24,6 +24,18 @@
       "password": {
         "type": "string",
         "encrypted": true
+      },
+      "ca_cert": {
+        "encrypted": true
+      },
+      "client_key": {
+        "encrypted": true
+      },
+      "client_cert": {
+        "encrypted": true
+      },
+      "root_cert": {
+        "encrypted": true
       }
     }
   },
@@ -42,38 +54,95 @@
     },
     "ssl_enabled": {
       "value": true
+    },
+    "ssl_certificate":{
+      "value": "none"
     }
   },
   "properties": {
-    "host": {
-      "label": "Host",
-      "key": "host",
-      "type": "text",
-      "description": "Enter host"
+    "ssl_certificate": {
+      "label": "SSL Certificate",
+      "key": "ssl_certificate",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing certificates",
+      "list": [
+        {
+          "value": "ca_certificate",
+          "name": "CA certificate"
+        },
+        {
+          "value": "client_certificate",
+          "name": "Client certificate"
+        },
+        {
+          "value": "none",
+          "name": "None"
+        }
+      ],
+      "commonFields":{
+        "host": {
+          "label": "Host",
+          "key": "host",
+          "type": "text",
+          "description": "Enter host"
+        },
+        "port": {
+          "label": "Port",
+          "key": "port",
+          "type": "text",
+          "description": "Enter port"
+        },
+        "ssl_enabled": {
+          "label": "SSL",
+          "key": "ssl_enabled",
+          "type": "toggle",
+          "description": "Toggle for ssl_enabled"
+        },
+        "username": {
+          "label": "Username",
+          "key": "username",
+          "type": "text",
+          "description": "Enter username"
+        },
+        "password": {
+          "label": "Password",
+          "key": "password",
+          "type": "password",
+          "description": "Enter password"
+        }
+      }
     },
-    "port": {
-      "label": "Port",
-      "key": "port",
-      "type": "text",
-      "description": "Enter port"
+    "ca_certificate":{
+      "ca_cert": {
+        "label": "CA Cert",
+        "key": "ca_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter ca certificate"
+      }
     },
-    "username": {
-      "label": "Username",
-      "key": "username",
-      "type": "text",
-      "description": "Enter username"
-    },
-    "ssl_enabled": {
-      "label": "SSL",
-      "key": "ssl_enabled",
-      "type": "toggle",
-      "description": "Toggle for ssl_enabled"
-    },
-    "password": {
-      "label": "Password",
-      "key": "password",
-      "type": "password",
-      "description": "Enter password"
+    "client_certificate":{
+      "client_key": {
+        "label": "Client Key",
+        "key": "client_key",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client key"
+      },
+      "client_cert": {
+        "label": "Client Cert",
+        "key": "client_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client certificate"
+      },
+      "root_cert": {
+        "label": "Root Cert",
+        "key": "root_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter root certificate"
+      }
     }
   },
   "required": [

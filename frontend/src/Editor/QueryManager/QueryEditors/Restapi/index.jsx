@@ -62,17 +62,17 @@ class Restapi extends React.Component {
     options[option].splice(index, 1);
 
     this.setState({ options }, () => {
-      this.props.optionsChanged(options);
+      this.props.optionsChanged({ ...options, arrayValuesChanged: true });
     });
   };
 
   keyValuePairValueChanged = (value, keyIndex, option, index) => {
     const { options } = this.state;
-
+    const prevValue = options[option][index][keyIndex];
     options[option][index][keyIndex] = value;
 
     this.setState({ options }, () => {
-      this.props.optionsChanged(options);
+      this.props.optionsChanged({ ...options, arrayValuesChanged: prevValue !== value });
     });
   };
 
