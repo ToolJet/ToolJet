@@ -16,6 +16,7 @@ import { CreateExtensionDto } from '../dto/create-extension.dto';
 import { UpdateExtensionDto } from '../dto/update-extension.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Connection } from 'typeorm';
+import { decode } from 'js-base64';
 
 @Controller('extensions')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -39,8 +40,13 @@ export class ExtensionsController {
   }
 
   @Get()
-  findAll() {
-    return this.extensionsService.findAll();
+  async findAll() {
+    const extensions = await this.extensionsService.findAll();
+    return extensions.map((extension) => {
+      extension.iconFile.data = `data:image/svg+xml;base64,${extension.iconFile.data.toString('utf8')}`;
+      extension.manifestFile.data = JSON.parse(decode(extension.manifestFile.data.toString('utf8')));
+      return extension;
+    });
   }
 
   @Get(':id')

@@ -60,7 +60,7 @@ export class ExtensionsService {
   }
 
   async findAll() {
-    return await this.extensionsRepository.find();
+    return await this.extensionsRepository.find({ relations: ['iconFile', 'manifestFile'] });
   }
 
   async findOne(id: string) {

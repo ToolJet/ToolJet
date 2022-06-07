@@ -54,9 +54,10 @@ export class DataSourcesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@User() user, @Body() createDataSourceDto: CreateDataSourceDto) {
-    const { kind, name, options, app_id, app_version_id } = createDataSourceDto;
+    const { kind, name, options, app_id, app_version_id, extension_id } = createDataSourceDto;
     const appId = app_id;
     const appVersionId = app_version_id;
+    const extensionId = extension_id;
 
     const app = await this.appsService.find(appId);
     const ability = await this.appsAbilityFactory.appsActions(user, appId);
@@ -65,7 +66,7 @@ export class DataSourcesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const dataSource = await this.dataSourcesService.create(name, kind, options, appId, appVersionId);
+    const dataSource = await this.dataSourcesService.create(name, kind, options, appId, appVersionId, extensionId);
     return decamelizeKeys(dataSource);
   }
 

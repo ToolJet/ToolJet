@@ -42,7 +42,8 @@ export class DataSourcesService {
     kind: string,
     options: Array<object>,
     appId: string,
-    appVersionId?: string // TODO: Make this non optional when autosave is implemented
+    appVersionId?: string, // TODO: Make this non optional when autosave is implemented
+    extensionId?: string
   ): Promise<DataSource> {
     const newDataSource = this.dataSourcesRepository.create({
       name,
@@ -50,6 +51,7 @@ export class DataSourcesService {
       options: await this.parseOptionsForCreate(options),
       appId,
       appVersionId,
+      extensionId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

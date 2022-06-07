@@ -1,5 +1,5 @@
 import React from 'react';
-import { datasourceService, authenticationService } from '@/_services';
+import { datasourceService, authenticationService, extensionsService } from '@/_services';
 import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -40,6 +40,7 @@ class DataSourceManager extends React.Component {
       isSaving: false,
       isCopied: false,
       queryString: null,
+      extensions: [],
       filteredDatasources: [],
       activeDatasourceList: '#alldatasources',
       suggestingDatasources: false,
@@ -50,6 +51,13 @@ class DataSourceManager extends React.Component {
     this.setState({
       appId: this.props.appId,
     });
+
+    extensionsService
+      .getExtensions()
+      .then(({ data = [] }) => this.setState({ extensions: data }))
+      .catch((error) => {
+        toast.error(error?.message || 'failed to fetch extensions');
+      });
   }
 
   componentDidUpdate(prevProps) {
@@ -67,6 +75,15 @@ class DataSourceManager extends React.Component {
       dataSourceMeta: source,
       selectedDataSource: source,
       name: source.kind,
+    });
+  };
+
+  selectExtensionDataSource = (source) => {
+    source.manifestFile.data.source.extensionId = source.id;
+    this.setState({
+      dataSourceMeta: source.manifestFile.data.source,
+      selectedDataSource: source.manifestFile.data.source,
+      name: source.manifestFile.data.source.kind,
     });
   };
 
@@ -116,6 +133,7 @@ class DataSourceManager extends React.Component {
     const { appId, options, selectedDataSource } = this.state;
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
+    const extensionId = selectedDataSource.extensionId;
     const appVersionId = this.props.editingVersionId;
 
     const parsedOptions = Object.keys(options).map((key) => {
@@ -137,7 +155,7 @@ class DataSourceManager extends React.Component {
         });
       } else {
         this.setState({ isSaving: true });
-        datasourceService.create(appId, appVersionId, name, kind, parsedOptions).then(() => {
+        datasourceService.create(appId, appVersionId, extensionId, name, kind, parsedOptions).then(() => {
           this.setState({ isSaving: false });
           this.hideModal();
           toast.success('Datasource Added', { position: 'top-center' });
@@ -293,6 +311,7 @@ class DataSourceManager extends React.Component {
       databases: DataBaseSources,
       apis: ApiSources,
       cloudStorages: CloudStorageSources,
+      extensions: this.state.extensions,
       filteredDatasources: this.state.filteredDatasources,
     };
     const dataSourceList = [
@@ -321,6 +340,12 @@ class DataSourceManager extends React.Component {
         renderDatasources: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
       },
       {
+        type: 'Extensions',
+        key: '#extensions',
+        list: allDataSourcesList.extensions,
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.extensions, 'Extensions'),
+      },
+      {
         type: 'Filtered Datasources',
         key: '#filtereddatasources',
         list: allDataSourcesList.filteredDatasources,
@@ -332,7 +357,7 @@ class DataSourceManager extends React.Component {
   };
 
   renderSidebarList = () => {
-    const dataSourceList = this.datasourcesGroups().splice(0, 4);
+    const dataSourceList = this.datasourcesGroups().splice(0, 5);
 
     const updateSuggestionState = () => {
       this.updateSuggestedDatasources();
@@ -395,7 +420,7 @@ class DataSourceManager extends React.Component {
                 title={item.title}
                 src={item.src}
                 handleClick={() => renderSelectedDatasource(item)}
-                usepluginIcon={true}
+                usepluginIcon={false}
                 height="35px"
                 width="35px"
               />
@@ -482,10 +507,39 @@ class DataSourceManager extends React.Component {
       );
     }
 
+    if (type === 'Extensions') {
+      const datasources = source.map((datasource) => {
+        return {
+          ...datasource,
+          src: datasource.iconFile.data,
+          title: datasource.name,
+        };
+      });
+
+      return (
+        <>
+          <div className="row row-deck mt-4">
+            <h4 className="mb-2">{type}</h4>
+            {datasources.map((item) => (
+              <Card
+                key={item.key}
+                title={item.title}
+                src={item?.src}
+                handleClick={() => this.selectExtensionDataSource(item)}
+                usepluginIcon={false}
+                height="35px"
+                width="35px"
+              />
+            ))}
+          </div>
+        </>
+      );
+    }
+
     const datasources = source.map((datasource) => {
       return {
         ...datasource,
-        src: datasource.kind.toLowerCase(),
+        src: datasource.kind?.toLowerCase() || datasource.iconFile.data,
         title: datasource.name,
       };
     });
@@ -498,9 +552,9 @@ class DataSourceManager extends React.Component {
             <Card
               key={item.key}
               title={item.title}
-              src={item.src}
+              src={item?.src}
               handleClick={() => renderSelectedDatasource(item)}
-              usepluginIcon={true}
+              usepluginIcon={false}
               height="35px"
               width="35px"
             />
