@@ -29,6 +29,9 @@
     }
   },
   "defaults": {
+    "database": {
+      "value": ""
+    },
     "output_location": {
       "value": ""
     },
@@ -43,6 +46,12 @@
     }
   },
   "properties": {
+    "database": {
+      "label": "Database",
+      "key": "database",
+      "type": "text",
+      "description": "Enter database name"
+    },
     "output_location": {
       "label": "S3 output location",
       "key": "output_location",
@@ -174,6 +183,7 @@
     "access_key",
     "secret_key",
     "region",
-    "output_location"
+    "output_location",
+    "database"
   ]
 }
