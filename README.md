@@ -71,6 +71,18 @@ You can deploy ToolJet on Heroku for free using the one-click-deployment button 
 <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main"><img src="https://www.herokucdn.com/deploy/button.svg" /></a>
 </P>
 
+### Try using Docker
+Want to give ToolJet a quick spin on your local machine? You can run the following command from your terminal to have ToolJet up and running right away.
+
+```bash
+docker run \
+  --name tooljet \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  -v tooljet_data:/var/lib/postgresql/13/main \
+  tooljet/try:latest
+```
+
 ## Tutorials and examples 
 
 [GitHub contributor leaderboard using ToolJet](https://blog.tooljet.io/building-a-github-contributor-leaderboard-using-tooljet/)<br>
