@@ -4,8 +4,9 @@ import config from 'config';
 import { RoomProvider } from '@y-presence/react';
 import Spinner from '@/_ui/Spinner';
 import { Editor } from '@/Editor';
-
+import useRouter from '@/_hooks/use-router';
 const Y = require('yjs');
+const psl = require('psl');
 const { WebsocketProvider } = require('y-websocket');
 
 const ydoc = new Y.Doc();
@@ -21,11 +22,15 @@ const getWebsocketUrl = () => {
 export const RealtimeEditor = (props) => {
   const appId = props.match.params.id;
   const [provider, setProvider] = React.useState();
+  const router = useRouter();
 
   React.useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    document.cookie = `auth_token=${currentUser?.auth_token}; path=/`;
+    const domain = psl.parse(window.location.host).domain;
+    document.cookie = `auth_token=${currentUser?.auth_token}; domain=.${domain}; path=/`;
+    document.cookie = `app_id=${router.query.id}; domain=.${domain}; path=/`;
     setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
 
   React.useEffect(() => {
