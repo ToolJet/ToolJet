@@ -93,7 +93,8 @@ export const Folders = function Folders({
         setDeletionStatus(false);
         foldersChanged();
       })
-      .catch(() => {
+      .catch(({ error }) => {
+        toast.error(error);
         setShowDeleteConfirmation(false);
         setDeletionStatus(false);
       });
@@ -128,7 +129,8 @@ export const Folders = function Folders({
           setNewFolderName('');
           foldersChanged();
         })
-        .catch(() => {
+        .catch(({ error }) => {
+          toast.error(error);
           setNewFolderName('');
           setUpdationStatus(false);
         });
