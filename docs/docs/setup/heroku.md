@@ -29,8 +29,8 @@ title: Heroku
    - **NODE_ENV**: By default NODE_ENV is set to production. 
    - **NODE_OPTIONS**: Node options are configured to increase node memory to support app build.
    - **SECRET_KEY_BASE**: ToolJet server uses a secure 64 byte hexadecimal string to encrypt session cookies. You should set the environment variable SECRET_KEY_BASE. If you have OpenSSL installed, you can run the command `openssl rand -hex 64` to generate the key.
-   - **TOOLJET_HOST**: Public URL of ToolJet installtion. This is usually `https://<app-name-in-first-step\>.herokuapp.com`.
-   - **TOOLJET_SERVER_URL**: URL of ToolJet server installtion. (This is same as the TOOLJET_HOST for Heroku deployments)
+   - **TOOLJET_HOST**: Public URL of ToolJet installation. This is usually `https://<app-name-in-first-step\>.herokuapp.com`.
+   - **TOOLJET_SERVER_URL**: URL of ToolJet server installation. (This is same as the TOOLJET_HOST for Heroku deployments)
 
 
 4. Click on `Deploy app` button at the bottom to initiate the build.
