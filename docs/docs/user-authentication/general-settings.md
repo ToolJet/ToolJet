@@ -1,6 +1,6 @@
 ---
-sidebar_position: 6
-sidebar_label: General Settings
+id: general-settings
+title: General Settings
 ---
 
 # Single Sign-On General Settings
@@ -25,6 +25,6 @@ Select `General Settings`
 
 You can enable/disable `Enable signup`. If it is enabled, new account will be created for user's first time SSO sign in else only existing users will be allowed to sign in via SSO.
 
-## Allowed domain
+## Allowed domains
 
 You can set allowed domains for SSO login, can add multiple domains comma separated. Allowed all domains by default.

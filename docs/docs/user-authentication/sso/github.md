@@ -13,7 +13,7 @@ Select `Manage SSO` from workspace options
 
 </div>
 
-Select `Git`, Git login will be disabled by default
+Select `GitHub`, GitHub login will be disabled by default
 
 <div style={{textAlign: 'center'}}>
 
@@ -21,7 +21,7 @@ Select `Git`, Git login will be disabled by default
 
 </div>
 
-Enable Git. You can see `Redirect URL` generated
+Enable GitHub. You can see `Redirect URL` generated
 
 <div style={{textAlign: 'center'}}>
 
@@ -33,7 +33,7 @@ Go to [GitHub Developer settings](https://github.com/settings/developers) and na
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Github create project](/img/sso/git/create-project.png)
+![ToolJet - GitHub create project](/img/sso/git/create-project.png)
 
 </div>
 
@@ -41,7 +41,7 @@ Go to [GitHub Developer settings](https://github.com/settings/developers) and na
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Github view client id](/img/sso/git/client-id.png)
+![ToolJet - GitHub view client id](/img/sso/git/client-id.png)
 
 </div>
 
@@ -49,10 +49,10 @@ Go to [GitHub Developer settings](https://github.com/settings/developers) and na
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Github create client secret](/img/sso/git/client-secret.png)
+![ToolJet - GitHub create client secret](/img/sso/git/client-secret.png)
 
 </div>
 
-Lastly, enter `Client Id` and `Client Secret` in Git manage SSO page and save.
+Lastly, enter `Client Id` and `Client Secret` in GitHub manage SSO page and save.
 
 The GitHub sign-in button will now be available in your ToolJet login screen if you have not enabled Multi-Workspace.

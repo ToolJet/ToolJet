@@ -2,7 +2,6 @@ import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
 import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
-import { history } from '@/_helpers';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ReactTooltip from 'react-tooltip';
 
@@ -26,7 +25,6 @@ class ManageOrgUsers extends React.Component {
   }
 
   validateEmail(email) {
-    console.log(email);
     const re =
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
@@ -166,11 +164,6 @@ class ManageOrgUsers extends React.Component {
     } else {
       this.setState({ creatingUser: false, showNewUserForm: true });
     }
-  };
-
-  logout = () => {
-    authenticationService.logout();
-    history.push('/login');
   };
 
   generateInvitationURL = (user) => window.location.origin + '/organization-invitations/' + user.invitation_token;
@@ -388,9 +381,9 @@ class ManageOrgUsers extends React.Component {
                                 <button
                                   type="button"
                                   style={{ minWidth: '100px' }}
-                                  className={`btn btn-sm btn-${user.status === 'archived' ? 'success' : 'danger'} ${
-                                    unarchivingUser === user.id || archivingUser === user.id ? 'btn-loading' : ''
-                                  }`}
+                                  className={`btn btn-sm btn-outline-${
+                                    user.status === 'archived' ? 'success' : 'danger'
+                                  } ${unarchivingUser === user.id || archivingUser === user.id ? 'btn-loading' : ''}`}
                                   disabled={unarchivingUser === user.id || archivingUser === user.id}
                                   onClick={() => {
                                     user.status === 'archived'
