@@ -91,7 +91,7 @@ export default class VariableForm extends React.Component {
                   className={`btn mx-2 btn-primary ${this.props.addingVar ? 'btn-loading' : ''}`}
                   disabled={this.props.addingVar}
                 >
-                  {!this.props.selectedVariableId ? 'Create variable ' : 'Save'}
+                  {!this.props.selectedVariableId ? 'Add variable' : 'Save'}
                 </button>
               </div>
             </form>

@@ -9,9 +9,9 @@ import VariablesTable from './VariablesTable';
 class ManageOrgVars extends React.Component {
   constructor(props) {
     super(props);
+    this.currentUser = authenticationService.currentUserValue;
 
     this.state = {
-      currentUser: authenticationService.currentUserValue,
       isLoading: true,
       showVariableForm: false,
       selectedVariableId: null,
@@ -118,7 +118,7 @@ class ManageOrgVars extends React.Component {
   createOrUpdate = (event) => {
     event.preventDefault();
 
-    let fields = {};
+    const fields = {};
     Object.keys(this.state.fields).map((key) => {
       fields[key] = '';
     });
@@ -204,8 +204,7 @@ class ManageOrgVars extends React.Component {
   };
 
   handleVariableTypeSelect = (value) => {
-    console.log(value);
-    let fields = this.state.fields;
+    const fields = this.state.fields;
     fields['variable_type'] = value;
 
     this.setState({
@@ -222,15 +221,15 @@ class ManageOrgVars extends React.Component {
   }
 
   canCreateVariable = () => {
-    return this.canAnyGroupPerformAction('org_environment_variable_create', this.state.currentUser.group_permissions);
+    return this.canAnyGroupPerformAction('org_environment_variable_create', this.currentUser.group_permissions);
   };
 
   canUpdateVariable = () => {
-    return this.canAnyGroupPerformAction('org_environment_variable_update', this.state.currentUser.group_permissions);
+    return this.canAnyGroupPerformAction('org_environment_variable_update', this.currentUser.group_permissions);
   };
 
   canDeleteVariable = () => {
-    return this.canAnyGroupPerformAction('org_environment_variable_delete', this.state.currentUser.group_permissions);
+    return this.canAnyGroupPerformAction('org_environment_variable_delete', this.currentUser.group_permissions);
   };
 
   render() {
@@ -295,7 +294,7 @@ class ManageOrgVars extends React.Component {
                 variables={variables}
                 canUpdateVariable={this.canUpdateVariable()}
                 canDeleteVariable={this.canDeleteVariable()}
-                admin={this.state.currentUser.admin}
+                admin={this.currentUser.admin}
                 onEditBtnClicked={this.onEditBtnClicked}
                 onDeleteBtnClicked={this.onDeleteBtnClicked}
               />
