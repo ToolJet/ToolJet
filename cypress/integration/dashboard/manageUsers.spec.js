@@ -4,14 +4,15 @@ import { usersSelector } from "Selectors/manageUsers";
 import { usersText } from "Texts/manageUsers";
 import * as users from "Support/utils/manageUsers";
 import * as common from "Support/utils/common";
-import { commonText, path } from "Texts/common";
+import { path } from "Texts/common";
 
 const firstName = fake.firstName;
 const lastName = fake.lastName.replaceAll("[^A-Za-z]", "");
-const email = `${firstName}@example.com`;
-const newEmail = `${lastName}@example.com`;
+const email = (`${firstName}@example.com`).toLowerCase();
+const newEmail = (`${lastName}@example.com`).toLowerCase();
+const companyName = fake.companyName;
 
-describe("Manage Users", ()=>{
+describe("Manage Users for multiple workspace", ()=>{
  before(()=>{
    cy.appUILogin();
  });
@@ -75,22 +76,26 @@ describe("Manage Users", ()=>{
  });
 
  it("Should verify the confirm invite page", ()=>{
-  users.addNewUser(firstName,lastName,newEmail);
-  cy.get(usersSelector.confirmInviteElements.acceptInvite).click();
-  cy.url().should("include",path.loginPath);
+  users.inviteUser(firstName,lastName,newEmail);
+  cy.get(usersSelector.acceptInvite).click();
+  cy.verifyToastMessage(commonSelectors.toastMessage, usersText.acceptInviteErrorToast);
 
   cy.appUILogin();
   common.navigateToManageUsers();
   cy.get(usersSelector.inviteUserButton).click();
   users.addNewUser(firstName,lastName,email);
+  users.confirmInviteElements();
 
   cy.get(usersSelector.finishSetup).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, usersText.passwordErrToast);
   cy.get(usersSelector.passwordInput).should("have.value", "");
   cy.get(usersSelector.confirmPasswordInput).should("have.value", "");
 
+  cy.clearAndType(usersSelector.firstNameField, firstName);
+  cy.clearAndType(usersSelector.lastNameField, lastName);
+  cy.clearAndType(usersSelector.workspaceField, companyName);
+  cy.get(usersSelector.roleOptions).select("Developer");
   cy.clearAndType(usersSelector.passwordInput, usersText.password);
-  cy.wait(1000);
   cy.get(usersSelector.finishSetup).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, usersText.passwordErrToast);
   cy.get(usersSelector.passwordInput).should("have.value", usersText.password);
@@ -120,9 +125,10 @@ describe("Manage Users", ()=>{
  it("should verify the new user account", ()=>{
   cy.login(email,usersText.password);
   cy.get(usersSelector.emptyImage).should("be.visible");
-  cy.get(usersSelector.manageUsers).should('not.exist');
-  cy.get(usersSelector.createNewApp).click();
-  cy.verifyToastMessage(commonSelectors.toastMessage, usersText.createAppPermissionToast);
+  cy.get(usersSelector.dropdownText).should('be.visible').and('have.text', companyName);
+  cy.get(usersSelector.dropdown).invoke("show");
+  cy.get(usersSelector.arrowIcon).click();
+  cy.contains("My workspace").should('be.visible');
   common.logout();
 
   cy.appUILogin();
@@ -136,26 +142,54 @@ describe("Manage Users", ()=>{
   cy.contains('td', email).parent().within(() => {
    cy.get('td button').click();
   });
-  cy.wait(500);
-  cy.contains('td', email).parent().within(() => {
-   cy.get('td small').should("have.text", usersText.archivedStatus);
-  });
   cy.verifyToastMessage(commonSelectors.toastMessage,usersText.archivedToast);
+
+  cy.contains('td', email).parent().within(() => {
+   cy.get(usersSelector.userStatus, { timeout: 9000 }).should("have.text", usersText.archivedStatus);
+  });
    
   common.logout();
   cy.clearAndType(commonSelectors.emailField, email);
   cy.clearAndType(commonSelectors.passwordField, usersText.password);
   cy.get(commonSelectors.signInButton).click();
-  cy.verifyToastMessage(commonSelectors.toastMessage,commonText.loginErrorToast);
-   
+  cy.get(usersSelector.dropdown).invoke("show");
+  cy.get(usersSelector.arrowIcon).click();
+  cy.contains("My workspace").should("not.exist");
+  common.logout();
+
   cy.appUILogin();
   common.navigateToManageUsers();
   cy.contains('td', email).parent().within(() => {
    cy.get('td button').click();
   });
-   
+
+  cy.wait(2000);
+  cy.window().then(win => {
+    cy.stub(win, 'prompt').returns(win.prompt).as('copyToClipboardPrompt');
+   });
+   cy.contains('td', email).parent().within(() => {
+   cy.get('td img').click();
+   });
+   cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteCopiedToast);
+
   cy.contains('td', email).parent().within(() => {
-   cy.get('td small').should("have.text", usersText.invitedStatus);
+   cy.get(usersSelector.userStatus, { timeout: 9000 }).should("have.text", usersText.invitedStatus);
+  });
+
+  cy.get('@copyToClipboardPrompt').then(prompt => {
+   common.logout();
+   cy.visit(prompt.args[0][1]);
+   cy.url().should("include",path.confirmInvite);
+  });
+  
+  cy.get(usersSelector.acceptInvite).click();
+  cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
+  cy.url().should("include",path.loginPath);
+
+  cy.appUILogin();
+  common.navigateToManageUsers();
+  cy.contains('td', email).parent().within(() => {
+   cy.get('td small').should("have.text", usersText.activeStatus);
   });
  });
 });

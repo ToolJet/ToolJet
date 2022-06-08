@@ -19,25 +19,42 @@ export const manageUsersElements=()=>{
  cy.get(usersSelector.createUserButton).should("be.visible").and("have.text", usersText.createUserButton);
 };
 
-export const addNewUser = (firstName,lastName,email) => {
-cy.clearAndType(usersSelector.firstNameInput, firstName);
-cy.clearAndType(usersSelector.lastNameInput, lastName);
-cy.clearAndType(usersSelector.emailInput, email);
+export const inviteUser = (firstName,lastName,email) => {
+ cy.clearAndType(usersSelector.firstNameInput, firstName);
+ cy.clearAndType(usersSelector.lastNameInput, lastName);
+ cy.clearAndType(usersSelector.emailInput, email);
 
-cy.get(usersSelector.createUserButton).click();
-cy.wait(1000);
-cy.window().then(win => {
+ cy.get(usersSelector.createUserButton).click();
+ cy.wait(2000);
+ cy.window().then(win => {
   cy.stub(win, 'prompt').returns(win.prompt).as('copyToClipboardPrompt');
-});
-cy.contains('td', email).parent().within(() => {
+ });
+ cy.contains('td', email).parent().within(() => {
  cy.get('td img').click();
-});
-cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteCopiedToast);
-cy.get('@copyToClipboardPrompt').then(prompt => {
+ });
+ cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteCopiedToast);
+ cy.get('@copyToClipboardPrompt').then(prompt => {
  common.logout();
  cy.visit(prompt.args[0][1]);
  cy.url().should("include",path.confirmInvite);
-});
+ });
+};
+
+export const addNewUser =(firstName,lastName,email)=>{
+  cy.intercept("POST", "/api/organization_users").as("appLibrary");
+  
+  cy.clearAndType(usersSelector.firstNameInput, firstName);
+  cy.clearAndType(usersSelector.lastNameInput, lastName);
+  cy.clearAndType(usersSelector.emailInput, email);
+ 
+  cy.get(usersSelector.createUserButton).click();
+  cy.wait('@appLibrary').then((res)=>{
+    const invitation1= (res.response.body.users.user.invitation_token);
+    const invitation2= (res.response.body.users.invitation_token);
+    const url= `http://localhost:8082/invitations/${invitation1}/workspaces/${invitation2}`
+    common.logout();
+    cy.visit(url);
+  });
 };
 
 export const confirmInviteElements =()=>{
