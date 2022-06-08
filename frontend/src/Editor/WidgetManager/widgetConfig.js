@@ -2122,13 +2122,12 @@ export const widgets = [
     },
     properties: {
       rawHtml: { type: 'code', displayName: 'Raw HTML' },
-      rawCSS: { type: 'code', displayName: 'Raw CSS' },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
-     events: {},
+    events: {},
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
     },
@@ -2143,17 +2142,14 @@ export const widgets = [
           value: `<body><main><section class="hero" style="height:310px;display: flex;
           justify-content: center;padding:0 1px;align-items: center;text-align:center">You can build your custom HTML-CSS template here</section></main></body>`,
         },
-        rawCSS: {
-          value: '',
-        },
       },
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
       },
     },
-   },
-   {
+  },
+  {
     name: 'VerticalDivider',
     displayName: 'Vertical Divider',
     description: 'Vertical Separator between components',
