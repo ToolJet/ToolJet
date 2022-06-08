@@ -36,14 +36,15 @@ class App extends React.Component {
       fetchedMetadata: false,
       onboarded: true,
       darkMode: localStorage.getItem('darkMode') === 'true',
+      currentVersion: null,
     };
   }
 
   fetchMetadata = () => {
     if (this.state.currentUser) {
       tooljetService.fetchMetaData().then((data) => {
-        this.setState({ onboarded: data.onboarded });
-
+        localStorage.setItem('currentVersion', data.installed_version);
+        this.setState({ onboarded: data.onboarded, currentVersion: data.installed_version });
         if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
@@ -69,7 +70,7 @@ class App extends React.Component {
   };
 
   render() {
-    const { updateAvailable, onboarded, darkMode } = this.state;
+    const { updateAvailable, onboarded, darkMode, currentVersion } = this.state;
     let toastOptions = {};
 
     if (darkMode) {
@@ -120,6 +121,7 @@ class App extends React.Component {
               component={HomePage}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
+              currentVersion={currentVersion}
             />
             <Route path="/login/:organisationId" exact component={LoginPage} />
             <Route path="/login" exact component={LoginPage} />

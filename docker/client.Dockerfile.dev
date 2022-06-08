@@ -7,7 +7,6 @@ RUN npm i -g npm@7.20.0
 
 # set working directory
 WORKDIR /app
-COPY ./.version ./.version
 COPY ./package.json ./package.json
 
 # add `/app/node_modules/.bin` to $PATH

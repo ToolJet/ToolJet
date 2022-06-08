@@ -595,7 +595,11 @@ class HomePage extends React.Component {
           </div>
         </Modal>
 
-        <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
+        <Header
+          switchDarkMode={this.props.switchDarkMode}
+          darkMode={this.props.darkMode}
+          currentVersion={this.props.currentVersion || localStorage.getItem('currentVersion')}
+        />
         {!isLoading && meta.total_count === 0 && !currentFolder.id && !appSearchKey && (
           <BlankPage
             createApp={this.createApp}
