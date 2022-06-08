@@ -12,7 +12,7 @@ import RunjsIcon from '../Icons/runjs.svg';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import { allSvgs } from '@tooljet/plugins/client';
-import { Confirm } from '../Viewer/Confirm';
+// import { Confirm } from '../Viewer/Confirm';
 import _ from 'lodash';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
@@ -120,31 +120,31 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
-    if (!nextProps.isQueryPaneDragging && !this.state.paneHeightChanged && !themeModeChanged) {
-      if (this.props.mode === 'create' && this.state.isFieldsChanged) {
-        this.setState({ showSaveConfirmation: true, nextProps });
-        return;
-      } else if (this.props.mode === 'edit') {
-        if (this.state.selectedQuery) {
-          const isQueryChanged = !_.isEqual(
-            this.removeRestKey(this.state.options),
-            this.removeRestKey(this.state.selectedQuery.options)
-          );
-          if (this.state.isFieldsChanged && isQueryChanged) {
-            this.setState({ showSaveConfirmation: true, nextProps });
-            return;
-          } else if (
-            !isQueryChanged &&
-            this.state.selectedQuery.kind === 'restapi' &&
-            this.state.restArrayValuesChanged
-          ) {
-            this.setState({ showSaveConfirmation: true, nextProps });
-            return;
-          }
-        }
-      }
-    }
+    // const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
+    // if (!nextProps.isQueryPaneDragging && !this.state.paneHeightChanged && !themeModeChanged) {
+    //   if (this.props.mode === 'create' && this.state.isFieldsChanged) {
+    //     this.setState({ showSaveConfirmation: true, nextProps });
+    //     return;
+    //   } else if (this.props.mode === 'edit') {
+    //     if (this.state.selectedQuery) {
+    //       const isQueryChanged = !_.isEqual(
+    //         this.removeRestKey(this.state.options),
+    //         this.removeRestKey(this.state.selectedQuery.options)
+    //       );
+    //       if (this.state.isFieldsChanged && isQueryChanged) {
+    //         this.setState({ showSaveConfirmation: true, nextProps });
+    //         return;
+    //       } else if (
+    //         !isQueryChanged &&
+    //         this.state.selectedQuery.kind === 'restapi' &&
+    //         this.state.restArrayValuesChanged
+    //       ) {
+    //         this.setState({ showSaveConfirmation: true, nextProps });
+    //         return;
+    //       }
+    //     }
+    //   }
+    // }
     this.setStateFromProps(nextProps);
   }
 
@@ -246,9 +246,11 @@ let QueryManager = class QueryManager extends React.Component {
           toast.success('Query Updated');
           this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
           this.props.dataQueriesChanged();
+          this.props.setStateOfUnsavedQueries(false);
         })
         .catch(({ error }) => {
           this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+          this.props.setStateOfUnsavedQueries(false);
           toast.error(error);
         });
     } else {
@@ -259,24 +261,47 @@ let QueryManager = class QueryManager extends React.Component {
           toast.success('Query Added');
           this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });
           this.props.dataQueriesChanged();
+          this.props.setStateOfUnsavedQueries(false);
         })
         .catch(({ error }) => {
           this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+          this.props.setStateOfUnsavedQueries(false);
           toast.error(error);
         });
     }
   };
 
+  validateNewOptions = (newOptions) => {
+    const headersChanged = newOptions.arrayValuesChanged ?? false;
+    let isFieldsChanged = false;
+    if (this.state.selectedQuery) {
+      const isQueryChanged = !_.isEqual(
+        this.removeRestKey(newOptions),
+        this.removeRestKey(this.state.selectedQuery.options)
+      );
+      if (isQueryChanged) {
+        isFieldsChanged = true;
+      } else if (this.state.selectedQuery.kind === 'restapi' && headersChanged) {
+        isFieldsChanged = true;
+      }
+    } else if (this.props.mode === 'create') {
+      isFieldsChanged = true;
+    }
+    if (isFieldsChanged) this.props.setStateOfUnsavedQueries(true);
+    this.setState({
+      options: newOptions,
+      isFieldsChanged,
+      restArrayValuesChanged: headersChanged,
+    });
+  };
+
   optionchanged = (option, value) => {
-    this.setState({ options: { ...this.state.options, [option]: value }, isFieldsChanged: true });
+    const newOptions = { ...this.state.options, [option]: value };
+    this.validateNewOptions(newOptions);
   };
 
   optionsChanged = (newOptions) => {
-    this.setState({
-      options: newOptions,
-      isFieldsChanged: true,
-      restArrayValuesChanged: newOptions.arrayValuesChanged,
-    });
+    this.validateNewOptions(newOptions);
   };
 
   toggleOption = (option) => {
@@ -338,16 +363,17 @@ let QueryManager = class QueryManager extends React.Component {
     return (
       <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
-        <Confirm
+        {/* <Confirm
           show={this.state.showSaveConfirmation}
           message={'Query is unsaved, save or leave without saving. Do you want to save?'}
           onConfirm={() => this.createOrUpdateDataQuery()}
           onCancel={() => {
             this.setState({ showSaveConfirmation: false, isFieldsChanged: false });
             this.setStateFromProps(this.state.nextProps);
+            this.props.setStateOfUnsavedQueries(false);
           }}
           queryConfirmationData={this.state.queryConfirmationData}
-        />
+        /> */}
         <div className="row header">
           <div className="col">
             {(addingQuery || editingQuery) && selectedDataSource && (
@@ -514,7 +540,8 @@ let QueryManager = class QueryManager extends React.Component {
                       isEditMode={this.props.mode === 'edit'}
                       queryName={this.state.queryName}
                     />
-                    {!dataSourceMeta?.disableTransformations && (
+
+                    {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
                       <div>
                         <div className="mb-3 mt-4">
                           <Transformation

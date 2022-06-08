@@ -12,6 +12,7 @@ export const Tabs = function Tabs({
   currentState,
   removeComponent,
   setExposedVariable,
+  fireEvent,
 }) {
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -60,16 +61,18 @@ export const Tabs = function Tabs({
     setCurrentTab(parsedDefaultTab);
   }, [parsedDefaultTab]);
 
-  useEffect(() => {
-    setExposedVariable('currentTab', currentTab);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab]);
-
   return (
     <div data-disabled={parsedDisabledState} className="jet-tabs card" style={computedStyles}>
       <ul className="nav nav-tabs" data-bs-toggle="tabs" style={{ display: parsedHideTabs && 'none' }}>
         {parsedTabs.map((tab) => (
-          <li className="nav-item" onClick={() => setCurrentTab(tab.id)} key={tab.id}>
+          <li
+            className="nav-item"
+            onClick={() => {
+              setCurrentTab(tab.id);
+              setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
+            }}
+            key={tab.id}
+          >
             <a
               className={`nav-link ${currentTab == tab.id ? 'active' : ''}`}
               style={
