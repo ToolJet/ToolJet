@@ -35,8 +35,8 @@ export class FoldersController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(@Request() req, @Param('id') id, @Body() body: any) {
-    const ability = await this.foldersAbilityFactory.folderActions(req.user, {});
+  async update(@User() user, @Param('id') id, @Body() body: any) {
+    const ability = await this.foldersAbilityFactory.folderActions(user, {});
 
     if (!ability.can('updateFolder', Folder)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
