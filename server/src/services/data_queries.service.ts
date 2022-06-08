@@ -78,9 +78,9 @@ export class DataQueriesService {
     return dataQuery;
   }
 
-  async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions) {
+  async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id) {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
-    const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
+    const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id);
     const kind = dataQuery.kind;
     const service = new allPlugins[kind]();
     return { service, sourceOptions, parsedQueryOptions };
@@ -91,7 +91,8 @@ export class DataQueriesService {
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,
       dataQuery,
-      queryOptions
+      queryOptions,
+      user.organizationId
     );
     let result;
 
@@ -113,7 +114,8 @@ export class DataQueriesService {
         ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
           dataSource,
           dataQuery,
-          queryOptions
+          queryOptions,
+          user.organizationId
         ));
 
         result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
@@ -206,7 +208,7 @@ export class DataQueriesService {
     return parsedOptions;
   }
 
-  async resolveVariable(str: string) {
+  async resolveVariable(str: string, organization_id: string) {
     const tempStr: string = str.replace(/{|}/g, '');
     const variablesResult = await this.orgEnvironmentVariablesRepository.find({ variableType: 'server' });
     const serverVariables = {};
@@ -214,7 +216,7 @@ export class DataQueriesService {
       variablesResult.map(async (variable) => {
         serverVariables[variable.variableName] = await this.encryptionService.decryptColumnValue(
           'org_environment_variables',
-          'value',
+          organization_id,
           variable.value
         );
       })
@@ -229,17 +231,17 @@ export class DataQueriesService {
     return result;
   }
 
-  async parseQueryOptions(object: any, options: object): Promise<object> {
+  async parseQueryOptions(object: any, options: object, organization_id: string): Promise<object> {
     if (typeof object === 'object' && object !== null) {
       for (const key of Object.keys(object)) {
-        object[key] = await this.parseQueryOptions(object[key], options);
+        object[key] = await this.parseQueryOptions(object[key], options, organization_id);
       }
       return object;
     } else if (typeof object === 'string') {
       object = object.replace(/\n/g, ' ');
       if (object.startsWith('{{') && object.endsWith('}}') && (object.match(/{{/g) || []).length === 1) {
         if (object.includes(`globals.environmentVariables.server`)) {
-          object = await this.resolveVariable(object);
+          object = await this.resolveVariable(object, organization_id);
         } else {
           object = options[object];
         }
@@ -250,7 +252,7 @@ export class DataQueriesService {
         if (variables?.length > 0) {
           for (const variable of variables) {
             if (variable.includes(`globals.environmentVariables.server`)) {
-              const secret_value = await this.resolveVariable(variable);
+              const secret_value = await this.resolveVariable(variable, organization_id);
               object = object.replace(variable, secret_value);
             } else {
               object = object.replace(variable, options[variable]);
@@ -263,7 +265,7 @@ export class DataQueriesService {
       object.forEach((element) => {});
 
       for (const [index, element] of object) {
-        object[index] = await this.parseQueryOptions(element, options);
+        object[index] = await this.parseQueryOptions(element, options, organization_id);
       }
       return object;
     }

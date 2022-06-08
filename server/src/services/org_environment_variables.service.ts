@@ -25,7 +25,8 @@ export class OrgEnvironmentVariablesService {
         if (variable.variableType === 'server') {
           delete variable.value;
         } else {
-          if (variable.encrypted) variable['value'] = await this.decryptSecret(variable.value);
+          if (variable.encrypted)
+            variable['value'] = await this.decryptSecret(currentUser.organizationId, variable.value);
         }
       })
     );
@@ -50,7 +51,7 @@ export class OrgEnvironmentVariablesService {
     const encrypted = environmentVariableDto.variable_type === 'server' ? true : environmentVariableDto.encrypted;
     let value: string;
     if (encrypted && environmentVariableDto.value) {
-      value = await this.encryptSecret(environmentVariableDto.value);
+      value = await this.encryptSecret(currentUser.organizationId, environmentVariableDto.value);
     } else {
       value = environmentVariableDto.value;
     }
@@ -93,7 +94,7 @@ export class OrgEnvironmentVariablesService {
     }
 
     if (variable.encrypted && value) {
-      value = await this.encryptSecret(value);
+      value = await this.encryptSecret(organizationId, value);
     }
 
     const updateableParams = {
@@ -111,11 +112,11 @@ export class OrgEnvironmentVariablesService {
     return await this.orgEnvironmentVariablesRepository.delete({ organizationId, id: variableId });
   }
 
-  private async encryptSecret(value: string) {
-    return await this.encryptionService.encryptColumnValue('org_environment_variables', 'value', value);
+  private async encryptSecret(workspaceId: string, value: string) {
+    return await this.encryptionService.encryptColumnValue('org_environment_variables', workspaceId, value);
   }
 
-  private async decryptSecret(value: string) {
-    return await this.encryptionService.decryptColumnValue('org_environment_variables', 'value', value);
+  private async decryptSecret(workspaceId: string, value: string) {
+    return await this.encryptionService.decryptColumnValue('org_environment_variables', workspaceId, value);
   }
 }
