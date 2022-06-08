@@ -10,6 +10,7 @@ import { DataSourcesService } from './data_sources.service';
 import got from 'got';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { EncryptionService } from './encryption.service';
+import { App } from 'src/entities/app.entity';
 
 @Injectable()
 export class DataQueriesService {
@@ -20,7 +21,9 @@ export class DataQueriesService {
     @InjectRepository(DataQuery)
     private dataQueriesRepository: Repository<DataQuery>,
     @InjectRepository(OrgEnvironmentVariable)
-    private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>
+    private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>,
+    @InjectRepository(App)
+    private appsRespository: Repository<App>
   ) {}
 
   async findOne(dataQueryId: string): Promise<DataQuery> {
@@ -86,13 +89,19 @@ export class DataQueriesService {
     return { service, sourceOptions, parsedQueryOptions };
   }
 
+  async getOrgIdfromApp(id: string) {
+    const app = await this.appsRespository.findOneOrFail({ id });
+    return app.organizationId;
+  }
+
   async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
     const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
+    const organizationId = user ? user.organizationId : await this.getOrgIdfromApp(dataQuery.appId);
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,
       dataQuery,
       queryOptions,
-      user.organizationId
+      organizationId
     );
     let result;
 
@@ -115,7 +124,7 @@ export class DataQueriesService {
           dataSource,
           dataQuery,
           queryOptions,
-          user.organizationId
+          organizationId
         ));
 
         result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
