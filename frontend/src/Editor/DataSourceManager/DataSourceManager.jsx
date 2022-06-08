@@ -80,6 +80,7 @@ class DataSourceManager extends React.Component {
 
   selectExtensionDataSource = (source) => {
     source.manifestFile.data.source.extensionId = source.id;
+    source.manifestFile.data.source.icon = source.iconFile.data;
     this.setState({
       dataSourceMeta: source.manifestFile.data.source,
       selectedDataSource: source.manifestFile.data.source,
@@ -566,6 +567,12 @@ class DataSourceManager extends React.Component {
 
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
+    let icon;
+    if (selectedDataSource?.extensionId) {
+      icon = <img src={selectedDataSource.icon} style={{ height: 35, width: 35 }} />;
+    } else if (selectedDataSource) {
+      icon = getSvgIcon(dataSourceMeta.kind?.toLowerCase(), 35, 35);
+    }
 
     return (
       <div>
@@ -582,7 +589,7 @@ class DataSourceManager extends React.Component {
             <Modal.Title>
               {selectedDataSource && (
                 <div className="row">
-                  {getSvgIcon(dataSourceMeta.kind.toLowerCase(), 35, 35)}
+                  {icon}
                   <div className="input-icon" style={{ width: '160px' }}>
                     <input
                       type="text"

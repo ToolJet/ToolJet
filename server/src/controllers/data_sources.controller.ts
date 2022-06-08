@@ -46,6 +46,13 @@ export class DataSourcesController {
     }
 
     const dataSources = await this.dataSourcesService.all(user, query);
+    for (const dataSource of dataSources) {
+      if (dataSource.extensionId) {
+        dataSource.extension.iconFile.data = `data:image/svg+xml;base64,${dataSource.extension.iconFile.data.toString(
+          'utf8'
+        )}`;
+      }
+    }
     const response = decamelizeKeys({ data_sources: dataSources });
 
     return response;

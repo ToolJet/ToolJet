@@ -39,6 +39,7 @@ export class DataQueriesService {
     return await this.dataQueriesRepository.find({
       where: whereClause,
       order: { createdAt: 'DESC' }, // Latest query should be on top
+      relations: ['extension', 'extension.iconFile', 'extension.manifestFile'],
     });
   }
 

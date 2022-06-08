@@ -27,7 +27,10 @@ export class DataSourcesService {
     const { app_id: appId, app_version_id: appVersionId }: any = query;
     const whereClause = { appId, ...(appVersionId && { appVersionId }) };
 
-    return await this.dataSourcesRepository.find({ where: whereClause });
+    return await this.dataSourcesRepository.find({
+      where: whereClause,
+      relations: ['extension', 'extension.iconFile', 'extension.manifestFile'],
+    });
   }
 
   async findOne(dataSourceId: string): Promise<DataSource> {

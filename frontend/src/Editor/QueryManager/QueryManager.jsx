@@ -256,7 +256,7 @@ let QueryManager = class QueryManager extends React.Component {
     } else {
       this.setState({ isCreating: true });
       dataqueryService
-        .create(appId, appVersionId, queryName, kind, options, dataSourceId)
+        .create(appId, appVersionId, queryName, kind, options, dataSourceId, selectedDataSource.extension_id)
         .then(() => {
           toast.success('Query Added');
           this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });

@@ -19,6 +19,7 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { AppsService } from '@services/apps.service';
 import { CreateDataQueryDto, UpdateDataQueryDto } from '@dto/data-query.dto';
 import { User } from 'src/decorators/user.decorator';
+import { decode } from 'js-base64';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -47,6 +48,16 @@ export class DataQueriesController {
       const decamelizedQuery = decamelizeKeys(query);
 
       decamelizedQuery['options'] = query.options;
+
+      if (query.extensionId) {
+        decamelizedQuery['extension'].manifest_file.data = JSON.parse(
+          decode(query.extension.manifestFile.data.toString('utf8'))
+        );
+        decamelizedQuery[
+          'extension'
+        ].icon_file.data = `data:image/svg+xml;base64,${query.extension.iconFile.data.toString('utf8')}`;
+      }
+
       seralizedQueries.push(decamelizedQuery);
     }
 
