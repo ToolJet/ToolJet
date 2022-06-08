@@ -57,7 +57,7 @@ class ManageOrgVars extends React.Component {
     this.setState({
       showVariableForm: false,
       newVariable: {},
-      fields: { encryption: false },
+      fields: { encryption: false, variable_type: 'client' },
       selectedVariableId: null,
     });
   };
@@ -123,6 +123,7 @@ class ManageOrgVars extends React.Component {
       fields[key] = '';
     });
     fields['encryption'] = false;
+    fields['variable_type'] = 'client';
 
     this.setState({
       addingVar: true,
@@ -192,6 +193,10 @@ class ManageOrgVars extends React.Component {
         });
         this.setState({
           isLoading: false,
+          fields: {
+            encryption: false,
+            variable_type: 'client',
+          },
         });
         this.fetchVariables();
       })
