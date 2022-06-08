@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
+import Select from '../../_ui/Select';
+import defaultStyles from '../../_ui/Select/styles';
 
+// import { SelectComponent } from '../../_ui/Select/SelectComponent';
 export const EventManager = ({
   component,
   componentMeta,
@@ -23,6 +25,14 @@ export const EventManager = ({
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };
   });
+
+  const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
+  useEffect(() => {
+    window.addEventListener('storage', () => {
+      setDarkMode(JSON.parse(localStorage.getItem('darkMode')) === 'true');
+    });
+  }, [darkMode]);
+  const styles = defaultStyles(darkMode);
 
   const actionLookup = Object.fromEntries(ActionTypes.map((actionType) => [actionType.id, actionType]));
 
@@ -115,8 +125,6 @@ export const EventManager = ({
     eventsChanged(newEvents);
   }
 
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-
   function eventPopover(event, index) {
     return (
       <Popover
@@ -131,14 +139,24 @@ export const EventManager = ({
               <span data-cy="event-label">Event</span>
             </div>
             <div className="col-9" data-cy="event-selection">
-              <SelectSearch
+              <Select
                 className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 options={possibleEvents}
                 value={event.eventId}
                 search={false}
                 onChange={(value) => handlerChanged(index, 'eventId', value)}
-                filterOptions={fuzzySearch}
                 placeholder="Select.."
+                styles={{
+                  ...styles,
+                  menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+                  menuList: (base) => ({
+                    ...base,
+                    '::-webkit-scrollbar': {
+                      width: '2px',
+                    },
+                  }),
+                }}
+                useMenuPortal="true"
               />
             </div>
           </div>
@@ -147,14 +165,24 @@ export const EventManager = ({
               <span data-cy="action-label">Action</span>
             </div>
             <div className="col-9 popover-action-select-search" data-cy="action-selection">
-              <SelectSearch
+              <Select
                 className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 options={actionOptions}
                 value={event.actionId}
                 search={false}
                 onChange={(value) => handlerChanged(index, 'actionId', value)}
-                filterOptions={fuzzySearch}
                 placeholder="Select.."
+                styles={{
+                  ...styles,
+                  menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+                  menuList: (base) => ({
+                    ...base,
+                    '::-webkit-scrollbar': {
+                      width: '2px',
+                    },
+                  }),
+                }}
+                useMenuPortal="true"
               />
             </div>
           </div>
@@ -186,14 +214,24 @@ export const EventManager = ({
                     Alert Type
                   </div>
                   <div className="col-9" data-cy="alert-message-type">
-                    <SelectSearch
+                    <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={alertOptions}
                       value={event.alertType}
                       search={false}
                       onChange={(value) => handlerChanged(index, 'alertType', value)}
-                      filterOptions={fuzzySearch}
                       placeholder="Select.."
+                      styles={{
+                        ...styles,
+                        menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+                        menuList: (base) => ({
+                          ...base,
+                          '::-webkit-scrollbar': {
+                            width: '2px',
+                          },
+                        }),
+                      }}
+                      useMenuPortal="true"
                     />
                   </div>
                 </div>
@@ -227,7 +265,7 @@ export const EventManager = ({
               <div className="row">
                 <div className="col-3 p-2">Modal</div>
                 <div className="col-9">
-                  <SelectSearch
+                  <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                     options={getComponentOptions('Modal')}
                     value={event.modal?.id ?? event.modal}
@@ -235,8 +273,18 @@ export const EventManager = ({
                     onChange={(value) => {
                       handlerChanged(index, 'modal', value);
                     }}
-                    filterOptions={fuzzySearch}
                     placeholder="Select.."
+                    styles={{
+                      ...styles,
+                      menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+                      menuList: (base) => ({
+                        ...base,
+                        '::-webkit-scrollbar': {
+                          width: '2px',
+                        },
+                      }),
+                    }}
+                    useMenuPortal="true"
                   />
                 </div>
               </div>
@@ -246,7 +294,7 @@ export const EventManager = ({
               <div className="row">
                 <div className="col-3 p-2">Modal</div>
                 <div className="col-9">
-                  <SelectSearch
+                  <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                     options={getComponentOptions('Modal')}
                     value={event.modal?.id ?? event.modal}
@@ -254,8 +302,18 @@ export const EventManager = ({
                     onChange={(value) => {
                       handlerChanged(index, 'modal', value);
                     }}
-                    filterOptions={fuzzySearch}
                     placeholder="Select.."
+                    styles={{
+                      ...styles,
+                      menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+                      menuList: (base) => ({
+                        ...base,
+                        '::-webkit-scrollbar': {
+                          width: '2px',
+                        },
+                      }),
+                    }}
+                    useMenuPortal="true"
                   />
                 </div>
               </div>
@@ -277,7 +335,7 @@ export const EventManager = ({
               <div className="row">
                 <div className="col-3 p-2">Query</div>
                 <div className="col-9">
-                  <SelectSearch
+                  <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                     options={dataQueries.map((query) => {
                       return { name: query.name, value: query.id };
@@ -289,8 +347,18 @@ export const EventManager = ({
                       handlerChanged(index, 'queryId', query.id);
                       handlerChanged(index, 'queryName', query.name);
                     }}
-                    filterOptions={fuzzySearch}
                     placeholder="Select.."
+                    styles={{
+                      ...styles,
+                      menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+                      menuList: (base) => ({
+                        ...base,
+                        '::-webkit-scrollbar': {
+                          width: '2px',
+                        },
+                      }),
+                    }}
+                    useMenuPortal="true"
                   />
                 </div>
               </div>
@@ -331,7 +399,7 @@ export const EventManager = ({
                 <div className="row">
                   <div className="col-3 p-2">Type</div>
                   <div className="col-9">
-                    <SelectSearch
+                    <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={[
                         { name: 'CSV', value: 'csv' },
@@ -342,8 +410,18 @@ export const EventManager = ({
                       onChange={(value) => {
                         handlerChanged(index, 'fileType', value);
                       }}
-                      filterOptions={fuzzySearch}
                       placeholder="Select.."
+                      styles={{
+                        ...styles,
+                        menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+                        menuList: (base) => ({
+                          ...base,
+                          '::-webkit-scrollbar': {
+                            width: '2px',
+                          },
+                        }),
+                      }}
+                      useMenuPortal="true"
                     />
                   </div>
                 </div>
@@ -378,7 +456,7 @@ export const EventManager = ({
                 <div className="row">
                   <div className="col-3 p-2">Table</div>
                   <div className="col-9">
-                    <SelectSearch
+                    <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={getComponentOptions('Table')}
                       value={event.table}
@@ -386,8 +464,18 @@ export const EventManager = ({
                       onChange={(value) => {
                         handlerChanged(index, 'table', value);
                       }}
-                      filterOptions={fuzzySearch}
                       placeholder="Select.."
+                      styles={{
+                        ...styles,
+                        menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+                        menuList: (base) => ({
+                          ...base,
+                          '::-webkit-scrollbar': {
+                            width: '2px',
+                          },
+                        }),
+                      }}
+                      useMenuPortal="true"
                     />
                   </div>
                 </div>
