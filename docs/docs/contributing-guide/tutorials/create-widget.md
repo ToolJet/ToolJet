@@ -4,16 +4,17 @@ title: Creating Widgets
 ---
 
 # Creating Widgets
+
 These are some of the most useful properties and functions passed to the widget
 
 ### properties
 
-The `properties` object will contain the configurable properties of a widget, initially obtained from its definition on `components.js`.
+The `properties` object will contain the configurable properties of a widget, initially obtained from its definition on `widgetConfig.js`.
 The values inside `properties` changes whenever the developer changes it from the inspector panel of ToolJet editor.
 
 ### exposedVariables
 
-The `exposedVariables` object will contain the values of all exposed variables as configured in `components.js`.
+The `exposedVariables` object will contain the values of all exposed variables as configured in `widgetConfig.js`.
 
 ### setExposedVariable('exposedVariableName', newValue)
 

@@ -2,7 +2,7 @@ import React, { useState, useRef, useLayoutEffect } from 'react';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
 import { v4 as uuidv4 } from 'uuid';
-import { componentTypes } from '../Components/components';
+import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
 import { renderElement } from './Utils';
@@ -351,6 +351,7 @@ export const Inspector = ({
                     className="w-100 form-control-plaintext form-control-plaintext-sm mt-1"
                     value={newComponentName}
                     ref={inputRef}
+                    data-cy="edit-widget-name"
                   />
                   <span className="input-icon-addon">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -415,6 +416,7 @@ export const Inspector = ({
           href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
           target="_blank"
           rel="noreferrer"
+          data-cy="widget-documentation-link"
         >
           <small>{componentMeta.name} documentation</small>
         </a>

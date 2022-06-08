@@ -7,6 +7,7 @@ import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from './all-exceptions-filter';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
+import { ConfigService } from '@nestjs/config';
 
 const fs = require('fs');
 
@@ -17,6 +18,7 @@ async function bootstrap() {
     bufferLogs: true,
     abortOnError: false,
   });
+  const configService = app.get<ConfigService>(ConfigService);
   const host = new URL(process.env.TOOLJET_HOST);
   const domain = host.hostname;
 
@@ -35,7 +37,7 @@ async function bootstrap() {
       useDefaults: true,
       directives: {
         upgradeInsecureRequests: null,
-        'img-src': ['*', 'data:'],
+        'img-src': ['*', 'data:', 'blob:'],
         'script-src': [
           'maps.googleapis.com',
           'apis.google.com',
@@ -71,7 +73,8 @@ async function bootstrap() {
   const port = parseInt(process.env.PORT) || 3000;
 
   await app.listen(port, '0.0.0.0', function () {
-    console.log('Listening on port %d', port);
+    const tooljetHost = configService.get<string>('TOOLJET_HOST');
+    console.log(`Ready to use at ${tooljetHost} 🚀`);
   });
 }
 

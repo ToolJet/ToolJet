@@ -23,6 +23,12 @@ ToolJet requires the following to connect to your Elasticsearch cluster:
 
 </div>
 
+Elastic search datasource is also providing an option for connecting services with ssl certificates. 
+- You can either use CA / Client certificates option. 
+  
+![ToolJet - Data Source - Elasticsearch - SSL](/img/datasource-reference/elasticsearch/ssl.png)
+
+
 ## Querying Elasticsearch 
 
 Click on `+` button of the query manager at the bottom panel of the editor and select the Elasticsearch added in the previous step as the data source. 

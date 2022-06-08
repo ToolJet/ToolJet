@@ -1,6 +1,6 @@
 {
   "git": {
-    "name": "Github",
+    "name": "GitHub",
     "responseType": "query",
     "params": {
       "token": "code"

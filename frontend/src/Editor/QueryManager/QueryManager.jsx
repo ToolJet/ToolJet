@@ -12,6 +12,8 @@ import RunjsIcon from '../Icons/runjs.svg';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import { allSvgs } from '@tooljet/plugins/client';
+// import { Confirm } from '../Viewer/Confirm';
+import _ from 'lodash';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -32,6 +34,11 @@ let QueryManager = class QueryManager extends React.Component {
       dataQueries: [],
       theme: {},
       isSourceSelected: false,
+      isFieldsChanged: false,
+      paneHeightChanged: false,
+      showSaveConfirmation: false,
+      restArrayValuesChanged: false,
+      nextProps: null,
     };
 
     this.previewPanelRef = React.createRef();
@@ -44,6 +51,7 @@ let QueryManager = class QueryManager extends React.Component {
     let dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
     const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
+    const queryPaneDragged = this.state.isQueryPaneDragging !== props.isQueryPaneDragging;
     this.setState(
       {
         appId: props.appId,
@@ -54,11 +62,14 @@ let QueryManager = class QueryManager extends React.Component {
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
         queryPaneHeight: props.queryPaneHeight,
+        isQueryPaneDragging: props.isQueryPaneDragging,
         currentState: props.currentState,
         selectedSource: source,
         dataSourceMeta,
-        isSourceSelected: paneHeightChanged ? this.state.isSourceSelected : props.isSourceSelected,
-        selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
+        paneHeightChanged,
+        isSourceSelected: paneHeightChanged || queryPaneDragged ? this.state.isSourceSelected : props.isSourceSelected,
+        selectedDataSource:
+          paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource,
         theme: {
           scheme: 'bright',
           author: 'chris kempson (http://chriskempson.com)',
@@ -109,8 +120,38 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   componentWillReceiveProps(nextProps) {
+    // const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
+    // if (!nextProps.isQueryPaneDragging && !this.state.paneHeightChanged && !themeModeChanged) {
+    //   if (this.props.mode === 'create' && this.state.isFieldsChanged) {
+    //     this.setState({ showSaveConfirmation: true, nextProps });
+    //     return;
+    //   } else if (this.props.mode === 'edit') {
+    //     if (this.state.selectedQuery) {
+    //       const isQueryChanged = !_.isEqual(
+    //         this.removeRestKey(this.state.options),
+    //         this.removeRestKey(this.state.selectedQuery.options)
+    //       );
+    //       if (this.state.isFieldsChanged && isQueryChanged) {
+    //         this.setState({ showSaveConfirmation: true, nextProps });
+    //         return;
+    //       } else if (
+    //         !isQueryChanged &&
+    //         this.state.selectedQuery.kind === 'restapi' &&
+    //         this.state.restArrayValuesChanged
+    //       ) {
+    //         this.setState({ showSaveConfirmation: true, nextProps });
+    //         return;
+    //       }
+    //     }
+    //   }
+    // }
     this.setStateFromProps(nextProps);
   }
+
+  removeRestKey = (options) => {
+    delete options.arrayValuesChanged;
+    return options;
+  };
 
   componentDidMount() {
     this.setStateFromProps(this.props);
@@ -203,11 +244,13 @@ let QueryManager = class QueryManager extends React.Component {
         .update(this.state.selectedQuery.id, queryName, options)
         .then(() => {
           toast.success('Query Updated');
-          this.setState({ isUpdating: false });
+          this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
           this.props.dataQueriesChanged();
+          this.props.setStateOfUnsavedQueries(false);
         })
         .catch(({ error }) => {
-          this.setState({ isUpdating: false });
+          this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+          this.props.setStateOfUnsavedQueries(false);
           toast.error(error);
         });
     } else {
@@ -216,22 +259,49 @@ let QueryManager = class QueryManager extends React.Component {
         .create(appId, appVersionId, queryName, kind, options, dataSourceId)
         .then(() => {
           toast.success('Query Added');
-          this.setState({ isCreating: false });
+          this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });
           this.props.dataQueriesChanged();
+          this.props.setStateOfUnsavedQueries(false);
         })
         .catch(({ error }) => {
-          this.setState({ isCreating: false });
+          this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+          this.props.setStateOfUnsavedQueries(false);
           toast.error(error);
         });
     }
   };
 
+  validateNewOptions = (newOptions) => {
+    const headersChanged = newOptions.arrayValuesChanged ?? false;
+    let isFieldsChanged = false;
+    if (this.state.selectedQuery) {
+      const isQueryChanged = !_.isEqual(
+        this.removeRestKey(newOptions),
+        this.removeRestKey(this.state.selectedQuery.options)
+      );
+      if (isQueryChanged) {
+        isFieldsChanged = true;
+      } else if (this.state.selectedQuery.kind === 'restapi' && headersChanged) {
+        isFieldsChanged = true;
+      }
+    } else if (this.props.mode === 'create') {
+      isFieldsChanged = true;
+    }
+    if (isFieldsChanged) this.props.setStateOfUnsavedQueries(true);
+    this.setState({
+      options: newOptions,
+      isFieldsChanged,
+      restArrayValuesChanged: headersChanged,
+    });
+  };
+
   optionchanged = (option, value) => {
-    this.setState({ options: { ...this.state.options, [option]: value } });
+    const newOptions = { ...this.state.options, [option]: value };
+    this.validateNewOptions(newOptions);
   };
 
   optionsChanged = (newOptions) => {
-    this.setState({ options: newOptions });
+    this.validateNewOptions(newOptions);
   };
 
   toggleOption = (option) => {
@@ -293,6 +363,17 @@ let QueryManager = class QueryManager extends React.Component {
     return (
       <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
+        {/* <Confirm
+          show={this.state.showSaveConfirmation}
+          message={'Query is unsaved, save or leave without saving. Do you want to save?'}
+          onConfirm={() => this.createOrUpdateDataQuery()}
+          onCancel={() => {
+            this.setState({ showSaveConfirmation: false, isFieldsChanged: false });
+            this.setStateFromProps(this.state.nextProps);
+            this.props.setStateOfUnsavedQueries(false);
+          }}
+          queryConfirmationData={this.state.queryConfirmationData}
+        /> */}
         <div className="row header">
           <div className="col">
             {(addingQuery || editingQuery) && selectedDataSource && (
@@ -450,7 +531,7 @@ let QueryManager = class QueryManager extends React.Component {
                 {selectedDataSource && (
                   <div>
                     <ElementToRender
-                      selectedDataSource={this.state.selectedSource}
+                      selectedDataSource={selectedDataSource}
                       options={this.state.options}
                       optionsChanged={this.optionsChanged}
                       optionchanged={this.optionchanged}
@@ -459,7 +540,8 @@ let QueryManager = class QueryManager extends React.Component {
                       isEditMode={this.props.mode === 'edit'}
                       queryName={this.state.queryName}
                     />
-                    {!dataSourceMeta?.disableTransformations && (
+
+                    {!dataSourceMeta?.disableTransformations && selectedDataSource?.kind != 'runjs' && (
                       <div>
                         <div className="mb-3 mt-4">
                           <Transformation

@@ -13,7 +13,7 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
   const menuItems = [
     { id: 'general-settings', label: 'General Settings' },
     { id: 'google', label: 'Google' },
-    { id: 'git', label: 'Git' },
+    { id: 'git', label: 'GitHub' },
     { id: 'openid', label: 'Open ID' },
     { id: 'form', label: 'Password Login' },
   ];

@@ -19,6 +19,8 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from '@services/audit_logger.service';
+import { File } from 'src/entities/file.entity';
+import { FilesService } from '@services/files.service';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { GroupPermissionsService } from '@services/group_permissions.service';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
@@ -32,6 +34,7 @@ import { OidcOAuthService } from '@ee/services/oauth/oidc_auth.service';
     PassportModule,
     TypeOrmModule.forFeature([
       User,
+      File,
       Organization,
       OrganizationUser,
       GroupPermission,
@@ -64,6 +67,7 @@ import { OidcOAuthService } from '@ee/services/oauth/oidc_auth.service';
     GoogleOAuthService,
     AuditLoggerService,
     GitOAuthService,
+    FilesService,
     GroupPermissionsService,
     EncryptionService,
     OidcOAuthService,
