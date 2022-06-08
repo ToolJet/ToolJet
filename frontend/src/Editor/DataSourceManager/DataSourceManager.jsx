@@ -27,7 +27,11 @@ class DataSourceManager extends React.Component {
     if (props.selectedDataSource) {
       selectedDataSource = props.selectedDataSource;
       options = selectedDataSource.options;
-      dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedDataSource.kind);
+      if (selectedDataSource?.extensionId) {
+        dataSourceMeta = selectedDataSource.manifestFile.data.source;
+      } else if (selectedDataSource) {
+        dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedDataSource.kind);
+      }
     }
 
     this.state = {
@@ -62,10 +66,16 @@ class DataSourceManager extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.selectedDataSource !== this.props.selectedDataSource) {
+      let dataSourceMeta;
+      if (this.props.selectedDataSource?.extensionId) {
+        dataSourceMeta = this.props.selectedDataSource.manifestFile.data.source;
+      } else {
+        dataSourceMeta = DataSourceTypes.find((source) => source.kind === this.props.selectedDataSource.kind);
+      }
       this.setState({
         selectedDataSource: this.props.selectedDataSource,
         options: this.props.selectedDataSource?.options,
-        dataSourceMeta: DataSourceTypes.find((source) => source.kind === this.props.selectedDataSource?.kind),
+        dataSourceMeta,
       });
     }
   }
@@ -398,19 +408,6 @@ class DataSourceManager extends React.Component {
         };
       });
 
-      // if (filteredDatasources.length === 0) {
-      //   return (
-      //     <div className="empty-state-wrapper row">
-      //       <EmptyStateContainer
-      //         queryString={this.state.queryString}
-      //         handleBackToAllDatasources={this.handleBackToAllDatasources}
-      //         darkMode={this.props.darkMode}
-      //         placeholder={'Tell us what you were looking for?'}
-      //       />
-      //     </div>
-      //   );
-      // }
-
       return (
         <>
           <div className="row row-deck mt-4">
@@ -421,7 +418,7 @@ class DataSourceManager extends React.Component {
                 title={item.title}
                 src={item.src}
                 handleClick={() => renderSelectedDatasource(item)}
-                usepluginIcon={false}
+                usepluginIcon={true}
                 height="35px"
                 width="35px"
               />

@@ -78,10 +78,17 @@ class Viewer extends React.Component {
 
     let queryState = {};
     data.data_queries.forEach((query) => {
-      queryState[query.name] = {
-        ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-        ...this.state.currentState.queries[query.name],
-      };
+      if (query.extension_id) {
+        queryState[query.name] = {
+          ...query.extension.manifest_file.data.source.exposedVariables,
+          ...this.state.currentState.queries[query.name],
+        };
+      } else {
+        queryState[query.name] = {
+          ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+          ...this.state.currentState.queries[query.name],
+        };
+      }
     });
 
     this.setState(
