@@ -336,7 +336,7 @@ export class AuthService {
         )
         .catch((err) => console.error('Error while sending welcome mail', err));
       throw new UnauthorizedException(
-        'User not exist in the workspace, Please setup your account using link shared via email'
+        'Please setup your account using account setup link shared via email before accepting the invite'
       );
     }
 
