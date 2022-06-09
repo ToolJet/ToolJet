@@ -44,6 +44,7 @@ export class OidcOAuthService {
       code_challenge: codeChallenge,
       code_challenge_method: 'S256',
       state: uuid.v4(),
+      redirect_uri: `${this.tooljetHost}/sso/openid/${configId}`,
     });
 
     return {
