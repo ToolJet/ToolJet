@@ -8,17 +8,21 @@ import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { User } from 'src/decorators/user.decorator';
 import { InviteNewUserDto } from '../dto/invite-new-user.dto';
+import { OrganizationsService } from '@services/organizations.service';
 
 @Controller('organization_users')
 export class OrganizationUsersController {
-  constructor(private organizationUsersService: OrganizationUsersService) {}
+  constructor(
+    private organizationUsersService: OrganizationUsersService,
+    private organizationsService: OrganizationsService
+  ) {}
 
   // Endpoint for inviting new organization users
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('inviteUser', UserEntity))
   @Post()
   async create(@User() user, @Body() inviteNewUserDto: InviteNewUserDto) {
-    const result = await this.organizationUsersService.inviteNewUser(user, inviteNewUserDto);
+    const result = await this.organizationsService.inviteNewUser(user, inviteNewUserDto);
     return decamelizeKeys({ users: result });
   }
 

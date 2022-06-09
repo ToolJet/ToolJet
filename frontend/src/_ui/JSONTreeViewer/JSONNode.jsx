@@ -52,9 +52,11 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   React.useEffect(() => {
     if (useActions && currentNode) {
-      const onSelectDispatchActions = getOnSelectLabelDispatchActions(currentNode, path).filter(
-        (action) => action.onSelect
-      );
+      const actions = getOnSelectLabelDispatchActions(currentNode, path);
+      const onSelectDispatchActions =
+        Object.prototype.toString.call(actions).slice(8, -1) === 'array'
+          ? actions.filter((action) => action.onSelect)
+          : [];
       if (onSelectDispatchActions.length > 0) {
         setOnSelectDispatchActions(onSelectDispatchActions);
       }
