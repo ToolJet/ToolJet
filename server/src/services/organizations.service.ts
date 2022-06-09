@@ -17,6 +17,17 @@ import { ConfigService } from '@nestjs/config';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from './audit_logger.service';
 
+type FetchUserResponse = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  id: string;
+  status: string;
+  invitationToken?: string;
+  accountSetupToken?: string;
+};
+
 @Injectable()
 export class OrganizationsService {
   constructor(
@@ -93,7 +104,7 @@ export class OrganizationsService {
     return createdGroupPermissions;
   }
 
-  async fetchUsers(user: any): Promise<OrganizationUser[]> {
+  async fetchUsers(user: any): Promise<FetchUserResponse[]> {
     const organizationUsers = await this.organizationUsersRepository.find({
       where: { organizationId: user.organizationId },
       relations: ['user'],
@@ -101,10 +112,8 @@ export class OrganizationsService {
 
     const isAdmin = await this.usersService.hasGroup(user, 'admin');
 
-    // serialize
-    const serializedUsers = [];
-    for (const orgUser of organizationUsers) {
-      const serializedUser = {
+    return organizationUsers?.map((orgUser) => {
+      return {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName,
         lastName: orgUser.user.lastName,
@@ -112,15 +121,14 @@ export class OrganizationsService {
         id: orgUser.id,
         role: orgUser.role,
         status: orgUser.status,
+        ...(isAdmin && orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
+        ...(this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
+        this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' &&
+        orgUser.user.invitationToken
+          ? { accountSetupToken: orgUser.user.invitationToken }
+          : {}),
       };
-
-      if (isAdmin && orgUser.invitationToken) {
-        serializedUser['invitationToken'] = orgUser.invitationToken;
-      }
-      serializedUsers.push(serializedUser);
-    }
-
-    return serializedUsers;
+    });
   }
 
   async fetchOrganisations(user: any): Promise<Organization[]> {
