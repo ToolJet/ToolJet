@@ -79,6 +79,7 @@ export const LeftSidebar = ({
         icon="back"
         className="left-sidebar-item no-border left-sidebar-layout"
         text={'Back'}
+        data-cy="back-button"
       />
       <ConfirmDialog
         show={showLeaveDialog}
