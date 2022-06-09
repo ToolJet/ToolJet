@@ -13,7 +13,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
 import { CustomComponent } from './Components/CustomComponent';
-import useFocus from '@/_hooks/use-Focus';
+import useFocus from '@/_hooks/use-focus';
 
 export const Inspector = ({
   cloneComponent,
