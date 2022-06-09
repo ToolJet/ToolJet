@@ -19,6 +19,9 @@ export class Extension {
   @Column({ name: 'name' })
   name: string;
 
+  @Column({ name: 'version' })
+  version: string;
+
   @Column({ name: 'operations_file_id' })
   operationsFileId: string;
 

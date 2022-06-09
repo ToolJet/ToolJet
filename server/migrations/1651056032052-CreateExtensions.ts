@@ -18,6 +18,10 @@ export class CreateExtensions1651056032052 implements MigrationInterface {
             type: 'varchar',
           },
           {
+            name: 'version',
+            type: 'varchar',
+          },
+          {
             name: 'operations_file_id',
             type: 'uuid',
           },
