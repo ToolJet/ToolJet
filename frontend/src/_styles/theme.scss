@@ -5396,6 +5396,13 @@ word-break: break-all;
 // sso end
 
 // steps-widget
+a.step-item-disabled {
+  text-decoration: none;
+}
+.steps{
+  overflow: hidden;
+  margin: 0rem !important;
+}
 .steps .step-blue:after, .steps .step-blue:before{
   color: #fff !important;
   background: #4d72fa !important;

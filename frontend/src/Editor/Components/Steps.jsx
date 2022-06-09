@@ -24,7 +24,9 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
           <a
             key={item.id}
             href="#"
-            className={`step-item ${item.id == activeStep && 'active'}  ${color && `step-${color}`}`}
+            className={`step-item ${item.id == activeStep && 'active'} ${!stepsSelectable && 'step-item-disabled'}  ${
+              color && `step-${color}`
+            }`}
             data-bs-toggle="tooltip"
             title={item?.tooltip}
             onClick={() => stepsSelectable && activeStepHandler(item.id)}
