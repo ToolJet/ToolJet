@@ -38,7 +38,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     isUnsavedQueriesAvailable,
   } = props;
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
-  const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
+  const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
 
   useImperativeHandle(ref, () => ({
     dataSourceModalToggleStateHandler() {
