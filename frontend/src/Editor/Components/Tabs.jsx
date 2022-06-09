@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, createRef } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
@@ -91,24 +91,46 @@ export const Tabs = function Tabs({
           </li>
         ))}
       </ul>
-      <div className="tab-content" ref={parentRef} id={`${id}-${currentTab}`}>
-        <div className="tab-pane active show">
-          <SubContainer
-            parent={`${id}-${currentTab}`}
-            {...containerProps}
-            parentRef={parentRef}
-            removeComponent={removeComponent}
-            containerCanvasWidth={width}
-            parentComponent={component}
-          />
-          <SubCustomDragLayer
-            parent={id}
-            parentRef={parentRef}
-            currentLayout={containerProps.currentLayout}
-            containerCanvasWidth={width}
-          />
+      {parsedTabs.map((tab) => (
+        <div
+          className="tab-content"
+          ref={(newCurrent) => {
+            if (currentTab === tab.id) {
+              parentRef.current = newCurrent;
+            }
+          }}
+          id={`${id}-${tab.id}`}
+          key={tab.id}
+        >
+          <div
+            className={`tab-pane active`}
+            style={{
+              opacity: tab.id === currentTab ? 1 : 0,
+              height: parsedHideTabs ? height : height - 41,
+              position: 'absolute',
+              top: parsedHideTabs ? '0px' : '41px',
+              width: '100%',
+            }}
+          >
+            <SubContainer
+              parent={`${id}-${tab.id}`}
+              {...containerProps}
+              parentRef={parentRef}
+              removeComponent={removeComponent}
+              containerCanvasWidth={width}
+              parentComponent={component}
+            />
+          </div>
+          {tab.id === currentTab && (
+            <SubCustomDragLayer
+              parent={`${id}-${tab.id}`}
+              parentRef={parentRef}
+              currentLayout={containerProps.currentLayout}
+              containerCanvasWidth={width}
+            />
+          )}
         </div>
-      </div>
+      ))}
     </div>
   );
 };
