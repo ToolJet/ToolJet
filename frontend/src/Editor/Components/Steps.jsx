@@ -6,6 +6,10 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
 
   const [activeStep, setActiveStep] = useState(null);
 
+  const dynamicStyle = {
+    '--bgColor': styles.color,
+    '--textColor': styles.textColor,
+  };
   const activeStepHandler = (id) => {
     const active = steps.filter((item) => item.id == id);
     setExposedVariable('currentStepId', active[0].id).then(() => fireEvent('onSelect'));
@@ -19,7 +23,7 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
 
   return (
     visibility && (
-      <div className={`steps ${theme == 'numbers' && 'steps-counter '}`}>
+      <div className={`steps ${theme == 'numbers' && 'steps-counter '}`} style={{ color: `${styles.textColor}` }}>
         {steps?.map((item) => (
           <a
             key={item.id}
@@ -30,7 +34,7 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
             data-bs-toggle="tooltip"
             title={item?.tooltip}
             onClick={() => stepsSelectable && activeStepHandler(item.id)}
-            style={{ color: '#656d77' }}
+            style={dynamicStyle}
           >
             {theme == 'titles' && item.name}
           </a>

@@ -2341,15 +2341,12 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     styles: {
       color: {
-        type: 'select',
+        type: 'code',
         displayName: 'Color',
-        options: [
-          { name: 'blue', value: 'blue' },
-          { name: 'red', value: 'red' },
-          { name: 'black', value: 'black' },
-          { name: 'green', value: 'green' },
-          { name: 'gray', value: 'gray' },
-        ],
+      },
+      textColor: {
+        type: 'code',
+        displayName: 'Text color',
       },
       theme: {
         type: 'select',
@@ -2381,7 +2378,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       styles: {
         visibility: { value: '{{true}}' },
         theme: { value: 'titles' },
-        color: { value: 'blue' },
+        color: { value: '#4d72fa' },
+        textColor: { value: '#3e525b' },
       },
     },
   },

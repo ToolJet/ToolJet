@@ -5403,28 +5403,26 @@ a.step-item-disabled {
   overflow: hidden;
   margin: 0rem !important;
 }
-.steps .step-blue:after, .steps .step-blue:before{
-  color: #fff !important;
-  background: #4d72fa !important;
-}
-.steps .step-red:after, .steps .step-red:before{
-  background: #f38b8b !important;
-}
-.steps .step-black:after, .steps .step-black:before{
-  background: #000000 !important;
-}
-.steps .step-green:after, .steps .step-green:before{
-  background: #48cd9d !important;
-}
-.steps .step-gray:after, .steps .step-gray:before{
-  background: #9b9b9b !important;
-}
 .step-item.active ~ .step-item:after, .step-item.active ~ .step-item:before {
   background: #f3f5f5 !important;
 }
+.step-item.active:before {
+  background: #fff !important;
+}
 .steps .step-item.active:before {
-    color: inherit;
     border-color: #b4b2b2 !important;
 }
-
+.steps-item{
+  color: var(--textColor) !important;
+}
+.step-item:before{
+  background: var(--bgColor) !important;
+  // remaining code
+}
+.step-item:after{
+  background: var(--bgColor) !important;
+}
+.step-item.active ~ .step-item {
+  color: var(--textColor) !important;;
+}
 // steps-widget end
