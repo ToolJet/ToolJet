@@ -2,24 +2,27 @@
 id: chart
 title: Chart
 ---
+
 # Chart
 
 Chart widget takes the chart type, data and styles to draw charts using Plotly.js.
 
 ## Chart types
+
 ### Line charts
 
 **Data requirements:** The data needs to be an array of objects and each object should have `x` and `y` keys.
 
 **Example:**
+
 ```json
 [
-  { "x": "Jan", "y": 100},
-  { "x": "Feb", "y": 80},
-  { "x": "Mar", "y": 40},
-  { "x": "Apr", "y": 100},
-  { "x": "May", "y": 80},
-  { "x": "Jun", "y": 40}
+  { "x": "Jan", "y": 100 },
+  { "x": "Feb", "y": 80 },
+  { "x": "Mar", "y": 40 },
+  { "x": "Apr", "y": 100 },
+  { "x": "May", "y": 80 },
+  { "x": "Jun", "y": 40 }
 ]
 ```
 
@@ -39,15 +42,15 @@ The chart will look like this:
 
 ```json
 [
-  { "x": "Jan", "y": 100},
-  { "x": "Feb", "y": 80},
-  { "x": "Mar", "y": 40},
-  { "x": "Apr", "y": 100},
-  { "x": "May", "y": 80},
-  { "x": "Jun", "y": 40},
-  { "x": "Jul", "y": 100},
-  { "x": "Aug", "y": 80},
-  { "x": "Sep", "y": 40}
+  { "x": "Jan", "y": 100 },
+  { "x": "Feb", "y": 80 },
+  { "x": "Mar", "y": 40 },
+  { "x": "Apr", "y": 100 },
+  { "x": "May", "y": 80 },
+  { "x": "Jun", "y": 40 },
+  { "x": "Jul", "y": 100 },
+  { "x": "Aug", "y": 80 },
+  { "x": "Sep", "y": 40 }
 ]
 ```
 
@@ -67,12 +70,12 @@ The chart will look like this:
 
 ```json
 [
-  { "x": "Jan", "y": 100},
-  { "x": "Feb", "y": 80},
-  { "x": "Mar", "y": 40},
-  { "x": "Apr", "y": 100},
-  { "x": "May", "y": 80},
-  { "x": "Jun", "y": 40}
+  { "x": "Jan", "y": 100 },
+  { "x": "Feb", "y": 80 },
+  { "x": "Mar", "y": 40 },
+  { "x": "Apr", "y": 100 },
+  { "x": "May", "y": 80 },
+  { "x": "Jun", "y": 40 }
 ]
 ```
 
@@ -96,7 +99,7 @@ This field is used to add a title to your selected chart.
 
 ### Plotly JSON chart schema
 
-In the chart widget, you can also plot a chart with JSON data. So the JSON will contain the information about the chart type, chart data, etc. You can learn more about the JSON properties from [here](https://plotly.com/javascript/reference/). 
+In the chart widget, you can also plot a chart with JSON data. So the JSON will contain the information about the chart type, chart data, etc. You can learn more about the JSON properties from [here](https://plotly.com/javascript/reference/).
 
 Anyway, to work with the JSON you need to enable the `Use Plotly JSON schema` toggle from the properties section.
 
@@ -142,10 +145,11 @@ Toggle `on` or `off` to show or hide the grid lines on the chart. You can also p
 
 ### Show on desktop
 
-Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+
 ### Show on mobile
 
-Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 
 ## Styles
 
