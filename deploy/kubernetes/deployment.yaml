@@ -154,3 +154,5 @@ spec:
               value: "tooljet-production-elasticache.nfupg8.ng.0001.use2.cache.amazonaws.com"
             - name: DEPLOYMENT_PLATFORM
               value: "k8s"
+            - name: HIDE_ACCOUNT_SETUP_LINK
+              value: true
