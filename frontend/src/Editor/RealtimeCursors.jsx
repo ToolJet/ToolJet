@@ -4,10 +4,10 @@ import { useOthers, useSelf } from 'y-presence';
 import { xorWith, isEqual } from 'lodash';
 import { Editor } from '@/Editor';
 import { USER_COLORS } from '@/_helpers/constants';
+import { userService } from '@/_services';
 
 const RealtimeCursors = (props) => {
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
   const others = useOthers();
 
   const unavailableColors = others.map((other) => other?.presence?.color);
@@ -22,6 +22,19 @@ const RealtimeCursors = (props) => {
     y: 0,
     color: availableColors[Math.floor(Math.random() * availableColors.length)],
   });
+
+  React.useEffect(() => {
+    async function fetchAvatar() {
+      const blob = await userService.getAvatar(currentUser.avatar_id);
+      const fileReader = new FileReader();
+      fileReader.onload = (e) => {
+        updatePresence({ image: e.target.result });
+      };
+      fileReader.readAsDataURL(blob);
+    }
+    if (currentUser.avatar_id) fetchAvatar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser.avatar_id]);
 
   const othersOnSameVersion = others.filter(
     (other) => other?.presence?.editingVersionId === self?.presence.editingVersionId
