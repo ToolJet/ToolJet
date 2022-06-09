@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
-import Select from '../../_ui/Select';
-import defaultStyles from '../../_ui/Select/styles';
+import Select from '@/_ui/Select';
+import defaultStyles from '@/_ui/Select/styles';
 
-// import { SelectComponent } from '../../_ui/Select/SelectComponent';
 export const EventManager = ({
   component,
   componentMeta,
@@ -150,7 +149,7 @@ export const EventManager = ({
                     },
                   }),
                 }}
-                useMenuPortal="true"
+                useMenuPortal={true}
               />
             </div>
           </div>
@@ -176,7 +175,7 @@ export const EventManager = ({
                     },
                   }),
                 }}
-                useMenuPortal="true"
+                useMenuPortal={true}
               />
             </div>
           </div>
@@ -225,7 +224,7 @@ export const EventManager = ({
                           },
                         }),
                       }}
-                      useMenuPortal="true"
+                      useMenuPortal={true}
                     />
                   </div>
                 </div>
@@ -278,7 +277,7 @@ export const EventManager = ({
                         },
                       }),
                     }}
-                    useMenuPortal="true"
+                    useMenuPortal={true}
                   />
                 </div>
               </div>
@@ -307,7 +306,7 @@ export const EventManager = ({
                         },
                       }),
                     }}
-                    useMenuPortal="true"
+                    useMenuPortal={true}
                   />
                 </div>
               </div>
@@ -352,7 +351,7 @@ export const EventManager = ({
                         },
                       }),
                     }}
-                    useMenuPortal="true"
+                    useMenuPortal={true}
                   />
                 </div>
               </div>
@@ -415,7 +414,7 @@ export const EventManager = ({
                           },
                         }),
                       }}
-                      useMenuPortal="true"
+                      useMenuPortal={true}
                     />
                   </div>
                 </div>
@@ -469,7 +468,7 @@ export const EventManager = ({
                           },
                         }),
                       }}
-                      useMenuPortal="true"
+                      useMenuPortal={true}
                     />
                   </div>
                 </div>
