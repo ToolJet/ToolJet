@@ -239,7 +239,7 @@ export const SubContainer = ({
 
   function getContainerCanvasWidth() {
     if (containerCanvasWidth !== undefined) {
-      return containerCanvasWidth;
+      return containerCanvasWidth - 2;
     }
     let width = 0;
     if (parentRef.current) {
