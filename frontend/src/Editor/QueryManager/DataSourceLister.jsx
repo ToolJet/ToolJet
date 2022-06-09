@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { allSvgs } from '@tooljet/plugins/client';
 import RunjsIcon from '../Icons/runjs.svg';
-import AddIcon from '../../../assets/images/icons/insert.svg';
+import AddIcon from '../../../assets/images/icons/add-source.svg';
 
 function DataSourceLister({
   dataSources,
@@ -44,7 +44,7 @@ function DataSourceLister({
       })}
       <div className="query-datasource-card" style={computedStyles} onClick={dataSourceModalHandler}>
         <AddIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
-        <p style={{ fontWeight: '500' }}> Add datasource</p>
+        <p> Add datasource</p>
       </div>
     </div>
   );
