@@ -105,7 +105,7 @@ export const Tabs = function Tabs({
           <div
             className={`tab-pane active`}
             style={{
-              opacity: tab.id === currentTab ? 1 : 0,
+              visibility: tab.id === currentTab ? 'visible' : 'hidden',
               height: parsedHideTabs ? height : height - 41,
               position: 'absolute',
               top: parsedHideTabs ? '0px' : '41px',
