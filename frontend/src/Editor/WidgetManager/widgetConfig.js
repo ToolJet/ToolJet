@@ -2341,11 +2341,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     styles: {
       color: {
-        type: 'code',
+        type: 'color',
         displayName: 'Color',
       },
       textColor: {
-        type: 'code',
+        type: 'color',
         displayName: 'Text color',
       },
       theme: {
