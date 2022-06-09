@@ -302,7 +302,11 @@ export const SubContainer = ({
     const subContainerWidth = canvasBoundingRect.width;
 
     top = y;
-    left = (x * 100) / subContainerWidth;
+    if (deltaWidth !== 0) {
+      // onResizeStop is triggered for a single click on the border, therefore this conditional logic
+      // should not be removed.
+      left = (x * 100) / subContainerWidth;
+    }
 
     width = width + (deltaWidth * 43) / subContainerWidth;
     height = height + deltaHeight;
