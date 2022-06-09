@@ -158,7 +158,12 @@ class ManageOrgUsers extends React.Component {
     }
   };
 
-  generateInvitationURL = (user) => window.location.origin + '/organization-invitations/' + user.invitation_token;
+  generateInvitationURL = (user) => {
+    if (user.account_setup_token) {
+      return `${window.location.origin}/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}`;
+    }
+    return `${window.location.origin}/organization-invitations/${user.invitation_token}`;
+  };
 
   invitationLinkCopyHandler = () => {
     toast.success('Invitation URL copied', {
