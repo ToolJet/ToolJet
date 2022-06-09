@@ -26,12 +26,7 @@ export const EventManager = ({
     return { name: action.name, value: action.id };
   });
 
-  const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
-  useEffect(() => {
-    window.addEventListener('storage', () => {
-      setDarkMode(JSON.parse(localStorage.getItem('darkMode')) === 'true');
-    });
-  }, [darkMode]);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   const styles = defaultStyles(darkMode);
 
   const actionLookup = Object.fromEntries(ActionTypes.map((actionType) => [actionType.id, actionType]));
@@ -124,7 +119,6 @@ export const EventManager = ({
     });
     eventsChanged(newEvents);
   }
-
   function eventPopover(event, index) {
     return (
       <Popover
