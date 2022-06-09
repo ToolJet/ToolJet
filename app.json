@@ -44,10 +44,6 @@
     "DEPLOYMENT_PLATFORM": {
       "description": "Platform ToolJet is deployed on",
       "value": "heroku"
-    },
-    "REDIS_URL": {
-      "description": "Redis URL for team collaboration",
-      "value": ""
     }
   },
   "formation": {
@@ -57,7 +53,8 @@
   },
   "image": "heroku/nodejs",
   "addons": [
-    "heroku-postgresql"
+    "heroku-postgresql",
+    "heroku-redis"
   ],
   "buildpacks": [
     {
