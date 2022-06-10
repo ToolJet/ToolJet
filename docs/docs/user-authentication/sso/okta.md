@@ -16,7 +16,7 @@ Goto `Applications` section and `Create App Integration`
 <img class="screenshot-full" src="/img/sso/okta/create-app-s1.png" alt="ToolJet - Okta create application" height="420"/>
 <br /><br /><br />
 
-- Enter `App integration name`. Enter `Sign-in redirect URIs` as `<YOUR-DOMAIN>/sso/okta` same sould be configured as environment variable `SSO_OKTA_OAUTH2_REDIRECT_URI`.
+- Enter `App integration name`. Enter `Sign-in redirect URIs` as `<YOUR-DOMAIN>/sso/okta`.
 
 <img class="screenshot-full" src="/img/sso/okta/create-app-s2.png" alt="ToolJet - Okta create application" height="420"/>
 <br /><br /><br />
