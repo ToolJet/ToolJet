@@ -12,7 +12,7 @@ export class CreateDataQueryDto {
 
   @IsUUID()
   @IsOptional()
-  extension_id: string;
+  plugin_id: string;
 
   @IsUUID()
   @IsOptional()
@@ -40,4 +40,4 @@ export class CreateDataQueryDto {
   options: object;
 }
 
-export class UpdateDataQueryDto extends PartialType(CreateDataQueryDto) { }
+export class UpdateDataQueryDto extends PartialType(CreateDataQueryDto) {}

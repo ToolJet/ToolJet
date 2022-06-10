@@ -1,11 +1,11 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddExtensionToDataQuery1652768887877 implements MigrationInterface {
+export class AddPluginToDataQuery1652768887877 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumn(
       'data_queries',
       new TableColumn({
-        name: 'extension_id',
+        name: 'plugin_id',
         type: 'uuid',
         isNullable: true,
       })

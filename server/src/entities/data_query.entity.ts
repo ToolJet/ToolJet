@@ -11,7 +11,7 @@ import {
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
 import { DataSource } from './data_source.entity';
-import { Extension } from './extension.entity';
+import { Plugin } from './plugin.entity';
 
 @Entity({ name: 'data_queries' })
 export class DataQuery extends BaseEntity {
@@ -33,8 +33,8 @@ export class DataQuery extends BaseEntity {
   @Column({ name: 'app_id' })
   appId: string;
 
-  @Column({ name: 'extension_id' })
-  extensionId: string;
+  @Column({ name: 'plugin_id' })
+  pluginId: string;
 
   @Column({ name: 'app_version_id' })
   appVersionId: string;
@@ -57,7 +57,7 @@ export class DataQuery extends BaseEntity {
   @JoinColumn({ name: 'data_source_id' })
   dataSource: DataSource;
 
-  @ManyToOne(() => Extension, (extension) => extension.id)
-  @JoinColumn({ name: 'extension_id' })
-  extension: Extension;
+  @ManyToOne(() => Plugin, (plugin) => plugin.id)
+  @JoinColumn({ name: 'plugin_id' })
+  plugin: Plugin;
 }

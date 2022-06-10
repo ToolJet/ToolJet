@@ -8,16 +8,16 @@ import { CredentialsService } from './credentials.service';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
 import got from 'got';
-import { ExtensionsService } from './extensions.service';
+import { PluginsService } from './plugins.service';
 import { FilesService } from './files.service';
 import { decode } from 'js-base64';
 import { requireFromString } from 'module-from-string';
-const extensions = {};
+const plugins = {};
 
 @Injectable()
 export class DataQueriesService {
   constructor(
-    private readonly extensionsService: ExtensionsService,
+    private readonly pluginsService: PluginsService,
     private readonly filesService: FilesService,
     private credentialsService: CredentialsService,
     private dataSourcesService: DataSourcesService,
@@ -28,7 +28,7 @@ export class DataQueriesService {
   async findOne(dataQueryId: string): Promise<DataQuery> {
     return await this.dataQueriesRepository.findOne({
       where: { id: dataQueryId },
-      relations: ['dataSource', 'extension', 'app'],
+      relations: ['dataSource', 'plugin', 'app'],
     });
   }
 
@@ -39,7 +39,7 @@ export class DataQueriesService {
     return await this.dataQueriesRepository.find({
       where: whereClause,
       order: { createdAt: 'DESC' }, // Latest query should be on top
-      relations: ['extension', 'extension.iconFile', 'extension.manifestFile'],
+      relations: ['plugin', 'plugin.iconFile', 'plugin.manifestFile'],
     });
   }
 
@@ -51,7 +51,7 @@ export class DataQueriesService {
     appId: string,
     dataSourceId: string,
     appVersionId?: string, // TODO: Make this non optional when autosave is implemented
-    extensionId?: string
+    pluginId?: string
   ): Promise<DataQuery> {
     const newDataQuery = this.dataQueriesRepository.create({
       name,
@@ -60,7 +60,7 @@ export class DataQueriesService {
       appId,
       dataSourceId,
       appVersionId,
-      extensionId,
+      pluginId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -88,15 +88,15 @@ export class DataQueriesService {
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
     const kind = dataQuery.kind;
     let service: any;
-    if (dataQuery.extensionId) {
+    if (dataQuery.pluginId) {
       let decoded: string;
-      if (extensions[dataQuery.extensionId]) {
-        decoded = extensions[dataQuery.extensionId];
+      if (plugins[dataQuery.pluginId]) {
+        decoded = plugins[dataQuery.pluginId];
       } else {
-        const extension = await this.extensionsService.findOne(dataQuery.extensionId);
-        const file = await this.filesService.findOne(extension.operationsFileId);
+        const plugin = await this.pluginsService.findOne(dataQuery.pluginId);
+        const file = await this.filesService.findOne(plugin.operationsFileId);
         decoded = decode(file.data.toString());
-        extensions[dataQuery.extensionId] = decoded;
+        plugins[dataQuery.pluginId] = decoded;
       }
       const code = requireFromString(decoded, { globals: { process, Buffer, Promise, setTimeout, clearTimeout } });
       try {

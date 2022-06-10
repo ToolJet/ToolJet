@@ -291,10 +291,10 @@ class Editor extends React.Component {
             () => {
               let queryState = {};
               data.data_queries.forEach((query) => {
-                if (query.extension_id) {
+                if (query.plugin_id) {
                   queryState[query.name] = {
-                    ...query.extension.manifest_file.data.source.exposedVariables,
-                    kind: query.extension.manifest_file.data.source.kind,
+                    ...query.plugin.manifest_file.data.source.exposedVariables,
+                    kind: query.plugin.manifest_file.data.source.kind,
                     ...this.state.currentState.queries[query.name],
                   };
                 } else {
@@ -750,9 +750,9 @@ class Editor extends React.Component {
   renderDataSource = (dataSource) => {
     let sourceMeta;
     let icon;
-    if (dataSource.extension_id) {
-      sourceMeta = dataSource.extension.manifest_file.data.source;
-      icon = <img src={dataSource.extension.icon_file.data} style={{ height: 25, width: 25 }} />;
+    if (dataSource.plugin_id) {
+      sourceMeta = dataSource.plugin.manifest_file.data.source;
+      icon = <img src={dataSource.plugin.icon_file.data} style={{ height: 25, width: 25 }} />;
     } else {
       sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
       icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25);
@@ -808,9 +808,9 @@ class Editor extends React.Component {
   renderDataQuery = (dataQuery) => {
     let sourceMeta;
     let icon;
-    if (dataQuery.extension_id) {
-      sourceMeta = dataQuery.extension.manifest_file.data.source;
-      icon = <img src={dataQuery.extension.icon_file.data} style={{ height: 25, width: 25 }} />;
+    if (dataQuery.plugin_id) {
+      sourceMeta = dataQuery.plugin.manifest_file.data.source;
+      icon = <img src={dataQuery.plugin.icon_file.data} style={{ height: 25, width: 25 }} />;
     } else {
       sourceMeta = DataSourceTypes.find((source) => source.kind === dataQuery.kind);
       icon =

@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, IsUUID, IsOptional, IsSemVer } from 'class-validator';
 
-export class CreateExtensionDto {
+export class CreatePluginDto {
   @IsString()
   @IsNotEmpty()
   name: string;

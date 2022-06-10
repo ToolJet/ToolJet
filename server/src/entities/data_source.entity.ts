@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
-import { Extension } from './extension.entity';
+import { Plugin } from './plugin.entity';
 
 @Entity({ name: 'data_sources' })
 export class DataSource extends BaseEntity {
@@ -29,8 +29,8 @@ export class DataSource extends BaseEntity {
   @Column({ name: 'app_id' })
   appId: string;
 
-  @Column({ name: 'extension_id' })
-  extensionId: string;
+  @Column({ name: 'plugin_id' })
+  pluginId: string;
 
   @Column({ name: 'app_version_id' })
   appVersionId: string;
@@ -49,7 +49,7 @@ export class DataSource extends BaseEntity {
   @JoinColumn({ name: 'app_id' })
   app: App;
 
-  @ManyToOne(() => Extension, (extension) => extension.id)
-  @JoinColumn({ name: 'extension_id' })
-  extension: Extension;
+  @ManyToOne(() => Plugin, (plugin) => plugin.id)
+  @JoinColumn({ name: 'plugin_id' })
+  plugin: Plugin;
 }

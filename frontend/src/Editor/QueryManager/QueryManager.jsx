@@ -49,7 +49,7 @@ let QueryManager = class QueryManager extends React.Component {
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
     let dataSourceMeta;
-    if (selectedQuery?.extensionId) {
+    if (selectedQuery?.pluginId) {
       dataSourceMeta = selectedQuery.manifestFile.data.source;
     } else {
       dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
@@ -261,7 +261,7 @@ let QueryManager = class QueryManager extends React.Component {
     } else {
       this.setState({ isCreating: true });
       dataqueryService
-        .create(appId, appVersionId, queryName, kind, options, dataSourceId, selectedDataSource.extension_id)
+        .create(appId, appVersionId, queryName, kind, options, dataSourceId, selectedDataSource.plugin_id)
         .then(() => {
           toast.success('Query Added');
           this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });

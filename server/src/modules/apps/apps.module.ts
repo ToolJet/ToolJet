@@ -27,8 +27,8 @@ import { DataSourcesService } from '@services/data_sources.service';
 import { CredentialsService } from '@services/credentials.service';
 import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
-import { ExtensionsService } from '@services/extensions.service';
-import { Extension } from 'src/entities/extension.entity';
+import { PluginsService } from '@services/plugins.service';
+import { Plugin } from 'src/entities/plugin.entity';
 
 @Module({
   imports: [
@@ -48,7 +48,7 @@ import { Extension } from 'src/entities/extension.entity';
       UserGroupPermission,
       Credential,
       File,
-      Extension,
+      Plugin,
     ]),
     CaslModule,
   ],
@@ -62,7 +62,7 @@ import { Extension } from 'src/entities/extension.entity';
     CredentialsService,
     EncryptionService,
     FilesService,
-    ExtensionsService,
+    PluginsService,
   ],
   controllers: [AppsController, AppUsersController],
 })

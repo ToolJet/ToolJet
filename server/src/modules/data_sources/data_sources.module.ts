@@ -23,8 +23,8 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
 import { FilesService } from '@services/files.service';
-import { ExtensionsService } from '@services/extensions.service';
-import { Extension } from 'src/entities/extension.entity';
+import { PluginsService } from '@services/plugins.service';
+import { Plugin } from 'src/entities/plugin.entity';
 
 @Module({
   imports: [
@@ -34,7 +34,7 @@ import { Extension } from 'src/entities/extension.entity';
       Credential,
       App,
       File,
-      Extension,
+      Plugin,
       AppVersion,
       AppUser,
       FolderApp,
@@ -55,7 +55,7 @@ import { Extension } from 'src/entities/extension.entity';
     UsersService,
     AppImportExportService,
     FilesService,
-    ExtensionsService,
+    PluginsService,
   ],
   controllers: [DataSourcesController],
 })

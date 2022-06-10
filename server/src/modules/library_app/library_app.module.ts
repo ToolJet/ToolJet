@@ -12,11 +12,11 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { CaslModule } from '../casl/casl.module';
 import { FilesService } from '@services/files.service';
 import { File } from 'src/entities/file.entity';
-import { ExtensionsService } from '@services/extensions.service';
-import { Extension } from 'src/entities/extension.entity';
+import { PluginsService } from '@services/plugins.service';
+import { Plugin } from 'src/entities/plugin.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([App, Credential, File, Extension, DataSource]), CaslModule],
+  imports: [TypeOrmModule.forFeature([App, Credential, File, Plugin, DataSource]), CaslModule],
   providers: [
     EncryptionService,
     CredentialsService,
@@ -24,7 +24,7 @@ import { Extension } from 'src/entities/extension.entity';
     LibraryAppCreationService,
     AppImportExportService,
     FilesService,
-    ExtensionsService,
+    PluginsService,
   ],
   controllers: [LibraryAppsController],
 })

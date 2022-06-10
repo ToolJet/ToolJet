@@ -3,16 +3,14 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { File } from 'src/entities//file.entity';
-import { Organization } from 'src/entities/organization.entity';
 
-@Entity({ name: 'extensions' })
-export class Extension {
+@Entity({ name: 'plugins' })
+export class Plugin {
   @PrimaryGeneratedColumn()
   public id: string;
 
@@ -48,7 +46,4 @@ export class Extension {
   @OneToOne(() => File, (file) => file.id)
   @JoinColumn({ name: 'manifest_file_id' })
   manifestFile?: File;
-
-  @OneToMany(() => Organization, (organization) => organization.id)
-  organizations: Organization[];
 }

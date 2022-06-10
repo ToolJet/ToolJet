@@ -1,5 +1,5 @@
 import React from 'react';
-import { datasourceService, authenticationService, extensionsService } from '@/_services';
+import { datasourceService, authenticationService, pluginsService } from '@/_services';
 import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -27,7 +27,7 @@ class DataSourceManager extends React.Component {
     if (props.selectedDataSource) {
       selectedDataSource = props.selectedDataSource;
       options = selectedDataSource.options;
-      if (selectedDataSource?.extensionId) {
+      if (selectedDataSource?.pluginId) {
         dataSourceMeta = selectedDataSource.manifestFile.data.source;
       } else if (selectedDataSource) {
         dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedDataSource.kind);
@@ -44,7 +44,7 @@ class DataSourceManager extends React.Component {
       isSaving: false,
       isCopied: false,
       queryString: null,
-      extensions: [],
+      plugins: [],
       filteredDatasources: [],
       activeDatasourceList: '#alldatasources',
       suggestingDatasources: false,
@@ -56,18 +56,18 @@ class DataSourceManager extends React.Component {
       appId: this.props.appId,
     });
 
-    extensionsService
-      .getExtensions()
-      .then(({ data = [] }) => this.setState({ extensions: data }))
+    pluginsService
+      .getPlugins()
+      .then(({ data = [] }) => this.setState({ plugins: data }))
       .catch((error) => {
-        toast.error(error?.message || 'failed to fetch extensions');
+        toast.error(error?.message || 'failed to fetch plugins');
       });
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.selectedDataSource !== this.props.selectedDataSource) {
       let dataSourceMeta;
-      if (this.props.selectedDataSource?.extensionId) {
+      if (this.props.selectedDataSource?.pluginId) {
         dataSourceMeta = this.props.selectedDataSource.manifestFile.data.source;
       } else {
         dataSourceMeta = DataSourceTypes.find((source) => source.kind === this.props.selectedDataSource.kind);
@@ -88,8 +88,8 @@ class DataSourceManager extends React.Component {
     });
   };
 
-  selectExtensionDataSource = (source) => {
-    source.manifestFile.data.source.extensionId = source.id;
+  selectPluginDataSource = (source) => {
+    source.manifestFile.data.source.pluginId = source.id;
     source.manifestFile.data.source.icon = source.iconFile.data;
     this.setState({
       dataSourceMeta: source.manifestFile.data.source,
@@ -144,7 +144,7 @@ class DataSourceManager extends React.Component {
     const { appId, options, selectedDataSource } = this.state;
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
-    const extensionId = selectedDataSource.extensionId;
+    const pluginId = selectedDataSource.pluginId;
     const appVersionId = this.props.editingVersionId;
 
     const parsedOptions = Object.keys(options).map((key) => {
@@ -166,7 +166,7 @@ class DataSourceManager extends React.Component {
         });
       } else {
         this.setState({ isSaving: true });
-        datasourceService.create(appId, appVersionId, extensionId, name, kind, parsedOptions).then(() => {
+        datasourceService.create(appId, appVersionId, pluginId, name, kind, parsedOptions).then(() => {
           this.setState({ isSaving: false });
           this.hideModal();
           toast.success('Datasource Added', { position: 'top-center' });
@@ -322,7 +322,7 @@ class DataSourceManager extends React.Component {
       databases: DataBaseSources,
       apis: ApiSources,
       cloudStorages: CloudStorageSources,
-      extensions: this.state.extensions,
+      plugins: this.state.plugins,
       filteredDatasources: this.state.filteredDatasources,
     };
     const dataSourceList = [
@@ -351,10 +351,10 @@ class DataSourceManager extends React.Component {
         renderDatasources: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
       },
       {
-        type: 'Extensions',
-        key: '#extensions',
-        list: allDataSourcesList.extensions,
-        renderDatasources: () => this.renderCardGroup(allDataSourcesList.extensions, 'Extensions'),
+        type: 'Plugins',
+        key: '#plugins',
+        list: allDataSourcesList.plugins,
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.plugins, 'Plugins'),
       },
       {
         type: 'Filtered Datasources',
@@ -505,7 +505,7 @@ class DataSourceManager extends React.Component {
       );
     }
 
-    if (type === 'Extensions') {
+    if (type === 'Plugins') {
       const datasources = source.map((datasource) => {
         return {
           ...datasource,
@@ -523,7 +523,7 @@ class DataSourceManager extends React.Component {
                 key={item.key}
                 title={item.title}
                 src={item?.src}
-                handleClick={() => this.selectExtensionDataSource(item)}
+                handleClick={() => this.selectPluginDataSource(item)}
                 usepluginIcon={false}
                 height="35px"
                 width="35px"
@@ -565,7 +565,7 @@ class DataSourceManager extends React.Component {
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
     let icon;
-    if (selectedDataSource?.extensionId) {
+    if (selectedDataSource?.pluginId) {
       icon = <img src={selectedDataSource.icon} style={{ height: 35, width: 35 }} />;
     } else if (selectedDataSource) {
       icon = getSvgIcon(dataSourceMeta.kind?.toLowerCase(), 35, 35);

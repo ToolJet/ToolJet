@@ -47,8 +47,8 @@ export class DataSourcesController {
 
     const dataSources = await this.dataSourcesService.all(user, query);
     for (const dataSource of dataSources) {
-      if (dataSource.extensionId) {
-        dataSource.extension.iconFile.data = `data:image/svg+xml;base64,${dataSource.extension.iconFile.data.toString(
+      if (dataSource.pluginId) {
+        dataSource.plugin.iconFile.data = `data:image/svg+xml;base64,${dataSource.plugin.iconFile.data.toString(
           'utf8'
         )}`;
       }
@@ -61,10 +61,10 @@ export class DataSourcesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@User() user, @Body() createDataSourceDto: CreateDataSourceDto) {
-    const { kind, name, options, app_id, app_version_id, extension_id } = createDataSourceDto;
+    const { kind, name, options, app_id, app_version_id, plugin_id } = createDataSourceDto;
     const appId = app_id;
     const appVersionId = app_version_id;
-    const extensionId = extension_id;
+    const pluginId = plugin_id;
 
     const app = await this.appsService.find(appId);
     const ability = await this.appsAbilityFactory.appsActions(user, appId);
@@ -73,7 +73,7 @@ export class DataSourcesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const dataSource = await this.dataSourcesService.create(name, kind, options, appId, appVersionId, extensionId);
+    const dataSource = await this.dataSourcesService.create(name, kind, options, appId, appVersionId, pluginId);
     return decamelizeKeys(dataSource);
   }
 
@@ -118,8 +118,8 @@ export class DataSourcesController {
   @UseGuards(JwtAuthGuard)
   @Post('test_connection')
   async testConnection(@User() user, @Body() testDataSourceDto: TestDataSourceDto) {
-    const { kind, options, extension_id } = testDataSourceDto;
-    return await this.dataSourcesService.testConnection(kind, options, extension_id);
+    const { kind, options, plugin_id } = testDataSourceDto;
+    return await this.dataSourcesService.testConnection(kind, options, plugin_id);
   }
 
   @UseGuards(JwtAuthGuard)

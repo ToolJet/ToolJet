@@ -1,25 +1,24 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { File } from 'src/entities/file.entity';
-import { Extension } from 'src/entities/extension.entity';
+import { Plugin } from 'src/entities/plugin.entity';
 import { Repository, Connection } from 'typeorm';
 import { CreateFileDto } from '../dto/create-file.dto';
-import { CreateExtensionDto } from '../dto/create-extension.dto';
-import { UpdateExtensionDto } from '../dto/update-extension.dto';
+import { CreatePluginDto } from '../dto/create-plugin.dto';
+import { UpdatePluginDto } from '../dto/update-plugin.dto';
 import { FilesService } from './files.service';
 import { encode } from 'js-base64';
-// import { Organization } from 'src/entities/organization.entity';
 
 @Injectable()
-export class ExtensionsService {
+export class PluginsService {
   constructor(
     private readonly filesService: FilesService,
     private connection: Connection,
-    @InjectRepository(Extension)
-    private extensionsRepository: Repository<Extension>
+    @InjectRepository(Plugin)
+    private pluginsRepository: Repository<Plugin>
   ) {}
   async create(
-    createExtensionDto: CreateExtensionDto,
+    createPluginDto: CreatePluginDto,
     files: { operations: Express.Multer.File[]; icon: Express.Multer.File[]; manifest: Express.Multer.File[] }
   ) {
     const queryRunner = this.connection.createQueryRunner();
@@ -40,18 +39,14 @@ export class ExtensionsService {
         })
       );
 
-      const extension = new Extension();
-      extension.name = createExtensionDto.name;
-      extension.version = createExtensionDto.version;
-      extension.operationsFileId = uploadedFiles.operations.id;
-      extension.iconFileId = uploadedFiles.icon.id;
-      extension.manifestFileId = uploadedFiles.manifest.id;
+      const plugin = new Plugin();
+      plugin.name = createPluginDto.name;
+      plugin.version = createPluginDto.version;
+      plugin.operationsFileId = uploadedFiles.operations.id;
+      plugin.iconFileId = uploadedFiles.icon.id;
+      plugin.manifestFileId = uploadedFiles.manifest.id;
 
-      // const org = new Organization();
-      // org.id = createExtensionDto.organizationId;
-      // extension.organizations = [org];
-
-      return this.extensionsRepository.save(extension);
+      return this.pluginsRepository.save(plugin);
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(error);
@@ -61,22 +56,22 @@ export class ExtensionsService {
   }
 
   async findAll() {
-    return await this.extensionsRepository.find({ relations: ['iconFile', 'manifestFile'] });
+    return await this.pluginsRepository.find({ relations: ['iconFile', 'manifestFile'] });
   }
 
   async findOne(id: string) {
-    const extension = await this.extensionsRepository.findOne({ where: { id } });
-    if (!extension) {
-      throw new NotFoundException('Extension not found');
+    const plugin = await this.pluginsRepository.findOne({ where: { id } });
+    if (!plugin) {
+      throw new NotFoundException('Plugin not found');
     }
-    return extension;
+    return plugin;
   }
 
-  update(id: string, updateExtensionDto: UpdateExtensionDto) {
-    return `This action updates a #${id} extension`;
+  update(id: string, updatePluginDto: UpdatePluginDto) {
+    return `This action updates a #${id} plugin`;
   }
 
   remove(id: string) {
-    return `This action removes a #${id} extension`;
+    return `This action removes a #${id} plugin`;
   }
 }

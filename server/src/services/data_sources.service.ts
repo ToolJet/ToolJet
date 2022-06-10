@@ -8,16 +8,16 @@ import { CredentialsService } from './credentials.service';
 import { cleanObject } from 'src/helpers/utils.helper';
 import { decode } from 'js-base64';
 import { FilesService } from './files.service';
-import { ExtensionsService } from './extensions.service';
+import { PluginsService } from './plugins.service';
 
 // const _eval = require('eval');
-const extensions = {};
+const plugins = {};
 
 @Injectable()
 export class DataSourcesService {
   constructor(
     private readonly filesService: FilesService,
-    private readonly extensionsService: ExtensionsService,
+    private readonly pluginsService: PluginsService,
     private credentialsService: CredentialsService,
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
@@ -29,14 +29,14 @@ export class DataSourcesService {
 
     return await this.dataSourcesRepository.find({
       where: whereClause,
-      relations: ['extension', 'extension.iconFile', 'extension.manifestFile'],
+      relations: ['plugin', 'plugin.iconFile', 'plugin.manifestFile'],
     });
   }
 
   async findOne(dataSourceId: string): Promise<DataSource> {
     return await this.dataSourcesRepository.findOne({
       where: { id: dataSourceId },
-      relations: ['app', 'extension'],
+      relations: ['app', 'plugin'],
     });
   }
 
@@ -46,7 +46,7 @@ export class DataSourcesService {
     options: Array<object>,
     appId: string,
     appVersionId?: string, // TODO: Make this non optional when autosave is implemented
-    extensionId?: string
+    pluginId?: string
   ): Promise<DataSource> {
     const newDataSource = this.dataSourcesRepository.create({
       name,
@@ -54,7 +54,7 @@ export class DataSourcesService {
       options: await this.parseOptionsForCreate(options),
       appId,
       appVersionId,
-      extensionId,
+      pluginId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -95,7 +95,7 @@ export class DataSourcesService {
     });
   }
 
-  async testConnection(kind: string, options: object, extension_id: string): Promise<object> {
+  async testConnection(kind: string, options: object, plugin_id: string): Promise<object> {
     let result = {};
     try {
       const sourceOptions = {};
@@ -104,7 +104,7 @@ export class DataSourcesService {
         sourceOptions[key] = options[key]['value'];
       }
 
-      const service = await this.getService(kind, extension_id);
+      const service = await this.getService(kind, plugin_id);
       if (!service?.testConnection) {
         throw new NotImplementedException('testConnection method not implemented');
       }
@@ -119,17 +119,17 @@ export class DataSourcesService {
     return result;
   }
 
-  async getService(kind: string, extensionId: any) {
+  async getService(kind: string, pluginId: any) {
     let service: any;
-    if (extensionId) {
+    if (pluginId) {
       let decoded: string;
-      if (extensions[extensionId]) {
-        decoded = decode(extensions[extensionId]);
+      if (plugins[pluginId]) {
+        decoded = decode(plugins[pluginId]);
       } else {
-        const extension = await this.extensionsService.findOne(extensionId);
-        const file = await this.filesService.findOne(extension.operationsFileId);
+        const plugin = await this.pluginsService.findOne(pluginId);
+        const file = await this.filesService.findOne(plugin.operationsFileId);
         decoded = decode(file.data.toString());
-        extensions[extensionId] = decoded;
+        plugins[pluginId] = decoded;
       }
       // const module = _eval(decoded);
       // service = new module();

@@ -12,7 +12,7 @@ export class CreateDataSourceDto {
 
   @IsUUID()
   @IsOptional()
-  extension_id: string;
+  plugin_id: string;
 
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
@@ -28,8 +28,8 @@ export class CreateDataSourceDto {
   options: any;
 }
 
-export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) { }
-export class TestDataSourceDto extends PartialType(CreateDataSourceDto) { }
+export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) {}
+export class TestDataSourceDto extends PartialType(CreateDataSourceDto) {}
 
 export class GetDataSourceOauthUrlDto {
   @IsString()

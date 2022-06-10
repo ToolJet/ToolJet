@@ -49,13 +49,13 @@ export class DataQueriesController {
 
       decamelizedQuery['options'] = query.options;
 
-      if (query.extensionId) {
-        decamelizedQuery['extension'].manifest_file.data = JSON.parse(
-          decode(query.extension.manifestFile.data.toString('utf8'))
+      if (query.pluginId) {
+        decamelizedQuery['plugin'].manifest_file.data = JSON.parse(
+          decode(query.plugin.manifestFile.data.toString('utf8'))
         );
-        decamelizedQuery[
-          'extension'
-        ].icon_file.data = `data:image/svg+xml;base64,${query.extension.iconFile.data.toString('utf8')}`;
+        decamelizedQuery['plugin'].icon_file.data = `data:image/svg+xml;base64,${query.plugin.iconFile.data.toString(
+          'utf8'
+        )}`;
       }
 
       seralizedQueries.push(decamelizedQuery);
@@ -69,11 +69,11 @@ export class DataQueriesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@User() user, @Body() dataQueryDto: CreateDataQueryDto): Promise<object> {
-    const { kind, name, options, app_id, app_version_id, data_source_id, extension_id } = dataQueryDto;
+    const { kind, name, options, app_id, app_version_id, data_source_id, plugin_id } = dataQueryDto;
     const appId = app_id;
     const appVersionId = app_version_id;
     const dataSourceId = data_source_id;
-    const extensionId = extension_id;
+    const pluginId = plugin_id;
 
     const app = await this.appsService.find(appId);
     const ability = await this.appsAbilityFactory.appsActions(user, appId);
@@ -99,7 +99,7 @@ export class DataQueriesController {
       appId,
       dataSourceId,
       appVersionId,
-      extensionId
+      pluginId
     );
     return decamelizeKeys(dataQuery);
   }

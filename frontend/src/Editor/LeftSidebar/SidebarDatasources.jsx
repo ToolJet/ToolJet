@@ -57,9 +57,9 @@ export const LeftSidebarDataSources = ({
   const renderDataSource = (dataSource, idx) => {
     let sourceMeta;
     let icon;
-    if (dataSource.extension_id) {
-      sourceMeta = dataSource.extension.manifest_file.data.source;
-      icon = <img src={dataSource.extension.icon_file.data} style={{ height: 25, width: 25 }} />;
+    if (dataSource.plugin_id) {
+      sourceMeta = dataSource.plugin.manifest_file.data.source;
+      icon = <img src={dataSource.plugin.icon_file.data} style={{ height: 25, width: 25 }} />;
     } else {
       sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
       icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25);
