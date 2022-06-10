@@ -72,11 +72,11 @@ export const Tabs = function Tabs({
           <li className="nav-item" onClick={() => setCurrentTab(tab.id)} key={tab.id}>
             <a
               className={`nav-link ${currentTab == tab.id ? 'active' : ''}`}
-              style={
-                currentTab == tab.id
-                  ? { color: parsedHighlightColor, borderBottom: `1px solid ${parsedHighlightColor}` }
-                  : {}
-              }
+              style={{
+                backgroundColor: `${tab?.backgroundColor && tab?.backgroundColor}`,
+                color: currentTab == tab.id && parsedHighlightColor,
+                borderBottom: currentTab == tab.id && `1px solid ${parsedHighlightColor}`,
+              }}
               ref={(el) => {
                 if (el && currentTab == tab.id) {
                   el.style.setProperty('color', parsedHighlightColor, 'important');
