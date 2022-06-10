@@ -9,7 +9,6 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
 import got from 'got';
 import { PluginsService } from './plugins.service';
-import { FilesService } from './files.service';
 import { decode } from 'js-base64';
 import { requireFromString } from 'module-from-string';
 const plugins = {};
@@ -18,7 +17,6 @@ const plugins = {};
 export class DataQueriesService {
   constructor(
     private readonly pluginsService: PluginsService,
-    private readonly filesService: FilesService,
     private credentialsService: CredentialsService,
     private dataSourcesService: DataSourcesService,
     @InjectRepository(DataQuery)
@@ -94,8 +92,7 @@ export class DataQueriesService {
         decoded = plugins[dataQuery.pluginId];
       } else {
         const plugin = await this.pluginsService.findOne(dataQuery.pluginId);
-        const file = await this.filesService.findOne(plugin.operationsFileId);
-        decoded = decode(file.data.toString());
+        decoded = decode(plugin.operationsFile.data.toString());
         plugins[dataQuery.pluginId] = decoded;
       }
       const code = requireFromString(decoded, { globals: { process, Buffer, Promise, setTimeout, clearTimeout } });

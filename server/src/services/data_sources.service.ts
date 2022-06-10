@@ -7,16 +7,13 @@ import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
 import { cleanObject } from 'src/helpers/utils.helper';
 import { decode } from 'js-base64';
-import { FilesService } from './files.service';
 import { PluginsService } from './plugins.service';
-
-// const _eval = require('eval');
+import { requireFromString } from 'module-from-string';
 const plugins = {};
 
 @Injectable()
 export class DataSourcesService {
   constructor(
-    private readonly filesService: FilesService,
     private readonly pluginsService: PluginsService,
     private credentialsService: CredentialsService,
     @InjectRepository(DataSource)
@@ -127,12 +124,15 @@ export class DataSourcesService {
         decoded = decode(plugins[pluginId]);
       } else {
         const plugin = await this.pluginsService.findOne(pluginId);
-        const file = await this.filesService.findOne(plugin.operationsFileId);
-        decoded = decode(file.data.toString());
+        decoded = decode(plugin.operationsFile.data.toString());
         plugins[pluginId] = decoded;
       }
-      // const module = _eval(decoded);
-      // service = new module();
+      const code = requireFromString(decoded, { globals: { process, Buffer, Promise, setTimeout, clearTimeout } });
+      try {
+        service = new code.default();
+      } catch (error) {
+        console.log('error', error);
+      }
     } else {
       service = new allPlugins[kind]();
     }

@@ -50,10 +50,11 @@ function deleteDataSource(id) {
   return fetch(`${config.apiUrl}/data_sources/${id}`, requestOptions).then(handleResponse);
 }
 
-function test(kind, options) {
+function test(kind, options, plugin_id) {
   const body = {
     kind,
     options,
+    plugin_id,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };

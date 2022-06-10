@@ -60,7 +60,7 @@ export class PluginsService {
   }
 
   async findOne(id: string) {
-    const plugin = await this.pluginsRepository.findOne({ where: { id } });
+    const plugin = await this.pluginsRepository.findOne({ where: { id }, relations: ['operationsFile'] });
     if (!plugin) {
       throw new NotFoundException('Plugin not found');
     }

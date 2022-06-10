@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { datasourceService } from '@/_services';
 
-export const TestConnection = ({ kind, options, onConnectionTestFailed, darkMode }) => {
+export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed, darkMode }) => {
   const [isTesting, setTestingStatus] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('unknown');
   const [buttonText, setButtonText] = useState('Test Connection');
@@ -24,7 +24,7 @@ export const TestConnection = ({ kind, options, onConnectionTestFailed, darkMode
   function testDataSource() {
     setTestingStatus(true);
 
-    datasourceService.test(kind, options).then(
+    datasourceService.test(kind, options, pluginId).then(
       (data) => {
         setTestingStatus(false);
         if (data.status === 'ok') {
