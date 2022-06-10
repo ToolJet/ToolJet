@@ -143,8 +143,7 @@ export default class RestapiQueryService implements QueryService {
         ...paramsFromUrl,
         ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
       },
-      form: isUrlEncoded ? json : undefined,
-      json: !isUrlEncoded ? json : undefined,
+      ...(isUrlEncoded ? { form: json } : { json }),
     };
 
     if (authType === 'basic') {
