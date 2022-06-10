@@ -24,8 +24,7 @@ Goto `Applications` section and `Create App Integration`
 <img class="screenshot-full" src="/img/sso/okta/create-app-s3.png" alt="ToolJet - Okta create application" height="420"/>
 <br /><br /><br />
 
-- Create application. Configure `Client Credentials` in environment variable. Set `SSO_OKTA_OAUTH2_CLIENT_ID` as `Client ID` and `SSO_OKTA_OAUTH2_CLIENT_SECRET` as `Client secret`.
-You can find `Okta domain`, set it for `SSO_OKTA_OAUTH2_DOMAIN`.
+- Create application. Configure `Client Credentials` in the UI. 
 
 <img class="screenshot-full" src="/img/sso/okta/create-app-s4.png" alt="ToolJet - Okta set environment variables" height="420"/>
 <br /><br /><br />
