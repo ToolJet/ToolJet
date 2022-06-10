@@ -20,17 +20,19 @@ const getItemStyle = (isDragging, draggableStyle) => {
   };
 };
 
-function Board({ height, state, colStyles, setState }) {
+function Board({ height, state, colStyles, setState, fireEvent, setExposedVariable }) {
   const addNewItem = (state, keyIndex) => {
     const newItem = {
       id: uuidv4(),
       title: 'New card',
-      description: '',
     };
     const newState = [...state];
     if (!newState[keyIndex]['cards']) [(newState[keyIndex]['cards'] = [])];
     newState[keyIndex]['cards'].push(newItem);
     setState(newState);
+    setExposedVariable('lastAddedCard', { listId: newState[keyIndex].id, title: newItem.title }).then(() =>
+      fireEvent('onCardAdded')
+    );
   };
 
   function onDragEnd(result) {

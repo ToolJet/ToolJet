@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React from 'react';
 import Board from './Board';
 import { isCardColoumnIdUpdated, updateCardData, updateColumnData, getData, isArray } from './utils';
@@ -13,6 +14,7 @@ export const KanbanBoard = ({
   setExposedVariable,
   containerProps,
   removeComponent,
+  fireEvent,
 }) => {
   const { columns, cardData, enableAddCard } = properties;
 
@@ -24,7 +26,10 @@ export const KanbanBoard = ({
   const [state, setState] = React.useState([]);
 
   React.useEffect(() => {
-    setExposedVariable('lists', state);
+    setExposedVariable(
+      'lists',
+      state.map((list) => ({ id: list.id, title: list.title, cards: list.cards.map((card) => _.omit(card, ['id'])) }))
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
@@ -112,7 +117,15 @@ export const KanbanBoard = ({
         data-disabled={disabledState}
         className={`kanban-container p-0 ${darkMode ? 'dark-themed' : ''}`}
       >
-        <Board height={height} state={state} isDisable={disabledState} colStyles={colStyles} setState={setState} />
+        <Board
+          height={height}
+          state={state}
+          isDisable={disabledState}
+          colStyles={colStyles}
+          setState={setState}
+          fireEvent={fireEvent}
+          setExposedVariable={setExposedVariable}
+        />
       </div>
     </BoardContext.Provider>
   );

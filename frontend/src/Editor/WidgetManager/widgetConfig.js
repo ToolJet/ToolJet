@@ -2336,7 +2336,12 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       cardData: { type: 'code', displayName: 'Card Data' },
       enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
     },
-    events: {},
+    events: {
+      onCardAdded: { displayName: 'Card added' },
+      onCardRemoved: { displayName: 'Card removed' },
+      onCardMoved: { displayName: 'Card moved' },
+      onCardSelected: { displayName: 'Card selected' },
+    },
     styles: {
       disabledState: { type: 'toggle', displayName: 'Disable' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
@@ -2346,6 +2351,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     exposedVariables: {
       lists: {},
+      lastAddedCard: {},
     },
     definition: {
       others: {
@@ -2358,7 +2364,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         },
         cardData: {
           value:
-            '{{[{ id: "01", title: "one", description: "Something@col1", columnId: "1" },{ id: "02", title: "two", description: "Something@col-1", columnId: "1" },{ id: "03", title: "three", description: "Something@col-2", columnId: "2" }]}}',
+            '{{[{ id: "01", title: "one", columnId: "1" },{ id: "02", title: "two", columnId: "1" },{ id: "03", title: "three", columnId: "2" }]}}',
         },
         enableAddCard: {
           value: `{{true}}`,
