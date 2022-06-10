@@ -42,6 +42,7 @@ export class ExtensionsService {
 
       const extension = new Extension();
       extension.name = createExtensionDto.name;
+      extension.version = createExtensionDto.version;
       extension.operationsFileId = uploadedFiles.operations.id;
       extension.iconFileId = uploadedFiles.icon.id;
       extension.manifestFileId = uploadedFiles.manifest.id;
