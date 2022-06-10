@@ -7,6 +7,7 @@ title: User Lifecycle
 
 ## Single-Workspace
 
+### User onboarding
 - If no user is present in the system, there will be `Sign-up` option in the login page. User can sign up by entering their email address. Tooljet will be sending a welcome email with activation URL to the email address. User can follow the activation URL and onboard to ToolJet.
 
   <div style={{textAlign: 'center'}}>
@@ -47,51 +48,97 @@ title: User Lifecycle
 
   </div>
 
+### Archive user
+  - User can be archived by workspace admin from using `Manage User` page
+
+    <div style={{textAlign: 'center'}}>
+
+    ![ToolJet - Single-Workspace Archive user](/img/user-lifecycle/archive-user.png)
+
+    </div>
+
+### Unarchive user
+  - User can be unArchived by workspace admin from using `Manage User` page
+
+    <div style={{textAlign: 'center'}}>
+
+    ![ToolJet - Single-Workspace Unarchive user](/img/user-lifecycle/unarchive-sw.png)
+
+    </div>
+
+  :::info
+  Archive or unarchive will affect user login, user won't be able to login using email id and password unless user is in active state
+  :::
+
 ## Multi-Workspace
 
 :::info
 Check Multi-workspace docs [here](/docs/tutorial/multiworkspace).
 :::
 
-- User can sign up using the sign up link provided on the login page, user will receive a welcome email with activation link. New workspace will be created for the user.
+### User onboarding
 
-  <div style={{textAlign: 'center'}}>
+  - User can sign up using the sign up link provided on the login page, user will receive a welcome email with activation link. New workspace will be created for the user.
 
-  ![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/signup-mw.png)
+    <div style={{textAlign: 'center'}}>
 
-  </div>
+    ![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/signup-mw.png)
 
-- Users can be added to multiple workspaces. Users can create their own workspaces and manage them.
+    </div>
 
-  <div style={{textAlign: 'center'}}>
+  - Users can be added to multiple workspaces. Users can create their own workspaces and manage them.
 
-  ![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/user-mw.png)
+    <div style={{textAlign: 'center'}}>
 
-  </div>
+    ![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/user-mw.png)
 
-- Existing user in active state for a workspace can be invited and on boarded to other workspaces, User will receive an invitation email with join link. If a user does not exist in the system, then they will receive a welcome email to setup the account, user can follow the link and on setup the account, once its done the user will be assigned to the new workspace created for the user.
+    </div>
 
-  <div style={{textAlign: 'center'}}>
+  - Existing user in active state for a workspace can be invited and on boarded to other workspaces, User will receive an invitation email with join link. If a user does not exist in the system, then they will receive a welcome email to setup the account, user can follow the link and on setup the account, once its done the user will be assigned to the new workspace created for the user.
 
-  ![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/invite-link-mw.png)
+    <div style={{textAlign: 'center'}}>
 
-  </div>
+    ![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/invite-link-mw.png)
 
-- Invited user can onboard through SSO login,  without using an invitation link from the workspace [login page](/docs/user-authentication/general-settings#login-url)
+    </div>
 
-  <div style={{textAlign: 'center'}}>
+  - Invited user can onboard through SSO login,  without using an invitation link from the workspace [login page](/docs/user-authentication/general-settings#login-url)
 
-  ![ToolJet - Single-Workspace accept invite](/img/user-lifecycle/sso-onboard-sw.png)
+    <div style={{textAlign: 'center'}}>
 
-  </div>
+    ![ToolJet - Single-Workspace accept invite](/img/user-lifecycle/sso-onboard-sw.png)
 
-- If `enable sign up` option in enabled in SSO [general settings](/docs/user-authentication/general-settings#enable-signup) for the workspace, user can setup account through SSO login without an invite from the workspace [login page](/docs/user-authentication/general-settings#login-url)
+    </div>
 
-  <div style={{textAlign: 'center'}}>
+  - If `enable sign up` option in enabled in SSO [general settings](/docs/user-authentication/general-settings#enable-signup) for the workspace, user can setup account through SSO login without an invite from the workspace [login page](/docs/user-authentication/general-settings#login-url)
 
-  ![ToolJet - Single-Workspace sign up using SSO](/img/user-lifecycle/sso-enable-signup-sw.png)
+    <div style={{textAlign: 'center'}}>
 
-  </div>
+    ![ToolJet - Single-Workspace sign up using SSO](/img/user-lifecycle/sso-enable-signup-sw.png)
+
+    </div>
+
+### Archive user
+  - User can be archived by workspace admin from using `Manage User` page
+
+    <div style={{textAlign: 'center'}}>
+
+    ![ToolJet - Single-Workspace Archive user](/img/user-lifecycle/archive-user.png)
+
+    </div>
+
+### Unarchive user
+  - User can be unarchive by workspace admin from using `Manage User` page
+
+    <div style={{textAlign: 'center'}}>
+
+    ![ToolJet - Single-Workspace Unarchive user](/img/user-lifecycle/unarchive-user-mw.png)
+
+    </div>
+
+  :::info
+  Archive or unarchive will not affect user login, user can login and use other workspaces where user is in active state.
+  :::
 
 ### Switch between workspaces
 
