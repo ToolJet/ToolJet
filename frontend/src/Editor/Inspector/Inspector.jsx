@@ -47,9 +47,24 @@ export const Inspector = ({
     e.preventDefault();
     let clonedComponent = JSON.parse(JSON.stringify(component));
     clonedComponent.id = uuidv4();
-    cloneComponent(clonedComponent);
+    const selectedComponents = [clonedComponent, ...retrieveChildComponents(clonedComponent, true)];
+    cloneComponent(selectedComponents);
+    toast.success(`${component.component.name} cloned succesfully`);
+    switchSidebarTab(2);
+  });
 
-    let childComponents = [];
+  useHotkeys('cmd+c, ctrl+c', (e) => {
+    e.preventDefault();
+    let copiedComponent = JSON.parse(JSON.stringify(component));
+    copiedComponent.parent = undefined;
+    const selectedComponents = [copiedComponent, ...retrieveChildComponents(copiedComponent)];
+    localStorage.setItem('widgetClipboard', JSON.stringify(selectedComponents));
+    toast.success(`${component.component.name} copied succesfully`);
+  });
+
+  const retrieveChildComponents = (selectedComponent, isCloning = false) => {
+    let childComponents = [],
+      selectedChildComponents = [];
 
     if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
       childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent?.startsWith(component.id));
@@ -59,19 +74,21 @@ export const Inspector = ({
 
     childComponents.forEach((componentId) => {
       let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
-      childComponent.id = uuidv4();
 
       if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
         const childTabId = childComponent.parent.split('-').at(-1);
-        childComponent.parent = `${clonedComponent.id}-${childTabId}`;
+        childComponent.parent = `${selectedComponent.id}-${childTabId}`;
       } else {
-        childComponent.parent = clonedComponent.id;
+        childComponent.parent = selectedComponent.id;
       }
-      cloneComponent(childComponent);
+      if (isCloning) {
+        childComponent.id = uuidv4();
+      }
+      selectedChildComponents.push(childComponent);
     });
-    toast.success(`${component.component.name} cloned succesfully`);
-    switchSidebarTab(2);
-  });
+
+    return selectedChildComponents;
+  };
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 

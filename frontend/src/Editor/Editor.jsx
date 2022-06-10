@@ -684,12 +684,12 @@ class Editor extends React.Component {
     this.appDefinitionChanged(appDefinition);
   };
 
-  cloneComponent = (newComponent) => {
+  cloneComponent = (newComponents) => {
     const appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
-
-    newComponent.component.name = computeComponentName(newComponent.component.component, appDefinition.components);
-
-    appDefinition.components[newComponent.id] = newComponent;
+    newComponents.forEach((newComponent) => {
+      newComponent.component.name = computeComponentName(newComponent.component.component, appDefinition.components);
+      appDefinition.components[newComponent.id] = newComponent;
+    });
     this.appDefinitionChanged(appDefinition);
   };
   decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
@@ -1297,6 +1297,8 @@ class Editor extends React.Component {
                         onComponentHover={this.handleComponentHover}
                         hoveredComponent={hoveredComponent}
                         dataQueries={dataQueries}
+                        cloneComponent={this.cloneComponent}
+                        switchSidebarTab={this.switchSidebarTab}
                       />
                       <CustomDragLayer
                         snapToGrid={true}

@@ -16,6 +16,7 @@ import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 import produce from 'immer';
+import { toast } from 'react-hot-toast';
 
 export const Container = ({
   canvasWidth,
@@ -45,6 +46,8 @@ export const Container = ({
   onComponentHover,
   hoveredComponent,
   dataQueries,
+  cloneComponent,
+  switchSidebarTab,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -61,10 +64,55 @@ export const Container = ({
   const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
+  const [isContainerFocused, setContainerFocus] = useState(false);
   const router = useRouter();
+  const canvasRef = useRef(null);
 
   useHotkeys('⌘+z, control+z', () => handleUndo());
   useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
+
+  useHotkeys(
+    '⌘+v, control+v',
+    () => {
+      if (isContainerFocused) {
+        const pastedComponent = JSON.parse(localStorage.getItem('widgetClipboard'));
+        if (Array.isArray(pastedComponent) && pastedComponent.length > 0) {
+          const selectedComponents = [];
+          const parentComponent = pastedComponent.shift();
+          parentComponent.id = uuidv4();
+          selectedComponents.push(parentComponent);
+          pastedComponent.forEach((component) => {
+            if (parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar') {
+              const childTabId = component.parent.split('-').at(-1);
+              component.parent = `${parentComponent.id}-${childTabId}`;
+            } else {
+              component.parent = parentComponent.id;
+            }
+            component.id = uuidv4();
+            selectedComponents.push(component);
+          });
+          cloneComponent(selectedComponents);
+          toast.success(`${parentComponent.component.name} pasted succesfully`);
+          switchSidebarTab(2);
+        }
+      }
+    },
+    [isContainerFocused]
+  );
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (canvasRef.current.contains(e.target)) {
+        if (!isContainerFocused) {
+          setContainerFocus(true);
+        }
+      } else if (isContainerFocused) {
+        setContainerFocus(false);
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [isContainerFocused, canvasRef]);
 
   useEffect(() => {
     setBoxes(components);
@@ -405,7 +453,10 @@ export const Container = ({
   return (
     <div
       {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
-      ref={drop}
+      ref={(el) => {
+        canvasRef.current = el;
+        drop(el);
+      }}
       style={styles}
       className={cx('real-canvas', {
         'show-grid': isDragging || isResizing,
