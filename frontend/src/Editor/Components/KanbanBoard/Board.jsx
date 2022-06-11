@@ -25,14 +25,13 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
     const newItem = {
       id: uuidv4(),
       title: 'New card',
+      columnId: state[keyIndex].id,
     };
     const newState = [...state];
     if (!newState[keyIndex]['cards']) [(newState[keyIndex]['cards'] = [])];
     newState[keyIndex]['cards'].push(newItem);
     setState(newState);
-    setExposedVariable('lastAddedCard', { listId: newState[keyIndex].id, title: newItem.title }).then(() =>
-      fireEvent('onCardAdded')
-    );
+    setExposedVariable('lastAddedCard', newItem).then(() => fireEvent('onCardAdded'));
   };
 
   function onDragEnd(result) {
@@ -84,6 +83,8 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
             updateCb={setState}
             addNewItem={addNewItem}
             colStyles={colStyles}
+            fireEvent={fireEvent}
+            setExposedVariable={setExposedVariable}
           />
         ))}
       </DragDropContext>

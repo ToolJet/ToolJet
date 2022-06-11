@@ -3,7 +3,17 @@ import { Droppable } from 'react-beautiful-dnd';
 import { Card } from './Card';
 import { BoardContext } from './KanbanBoard';
 
-const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, addNewItem }) => {
+const Column = ({
+  state,
+  group,
+  keyIndex,
+  getListStyle,
+  getItemStyle,
+  updateCb,
+  addNewItem,
+  fireEvent,
+  setExposedVariable,
+}) => {
   const styles = {
     overflowX: 'hidden',
     overflowY: 'hidden',
@@ -94,6 +104,8 @@ const Column = ({ state, group, keyIndex, getListStyle, getItemStyle, updateCb, 
                 updateCb={updateCb}
                 getItemStyle={getItemStyle}
                 keyIndex={keyIndex}
+                fireEvent={fireEvent}
+                setExposedVariable={setExposedVariable}
               />
             ))}
 

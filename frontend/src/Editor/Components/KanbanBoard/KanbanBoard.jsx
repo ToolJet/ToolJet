@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import React from 'react';
 import Board from './Board';
 import { isCardColoumnIdUpdated, updateCardData, updateColumnData, getData, isArray } from './utils';
@@ -26,10 +25,7 @@ export const KanbanBoard = ({
   const [state, setState] = React.useState([]);
 
   React.useEffect(() => {
-    setExposedVariable(
-      'lists',
-      state.map((list) => ({ id: list.id, title: list.title, cards: list.cards.map((card) => _.omit(card, ['id'])) }))
-    );
+    setExposedVariable('lists', state);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 

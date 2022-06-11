@@ -4,8 +4,9 @@ import { BoardContext } from './KanbanBoard';
 import { v4 as uuidv4 } from 'uuid';
 import { CardEventPopover } from './CardPopover';
 import { ReactPortal } from '@/_components/Portal/ReactPortal';
+import _ from 'lodash';
 
-export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) => {
+export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex, fireEvent, setExposedVariable }) => {
   const [isHovered, setIsHovered] = React.useState(false);
 
   const [eventPopoverOptions, setEventPopoverOptions] = React.useState({ show: false });
@@ -21,8 +22,9 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex }) =
 
   const removeCardHandler = (colIndex, cardIndex) => {
     const newState = [...state];
-    newState[colIndex]['cards'].splice(cardIndex, 1);
+    const removedCard = newState[colIndex]['cards'].splice(cardIndex, 1)[0];
     updateCb(newState);
+    setExposedVariable('lastRemovedCard', removedCard).then(() => fireEvent('onCardRemoved'));
   };
 
   const draggableId = item.id ?? uuidv4();
