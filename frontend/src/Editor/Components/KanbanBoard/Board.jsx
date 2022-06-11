@@ -41,6 +41,13 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
     if (destination && destination !== null) {
       const sInd = +source.droppableId;
       const dInd = +destination.droppableId;
+      const originColumnId = state[sInd].id;
+      const destinationColumnId = state[dInd].id;
+
+      const card = state[sInd]['cards'][source.index];
+      const cardDetails = {
+        title: card.title,
+      };
 
       if (sInd === dInd) {
         const items = reorderCards(state[sInd]['cards'], source.index, destination.index);
@@ -56,6 +63,15 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
 
         setState(newState);
       }
+
+      const movementDetails = {
+        originColumnId,
+        destinationColumnId,
+        originCardIndex: sInd,
+        destinationCardIndex: dInd,
+        cardDetails,
+      };
+      setExposedVariable('lastCardMovement', movementDetails).then(() => fireEvent('onCardMoved'));
     }
   }
 

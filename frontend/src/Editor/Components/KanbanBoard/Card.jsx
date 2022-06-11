@@ -42,6 +42,11 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex, fir
     });
   };
 
+  const handleCardClick = (event) => {
+    handleEventPopoverOptions(event);
+    setExposedVariable('selectedCard', item).then(() => fireEvent('onCardSelected'));
+  };
+
   const target = React.useRef(null);
   const el = document.getElementById(id);
 
@@ -61,14 +66,8 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex, fir
           {...dndProps.dragHandleProps}
           style={{ ...getItemStyle(dndState.isDragging, dndProps.draggableProps.style) }}
         >
-          {console.log('dndProps => ', dndProps, 'snapshot =>', dndState)}
-
           <div className="card-body d-flex">
-            <span
-              ref={target}
-              onClick={handleEventPopoverOptions}
-              className="text-muted flex-grow-1 cursor-pointer fw-bold"
-            >
+            <span ref={target} onClick={handleCardClick} className="text-muted flex-grow-1 cursor-pointer fw-bold">
               {item.title}
             </span>
             {isHovered && !item.isEditing && (

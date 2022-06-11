@@ -2352,6 +2352,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     exposedVariables: {
       lists: {},
       lastAddedCard: {},
+      lastAddedRemoved: {},
+      lastCardMovement: {},
     },
     definition: {
       others: {
