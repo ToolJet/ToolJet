@@ -17,6 +17,7 @@
     "@testing-library/user-event": "^7.2.1",
     "@tooljet/plugins": "../plugins",
     "@uiw/react-codemirror": "^3.0.6",
+    "@y-presence/react": "^2.0.0",
     "array-move": "^3.0.1",
     "axios": "^0.24.0",
     "babel-eslint": "^10.1.0",
@@ -43,6 +44,7 @@
     "node-sass": "^4.14.1",
     "papaparse": "^5.3.0",
     "plotly.js-basic-dist-min": "^1.58.4",
+    "psl": "^1.8.0",
     "query-string": "^6.13.6",
     "rc-slider": "^9.7.5",
     "react": "^16.14.0",
@@ -89,7 +91,6 @@
     "uuid": "8.3.2",
     "webpack": "^5.55.1",
     "webpack-cli": "^4.8.0",
-    "y-presence": "^1.0.6",
     "y-websocket": "^1.4.0",
     "yjs": "^13.5.28",
     "yup": "^0.27.0"

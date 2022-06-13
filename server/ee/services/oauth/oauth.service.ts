@@ -63,12 +63,12 @@ export class OauthService {
   async #findAndActivateUser(email: string, organizationId: string): Promise<User> {
     const user = await this.usersService.findByEmail(email, organizationId);
     if (!user) {
-      throw new UnauthorizedException('User not exist in the workspace');
+      throw new UnauthorizedException('User does not exist in the workspace');
     }
     const organizationUser: OrganizationUser = user.organizationUsers?.[0];
 
     if (!organizationUser) {
-      throw new UnauthorizedException('User not exist in the workspace');
+      throw new UnauthorizedException('User does not exist in the workspace');
     }
     if (organizationUser.status != 'active') await this.organizationUsersService.activate(organizationUser);
     return user;
