@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export const getData = (columns, cards) => {
   if (isArray(cards) && isArray(columns)) {
     const clonedColumns = [...columns];
@@ -105,7 +107,7 @@ export const updateCardData = (currentData, cards, newData) => {
 
 const findCard = (state, cardId) => {
   for (let i = 0; i < state.length; i++) {
-    for (let j = 0; j < state[i].cards.length; j++) {
+    for (let j = 0; j < state[i].cards?.length ?? 0; j++) {
       if (state[i].cards[j].id === cardId) {
         return state[i].cards[j];
       }
@@ -132,3 +134,7 @@ export const isCardColoumnIdUpdated = (currentCardData, nextCardData) => {
 };
 
 export const isArray = (value) => Object.prototype.toString.call(value).slice(8, -1) === 'Array';
+
+export const isValidCardData = (cardData) => {
+  return _.isArray(cardData) && cardData.every((card) => _.isString(card.id));
+};
