@@ -2338,7 +2338,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     events: {
-      onSelect: { displayName: 'On onSelect' },
+      onSelect: { displayName: 'On select' },
     },
     styles: {
       color: {
