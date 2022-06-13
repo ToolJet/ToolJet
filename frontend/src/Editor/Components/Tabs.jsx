@@ -58,10 +58,14 @@ export const Tabs = function Tabs({
 
   useEffect(() => {
     setExposedVariable('currentTab', currentTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTab]);
+
+  useEffect(() => {
     const currentTabData = parsedTabs.filter((tab) => tab.id === currentTab);
     setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : 'white');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab]);
+  }, [currentState, currentTab]);
 
   return (
     <div
