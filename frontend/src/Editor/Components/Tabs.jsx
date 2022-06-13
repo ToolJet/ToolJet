@@ -50,7 +50,7 @@ export const Tabs = function Tabs({
 
   const parentRef = useRef(null);
   const [currentTab, setCurrentTab] = useState(parsedDefaultTab);
-  const [bgColor, setBgColor] = useState('white');
+  const [bgColor, setBgColor] = useState('#fff');
 
   useEffect(() => {
     setCurrentTab(parsedDefaultTab);
