@@ -50,7 +50,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 - *Desktop & mobile*: ;layout widths can be customised to support different screens. 
 - *Self-host:* (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
 - *Collaborate:* add comments anywhere on the canvas and tag your team members.
-- *Extend with plugins:*: use our [commandline tool](https://www.npmjs.com/package/@tooljet/cli) to easily boostrap new connectors.
+- *Extend with plugins:*: use our [commandline tool](https://www.npmjs.com/package/@tooljet/cli) to easily bootstrap new connectors.
 - *Version control:* every application have different versions with proper release cycle.
 - *Run JS code:* ability custom JavaScript snippets
 - *Granular access control* on organization-level and app-level.
@@ -70,6 +70,18 @@ You can deploy ToolJet on Heroku for free using the one-click-deployment button 
 <p align="center">
 <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main"><img src="https://www.herokucdn.com/deploy/button.svg" /></a>
 </P>
+
+### Try using Docker
+Want to give ToolJet a quick spin on your local machine? You can run the following command from your terminal to have ToolJet up and running right away.
+
+```bash
+docker run \
+  --name tooljet \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  -v tooljet_data:/var/lib/postgresql/13/main \
+  tooljet/try:latest
+```
 
 ## Tutorials and examples 
 

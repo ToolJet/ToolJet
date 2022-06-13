@@ -45,7 +45,7 @@ export const RedirectSso = function RedirectSso() {
             </h2>
             <p className="sso-helper-doc">
               From v1.13.0 we have introduced
-              <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
+              <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/tutorial/multiworkspace">
                 Multi-Workspace
               </a>
               . The Single Sign-On related configurations are moved from environment variables to database. Please refer
@@ -59,9 +59,9 @@ export const RedirectSso = function RedirectSso() {
               to configure SSO.
               <br />
               <li>
-                If you have Google or Git SSO configurations before upgrade and disabled Multi-Workspace, then the SSO
-                configurations will be migrated while upgrade but you have to re-configure the redirect URL in the SSO
-                provider side. Redirect URLs for each SSO are given below.
+                If you have Google or GitHub SSO configurations before upgrade and disabled Multi-Workspace, then the
+                SSO configurations will be migrated while upgrade but you have to re-configure the redirect URL in the
+                SSO provider side. Redirect URLs for each SSO are given below.
                 <br />
               </li>
               <li>
@@ -75,7 +75,7 @@ export const RedirectSso = function RedirectSso() {
                   <div>
                     <p className="workspace-status">
                       You have Enabled
-                      <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
+                      <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/tutorial/multiworkspace">
                         Multi-Workspace
                       </a>
                     </p>
@@ -95,7 +95,7 @@ export const RedirectSso = function RedirectSso() {
 "
                       ></span>
                       You have Disabled
-                      <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/multiworkspace">
+                      <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/tutorial/multiworkspace">
                         Multi-Workspace.
                       </a>
                     </p>
@@ -142,7 +142,7 @@ export const RedirectSso = function RedirectSso() {
                         <>
                           <p className="sso-type ">
                             <span className="">-</span>
-                            Git : <a href="https://docs.tooljet.com/docs/sso/github"> Link</a>
+                            GitHub : <a href="https://docs.tooljet.com/docs/sso/github"> Link</a>
                           </p>
 
                           <div className="flexer">

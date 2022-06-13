@@ -94,14 +94,18 @@ class ConfirmationPage extends React.Component {
         >
           <div className="text-center mb-4">
             <a href=".">
-              <img src="/assets/images/logo-color.svg" height="30" alt="" />
+              <img src="/assets/images/logo-color.svg" height="30" alt="" data-cy="page-logo" />
             </a>
           </div>
-          <form className="card card-md" action="." method="get" autoComplete="off">
+          <form className="card card-md" action="." method="get" autoComplete="off" data-cy="confirm-invite-container">
             <div className="card-body">
-              <h2 className="card-title text-center mb-4">Set up your account</h2>
+              <h2 className="card-title text-center mb-4" data-cy="card-title">
+                Set up your account
+              </h2>
               <div className="mb-3">
-                <label className="form-label">First name</label>
+                <label className="form-label" data-cy="first-name-label">
+                  First name
+                </label>
                 <div className="input-group input-group-flat">
                   <input
                     onChange={this.handleChange}
@@ -109,12 +113,15 @@ class ConfirmationPage extends React.Component {
                     type="text"
                     className="form-control"
                     autoComplete="off"
+                    data-cy="first-name-input"
                   />
                   <span className="input-group-text"></span>
                 </div>
               </div>
               <div className="mb-3">
-                <label className="form-label">Last name</label>
+                <label className="form-label" data-cy="last-name-label">
+                  Last name
+                </label>
                 <div className="input-group input-group-flat">
                   <input
                     onChange={this.handleChange}
@@ -122,12 +129,15 @@ class ConfirmationPage extends React.Component {
                     type="text"
                     className="form-control"
                     autoComplete="off"
+                    data-cy="last-name-input"
                   />
                   <span className="input-group-text"></span>
                 </div>
               </div>
               <div className="mb-3">
-                <label className="form-label">Workspace</label>
+                <label className="form-label" data-cy="company-label">
+                  Company
+                </label>
                 <div className="input-group input-group-flat">
                   <input
                     onChange={this.handleChange}
@@ -135,13 +145,22 @@ class ConfirmationPage extends React.Component {
                     type="text"
                     className="form-control"
                     autoComplete="off"
+                    data-cy="workspace-input"
                   />
                   <span className="input-group-text"></span>
                 </div>
               </div>
               <div className="mb-3">
-                <div className="form-label">Role</div>
-                <select className="form-select" name="role" defaultValue="" onChange={this.handleChange}>
+                <div className="form-label" data-cy="role-label">
+                  Role
+                </div>
+                <select
+                  className="form-select"
+                  name="role"
+                  defaultValue=""
+                  onChange={this.handleChange}
+                  data-cy="role-options"
+                >
                   <option value="" disabled>
                     Please select
                   </option>
@@ -149,7 +168,9 @@ class ConfirmationPage extends React.Component {
                 </select>
               </div>
               <div className="mb-3">
-                <label className="form-label">Password</label>
+                <label className="form-label" data-cy="password-label">
+                  Password
+                </label>
                 <div className="input-group input-group-flat">
                   <input
                     onChange={this.handleChange}
@@ -157,12 +178,15 @@ class ConfirmationPage extends React.Component {
                     type="password"
                     className="form-control"
                     autoComplete="off"
+                    data-cy="password-input"
                   />
                   <span className="input-group-text"></span>
                 </div>
               </div>
               <div className="mb-3">
-                <label className="form-label">Confirm Password</label>
+                <label className="form-label" data-cy="confirm-password-label">
+                  Confirm Password
+                </label>
                 <div className="input-group input-group-flat">
                   <input
                     onChange={this.handleChange}
@@ -170,12 +194,13 @@ class ConfirmationPage extends React.Component {
                     type="password"
                     className="form-control"
                     autoComplete="off"
+                    data-cy="confirm-password-input"
                   />
                   <span className="input-group-text"></span>
                 </div>
               </div>
               <div className="form-footer">
-                <p>
+                <p data-cy="terms-and-condition-info">
                   By clicking the button below, you agree to our{' '}
                   <a href="https://tooljet.io/terms">Terms and Conditions</a>.
                 </p>
@@ -183,6 +208,7 @@ class ConfirmationPage extends React.Component {
                   className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}
                   onClick={this.setPassword}
                   disabled={isLoading}
+                  data-cy="finish-setup-button"
                 >
                   Finish account setup
                 </button>

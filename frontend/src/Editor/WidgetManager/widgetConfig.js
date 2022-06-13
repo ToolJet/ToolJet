@@ -1570,7 +1570,7 @@ export const widgets = [
       defaultTab: { type: 'code', displayName: 'Default tab' },
       hideTabs: { type: 'toggle', displayName: 'Hide Tabs' },
     },
-    events: {},
+    events: { onTabSwitch: { displayName: 'On tab switch' } },
     styles: {
       highlightColor: { type: 'color', displayName: 'Highlight Color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
@@ -2315,6 +2315,72 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
+      },
+    },
+  },
+
+  {
+    name: 'Steps',
+    displayName: 'Steps',
+    description: 'Steps',
+    component: 'Steps',
+    properties: {
+      steps: { type: 'code', displayName: 'Steps' },
+      currentStep: { type: 'code', displayName: 'Current step' },
+      stepsSelectable: { type: 'toggle', displayName: 'Steps selectable' },
+    },
+    defaultSize: {
+      width: 22,
+      height: 38,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {
+      onSelect: { displayName: 'On select' },
+    },
+    styles: {
+      color: {
+        type: 'color',
+        displayName: 'Color',
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text color',
+      },
+      theme: {
+        type: 'select',
+        displayName: 'Theme',
+        options: [
+          { name: 'titles', value: 'titles' },
+          { name: 'numbers', value: 'numbers' },
+          { name: 'plain', value: 'plain' },
+        ],
+      },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      currentStepId: '3',
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        steps: {
+          value: `{{ [{ name: 'step 1', tooltip: 'some tooltip', id: 1},{ name: 'step 2', tooltip: 'some tooltip', id: 2},{ name: 'step 3', tooltip: 'some tooltip', id: 3},{ name: 'step 4', tooltip: 'some tooltip', id: 4},{ name: 'step 5', tooltip: 'some tooltip', id: 5}]}}`,
+        },
+        currentStep: { value: '{{3}}' },
+        stepsSelectable: { value: true },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        theme: { value: 'titles' },
+        color: { value: '#4d72fa' },
+        textColor: { value: '#3e525b' },
       },
     },
   },

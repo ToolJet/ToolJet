@@ -102,7 +102,7 @@ describe('Authentication', () => {
           .send({ email: 'admin@tooljet.io', password: 'password' })
           .expect(201);
       });
-      it('throw unauthorized error if user not exist in given organization if valid credentials', async () => {
+      it('throw unauthorized error if user does not exist in given organization if valid credentials', async () => {
         await request(app.getHttpServer())
           .post('/api/authenticate/82249621-efc1-4cd2-9986-5c22182fa8a7')
           .send({ email: 'admin@tooljet.io', password: 'password' })
@@ -220,7 +220,7 @@ describe('Authentication', () => {
           .send({ email: 'admin@tooljet.io', password: 'password' })
           .expect(201);
       });
-      it('throw unauthorized error if user not exist in given organization if valid credentials', async () => {
+      it('throw unauthorized error if user does not exist in given organization if valid credentials', async () => {
         await request(app.getHttpServer())
           .post('/api/authenticate/82249621-efc1-4cd2-9986-5c22182fa8a7')
           .send({ email: 'admin@tooljet.io', password: 'password' })
@@ -801,7 +801,7 @@ describe('Authentication', () => {
 
         expect(response.statusCode).toBe(401);
         expect(response.body.message).toBe(
-          'User not exist in the workspace, Please setup your account using link shared via email'
+          'Please setup your account using account setup link shared via email before accepting the invite'
         );
       });
     });
