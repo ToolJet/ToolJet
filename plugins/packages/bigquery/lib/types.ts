@@ -8,4 +8,5 @@ export type QueryOptions = {
   datasetId: string;
   queryOptions: string;
   queryResultsOptions: string;
+  tableId: string;
 };

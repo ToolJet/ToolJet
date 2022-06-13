@@ -22,16 +22,105 @@
         {
           "value": "query",
           "name": "Query"
+        },
+        {
+          "value": "create_table",
+          "name": "Create Table"
+        },
+        {
+          "value": "delete_table",
+          "name": "Delete Table"
+        },
+        {
+          "value": "create_view",
+          "name": "Create View"
         }
       ]
     },
-    "list_tables": {
+    "create_table": {
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table id"
+      },
       "datasetId": {
-        "label": "Dataset",
+        "label": "Dataset id",
         "key": "datasetId",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter dataset",
+        "description": "Enter dataset id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter dataset"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ filter: 'labels.color:green' }",
+        "description": "Enter options",
+        "height": "150px"
+      }
+    },
+    "delete_table": {
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table id"
+      },
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter dataset id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter dataset"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ filter: 'labels.color:green' }",
+        "description": "Enter options",
+        "height": "150px"
+      }
+    },
+    "create_view": {
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table id"
+      },
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter dataset id",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",

@@ -21,6 +21,26 @@ export default class Bigquery implements QueryService {
           result = tables;
           break;
         }
+        case 'create_tables': {
+          const [table] = await client
+            .dataset(queryOptions.datasetId)
+            .createTable(queryOptions.tableId, this.parseJSON(queryOptions.options));
+          result = table;
+          break;
+        }
+
+        case 'delete_tables': {
+          result = await client.dataset(queryOptions.datasetId).table(queryOptions.tableId).delete();
+          break;
+        }
+        case 'create_view': {
+          const [view] = await client
+            .dataset(queryOptions.datasetId)
+            .createTable(queryOptions.tableId, this.parseJSON(queryOptions.options));
+
+          result = view;
+          break;
+        }
         case 'query': {
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
