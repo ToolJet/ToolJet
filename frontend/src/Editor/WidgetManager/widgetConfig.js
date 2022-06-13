@@ -2318,4 +2318,45 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
   },
+  {
+    name: 'ColorPicker',
+    displayName: 'Color Picker',
+    description: 'Color Picker Pallete',
+    component: 'ColorPicker',
+    properties: {
+      defaultColor: { type: 'code', displayName: 'Default Color' },
+    },
+    defaultSize: {
+      width: 9,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      selectedColorHex: '#000000',
+      selectedColorRGB: 'rgb(0,0,0)',
+      selectedColorRGBA: 'rgba(0, 0, 0, 1)',
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        defaultColor: {
+          value: '#000000',
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
 ];
