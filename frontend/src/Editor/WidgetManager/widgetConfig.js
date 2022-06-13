@@ -2351,7 +2351,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       accentColor: { type: 'color', displayName: 'Accent color' },
     },
     exposedVariables: {
-      lists: {},
+      columns: {},
       lastAddedCard: {},
       lastRemovedCard: {},
       lastCardMovement: {},
