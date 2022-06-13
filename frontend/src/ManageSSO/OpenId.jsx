@@ -21,14 +21,22 @@ export function OpenId({ settings, updateData }) {
   const saveSettings = () => {
     setSaving(true);
     organizationService
-      .editOrganizationConfigs({ type: 'openid', configs: { name, clientId, clientSecret, wellKnownUrl } })
+      .editOrganizationConfigs({
+        type: 'openid',
+        configs: { name, clientId, clientSecret, wellKnownUrl },
+      })
       .then(
         (data) => {
           setSaving(false);
           data.id && setConfigId(data.id);
           updateData('openid', {
             id: data.id,
-            configs: { client_id: clientId, client_secret: clientSecret, name: name, well_known_url: wellKnownUrl },
+            configs: {
+              client_id: clientId,
+              client_secret: clientSecret,
+              name: name,
+              well_known_url: wellKnownUrl,
+            },
           });
           toast.success('updated SSO configurations', {
             position: 'top-center',
@@ -70,7 +78,7 @@ export function OpenId({ settings, updateData }) {
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
           <div className="card-title">
-            Open ID
+            OpenID Connect
             <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`}>{enabled ? 'Enabled' : 'Disabled'}</span>
           </div>
           <div>
