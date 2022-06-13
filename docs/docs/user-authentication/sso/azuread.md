@@ -1,64 +1,67 @@
 ---
-sidebar_position: 6
-sidebar_label: AzureAD
+id: azuread
+title: AzureAD
 ---
 
 # AzureAD Single Sign-on
 
 :::info
-To construct a well known URL refer this link :: https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc
+To construct a Well Known URL refer this link :: https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc
 :::
 
 - Open your organisation page and select `app registration`
+    <div style={{textAlign: 'center'}}>
 
+    ![ToolJet - AzureAD app registration](/img/sso/azuread/azure-app-reg.png)
 
-<img class="screenshot-full" src="/img/sso/azuread/azure-app-reg.png" alt="ToolJet - AzureAD app registration" height="420"/>
-<br /><br /><br />
+    </div>
 
 - Select `new registration`
-<br/>
-<br/>
+    <div style={{textAlign: 'center'}}>
 
+    ![ToolJet - AzureAD app registration](/img/sso/azuread/select-new-reg-azure.png)
 
-<img class="screenshot-full" src="/img/sso/azuread/select-new-reg-azure.png" alt="ToolJet - AzureAD new registration" height="420"/>
-<br /><br /><br />
+    </div>
 
 - Open your organisation page and select app registration.
 
-- Enter name, select supported account type and enter redirect url which can be copied from` Manage SSO -> Open Id -> Redirect URL, click on register`.
-<br/>
+- Enter name, select supported account type and enter the redirect URL which can be copied from `Manage SSO -> Open Id -> Redirect URL, click on register`.
+    <div style={{textAlign: 'center'}}>
 
-<img class="screenshot-full" src="/img/sso/azuread/azure-3.png" alt="ToolJet - AzureAD new registration" height="420"/>
-<br /><br /><br />
+    ![ToolJet - AzureAD app registration](/img/sso/azuread/azure-3.png)
 
-- Application will be registered and able to view the details
-configure Application (Client) ID as `clinet id`in open id configuration page.
+    </div>
 
-<img class="screenshot-full" src="/img/sso/azuread/azure-4-cred.png" alt="ToolJet - AzureAD credentials" height="420"/>
-<br /><br /><br />
+- Application will be registered and will be able to view the details
 
-- Client credentials part click on Add certificate or secret.
+- Configure Application (Client) ID as `client id` in Open Id configuration page.
+    <div style={{textAlign: 'center'}}>
 
-- Click on new client secret.
+    ![ToolJet - AzureAD app registration](/img/sso/azuread/azure-4-cred.png)
 
-<br/>
+    </div>
 
-<img class="screenshot-full" src="/img/sso/azuread/azure8.png" alt="ToolJet - AzureAD client secret" height="420"/>
-<br /><br /><br />
+- Click on `Add certificate or secret` next to the **Client credentials**.
 
-- Enter description and expiry, click on add button.
+- Click on `+New Client Secret`
+    <div style={{textAlign: 'center'}}>
 
-<img class="screenshot-full" src="/img/sso/azuread/azure7.png" alt="ToolJet - AzureAD" height="420"/>
-<br /><br /><br />
+    ![ToolJet - AzureAD app registration](/img/sso/azuread/azure8.png)
 
-- Secret will be created, copy value and add it to the `client secret `section of Open Id SSO configs.
+    </div>
 
-<img class="screenshot-full" src="/img/sso/azuread/azure8.png" alt="ToolJet - AzureAD client secret" height="420"/>
-<br /><br /><br />
+- Give a description, set the expiry, and then click on the `Add` button.
+    <div style={{textAlign: 'center'}}>
 
+    ![ToolJet - AzureAD app registration](/img/sso/azuread/azure7.png)
+
+    </div>
+
+- Secret will be created, copy value and add it to the `client secret ` section of Open Id SSO config.
 
 - You can brand the redirect page using the branding and properties option.
-<br/>
+    <div style={{textAlign: 'center'}}>
 
-<img class="screenshot-full" src="/img/sso/azuread/azure9.png" alt="ToolJet - AzureAD branding" height="420"/>
-<br /><br /><br />
+    ![ToolJet - AzureAD app registration](/img/sso/azuread/azure9.png)
+
+    </div>

@@ -5,28 +5,31 @@ title: Setup
 
 # Configure OpenId Connect Single Sign-on
 
-:::note
-<b>NOTE: This feature is available only for enterprise edition.</b>
+:::info 
+NOTE: This feature is available <b>only for Enterprise edition</b>.
 :::
+
+
 - Select `Manage SSO` from workspace options
 
-<div style={{textAlign: 'center'}}>
+    <div style={{textAlign: 'center'}}>
 
-![ToolJet - SSO configs](/img/password-login/organization-menu.png)
+    ![ToolJet - SSO configs](/img/password-login/organization-menu.png)
 
-</div>
+    </div>
 
 - Select `OpenId Connect`.
 
+    <div style={{textAlign: 'center'}}>
+
+    ![ToolJet - SSO configs](/img/sso/openid/openid-select.png)
+
+    </div>
+
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - SSO configs](/img/sso/openid/openid-select.png)
+![ToolJet - SSO configs](/img/sso/openid/openid.png)
 
 </div>
 
-
-
-<img class="screenshot-full" src="/img/sso/openid/openid.png" alt="ToolJet -open id"/>
-<br /><br /><br />
-
-- Find and set name, client id, client secret, well known url from your open id provider.
+- Find and set **Name**, **Client Id**, **Client Secret**, and **Well Known URL** from your Open Id provider.

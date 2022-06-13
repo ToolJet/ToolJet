@@ -1,52 +1,54 @@
 ---
-sidebar_position: 6
-sidebar_label: Okta
+id: okta
+title: Okta
 ---
 
 # Okta Single Sign-on
 
 - Sign in to [Okta developer console](https://developer.okta.com/)
-Goto `Applications` section and `Create App Integration`
 
-<img class="screenshot-full" src="/img/sso/okta/create-app.png" alt="ToolJet - Okta create application" height="420"/>
-<br /><br /><br />
+- Go to the `Applications` section and click on the `Create App Integration`
+    <div style={{textAlign: 'center'}}>
 
-- Select `Sign-in method` as `OIDC - OpenID Connect` and `Application type` as `Web Application`. Go to next step
+    ![ToolJet - Okta create application](/img/sso/okta/create-app.png)
 
-<img class="screenshot-full" src="/img/sso/okta/create-app-s1.png" alt="ToolJet - Okta create application" height="420"/>
-<br /><br /><br />
+    </div>
 
-- Enter `App integration name`. Enter `Sign-in redirect URIs` as `<YOUR-DOMAIN>/sso/okta`.
+- Select `Sign-in method` as `OIDC - OpenID Connect` and `Application type` as `Web Application`. Go to the next step
+    <div style={{textAlign: 'center'}}>
 
-<img class="screenshot-full" src="/img/sso/okta/create-app-s2.png" alt="ToolJet - Okta create application" height="420"/>
-<br /><br /><br />
+    ![ToolJet - Okta create application](/img/sso/okta/create-app-s1.png)
 
-<img class="screenshot-full" src="/img/sso/okta/create-app-s3.png" alt="ToolJet - Okta create application" height="420"/>
-<br /><br /><br />
+    </div>
 
-- Create application. Configure `Client Credentials` in the UI. 
+- Enter `App integration name` and then enter `Sign-in redirect URIs` as `<YOUR-DOMAIN>/sso/okta`.
+    <div style={{textAlign: 'center'}}>
 
-<img class="screenshot-full" src="/img/sso/okta/create-app-s4.png" alt="ToolJet - Okta set environment variables" height="420"/>
-<br /><br /><br />
+    ![ToolJet - Okta create application](/img/sso/okta/create-app-s2.png)
 
-- If you wish to show your application on Okta, Edit the application and select `Login initiated by` section as `Either Okta or App`. Select visibility. `Login flow` should be `Redirect to app to initiate login (OIDC Compliant)`
+    </div>
 
-:::info
+- Create application and configure `Client Credentials` in the UI. 
+    <div style={{textAlign: 'center'}}>
 
-### Change Grant type 
+    ![ToolJet - Okta create application](/img/sso/okta/create-app-s4.png)
+
+    </div>
+
+- If you wish to show your application on Okta, edit the application and select `Login initiated by` section as `Either Okta or App`, set visibility according to your preference and `Login flow` should `Redirect to app to initiate login (OIDC Compliant)`.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Okta create application](/img/sso/okta/create-app-s5.png)
+
+</div>
+
+:::info Change Grant type
 To change the Login flow to `Redirect to app to initiate login (OIDC Compliant)`, its mandatory to change the `Grant type` - `Client acting on behalf of a user` section to `Implicit (hybrid)` and tick `Allow Access Token with implicit grant type`.
 :::
 
-<img class="screenshot-full" src="/img/sso/okta/create-app-s5.png" alt="ToolJet - List the application in okta" height="420"/>
-<br /><br /><br />
-
-<br />
-
 - The Okta sign-in button will now be available in your ToolJet login screen.
-<br />
-<br />
 
 :::info
-To find well known URL refer this Link.
-https://developer.okta.com/docs/concepts/auth-servers/#org-authorization-server
+To find Well Known URL refer this Link: https://developer.okta.com/docs/concepts/auth-servers/#org-authorization-server
 :::
