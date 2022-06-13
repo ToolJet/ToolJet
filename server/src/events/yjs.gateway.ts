@@ -28,7 +28,9 @@ export class YjsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (isEmpty(signedJwt)) connection.close(ERROR_CODE_WEBSOCKET_AUTH_FAILED);
       else {
         try {
-          setupWSConnection(connection, request);
+          const appId = this.getCookie(request?.headers?.cookie, 'app_id');
+          setupWSConnection(connection, request, { docName: appId });
+          console.log(`User connected with app-id: ${appId}`);
         } catch (error) {
           console.log(error);
         }

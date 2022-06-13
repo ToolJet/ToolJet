@@ -1,0 +1,42 @@
+name: Heroku Review App on label
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  create-review-app:
+    if: ${{ github.event.label.name == 'create-review-app' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: fastruby/manage-heroku-review-app@v1.2
+        with:
+          action: create
+        env:
+          HEROKU_API_TOKEN: ${{ secrets.HEROKU_API_TOKEN }}
+          HEROKU_PIPELINE_ID: ${{ secrets.HEROKU_PIPELINE_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: fastruby/pr-unlabeler@v1
+        with:
+          label-to-remove: "create-review-app"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  destroy-review-app:
+    if: ${{ github.event.label.name == 'destroy-review-app' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: fastruby/manage-heroku-review-app@v1.2
+        with:
+          action: destroy
+        env:
+          HEROKU_API_TOKEN: ${{ secrets.HEROKU_API_TOKEN }}
+          HEROKU_PIPELINE_ID: ${{ secrets.HEROKU_PIPELINE_ID }}
+
+      - uses: fastruby/pr-unlabeler@v1
+        with:
+          label-to-remove: "destroy-review-app"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

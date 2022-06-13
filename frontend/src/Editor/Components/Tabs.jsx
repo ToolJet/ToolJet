@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, createRef } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
@@ -12,6 +12,7 @@ export const Tabs = function Tabs({
   currentState,
   removeComponent,
   setExposedVariable,
+  fireEvent,
 }) {
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -60,16 +61,18 @@ export const Tabs = function Tabs({
     setCurrentTab(parsedDefaultTab);
   }, [parsedDefaultTab]);
 
-  useEffect(() => {
-    setExposedVariable('currentTab', currentTab);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab]);
-
   return (
     <div data-disabled={parsedDisabledState} className="jet-tabs card" style={computedStyles}>
       <ul className="nav nav-tabs" data-bs-toggle="tabs" style={{ display: parsedHideTabs && 'none' }}>
         {parsedTabs.map((tab) => (
-          <li className="nav-item" onClick={() => setCurrentTab(tab.id)} key={tab.id}>
+          <li
+            className="nav-item"
+            onClick={() => {
+              setCurrentTab(tab.id);
+              setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
+            }}
+            key={tab.id}
+          >
             <a
               className={`nav-link ${currentTab == tab.id ? 'active' : ''}`}
               style={
@@ -88,24 +91,46 @@ export const Tabs = function Tabs({
           </li>
         ))}
       </ul>
-      <div className="tab-content" ref={parentRef} id={`${id}-${currentTab}`}>
-        <div className="tab-pane active show">
-          <SubContainer
-            parent={`${id}-${currentTab}`}
-            {...containerProps}
-            parentRef={parentRef}
-            removeComponent={removeComponent}
-            containerCanvasWidth={width}
-            parentComponent={component}
-          />
-          <SubCustomDragLayer
-            parent={id}
-            parentRef={parentRef}
-            currentLayout={containerProps.currentLayout}
-            containerCanvasWidth={width}
-          />
+      {parsedTabs.map((tab) => (
+        <div
+          className="tab-content"
+          ref={(newCurrent) => {
+            if (currentTab === tab.id) {
+              parentRef.current = newCurrent;
+            }
+          }}
+          id={`${id}-${tab.id}`}
+          key={tab.id}
+        >
+          <div
+            className={`tab-pane active`}
+            style={{
+              visibility: tab.id === currentTab ? 'visible' : 'hidden',
+              height: parsedHideTabs ? height : height - 41,
+              position: 'absolute',
+              top: parsedHideTabs ? '0px' : '41px',
+              width: '100%',
+            }}
+          >
+            <SubContainer
+              parent={`${id}-${tab.id}`}
+              {...containerProps}
+              parentRef={parentRef}
+              removeComponent={removeComponent}
+              containerCanvasWidth={width}
+              parentComponent={component}
+            />
+          </div>
+          {tab.id === currentTab && (
+            <SubCustomDragLayer
+              parent={`${id}-${tab.id}`}
+              parentRef={parentRef}
+              currentLayout={containerProps.currentLayout}
+              containerCanvasWidth={width}
+            />
+          )}
         </div>
-      </div>
+      ))}
     </div>
   );
 };
