@@ -207,8 +207,9 @@ class LoginPage extends React.Component {
                   </div>
                 )}
                 <div
-                  className={`form-footer d-flex flex-column align-items-center ${!configs?.form?.enabled ? 'mt-0' : ''
-                    }`}
+                  className={`form-footer d-flex flex-column align-items-center ${
+                    !configs?.form?.enabled ? 'mt-0' : ''
+                  }`}
                 >
                   {configs?.form?.enabled && (
                     <button
@@ -227,7 +228,12 @@ class LoginPage extends React.Component {
                     />
                   )}
                   {this.state.configs?.git?.enabled && <GitSSOLoginButton configs={this.state.configs?.git?.configs} />}
-                  {this.state.configs?.openid?.enabled && <OidcSSOLoginButton configId={this.state.configs?.openid?.config_id} configs={this.state.configs?.openid?.configs} />}
+                  {this.state.configs?.openid?.enabled && (
+                    <OidcSSOLoginButton
+                      configId={this.state.configs?.openid?.config_id}
+                      configs={this.state.configs?.openid?.configs}
+                    />
+                  )}
                 </div>
               </div>
             )}

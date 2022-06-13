@@ -12,13 +12,13 @@ export default function OIDCSSOLoginButton({ configId, configs }) {
       .then((res) => res.json())
       .then((json) => {
         if (json.authorizationUrl) {
-          return window.location.href = json.authorizationUrl
+          return (window.location.href = json.authorizationUrl);
         }
         toast.error('Open ID login failed');
       })
       .catch((reason) => {
         toast.error(reason.error);
-      })
+      });
   };
   return (
     <div>
