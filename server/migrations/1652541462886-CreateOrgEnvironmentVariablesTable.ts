@@ -30,7 +30,9 @@ export class CreateOrgEnvironmentVariablesTable1652541462886 implements Migratio
           },
           {
             name: 'variable_type',
-            type: 'varchar',
+            type: 'enum',
+            enumName: 'variable_type',
+            enum: ['client', 'server'],
             isNullable: false,
           },
           {
@@ -68,7 +70,7 @@ export class CreateOrgEnvironmentVariablesTable1652541462886 implements Migratio
     await queryRunner.createUniqueConstraint(
       'org_environment_variables',
       new TableUnique({
-        columnNames: ['variable_name', 'variable_type'],
+        columnNames: ['variable_name', 'variable_type', 'organization_id'],
       })
     );
   }

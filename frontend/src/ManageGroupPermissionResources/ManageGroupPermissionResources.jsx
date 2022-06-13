@@ -287,6 +287,12 @@ class ManageGroupPermissionResources extends React.Component {
       return { name: `${user.first_name} ${user.last_name}`, value: user.id };
     });
 
+    const orgEnvironmentPermission = groupPermission
+      ? groupPermission.org_environment_variable_create &&
+        groupPermission.org_environment_variable_update &&
+        groupPermission.org_environment_variable_delete
+      : false;
+
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -628,44 +634,15 @@ class ManageGroupPermissionResources extends React.Component {
                                             type="checkbox"
                                             onChange={() => {
                                               this.updateGroupPermission(groupPermission.id, {
-                                                org_environment_variable_create:
-                                                  !groupPermission.org_environment_variable_create,
+                                                org_environment_variable_create: !orgEnvironmentPermission,
+                                                org_environment_variable_update: !orgEnvironmentPermission,
+                                                org_environment_variable_delete: !orgEnvironmentPermission,
                                               });
                                             }}
-                                            checked={groupPermission.org_environment_variable_create}
+                                            checked={orgEnvironmentPermission}
                                             disabled={groupPermission.group === 'admin'}
                                           />
-                                          <span className="form-check-label">Create</span>
-                                        </label>
-                                        <label className="form-check form-check-inline">
-                                          <input
-                                            className="form-check-input"
-                                            type="checkbox"
-                                            onChange={() => {
-                                              this.updateGroupPermission(groupPermission.id, {
-                                                org_environment_variable_update:
-                                                  !groupPermission.org_environment_variable_update,
-                                              });
-                                            }}
-                                            checked={groupPermission.org_environment_variable_update}
-                                            disabled={groupPermission.group === 'admin'}
-                                          />
-                                          <span className="form-check-label">Update</span>
-                                        </label>
-                                        <label className="form-check form-check-inline">
-                                          <input
-                                            className="form-check-input"
-                                            type="checkbox"
-                                            onChange={() => {
-                                              this.updateGroupPermission(groupPermission.id, {
-                                                org_environment_variable_delete:
-                                                  !groupPermission.org_environment_variable_delete,
-                                              });
-                                            }}
-                                            checked={groupPermission.org_environment_variable_delete}
-                                            disabled={groupPermission.group === 'admin'}
-                                          />
-                                          <span className="form-check-label">Delete</span>
+                                          <span className="form-check-label">Create/Update/Delete</span>
                                         </label>
                                       </div>
                                     </td>

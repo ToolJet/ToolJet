@@ -32,11 +32,6 @@ class ManageOrgVars extends React.Component {
     this.fetchVariables();
   }
 
-  calculateOffset() {
-    const elementHeight = this.tableRef.current.getBoundingClientRect().top;
-    return window.innerHeight - elementHeight;
-  }
-
   onEditBtnClicked = (variable) => {
     this.setState({
       showVariableForm: true,

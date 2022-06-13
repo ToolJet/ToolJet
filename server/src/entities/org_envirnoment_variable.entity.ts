@@ -22,7 +22,7 @@ export class OrgEnvironmentVariable extends BaseEntity {
   @Column({ name: 'value' })
   value: string;
 
-  @Column({ name: 'variable_type' })
+  @Column({ type: 'enum', enumName: 'variable_type', name: 'variable_type', enum: ['client', 'server'] })
   variableType: string;
 
   @Column({ name: 'encrypted' })

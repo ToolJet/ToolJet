@@ -1,4 +1,4 @@
-import { EnvironmentVariableDto } from '@dto/environment-variable.dto';
+import { CreateEnvironmentVariableDto } from '@dto/environment-variable.dto';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
@@ -34,7 +34,10 @@ export class OrgEnvironmentVariablesService {
     return variables;
   }
 
-  async create(currentUser: User, environmentVariableDto: EnvironmentVariableDto): Promise<OrgEnvironmentVariable> {
+  async create(
+    currentUser: User,
+    environmentVariableDto: CreateEnvironmentVariableDto
+  ): Promise<OrgEnvironmentVariable> {
     const variableToFind = await this.orgEnvironmentVariablesRepository.findOne({
       where: {
         variableName: environmentVariableDto.variable_name,

@@ -14,7 +14,7 @@ import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User } from 'src/decorators/user.decorator';
-import { EnvironmentVariableDto } from '@dto/environment-variable.dto';
+import { CreateEnvironmentVariableDto, UpdateEnvironmentVariableDto } from '@dto/environment-variable.dto';
 import { OrgEnvironmentVariablesService } from '@services/org_environment_variables.service';
 import { OrgEnvironmentVariablesAbilityFactory } from 'src/modules/casl/abilities/org-environment-variables-ability.factory';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
@@ -36,20 +36,20 @@ export class OrgEnvironmentVariablesController {
   // Endpoint for adding new env vars
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @Post()
-  async create(@User() user, @Body() environmentVariableDto: EnvironmentVariableDto) {
+  async create(@User() user, @Body() createEnvironmentVariableDto: CreateEnvironmentVariableDto) {
     const ability = await this.orgEnvironmentVariablesAbilityFactory.orgEnvironmentVariableActions(user, {});
 
     if (!ability.can('createOrgEnvironmentVariable', OrgEnvironmentVariable)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.orgEnvironmentVariablesService.create(user, environmentVariableDto);
+    const result = await this.orgEnvironmentVariablesService.create(user, createEnvironmentVariableDto);
     return decamelizeKeys({ variable: result });
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @Patch(':id')
-  async update(@Body() body, @User() user, @Param('id') variableId) {
+  async update(@Body() body: UpdateEnvironmentVariableDto, @User() user, @Param('id') variableId) {
     const ability = await this.orgEnvironmentVariablesAbilityFactory.orgEnvironmentVariableActions(user, {});
 
     if (!ability.can('updateOrgEnvironmentVariable', OrgEnvironmentVariable)) {
