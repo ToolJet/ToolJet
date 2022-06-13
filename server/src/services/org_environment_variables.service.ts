@@ -1,4 +1,4 @@
-import { CreateEnvironmentVariableDto } from '@dto/environment-variable.dto';
+import { CreateEnvironmentVariableDto, UpdateEnvironmentVariableDto } from '@dto/environment-variable.dto';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
@@ -78,7 +78,7 @@ export class OrgEnvironmentVariablesService {
     });
   }
 
-  async update(organizationId: string, variableId: string, params: any) {
+  async update(organizationId: string, variableId: string, params: UpdateEnvironmentVariableDto) {
     const { variable_name } = params;
     let value = params.value;
     const variable = await this.fetch(organizationId, variableId);
