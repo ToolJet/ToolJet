@@ -13,7 +13,7 @@ title: Setup
 
 </div>
 
-- Select `Open id`.
+- Select `OpenId Connect`.
 
 <div style={{textAlign: 'center'}}>
 
