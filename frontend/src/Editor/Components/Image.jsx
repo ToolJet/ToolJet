@@ -51,7 +51,7 @@ export const Image = function Image({ component, height, properties, styles, fir
             <center>
               <div className="spinner-border " role="status"></div>
             </center>
-          ) : (
+          ) : zoomButtons ? (
             <>
               <TransformWrapper>
                 {({ zoomIn, zoomOut }) => (
@@ -89,6 +89,22 @@ export const Image = function Image({ component, height, properties, styles, fir
                 )}
               </TransformWrapper>
             </>
+          ) : (
+            <img
+              src={source}
+              className={`zoom-image-wrap ${borderType !== 'none' ? borderType : ''}`}
+              style={{
+                backgroundColor,
+                padding: Number.parseInt(padding),
+                objectFit: imageFit ? imageFit : 'contain',
+                cursor: hasOnClickEvent ? 'pointer' : 'inherit',
+                pointerEvents: 'auto',
+              }}
+              height={height}
+              onClick={() => fireEvent('onClick')}
+              alt={alternativeText}
+              width={width}
+            />
           )}
         </LazyLoad>
       )}

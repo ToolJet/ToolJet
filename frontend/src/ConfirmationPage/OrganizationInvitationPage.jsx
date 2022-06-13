@@ -66,22 +66,25 @@ class OrganizationInvitationPage extends React.Component {
 
     return (
       <div className="page page-center" ref={this.formRef}>
-        <div className="container-tight py-2 invitation-page">
+        <div className="container-tight py-2 invitation-page" data-cy="confirm-invite-container">
           <div className="text-center mb-4">
             <a href=".">
-              <img src="/assets/images/logo-color.svg" height="30" alt="" />
+              <img src="/assets/images/logo-color.svg" height="30" alt="" data-cy="page-logo" />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
             <div className="card-body">
               {!this.single_organization ? (
                 <>
-                  <h2 className="card-title text-center mb-2">Already have an account?</h2>
+                  <h2 className="card-title text-center mb-2" data-cy="card-title">
+                    Already have an account?
+                  </h2>
                   <div className="mb-3">
                     <button
                       className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}
                       onClick={(e) => this.acceptInvite(e)}
                       disabled={isLoading}
+                      data-cy="accept-invite-button"
                     >
                       Accept invite
                     </button>
