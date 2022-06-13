@@ -3795,6 +3795,32 @@ input[type="text"] {
   width: 12px;
 }
 
+.resize-modal-portal {
+  z-index: 3;
+  .resize-modal {
+    .modal-content {
+      width: 100% !important;
+      height: 100%;
+      .modal-body {
+        width: 100% !important;
+        height: calc(100% - 44px) !important;
+        .editor-container {
+          height: 100%;
+          .CodeMirror {
+            height: 100% !important;
+          }
+        }
+      }
+    }
+    .portal-header {
+      width: 100% !important;
+    }
+    .resize-handle {
+      cursor: move;
+    }
+  }
+}
+
 .modal-portal-wrapper {
   justify-content: center;
   align-items: center;

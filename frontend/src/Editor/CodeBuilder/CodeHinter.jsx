@@ -60,6 +60,7 @@ export function CodeHinter({
   fieldMeta,
   onFxPress,
   fxActive,
+  hideSuggestion = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -116,6 +117,7 @@ export function CodeHinter({
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
   let suggestions = useMemo(() => {
+    if (hideSuggestion) return [];
     return getSuggestionKeys(realState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [realState.components, realState.queries]);
@@ -294,6 +296,7 @@ export function CodeHinter({
                 optionalProps={{ styles: { height: 300 }, cls: className }}
                 darkMode={darkMode}
                 selectors={{ className: 'preview-block-portal' }}
+                dragResizePortal={true}
               >
                 <CodeMirror
                   value={typeof initialValue === 'string' ? initialValue : ''}
