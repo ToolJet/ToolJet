@@ -2341,6 +2341,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       onCardRemoved: { displayName: 'Card removed' },
       onCardMoved: { displayName: 'Card moved' },
       onCardSelected: { displayName: 'Card selected' },
+      onCardUpdated: { displayName: 'Card updated' },
     },
     styles: {
       disabledState: { type: 'toggle', displayName: 'Disable' },
@@ -2354,6 +2355,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       lastAddedCard: {},
       lastAddedRemoved: {},
       lastCardMovement: {},
+      lastUpdatedCard: {},
     },
     definition: {
       others: {

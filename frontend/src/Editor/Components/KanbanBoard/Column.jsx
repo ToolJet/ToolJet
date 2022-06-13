@@ -13,6 +13,7 @@ const Column = ({
   addNewItem,
   fireEvent,
   setExposedVariable,
+  updateCardProperty,
 }) => {
   const styles = {
     overflowX: 'hidden',
@@ -106,6 +107,7 @@ const Column = ({
                 keyIndex={keyIndex}
                 fireEvent={fireEvent}
                 setExposedVariable={setExposedVariable}
+                updateCardProperty={updateCardProperty}
               />
             ))}
 

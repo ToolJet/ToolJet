@@ -81,6 +81,19 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
     borderColor: isDraggingOver && '#c0ccf8',
   });
 
+  const updateCardProperty = (columnIndex, cardIndex, property, newValue) => {
+    const columnOfCardToBeUpdated = state[columnIndex];
+    const cardSetOfTheCardToBeUpdated = columnOfCardToBeUpdated.cards;
+    const cardToBeUpdated = cardSetOfTheCardToBeUpdated[cardIndex];
+    const updatedCard = { ...cardToBeUpdated, [property]: newValue };
+    const updatedCardSet = cardSetOfTheCardToBeUpdated.map((card, index) => (index === cardIndex ? updatedCard : card));
+    const updatedColumn = { ...columnOfCardToBeUpdated, cards: updatedCardSet };
+    const newState = state.map((column, index) => (index === columnIndex ? updatedColumn : column));
+    setState(newState);
+
+    setExposedVariable('lastUpdatedCard', updatedCard).then(() => fireEvent('onCardUpdated'));
+  };
+
   return (
     <div
       style={{ height: height, overflowX: 'auto' }}
@@ -101,6 +114,7 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
             colStyles={colStyles}
             fireEvent={fireEvent}
             setExposedVariable={setExposedVariable}
+            updateCardProperty={updateCardProperty}
           />
         ))}
       </DragDropContext>

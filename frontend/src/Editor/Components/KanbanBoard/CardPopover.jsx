@@ -1,20 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { SubCustomDragLayer } from '../../SubCustomDragLayer';
-import { SubContainer } from '../../SubContainer';
 
 export const CardEventPopover = function ({
   show,
   offset,
   kanbanCardWidgetId,
-  containerProps,
-  removeComponent,
   popoverClosed,
-  customResolvables,
+  card,
+  updateCardProperty,
+  index,
+  keyIndex,
 }) {
   const parentRef = useRef(null);
   const [showPopover, setShow] = useState(show);
   const [top, setTop] = useState(0);
   const [left, setLeft] = useState(0);
+
+  const [titleInputBoxValue, setTitleInputBoxValue] = useState(card.title ?? '');
+  const [descriptionTextAreaValue, setDescriptionTextAreaValue] = useState(card.description ?? '');
+  const [titleHovered, setTitleHovered] = useState(false);
+  const [descriptionHovered, setDescriptionHovered] = useState(false);
+  const [titleEditMode, setTitleEditMode] = useState(false);
+  const [descriptionEditMode, setDescriptionEditMode] = useState(false);
 
   const minHeight = 400;
   let kanbanBounds;
@@ -72,19 +78,69 @@ export const CardEventPopover = function ({
     >
       {parentRef.current && showPopover && (
         <div className="popover-body" style={{ padding: 'unset', width: '100%', height: '100%', zIndex: 11 }}>
-          <SubContainer
-            containerCanvasWidth={300}
-            parent={`${kanbanCardWidgetId}-popover`}
-            {...containerProps}
-            parentRef={parentRef}
-            removeComponent={removeComponent}
-            customResolvables={{ card: customResolvables }}
-          />
-          <SubCustomDragLayer
-            parent={kanbanCardWidgetId}
-            parentRef={parentRef}
-            currentLayout={containerProps.currentLayout}
-          />
+          <div className="rows p-2 overflow-auto">
+            <div
+              className="row overflow-auto"
+              onMouseEnter={() => setTitleHovered(true)}
+              onMouseLeave={() => setTitleHovered(false)}
+            >
+              {titleEditMode ? (
+                <div>
+                  <input
+                    type="text"
+                    className="form-control"
+                    defaultValue={titleInputBoxValue}
+                    onChange={(event) => setTitleInputBoxValue(event.target.value)}
+                    onBlur={() => {
+                      updateCardProperty(keyIndex, index, 'title', titleInputBoxValue);
+                      setTitleEditMode(false);
+                    }}
+                  />
+                </div>
+              ) : (
+                <h3>
+                  {card?.title ?? ''}
+                  <img
+                    src="/assets/images/icons/editor/edit.svg"
+                    style={{ visibility: titleHovered ? 'visible' : 'hidden', height: 15, width: 15, paddingLeft: 1 }}
+                    onClick={() => setTitleEditMode(true)}
+                  />
+                </h3>
+              )}
+            </div>
+            <div
+              className="row overflow-auto"
+              onMouseEnter={() => setDescriptionHovered(true)}
+              onMouseLeave={() => setDescriptionHovered(false)}
+            >
+              {descriptionEditMode ? (
+                <textarea
+                  className="form-control"
+                  onChange={(event) => setDescriptionTextAreaValue(event.target.value)}
+                  onBlur={() => {
+                    updateCardProperty(keyIndex, index, 'description', descriptionTextAreaValue);
+                    setDescriptionEditMode(false);
+                  }}
+                >
+                  {descriptionTextAreaValue}
+                </textarea>
+              ) : (
+                <p>
+                  {card?.description ?? ''}
+                  <img
+                    src="/assets/images/icons/editor/edit.svg"
+                    style={{
+                      visibility: descriptionHovered ? 'visible' : 'hidden',
+                      height: 15,
+                      width: 15,
+                      paddingLeft: 1,
+                    }}
+                    onClick={() => setDescriptionEditMode(true)}
+                  />
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

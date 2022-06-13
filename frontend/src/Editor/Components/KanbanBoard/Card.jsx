@@ -6,7 +6,17 @@ import { CardEventPopover } from './CardPopover';
 import { ReactPortal } from '@/_components/Portal/ReactPortal';
 import _ from 'lodash';
 
-export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex, fireEvent, setExposedVariable }) => {
+export const Card = ({
+  item,
+  index,
+  state,
+  updateCb,
+  getItemStyle,
+  keyIndex,
+  fireEvent,
+  setExposedVariable,
+  updateCardProperty,
+}) => {
   const [isHovered, setIsHovered] = React.useState(false);
 
   const [eventPopoverOptions, setEventPopoverOptions] = React.useState({ show: false });
@@ -18,7 +28,7 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex, fir
     });
   }
 
-  const { id, containerProps, removeComponent, darkMode } = React.useContext(BoardContext);
+  const { id, darkMode } = React.useContext(BoardContext);
 
   const removeCardHandler = (colIndex, cardIndex) => {
     const newState = [...state];
@@ -85,10 +95,11 @@ export const Card = ({ item, index, state, updateCb, getItemStyle, keyIndex, fir
                   kanbanCardWidgetId={id}
                   show={eventPopoverOptions.show}
                   offset={eventPopoverOptions.offset}
-                  containerProps={containerProps}
-                  removeComponent={removeComponent}
                   popoverClosed={popoverClosed}
-                  customResolvables={item}
+                  card={item}
+                  updateCardProperty={updateCardProperty}
+                  index={index}
+                  keyIndex={keyIndex}
                 />
               </ReactPortal>
             )}

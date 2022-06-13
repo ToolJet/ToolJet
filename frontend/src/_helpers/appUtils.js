@@ -497,6 +497,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCardRemoved',
       'onCardMoved',
       'onCardSelected',
+      'onCardUpdated',
     ].includes(eventName)
   ) {
     const { component } = options;
