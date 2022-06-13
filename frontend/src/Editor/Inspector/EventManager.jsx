@@ -26,7 +26,16 @@ export const EventManager = ({
   });
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const styles = defaultStyles(darkMode);
+  const styles = {
+    ...defaultStyles(darkMode),
+    menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+    menuList: (base) => ({
+      ...base,
+      '::-webkit-scrollbar': {
+        width: '2px',
+      },
+    }),
+  };
 
   const actionLookup = Object.fromEntries(ActionTypes.map((actionType) => [actionType.id, actionType]));
 
@@ -139,16 +148,7 @@ export const EventManager = ({
                 search={false}
                 onChange={(value) => handlerChanged(index, 'eventId', value)}
                 placeholder="Select.."
-                styles={{
-                  ...styles,
-                  menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
-                  menuList: (base) => ({
-                    ...base,
-                    '::-webkit-scrollbar': {
-                      width: '2px',
-                    },
-                  }),
-                }}
+                styles={styles}
                 useMenuPortal={true}
               />
             </div>
@@ -165,16 +165,7 @@ export const EventManager = ({
                 search={false}
                 onChange={(value) => handlerChanged(index, 'actionId', value)}
                 placeholder="Select.."
-                styles={{
-                  ...styles,
-                  menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
-                  menuList: (base) => ({
-                    ...base,
-                    '::-webkit-scrollbar': {
-                      width: '2px',
-                    },
-                  }),
-                }}
+                styles={styles}
                 useMenuPortal={true}
               />
             </div>
@@ -214,16 +205,7 @@ export const EventManager = ({
                       search={false}
                       onChange={(value) => handlerChanged(index, 'alertType', value)}
                       placeholder="Select.."
-                      styles={{
-                        ...styles,
-                        menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
-                        menuList: (base) => ({
-                          ...base,
-                          '::-webkit-scrollbar': {
-                            width: '2px',
-                          },
-                        }),
-                      }}
+                      styles={styles}
                       useMenuPortal={true}
                     />
                   </div>
@@ -267,16 +249,7 @@ export const EventManager = ({
                       handlerChanged(index, 'modal', value);
                     }}
                     placeholder="Select.."
-                    styles={{
-                      ...styles,
-                      menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
-                      menuList: (base) => ({
-                        ...base,
-                        '::-webkit-scrollbar': {
-                          width: '2px',
-                        },
-                      }),
-                    }}
+                    styles={styles}
                     useMenuPortal={true}
                   />
                 </div>
@@ -296,16 +269,7 @@ export const EventManager = ({
                       handlerChanged(index, 'modal', value);
                     }}
                     placeholder="Select.."
-                    styles={{
-                      ...styles,
-                      menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
-                      menuList: (base) => ({
-                        ...base,
-                        '::-webkit-scrollbar': {
-                          width: '2px',
-                        },
-                      }),
-                    }}
+                    styles={styles}
                     useMenuPortal={true}
                   />
                 </div>
@@ -341,16 +305,7 @@ export const EventManager = ({
                       handlerChanged(index, 'queryName', query.name);
                     }}
                     placeholder="Select.."
-                    styles={{
-                      ...styles,
-                      menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
-                      menuList: (base) => ({
-                        ...base,
-                        '::-webkit-scrollbar': {
-                          width: '2px',
-                        },
-                      }),
-                    }}
+                    styles={styles}
                     useMenuPortal={true}
                   />
                 </div>
@@ -404,16 +359,7 @@ export const EventManager = ({
                         handlerChanged(index, 'fileType', value);
                       }}
                       placeholder="Select.."
-                      styles={{
-                        ...styles,
-                        menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
-                        menuList: (base) => ({
-                          ...base,
-                          '::-webkit-scrollbar': {
-                            width: '2px',
-                          },
-                        }),
-                      }}
+                      styles={styles}
                       useMenuPortal={true}
                     />
                   </div>
@@ -458,16 +404,7 @@ export const EventManager = ({
                         handlerChanged(index, 'table', value);
                       }}
                       placeholder="Select.."
-                      styles={{
-                        ...styles,
-                        menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
-                        menuList: (base) => ({
-                          ...base,
-                          '::-webkit-scrollbar': {
-                            width: '2px',
-                          },
-                        }),
-                      }}
+                      styles={styles}
                       useMenuPortal={true}
                     />
                   </div>
