@@ -6,7 +6,7 @@ import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
-import { componentTypes } from './Components/components';
+import { componentTypes } from './WidgetManager/components';
 import { computeComponentName } from '@/_helpers/utils';
 import produce from 'immer';
 
@@ -239,7 +239,7 @@ export const SubContainer = ({
 
   function getContainerCanvasWidth() {
     if (containerCanvasWidth !== undefined) {
-      return containerCanvasWidth;
+      return containerCanvasWidth - 2;
     }
     let width = 0;
     if (parentRef.current) {
@@ -302,7 +302,11 @@ export const SubContainer = ({
     const subContainerWidth = canvasBoundingRect.width;
 
     top = y;
-    left = (x * 100) / subContainerWidth;
+    if (deltaWidth !== 0) {
+      // onResizeStop is triggered for a single click on the border, therefore this conditional logic
+      // should not be removed.
+      left = (x * 100) / subContainerWidth;
+    }
 
     width = width + (deltaWidth * 43) / subContainerWidth;
     height = height + deltaHeight;

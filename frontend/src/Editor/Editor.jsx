@@ -10,7 +10,7 @@ import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
-import { componentTypes } from './Components/components';
+import { componentTypes } from './WidgetManager/components';
 import { Inspector } from './Inspector/Inspector';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
@@ -46,11 +46,11 @@ import Spinner from '@/_ui/Spinner';
 import { AppVersionsManager } from './AppVersionsManager';
 import { SearchBoxComponent } from '@/_ui/Search';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
-import { Cursor } from './Cursor';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import RealtimeAvatars from './RealtimeAvatars';
 import InitVersionCreateModal from './InitVersionCreateModal';
+import RealtimeCursors from '@/Editor/RealtimeCursors';
 
 setAutoFreeze(false);
 enablePatches();
@@ -131,7 +131,7 @@ class Editor extends React.Component {
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
       isSaving: false,
-      saveError: false,
+      isUnsavedQueriesAvailable: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -174,12 +174,6 @@ class Editor extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (!isEqual(prevState.appDefinition, this.state.appDefinition)) {
       computeComponentState(this, this.state.appDefinition.components);
-    }
-
-    if (config.ENABLE_MULTIPLAYER_EDITING) {
-      if (this.props.othersOnSameVersion.length !== prevProps.othersOnSameVersion.length) {
-        ReactTooltip.rebuild();
-      }
     }
   }
 
@@ -248,6 +242,7 @@ class Editor extends React.Component {
     document.removeEventListener('mouseup', this.onMouseUp);
     document.title = 'Tooljet - Dashboard';
     this.socket && this.socket?.close();
+    if (config.ENABLE_MULTIPLAYER_EDITING) this.props?.provider?.disconnect();
   }
 
   // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
@@ -1069,6 +1064,12 @@ class Editor extends React.Component {
     this.props.switchDarkMode(newMode);
   };
 
+  setStateOfUnsavedQueries = (state) => {
+    this.setState({
+      isUnsavedQueriesAvailable: state,
+    });
+  };
+
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
   render() {
@@ -1164,13 +1165,7 @@ class Editor extends React.Component {
               >
                 {this.state.isSaving ? <Spinner size="small" /> : 'All changes are saved'}
               </span>
-              {config.ENABLE_MULTIPLAYER_EDITING && (
-                <RealtimeAvatars
-                  updatePresence={this.props.updatePresence}
-                  editingVersionId={this.state?.editingVersion?.id}
-                  self={this.props.self}
-                />
-              )}
+              {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
               {editingVersion && (
                 <AppVersionsManager
                   appId={appId}
@@ -1246,6 +1241,8 @@ class Editor extends React.Component {
               runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
               toggleAppMaintenance={this.toggleAppMaintenance}
               is_maintenance_on={this.state.app.is_maintenance_on}
+              isSaving={this.state.isSaving}
+              isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
@@ -1267,12 +1264,9 @@ class Editor extends React.Component {
                     backgroundColor: this.state.appDefinition.globalSettings.canvasBackgroundColor,
                   }}
                 >
-                  {this.props?.othersOnSameVersion?.map(({ id, presence }) => {
-                    if (!presence) return null;
-                    return (
-                      <Cursor key={id} name={presence.firstName} color={presence.color} x={presence.x} y={presence.y} />
-                    );
-                  })}
+                  {config.ENABLE_MULTIPLAYER_EDITING && (
+                    <RealtimeCursors editingVersionId={this.state?.editingVersion?.id} />
+                  )}
                   {defaultComponentStateComputed && (
                     <>
                       <Container
@@ -1471,6 +1465,7 @@ class Editor extends React.Component {
                             allComponents={appDefinition.components}
                             isSourceSelected={this.state.isSourceSelected}
                             isQueryPaneDragging={this.state.isQueryPaneDragging}
+                            setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
                           />
                         </div>
                       </div>
