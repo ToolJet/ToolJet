@@ -93,6 +93,7 @@ export default class RestapiQueryService implements QueryService {
 
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
     const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
+    const isUrlEncoded = this.checkIfContentTypeIsURLenc(queryOptions['headers']);
 
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
@@ -142,7 +143,7 @@ export default class RestapiQueryService implements QueryService {
         ...paramsFromUrl,
         ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
       },
-      json,
+      ...(isUrlEncoded ? { form: json } : { json }),
     };
 
     if (authType === 'basic') {
