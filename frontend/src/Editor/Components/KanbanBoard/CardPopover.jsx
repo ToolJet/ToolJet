@@ -65,7 +65,7 @@ export const CardEventPopover = function ({
         zIndex: 100,
         width: '300px',
         maxWidth: '300px',
-        minHeight,
+        height: 300,
         top: `${top}%`,
         left,
         display: showPopover ? 'block' : 'none',
@@ -77,7 +77,7 @@ export const CardEventPopover = function ({
       id={`${kanbanCardWidgetId}-popover`}
     >
       {parentRef.current && showPopover && (
-        <div className="popover-body" style={{ padding: 'unset', width: '100%', height: '100%', zIndex: 11 }}>
+        <div className="popover-body" style={{ padding: 'unset', width: '100%', height: 100, zIndex: 11 }}>
           <div className="rows p-2 overflow-auto">
             <div
               className="row overflow-auto"
@@ -109,24 +109,33 @@ export const CardEventPopover = function ({
               )}
             </div>
             <div
-              className="row overflow-auto"
+              className="row overflow-auto d-flex align-items-center flex-column"
               onMouseEnter={() => setDescriptionHovered(true)}
               onMouseLeave={() => setDescriptionHovered(false)}
+              style={{ maxHeight: 250 }}
             >
               {descriptionEditMode ? (
                 <textarea
                   className="form-control"
+                  style={{ width: '95%' }}
                   onChange={(event) => setDescriptionTextAreaValue(event.target.value)}
                   onBlur={() => {
                     updateCardProperty(keyIndex, index, 'description', descriptionTextAreaValue);
                     setDescriptionEditMode(false);
                   }}
+                  rows={10}
                 >
                   {descriptionTextAreaValue}
                 </textarea>
               ) : (
                 <p>
-                  {card?.description ?? ''}
+                  {['', undefined].includes(card.description) ? (
+                    <a style={{ color: 'grey' }} onClick={() => setDescriptionEditMode(true)}>
+                      Add description
+                    </a>
+                  ) : (
+                    card.description
+                  )}
                   <img
                     src="/assets/images/icons/editor/edit.svg"
                     style={{
