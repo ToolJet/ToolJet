@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 
 class LoginPage extends React.Component {
@@ -227,6 +228,12 @@ class LoginPage extends React.Component {
                     />
                   )}
                   {this.state.configs?.git?.enabled && <GitSSOLoginButton configs={this.state.configs?.git?.configs} />}
+                  {this.state.configs?.openid?.enabled && (
+                    <OidcSSOLoginButton
+                      configId={this.state.configs?.openid?.config_id}
+                      configs={this.state.configs?.openid?.configs}
+                    />
+                  )}
                 </div>
               </div>
             )}

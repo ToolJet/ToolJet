@@ -287,7 +287,7 @@ export class OrganizationsService {
   async updateOrganizationConfigs(organizationId: string, params: any) {
     const { type, configs, enabled } = params;
 
-    if (!(type && ['git', 'google', 'form'].includes(type))) {
+    if (!(type && ['git', 'google', 'form', 'openid'].includes(type))) {
       throw new BadRequestException();
     }
 

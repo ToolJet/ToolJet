@@ -26,6 +26,7 @@ import { GroupPermissionsService } from '@services/group_permissions.service';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
+import { OidcOAuthService } from '@ee/services/oauth/oidc_auth.service';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { EncryptionService } from '@services/encryption.service';
     FilesService,
     GroupPermissionsService,
     EncryptionService,
+    OidcOAuthService,
   ],
   controllers: [OauthController],
   exports: [AuthService],
