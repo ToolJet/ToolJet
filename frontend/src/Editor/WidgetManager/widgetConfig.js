@@ -2353,7 +2353,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     exposedVariables: {
       lists: {},
       lastAddedCard: {},
-      lastAddedRemoved: {},
+      lastRemovedCard: {},
       lastCardMovement: {},
       lastUpdatedCard: {},
     },
