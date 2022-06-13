@@ -42,6 +42,7 @@ import { ButtonGroup } from './Components/ButtonGroup';
 import { CustomComponent } from './Components/CustomComponent/CustomComponent';
 import { VerticalDivider } from './Components/verticalDivider';
 import { PDF } from './Components/PDF';
+import { Steps } from './Components/Steps';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { resolveProperties, resolveStyles, resolveGeneralProperties } from './component-properties-resolution';
@@ -90,6 +91,7 @@ const AllComponents = {
   CustomComponent,
   VerticalDivider,
   PDF,
+  Steps,
 };
 
 export const Box = function Box({

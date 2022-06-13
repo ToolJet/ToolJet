@@ -5420,3 +5420,35 @@ word-break: break-all;
  }
 
 // sso end
+
+// steps-widget
+a.step-item-disabled {
+  text-decoration: none;
+}
+.steps{
+  overflow: hidden;
+  margin: 0rem !important;
+}
+.step-item.active ~ .step-item:after, .step-item.active ~ .step-item:before {
+  background: #f3f5f5 !important;
+}
+.step-item.active:before {
+  background: #fff !important;
+}
+.steps .step-item.active:before {
+    border-color: #b4b2b2 !important;
+}
+.steps-item{
+  color: var(--textColor) !important;
+}
+.step-item:before{
+  background: var(--bgColor) !important;
+  // remaining code
+}
+.step-item:after{
+  background: var(--bgColor) !important;
+}
+.step-item.active ~ .step-item {
+  color: var(--textColor) !important;;
+}
+// steps-widget end
