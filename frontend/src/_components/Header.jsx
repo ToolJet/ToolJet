@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { authenticationService, userService, tooljetService } from '@/_services';
+import { authenticationService, userService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
 
@@ -38,13 +38,6 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   function openSettings() {
     history.push('/settings');
   }
-
-  const [currentVersion, setCurrentVersion] = useState();
-  useEffect(() => {
-    tooljetService.fetchMetaData().then((data) => {
-      setCurrentVersion(data.installed_version);
-    });
-  }, []);
 
   return (
     <header className="navbar tabbed-navbar navbar-expand-md navbar-light d-print-none">
@@ -101,9 +94,6 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               </Link>
               <Link data-testid="logoutBtn" to="#" onClick={logout} className="dropdown-item" data-cy="logout-link">
                 Logout
-              </Link>
-              <Link to="#" className="dropdown-item" style={{ color: 'grey', pointerEvents: 'none' }}>
-                v{currentVersion}
               </Link>
             </div>
           </div>
