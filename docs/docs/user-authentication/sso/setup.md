@@ -3,8 +3,11 @@ id: setup
 title: Setup
 ---
 
-# Configure Open-Id Single Sign-on
+# Configure OpenId Connect Single Sign-on
 
+:::note
+<b>NOTE: This feature is available only for enterprise edition.</b>
+:::
 - Select `Manage SSO` from workspace options
 
 <div style={{textAlign: 'center'}}>
