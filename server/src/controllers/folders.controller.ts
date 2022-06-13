@@ -35,14 +35,12 @@ export class FoldersController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(@User() user, @Param('id') id, @Body() body: any) {
+  async update(@User() user, @Param('id') id, @Body('name') folderName: string) {
     const ability = await this.foldersAbilityFactory.folderActions(user, {});
 
     if (!ability.can('updateFolder', Folder)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const folderName = body.name;
-
     const folder = await this.foldersService.update(id, folderName);
     return decamelizeKeys(folder);
   }
