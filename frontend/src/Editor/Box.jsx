@@ -43,6 +43,7 @@ import { CustomComponent } from './Components/CustomComponent/CustomComponent';
 import { VerticalDivider } from './Components/verticalDivider';
 import { PDF } from './Components/PDF';
 import { ColorPicker } from './Components/ColorPicker';
+import { Steps } from './Components/Steps';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { resolveProperties, resolveStyles, resolveGeneralProperties } from './component-properties-resolution';
@@ -92,6 +93,7 @@ const AllComponents = {
   VerticalDivider,
   PDF,
   ColorPicker,
+  Steps,
 };
 
 export const Box = function Box({
