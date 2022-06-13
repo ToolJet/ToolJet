@@ -48,13 +48,9 @@ export const Tabs = function Tabs({
     console.log(err);
   }
 
-  const computedStyles = {
-    height,
-    display: parsedWidgetVisibility ? 'flex' : 'none',
-  };
-
   const parentRef = useRef(null);
   const [currentTab, setCurrentTab] = useState(parsedDefaultTab);
+  const [bgColor, setBgColor] = useState('white');
 
   useEffect(() => {
     setCurrentTab(parsedDefaultTab);
@@ -62,18 +58,27 @@ export const Tabs = function Tabs({
 
   useEffect(() => {
     setExposedVariable('currentTab', currentTab);
+    const currentTabData = parsedTabs.filter((tab) => tab.id === currentTab);
+    setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : 'white');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab]);
 
   return (
-    <div data-disabled={parsedDisabledState} className="jet-tabs card" style={computedStyles}>
-      <ul className="nav nav-tabs" data-bs-toggle="tabs" style={{ display: parsedHideTabs && 'none' }}>
+    <div
+      data-disabled={parsedDisabledState}
+      className="jet-tabs card"
+      style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor }}
+    >
+      <ul
+        className="nav nav-tabs"
+        data-bs-toggle="tabs"
+        style={{ display: parsedHideTabs && 'none', backgroundColor: '#fff', margin: '-1px' }}
+      >
         {parsedTabs.map((tab) => (
           <li className="nav-item" onClick={() => setCurrentTab(tab.id)} key={tab.id}>
             <a
               className={`nav-link ${currentTab == tab.id ? 'active' : ''}`}
               style={{
-                backgroundColor: `${tab?.backgroundColor && tab?.backgroundColor}`,
                 color: currentTab == tab.id && parsedHighlightColor,
                 borderBottom: currentTab == tab.id && `1px solid ${parsedHighlightColor}`,
               }}
@@ -97,6 +102,7 @@ export const Tabs = function Tabs({
             removeComponent={removeComponent}
             containerCanvasWidth={width}
             parentComponent={component}
+            style={{ backgroundColor: 'red' }}
           />
           <SubCustomDragLayer
             parent={id}
