@@ -117,7 +117,7 @@ export const Tabs = function Tabs({
               {...containerProps}
               parentRef={parentRef}
               removeComponent={removeComponent}
-              containerCanvasWidth={width}
+              containerCanvasWidth={width - 4}
               parentComponent={component}
             />
           </div>
