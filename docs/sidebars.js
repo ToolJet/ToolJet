@@ -201,10 +201,10 @@ const sidebars = {
             'user-authentication/sso/google',
              {
           type: 'category',
-          label: 'Open-Id',
+          label: 'OpenId Connect',
           link: {
             type: 'generated-index',
-            title: 'Open-Id',
+            title: 'OpenId Connect',
             description:" ",
             keywords: ['okta','openid','azureAD'],
           },
