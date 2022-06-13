@@ -129,6 +129,7 @@ const sidebars = {
         'widgets/spinner',
         'widgets/star',
         'widgets/statistics',
+        'widgets/steps',
         'widgets/table',
         'widgets/tabs',
         'widgets/tags',
