@@ -115,6 +115,7 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
             fireEvent={fireEvent}
             setExposedVariable={setExposedVariable}
             updateCardProperty={updateCardProperty}
+            boardHeight={height}
           />
         ))}
       </DragDropContext>

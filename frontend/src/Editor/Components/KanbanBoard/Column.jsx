@@ -14,11 +14,12 @@ const Column = ({
   fireEvent,
   setExposedVariable,
   updateCardProperty,
+  boardHeight,
 }) => {
   const styles = {
     overflowX: 'hidden',
     overflowY: 'hidden',
-    maxHeight: 350,
+    maxHeight: boardHeight - 80,
   };
 
   const cards = group['cards'];
