@@ -5,6 +5,7 @@ import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { App } from 'src/entities/app.entity';
 import { Thread } from 'src/entities/thread.entity';
+import { Comment } from 'src/entities/comment.entity';
 
 export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -47,7 +48,7 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
 
     //merge or delete same users
     const deletedUsers = [];
-    void (async () => {
+    await (async () => {
       for (const user of users) {
         if (!deletedUsers.includes(user.id) && !user.invitationToken) {
           const { email } = user;
@@ -81,7 +82,7 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
     const onlyInLeft = (left: any, right: any, compareFunction) =>
       left.filter((leftValue: any) => !right.some((rightValue: any) => compareFunction(leftValue, rightValue)));
 
-    void (async () => {
+    await (async () => {
       for (const deletingUser of usersToDelete) {
         if (!deletingUser.invitationToken) {
           const onlyInDeleteUserOrgs = onlyInLeft(
@@ -91,8 +92,8 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
           );
 
           if (onlyInDeleteUserOrgs.length > 0) {
-            // map other org to original user
-            void (async () => {
+            // map other orgs to original user
+            await (async () => {
               for (const orgnizationUser of onlyInDeleteUserOrgs) {
                 await entityManager.update(OrganizationUser, orgnizationUser.id, {
                   user: originalUser,
@@ -115,7 +116,10 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
           );
 
           //threads
-          await this.migrateThreads(entityManager, deletingUser.id, originalUser.id);
+          await this.migrateThreads(entityManager, deletingUser.id, originalUser);
+
+          //comments
+          await this.migrateComments(entityManager, deletingUser.id, originalUser);
         }
 
         //delete duplicate user
@@ -126,7 +130,7 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
 
   private async migrateUserGroupPermissions(entityManager: EntityManager, deletingUser: User, originalUser: User) {
     const origin_user_permissions = await originalUser.groupPermissions;
-    void (async () => {
+    await (async () => {
       for (const userGroupPermission of deletingUser.userGroupPermissions) {
         const deleting_group_permission = userGroupPermission.groupPermission;
         const original_group_permission = await this.checkPermissionIsExisted(
@@ -142,13 +146,27 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
     })();
   }
 
-  private async migrateThreads(entityManager: EntityManager, deletingUserId: string, originalUserId: string) {
-    return await entityManager.connection
-      .createQueryBuilder()
-      .update(Thread)
-      .set({ userId: originalUserId })
-      .where({ id: deletingUserId })
-      .execute();
+  private async migrateThreads(entityManager: EntityManager, deletingUserId: string, originalUser: User) {
+    const threads = await entityManager.find(Thread, { userId: deletingUserId });
+    return await Promise.all(
+      threads.map(async (thread) => {
+        await entityManager.update(Thread, thread.id, {
+          user: originalUser,
+        });
+      })
+    );
+  }
+
+  //error here
+  private async migrateComments(entityManager: EntityManager, deletingUserId: string, originalUser: User) {
+    const comments = await entityManager.find(Comment, { userId: deletingUserId });
+    return await Promise.all(
+      comments.map(async (comment) => {
+        await entityManager.update(Comment, comment.id, {
+          user: originalUser,
+        });
+      })
+    );
   }
 
   private async updateUserGroupPermission(entityManager: EntityManager, userGroupPermissionId: string, userId: string) {
