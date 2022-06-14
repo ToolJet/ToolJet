@@ -9,8 +9,8 @@ export default class Athena implements QueryService {
       sql: queryOptions.query,
       db: sourceOptions.database,
       ...(queryOptions.pagination?.length > 0 && { pagination: queryOptions.pagination }),
-      ...(queryOptions?.nextToken?.length > 0 && { getStats: queryOptions.nextToken }),
-      ...(queryOptions?.queryExecutionId?.length > 0 && { pagination: queryOptions.queryExecutionId }),
+      ...(queryOptions?.nextToken?.length > 0 && { nextToken: queryOptions.nextToken }),
+      ...(queryOptions?.queryExecutionId?.length > 0 && { queryExecutionId: queryOptions.queryExecutionId }),
     };
 
     try {
