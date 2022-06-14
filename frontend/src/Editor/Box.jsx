@@ -43,6 +43,7 @@ import { CustomComponent } from './Components/CustomComponent/CustomComponent';
 import { VerticalDivider } from './Components/verticalDivider';
 import { PDF } from './Components/PDF';
 import { ColorPicker } from './Components/ColorPicker';
+import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import { Steps } from './Components/Steps';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
@@ -93,6 +94,7 @@ const AllComponents = {
   VerticalDivider,
   PDF,
   ColorPicker,
+  KanbanBoard,
   Steps,
 };
 
