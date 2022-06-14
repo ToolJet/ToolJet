@@ -2,7 +2,7 @@ import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@to
 import { SourceOptions, QueryOptions } from './types';
 
 export default class Athena implements QueryService {
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     let result = {};
     const athenaClient = await this.getConnection(sourceOptions);
     const myQuery = {
@@ -29,7 +29,7 @@ export default class Athena implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const athenaClient = await this.getConnection(sourceOptions);
     try {
-      await athenaClient.query('SHOW DATABASES');
+      await athenaClient.query('SHOW TABLES');
     } catch (error) {
       throw new Error(error);
     }
@@ -37,7 +37,7 @@ export default class Athena implements QueryService {
       status: 'ok',
     };
   }
-  async getConnection(sourceOptions: SourceOptions, queryOptions?: QueryOptions): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions): Promise<any> {
     const AthenaExpress = require('athena-express'),
       AWS = require('aws-sdk'),
       awsCredentials = {
