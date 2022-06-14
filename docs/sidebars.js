@@ -115,6 +115,7 @@ const sidebars = {
         'widgets/file-picker',
         'widgets/iframe',
         'widgets/image',
+        'widgets/kanban',
         'widgets/listview',
         'widgets/map',
         'widgets/modal',
@@ -192,6 +193,7 @@ const sidebars = {
       },
       collapsed: true,
       items: [
+        'user-authentication/user-lifecycle',
         'user-authentication/general-settings',
         'user-authentication/password-login',
         {
@@ -200,6 +202,22 @@ const sidebars = {
           items: [
             'user-authentication/sso/github',
             'user-authentication/sso/google',
+             {
+          type: 'category',
+          label: 'OpenId Connect',
+          link: {
+            type: 'generated-index',
+            title: 'OpenId Connect',
+            description:" ",
+            keywords: ['okta','openid','azureAD'],
+          },
+          collapsed: false,
+          items: [
+            'user-authentication/sso/setup',
+            'user-authentication/sso/okta',
+            'user-authentication/sso/azuread',
+          ],
+        }
           ],
         },
       ],
