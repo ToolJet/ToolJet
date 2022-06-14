@@ -8,6 +8,7 @@ import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+import { ConfigService } from '@nestjs/config';
 const uuid = require('uuid');
 
 @Injectable()
@@ -16,7 +17,8 @@ export class OrganizationUsersService {
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
     private usersService: UsersService,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private configService: ConfigService
   ) {}
 
   async findOrganization(id: string): Promise<OrganizationUser> {
@@ -79,7 +81,10 @@ export class OrganizationUsersService {
         status: 'invited',
         invitationToken,
       });
-      await manager.update(User, organizationUser.userId, { password: uuid.v4() });
+
+      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+        await manager.update(User, organizationUser.userId, { password: uuid.v4() });
+      }
     });
 
     const updatedUser = await this.usersService.findOne(organizationUser.userId);
@@ -102,8 +107,8 @@ export class OrganizationUsersService {
     return true;
   }
 
-  async activate(user: OrganizationUser) {
-    await this.organizationUsersRepository.update(user.id, {
+  async activate(organizationUser: OrganizationUser) {
+    await this.organizationUsersRepository.update(organizationUser.id, {
       status: 'active',
     });
   }

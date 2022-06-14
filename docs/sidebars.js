@@ -193,6 +193,7 @@ const sidebars = {
       },
       collapsed: true,
       items: [
+        'user-authentication/user-lifecycle',
         'user-authentication/general-settings',
         'user-authentication/password-login',
         {
