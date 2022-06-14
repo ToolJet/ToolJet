@@ -123,36 +123,36 @@ export class AuthService {
       await this.usersService.updateDefaultOrganization(user, organization.id);
     }
 
-      await this.auditLoggerService.perform({
-        request,
-        userId: user.id,
-        organizationId: organization.id,
-        resourceId: user.id,
-        resourceType: ResourceTypes.USER,
-        resourceName: user.email,
-        actionType: ActionTypes.USER_LOGIN,
-      });
+    await this.auditLoggerService.perform({
+      request,
+      userId: user.id,
+      organizationId: organization.id,
+      resourceId: user.id,
+      resourceType: ResourceTypes.USER,
+      resourceName: user.email,
+      actionType: ActionTypes.USER_LOGIN,
+    });
 
-      const payload = {
-        username: user.id,
-        sub: user.email,
-        organizationId: user.organizationId,
-        isPasswordLogin: true,
-      };
+    const payload = {
+      username: user.id,
+      sub: user.email,
+      organizationId: user.organizationId,
+      isPasswordLogin: true,
+    };
 
-      return decamelizeKeys({
-        id: user.id,
-        auth_token: this.jwtService.sign(payload),
-        email: user.email,
-        first_name: user.firstName,
-        last_name: user.lastName,
-        avatar_id: user.avatarId,
-        organizationId: user.organizationId,
-        organization: organization.name,
-        admin: await this.usersService.hasGroup(user, 'admin'),
-        group_permissions: await this.usersService.groupPermissions(user),
-        app_group_permissions: await this.usersService.appGroupPermissions(user),
-      });
+    return decamelizeKeys({
+      id: user.id,
+      auth_token: this.jwtService.sign(payload),
+      email: user.email,
+      first_name: user.firstName,
+      last_name: user.lastName,
+      avatar_id: user.avatarId,
+      organizationId: user.organizationId,
+      organization: organization.name,
+      admin: await this.usersService.hasGroup(user, 'admin'),
+      group_permissions: await this.usersService.groupPermissions(user),
+      app_group_permissions: await this.usersService.appGroupPermissions(user),
+    });
   }
 
   async createCRMUser(user): Promise<boolean> {
