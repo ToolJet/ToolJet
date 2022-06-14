@@ -11,11 +11,8 @@ export default class Athena implements QueryService {
     };
 
     try {
-      console.log(
-        JSON.stringify(myQuery, (_, myQuery) => (typeof myQuery === 'bigint' ? myQuery.toString() : myQuery))
-      );
-      result = await athenaClient.query(this.toObject(myQuery));
-      console.log('result ::: ', result);
+      const data = await athenaClient.query(myQuery);
+      result = this.toJson(data);
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
     }
@@ -29,7 +26,7 @@ export default class Athena implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const athenaClient = await this.getConnection(sourceOptions);
     try {
-      await athenaClient.query('SHOW TABLES');
+      await athenaClient.query('SHOW DATABASES');
     } catch (error) {
       throw new Error(error);
     }
@@ -58,9 +55,9 @@ export default class Athena implements QueryService {
     const athenaExpress = new AthenaExpress(athenaExpressConfig);
     return athenaExpress;
   }
-  private toObject(data) {
-    const val = typeof data === 'bigint' ? data.toString() : data;
-    const newVal = JSON.parse(JSON.stringify(val));
-    return newVal;
+  private toJson(data) {
+    return JSON.parse(
+      JSON.stringify(data, (_, v) => (typeof v === 'bigint' ? `${v}n` : v)).replace(/"(-?\d+)n"/g, (_, a) => a)
+    );
   }
 }
