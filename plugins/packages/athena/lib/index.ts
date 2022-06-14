@@ -41,6 +41,28 @@ export default class Athena implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
+    const AthenaExpress = require('athena-express'),
+      AWS = require('aws-sdk'),
+      awsCredentials = {
+        region: sourceOptions.region,
+        accessKeyId: sourceOptions.access_key,
+        secretAccessKey: sourceOptions.secret_key,
+      };
+
+    AWS.config.update(awsCredentials);
+
+    const athenaExpressConfig = {
+      aws: AWS,
+      getStats: true,
+      db: sourceOptions.database,
+    };
+
+    const athenaExpress = new AthenaExpress(athenaExpressConfig);
+    try {
+      await athenaExpress.query('SHOW TABLES');
+    } catch (error) {
+      throw new Error(error);
+    }
     return {
       status: 'ok',
     };
