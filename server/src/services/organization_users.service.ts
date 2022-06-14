@@ -66,7 +66,13 @@ export class OrganizationUsersService {
       where: { id, organizationId: user.organizationId },
       relations: ['user', 'organization'],
     });
-    if (organizationUser.status !== 'archived') return;
+
+    if (!(organizationUser && organizationUser.organization && organizationUser.user)) {
+      throw new BadRequestException('User not exist');
+    }
+    if (organizationUser.status !== 'archived') {
+      throw new BadRequestException('User status must be archived to unarchive');
+    }
 
     const invitationToken = uuid.v4();
 
@@ -78,11 +84,11 @@ export class OrganizationUsersService {
     }
 
     await this.emailService.sendOrganizationUserWelcomeEmail(
-      organizationUser?.user?.email,
-      organizationUser?.user?.firstName,
+      organizationUser.user.email,
+      organizationUser.user.firstName,
       user.firstName,
       invitationToken,
-      organizationUser?.organization?.name
+      organizationUser.organization.name
     );
 
     return;
