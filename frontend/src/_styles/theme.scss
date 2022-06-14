@@ -5320,6 +5320,120 @@ div#driver-page-overlay {
     }
   }
 }
+
+
+//Kanban board
+
+.kanban-container.dark-themed {
+  background-color: $bg-dark-light !important;
+  .kanban-column {
+    .card-header {
+      background-color: #324156 !important;
+    }
+  }
+}
+
+.kanban-container {
+  background-color: #fefefe;
+  
+  .kanban-column {
+    background-color: #f4f4f4;
+    padding: 0 !important;
+    height: fit-content !important;
+    
+   .card-body {
+    &:hover {
+      overflow-y: auto !important;
+      &::-webkit-scrollbar {
+        width: 0 !important;
+        height: 0 !important;
+      }
+    }
+   }
+    
+    .card-header {
+      background-color: #fefefe;
+      
+      .badge {
+        font-size: 12px !important;
+      }
+    }
+
+    .card-body .dnd-card {
+      border-radius: 5px !important;
+    }
+    .dnd-card.card {
+      height: 52px !important;
+      padding: 5px !important;
+    }
+    .dnd-card.card.card-dark {
+      background-color: $bg-dark !important;
+    }
+  }
+
+  .kanban-board-add-group {
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.5);
+    background-color: transparent;
+    border-style: dashed;
+    border-color: rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    grid-auto-rows: max-content;
+    overflow: hidden;
+    box-sizing: border-box;
+    appearance: none;
+    outline: none;
+    margin: 10px;
+    border-radius: 5px;
+    min-width: 350px;
+    height: 200px;
+    font-size: 1em;
+  }
+  .add-card-btn {
+    font-size: 1em;
+    font-weight: 400;
+    color: #3e525b;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 5px;
+    background-color: transparent;
+    border-style: dashed;
+    border-color: rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    &:hover {
+      background-color: #e6e6e6;
+    }
+  }
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+.cursor-text {
+  cursor: text;
+}
+
+.bade-component {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    user-select: none;
+    padding: calc(0.25rem - 1px) 0.25rem;
+    height: 1.25rem;
+    border: 1px solid transparent;
+    min-width: 1.25rem;
+    font-weight: 600;
+    font-size: .625rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    vertical-align: bottom;
+    border-radius: 4px;
+}
 // sso-helper-page
 .sso-helper-container{
   width: 60vw;
