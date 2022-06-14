@@ -9,7 +9,7 @@
   },
   "properties": {
     "mode": {
-      "label": "",
+      "label": "Query",
       "key": "mode",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for mode",
@@ -26,6 +26,39 @@
         "type": "codehinter",
         "description": "Enter query",
         "height": "150px"
+      },
+      "Pagination": {
+        "label": "Pagination",
+        "key": "pagination",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter pagination number",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "10"
+      },
+      "NextToken": {
+        "label": "NextToken",
+        "key": "nextToken",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter NextToken",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "ARfCDXRjMkQsR1NWziK1ARgiip3umf3q0/bZmNZWeQxUDc7iSToT7uJHy2yo8nL5FyxQoIIkuPh/zDD51xld7SoALA+zhMhpZg=="
+      },
+      "QueryExecutionId": {
+        "label": "QueryExecutionId",
+        "key": "queryExecutionId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter QueryExecutionId",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "c274843b-4c5c-4ccf-ac8b-e33d595b927d"
       }
     }
   }

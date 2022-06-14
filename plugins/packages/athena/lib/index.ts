@@ -8,6 +8,9 @@ export default class Athena implements QueryService {
     const myQuery = {
       sql: queryOptions.query,
       db: sourceOptions.database,
+      ...(queryOptions.pagination?.length > 0 && { pagination: queryOptions.pagination }),
+      ...(queryOptions.nextToken && { getStats: queryOptions.nextToken }),
+      ...(queryOptions.queryExecutionId && { pagination: queryOptions.queryExecutionId }),
     };
 
     try {
@@ -47,7 +50,6 @@ export default class Athena implements QueryService {
 
     const athenaExpressConfig = {
       aws: AWS,
-      getStats: true,
       db: sourceOptions.database,
       ...(sourceOptions.output_location?.length > 0 && { s3: sourceOptions.output_location }),
     };
