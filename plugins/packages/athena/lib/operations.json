@@ -39,22 +39,22 @@
         "placeholder": "10"
       },
       "NextToken": {
-        "label": "NextToken",
+        "label": "Next token",
         "key": "nextToken",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter NextToken",
+        "description": "Enter next token",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "ARfCDXRjMkQsR1NWziK1ARgiip3umf3q0/bZmNZWeQxUDc7iSToT7uJHy2yo8nL5FyxQoIIkuPh/zDD51xld7SoALA+zhMhpZg=="
       },
       "QueryExecutionId": {
-        "label": "QueryExecutionId",
+        "label": "Query execution id",
         "key": "queryExecutionId",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter QueryExecutionId",
+        "description": "Enter query execution id",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
