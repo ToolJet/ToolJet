@@ -31,12 +31,13 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  async findByEmail(email: string, organisationId?: string): Promise<User> {
+  async findByEmail(email: string, organisationId?: string, status?: string | Array<string>): Promise<User> {
     if (!organisationId) {
       return this.usersRepository.findOne({
         where: { email },
       });
     } else {
+      const statusList = status ? (typeof status === 'object' ? status : [status]) : ['active', 'invited', 'archived'];
       return await createQueryBuilder(User, 'users')
         .innerJoinAndSelect(
           'users.organizationUsers',
@@ -44,7 +45,9 @@ export class UsersService {
           'organization_users.organizationId = :organisationId',
           { organisationId }
         )
-        .where('organization_users.status = :active', { active: 'active' })
+        .where('organization_users.status IN(:...statusList)', {
+          statusList,
+        })
         .andWhere('users.email = :email', { email })
         .getOne();
     }
@@ -113,11 +116,6 @@ export class UsersService {
         }
       }
     });
-  }
-
-  async status(user: User) {
-    const orgUser = await this.organizationUsersRepository.findOne({ where: { user } });
-    return orgUser.status;
   }
 
   async findOrCreateByEmail(userParams: any, organizationId: string): Promise<{ user: User; newUserCreated: boolean }> {
