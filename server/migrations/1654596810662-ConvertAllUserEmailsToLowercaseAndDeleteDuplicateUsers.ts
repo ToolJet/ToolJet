@@ -24,16 +24,14 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
       .leftJoinAndSelect('users.organizationUsers', 'organizationUsers')
       .leftJoinAndSelect('users.apps', 'apps')
       .leftJoinAndSelect('users.groupPermissions', 'groupPermissions')
-      .leftJoinAndSelect('groupPermissions.appGroupPermission', 'appGroupPermission')
-      .leftJoinAndSelect('groupPermissions.userGroupPermission', 'userGroupPermission');
+      .leftJoinAndSelect('users.userGroupPermissions', 'userGroupPermissions')
+      .leftJoinAndSelect('userGroupPermissions.groupPermission', 'groupPermission');
 
     const users = await usersQuery.getMany();
 
     //change all email addresses to lowercase
     await Promise.all(
       users.map(async (user) => {
-        console.log(user);
-
         const { id, email } = user;
         if (!this.isUpper(email)) {
           await entityManager.update(
@@ -75,13 +73,6 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
         columnNames: ['email'],
       })
     );
-
-    const us = await usersQuery.getMany();
-    for (const user of us) {
-      console.log(user);
-    }
-
-    throw Error('');
   }
 
   private async migrateUsers(originalUser: User, usersToDelete: User[], entityManager: EntityManager) {
@@ -98,10 +89,8 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
             organizationUsers,
             isSameOrganization
           );
-          if (onlyInDeleteUserOrgs.length <= 0) {
-            //check if the deleting user has the admin privillages
-            await this.migratePermissions(entityManager, originalUser, deletingUser);
-          } else {
+
+          if (onlyInDeleteUserOrgs.length > 0) {
             // map other org to original user
             void (async () => {
               for (const orgnizationUser of onlyInDeleteUserOrgs) {
@@ -110,8 +99,11 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
                 });
               }
             })();
-            await this.migratePermissions(entityManager, originalUser, deletingUser);
           }
+
+          //user group permissions
+          await this.migrateUserGroupPermissions(entityManager, deletingUser, originalUser);
+
           //apps
           await Promise.all(
             deletingUser.apps.map(
@@ -132,6 +124,24 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
     })();
   }
 
+  private async migrateUserGroupPermissions(entityManager: EntityManager, deletingUser: User, originalUser: User) {
+    const origin_user_permissions = await originalUser.groupPermissions;
+    void (async () => {
+      for (const userGroupPermission of deletingUser.userGroupPermissions) {
+        const deleting_group_permission = userGroupPermission.groupPermission;
+        const original_group_permission = await this.checkPermissionIsExisted(
+          origin_user_permissions,
+          deleting_group_permission.organizationId,
+          deleting_group_permission.group
+        );
+
+        if (!original_group_permission) {
+          await this.updateUserGroupPermission(entityManager, userGroupPermission.id, originalUser.id);
+        }
+      }
+    })();
+  }
+
   private async migrateThreads(entityManager: EntityManager, deletingUserId: string, originalUserId: string) {
     return await entityManager.connection
       .createQueryBuilder()
@@ -141,75 +151,29 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
       .execute();
   }
 
-  private isUpper(str: string) {
-    return !/[a-z]/.test(str) && /[A-Z]/.test(str);
-  }
-
-  private async checkIfUserHasAdminPrivilege(user: User): Promise<GroupPermission> {
-    const permissions = await user.groupPermissions;
-    let adminPermission = null;
-    permissions.map((permission) => {
-      if (permission.group === 'admin') {
-        adminPermission = permission;
-        return;
-      }
-    });
-    return adminPermission;
-  }
-
-  private async getNonDefaultGroupsIfExisted(group_permissions: GroupPermission[]) {
-    const groups = [];
-    const defualts = ['admin', 'all_users'];
-    group_permissions.map((group_permission) => {
-      if (!defualts.includes(group_permission.group)) {
-        groups.push(group_permission);
-      }
-    });
-    return groups;
-  }
-
-  private async updateUserGroupPermissions(
-    entityManager: EntityManager,
-    user_permissions: UserGroupPermission[],
-    originalUserId: string
-  ) {
-    return await Promise.all(
-      user_permissions.map(
-        async (user_group) =>
-          await entityManager.update(UserGroupPermission, user_group.id, {
-            userId: originalUserId,
-          })
-      )
+  private async updateUserGroupPermission(entityManager: EntityManager, userGroupPermissionId: string, userId: string) {
+    return await entityManager.update(
+      UserGroupPermission,
+      {
+        id: userGroupPermissionId,
+      },
+      { userId }
     );
   }
 
-  private async migratePermissions(entityManager: EntityManager, originalUser: User, deletingUser: User) {
-    const deleteUserAdminPermission = await this.checkIfUserHasAdminPrivilege(originalUser);
-    const originalUserAdminPermission = await this.checkIfUserHasAdminPrivilege(deletingUser);
-
-    if (deleteUserAdminPermission && !originalUserAdminPermission) {
-      //transfer admin privillages to original user
-      return await this.updateUserGroupPermissions(
-        entityManager,
-        deleteUserAdminPermission.userGroupPermission,
-        originalUser.id
-      );
-    } else {
-      //check if both users havn't the admin privillages
-      if (!deleteUserAdminPermission && !originalUserAdminPermission) {
-        //then check if the deleting user has any new group permissions existed, then merge to original user
-        const other_permissions = await this.getNonDefaultGroupsIfExisted(await deletingUser.groupPermissions);
-        return await Promise.all(
-          other_permissions.map(async (group_permission: GroupPermission) => {
-            return await this.updateUserGroupPermissions(
-              entityManager,
-              group_permission.userGroupPermission,
-              originalUser.id
-            );
-          })
-        );
+  private async checkPermissionIsExisted(permissions: GroupPermission[], organizationId: string, group: string) {
+    let group_permission: GroupPermission = null;
+    permissions.map((permission) => {
+      if (permission.organizationId === organizationId && permission.group === group) {
+        group_permission = permission;
+        return;
       }
-    }
+    });
+    return group_permission;
+  }
+
+  private isUpper(str: string) {
+    return !/[a-z]/.test(str) && /[A-Z]/.test(str);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
