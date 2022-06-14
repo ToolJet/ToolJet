@@ -81,7 +81,12 @@ export const RedirectSso = function RedirectSso() {
                     </p>
                     <p>
                       Please login with password and you can setup sso using workspace
-                      <a href="https://docs.tooljet.com/docs/category/single-sign-on">Manage SSO menu.</a>
+                      <a
+                        href="https://docs.tooljet.com/docs/user-authentication/general-settings"
+                        style={{ marginLeft: '4px' }}
+                      >
+                        Manage SSO menu.
+                      </a>
                     </p>
                   </div>
                 </>
@@ -111,7 +116,10 @@ export const RedirectSso = function RedirectSso() {
                       ) : (
                         <p>
                           Please login with password and you can setup sso using workspace
-                          <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/category/single-sign-on">
+                          <a
+                            style={{ marginLeft: '4px' }}
+                            href="https://docs.tooljet.com/docs/user-authentication/general-settings"
+                          >
                             Manage SSO menu.
                           </a>
                         </p>
