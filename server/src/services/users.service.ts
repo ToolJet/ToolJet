@@ -155,10 +155,11 @@ export class UsersService {
     // removing keys with undefined values
     cleanObject(updatableParams);
 
-    await this.updateUser(userId, updatableParams);
-    const user = await this.findOne(userId);
+    let user: User;
 
     const performUpdateInTransaction = async (manager) => {
+      await manager.update(User, userId, updatableParams);
+      user = await manager.findOne(User, { where: { id: userId } });
       await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups, organizationId);
       await this.addUserGroupPermissions(manager, user, addGroups, organizationId);
     };
