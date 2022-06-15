@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  tooljet:
+    tty: true
+    stdin_open: true
+    image: tooljet/try:latest
+    restart: always
+    volumes:
+      - tooljet_data:/var/lib/postgresql/13/main
+    ports:
+      - 3000:3000
+
+volumes:
+  tooljet_data:
