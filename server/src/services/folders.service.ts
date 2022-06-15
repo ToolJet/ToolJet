@@ -321,7 +321,9 @@ export class FoldersService {
 
     folder.folderApps.map((folderApp: FolderApp) => {
       if (!allViewableAppIds.includes(folderApp.appId)) {
-        throw new ForbiddenException('You do not have permissions to perform this action');
+        throw new ForbiddenException(
+          'Applications not authorised for you are included in the folder, please contact administrator to remove them and try again'
+        );
       }
     });
     return await this.foldersRepository.delete({ id, organizationId: user.organizationId });

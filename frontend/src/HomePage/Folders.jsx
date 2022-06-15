@@ -54,7 +54,7 @@ export const Folders = function Folders({
     if (validateName()) {
       setCreationStatus(true);
       folderService.create(newFolderName).then(() => {
-        toast.success('folder created.', {
+        toast.success('Folder created.', {
           position: 'top-center',
         });
         setCreationStatus(false);
@@ -86,7 +86,7 @@ export const Folders = function Folders({
     folderService
       .deleteFolder(deletingFolder.id)
       .then(() => {
-        toast.success('folder has been deleted.', {
+        toast.success('Folder has been deleted.', {
           position: 'top-center',
         });
         setShowDeleteConfirmation(false);
@@ -106,8 +106,8 @@ export const Folders = function Folders({
   }
 
   function validateName() {
-    if (!newFolderName || !newFolderName.trim()) {
-      toast.error("folder name can't be empty.", {
+    if (!newFolderName?.trim()) {
+      toast.error("Folder name can't be empty.", {
         position: 'top-center',
       });
       return false;
