@@ -48,20 +48,29 @@ export class OauthService {
   }
 
   async #findOrCreateUser({ firstName, lastName, email }: UserResponse, organization: Organization): Promise<User> {
-    const { user, newUserCreated } = await this.usersService.findOrCreateByEmail(
-      { firstName, lastName, email },
-      organization.id
-    );
+    const existingUser = await this.usersService.findByEmail(email, organization.id, ['active', 'invited']);
+    const organizationUser = existingUser?.organizationUsers?.[0];
 
-    if (newUserCreated) {
-      const organizationUser = await this.organizationUsersService.create(user, organization);
-      await this.organizationUsersService.activate(organizationUser);
+    if (!organizationUser) {
+      // User not exist in the workspace
+      const { user, newUserCreated } = await this.usersService.findOrCreateByEmail(
+        { firstName, lastName, email },
+        organization.id
+      );
+
+      if (newUserCreated) {
+        const organizationUser = await this.organizationUsersService.create(user, organization);
+        await this.organizationUsersService.activate(organizationUser);
+      }
+      return user;
+    } else {
+      if (organizationUser.status !== 'active') await this.organizationUsersService.activate(organizationUser);
+      return existingUser;
     }
-    return user;
   }
 
   async #findAndActivateUser(email: string, organizationId: string): Promise<User> {
-    const user = await this.usersService.findByEmail(email, organizationId);
+    const user = await this.usersService.findByEmail(email, organizationId, ['active', 'invited']);
     if (!user) {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
@@ -70,7 +79,7 @@ export class OauthService {
     if (!organizationUser) {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
-    if (organizationUser.status != 'active') await this.organizationUsersService.activate(organizationUser);
+    if (organizationUser.status !== 'active') await this.organizationUsersService.activate(organizationUser);
     return user;
   }
 
