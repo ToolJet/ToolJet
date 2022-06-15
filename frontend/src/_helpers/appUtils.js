@@ -167,7 +167,7 @@ function logoutAction(_ref) {
 
   return Promise.resolve();
 }
-function executeAction(_ref, event, mode, customVariables) {
+export const executeAction = (_ref, event, mode, customVariables) => {
   console.log('nopski', customVariables);
   if (event) {
     switch (event.actionId) {
@@ -315,7 +315,7 @@ function executeAction(_ref, event, mode, customVariables) {
       }
     }
   }
-}
+};
 
 export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;

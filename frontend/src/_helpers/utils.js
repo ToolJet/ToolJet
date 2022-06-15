@@ -3,7 +3,7 @@ import moment from 'moment';
 import _ from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
-import { previewQuery, runQuery } from '@/_helpers/appUtils';
+import { previewQuery, executeAction } from '@/_helpers/appUtils';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -282,35 +282,31 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
       if (isPreview) {
         return previewQuery(_ref, query, true);
       } else {
-        return runQuery(_ref, query.id, query.name, confirmed, mode);
+        const event = {
+          actionId: 'run-query',
+          queryId: query.id,
+          queryName: query.name,
+        };
+        return executeAction(_ref, event, mode, {});
       }
     },
     setVariable: function (key = '', value = '') {
       if (key) {
-        const customAppVariables = { ..._ref.state.currentState.variables };
-        const objKey = resolveReferences(key, _ref.state.currentState, undefined, {});
-        const objValue = resolveReferences(value, _ref.state.currentState, undefined, {});
-        customAppVariables[objKey] = objValue;
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            variables: customAppVariables,
-          },
-        });
+        const event = {
+          actionId: 'set-custom-variable',
+          key,
+          value,
+        };
+        return executeAction(_ref, event, mode, {});
       }
     },
     unSetVariable: function (key = '') {
       if (key) {
-        const objKey = resolveReferences(key, _ref.state.currentState, undefined, {});
-        const customAppVariables = { ..._ref.state.currentState.variables };
-        delete customAppVariables[objKey];
-
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            variables: customAppVariables,
-          },
-        });
+        const event = {
+          actionId: 'unset-custom-variable',
+          key,
+        };
+        return executeAction(_ref, event, mode, {});
       }
     },
   };
