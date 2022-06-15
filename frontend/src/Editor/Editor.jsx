@@ -1149,6 +1149,7 @@ class Editor extends React.Component {
                     onBlur={(e) => this.saveAppName(this.state.app.id, e.target.value)}
                     className="form-control-plaintext form-control-plaintext-sm"
                     value={this.state.app.name}
+                    data-cy="app-name-input"
                   />
                   <span className="input-icon-addon">
                     <EditIcon />
