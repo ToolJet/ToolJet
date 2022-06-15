@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
 import { allSvgs } from '@tooljet/plugins/client';
 import RunjsIcon from '../Icons/runjs.svg';
+import AddIcon from '../../../assets/images/icons/add-source.svg';
 
-function DataSourceLister({ dataSources, staticDataSources, changeDataSource, handleBackButton, darkMode }) {
+function DataSourceLister({
+  dataSources,
+  staticDataSources,
+  changeDataSource,
+  handleBackButton,
+  darkMode,
+  dataSourceModalHandler,
+}) {
   const [allSources] = useState([...dataSources, ...staticDataSources]);
 
   const computedStyles = {
@@ -34,6 +42,10 @@ function DataSourceLister({ dataSources, staticDataSources, changeDataSource, ha
           </div>
         );
       })}
+      <div className="query-datasource-card" style={computedStyles} onClick={dataSourceModalHandler}>
+        <AddIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
+        <p> Add datasource</p>
+      </div>
     </div>
   );
 }
