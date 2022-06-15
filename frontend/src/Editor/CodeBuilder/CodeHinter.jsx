@@ -296,6 +296,7 @@ export function CodeHinter({
                 optionalProps={{ styles: { height: 300 }, cls: className }}
                 darkMode={darkMode}
                 selectors={{ className: 'preview-block-portal' }}
+                dragResizePortal={true}
               >
                 <CodeMirror
                   value={typeof initialValue === 'string' ? initialValue : ''}

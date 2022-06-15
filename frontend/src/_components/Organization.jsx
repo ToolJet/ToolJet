@@ -252,6 +252,7 @@ export const Organization = function Organization() {
                     fill="none"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    data-cy="workspace-arrow-icon"
                   >
                     <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                     <polyline points="9 6 15 12 9 18"></polyline>
@@ -295,7 +296,7 @@ export const Organization = function Organization() {
           <div>{organization}</div>
         </a>
         {(!isSingleOrganization || admin) && (
-          <div className="dropdown-menu end-0">
+          <div className="dropdown-menu end-0" data-cy="workspace-dropdown">
             {isListOrganizations ? getListOrganizations() : getOrganizationMenu()}
           </div>
         )}
