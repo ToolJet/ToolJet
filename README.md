@@ -77,6 +77,10 @@ You can deploy ToolJet for free using either of the one-click-deployment button 
   </a>
 </div>
 
+> Login credentials  for the deployment: <br/>
+> Email: `dev@tooljet.io` <br/>
+> Password: `password`
+
 ### Try using Docker
 Want to give ToolJet a quick spin on your local machine? You can run the following command from your terminal to have ToolJet up and running right away.
 
