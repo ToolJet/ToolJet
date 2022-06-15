@@ -5,12 +5,7 @@ services:
     tty: true
     stdin_open: true
     image: tooljet/try:latest
-    volumes:
-      - tooljet_data:/var/lib/postgresql/13/main
     ports:
       - 3000:3000
     environment:
       DEPLOYMENT_PLATFORM: "docker:pwd"
-
-volumes:
-  tooljet_data:
