@@ -21,33 +21,35 @@ function dropDatabase(): void {
     throw new Error(`Config validation error: ${error.message}`);
   }
 
-  exec('command -v dropdb', (err, _stdout, _stderr) => {
-    if (err) {
-      console.error(err);
+  const connectivityCheck = exec('command -v createdb');
+  connectivityCheck.on('exit', function (signal) {
+    if (signal === 1) {
+      console.error('Unable to connect to database');
+      process.exit(1);
+    }
+  });
+
+  const dropdb =
+    `PGPASSWORD=${envVars.PG_PASS} dropdb ` +
+    `-h ${envVars.PG_HOST} ` +
+    `-p ${envVars.PG_PORT} ` +
+    `-U ${envVars.PG_USER} ` +
+    process.env.PG_DB;
+
+  exec(dropdb, (err, _stdout, _stderr) => {
+    if (!err) {
+      console.log(`Dropped database ${envVars.PG_DB}`);
       return;
     }
 
-    const dropdb =
-      `PGPASSWORD=${envVars.PG_PASS} dropdb ` +
-      `-h ${envVars.PG_HOST} ` +
-      `-p ${envVars.PG_PORT} ` +
-      `-U ${envVars.PG_USER} ` +
-      process.env.PG_DB;
+    const errorMessage = `database "${envVars.PG_DB}" does not exist`;
 
-    exec(dropdb, (err, _stdout, _stderr) => {
-      if (!err) {
-        console.log(`Dropped database ${envVars.PG_DB}`);
-        return;
-      }
-
-      const errorMessage = `database "${envVars.PG_DB}" does not exist`;
-
-      if (err.message.includes(errorMessage)) {
-        console.log(errorMessage);
-      } else {
-        console.error(err);
-      }
-    });
+    if (err.message.includes(errorMessage)) {
+      console.log(errorMessage);
+    } else {
+      console.error(err);
+      process.exit(1);
+    }
   });
 }
 

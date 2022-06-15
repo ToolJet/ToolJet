@@ -6,11 +6,7 @@ title: Button
 
 Button widget can be used to take actions.
 
-<div style={{textAlign: 'left'}}>
-    <figure class="video_container">
-    <iframe width="630" height="400" src="https://www.youtube.com/embed/zw3yxC7WUOg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    </figure>
-</div>
+<iframe height="500"src="https://www.youtube.com/embed/zw3yxC7WUOg" title="Tooljet Button Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Properties
 ### Event: On click

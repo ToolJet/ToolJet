@@ -10,7 +10,7 @@ import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
-import { componentTypes } from '@/Editor/Components/components';
+import { componentTypes } from '@/Editor/WidgetManager/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import { allSvgs } from '@tooljet/plugins/client';
@@ -493,6 +493,12 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCalendarViewChange',
       'onSearchTextChanged',
       'onPageChange',
+      'onCardAdded',
+      'onCardRemoved',
+      'onCardMoved',
+      'onCardSelected',
+      'onCardUpdated',
+      'onTabSwitch',
     ].includes(eventName)
   ) {
     const { component } = options;

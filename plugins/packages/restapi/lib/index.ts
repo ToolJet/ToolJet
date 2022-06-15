@@ -1,7 +1,7 @@
 const urrl = require('url');
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
-import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, cleanSensitiveData } from '@tooljet-plugins/common';
 const JSON5 = require('json5');
 import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
 
@@ -93,6 +93,7 @@ export default class RestapiQueryService implements QueryService {
 
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
     const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
+    const isUrlEncoded = this.checkIfContentTypeIsURLenc(queryOptions['headers']);
 
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
@@ -142,7 +143,7 @@ export default class RestapiQueryService implements QueryService {
         ...paramsFromUrl,
         ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
       },
-      json,
+      ...(isUrlEncoded ? { form: json } : { json }),
     };
 
     if (authType === 'basic') {
@@ -185,6 +186,8 @@ export default class RestapiQueryService implements QueryService {
       }
       throw new QueryError('Query could not be completed', error.message, result);
     }
+
+    requestObject['headers'] = cleanSensitiveData(requestObject['headers'], ['authorization']);
 
     return {
       status: 'ok',
