@@ -92,9 +92,13 @@ class OrganizationInvitationPage extends React.Component {
                 </>
               ) : (
                 <>
-                  <h2 className="card-title text-center mb-4">Set up your account</h2>
+                  <h2 className="card-title text-center mb-4" data-cy="card-title">
+                    Set up your account
+                  </h2>
                   <div className="mb-3">
-                    <label className="form-label">Password</label>
+                    <label className="form-label" data-cy="password-label">
+                      Password
+                    </label>
                     <div className="input-group input-group-flat">
                       <input
                         onChange={this.handleChange}
@@ -102,12 +106,15 @@ class OrganizationInvitationPage extends React.Component {
                         type="password"
                         className="form-control"
                         autoComplete="off"
+                        data-cy="password-input"
                       />
                       <span className="input-group-text"></span>
                     </div>
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Confirm Password</label>
+                    <label className="form-label" data-cy="confirm-password-label">
+                      Confirm Password
+                    </label>
                     <div className="input-group input-group-flat">
                       <input
                         onChange={this.handleChange}
@@ -115,12 +122,13 @@ class OrganizationInvitationPage extends React.Component {
                         type="password"
                         className="form-control"
                         autoComplete="off"
+                        data-cy="confirm-password-input"
                       />
                       <span className="input-group-text"></span>
                     </div>
                   </div>
                   <div className="form-footer">
-                    <p>
+                    <p data-cy="terms-and-condition-info">
                       By clicking the button below, you agree to our{' '}
                       <a href="https://tooljet.io/terms">Terms and Conditions</a>.
                     </p>
@@ -128,6 +136,7 @@ class OrganizationInvitationPage extends React.Component {
                       className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}
                       onClick={(e) => this.acceptInvite(e, true)}
                       disabled={isLoading}
+                      data-cy="finish-setup-button"
                     >
                       Finish account setup and accept invite
                     </button>
