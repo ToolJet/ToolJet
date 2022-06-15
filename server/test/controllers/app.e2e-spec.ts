@@ -450,7 +450,7 @@ describe('Authentication', () => {
     });
   });
 
-  describe('POST /api/forgot_password', () => {
+  describe('POST /api/forgot-password', () => {
     beforeEach(async () => {
       await createUser(app, {
         email: 'admin@tooljet.io',
@@ -459,7 +459,7 @@ describe('Authentication', () => {
       });
     });
     it('should return error if required params are not present', async () => {
-      const response = await request(app.getHttpServer()).post('/api/forgot_password');
+      const response = await request(app.getHttpServer()).post('/api/forgot-password');
 
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toStrictEqual(['email should not be empty', 'email must be an email']);
@@ -470,7 +470,7 @@ describe('Authentication', () => {
       emailServiceMock.mockImplementation();
 
       const response = await request(app.getHttpServer())
-        .post('/api/forgot_password')
+        .post('/api/forgot-password')
         .send({ email: 'admin@tooljet.io' });
 
       expect(response.statusCode).toBe(201);
@@ -483,7 +483,7 @@ describe('Authentication', () => {
     });
   });
 
-  describe('POST /api/reset_password', () => {
+  describe('POST /api/reset-password', () => {
     beforeEach(async () => {
       await createUser(app, {
         email: 'admin@tooljet.io',
@@ -492,7 +492,7 @@ describe('Authentication', () => {
       });
     });
     it('should return error if required params are not present', async () => {
-      const response = await request(app.getHttpServer()).post('/api/reset_password');
+      const response = await request(app.getHttpServer()).post('/api/reset-password');
 
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toStrictEqual([
@@ -511,7 +511,7 @@ describe('Authentication', () => {
       user.forgotPasswordToken = 'token';
       await user.save();
 
-      const response = await request(app.getHttpServer()).post('/api/reset_password').send({
+      const response = await request(app.getHttpServer()).post('/api/reset-password').send({
         password: 'new_password',
         token: 'token',
       });

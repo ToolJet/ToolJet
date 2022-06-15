@@ -177,6 +177,13 @@ export class UsersService {
     return user;
   }
 
+  async updateUser(userId, updatableParams) {
+    if (updatableParams.password) {
+      updatableParams.password = bcrypt.hashSync(updatableParams.password, 10);
+    }
+    await this.usersRepository.update(userId, updatableParams);
+  }
+
   async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[], organizationId?: string) {
     const orgId = organizationId || user.defaultOrganizationId;
     if (addGroups) {

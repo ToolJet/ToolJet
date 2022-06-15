@@ -108,8 +108,8 @@ class LoginPage extends React.Component {
     this.setState({ isLoading: false });
   };
 
-  authFailureHandler = () => {
-    toast.error('Invalid email or password', {
+  authFailureHandler = (res) => {
+    toast.error(res.error || 'Invalid email or password', {
       id: 'toast-login-auth-error',
       position: 'top-center',
     });
