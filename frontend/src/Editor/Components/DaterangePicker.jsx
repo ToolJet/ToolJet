@@ -17,15 +17,10 @@ export const DaterangePicker = function DaterangePicker({
   const { borderRadius, visibility, disabledState } = styles;
   const { defaultStartDate, defaultEndDate } = properties;
   const formatProp = properties.format;
-  // eslint-disable-next-line no-unused-vars
-  const startDateProp = isEmpty(exposedVariables.startDate)
-    ? moment(defaultStartDate, formatProp)
-    : exposedVariables.startDate;
-  const endDateProp = isEmpty(exposedVariables.endDate) ? moment(defaultEndDate, formatProp) : exposedVariables.endDate;
 
   const [focusedInput, setFocusedInput] = useState(null);
   const [startDate, setStartDate] = useState(moment(defaultStartDate, formatProp));
-  const [endDate, setEndDate] = useState(endDateProp);
+  const [endDate, setEndDate] = useState(moment(defaultEndDate, formatProp));
 
   const dateRangeRef = useRef(null);
 
