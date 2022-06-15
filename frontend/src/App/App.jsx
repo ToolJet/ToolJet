@@ -44,7 +44,7 @@ class App extends React.Component {
     if (this.state.currentUser) {
       tooljetService.fetchMetaData().then((data) => {
         this.setState({ onboarded: data.onboarded });
-
+        config.currentVersion = data.installed_version;
         if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
