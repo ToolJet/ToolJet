@@ -9,4 +9,5 @@ export type QueryOptions = {
   queryOptions: string;
   queryResultsOptions: string;
   tableId: string;
+  rows: string;
 };

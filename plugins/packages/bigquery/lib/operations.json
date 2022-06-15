@@ -34,9 +34,63 @@
         {
           "value": "create_view",
           "name": "Create View"
+        },
+        {
+          "value": "insert_record",
+          "name": "Insert Record"
+        },
+        {
+          "value": "update_record",
+          "name": "Update Record"
+        },
+        {
+          "value": "delete_record",
+          "name": "Delete Record"
+        },
+        {
+          "value": "bulk_insert",
+          "name": "Bulk insert records"
+        },
+        {
+          "value": "bulk_primary_insert",
+          "name": "Bulk update via primary key"
         }
       ]
     },
+    "insert_record": {
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table id"
+      },
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter dataset id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter dataset"
+      },
+      "rows": {
+        "label": "Rows",
+        "key": "rows",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "",
+        "description": "Enter rows",
+        "height": "150px"
+      }
+    },
+
     "create_table": {
       "tableId": {
         "label": "Table id",
