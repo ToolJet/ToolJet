@@ -72,7 +72,7 @@ You can deploy ToolJet for free using either of the one-click-deployment button 
   <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main">
     <img src="https://www.herokucdn.com/deploy/button.svg" />
   </a>
-  <a href="https://raw.githubusercontent.com/ToolJet/ToolJet/chore/play-with-docker-setup/deploy/docker/play-with-docker.yml">
+  <a href="https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/ToolJet/ToolJet/chore/play-with-docker-setup/deploy/docker/play-with-docker.yml">
     <img src="https://raw.githubusercontent.com/play-with-docker/stacks/master/assets/images/button.png" alt="Try in PWD" height="32"/>
   </a>
 </div>
