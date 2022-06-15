@@ -46,11 +46,11 @@ import Spinner from '@/_ui/Spinner';
 import { AppVersionsManager } from './AppVersionsManager';
 import { SearchBoxComponent } from '@/_ui/Search';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
-import { Cursor } from './Cursor';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import RealtimeAvatars from './RealtimeAvatars';
 import InitVersionCreateModal from './InitVersionCreateModal';
+import RealtimeCursors from '@/Editor/RealtimeCursors';
 
 setAutoFreeze(false);
 enablePatches();
@@ -175,12 +175,6 @@ class Editor extends React.Component {
     if (!isEqual(prevState.appDefinition, this.state.appDefinition)) {
       computeComponentState(this, this.state.appDefinition.components);
     }
-
-    if (config.ENABLE_MULTIPLAYER_EDITING) {
-      if (this.props.othersOnSameVersion.length !== prevProps.othersOnSameVersion.length) {
-        ReactTooltip.rebuild();
-      }
-    }
   }
 
   isVersionReleased = (version = this.state.editingVersion) => {
@@ -248,6 +242,7 @@ class Editor extends React.Component {
     document.removeEventListener('mouseup', this.onMouseUp);
     document.title = 'Tooljet - Dashboard';
     this.socket && this.socket?.close();
+    if (config.ENABLE_MULTIPLAYER_EDITING) this.props?.provider?.disconnect();
   }
 
   // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
@@ -1170,16 +1165,15 @@ class Editor extends React.Component {
                 })}
                 data-cy="autosave-indicator"
               >
-                {this.state.isSaving ? <Spinner size="small" /> : 'All changes are saved'}
+                {this.state.isSaving ? (
+                  <Spinner size="small" />
+                ) : this.state.saveError ? (
+                  'Could not save changes'
+                ) : (
+                  'All changes are saved'
+                )}
               </span>
-              {config.ENABLE_MULTIPLAYER_EDITING && (
-                <RealtimeAvatars
-                  updatePresence={this.props.updatePresence}
-                  editingVersionId={this.state?.editingVersion?.id}
-                  self={this.props.self}
-                  othersOnSameVersion={this.props.othersOnSameVersion}
-                />
-              )}
+              {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
               {editingVersion && (
                 <AppVersionsManager
                   appId={appId}
@@ -1278,12 +1272,9 @@ class Editor extends React.Component {
                     backgroundColor: this.state.appDefinition.globalSettings.canvasBackgroundColor,
                   }}
                 >
-                  {this.props?.othersOnSameVersion?.map(({ id, presence }) => {
-                    if (!presence) return null;
-                    return (
-                      <Cursor key={id} name={presence.firstName} color={presence.color} x={presence.x} y={presence.y} />
-                    );
-                  })}
+                  {config.ENABLE_MULTIPLAYER_EDITING && (
+                    <RealtimeCursors editingVersionId={this.state?.editingVersion?.id} />
+                  )}
                   {defaultComponentStateComputed && (
                     <>
                       <Container

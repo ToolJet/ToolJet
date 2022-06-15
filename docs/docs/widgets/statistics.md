@@ -2,6 +2,7 @@
 id: statistics
 title: Statistics
 ---
+
 # Statistics
 
 Statistics can be used to display different statistical information.
@@ -38,10 +39,11 @@ This property lets you add and secondary sign either positive or negative,can be
 
 ### Show on desktop
 
-Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+
 ### Show on mobile
 
-Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 
 ## Styles
 
@@ -51,15 +53,15 @@ You can change the primary label color by entering the Hex color code or choosin
 
 ### Primary Text Colour
 
-You can change the primary text color of the primary la bbey entering the Hex color code or choosing a color of your choice from the color picker.
+You can change the primary text color of the primary label by entering the Hex color code or choosing a color of your choice from the color picker.
 
 ### Secondary Label Colour
 
-You can change the secondary label color of the primary la bbey entering the Hex color code or choosing a color of your choice from the color picker.
+You can change the secondary label color of the primary label by entering the Hex color code or choosing a color of your choice from the color picker.
 
 ### Secondary Text Colour
 
-You can change the secondary text color of the primary la bbey entering the Hex color code or choosing a color of your choice from the color picker.
+You can change the secondary text color of the primary label by entering the Hex color code or choosing a color of your choice from the color picker.
 
 ### Visibility
 

@@ -44,7 +44,7 @@ class App extends React.Component {
     if (this.state.currentUser) {
       tooljetService.fetchMetaData().then((data) => {
         this.setState({ onboarded: data.onboarded });
-
+        config.currentVersion = data.installed_version;
         if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
@@ -137,6 +137,20 @@ class App extends React.Component {
                     pathname: '/confirm',
                     state: {
                       token: props.match.params.token,
+                    },
+                  }}
+                />
+              )}
+            />
+            <Route
+              path="/invitations/:token/workspaces/:organizationToken"
+              render={(props) => (
+                <Redirect
+                  to={{
+                    pathname: '/confirm',
+                    state: {
+                      token: props.match.params.token,
+                      organizationToken: props.match.params.organizationToken,
                     },
                   }}
                 />
