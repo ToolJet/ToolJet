@@ -29,7 +29,7 @@ export const usersSelector ={
     firstNameLabel: "[data-cy=first-name-label]",
     lastNameLabel:"[data-cy=last-name-label]",
     companyLabel: "[data-cy=company-label]",
-    roleLable: "[data-cy=role-label]",
+    roleLabel: "[data-cy=role-label]",
     passwordLabel: "[data-cy=password-label]",
     confirmpasswordLabel: "[data-cy=confirm-password-label]",
     termsInfo: "[data-cy=terms-and-condition-info]",
@@ -47,4 +47,11 @@ export const usersSelector ={
   createNewApp: "[data-cy=create-new-application]",
   dropdownText: "[data-cy=dropdown-organization-list]>>:eq(0)",
   arrowIcon: "[data-cy=workspace-arrow-icon]",
+  singleWorkspaceElements:{
+    cardTitle: "[data-cy=card-title]",
+    passwordLabel: "[data-cy=password-label]",
+    confirmpasswordLabel: "[data-cy=confirm-password-label]",
+    termsInfo: "[data-cy=terms-and-condition-info]",
+  }
+
 }

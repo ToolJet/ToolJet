@@ -18,7 +18,8 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
 
   useEffect(() => {
     setActiveStep(currentStep);
-    setExposedVariable('currentStepId', currentStep).then(() => fireEvent('onSelect'));
+    setExposedVariable('currentStepId', currentStep);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
   return (

@@ -50,13 +50,13 @@ export class AuthService {
   }
 
   private async validateUser(email: string, password: string, organizationId?: string): Promise<User> {
-    const user = await this.usersService.findByEmail(email, organizationId);
+    const user = await this.usersService.findByEmail(email, organizationId, 'active');
 
-    if (!user) return null;
+    if (!(user && (await bcrypt.compare(password, user.password)))) {
+      return;
+    }
 
-    const isVerified = await bcrypt.compare(password, user.password);
-
-    return isVerified ? user : null;
+    return user;
   }
 
   async login(email: string, password: string, organizationId?: string) {
@@ -64,76 +64,78 @@ export class AuthService {
 
     const user = await this.validateUser(email, password, organizationId);
 
-    if (user && (await this.usersService.status(user)) !== 'archived') {
-      if (!organizationId) {
-        // Global login
-        // Determine the organization to be loaded
-        if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
-          // Single organization
-          organization = await this.organizationsService.getSingleOrganization();
-          if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
-            throw new UnauthorizedException();
-          }
-        } else {
-          const organizationList: Organization[] = await this.organizationsService.findOrganizationSupportsFormLogin(
-            user
-          );
-
-          const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
-          // Multi organization
-          if (defaultOrgDetails) {
-            // default organization form login enabled
-            organization = defaultOrgDetails;
-          } else if (organizationList?.length > 0) {
-            // default organization form login not enabled, picking first one from form enabled list
-            organization = organizationList[0];
-          } else {
-            // no form login enabled organization available for user - creating new one
-            organization = await this.organizationsService.create('Untitled workspace', user);
-          }
-        }
-        user.organizationId = organization.id;
-      } else {
-        // organization specific login
-        user.organizationId = organizationId;
-
-        organization = await this.organizationsService.get(user.organizationId);
-        const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
-
-        if (!formConfigs?.enabled) {
-          // no configurations in organization side or Form login disabled for the organization
-          throw new UnauthorizedException('Password login is disabled for the organization');
-        }
-      }
-
-      if (user.defaultOrganizationId !== user.organizationId) {
-        // Updating default organization Id
-        await this.usersService.updateDefaultOrganization(user, organization.id);
-      }
-
-      const payload = {
-        username: user.id,
-        sub: user.email,
-        organizationId: user.organizationId,
-        isPasswordLogin: true,
-      };
-
-      return decamelizeKeys({
-        id: user.id,
-        auth_token: this.jwtService.sign(payload),
-        email: user.email,
-        first_name: user.firstName,
-        last_name: user.lastName,
-        avatar_id: user.avatarId,
-        organizationId: user.organizationId,
-        organization: organization.name,
-        admin: await this.usersService.hasGroup(user, 'admin'),
-        group_permissions: await this.usersService.groupPermissions(user),
-        app_group_permissions: await this.usersService.appGroupPermissions(user),
-      });
-    } else {
+    if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
+    if (!organizationId) {
+      // Global login
+      // Determine the organization to be loaded
+      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+        // Single organization
+        if (user?.organizationUsers?.[0].status !== 'active') {
+          throw new UnauthorizedException('Your account is not active');
+        }
+        organization = await this.organizationsService.getSingleOrganization();
+        if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
+          throw new UnauthorizedException();
+        }
+      } else {
+        // Multi organization
+        const organizationList: Organization[] = await this.organizationsService.findOrganizationSupportsFormLogin(
+          user
+        );
+
+        const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
+        if (defaultOrgDetails) {
+          // default organization form login enabled
+          organization = defaultOrgDetails;
+        } else if (organizationList?.length > 0) {
+          // default organization form login not enabled, picking first one from form enabled list
+          organization = organizationList[0];
+        } else {
+          // no form login enabled organization available for user - creating new one
+          organization = await this.organizationsService.create('Untitled workspace', user);
+        }
+      }
+      user.organizationId = organization.id;
+    } else {
+      // organization specific login
+      // No need to validate user status, validateUser() already covers it
+      user.organizationId = organizationId;
+
+      organization = await this.organizationsService.get(user.organizationId);
+      const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+
+      if (!formConfigs?.enabled) {
+        // no configurations in organization side or Form login disabled for the organization
+        throw new UnauthorizedException('Password login is disabled for the organization');
+      }
+    }
+
+    if (user.defaultOrganizationId !== user.organizationId) {
+      // Updating default organization Id
+      await this.usersService.updateDefaultOrganization(user, organization.id);
+    }
+
+    const payload = {
+      username: user.id,
+      sub: user.email,
+      organizationId: user.organizationId,
+      isPasswordLogin: true,
+    };
+
+    return decamelizeKeys({
+      id: user.id,
+      auth_token: this.jwtService.sign(payload),
+      email: user.email,
+      first_name: user.firstName,
+      last_name: user.lastName,
+      organizationId: user.organizationId,
+      organization: organization.name,
+      admin: await this.usersService.hasGroup(user, 'admin'),
+      group_permissions: await this.usersService.groupPermissions(user),
+      app_group_permissions: await this.usersService.appGroupPermissions(user),
+    });
   }
 
   async switchOrganization(newOrganizationId: string, user: User, isNewOrganization?: boolean) {
@@ -143,45 +145,44 @@ export class AuthService {
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       throw new UnauthorizedException();
     }
-    const newUser = await this.usersService.findByEmail(user.email, newOrganizationId);
+    const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, 'active');
 
-    if (newUser && (await this.usersService.status(newUser)) !== 'archived') {
-      newUser.organizationId = newOrganizationId;
-
-      const organization: Organization = await this.organizationsService.get(newUser.organizationId);
-
-      const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
-
-      if (!formConfigs?.enabled) {
-        // no configurations in organization side or Form login disabled for the organization
-        throw new UnauthorizedException('Password login disabled for the organization');
-      }
-
-      // Updating default organization Id
-      await this.usersService.updateDefaultOrganization(newUser, newUser.organizationId);
-
-      const payload = {
-        username: user.id,
-        sub: user.email,
-        organizationId: newUser.organizationId,
-        isPasswordLogin: true,
-      };
-
-      return decamelizeKeys({
-        id: newUser.id,
-        auth_token: this.jwtService.sign(payload),
-        email: newUser.email,
-        first_name: newUser.firstName,
-        last_name: newUser.lastName,
-        organizationId: newUser.organizationId,
-        organization: organization.name,
-        admin: await this.usersService.hasGroup(newUser, 'admin'),
-        group_permissions: await this.usersService.groupPermissions(newUser),
-        app_group_permissions: await this.usersService.appGroupPermissions(newUser),
-      });
-    } else {
+    if (!newUser) {
       throw new UnauthorizedException('Invalid credentials');
     }
+    newUser.organizationId = newOrganizationId;
+
+    const organization: Organization = await this.organizationsService.get(newUser.organizationId);
+
+    const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+
+    if (!formConfigs?.enabled) {
+      // no configurations in organization side or Form login disabled for the organization
+      throw new UnauthorizedException('Password login disabled for the organization');
+    }
+
+    // Updating default organization Id
+    await this.usersService.updateDefaultOrganization(newUser, newUser.organizationId);
+
+    const payload = {
+      username: user.id,
+      sub: user.email,
+      organizationId: newUser.organizationId,
+      isPasswordLogin: true,
+    };
+
+    return decamelizeKeys({
+      id: newUser.id,
+      auth_token: this.jwtService.sign(payload),
+      email: newUser.email,
+      first_name: newUser.firstName,
+      last_name: newUser.lastName,
+      organizationId: newUser.organizationId,
+      organization: organization.name,
+      admin: await this.usersService.hasGroup(newUser, 'admin'),
+      group_permissions: await this.usersService.groupPermissions(newUser),
+      app_group_permissions: await this.usersService.appGroupPermissions(newUser),
+    });
   }
 
   async signup(email: string) {
