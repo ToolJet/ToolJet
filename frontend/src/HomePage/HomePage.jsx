@@ -148,7 +148,7 @@ class HomePage extends React.Component {
         const appName = app.name.replace(/\s+/g, '-').toLowerCase();
         const fileName = `${appName}-export-${new Date().getTime()}`;
         // simulate link click download
-        const json = JSON.stringify(data);
+        const json = JSON.stringify(data, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
         const href = URL.createObjectURL(blob);
         const link = document.createElement('a');
