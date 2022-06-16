@@ -2318,4 +2318,136 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
   },
+
+  {
+    name: 'Steps',
+    displayName: 'Steps',
+    description: 'Steps',
+    component: 'Steps',
+    properties: {
+      steps: { type: 'code', displayName: 'Steps' },
+      currentStep: { type: 'code', displayName: 'Current step' },
+      stepsSelectable: { type: 'toggle', displayName: 'Steps selectable' },
+    },
+    defaultSize: {
+      width: 22,
+      height: 38,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {
+      onSelect: { displayName: 'On select' },
+    },
+    styles: {
+      color: {
+        type: 'color',
+        displayName: 'Color',
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text color',
+      },
+      theme: {
+        type: 'select',
+        displayName: 'Theme',
+        options: [
+          { name: 'titles', value: 'titles' },
+          { name: 'numbers', value: 'numbers' },
+          { name: 'plain', value: 'plain' },
+        ],
+      },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      currentStepId: '3',
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        steps: {
+          value: `{{ [{ name: 'step 1', tooltip: 'some tooltip', id: 1},{ name: 'step 2', tooltip: 'some tooltip', id: 2},{ name: 'step 3', tooltip: 'some tooltip', id: 3},{ name: 'step 4', tooltip: 'some tooltip', id: 4},{ name: 'step 5', tooltip: 'some tooltip', id: 5}]}}`,
+        },
+        currentStep: { value: '{{3}}' },
+        stepsSelectable: { value: true },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        theme: { value: 'titles' },
+        color: { value: '#4d72fa' },
+        textColor: { value: '#3e525b' },
+      },
+    },
+  },
+  {
+    name: 'KanbanBoard',
+    displayName: 'Kanban Board',
+    description: 'Kanban Board',
+    component: 'KanbanBoard',
+    defaultSize: {
+      width: 40,
+      height: 490,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      columns: { type: 'code', displayName: 'Columns' },
+      cardData: { type: 'code', displayName: 'Card Data' },
+      enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
+    },
+    events: {
+      onCardAdded: { displayName: 'Card added' },
+      onCardRemoved: { displayName: 'Card removed' },
+      onCardMoved: { displayName: 'Card moved' },
+      onCardSelected: { displayName: 'Card selected' },
+      onCardUpdated: { displayName: 'Card updated' },
+    },
+    styles: {
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      width: { type: 'number', displayName: 'Width' },
+      minWidth: { type: 'number', displayName: 'Min Width' },
+      accentColor: { type: 'color', displayName: 'Accent color' },
+    },
+    exposedVariables: {
+      columns: {},
+      lastAddedCard: {},
+      lastRemovedCard: {},
+      lastCardMovement: {},
+      lastUpdatedCard: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        columns: {
+          value: '{{[{ "id": "1", "title": "to do" },{ "id": "2", "title": "in progress" }]}}',
+        },
+        cardData: {
+          value:
+            '{{[{ id: "01", title: "one", columnId: "1" },{ id: "02", title: "two", columnId: "1" },{ id: "03", title: "three", columnId: "2" }]}}',
+        },
+        enableAddCard: {
+          value: `{{true}}`,
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+        width: { value: '{{400}}' },
+        minWidth: { value: '{{200}}' },
+        textColor: { value: '#4d72fa' },
+      },
+    },
+  },
 ];

@@ -40,5 +40,13 @@ export const usersText = {
   archivedStatus: "archived",
   invitedStatus: "invited",
   archivedToast: "The user has been archived",
-  inviteToast: "Added to the workspace successfully."
+  inviteToast: "Added to the workspace successfully.",
+  singleWorkspaceElements:{
+    cardTitle: "Set up your account",
+    passwordLabel: "Password",
+    confirmpasswordLabel: "Confirm Password",
+    termsInfo: "By clicking the button below, you agree to our Terms and Conditions.",
+  },
+  swPasswordSuccessToast: "Added to the workspace and password has been set successfully."
+
 }
