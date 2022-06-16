@@ -9,24 +9,6 @@ export default class Bigquery implements QueryService {
     const client = await this.getConnection(sourceOptions);
     let result = {};
 
-    // const constructQuery = async (type: string) => {
-    //   let query = '';
-    //   if (type == 'delete')
-    //     query = `DELETE FROM ${queryOptions.tableId} WHERE ${queryOptions.where_field} ='${queryOptions.where_value}';`;
-    //   else if (type == 'update')
-    //     query = `UPDATE  ${queryOptions.tableId} SET address = 'Canyon 123' WHERE address = 'Valley 345`;
-    //   else if (type == 'insert')
-    //     query = `INSERT INTO ${queryOptions.tableId} (${queryOptions.columns}) VALUES( ${queryOptions.values})`;
-    //   console.log('query ::: ', query);
-
-    //   const [job] = await client.createQueryJob({
-    //     ...this.parseJSON(queryOptions.queryOptions),
-    //     query: query,
-    //   });
-    //   const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
-    //   return rows;
-    // };
-
     try {
       switch (operation) {
         case 'list_datasets': {
@@ -59,7 +41,6 @@ export default class Bigquery implements QueryService {
           SELECT ${queryOptions.columns}
           FROM ${queryOptions.datasetId}.${queryOptions.tableId}
           WHERE ${queryOptions.where_field}${queryOptions.where_operation} ${queryOptions.where_value};`;
-          console.log('viewQuery::', query);
 
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
@@ -101,7 +82,6 @@ export default class Bigquery implements QueryService {
 
         case 'update_record': {
           const query = `UPDATE  ${queryOptions.datasetId}.${queryOptions.tableId} SET ${queryOptions.columns} WHERE ${queryOptions.where_field}${queryOptions.where_operation}'${queryOptions.where_value}'`;
-          console.log('updateQuery', query);
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
             query: query,
