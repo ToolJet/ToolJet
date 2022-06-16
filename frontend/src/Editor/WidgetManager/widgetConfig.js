@@ -2139,7 +2139,7 @@ export const widgets = [
       },
       properties: {
         rawHtml: {
-          value: `<body><main><section class="hero" style="height:310px;display: flex;
+          value: `<body><main><section class="hero" style="height:306px;display: flex;
           justify-content: center;padding:0 1px;align-items: center;text-align:center">You can build your custom HTML-CSS template here</section></main></body>`,
         },
       },

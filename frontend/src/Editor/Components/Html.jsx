@@ -18,7 +18,6 @@ export const Html = function ({ height, properties, styles, darkMode }) {
     <div style={{ display: visibility ? '' : 'none', width: '100%', height, overflowY: 'auto' }}>
       {
         <div
-          className="custom_css"
           style={baseStyle}
           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(rawHtml, { FORCE_BODY: true }) }}
         />
