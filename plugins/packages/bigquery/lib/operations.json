@@ -89,6 +89,24 @@
         "placeholder": "",
         "description": "Enter rows",
         "height": "150px"
+      },
+      "columns": {
+        "label": "Columns",
+        "key": "columns",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "",
+        "description": "Enter columns",
+        "height": "150px"
+      },
+      "values": {
+        "label": "Values",
+        "key": "values",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "",
+        "description": "Enter values",
+        "height": "150px"
       }
     },
 
@@ -199,7 +217,6 @@
         "height": "150px"
       }
     },
-
 
     "create_table": {
       "tableId": {

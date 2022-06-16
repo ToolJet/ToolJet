@@ -9,15 +9,41 @@ export default class Bigquery implements QueryService {
     const client = await this.getConnection(sourceOptions);
     let result = {};
 
-    const constructDeleteQuery = async (table_name, condition) => {
-      const delQuery = `DELETE FROM ${table_name} WHERE ${condition};`;
+    const constructQuery = async (type: string) => {
+      let query = '';
+      if (type == 'delete')
+        query = `DELETE FROM ${queryOptions.tableId} WHERE ${queryOptions.where_field} =${queryOptions.where_operation} ${queryOptions.where_value};`;
+      else if (type == 'update')
+        query = `UPDATE  ${queryOptions.tableId} SET address = 'Canyon 123' WHERE address = 'Valley 345`;
+      else if (type == 'insert')
+        query = `INSERT INTO ${queryOptions.tableId} (${queryOptions.columns}) VALUES( ${queryOptions.values})`;
+
       const [job] = await client.createQueryJob({
         ...this.parseJSON(queryOptions.queryOptions),
-        query: delQuery,
+        query: query,
       });
       const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
       return rows;
     };
+    // const constructUpdateQuery = async () => {
+    //   const delQuery = `UPDATE  ${queryOptions.tableId} SET address = 'Canyon 123' WHERE address = 'Valley 345`;
+    //   const [job] = await client.createQueryJob({
+    //     ...this.parseJSON(queryOptions.queryOptions),
+    //     query: delQuery,
+    //   });
+    //   const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
+    //   return rows;
+    // };
+    // const constructInsertQuery = async () => {
+    //   const insertQuery = `INSERT INTO ${queryOptions.tableId} (${queryOptions.columns}) VALUES( ${queryOptions.values})`;
+
+    //   const [job] = await client.createQueryJob({
+    //     ...this.parseJSON(queryOptions.queryOptions),
+    //     query: insertQuery,
+    //   });
+    //   const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
+    //   return rows;
+    // };
 
     try {
       switch (operation) {
@@ -61,24 +87,18 @@ export default class Bigquery implements QueryService {
           break;
         }
         case 'delete_record': {
-          const rows = constructDeleteQuery(queryOptions.tableId, queryOptions.condition);
+          const rows = constructQuery('delete');
           result = rows;
           break;
         }
         case 'insert_record': {
-          const [datasets] = await client
-            .dataset(queryOptions.datasetId)
-            .table(queryOptions.tableId)
-            .insert(this.parseJSON(queryOptions.rows));
-          result = datasets;
+          const rows = constructQuery('insert');
+          result = rows;
           break;
         }
         case 'update_record': {
-          const [datasets] = await client
-            .dataset(queryOptions.datasetId)
-            .table(queryOptions.tableId)
-            .insert(this.parseJSON(queryOptions.rows));
-          result = datasets;
+          const rows = constructQuery('update');
+          result = rows;
           break;
         }
       }
