@@ -287,8 +287,7 @@
         "label": "Columns",
         "key": "columns",
         "type": "codehinter",
-        "mode": "javascript",
-        "placeholder": "[ column1, column2, ... ]",
+        "placeholder": "column1, column2, ... ",
         "description": "Enter columns",
         "height": "150px"
       },

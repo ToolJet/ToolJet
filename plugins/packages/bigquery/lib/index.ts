@@ -55,10 +55,8 @@ export default class Bigquery implements QueryService {
         }
 
         case 'create_view': {
-          console.log('checker::::', queryOptions.columns);
-
           const query = `CREATE VIEW ${queryOptions.datasetId}.${queryOptions.view_name} AS
-          SELECT ${this.parseJSON(queryOptions.columns.join(','))}
+          SELECT ${queryOptions.columns}
           FROM ${queryOptions.datasetId}.${queryOptions.tableId}
           WHERE ${queryOptions.where_field}${queryOptions.where_operation} ${queryOptions.where_value};`;
           console.log('viewQuery::', query);
