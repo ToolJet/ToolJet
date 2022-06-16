@@ -70,7 +70,11 @@ const InitVersionCreateModal = ({ appId, showModal, hideModal, fetchApp, darkMod
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button className={cx({ 'btn-loading': isCreatingInitVersion })} onClick={() => createInitVersion()}>
+        <Button
+          className={cx({ 'btn-loading': isCreatingInitVersion })}
+          onClick={() => createInitVersion()}
+          data-cy="create-button"
+        >
           Create
         </Button>
       </Modal.Footer>
