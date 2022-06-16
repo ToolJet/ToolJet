@@ -35,6 +35,32 @@ export function resolve(data, state) {
   }
 }
 
+function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword) {
+  let result = '';
+  let error;
+  try {
+    const evalFunction = Function(
+      ['variables', 'components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects), reservedKeyword],
+      `return ${code}`
+    );
+    result = evalFunction(
+      state.variables,
+      state.components,
+      state.queries,
+      state.globals,
+      moment,
+      _,
+      ...Object.values(customObjects),
+      null
+    );
+    if (withError) return [result, error];
+    return result;
+  } catch (err) {
+    error = err;
+    console.log('eval_error', err);
+  }
+}
+
 export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
   const reservedKeyword = ['app']; //Keywords that slows down the app
   object = _.clone(object);
@@ -44,41 +70,26 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
     case 'string': {
       if (object.startsWith('{{') && object.endsWith('}}')) {
         const code = object.replace('{{', '').replace('}}', '');
-        let result = '';
 
         if (reservedKeyword.includes(code)) {
           error = `${code} is a reserved keyword`;
           return [{}, error];
         }
 
-        try {
-          const evalFunction = Function(
-            [
-              'variables',
-              'components',
-              'queries',
-              'globals',
-              'moment',
-              '_',
-              ...Object.keys(customObjects),
-              reservedKeyword,
-            ],
-            `return ${code}`
-          );
-          result = evalFunction(
-            state.variables,
-            state.components,
-            state.queries,
-            state.globals,
-            moment,
-            _,
-            ...Object.values(customObjects),
-            null
-          );
-        } catch (err) {
-          error = err;
-          console.log('eval_error', err);
+        let result = resolveCode(code, state, customObjects, withError, reservedKeyword);
+
+        if (withError) return [result, error];
+        return result;
+      } else if (object.startsWith('%%') && object.endsWith('%%')) {
+        const code = object.replaceAll('%%', '');
+
+        if (code.includes('server') && !new RegExp('^globals.environmentVariables.server.[A-Za-z0-9]+$').test(code)) {
+          error = `${code} is invalid. Server variables can't use like this`;
+          return [{}, error];
         }
+
+        let result = resolveCode(code, state, customObjects, withError, reservedKeyword);
+
         if (withError) return [result, error];
         return result;
       }
