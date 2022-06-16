@@ -219,7 +219,10 @@ export class DataQueriesService {
 
   async resolveVariable(str: string, organization_id: string) {
     const tempStr: string = str.replace(/{|}/g, '');
-    const variablesResult = await this.orgEnvironmentVariablesRepository.find({ variableType: 'server' });
+    const variablesResult = await this.orgEnvironmentVariablesRepository.find({
+      variableType: 'server',
+      organizationId: organization_id,
+    });
     const serverVariables = {};
     await Promise.all(
       variablesResult.map(async (variable) => {
