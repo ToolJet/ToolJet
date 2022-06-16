@@ -3,35 +3,25 @@ import 'react-datetime/css/react-datetime.css';
 import { DateRangePicker } from 'react-dates';
 import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
-import { isEmpty } from 'lodash';
 import moment from 'moment';
 
-export const DaterangePicker = function DaterangePicker({
-  height,
-  properties,
-  styles,
-  exposedVariables,
-  setExposedVariable,
-  width,
-}) {
+export const DaterangePicker = function DaterangePicker({ height, properties, styles, setExposedVariable, width }) {
   const { borderRadius, visibility, disabledState } = styles;
   const { defaultStartDate, defaultEndDate } = properties;
   const formatProp = properties.format;
-  // eslint-disable-next-line no-unused-vars
-  const startDateProp = isEmpty(exposedVariables.startDate)
-    ? moment(defaultStartDate, formatProp)
-    : exposedVariables.startDate;
-  const endDateProp = isEmpty(exposedVariables.endDate) ? moment(defaultEndDate, formatProp) : exposedVariables.endDate;
 
   const [focusedInput, setFocusedInput] = useState(null);
   const [startDate, setStartDate] = useState(moment(defaultStartDate, formatProp));
-  const [endDate, setEndDate] = useState(endDateProp);
+  const [endDate, setEndDate] = useState(moment(defaultEndDate, formatProp));
 
   const dateRangeRef = useRef(null);
 
   useEffect(() => {
     setStartDate(moment(defaultStartDate, formatProp));
     setEndDate(moment(defaultEndDate, formatProp));
+    setExposedVariable('startDate', startDate.format(formatProp));
+    setExposedVariable('endDate', endDate.format(formatProp));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultEndDate, defaultStartDate, formatProp]);
 
   useEffect(() => {
