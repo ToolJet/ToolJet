@@ -1,5 +1,5 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -8,10 +8,15 @@ import { CredentialsService } from './credentials.service';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
 import got from 'got';
+import { PluginsService } from './plugins.service';
+import { decode } from 'js-base64';
+import { requireFromString } from 'module-from-string';
+const plugins = {};
 
 @Injectable()
 export class DataQueriesService {
   constructor(
+    private readonly pluginsService: PluginsService,
     private credentialsService: CredentialsService,
     private dataSourcesService: DataSourcesService,
     @InjectRepository(DataQuery)
@@ -21,7 +26,7 @@ export class DataQueriesService {
   async findOne(dataQueryId: string): Promise<DataQuery> {
     return await this.dataQueriesRepository.findOne({
       where: { id: dataQueryId },
-      relations: ['dataSource', 'app'],
+      relations: ['dataSource', 'plugin', 'app'],
     });
   }
 
@@ -32,6 +37,7 @@ export class DataQueriesService {
     return await this.dataQueriesRepository.find({
       where: whereClause,
       order: { createdAt: 'DESC' }, // Latest query should be on top
+      relations: ['plugin', 'plugin.iconFile', 'plugin.manifestFile'],
     });
   }
 
@@ -42,7 +48,8 @@ export class DataQueriesService {
     options: object,
     appId: string,
     dataSourceId: string,
-    appVersionId?: string // TODO: Make this non optional when autosave is implemented
+    appVersionId?: string, // TODO: Make this non optional when autosave is implemented
+    pluginId?: string
   ): Promise<DataQuery> {
     const newDataQuery = this.dataQueriesRepository.create({
       name,
@@ -51,6 +58,7 @@ export class DataQueriesService {
       appId,
       dataSourceId,
       appVersionId,
+      pluginId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -77,7 +85,25 @@ export class DataQueriesService {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
     const kind = dataQuery.kind;
-    const service = new allPlugins[kind]();
+    let service: any;
+    if (dataQuery.pluginId) {
+      let decoded: string;
+      if (plugins[dataQuery.pluginId]) {
+        decoded = plugins[dataQuery.pluginId];
+      } else {
+        const plugin = await this.pluginsService.findOne(dataQuery.pluginId);
+        decoded = decode(plugin.operationsFile.data.toString());
+        plugins[dataQuery.pluginId] = decoded;
+      }
+      const code = requireFromString(decoded, { globals: { process, Buffer, Promise, setTimeout, clearTimeout } });
+      try {
+        service = new code.default();
+      } catch (error) {
+        console.log('error', error);
+      }
+    } else {
+      service = new allPlugins[kind]();
+    }
     return { service, sourceOptions, parsedQueryOptions };
   }
 
@@ -91,6 +117,9 @@ export class DataQueriesService {
     let result;
 
     try {
+      if (!service?.run) {
+        throw new NotImplementedException('run method not implemented');
+      }
       return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
     } catch (error) {
       const statusCode = error?.data?.responseObject?.statusCode;

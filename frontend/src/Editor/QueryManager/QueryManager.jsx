@@ -48,7 +48,12 @@ let QueryManager = class QueryManager extends React.Component {
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
-    let dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
+    let dataSourceMeta;
+    if (selectedQuery?.pluginId) {
+      dataSourceMeta = selectedQuery.manifestFile.data.source;
+    } else {
+      dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
+    }
     const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
     const queryPaneDragged = this.state.isQueryPaneDragging !== props.isQueryPaneDragging;
@@ -256,7 +261,7 @@ let QueryManager = class QueryManager extends React.Component {
     } else {
       this.setState({ isCreating: true });
       dataqueryService
-        .create(appId, appVersionId, queryName, kind, options, dataSourceId)
+        .create(appId, appVersionId, queryName, kind, options, dataSourceId, selectedDataSource.plugin_id)
         .then(() => {
           toast.success('Query Added');
           this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });

@@ -32,6 +32,7 @@ import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
+import { PluginsModule } from './modules/plugins/plugins.module';
 
 const imports = [
   ConfigModule.forRoot({
@@ -79,6 +80,7 @@ const imports = [
   LibraryAppModule,
   GroupPermissionsModule,
   FilesModule,
+  PluginsModule,
   EventsModule,
 ];
 

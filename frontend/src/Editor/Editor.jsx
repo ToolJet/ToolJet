@@ -293,11 +293,19 @@ class Editor extends React.Component {
             () => {
               let queryState = {};
               data.data_queries.forEach((query) => {
-                queryState[query.name] = {
-                  ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-                  kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
-                  ...this.state.currentState.queries[query.name],
-                };
+                if (query.plugin_id) {
+                  queryState[query.name] = {
+                    ...query.plugin.manifest_file.data.source.exposedVariables,
+                    kind: query.plugin.manifest_file.data.source.kind,
+                    ...this.state.currentState.queries[query.name],
+                  };
+                } else {
+                  queryState[query.name] = {
+                    ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+                    kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
+                    ...this.state.currentState.queries[query.name],
+                  };
+                }
               });
 
               // Select first query by default
@@ -742,7 +750,15 @@ class Editor extends React.Component {
   };
 
   renderDataSource = (dataSource) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
+    let sourceMeta;
+    let icon;
+    if (dataSource.plugin_id) {
+      sourceMeta = dataSource.plugin.manifest_file.data.source;
+      icon = <img src={dataSource.plugin.icon_file.data} style={{ height: 25, width: 25 }} />;
+    } else {
+      sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
+      icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25);
+    }
     return (
       <tr
         role="button"
@@ -755,7 +771,7 @@ class Editor extends React.Component {
         }}
       >
         <td>
-          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)} {dataSource.name}
+          {icon} {dataSource.name}
         </td>
       </tr>
     );
@@ -792,7 +808,20 @@ class Editor extends React.Component {
   };
 
   renderDataQuery = (dataQuery) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataQuery.kind);
+    let sourceMeta;
+    let icon;
+    if (dataQuery.plugin_id) {
+      sourceMeta = dataQuery.plugin.manifest_file.data.source;
+      icon = <img src={dataQuery.plugin.icon_file.data} style={{ height: 25, width: 25 }} />;
+    } else {
+      sourceMeta = DataSourceTypes.find((source) => source.kind === dataQuery.kind);
+      icon =
+        sourceMeta.kind === 'runjs' ? (
+          <RunjsIcon style={{ height: 25, width: 25 }} />
+        ) : (
+          getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)
+        );
+    }
 
     let isSeletedQuery = false;
     if (this.state.selectedQuery) {
@@ -817,11 +846,7 @@ class Editor extends React.Component {
         onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col-auto" style={{ width: '28px' }}>
-          {sourceMeta.kind === 'runjs' ? (
-            <RunjsIcon style={{ height: 25, width: 25 }} />
-          ) : (
-            getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)
-          )}
+          {icon}
         </div>
         <div className="col">
           <OverlayTrigger

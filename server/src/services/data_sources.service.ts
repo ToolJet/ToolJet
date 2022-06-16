@@ -1,15 +1,20 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getManager, Repository } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
 import { cleanObject } from 'src/helpers/utils.helper';
+import { decode } from 'js-base64';
+import { PluginsService } from './plugins.service';
+import { requireFromString } from 'module-from-string';
+const plugins = {};
 
 @Injectable()
 export class DataSourcesService {
   constructor(
+    private readonly pluginsService: PluginsService,
     private credentialsService: CredentialsService,
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
@@ -19,13 +24,16 @@ export class DataSourcesService {
     const { app_id: appId, app_version_id: appVersionId }: any = query;
     const whereClause = { appId, ...(appVersionId && { appVersionId }) };
 
-    return await this.dataSourcesRepository.find({ where: whereClause });
+    return await this.dataSourcesRepository.find({
+      where: whereClause,
+      relations: ['plugin', 'plugin.iconFile', 'plugin.manifestFile'],
+    });
   }
 
   async findOne(dataSourceId: string): Promise<DataSource> {
     return await this.dataSourcesRepository.findOne({
       where: { id: dataSourceId },
-      relations: ['app'],
+      relations: ['app', 'plugin'],
     });
   }
 
@@ -34,7 +42,8 @@ export class DataSourcesService {
     kind: string,
     options: Array<object>,
     appId: string,
-    appVersionId?: string // TODO: Make this non optional when autosave is implemented
+    appVersionId?: string, // TODO: Make this non optional when autosave is implemented
+    pluginId?: string
   ): Promise<DataSource> {
     const newDataSource = this.dataSourcesRepository.create({
       name,
@@ -42,6 +51,7 @@ export class DataSourcesService {
       options: await this.parseOptionsForCreate(options),
       appId,
       appVersionId,
+      pluginId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -82,7 +92,7 @@ export class DataSourcesService {
     });
   }
 
-  async testConnection(kind: string, options: object): Promise<object> {
+  async testConnection(kind: string, options: object, plugin_id: string): Promise<object> {
     let result = {};
     try {
       const sourceOptions = {};
@@ -91,7 +101,10 @@ export class DataSourcesService {
         sourceOptions[key] = options[key]['value'];
       }
 
-      const service = new allPlugins[kind]();
+      const service = await this.getService(kind, plugin_id);
+      if (!service?.testConnection) {
+        throw new NotImplementedException('testConnection method not implemented');
+      }
       result = await service.testConnection(sourceOptions);
     } catch (error) {
       result = {
@@ -101,6 +114,29 @@ export class DataSourcesService {
     }
 
     return result;
+  }
+
+  async getService(kind: string, pluginId: any) {
+    let service: any;
+    if (pluginId) {
+      let decoded: string;
+      if (plugins[pluginId]) {
+        decoded = decode(plugins[pluginId]);
+      } else {
+        const plugin = await this.pluginsService.findOne(pluginId);
+        decoded = decode(plugin.operationsFile.data.toString());
+        plugins[pluginId] = decoded;
+      }
+      const code = requireFromString(decoded, { globals: { process, Buffer, Promise, setTimeout, clearTimeout } });
+      try {
+        service = new code.default();
+      } catch (error) {
+        console.log('error', error);
+      }
+    } else {
+      service = new allPlugins[kind]();
+    }
+    return service;
   }
 
   async parseOptionsForOauthDataSource(options: Array<object>) {

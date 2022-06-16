@@ -46,6 +46,13 @@ export class DataSourcesController {
     }
 
     const dataSources = await this.dataSourcesService.all(user, query);
+    for (const dataSource of dataSources) {
+      if (dataSource.pluginId) {
+        dataSource.plugin.iconFile.data = `data:image/svg+xml;base64,${dataSource.plugin.iconFile.data.toString(
+          'utf8'
+        )}`;
+      }
+    }
     const response = decamelizeKeys({ data_sources: dataSources });
 
     return response;
@@ -54,9 +61,10 @@ export class DataSourcesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@User() user, @Body() createDataSourceDto: CreateDataSourceDto) {
-    const { kind, name, options, app_id, app_version_id } = createDataSourceDto;
+    const { kind, name, options, app_id, app_version_id, plugin_id } = createDataSourceDto;
     const appId = app_id;
     const appVersionId = app_version_id;
+    const pluginId = plugin_id;
 
     const app = await this.appsService.find(appId);
     const ability = await this.appsAbilityFactory.appsActions(user, appId);
@@ -65,7 +73,7 @@ export class DataSourcesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const dataSource = await this.dataSourcesService.create(name, kind, options, appId, appVersionId);
+    const dataSource = await this.dataSourcesService.create(name, kind, options, appId, appVersionId, pluginId);
     return decamelizeKeys(dataSource);
   }
 
@@ -110,8 +118,8 @@ export class DataSourcesController {
   @UseGuards(JwtAuthGuard)
   @Post('test_connection')
   async testConnection(@User() user, @Body() testDataSourceDto: TestDataSourceDto) {
-    const { kind, options } = testDataSourceDto;
-    return await this.dataSourcesService.testConnection(kind, options);
+    const { kind, options, plugin_id } = testDataSourceDto;
+    return await this.dataSourcesService.testConnection(kind, options, plugin_id);
   }
 
   @UseGuards(JwtAuthGuard)
