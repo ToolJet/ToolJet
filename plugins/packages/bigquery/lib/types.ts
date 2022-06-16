@@ -16,4 +16,5 @@ export type QueryOptions = {
   where_operation: string;
   columns: string;
   values: string;
+  view_name: string;
 };

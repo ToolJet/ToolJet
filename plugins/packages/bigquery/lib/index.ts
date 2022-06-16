@@ -12,11 +12,12 @@ export default class Bigquery implements QueryService {
     const constructQuery = async (type: string) => {
       let query = '';
       if (type == 'delete')
-        query = `DELETE FROM ${queryOptions.tableId} WHERE ${queryOptions.where_field} =${queryOptions.where_operation} ${queryOptions.where_value};`;
+        query = `DELETE FROM ${queryOptions.tableId} WHERE ${queryOptions.where_field} ='${queryOptions.where_value}';`;
       else if (type == 'update')
         query = `UPDATE  ${queryOptions.tableId} SET address = 'Canyon 123' WHERE address = 'Valley 345`;
       else if (type == 'insert')
         query = `INSERT INTO ${queryOptions.tableId} (${queryOptions.columns}) VALUES( ${queryOptions.values})`;
+      console.log('query ::: ', query);
 
       const [job] = await client.createQueryJob({
         ...this.parseJSON(queryOptions.queryOptions),
@@ -24,26 +25,14 @@ export default class Bigquery implements QueryService {
       });
       const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
       return rows;
-    };
-    // const constructUpdateQuery = async () => {
-    //   const delQuery = `UPDATE  ${queryOptions.tableId} SET address = 'Canyon 123' WHERE address = 'Valley 345`;
-    //   const [job] = await client.createQueryJob({
-    //     ...this.parseJSON(queryOptions.queryOptions),
-    //     query: delQuery,
-    //   });
-    //   const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
-    //   return rows;
-    // };
-    // const constructInsertQuery = async () => {
-    //   const insertQuery = `INSERT INTO ${queryOptions.tableId} (${queryOptions.columns}) VALUES( ${queryOptions.values})`;
 
-    //   const [job] = await client.createQueryJob({
-    //     ...this.parseJSON(queryOptions.queryOptions),
-    //     query: insertQuery,
-    //   });
-    //   const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
-    //   return rows;
-    // };
+      // const [job] = await client.createQueryJob({
+      //   ...this.parseJSON(queryOptions?.queryOptions),
+      //   query: query,
+      // });
+      // const [rows] = await job.getQueryResults(this.parseJSON(queryOptions?.queryResultsOptions));
+      // return rows;
+    };
 
     try {
       switch (operation) {
@@ -70,6 +59,12 @@ export default class Bigquery implements QueryService {
           break;
         }
         case 'create_view': {
+          const viewQuery = `CREATE VIEW ${queryOptions.view_name} AS
+          SELECT CustomerName, ContactName
+          FROM ${queryOptions.datasetId}${queryOptions.tableId}
+          WHERE ${queryOptions.where_field}${queryOptions.where_operation}'${queryOptions.where_value};`;
+          console.log('viewQuery::', viewQuery);
+
           const [view] = await client
             .dataset(queryOptions.datasetId)
             .createTable(queryOptions.tableId, this.parseJSON(queryOptions.options));
@@ -87,12 +82,20 @@ export default class Bigquery implements QueryService {
           break;
         }
         case 'delete_record': {
-          const rows = constructQuery('delete');
+          const query = `DELETE FROM ${queryOptions.datasetId} .${queryOptions.tableId} WHERE ${queryOptions.where_field}${queryOptions.where_operation}'${queryOptions.where_value}';`;
+          const [job] = await client.createQueryJob({
+            ...this.parseJSON(queryOptions.queryOptions),
+            query: query,
+          });
+          const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
           result = rows;
           break;
         }
         case 'insert_record': {
-          const rows = constructQuery('insert');
+          const rows = await client
+            .dataset(queryOptions.datasetId)
+            .table(queryOptions.tableId)
+            .insert(this.parseJSON(queryOptions.rows));
           result = rows;
           break;
         }

@@ -151,8 +151,8 @@
         "description": "Single select dropdown for where operation",
         "list": [
           {
-            "value": "==",
-            "name": "=="
+            "value": "=",
+            "name": "="
           },
           {
             "value": "<",
