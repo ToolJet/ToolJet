@@ -16,7 +16,6 @@ const sidebars = {
       label: 'Setup',
       link: {type: 'doc', id: 'setup/index'},
       items: [
-        'setup/introduction',
         'setup/docker',
         'setup/docker-local',
         'setup/heroku',
