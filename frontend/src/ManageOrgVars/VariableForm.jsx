@@ -63,7 +63,8 @@ export default class VariableForm extends React.Component {
                     )}
                   </div>
                   <div className="col">
-                    <label className="form-check form-switch">
+                    <label className="form-label">Enable encryption</label>
+                    <div className="form-check form-switch encryption-input">
                       <input
                         className="form-check-input"
                         type="checkbox"
@@ -77,8 +78,7 @@ export default class VariableForm extends React.Component {
                           this.props.fields['variable_type'] === 'server' ? true : this.props.fields['encryption']
                         }
                       />
-                      <span className="form-check-label">Enable encryption</span>
-                    </label>
+                    </div>
                   </div>
                 </div>
               </div>

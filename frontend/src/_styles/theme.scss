@@ -5341,9 +5341,17 @@ div#driver-page-overlay {
   }
 }
 
+.org-variables-page{
+  .btn-org-env {
+    width: 36px;
+  }
+  
+  .encryption-input {
+    width: fit-content;
+  }
+}
 
 //Kanban board
-
 .kanban-container.dark-themed {
   background-color: $bg-dark-light !important;
   .kanban-column {
