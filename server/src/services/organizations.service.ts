@@ -15,6 +15,17 @@ import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
 
+type FetchUserResponse = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  id: string;
+  status: string;
+  invitationToken?: string;
+  accountSetupToken?: string;
+};
+
 @Injectable()
 export class OrganizationsService {
   constructor(
@@ -90,7 +101,7 @@ export class OrganizationsService {
     return createdGroupPermissions;
   }
 
-  async fetchUsers(user: any): Promise<OrganizationUser[]> {
+  async fetchUsers(user: any): Promise<FetchUserResponse[]> {
     const organizationUsers = await this.organizationUsersRepository.find({
       where: { organizationId: user.organizationId },
       relations: ['user'],
@@ -98,10 +109,8 @@ export class OrganizationsService {
 
     const isAdmin = await this.usersService.hasGroup(user, 'admin');
 
-    // serialize
-    const serializedUsers = [];
-    for (const orgUser of organizationUsers) {
-      const serializedUser = {
+    return organizationUsers?.map((orgUser) => {
+      return {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName,
         lastName: orgUser.user.lastName,
@@ -109,15 +118,14 @@ export class OrganizationsService {
         id: orgUser.id,
         role: orgUser.role,
         status: orgUser.status,
+        ...(isAdmin && orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
+        ...(this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
+        this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' &&
+        orgUser.user.invitationToken
+          ? { accountSetupToken: orgUser.user.invitationToken }
+          : {}),
       };
-
-      if (isAdmin && orgUser.invitationToken) {
-        serializedUser['invitationToken'] = orgUser.invitationToken;
-      }
-      serializedUsers.push(serializedUser);
-    }
-
-    return serializedUsers;
+    });
   }
 
   async fetchOrganisations(user: any): Promise<Organization[]> {
@@ -322,7 +330,7 @@ export class OrganizationsService {
     };
 
     let user = await this.usersService.findByEmail(userParams.email);
-    let defaultOrganisation: Organization,
+    let defaultOrganization: Organization,
       shouldSendWelcomeMail = false;
 
     if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
@@ -338,7 +346,7 @@ export class OrganizationsService {
       // User not exist
       shouldSendWelcomeMail = true;
       // Create default organization
-      defaultOrganisation = await this.create('Untitled workspace');
+      defaultOrganization = await this.create('Untitled workspace');
     }
     user = await this.usersService.create(
       userParams,
@@ -346,13 +354,13 @@ export class OrganizationsService {
       ['all_users'],
       user,
       true,
-      defaultOrganisation?.id
+      defaultOrganization?.id
     );
 
-    if (defaultOrganisation) {
+    if (defaultOrganization) {
       // Setting up default organization
-      await this.organizationUserService.create(user, defaultOrganisation, true);
-      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganisation.id, user.id);
+      await this.organizationUserService.create(user, defaultOrganization, true);
+      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id);
     }
 
     const currentOrganization: Organization = (

@@ -523,6 +523,7 @@ let QueryManager = class QueryManager extends React.Component {
                         changeDataSource={this.changeDataSource}
                         handleBackButton={this.handleBackButton}
                         darkMode={this.props.darkMode}
+                        dataSourceModalHandler={this.props.dataSourceModalHandler}
                       />
                     )}
                   </div>

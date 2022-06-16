@@ -1,10 +1,12 @@
 /* eslint-disable import/no-unresolved */
 import React from 'react';
 import config from 'config';
-import { PresenceProvider } from 'y-presence';
-import RealtimeCursors from '@/Editor/RealtimeCursors';
+import { RoomProvider } from '@y-presence/react';
 import Spinner from '@/_ui/Spinner';
+import { Editor } from '@/Editor';
+import useRouter from '@/_hooks/use-router';
 const Y = require('yjs');
+const psl = require('psl');
 const { WebsocketProvider } = require('y-websocket');
 
 const ydoc = new Y.Doc();
@@ -20,11 +22,15 @@ const getWebsocketUrl = () => {
 export const RealtimeEditor = (props) => {
   const appId = props.match.params.id;
   const [provider, setProvider] = React.useState();
+  const router = useRouter();
 
   React.useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    document.cookie = `auth_token=${currentUser?.auth_token}; path=/`;
+    const domain = psl.parse(window.location.host).domain;
+    document.cookie = `auth_token=${currentUser?.auth_token}; domain=.${domain}; path=/`;
+    document.cookie = `app_id=${router.query.id}; domain=.${domain}; path=/`;
     setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
 
   React.useEffect(() => {
@@ -40,9 +46,21 @@ export const RealtimeEditor = (props) => {
 
   if (!provider) return <Spinner />;
 
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+  const initialPresence = {
+    firstName: currentUser?.first_name ?? '',
+    lastName: currentUser?.last_name ?? '',
+    image: '',
+    editingVersionId: '',
+    x: 0,
+    y: 0,
+    color: '',
+  };
+
   return (
-    <PresenceProvider awareness={provider.awareness}>
-      <RealtimeCursors ymap={ydoc.getMap('appDef')} {...props} />
-    </PresenceProvider>
+    <RoomProvider awareness={provider.awareness} initialPresence={initialPresence}>
+      <Editor provider={provider} ymap={ydoc.getMap('appDef')} {...props} />
+    </RoomProvider>
   );
 };
