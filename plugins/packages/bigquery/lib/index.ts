@@ -26,14 +26,7 @@ export default class Bigquery implements QueryService {
           result = datasets;
           break;
         }
-        case 'insert_record': {
-          const [datasets] = await client
-            .dataset(queryOptions.datasetId)
-            .table(queryOptions.tableId)
-            .insert(this.parseJSON(queryOptions.rows));
-          result = datasets;
-          break;
-        }
+
         case 'list_tables': {
           const [tables] = await client.dataset(queryOptions.datasetId).getTables(this.parseJSON(queryOptions.options));
           result = tables;
@@ -67,9 +60,25 @@ export default class Bigquery implements QueryService {
           result = rows;
           break;
         }
-        case 'delete record': {
+        case 'delete_record': {
           const rows = constructDeleteQuery(queryOptions.tableId, queryOptions.condition);
           result = rows;
+          break;
+        }
+        case 'insert_record': {
+          const [datasets] = await client
+            .dataset(queryOptions.datasetId)
+            .table(queryOptions.tableId)
+            .insert(this.parseJSON(queryOptions.rows));
+          result = datasets;
+          break;
+        }
+        case 'update_record': {
+          const [datasets] = await client
+            .dataset(queryOptions.datasetId)
+            .table(queryOptions.tableId)
+            .insert(this.parseJSON(queryOptions.rows));
+          result = datasets;
           break;
         }
       }
