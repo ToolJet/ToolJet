@@ -2460,7 +2460,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     defaultSize: {
       width: 9,
-      height: 30,
+      height: 40,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },

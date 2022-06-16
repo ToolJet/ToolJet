@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SketchPicker } from 'react-color';
 
-export const ColorPicker = function ({ width, properties, styles, setExposedVariable }) {
+export const ColorPicker = function ({ properties, styles, setExposedVariable, darkMode, height }) {
   const { visibility } = styles;
   const defaultColor = properties.defaultColor;
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [color, setColor] = useState(defaultColor);
+  useEffect(() => setColor(defaultColor), [defaultColor]);
 
   const handleColorChange = (color) => {
     const { r, g, b, a } = color.rgb;
@@ -22,24 +23,31 @@ export const ColorPicker = function ({ width, properties, styles, setExposedVari
     height: '20px',
     border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(color) && '#c5c8c9'}`,
   };
-  //color style for text showing selected color
-  const textColorStyle = { color: 'black' };
-  const baseStyle = {
-    width,
-    display: visibility ? 'block' : 'none',
+
+  const style = {
+    borderRadius: '5px',
+    height,
+    padding: '0.5rem',
+    border: `1px solid ${['#ffffff', '#fff', '#1f2936'].includes(color) && '#c5c8c9'}`,
+    positin: 'relative',
   };
+  const baseStyle = visibility
+    ? darkMode
+      ? { ...style, color: '#ffffff', backgroundColor: '#1F2936' }
+      : { ...style, color: 'inherit' }
+    : { display: 'none' };
 
   return (
-    <div style={baseStyle}>
+    <div style={baseStyle} className="form-control" onMouseLeave={() => setShowColorPicker(false)}>
       <div
-        className="d-flex h-100 justify-content-between align-items-center px-2 py-1"
+        className="d-flex h-100 justify-content-between align-items-center  "
         onClick={() => setShowColorPicker(true)}
       >
-        <span style={textColorStyle}>{color}</span>
+        <span>{color}</span>
         <div style={backgroundColorDivStyle}></div>
       </div>
       {showColorPicker && (
-        <div className="w-100" onMouseLeave={() => setShowColorPicker(false)}>
+        <div className="position-absolute bottom-0" style={{ left: 0, right: 0 }}>
           <SketchPicker color={color} onChangeComplete={handleColorChange} />
         </div>
       )}
