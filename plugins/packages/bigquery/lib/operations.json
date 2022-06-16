@@ -376,6 +376,121 @@
         "height": "150px"
       }
     },
+    "update_record": {
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table id"
+      },
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter dataset id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter dataset"
+      },
+      "columns": {
+        "label": "Columns",
+        "key": "columns",
+        "type": "codehinter",
+        "placeholder": "column1 = value1, column2 = value2, ...",
+        "description": "Enter columns",
+        "height": "150px"
+      },
+      "where_field": {
+        "label": "Field",
+        "key": "where_field",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter field",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter field"
+      },
+      "where_operation": {
+        "label": "Operator",
+        "key": "where_operation",
+        "className": "col-4",
+        "type": "dropdown",
+        "description": "Single select dropdown for where operation",
+        "list": [
+          {
+            "value": "=",
+            "name": "="
+          },
+          {
+            "value": "<",
+            "name": "<"
+          },
+          {
+            "value": ">",
+            "name": ">"
+          },
+          {
+            "value": "<=",
+            "name": "<="
+          },
+          {
+            "value": ">=",
+            "name": ">="
+          },
+          {
+            "value": "array-contains",
+            "name": "array-contains"
+          },
+          {
+            "value": "in",
+            "name": "in"
+          },
+          {
+            "value": "array-contains-any",
+            "name": "array-contains-any"
+          },
+          {
+            "value": "",
+            "name": "None"
+          }
+        ]
+      },
+      "where_value": {
+        "label": "Value",
+        "key": "where_value",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter value",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter value"
+      },
+      "queryOptions": {
+        "label": "Query options",
+        "key": "queryOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ location: 'US', dryRun: true }",
+        "description": "Enter query options",
+        "height": "150px"
+      },
+      "queryResultsOptions": {
+        "label": "Query results options",
+        "key": "queryResultsOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ wrapIntegers: true }",
+        "description": "Enter Query results options",
+        "height": "150px"
+      }
+    },
     "list_datasets": {
       "options": {
         "label": "Options",

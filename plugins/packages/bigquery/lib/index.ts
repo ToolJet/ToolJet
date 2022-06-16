@@ -40,6 +40,7 @@ export default class Bigquery implements QueryService {
           result = tables;
           break;
         }
+
         case 'create_table': {
           const [table] = await client
             .dataset(queryOptions.datasetId)
@@ -47,10 +48,12 @@ export default class Bigquery implements QueryService {
           result = table;
           break;
         }
+
         case 'delete_table': {
           result = await client.dataset(queryOptions.datasetId).table(queryOptions.tableId).delete();
           break;
         }
+
         case 'create_view': {
           console.log('checker::::', queryOptions.columns);
 
@@ -68,6 +71,7 @@ export default class Bigquery implements QueryService {
           result = rows;
           break;
         }
+
         case 'query': {
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
@@ -77,6 +81,7 @@ export default class Bigquery implements QueryService {
           result = rows;
           break;
         }
+
         case 'delete_record': {
           const query = `DELETE FROM ${queryOptions.datasetId}.${queryOptions.tableId} WHERE ${queryOptions.where_field}${queryOptions.where_operation}'${queryOptions.where_value}';`;
           const [job] = await client.createQueryJob({
@@ -95,8 +100,9 @@ export default class Bigquery implements QueryService {
           result = rows;
           break;
         }
+
         case 'update_record': {
-          const query = `UPDATE  ${queryOptions.datasetId}.${queryOptions.tableId} SET address = 'Canyon 123' WHERE ${queryOptions.where_field}${queryOptions.where_operation}'${queryOptions.where_value}'`;
+          const query = `UPDATE  ${queryOptions.datasetId}.${queryOptions.tableId} SET ${queryOptions.columns} WHERE ${queryOptions.where_field}${queryOptions.where_operation}'${queryOptions.where_value}'`;
           console.log('updateQuery', query);
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
