@@ -402,7 +402,7 @@
         "label": "Columns",
         "key": "columns",
         "type": "codehinter",
-        "placeholder": "column1 = value1, column2 = value2, ...",
+        "placeholder": "age=24 ,name='bob'..",
         "description": "Enter columns",
         "height": "150px"
       },
