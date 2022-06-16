@@ -4164,6 +4164,25 @@ input[type="text"] {
     color: #0565ff;
     cursor: pointer;
   }
+
+  .menu-ico {
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 13px;
+    &__open {
+      background-color: #d2ddec;
+    }
+    img {
+      padding: 0px;
+      height: 14px;
+      width: 14px;
+      vertical-align: unset;
+    }
+  }
+  
+  .menu-ico:hover {
+    background-color: #d2ddec;
+  }
 }
 
 /**

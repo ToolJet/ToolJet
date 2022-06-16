@@ -311,6 +311,12 @@ export class UsersService {
       case 'create':
         permissionGrant = this.canAnyGroupPerformAction('folderCreate', await this.groupPermissions(user));
         break;
+      case 'update':
+        permissionGrant = this.canAnyGroupPerformAction('folderUpdate', await this.groupPermissions(user));
+        break;
+      case 'delete':
+        permissionGrant = this.canAnyGroupPerformAction('folderDelete', await this.groupPermissions(user));
+        break;
       default:
         permissionGrant = false;
         break;
