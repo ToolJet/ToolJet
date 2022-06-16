@@ -15,4 +15,9 @@ export const commonSelectors={
   emailField: "[data-cy=email-text-field]",
   passwordField: "[data-cy=password-text-field]",
   signInButton: "[data-cy=login-button]",
+  backButton: "[data-cy=back-button]",
+  emptyAppCreateButton: "[data-cy=create-new-application]",
+  appCreateButton: "[data-cy=create-new-app-button]",
+  createButton: "[data-cy=create-button]",
+  appNameInput: "[data-cy=app-name-input]",
 }

@@ -27,6 +27,7 @@ export default function Header({
                 <Button
                   className={`btn btn-primary d-none d-lg-inline mb-3 ms-2 ${creatingApp ? 'btn-loading' : ''}`}
                   onClick={createApp}
+                  data-cy="create-new-app-button"
                 >
                   {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
                   Create new application
