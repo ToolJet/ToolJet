@@ -10,4 +10,5 @@ export type QueryOptions = {
   queryResultsOptions: string;
   tableId: string;
   rows: string;
+  condition: string;
 };

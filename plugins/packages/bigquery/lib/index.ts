@@ -9,6 +9,16 @@ export default class Bigquery implements QueryService {
     const client = await this.getConnection(sourceOptions);
     let result = {};
 
+    const constructDeleteQuery = async (table_name, condition) => {
+      const delQuery = `DELETE FROM ${table_name} WHERE ${condition};`;
+      const [job] = await client.createQueryJob({
+        ...this.parseJSON(queryOptions.queryOptions),
+        query: delQuery,
+      });
+      const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
+      return rows;
+    };
+
     try {
       switch (operation) {
         case 'list_datasets': {
@@ -16,11 +26,11 @@ export default class Bigquery implements QueryService {
           result = datasets;
           break;
         }
-        case 'insert_data': {
+        case 'insert_record': {
           const [datasets] = await client
             .dataset(queryOptions.datasetId)
             .table(queryOptions.tableId)
-            .insert(queryOptions.rows);
+            .insert(this.parseJSON(queryOptions.rows));
           result = datasets;
           break;
         }
@@ -29,15 +39,14 @@ export default class Bigquery implements QueryService {
           result = tables;
           break;
         }
-        case 'create_tables': {
+        case 'create_table': {
           const [table] = await client
             .dataset(queryOptions.datasetId)
             .createTable(queryOptions.tableId, this.parseJSON(queryOptions.options));
           result = table;
           break;
         }
-
-        case 'delete_tables': {
+        case 'delete_table': {
           result = await client.dataset(queryOptions.datasetId).table(queryOptions.tableId).delete();
           break;
         }
@@ -59,11 +68,7 @@ export default class Bigquery implements QueryService {
           break;
         }
         case 'delete record': {
-          const [job] = await client.createQueryJob({
-            ...this.parseJSON(queryOptions.queryOptions),
-            query: queryOptions.query,
-          });
-          const [rows] = await job.getQueryResults(this.parseJSON(queryOptions.queryResultsOptions));
+          const rows = constructDeleteQuery(queryOptions.tableId, queryOptions.condition);
           result = rows;
           break;
         }

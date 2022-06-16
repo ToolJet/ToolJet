@@ -145,16 +145,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter dataset"
-      },
-      "options": {
-        "label": "Options",
-        "key": "options",
-        "type": "codehinter",
-        "mode": "javascript",
-        "placeholder": "{ filter: 'labels.color:green' }",
-        "description": "Enter options",
-        "height": "150px"
+        "placeholder": "Enter dataset id"
       }
     },
     "create_view": {
@@ -199,6 +190,19 @@
         "placeholder": "{ filter: 'labels.color:green' }",
         "description": "Enter options",
         "height": "150px"
+      }
+    },
+    "list_tables": {
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter dataset id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter dataset"
       }
     },
     "query": {
