@@ -210,7 +210,7 @@ This can be an absolute path, or relative to main HTML file.
 
 
 #### Password Retry Limit (Optional)
-The maximum password login retry limit for a user is by default 5, account will be locked after 5 unsuccessful password tries. Use these variables to control this behavior.
+The maximum retry limit of login password for a user is by default set to 5, account will be locked after 5 unsuccessful login attempts. Use the variables mentioned below to control this behavior:
 
 | variable                              | description                                                   |
 | ------------------------------------- | -----------------------------------------------------------   |
