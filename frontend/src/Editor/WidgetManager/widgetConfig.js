@@ -1307,6 +1307,7 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+      instructionText: { type: 'code', displayName: 'Instruction Text' },
       enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
       enablePicker: { type: 'code', displayName: 'Use File Picker' },
       enableMultiple: { type: 'code', displayName: 'Pick multiple files' },
@@ -1340,6 +1341,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
+        instructionText: { value: 'Drag and Drop some files here, or click to select files' },
         enableDropzone: { value: '{{true}}' },
         enablePicker: { value: '{{true}}' },
         maxFileCount: { value: '{{2}}' },
