@@ -13,7 +13,7 @@ import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import { allSvgs } from '@tooljet/plugins/client';
 // import { Confirm } from '../Viewer/Confirm';
-import _ from 'lodash';
+import _, { isEmpty, isEqual } from 'lodash';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -145,6 +145,26 @@ let QueryManager = class QueryManager extends React.Component {
     //     }
     //   }
     // }
+    if (!isEmpty(this.state.updatedQuery)) {
+      const query = nextProps.dataQueries.find((q) => q.id === this.state.updatedQuery.id);
+      if (query) {
+        const isLoading = nextProps.currentState?.queries[query.name]
+          ? nextProps.currentState?.queries[query.name]?.isLoading
+          : false;
+        const prevLoading = this.state.currentState?.queries[query.name]
+          ? this.state.currentState?.queries[query.name]?.isLoading
+          : false;
+        if (!isEqual(this.state.selectedQuery, nextProps.selectedQuery)) {
+          if (query && !isLoading && !prevLoading) {
+            this.props.runQuery(query.id, query.name);
+          }
+        } else if (!isLoading && prevLoading) {
+          this.state.updatedQuery.updateQuery
+            ? this.setState({ updatedQuery: {}, isUpdating: false })
+            : this.setState({ updatedQuery: {}, isCreating: false });
+        }
+      }
+    }
     this.setStateFromProps(nextProps);
   }
 
@@ -242,9 +262,13 @@ let QueryManager = class QueryManager extends React.Component {
       this.setState({ isUpdating: true });
       dataqueryService
         .update(this.state.selectedQuery.id, queryName, options)
-        .then(() => {
-          toast.success('Query Updated');
-          this.setState({ isUpdating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+        .then((data) => {
+          this.setState({
+            isUpdating: selectedDataSource?.kind !== 'runjs' ? true : false,
+            isFieldsChanged: false,
+            restArrayValuesChanged: false,
+            updatedQuery: selectedDataSource?.kind !== 'runjs' ? { ...data, updateQuery: true } : {},
+          });
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
         })
@@ -257,9 +281,14 @@ let QueryManager = class QueryManager extends React.Component {
       this.setState({ isCreating: true });
       dataqueryService
         .create(appId, appVersionId, queryName, kind, options, dataSourceId)
-        .then(() => {
+        .then((data) => {
           toast.success('Query Added');
-          this.setState({ isCreating: false, isFieldsChanged: false, restArrayValuesChanged: false });
+          this.setState({
+            isCreating: selectedDataSource?.kind !== 'runjs' ? true : false,
+            isFieldsChanged: false,
+            restArrayValuesChanged: false,
+            updatedQuery: selectedDataSource?.kind !== 'runjs' ? { ...data, updateQuery: false } : {},
+          });
           this.props.dataQueriesChanged();
           this.props.setStateOfUnsavedQueries(false);
         })
@@ -356,6 +385,7 @@ let QueryManager = class QueryManager extends React.Component {
     }
 
     let buttonText = mode === 'edit' ? 'Save' : 'Create';
+    buttonText = selectedDataSource?.kind !== 'runjs' ? buttonText + ' & Run' : buttonText;
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
     const Icon = allSvgs[this?.state?.selectedDataSource?.kind];
@@ -444,7 +474,7 @@ let QueryManager = class QueryManager extends React.Component {
                 className={`btn btn-primary m-1 float-right ${isUpdating || isCreating ? 'btn-loading' : ''} ${
                   this.state.selectedDataSource ? '' : 'disabled'
                 }`}
-                style={{ width: '72px', height: '28px' }}
+                style={{ width: '102px', height: '28px' }}
               >
                 {buttonText}
               </button>

@@ -1074,6 +1074,8 @@ class Editor extends React.Component {
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
+  runQuery = (queryId, queryName) => runQuery(this, queryId, queryName);
+
   dataSourceModalHandler = () => {
     this.dataSourceModalRef.current.dataSourceModalToggleStateHandler();
   };
@@ -1479,6 +1481,7 @@ class Editor extends React.Component {
                             allComponents={appDefinition.components}
                             isSourceSelected={this.state.isSourceSelected}
                             isQueryPaneDragging={this.state.isQueryPaneDragging}
+                            runQuery={this.runQuery}
                             dataSourceModalHandler={this.dataSourceModalHandler}
                             setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
                           />
