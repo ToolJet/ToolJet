@@ -137,7 +137,7 @@ function SettingsPage(props) {
                         placeholder="Enter first name"
                         value={firstName}
                         onChange={(event) => setFirstName(event.target.value)}
-                        onKeyPress={(event) => !/^[A-Za-z]+$/.test(event.key) && event.preventDefault(true)}
+                        onKeyPress={(event) => !/^[A-Za-z0-9<XXX> -]+$/.test(event.key) && event.preventDefault(true)}
                         data-cy="first-name-input"
                       />
                     </div>
@@ -154,7 +154,7 @@ function SettingsPage(props) {
                         placeholder="Enter last name"
                         value={lastName}
                         onChange={(event) => setLastName(event.target.value)}
-                        onKeyPress={(event) => !/^[A-Za-z]+$/.test(event.key) && event.preventDefault(true)}
+                        onKeyPress={(event) => !/^[A-Za-z0-9<XXX> -]+$/.test(event.key) && event.preventDefault(true)}
                         data-cy="last-name-input"
                       />
                     </div>
