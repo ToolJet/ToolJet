@@ -289,15 +289,19 @@ class ManageOrgVars extends React.Component {
                 addingVar={addingVar}
               />
             ) : (
-              <VariablesTable
-                isLoading={isLoading}
-                variables={variables}
-                canUpdateVariable={this.canUpdateVariable()}
-                canDeleteVariable={this.canDeleteVariable()}
-                admin={this.currentUser.admin}
-                onEditBtnClicked={this.onEditBtnClicked}
-                onDeleteBtnClicked={this.onDeleteBtnClicked}
-              />
+              <>
+                {variables?.length > 0 && (
+                  <VariablesTable
+                    isLoading={isLoading}
+                    variables={variables}
+                    canUpdateVariable={this.canUpdateVariable()}
+                    canDeleteVariable={this.canDeleteVariable()}
+                    admin={this.currentUser.admin}
+                    onEditBtnClicked={this.onEditBtnClicked}
+                    onDeleteBtnClicked={this.onDeleteBtnClicked}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>
