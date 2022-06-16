@@ -76,11 +76,15 @@ describe('Authentication', () => {
       expect(adminGroup.appCreate).toBeTruthy();
       expect(adminGroup.appDelete).toBeTruthy();
       expect(adminGroup.folderCreate).toBeTruthy();
+      expect(adminGroup.folderUpdate).toBeTruthy();
+      expect(adminGroup.folderDelete).toBeTruthy();
 
       const allUserGroup = groupPermissions.find((x) => x.group == 'all_users');
       expect(allUserGroup.appCreate).toBeFalsy();
       expect(allUserGroup.appDelete).toBeFalsy();
       expect(allUserGroup.folderCreate).toBeFalsy();
+      expect(allUserGroup.folderUpdate).toBeFalsy();
+      expect(allUserGroup.folderDelete).toBeFalsy();
     });
     describe('Single organization operations', () => {
       beforeEach(async () => {
@@ -202,11 +206,15 @@ describe('Authentication', () => {
         expect(adminGroup.appCreate).toBeTruthy();
         expect(adminGroup.appDelete).toBeTruthy();
         expect(adminGroup.folderCreate).toBeTruthy();
+        expect(adminGroup.folderUpdate).toBeTruthy();
+        expect(adminGroup.folderDelete).toBeTruthy();
 
         const allUserGroup = groupPermissions.find((x) => x.group == 'all_users');
         expect(allUserGroup.appCreate).toBeFalsy();
         expect(allUserGroup.appDelete).toBeFalsy();
         expect(allUserGroup.folderCreate).toBeFalsy();
+        expect(allUserGroup.folderUpdate).toBeFalsy();
+        expect(allUserGroup.folderDelete).toBeFalsy();
       });
       it('authenticate if valid credentials', async () => {
         await request(app.getHttpServer())
