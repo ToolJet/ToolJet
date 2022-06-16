@@ -12,16 +12,16 @@
       "description": "Single select dropdown for operation",
       "list": [
         {
+          "value": "query",
+          "name": "Query"
+        },
+        {
           "value": "list_datasets",
           "name": "List Datasets"
         },
         {
           "value": "list_tables",
           "name": "List Tables"
-        },
-        {
-          "value": "query",
-          "name": "Query"
         },
         {
           "value": "create_table",
@@ -40,20 +40,12 @@
           "name": "Insert Record"
         },
         {
-          "value": "update_record",
-          "name": "Update Record"
-        },
-        {
           "value": "delete_record",
           "name": "Delete Record"
         },
         {
-          "value": "bulk_insert",
-          "name": "Bulk insert records"
-        },
-        {
-          "value": "bulk_primary_insert",
-          "name": "Bulk update via primary key"
+          "value": "update_record",
+          "name": "Update Record"
         }
       ]
     },
@@ -88,24 +80,6 @@
         "mode": "javascript",
         "placeholder": "",
         "description": "Enter rows",
-        "height": "150px"
-      },
-      "columns": {
-        "label": "Columns",
-        "key": "columns",
-        "type": "codehinter",
-        "mode": "javascript",
-        "placeholder": "",
-        "description": "Enter columns",
-        "height": "150px"
-      },
-      "values": {
-        "label": "Values",
-        "key": "values",
-        "type": "codehinter",
-        "mode": "javascript",
-        "placeholder": "",
-        "description": "Enter values",
         "height": "150px"
       }
     },
@@ -298,13 +272,107 @@
         "className": "codehinter-plugins",
         "placeholder": "Enter dataset"
       },
-      "options": {
-        "label": "Options",
-        "key": "options",
+      "view_name": {
+        "label": "View name",
+        "key": "view_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter view name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter view name"
+      },
+      "columns": {
+        "label": "Columns",
+        "key": "columns",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ filter: 'labels.color:green' }",
-        "description": "Enter options",
+        "placeholder": "[ column1, column2, ... ]",
+        "description": "Enter columns",
+        "height": "150px"
+      },
+      "where_field": {
+        "label": "Field",
+        "key": "where_field",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter field",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter field"
+      },
+      "where_operation": {
+        "label": "Operator",
+        "key": "where_operation",
+        "className": "col-4",
+        "type": "dropdown",
+        "description": "Single select dropdown for where operation",
+        "list": [
+          {
+            "value": "=",
+            "name": "="
+          },
+          {
+            "value": "<",
+            "name": "<"
+          },
+          {
+            "value": ">",
+            "name": ">"
+          },
+          {
+            "value": "<=",
+            "name": "<="
+          },
+          {
+            "value": ">=",
+            "name": ">="
+          },
+          {
+            "value": "array-contains",
+            "name": "array-contains"
+          },
+          {
+            "value": "in",
+            "name": "in"
+          },
+          {
+            "value": "array-contains-any",
+            "name": "array-contains-any"
+          },
+          {
+            "value": "",
+            "name": "None"
+          }
+        ]
+      },
+      "where_value": {
+        "label": "Value",
+        "key": "where_value",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter value",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter value"
+      },
+      "queryOptions": {
+        "label": "Query options",
+        "key": "queryOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ location: 'US', dryRun: true }",
+        "description": "Enter query options",
+        "height": "150px"
+      },
+      "queryResultsOptions": {
+        "label": "Query results options",
+        "key": "queryResultsOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ wrapIntegers: true }",
+        "description": "Enter Query results options",
         "height": "150px"
       }
     },
