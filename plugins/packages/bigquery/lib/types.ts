@@ -11,7 +11,7 @@ export type QueryOptions = {
   tableId: string;
   rows: string;
   condition: string;
-  columns: Array<string>;
+  columns: Array<object>;
   values: string;
   view_name: string;
 };
