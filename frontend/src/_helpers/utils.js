@@ -53,12 +53,12 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
       ...Object.values(customObjects),
       null
     );
-    if (withError) return [result, error];
-    return result;
   } catch (err) {
     error = err;
     console.log('eval_error', err);
   }
+  if (withError) return [result, error];
+  return result;
 }
 
 export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
@@ -76,10 +76,7 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
           return [{}, error];
         }
 
-        let result = resolveCode(code, state, customObjects, withError, reservedKeyword);
-
-        if (withError) return [result, error];
-        return result;
+        return resolveCode(code, state, customObjects, withError, reservedKeyword);
       } else if (object.startsWith('%%') && object.endsWith('%%')) {
         const code = object.replaceAll('%%', '');
 
@@ -88,10 +85,7 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
           return [{}, error];
         }
 
-        let result = resolveCode(code, state, customObjects, withError, reservedKeyword);
-
-        if (withError) return [result, error];
-        return result;
+        return resolveCode(code, state, customObjects, withError, reservedKeyword);
       }
 
       const dynamicVariables = getDynamicVariables(object);
