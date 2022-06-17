@@ -40,7 +40,7 @@ export default class Bigquery implements QueryService {
           const query = `CREATE VIEW ${queryOptions.datasetId}.${queryOptions.view_name} AS
           SELECT ${queryOptions.columns}
           FROM ${queryOptions.datasetId}.${queryOptions.tableId}
-          WHERE ${queryOptions.where_field}${queryOptions.where_operation} ${queryOptions.where_value};`;
+          WHERE ${queryOptions.condition};`;
 
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
@@ -62,7 +62,7 @@ export default class Bigquery implements QueryService {
         }
 
         case 'delete_record': {
-          const query = `DELETE FROM ${queryOptions.datasetId}.${queryOptions.tableId} WHERE ${queryOptions.where_field}${queryOptions.where_operation}'${queryOptions.where_value}';`;
+          const query = `DELETE FROM ${queryOptions.datasetId}.${queryOptions.tableId} WHERE ${queryOptions.condition};`;
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
             query: query,
@@ -82,7 +82,7 @@ export default class Bigquery implements QueryService {
         }
 
         case 'update_record': {
-          const query = `UPDATE  ${queryOptions.datasetId}.${queryOptions.tableId} SET ${queryOptions.columns} WHERE ${queryOptions.where_field}${queryOptions.where_operation}'${queryOptions.where_value}'`;
+          const query = `UPDATE  ${queryOptions.datasetId}.${queryOptions.tableId} SET ${queryOptions.columns} WHERE ${queryOptions.condition}`;
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
             query: query,
