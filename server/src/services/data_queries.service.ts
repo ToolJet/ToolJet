@@ -255,12 +255,7 @@ export class DataQueriesService {
 
         if (variables?.length > 0) {
           for (const variable of variables) {
-            if (variable.includes(`globals.environmentVariables.server`)) {
-              const secret_value = await this.resolveVariable(variable, organization_id);
-              object = object.replace(variable, secret_value);
-            } else {
-              object = object.replace(variable, options[variable]);
-            }
+            object = object.replace(variable, options[variable]);
           }
         }
         return object;
@@ -270,6 +265,20 @@ export class DataQueriesService {
             object = await this.resolveVariable(object, organization_id);
           } else {
             object = options[object];
+          }
+          return object;
+        } else {
+          const variables = object.match(/%%(.*?)%%/g);
+
+          if (variables?.length > 0) {
+            for (const variable of variables) {
+              if (variable.includes(`globals.environmentVariables.server`)) {
+                const secret_value = await this.resolveVariable(variable, organization_id);
+                object = object.replace(variable, secret_value);
+              } else {
+                object = object.replace(variable, options[variable]);
+              }
+            }
           }
           return object;
         }
