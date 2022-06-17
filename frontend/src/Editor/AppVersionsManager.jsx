@@ -77,33 +77,41 @@ export const AppVersionsManager = function AppVersionsManager({
   };
 
   const createVersion = (versionName, createAppVersionFrom) => {
-    if (versionName.trim() !== '') {
-      setIsCreatingVersion(true);
-      appVersionService
-        .create(appId, versionName, createAppVersionFrom.id)
-        .then(() => {
-          closeModal();
-          toast.success('Version Created');
+    const trimmedVersionName = versionName.trim();
 
-          appVersionService.getAll(appId).then((data) => {
-            setAppVersions(data.versions);
-
-            const latestVersion = data.versions.at(0);
-            setAppDefinitionFromVersion(latestVersion);
-            setEditingAppVersion(latestVersion);
-            setVersionName('');
-          });
-
-          setIsCreatingVersion(false);
-        })
-        .catch((_error) => {
-          setIsCreatingVersion(false);
-          toast.error('Oops, something went wrong');
-        });
-    } else {
-      toast.error('The name of version should not be empty');
-      setIsCreatingVersion(false);
+    if (!trimmedVersionName) {
+      toast.error('The version name should not be empty');
+      return;
     }
+
+    if (trimmedVersionName.length > 255) {
+      toast.error('The version name cannot be more than 255 characters');
+      return;
+    }
+
+    setIsCreatingVersion(true);
+
+    appVersionService
+      .create(appId, versionName, createAppVersionFrom.id)
+      .then(() => {
+        closeModal();
+        toast.success('Version Created');
+
+        appVersionService.getAll(appId).then((data) => {
+          setAppVersions(data.versions);
+
+          const latestVersion = data.versions.at(0);
+          setAppDefinitionFromVersion(latestVersion);
+          setEditingAppVersion(latestVersion);
+          setVersionName('');
+        });
+
+        setIsCreatingVersion(false);
+      })
+      .catch((_error) => {
+        toast.error('Oops, something went wrong');
+        setIsCreatingVersion(false);
+      });
   };
 
   const deleteAppVersion = (versionId) => {
@@ -173,17 +181,17 @@ export const AppVersionsManager = function AppVersionsManager({
 
   return (
     <div ref={wrapperRef} className="input-group app-version-menu">
-      <span className="input-group-text app-version-menu-sm">Version</span>
-      <span
+      <div className="input-group-text app-version-menu-sm">Version</div>
+      <div
         className={`app-version-name form-select app-version-menu-sm ${appVersions ? '' : 'disabled'}`}
         onClick={() => {
           setShowDropDown(!showDropDown);
         }}
       >
-        <span className={`${releasedVersionId === editingAppVersion.id ? 'released' : ''}`}>
+        <div className={`selected ${releasedVersionId === editingAppVersion.id ? 'released' : ''}`}>
           {releasedVersionId === editingAppVersion.id && <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />}
-          <span className="px-1">{editingAppVersion.name}</span>
-        </span>
+          <div className="px-1 version-name">{editingAppVersion.name}</div>
+        </div>
         {showDropDown && (
           <>
             <div className="dropdown-menu app-version-container show">
@@ -213,9 +221,9 @@ export const AppVersionsManager = function AppVersionsManager({
                         onMouseEnter={() => setMouseHoveredOnVersion(version.id)}
                         onMouseLeave={() => setMouseHoveredOnVersion(null)}
                       >
-                        <div className="col-md-4">{version.name}</div>
+                        <div className="col-md-9  version-name">{version.name}</div>
 
-                        <div className="col-md-2 offset-md-5 d-flex" style={{ gap: 5, paddingLeft: 10 }}>
+                        <div className="col-md-3 d-flex" style={{ gap: 5, paddingLeft: 10 }}>
                           <button
                             className="btn badge bg-azure-lt"
                             onClick={(e) => {
@@ -296,7 +304,7 @@ export const AppVersionsManager = function AppVersionsManager({
           appVersions={appVersions}
           showCreateVersionModalPrompt={showCreateVersionModalPrompt}
         />
-      </span>
+      </div>
       <Modal show={showVersionUpdateModal} closeModal={() => setShowVersionUpdateModal(false)} title="Edit version">
         <div className="row">
           <div className="col modal-main">
@@ -307,7 +315,7 @@ export const AppVersionsManager = function AppVersionsManager({
               placeholder="version name"
               disabled={isEditingVersion}
               value={versionName}
-              maxLength={25}
+              maxLength="255"
             />
           </div>
         </div>
@@ -388,6 +396,7 @@ const CreateVersionModal = function CreateVersionModal({
           <label className="form-label">Version Name</label>
           <input
             type="text"
+            maxLength="255"
             onChange={(e) => setVersionName(e.target.value)}
             className="form-control"
             placeholder="Enter version name"

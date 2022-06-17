@@ -2692,6 +2692,10 @@ hr {
   overflow: auto;
 }
 
+.app-version-container .dropdown-item {
+  cursor: pointer;
+}
+
 .query-manager-header {
   .nav-item {
     border-right: solid 1px #dadcde;
@@ -2899,7 +2903,7 @@ input:focus-visible {
   .DateRangePickerInput__withBorder {
     border: 1px solid #1f2936;
   }
-  
+
   .main .canvas-container .canvas-area {
     background: #2f3c4c;
   }
@@ -3118,29 +3122,29 @@ input:focus-visible {
 
   .skeleton-line::after {
     background-image: linear-gradient(
-      to right,
-      #566177 0,
-      #5a6170 40%,
-      #4c5b79 80%
-    );
+        to right,
+        #566177 0,
+        #5a6170 40%,
+        #4c5b79 80%
+      );
   }
 
   .app-icon-skeleton::after {
     background-image: linear-gradient(
-      to right,
-      #566177 0,
-      #5a6170 40%,
-      #4c5b79 80%
-    );
+        to right,
+        #566177 0,
+        #5a6170 40%,
+        #4c5b79 80%
+      );
   }
 
   .folder-icon-skeleton::after {
     background-image: linear-gradient(
-      to right,
-      #566177 0,
-      #5a6170 40%,
-      #4c5b79 80%
-    );
+        to right,
+        #566177 0,
+        #5a6170 40%,
+        #4c5b79 80%
+      );
   }
 
   .select-search__input {
@@ -4048,6 +4052,20 @@ input[type="text"] {
   width: 283px;
 }
 
+.app-version-menu {
+  .selected {
+    width: 100%;
+    display: flex;
+    cursor: pointer;
+  }
+
+  .version-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 .app-version-menu .released {
   color: #36af8b;
 }
@@ -4792,14 +4810,14 @@ div#driver-page-overlay {
 }
 .hinter-canvas-input {
   .canvas-hinter-wrap{
-  width: 135px;
-  height: 42px !important;
-}
+    width: 135px;
+    height: 42px !important;
+  }
 }
 .hinter-canvas-input{
   width: 180px !important;
   display: flex;
-  padding: 4px; 
+  padding: 4px;
   height: 41.2px !important;
   margin-top: 1px;
   .CodeMirror-sizer{
@@ -5353,25 +5371,25 @@ div#driver-page-overlay {
 
 .kanban-container {
   background-color: #fefefe;
-  
+
   .kanban-column {
     background-color: #f4f4f4;
     padding: 0 !important;
     height: fit-content !important;
-    
-   .card-body {
-    &:hover {
-      overflow-y: auto !important;
-      &::-webkit-scrollbar {
-        width: 0 !important;
-        height: 0 !important;
+
+    .card-body {
+      &:hover {
+        overflow-y: auto !important;
+        &::-webkit-scrollbar {
+          width: 0 !important;
+          height: 0 !important;
+        }
       }
     }
-   }
-    
+
     .card-header {
       background-color: #fefefe;
-      
+
       .badge {
         font-size: 12px !important;
       }
@@ -5436,21 +5454,21 @@ div#driver-page-overlay {
 }
 
 .bade-component {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    user-select: none;
-    padding: calc(0.25rem - 1px) 0.25rem;
-    height: 1.25rem;
-    border: 1px solid transparent;
-    min-width: 1.25rem;
-    font-weight: 600;
-    font-size: .625rem;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-    vertical-align: bottom;
-    border-radius: 4px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  user-select: none;
+  padding: calc(0.25rem - 1px) 0.25rem;
+  height: 1.25rem;
+  border: 1px solid transparent;
+  min-width: 1.25rem;
+  font-weight: 600;
+  font-size: .625rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  vertical-align: bottom;
+  border-radius: 4px;
 }
 // sso-helper-page
 .sso-helper-container{
@@ -5468,9 +5486,9 @@ div#driver-page-overlay {
 }
 #git-url , #google-url
 {
-color: #0565ff;
-margin-left: 4px;
-word-break: break-all;
+  color: #0565ff;
+  margin-left: 4px;
+  word-break: break-all;
 }
 @media only screen and (max-width: 768px) {
   .sso-helper-container{
@@ -5501,10 +5519,10 @@ word-break: break-all;
   margin-bottom: 4px !important;
   display: flex;
   span{
-   margin-right: 10px;
+    margin-right: 10px;
   }
   a{
-   margin-left: 6px;
+    margin-left: 6px;
 
   }
 }
@@ -5520,13 +5538,13 @@ word-break: break-all;
   border-right: 3px solid transparent;
   border-bottom: 8px solid transparent;
   box-shadow: 0 0 0 2px,
-  inset 6px 4px 0 -4px,
-  inset -6px 4px 0 -4px;
+    inset 6px 4px 0 -4px,
+    inset -6px 4px 0 -4px;
   border-radius: 3px
- }
- 
- .gg-album::after,
- .gg-album::before {
+}
+
+.gg-album::after,
+.gg-album::before {
   content: "";
   display: block;
   box-sizing: border-box;
@@ -5537,19 +5555,19 @@ word-break: break-all;
   transform: rotate(46deg);
   top: 5px;
   right: 4px
- }
- 
- .gg-album::after {
+}
+
+.gg-album::after {
   transform: rotate(-46deg);
   right: 2px
- } 
- .sso-helper-header{
-   display: flex;
-   align-items: center;
-   span{
+}
+.sso-helper-header{
+  display: flex;
+  align-items: center;
+  span{
     margin-right: 10px;
-   }
- }
+  }
+}
 
 // sso end
 
@@ -5568,7 +5586,7 @@ a.step-item-disabled {
   background: #fff !important;
 }
 .steps .step-item.active:before {
-    border-color: #b4b2b2 !important;
+  border-color: #b4b2b2 !important;
 }
 .steps-item{
   color: var(--textColor) !important;
