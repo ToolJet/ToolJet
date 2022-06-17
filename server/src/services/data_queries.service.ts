@@ -218,28 +218,24 @@ export class DataQueriesService {
   }
 
   async resolveVariable(str: string, organization_id: string) {
-    const tempStr: string = str.replace(/{|}/g, '');
-    const variablesResult = await this.orgEnvironmentVariablesRepository.find({
-      variableType: 'server',
-      organizationId: organization_id,
-    });
-    const serverVariables = {};
-    await Promise.all(
-      variablesResult.map(async (variable) => {
-        serverVariables[variable.variableName] = await this.encryptionService.decryptColumnValue(
+    const tempStr: string = str.replace(/%%/g, '');
+    let result = tempStr;
+    if (new RegExp('^globals.environmentVariables.server.[A-Za-z0-9]+$').test(tempStr)) {
+      const splitArray = tempStr.split('.');
+      const variableResult = await this.orgEnvironmentVariablesRepository.findOne({
+        variableType: 'server',
+        organizationId: organization_id,
+        variableName: splitArray[splitArray.length - 1],
+      });
+
+      if (variableResult) {
+        result = await this.encryptionService.decryptColumnValue(
           'org_environment_variables',
           organization_id,
-          variable.value
+          variableResult.value
         );
-      })
-    );
-    const evalFunction = Function('globals', `return ${tempStr}`);
-    const result = evalFunction({
-      environmentVariables: {
-        server: { ...serverVariables },
-      },
-    });
-
+      }
+    }
     return result;
   }
 
@@ -252,13 +248,9 @@ export class DataQueriesService {
     } else if (typeof object === 'string') {
       object = object.replace(/\n/g, ' ');
       if (object.startsWith('{{') && object.endsWith('}}') && (object.match(/{{/g) || []).length === 1) {
-        if (object.includes(`globals.environmentVariables.server`)) {
-          object = await this.resolveVariable(object, organization_id);
-        } else {
-          object = options[object];
-        }
+        object = options[object];
         return object;
-      } else {
+      } else if (object.match(/\{\{(.*?)\}\}/g)?.length > 0) {
         const variables = object.match(/\{\{(.*?)\}\}/g);
 
         if (variables?.length > 0) {
@@ -272,6 +264,15 @@ export class DataQueriesService {
           }
         }
         return object;
+      } else {
+        if (object.startsWith('%%') && object.endsWith('%%') && (object.match(/%%/g) || []).length === 2) {
+          if (object.includes(`globals.environmentVariables.server`)) {
+            object = await this.resolveVariable(object, organization_id);
+          } else {
+            object = options[object];
+          }
+          return object;
+        }
       }
     } else if (Array.isArray(object)) {
       object.forEach((element) => {});
