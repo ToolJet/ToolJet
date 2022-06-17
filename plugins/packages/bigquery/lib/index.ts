@@ -12,13 +12,13 @@ export default class Bigquery implements QueryService {
     try {
       switch (operation) {
         case 'list_datasets': {
-          const [datasets] = await client.getDatasets(this.parseJSON(queryOptions.options));
+          const [datasets] = await client.getDatasets();
           result = datasets;
           break;
         }
 
         case 'list_tables': {
-          const [tables] = await client.dataset(queryOptions.datasetId).getTables(this.parseJSON(queryOptions.options));
+          const [tables] = await client.dataset(queryOptions.datasetId).getTables();
           result = tables;
           break;
         }
@@ -71,6 +71,7 @@ export default class Bigquery implements QueryService {
           result = rows;
           break;
         }
+
         case 'insert_record': {
           const rows = await client
             .dataset(queryOptions.datasetId)
