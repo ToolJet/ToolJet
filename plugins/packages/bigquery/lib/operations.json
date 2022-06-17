@@ -290,7 +290,7 @@
         "label": "Columns",
         "key": "columns",
         "type": "codehinter",
-        "placeholder": "age=24 ,name='bob'..",
+        "placeholder": "{{{name:'bigshow',age:555}}}",
         "description": "Enter columns",
         "height": "150px"
       },

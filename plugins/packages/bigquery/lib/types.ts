@@ -11,8 +11,8 @@ export type QueryOptions = {
   tableId: string;
   rows: string;
   condition: string;
-  columns: Array<object>;
-  viewcolumns: Array<string>;
+  columns: object;
+  viewcolumns: string;
   values: string;
   view_name: string;
 };

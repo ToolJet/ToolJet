@@ -38,7 +38,7 @@ export default class Bigquery implements QueryService {
 
         case 'create_view': {
           const query = `CREATE VIEW ${queryOptions.datasetId}.${queryOptions.view_name} AS
-          SELECT ${queryOptions.viewcolumns.join(',')}
+          SELECT ${queryOptions.viewcolumns}
           FROM ${queryOptions.datasetId}.${queryOptions.tableId}
           WHERE ${queryOptions.condition};`;
 
@@ -62,7 +62,9 @@ export default class Bigquery implements QueryService {
         }
 
         case 'delete_record': {
-          const query = `DELETE FROM ${queryOptions.datasetId}.${queryOptions.tableId} WHERE ${queryOptions.condition};`;
+          const query = `DELETE FROM ${queryOptions.datasetId}.${queryOptions.tableId} ${
+            queryOptions.condition ? `WHERE ${queryOptions.condition}` : 'WHERE TRUE'
+          }`;
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
             query: query,
@@ -84,7 +86,10 @@ export default class Bigquery implements QueryService {
         case 'update_record': {
           let columString = '';
           columString = await this.columnBuilder(queryOptions);
-          const query = `UPDATE  ${queryOptions.datasetId}.${queryOptions.tableId} SET ${columString} WHERE ${queryOptions.condition}`;
+          const query = `UPDATE  ${queryOptions.datasetId}.${queryOptions.tableId} SET ${columString}  ${
+            queryOptions.condition ? `WHERE ${queryOptions.condition}` : 'WHERE TRUE'
+          }`;
+
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
             query: query,
@@ -106,13 +111,11 @@ export default class Bigquery implements QueryService {
   }
   async columnBuilder(queryOptions: any): Promise<string> {
     const columString = [];
-    const columns = queryOptions['columns'];
-    columns.map((item: any) => {
-      for (const [key, value] of Object.entries(item)) {
-        const primaryKeyValue = typeof value === 'string' ? `'${value}'` : value;
-        columString.push(`${key}=${primaryKeyValue}`);
-      }
-    });
+    const columns = queryOptions.columns;
+    for (const [key, value] of Object.entries(columns)) {
+      const primaryKeyValue = typeof value === 'string' ? `'${value}'` : value;
+      columString.push(`${key}=${primaryKeyValue}`);
+    }
     return columString.join(',');
   }
 
