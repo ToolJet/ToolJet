@@ -227,12 +227,12 @@
         "className": "codehinter-plugins",
         "placeholder": "Enter view name"
       },
-      "columns": {
-        "label": "Columns",
-        "key": "columns",
+      "viewcolumns": {
+        "label": "View Columns",
+        "key": "viewcolumns",
         "type": "codehinter",
         "placeholder": "column1, column2, ... ",
-        "description": "Enter columns",
+        "description": "Enter viewcolumns",
         "height": "150px"
       },
       "condition": {

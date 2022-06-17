@@ -12,6 +12,7 @@ export type QueryOptions = {
   rows: string;
   condition: string;
   columns: Array<object>;
+  viewcolumns: Array<string>;
   values: string;
   view_name: string;
 };
