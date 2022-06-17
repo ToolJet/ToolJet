@@ -228,7 +228,7 @@
         "placeholder": "Enter view name"
       },
       "viewcolumns": {
-        "label": "View Columns",
+        "label": "View columns",
         "key": "viewcolumns",
         "type": "codehinter",
         "placeholder": "column1, column2, ... ",
@@ -290,7 +290,7 @@
         "label": "Columns",
         "key": "columns",
         "type": "codehinter",
-        "placeholder": "{{{name:'bigshow',age:555}}}",
+        "placeholder": "{{({name:'bob',age:30})}}",
         "description": "Enter columns",
         "height": "150px"
       },

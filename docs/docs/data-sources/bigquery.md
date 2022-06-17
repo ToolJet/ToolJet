@@ -64,20 +64,22 @@ Query results can be transformed using transformations. Read our transformations
 
 -  [List Tables](#list-tables)
 
--  [Insert Record] (#insert-record)
+-  [Query](#query)
 
--  [Delete Record ](#insert-record)
+-  [Insert Record ](#insert-record)
 
--  [Update Record](#insert-record)
+-  [Delete Record ](#delete-record)
 
-
--  [Create View](#insert-record)
-
-
--  [Create Table](#insert-record)
+-  [Update Record](#update-record)
 
 
--  [Delete Table](#insert-record)
+-  [Create View](#create-view)
+
+
+-  [Create Table](#create-table)
+
+
+-  [Delete Table](#create-table)
 
 
 
@@ -117,24 +119,67 @@ Return list of tables within a dataset
 
 Return data based on the `Query`. `Query options` ([Reference](https://cloud.google.com/bigquery/docs/reference/rest/v2/Job)), and `Query result options` ([Reference](https://cloud.google.com/nodejs/docs/reference/bigquery/latest/overview#_google_cloud_bigquery_QueryResultsOptions_type)).
 
-### Insert Record
-
-### Delete Record 
-
-### Update Record
-
-
-### Create View
-
-
-### Create Table
-
-
-### Delete Table
-
 
 <div style={{textAlign: 'center'}}>
 
 ![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/query.png)
 
 </div>
+
+### Insert Record
+- To insert a record.
+
+`[
+      {
+        name: 'Tom',
+        age: '30',
+        location: bqGeography,
+        school: schoolBuffer,
+        measurements: [50.05, 100.5],
+        datesTimes: {
+          day: bqDate,
+          firstTime: bqDatetime,
+          secondTime: bqTime,
+          thirdTime: bqTimestamp,
+        },
+      },
+      {
+        name: 'Ada',
+        age: '35',
+        measurements: [30.08, 121.7],
+      },
+    ]`
+
+### Delete Record 
+- To delete a record.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-delete.png)
+
+</div>
+
+:::info
+NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be deleted!
+:::
+### Update Record
+- To update a record.
+:::info
+NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be updated!
+:::
+### Create View
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-view.png)
+
+</div>
+
+- To create a view.
+
+### Create Table
+
+- To create a table.
+
+### Delete Table
+- To delete a table.
