@@ -145,7 +145,7 @@ export class UsersService {
 
     const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
 
-    const updateableParams = {
+    const updatableParams = {
       forgotPasswordToken,
       firstName,
       lastName,
@@ -153,16 +153,14 @@ export class UsersService {
     };
 
     // removing keys with undefined values
-    cleanObject(updateableParams);
+    cleanObject(updatableParams);
 
     let user: User;
 
     const performUpdateInTransaction = async (manager) => {
-      await manager.update(User, userId, { ...updateableParams });
+      await manager.update(User, userId, updatableParams);
       user = await manager.findOne(User, { where: { id: userId } });
-
       await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups, organizationId);
-
       await this.addUserGroupPermissions(manager, user, addGroups, organizationId);
     };
 
@@ -175,6 +173,10 @@ export class UsersService {
     }
 
     return user;
+  }
+
+  async updateUser(userId, updatableParams) {
+    await this.usersRepository.update(userId, updatableParams);
   }
 
   async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[], organizationId?: string) {
