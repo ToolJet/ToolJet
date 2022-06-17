@@ -270,7 +270,6 @@ export const Organization = function Organization() {
         <div className="dropdown-divider"></div>
         {admin && (
           <>
-            <div className="dropdown-divider"></div>
             <Link data-testid="settingsBtn" to="/users" className="dropdown-item" data-cy="manage-users">
               Manage Users
             </Link>
