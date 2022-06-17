@@ -206,7 +206,6 @@ export const widgets = [
       loadingState: { type: 'toggle', displayName: 'Loading State' },
       markerColor: { type: 'color', displayName: 'Marker color' },
       showAxes: { type: 'toggle', displayName: 'Show axes' },
-      options: { type: 'toggle', displayName: 'Options' },
       showGridLines: { type: 'toggle', displayName: 'Show grid lines' },
       type: {
         type: 'select',
@@ -238,7 +237,8 @@ export const widgets = [
         title: { value: 'This title can be changed' },
         markerColor: { value: '#CDE1F8' },
         showAxes: { value: '{{true}}' },
-        options: { value: '{{true}}' },
+       
+        
         showGridLines: { value: '{{true}}' },
         plotFromJson: { value: '{{false}}' },
         loadingState: { value: `{{false}}` },
