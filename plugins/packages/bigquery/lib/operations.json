@@ -78,7 +78,7 @@
         "key": "rows",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "",
+        "placeholder": "[{name: 'Tom', age: 30},{name: 'Jane', age: 32}]",
         "description": "Enter rows",
         "height": "150px"
       }
