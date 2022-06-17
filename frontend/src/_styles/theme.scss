@@ -537,6 +537,14 @@ button {
       border: solid rgba(0, 0, 0, 0.125);
       border-width: 1px 0px 0px 0px;
 
+      .create-save-button-dropdown-toggle {
+        background-color: #4a6ce8;
+      }
+
+      .create-save-button-dropdown-toggle:hover {
+        background-color: #4066f0;
+      }
+
       .table-responsive {
         scrollbar-width: none;
       }
