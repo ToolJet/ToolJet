@@ -129,26 +129,11 @@ Return data based on the `Query`. `Query options` ([Reference](https://cloud.goo
 ### Insert Record
 - To insert a record.
 
-`[
-      {
-        name: 'Tom',
-        age: '30',
-        location: bqGeography,
-        school: schoolBuffer,
-        measurements: [50.05, 100.5],
-        datesTimes: {
-          day: bqDate,
-          firstTime: bqDatetime,
-          secondTime: bqTime,
-          thirdTime: bqTimestamp,
-        },
-      },
-      {
-        name: 'Ada',
-        age: '35',
-        measurements: [30.08, 121.7],
-      },
-    ]`
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-insert.png)
+
+</div>
 
 ### Delete Record 
 - To delete a record.
@@ -164,10 +149,19 @@ NOTE: Be careful when deleting records in a table. If you omit the WHERE clause,
 :::
 ### Update Record
 - To update a record.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-update.png)
+
+</div>
+
 :::info
 NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be updated!
 :::
 ### Create View
+
+- To create a view.
 
 <div style={{textAlign: 'center'}}>
 
@@ -175,11 +169,14 @@ NOTE: Be careful when deleting records in a table. If you omit the WHERE clause,
 
 </div>
 
-- To create a view.
 
 ### Create Table
 
 - To create a table.
+
+:::info
+NOTE: visit -https://github.com/googleapis/nodejs-bigquery/blob/main/samples/createTable.js for more info on schema.
+:::
 
 ### Delete Table
 - To delete a table.
