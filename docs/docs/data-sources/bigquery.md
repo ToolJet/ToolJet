@@ -64,7 +64,21 @@ Query results can be transformed using transformations. Read our transformations
 
 -  [List Tables](#list-tables)
 
--  [Query](#query)
+-  [Insert Record] (#insert-record)
+
+-  [Delete Record ](#insert-record)
+
+-  [Update Record](#insert-record)
+
+
+-  [Create View](#insert-record)
+
+
+-  [Create Table](#insert-record)
+
+
+-  [Delete Table](#insert-record)
+
 
 
 ### List Datasets
@@ -102,6 +116,22 @@ Return list of tables within a dataset
 ### Query
 
 Return data based on the `Query`. `Query options` ([Reference](https://cloud.google.com/bigquery/docs/reference/rest/v2/Job)), and `Query result options` ([Reference](https://cloud.google.com/nodejs/docs/reference/bigquery/latest/overview#_google_cloud_bigquery_QueryResultsOptions_type)).
+
+### Insert Record
+
+### Delete Record 
+
+### Update Record
+
+
+### Create View
+
+
+### Create Table
+
+
+### Delete Table
+
 
 <div style={{textAlign: 'center'}}>
 
