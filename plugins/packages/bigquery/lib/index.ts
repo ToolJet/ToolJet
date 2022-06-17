@@ -41,7 +41,6 @@ export default class Bigquery implements QueryService {
           SELECT ${queryOptions.viewcolumns.join(',')}
           FROM ${queryOptions.datasetId}.${queryOptions.tableId}
           WHERE ${queryOptions.condition};`;
-          console.log('QUERY', query);
 
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
