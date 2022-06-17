@@ -11,9 +11,6 @@ export type QueryOptions = {
   tableId: string;
   rows: string;
   condition: string;
-  where_field: string;
-  where_value: string;
-  where_operation: string;
   columns: Array<string>;
   values: string;
   view_name: string;
