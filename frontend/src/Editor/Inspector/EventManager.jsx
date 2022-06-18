@@ -76,6 +76,21 @@ export const EventManager = ({
     return componentOptions;
   }
 
+  function getComponentOptionsOfComponentsWithActions(componentType = '') {
+    let componentOptions = [];
+    Object.keys(components || {}).forEach((key) => {
+      if ((components[key].component.actions?.length ?? 0) > 0) {
+        if (componentType === '' || components[key].component.component === componentType) {
+          componentOptions.push({
+            name: components[key].component.name,
+            value: key,
+          });
+        }
+      }
+    });
+    return componentOptions;
+  }
+
   function getComponentActionOptions(componentId) {
     if (componentId == undefined) return [];
     const component = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId)[0][1];
@@ -104,7 +119,7 @@ export const EventManager = ({
 
   function getComponentActionDefaultParams(componentId, actionHandle) {
     const action = getAction(componentId, actionHandle);
-    const defaultParams = action.params.map((param) => ({ handle: param.handle, value: param.defaultValue }));
+    const defaultParams = (action.params ?? []).map((param) => ({ handle: param.handle, value: param.defaultValue }));
     return defaultParams;
   }
 
@@ -491,7 +506,7 @@ export const EventManager = ({
                   <div className="col-9">
                     <SelectSearch
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
-                      options={getComponentOptions()}
+                      options={getComponentOptionsOfComponentsWithActions()}
                       value={event?.componentId}
                       search={true}
                       onChange={(value) => {
@@ -526,7 +541,7 @@ export const EventManager = ({
                 </div>
                 {event?.componentId &&
                   event?.componentSpecificActionHandle &&
-                  getAction(event?.componentId, event?.componentSpecificActionHandle).params.map((param) => (
+                  (getAction(event?.componentId, event?.componentSpecificActionHandle).params ?? []).map((param) => (
                     <div className="row mt-2" key={param.handle}>
                       <div className="col-3 p-1">{param.displayName}</div>
                       <div className="col-9">

@@ -181,6 +181,10 @@ export const widgets = [
     exposedVariables: {},
     actions: [
       {
+        handle: 'click',
+        displayName: 'Click',
+      },
+      {
         handle: 'setLabel',
         displayName: 'Set label',
         params: [{ handle: 'label', displayName: 'Label', defaultValue: 'New label' }],
