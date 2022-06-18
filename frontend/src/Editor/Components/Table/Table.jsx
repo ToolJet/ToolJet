@@ -806,7 +806,7 @@ export function Table({
 
   registerAction(
     'setPage',
-    function (targetPageIndex) {
+    async function (targetPageIndex) {
       setPaginationInternalPageIndex(targetPageIndex);
       setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);

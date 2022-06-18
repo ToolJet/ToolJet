@@ -20,11 +20,13 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
   };
 
-  registerAction('click', function () {
+  registerAction('click', async function () {
     fireEvent('onClick');
   });
 
-  registerAction('setLabel', setLabel);
+  registerAction('setLabel', async function (label) {
+    setLabel(label);
+  });
 
   return (
     <div className="widget-button">

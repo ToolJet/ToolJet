@@ -323,8 +323,8 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           ...param,
           value: resolveReferences(param.value, _ref.state.currentState, undefined, customVariables),
         }));
-        action(...actionArguments.map((argument) => argument.value));
-        return Promise.resolve();
+        const actionPromise = action(...actionArguments.map((argument) => argument.value));
+        return actionPromise ?? Promise.resolve();
       }
     }
   }
