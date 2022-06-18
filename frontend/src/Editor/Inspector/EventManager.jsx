@@ -495,6 +495,7 @@ export const EventManager = ({
                       value={event?.componentId}
                       search={true}
                       onChange={(value) => {
+                        handlerChanged(index, 'componentSpecificActionHandle', undefined);
                         handlerChanged(index, 'componentId', value);
                       }}
                       filterOptions={fuzzySearch}
@@ -533,7 +534,7 @@ export const EventManager = ({
                           theme={darkMode ? 'monokai' : 'default'}
                           currentState={currentState}
                           initialValue={
-                            event?.componentSpecificActionParams?.find((param) => param.handle === param.handle)
+                            event?.componentSpecificActionParams?.find((paramItem) => paramItem.handle === param.handle)
                               ?.value ?? param.defaultValue
                           }
                           onChange={(value) => {

@@ -87,6 +87,19 @@ export const widgets = [
       searchText: '',
       selectedRows: [],
     },
+    actions: [
+      {
+        handle: 'setPage',
+        displayName: 'Set page',
+        params: [
+          {
+            handle: 'page',
+            displayName: 'Page',
+            defaultValue: '{{1}}',
+          },
+        ],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
