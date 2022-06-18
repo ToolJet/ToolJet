@@ -709,7 +709,7 @@ let QueryManager = class QueryManager extends React.Component {
 
                 <div className="hr-text hr-text-left">Events</div>
 
-                <div className="query-manager-events">
+                <div>
                   <EventManager
                     eventsChanged={this.eventsChanged}
                     component={mockDataQueryComponent.component}
