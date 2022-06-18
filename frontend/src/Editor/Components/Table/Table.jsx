@@ -720,6 +720,7 @@ export function Table({
     () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [
       JSON.stringify(columnData),
+      JSON.stringify(tableData),
       JSON.stringify(actions),
       leftActionsCellData.length,
       rightActionsCellData.length,

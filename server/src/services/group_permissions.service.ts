@@ -123,7 +123,17 @@ export class GroupPermissionsService {
       },
     });
 
-    const { app_create, app_delete, add_apps, remove_apps, add_users, remove_users, folder_create } = body;
+    const {
+      app_create,
+      app_delete,
+      add_apps,
+      remove_apps,
+      add_users,
+      remove_users,
+      folder_create,
+      folder_delete,
+      folder_update,
+    } = body;
 
     await getManager().transaction(async (manager) => {
       // update group permissions
@@ -131,6 +141,8 @@ export class GroupPermissionsService {
         ...(typeof app_create === 'boolean' && { appCreate: app_create }),
         ...(typeof app_delete === 'boolean' && { appDelete: app_delete }),
         ...(typeof folder_create === 'boolean' && { folderCreate: folder_create }),
+        ...(typeof folder_delete === 'boolean' && { folderDelete: folder_delete }),
+        ...(typeof folder_update === 'boolean' && { folderUpdate: folder_update }),
       };
       if (Object.keys(groupPermissionUpdateParams).length !== 0) {
         await manager.update(GroupPermission, groupPermissionId, groupPermissionUpdateParams);

@@ -3,6 +3,7 @@ import moment from 'moment';
 import _ from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
+import { previewQuery, executeAction } from '@/_helpers/appUtils';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -269,13 +270,67 @@ export function validateEmail(email) {
   return emailRegex.test(email);
 }
 
-export async function executeMultilineJS(currentState, code) {
+export async function executeMultilineJS(_ref, code, isPreview, confirmed = undefined, mode = '') {
+  const { currentState } = _ref.state;
   let result = {},
     error = null;
 
+  const actions = {
+    runQuery: function (queryName = '') {
+      const query = _ref.state.dataQueries.find((query) => query.name === queryName);
+      if (_.isEmpty(query)) return;
+      if (isPreview) {
+        return previewQuery(_ref, query, true);
+      } else {
+        const event = {
+          actionId: 'run-query',
+          queryId: query.id,
+          queryName: query.name,
+        };
+        return executeAction(_ref, event, mode, {});
+      }
+    },
+    setVariable: function (key = '', value = '') {
+      if (key) {
+        const event = {
+          actionId: 'set-custom-variable',
+          key,
+          value,
+        };
+        return executeAction(_ref, event, mode, {});
+      }
+    },
+    unSetVariable: function (key = '') {
+      if (key) {
+        const event = {
+          actionId: 'unset-custom-variable',
+          key,
+        };
+        return executeAction(_ref, event, mode, {});
+      }
+    },
+  };
+
+  for (const key of Object.keys(currentState.queries)) {
+    currentState.queries[key] = {
+      ...currentState.queries[key],
+      run: () => actions.runQuery(key),
+    };
+  }
+
   try {
     const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
-    var evalFn = new AsyncFunction('moment', '_', 'components', 'queries', 'globals', 'axios', 'variables', code);
+    var evalFn = new AsyncFunction(
+      'moment',
+      '_',
+      'components',
+      'queries',
+      'globals',
+      'axios',
+      'variables',
+      'actions',
+      code
+    );
     result = {
       status: 'ok',
       data: await evalFn(
@@ -285,7 +340,8 @@ export async function executeMultilineJS(currentState, code) {
         currentState.queries,
         currentState.globals,
         axios,
-        currentState.variables
+        currentState.variables,
+        actions
       ),
     };
   } catch (err) {

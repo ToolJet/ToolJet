@@ -43,7 +43,7 @@ export function Git({ settings, updateData }) {
         setEnabled(enabled_tmp);
         data.id && setConfigId(data.id);
         updateData('git', { id: data.id, enabled: enabled_tmp });
-        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} Git SSO`, {
+        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} GitHub SSO`, {
           position: 'top-center',
         });
       },
@@ -61,7 +61,7 @@ export function Git({ settings, updateData }) {
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
           <div className="card-title">
-            Git
+            GitHub
             <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`}>{enabled ? 'Enabled' : 'Disabled'}</span>
           </div>
           <div>

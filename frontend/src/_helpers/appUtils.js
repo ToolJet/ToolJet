@@ -167,7 +167,7 @@ function logoutAction(_ref) {
 
   return Promise.resolve();
 }
-function executeAction(_ref, event, mode, customVariables) {
+export const executeAction = (_ref, event, mode, customVariables) => {
   console.log('nopski', customVariables);
   if (event) {
     switch (event.actionId) {
@@ -327,7 +327,7 @@ function executeAction(_ref, event, mode, customVariables) {
       }
     }
   }
-}
+};
 
 export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
@@ -505,6 +505,12 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCalendarViewChange',
       'onSearchTextChanged',
       'onPageChange',
+      'onCardAdded',
+      'onCardRemoved',
+      'onCardMoved',
+      'onCardSelected',
+      'onCardUpdated',
+      'onTabSwitch',
     ].includes(eventName)
   ) {
     const { component } = options;
@@ -554,7 +560,7 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query) {
+export function previewQuery(_ref, query, calledFromQuery = false) {
   const options = getQueryVariables(query.options, _ref.props.currentState);
 
   _ref.setState({ previewLoading: true });
@@ -562,7 +568,7 @@ export function previewQuery(_ref, query) {
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref.state.currentState, query.options.code);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, true);
     } else {
       queryExecutionPromise = dataqueryService.preview(query, options);
     }
@@ -575,7 +581,11 @@ export function previewQuery(_ref, query) {
           finalData = runTransformation(_ref, finalData, query.options.transformation, query);
         }
 
-        _ref.setState({ previewLoading: false, queryPreviewData: finalData });
+        if (calledFromQuery) {
+          _ref.setState({ previewLoading: false });
+        } else {
+          _ref.setState({ previewLoading: false, queryPreviewData: finalData });
+        }
         switch (data.status) {
           case 'failed': {
             toast.error(`${data.message}: ${data.description}`);
@@ -594,7 +604,7 @@ export function previewQuery(_ref, query) {
           }
         }
 
-        resolve();
+        resolve({ status: data.status, data: finalData });
       })
       .catch(({ error, data }) => {
         _ref.setState({ previewLoading: false, queryPreviewData: data });
@@ -651,7 +661,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
         console.log('here');
-        queryExecutionPromise = executeMultilineJS(_self.state.currentState, query.options.code);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, false, confirmed, mode);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }
@@ -697,7 +707,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
                 },
               },
               () => {
-                resolve();
+                resolve(data);
                 onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
               }
             );
@@ -731,7 +741,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
                   },
                 },
                 () => {
-                  resolve();
+                  resolve(finalData);
                   onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
                 }
               );
@@ -770,7 +780,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
               },
             },
             () => {
-              resolve();
+              resolve({ status: 'ok', data: finalData });
               onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
             }
           );
@@ -790,7 +800,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
               },
             },
             () => {
-              resolve();
+              resolve({ status: 'failed', message: error });
             }
           );
         });
