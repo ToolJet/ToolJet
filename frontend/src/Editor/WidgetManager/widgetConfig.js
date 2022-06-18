@@ -166,6 +166,13 @@ export const widgets = [
       borderRadius: { type: 'number', displayName: 'Border radius' },
     },
     exposedVariables: {},
+    actions: [
+      {
+        handle: 'setLabel',
+        displayName: 'Set label',
+        params: [{ handle: 'label', displayName: 'Label', defaultValue: 'New label' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },

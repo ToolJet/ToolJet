@@ -6,6 +6,7 @@ import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import _ from 'lodash';
+import { componentTypes } from '../WidgetManager/components';
 
 export const EventManager = ({
   component,
@@ -77,25 +78,34 @@ export const EventManager = ({
 
   function getComponentActionOptions(componentId) {
     if (componentId == undefined) return [];
-    console.log({ currentState, componentId });
-    const component = Object.values(currentState?.components ?? {}).filter(
-      (component) => component.id === componentId
-    )[0];
-    const actions = Object.keys(component).filter((key) => typeof component[key] === 'function');
+    const component = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId)[0][1];
+    const targetComponentMeta = componentTypes.find(
+      (componentType) => component.component.component === componentType.component
+    );
+    const actions = targetComponentMeta.actions;
+
     const options = actions.map((action) => ({
-      name: _.startCase(action),
-      value: action,
+      name: action.displayName,
+      value: action.handle,
     }));
 
     return options;
   }
 
-  function getActionParamHandles(componentId, actionName) {
-    if (componentId == undefined || actionName == undefined) return {};
-    const component = Object.values(currentState?.components ?? {}).filter(
-      (component) => component.id === componentId
-    )[0];
-    return component[actionName].paramHandles;
+  function getAction(componentId, actionHandle) {
+    if (componentId == undefined || actionHandle == undefined) return {};
+    const component = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId)[0][1];
+    const targetComponentMeta = componentTypes.find(
+      (componentType) => component.component.component === componentType.component
+    );
+    const actions = targetComponentMeta.actions;
+    return actions.find((action) => action.handle === actionHandle);
+  }
+
+  function getComponentActionDefaultParams(componentId, actionHandle) {
+    const action = getAction(componentId, actionHandle);
+    const defaultParams = action.params.map((param) => ({ handle: param.handle, value: param.defaultValue }));
+    return defaultParams;
   }
 
   function getAllApps() {
@@ -498,10 +508,15 @@ export const EventManager = ({
                     <SelectSearch
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={getComponentActionOptions(event?.componentId)}
-                      value={event?.action}
+                      value={event?.componentSpecificActionHandle}
                       search={true}
                       onChange={(value) => {
-                        handlerChanged(index, 'action', value);
+                        handlerChanged(index, 'componentSpecificActionHandle', value);
+                        handlerChanged(
+                          index,
+                          'componentSpecificActionParams',
+                          getComponentActionDefaultParams(event?.componentId, value)
+                        );
                       }}
                       filterOptions={fuzzySearch}
                       placeholder="Select.."
@@ -509,16 +524,26 @@ export const EventManager = ({
                   </div>
                 </div>
                 {event?.componentId &&
-                  event?.action &&
-                  getActionParamHandles(event?.componentId, event?.action).map((param) => (
-                    <div className="row mt-2" key={param}>
-                      <div className="col-3 p-1">{_.startCase(param)}</div>
+                  event?.componentSpecificActionHandle &&
+                  getAction(event?.componentId, event?.componentSpecificActionHandle).params.map((param) => (
+                    <div className="row mt-2" key={param.handle}>
+                      <div className="col-3 p-1">{param.displayName}</div>
                       <div className="col-9">
                         <CodeHinter
                           theme={darkMode ? 'monokai' : 'default'}
                           currentState={currentState}
-                          initialValue={event[param]}
-                          onChange={(value) => handlerChanged(index, param, value)}
+                          initialValue={
+                            event?.componentSpecificActionParams?.find((param) => param.handle === param.handle)
+                              ?.value ?? param.defaultValue
+                          }
+                          onChange={(value) => {
+                            const newParam = { ...param, value: value };
+                            const params = event?.componentSpecificActionParams ?? [];
+                            const newParams = params.map((paramOfParamList) =>
+                              paramOfParamList.handle === param.handle ? newParam : param
+                            );
+                            handlerChanged(index, 'componentSpecificActionParams', newParams);
+                          }}
                           enablePreview={true}
                         />
                       </div>

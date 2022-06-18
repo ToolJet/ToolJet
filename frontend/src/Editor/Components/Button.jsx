@@ -24,7 +24,7 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
     fireEvent('onClick');
   });
 
-  registerAction('setLabel', setLabel, ['label']);
+  registerAction('setLabel', setLabel);
 
   return (
     <div className="widget-button">
