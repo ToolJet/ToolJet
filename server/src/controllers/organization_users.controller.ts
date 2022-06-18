@@ -29,17 +29,17 @@ export class OrganizationUsersController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('archiveUser', UserEntity))
   @Post(':id/archive')
-  async archive(@Param('id') id: string) {
-    const result = await this.organizationUsersService.archive(id);
-    return decamelizeKeys({ result });
+  async archive(@User() user, @Param('id') id: string) {
+    await this.organizationUsersService.archive(id, user.organizationId);
+    return;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('archiveUser', UserEntity))
   @Post(':id/unarchive')
   async unarchive(@User() user, @Param('id') id: string) {
-    const result = await this.organizationUsersService.unarchive(user, id);
-    return decamelizeKeys({ result });
+    await this.organizationUsersService.unarchive(user, id);
+    return;
   }
 
   // Deprecated
