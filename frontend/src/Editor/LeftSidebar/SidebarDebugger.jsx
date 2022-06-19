@@ -270,7 +270,7 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
             />
           </span>
         )}
-        {errorProps.kind === 'component' && (
+        {/* {errorProps.kind === 'component' && (
           <span>
             <ReactJson
               src={errorProps.effectiveProperties}
@@ -286,7 +286,7 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
               collapseStringsAfterLength={1000}
             />
           </span>
-        )}
+        )} */}
 
         <hr className="border-1 border-bottom bg-grey py-0" />
       </div>

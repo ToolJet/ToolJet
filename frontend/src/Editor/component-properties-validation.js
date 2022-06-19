@@ -43,7 +43,7 @@ const generateSchemaFromValidationDefinition = (definition) => {
   return definition.required ? schema : optional(schema);
 };
 
-const validate = (value, schema, defaultValue) => {
+const validate = (value, schema, _defaultValue) => {
   let valid = true;
   const errors = [];
 
@@ -51,12 +51,12 @@ const validate = (value, schema, defaultValue) => {
     assert(value, schema);
   } catch (structError) {
     valid = false;
-    errors.push(structError.message + '. Falling back to default value: ' + defaultValue?.toString());
+    errors.push(structError.message);
   }
 
   if (_.isUndefined(value)) {
     valid = false;
-    errors.push("Received 'undefined'. Falling back to default value: " + defaultValue?.toString());
+    errors.push("Received 'undefined'");
   }
 
   return [valid, errors];
@@ -79,6 +79,7 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
         ...allErrors,
         ...errors.map((message) => ({ property: propertyDefinitions[propertyName]?.displayName, message })),
       ];
+
       // return [propertyName, _valid ? value : defaultValue];
       // uncomment the above line and comment the below line to enable coercing to default values
       return [propertyName, value];

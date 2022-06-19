@@ -3,7 +3,7 @@ import { widgets } from './widgetConfig';
 const universalProps = {
   properties: {},
   general: {
-    tooltip: { type: 'code', displayName: 'Tooltip' },
+    tooltip: { type: 'code', displayName: 'Tooltip', validation: { schema: { type: 'string' } } },
   },
   others: {},
   events: {},

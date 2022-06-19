@@ -149,7 +149,6 @@ export const Box = function Box({
   const [renderCount, setRenderCount] = useState(0);
   const [renderStartTime, setRenderStartTime] = useState(new Date());
 
-  console.log({ validate: component.validate });
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
   const [validatedProperties, propertyErrors] =
     mode === 'edit' && component.validate
@@ -162,11 +161,15 @@ export const Box = function Box({
       ? validateProperties(resolvedStyles, componentMeta.styles)
       : [resolvedStyles, []];
   const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
+  const [validatedGeneralProperties, generalPropertiesErrors] =
+    mode === 'edit' && component.validate
+      ? validateProperties(resolvedGeneralProperties, componentMeta.general)
+      : [resolvedGeneralProperties, []];
 
   useEffect(() => {
     const componentName = getComponentName(currentState, id);
     const errorLog = Object.fromEntries(
-      [...propertyErrors, ...styleErrors].map((error) => [
+      [...propertyErrors, ...styleErrors, ...generalPropertiesErrors].map((error) => [
         `${componentName} - ${error.property}`,
         {
           type: 'component',
@@ -179,7 +182,7 @@ export const Box = function Box({
     );
     sideBarDebugger?.error(errorLog);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ propertyErrors, styleErrors })]);
+  }, [JSON.stringify({ propertyErrors, styleErrors, generalPropertiesErrors })]);
 
   useEffect(() => {
     setRenderCount(renderCount + 1);
@@ -234,9 +237,9 @@ export const Box = function Box({
     <OverlayTrigger
       placement={inCanvas ? 'auto' : 'top'}
       delay={{ show: 500, hide: 0 }}
-      trigger={inCanvas && !resolvedGeneralProperties.tooltip?.trim() ? null : ['hover', 'focus']}
+      trigger={inCanvas && !validatedGeneralProperties.tooltip?.trim() ? null : ['hover', 'focus']}
       overlay={(props) =>
-        renderTooltip({ props, text: inCanvas ? `${resolvedGeneralProperties.tooltip}` : `${component.description}` })
+        renderTooltip({ props, text: inCanvas ? `${validatedGeneralProperties.tooltip}` : `${component.description}` })
       }
     >
       <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
