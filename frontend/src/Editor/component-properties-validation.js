@@ -79,7 +79,9 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
         ...allErrors,
         ...errors.map((message) => ({ property: propertyDefinitions[propertyName]?.displayName, message })),
       ];
-      return [propertyName, valid ? value : defaultValue];
+      // return [propertyName, valid ? value : defaultValue];
+      // uncomment the above line and comment the below line to enable coercing to default values
+      return [propertyName, value];
     })
   );
   return [coercedProperties, allErrors];

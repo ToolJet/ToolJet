@@ -172,12 +172,54 @@ export const widgets = [
       onClick: { displayName: 'On click' },
     },
     styles: {
-      backgroundColor: { type: 'color', displayName: 'Background color' },
-      textColor: { type: 'color', displayName: 'Text color' },
-      loaderColor: { type: 'color', displayName: 'Loader color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'number', displayName: 'Border radius' },
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
+      loaderColor: {
+        type: 'color',
+        displayName: 'Loader color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
+      borderRadius: {
+        type: 'number',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'number' },
+          defaultValue: false,
+        },
+      },
     },
     exposedVariables: {},
     definition: {
