@@ -16,7 +16,7 @@ const sidebars = {
       label: 'Setup',
       link: {type: 'doc', id: 'setup/index'},
       items: [
-        'setup/introduction',
+        'setup/docker-local',
         'setup/docker',
         'setup/heroku',
         'setup/ec2',
@@ -52,8 +52,8 @@ const sidebars = {
         'tutorial/versioning-and-release',
         'tutorial/sharing-and-deploying',
         'tutorial/manage-users-groups',
-        'password-login/password-login',
         'tutorial/keyboard-shortcuts',
+        'tutorial/multiworkspace',
       ],
     },
     {
@@ -86,6 +86,7 @@ const sidebars = {
         'data-sources/postgresql',
         'data-sources/redis',
         'data-sources/restapi',
+        'data-sources/saphana',
         'data-sources/sendgrid',
         'data-sources/smtp',
         'data-sources/snowflake',
@@ -98,6 +99,7 @@ const sidebars = {
       label: 'Widget Reference',
       items: [
         'widgets/button',
+        'widgets/button-group',
         'widgets/calendar',
         'widgets/chart',
         'widgets/checkbox',
@@ -112,6 +114,7 @@ const sidebars = {
         'widgets/file-picker',
         'widgets/iframe',
         'widgets/image',
+        'widgets/kanban',
         'widgets/listview',
         'widgets/map',
         'widgets/modal',
@@ -126,6 +129,7 @@ const sidebars = {
         'widgets/spinner',
         'widgets/star',
         'widgets/statistics',
+        'widgets/steps',
         'widgets/table',
         'widgets/tabs',
         'widgets/tags',
@@ -178,17 +182,43 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Single Sign-on',
+      label: 'User Authentication',
       link: {
         type: 'generated-index',
-        title: 'Single Sign-on',
+        title: 'User Authentication',
         description:
-          "Guide for enabling available Single Sign-ons on ToolJet",
-        keywords: ['single sign-on','SSO'],
+          "Guides for setting up User Authentication and managing Single Sign-On",
+        keywords: ['SSO','authentication'],
       },
+      collapsed: true,
       items: [
-        'sso/github',
-        'sso/google',
+        'user-authentication/user-lifecycle',
+        'user-authentication/general-settings',
+        'user-authentication/password-login',
+        {
+          type: 'category',
+          label: 'SSO',
+          items: [
+            'user-authentication/sso/github',
+            'user-authentication/sso/google',
+             {
+          type: 'category',
+          label: 'OpenId Connect',
+          link: {
+            type: 'generated-index',
+            title: 'OpenId Connect',
+            description:" ",
+            keywords: ['okta','openid','azureAD'],
+          },
+          collapsed: false,
+          items: [
+            'user-authentication/sso/setup',
+            'user-authentication/sso/okta',
+            'user-authentication/sso/azuread',
+          ],
+        }
+          ],
+        },
       ],
     },
     {
@@ -224,7 +254,7 @@ const sidebars = {
         'contributing-guide/slackcoc',
       ],
     },
-  ]
+  ],
 };
 
 module.exports = sidebars;

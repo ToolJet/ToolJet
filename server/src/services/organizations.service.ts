@@ -7,10 +7,24 @@ import { User } from 'src/entities/user.entity';
 import { cleanObject } from 'src/helpers/utils.helper';
 import { createQueryBuilder, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
+import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
 import { GroupPermissionsService } from './group_permissions.service';
 import { OrganizationUsersService } from './organization_users.service';
 import { UsersService } from './users.service';
+import { InviteNewUserDto } from '@dto/invite-new-user.dto';
+import { ConfigService } from '@nestjs/config';
+
+type FetchUserResponse = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  id: string;
+  status: string;
+  invitationToken?: string;
+  accountSetupToken?: string;
+};
 
 @Injectable()
 export class OrganizationsService {
@@ -26,7 +40,9 @@ export class OrganizationsService {
     private usersService: UsersService,
     private organizationUserService: OrganizationUsersService,
     private groupPermissionService: GroupPermissionsService,
-    private encryptionService: EncryptionService
+    private encryptionService: EncryptionService,
+    private emailService: EmailService,
+    private configService: ConfigService
   ) {}
 
   async create(name: string, user?: User): Promise<Organization> {
@@ -77,6 +93,8 @@ export class OrganizationsService {
         appCreate: isAdmin,
         appDelete: isAdmin,
         folderCreate: isAdmin,
+        folderUpdate: isAdmin,
+        folderDelete: isAdmin,
       });
       await this.groupPermissionsRepository.save(groupPermission);
       createdGroupPermissions.push(groupPermission);
@@ -85,7 +103,7 @@ export class OrganizationsService {
     return createdGroupPermissions;
   }
 
-  async fetchUsers(user: any): Promise<OrganizationUser[]> {
+  async fetchUsers(user: any): Promise<FetchUserResponse[]> {
     const organizationUsers = await this.organizationUsersRepository.find({
       where: { organizationId: user.organizationId },
       relations: ['user'],
@@ -93,10 +111,8 @@ export class OrganizationsService {
 
     const isAdmin = await this.usersService.hasGroup(user, 'admin');
 
-    // serialize
-    const serializedUsers = [];
-    for (const orgUser of organizationUsers) {
-      const serializedUser = {
+    return organizationUsers?.map((orgUser) => {
+      return {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName,
         lastName: orgUser.user.lastName,
@@ -104,15 +120,14 @@ export class OrganizationsService {
         id: orgUser.id,
         role: orgUser.role,
         status: orgUser.status,
+        ...(isAdmin && orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
+        ...(this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
+        this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' &&
+        orgUser.user.invitationToken
+          ? { accountSetupToken: orgUser.user.invitationToken }
+          : {}),
       };
-
-      if (isAdmin && orgUser.invitationToken) {
-        serializedUser['invitationToken'] = orgUser.invitationToken;
-      }
-      serializedUsers.push(serializedUser);
-    }
-
-    return serializedUsers;
+    });
   }
 
   async fetchOrganisations(user: any): Promise<Organization[]> {
@@ -307,5 +322,84 @@ export class OrganizationsService {
     });
     await this.decryptSecret(result?.configs);
     return result;
+  }
+
+  async inviteNewUser(currentUser: User, inviteNewUserDto: InviteNewUserDto): Promise<OrganizationUser> {
+    const userParams = <User>{
+      firstName: inviteNewUserDto.first_name,
+      lastName: inviteNewUserDto.last_name,
+      email: inviteNewUserDto.email,
+    };
+
+    let user = await this.usersService.findByEmail(userParams.email);
+    let defaultOrganization: Organization,
+      shouldSendWelcomeMail = false;
+
+    if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
+      throw new BadRequestException('User with such email already exists.');
+    }
+
+    if (user?.invitationToken) {
+      // user sign up not completed, name will be empty - updating name
+      await this.usersService.update(user.id, { firstName: userParams.firstName, lastName: userParams.lastName });
+    }
+
+    if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
+      // User not exist
+      shouldSendWelcomeMail = true;
+      // Create default organization
+      defaultOrganization = await this.create('Untitled workspace');
+    }
+    user = await this.usersService.create(
+      userParams,
+      currentUser.organizationId,
+      ['all_users'],
+      user,
+      true,
+      defaultOrganization?.id
+    );
+
+    if (defaultOrganization) {
+      // Setting up default organization
+      await this.organizationUserService.create(user, defaultOrganization, true);
+      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id);
+    }
+
+    const currentOrganization: Organization = (
+      await this.organizationUsersRepository.findOne({
+        where: { userId: currentUser.id, organizationId: currentUser.organizationId },
+        relations: ['organization'],
+      })
+    )?.organization;
+
+    const organizationUser: OrganizationUser = await this.organizationUserService.create(
+      user,
+      currentOrganization,
+      true
+    );
+
+    if (shouldSendWelcomeMail) {
+      this.emailService
+        .sendWelcomeEmail(
+          user.email,
+          user.firstName,
+          user.invitationToken,
+          organizationUser.invitationToken,
+          currentOrganization.name,
+          `${currentUser.firstName} ${currentUser.lastName}`
+        )
+        .catch((err) => console.error('Error while sending welcome mail', err));
+    } else {
+      this.emailService
+        .sendOrganizationUserWelcomeEmail(
+          user.email,
+          user.firstName,
+          `${currentUser.firstName} ${currentUser.lastName}`,
+          organizationUser.invitationToken,
+          currentOrganization.name
+        )
+        .catch((err) => console.error('Error while sending welcome mail', err));
+    }
+    return organizationUser;
   }
 }

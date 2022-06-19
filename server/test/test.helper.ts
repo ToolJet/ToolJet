@@ -6,6 +6,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { User } from 'src/entities/user.entity';
 import { App } from 'src/entities/app.entity';
+import { File } from 'src/entities/file.entity';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
@@ -25,6 +26,7 @@ import { AppsModule } from 'src/modules/apps/apps.module';
 import { LibraryAppCreationService } from '@services/library_app_creation.service';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { v4 as uuidv4 } from 'uuid';
+import { CreateFileDto } from '@dto/create-file.dto';
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -319,6 +321,8 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
         appCreate: group == 'admin',
         appDelete: group == 'admin',
         folderCreate: group == 'admin',
+        folderUpdate: group == 'admin',
+        folderDelete: group == 'admin',
       });
       await groupPermissionRepository.save(groupPermission);
     }
@@ -441,6 +445,15 @@ export async function createDataQuery(nestApp, { application, kind, dataSource, 
       updatedAt: new Date(),
     })
   );
+}
+
+export async function createFile(nestApp: any) {
+  let fileRepository: Repository<File>;
+  fileRepository = nestApp.get('FileRepository');
+  const createFileDto = new CreateFileDto();
+  createFileDto.filename = 'testfile';
+  createFileDto.data = Buffer.from([1, 2, 3, 4]);
+  return await fileRepository.save(fileRepository.create(createFileDto));
 }
 
 export async function createThread(_nestApp, { appId, x, y, userId, organizationId, appVersionsId }: any) {

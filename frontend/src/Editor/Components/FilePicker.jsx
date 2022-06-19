@@ -14,6 +14,8 @@ export const FilePicker = ({
   styles,
 }) => {
   //* properties definitions
+  const instructionText =
+    component.definition.properties.instructionText?.value ?? 'Drag and Drop some files here, or click to select files';
   const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
@@ -77,17 +79,21 @@ export const FilePicker = ({
     borderColor: '#ff1744',
   };
 
+  const [disablePicker, setDisablePicker] = React.useState(false);
+
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles, fileRejections } =
     useDropzone({
       accept: parsedFileType,
-      noClick: !parsedEnablePicker,
-      noDrag: !parsedEnableDropzone,
+      noClick: !parsedEnablePicker || disablePicker,
+      noDrag: !parsedEnableDropzone || disablePicker,
       noKeyboard: true,
       maxFiles: parsedMaxFileCount,
       minSize: parsedMinSize,
       maxSize: parsedMaxSize,
       multiple: parsedEnableMultiple,
-      disabled: parsedDisabledState,
+      disabled: disablePicker,
+      validator: validateFileExists,
+      onDropRejected: () => (selectedFiles.length > 0 ? setShowSelectedFiles(true) : setShowSelectedFiles(false)),
       onFileDialogCancel: () => (selectedFiles.length > 0 ? setShowSelectedFiles(true) : setShowSelectedFiles(false)),
     });
 
@@ -105,6 +111,30 @@ export const FilePicker = ({
   const [accepted, setAccepted] = React.useState(false);
   const [showSelectedFiles, setShowSelectedFiles] = React.useState(false);
   const [selectedFiles, setSelectedFiles] = React.useState([]);
+
+  //* custom validator
+  function validateFileExists(_file) {
+    const selectedFilesCount = selectedFiles.length;
+
+    if (selectedFilesCount === parsedMaxFileCount) {
+      return {
+        code: 'max_file_count_reached',
+        message: `Max file count reached`,
+      };
+    }
+
+    return null;
+  }
+
+  useEffect(() => {
+    if (parsedDisabledState) setDisablePicker(true);
+
+    if (selectedFiles.length === parsedMaxFileCount && parsedEnableMultiple) {
+      setDisablePicker(true);
+    } else {
+      setDisablePicker(false);
+    }
+  }, [selectedFiles.length, parsedDisabledState, parsedMaxFileCount, parsedEnableMultiple]);
 
   /**
    * *getFileData()
@@ -152,6 +182,7 @@ export const FilePicker = ({
       dataURL: readFileAsDataURL, // TODO: Fix dataURL to have correct format
       base64Data: readFileAsDataURL,
       parsedData: shouldProcessFileParsing ? await processFileContent(file.type, readFileAsText) : null,
+      filePath: file.path,
     };
   };
 
@@ -202,7 +233,9 @@ export const FilePicker = ({
       acceptedFiles.map((acceptedFile) => {
         const acceptedFileData = fileReader(acceptedFile);
         acceptedFileData.then((data) => {
-          fileData.push(data);
+          if (fileData.length < parsedMaxFileCount) {
+            fileData.push(data);
+          }
         });
       });
       setSelectedFiles(fileData);
@@ -226,8 +259,10 @@ export const FilePicker = ({
     }
 
     return () => {
+      if (selectedFiles.length === 0) {
+        setShowSelectedFiles(false);
+      }
       setAccepted(false);
-      setShowSelectedFiles(false);
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -255,8 +290,8 @@ export const FilePicker = ({
         <input {...getInputProps()} />
         <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
 
-        {showSelectedFiles ? (
-          <FilePicker.AcceptedFiles width={width - 10} height={height} showFilezone={setShowSelectedFiles}>
+        {showSelectedFiles && !accepted ? (
+          <FilePicker.AcceptedFiles width={width - 10} height={height}>
             {selectedFiles.map((acceptedFile, index) => (
               <>
                 <div key={index} className="col-10">
@@ -283,12 +318,21 @@ export const FilePicker = ({
         ) : (
           <FilePicker.Signifiers
             signifier={!isDragAccept && !accepted & !isDragReject}
-            feedback={'Drag & drop some files here, or click to select files'}
+            feedback={instructionText}
             cls={`${darkMode ? 'text-secondary' : 'text-dark'} mt-3`}
           />
         )}
 
-        <FilePicker.Signifiers signifier={isDragAccept} feedback={'All files will be accepted'} cls="text-lime mt-3" />
+        <FilePicker.Signifiers
+          signifier={isDragAccept && !(selectedFiles.length === parsedMaxFileCount)}
+          feedback={'All files will be accepted'}
+          cls="text-lime mt-3"
+        />
+        <FilePicker.Signifiers
+          signifier={isDragAccept && selectedFiles.length === parsedMaxFileCount}
+          feedback={'Max file reached!'}
+          cls="text-red mt-3"
+        />
 
         <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
       </div>
@@ -298,13 +342,13 @@ export const FilePicker = ({
 
 FilePicker.Signifiers = ({ signifier, feedback, cls }) => {
   if (signifier) {
-    return <>{feedback === null ? <div className={cls}></div> : <p className={cls}>{feedback}</p>}</>;
+    return <>{feedback === null ? <center className={cls}></center> : <p className={cls}>{feedback}</p>}</>;
   }
 
   return null;
 };
 
-FilePicker.AcceptedFiles = ({ children, width, height, showFilezone }) => {
+FilePicker.AcceptedFiles = ({ children, width, height }) => {
   const styles = {
     color: '#bdbdbd',
     outline: 'none',
@@ -316,7 +360,7 @@ FilePicker.AcceptedFiles = ({ children, width, height, showFilezone }) => {
     height,
   };
   return (
-    <aside style={styles} onClick={() => showFilezone(false)}>
+    <aside style={styles}>
       <span className="text-info">Files</span>
       <div className="row accepted-files">{children}</div>
     </aside>

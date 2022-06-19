@@ -7,6 +7,10 @@ title: Google Sheets
 
 ToolJet can connect to Google Sheet using OAuth 2.0, which helps us to limit an application's access to a user's account.
 
+## How to integrate Google Sheets
+
+<iframe height="500" src="https://www.youtube.com/embed/3PO41waW2CQ" title="ToolJet Googlsheet Integration" frameborder="0" allowfullscreen width="100%"></iframe>
+
 ## Self-Hosted Configuration
 
 If you are self-hosting the application, you will need to perform some additional steps.

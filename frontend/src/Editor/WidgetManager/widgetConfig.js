@@ -1,4 +1,4 @@
-export const componentTypes = [
+export const widgets = [
   {
     name: 'Table',
     displayName: 'Table',
@@ -6,110 +6,37 @@ export const componentTypes = [
     component: 'Table',
     properties: {
       title: { type: 'string', displayName: 'Title' },
-      data: {
-        type: 'code',
-        displayName: 'Table data',
-        validation: {
-          schemas: [{ type: 'array', required: true, element: { type: 'object', required: true } }],
-          default: [],
-        },
-      },
-      loadingState: {
-        type: 'toggle',
-        displayName: 'Loading state',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
-      },
+      data: { type: 'code', displayName: 'Table data' },
+      loadingState: { type: 'toggle', displayName: 'Loading state' },
       columns: { type: 'array', displayName: 'Table Columns' },
       serverSidePagination: {
         type: 'toggle',
         displayName: 'Server-side pagination',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
       },
       clientSidePagination: {
         type: 'toggle',
         displayName: 'Client-side pagination',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
       },
-      serverSideSearch: {
-        type: 'toggle',
-        displayName: 'Server-side search',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
-      },
+      serverSideSearch: { type: 'toggle', displayName: 'Server-side search' },
       actionButtonBackgroundColor: {
         type: 'color',
         displayName: 'Background color',
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: '#4D72FA',
-        },
       },
-      actionButtonTextColor: {
-        type: 'color',
-        displayName: 'Text color',
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: 'black',
-        },
-      },
-      displaySearchBox: {
-        type: 'toggle',
-        displayName: 'Show search box',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
-      },
+      actionButtonTextColor: { type: 'color', displayName: 'Text color' },
+      displaySearchBox: { type: 'toggle', displayName: 'Show search box' },
       showDownloadButton: {
         type: 'toggle',
         displayName: 'Show download button',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
       },
-      showFilterButton: {
-        type: 'toggle',
-        displayName: 'Show filter button',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
-      },
+      showFilterButton: { type: 'toggle', displayName: 'Show filter button' },
       showBulkUpdateActions: {
         type: 'toggle',
         displayName: 'Show bulk update actions',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
       },
-      showBulkSelector: {
-        type: 'toggle',
-        displayName: 'Bulk selection',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
-      },
+      showBulkSelector: { type: 'toggle', displayName: 'Bulk selection' },
       highlightSelectedRow: {
         type: 'toggle',
         displayName: 'Highlight selected row',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
       },
     },
     others: {
@@ -127,36 +54,18 @@ export const componentTypes = [
       onSearch: { displayName: 'Search' },
     },
     styles: {
-      textColor: {
-        type: 'color',
-        displayName: 'Text Color',
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: 'black',
-        },
-      },
-      actionButtonRadius: {
-        type: 'code',
-        displayName: 'Action Button Radius',
-        validation: {
-          schemas: [{ type: 'number', required: true }],
-          default: 0,
-        },
-      },
+      textColor: { type: 'color', displayName: 'Text Color' },
+      actionButtonRadius: { type: 'code', displayName: 'Action Button Radius' },
       tableType: {
         type: 'select',
         displayName: 'Table type',
         options: [
-          { name: 'Bordered', value: '' },
+          { name: 'Bordered', value: 'table-bordered' },
           { name: 'Borderless', value: 'table-borderless' },
           { name: 'Classic', value: 'table-classic' },
           { name: 'Striped', value: 'table-striped' },
           { name: 'Striped & bordered', value: 'table-striped table-bordered' },
         ],
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: '',
-        },
       },
       cellSize: {
         type: 'select',
@@ -165,35 +74,10 @@ export const componentTypes = [
           { name: 'Compact', value: 'compact' },
           { name: 'Spacious', value: 'spacious' },
         ],
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: '',
-        },
       },
-      borderRadius: {
-        type: 'code',
-        displayName: 'Border Radius',
-        validation: {
-          schemas: [{ type: 'number', required: true }],
-          default: 0,
-        },
-      },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
-      },
+      borderRadius: { type: 'code', displayName: 'Border Radius' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       selectedRow: {},
@@ -223,9 +107,18 @@ export const componentTypes = [
         showFilterButton: { value: '{{true}}' },
         columns: {
           value: [
-            { name: 'id', id: 'e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737' },
-            { name: 'name', id: '5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a' },
-            { name: 'email', id: 'afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f' },
+            {
+              name: 'id',
+              id: 'e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737',
+            },
+            {
+              name: 'name',
+              id: '5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a',
+            },
+            {
+              name: 'email',
+              id: 'afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f',
+            },
           ],
         },
         showBulkUpdateActions: { value: '{{true}}' },
@@ -235,11 +128,12 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
-        actionButtonRadius: { value: '{{0}}' },
+        actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         cellSize: { value: 'compact' },
-        borderRadius: { value: '{{0}}' },
+        borderRadius: { value: '0' },
+        tableType: { value: 'table-bordered' },
       },
     },
   },
@@ -257,16 +151,8 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      text: {
-        type: 'code',
-        displayName: 'Button Text',
-        validation: [{ type: 'string', default: 'Button', required: true }],
-      },
-      loadingState: {
-        type: 'toggle',
-        displayName: 'Loading State',
-        validation: [{ default: false, required: true, type: 'boolean' }],
-      },
+      text: { type: 'code', displayName: 'Button Text' },
+      loadingState: { type: 'toggle', displayName: 'Loading State' },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -315,54 +201,12 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      title: {
-        type: 'code',
-        displayName: 'Title',
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: '',
-        },
-      },
-      data: {
-        type: 'json',
-        displayName: 'Data',
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: '[]',
-        },
-      },
-      loadingState: {
-        type: 'toggle',
-        displayName: 'Loading State',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
-      },
-      markerColor: {
-        type: 'color',
-        displayName: 'Marker color',
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: '#CDE1F8',
-        },
-      },
-      showAxes: {
-        type: 'toggle',
-        displayName: 'Show axes',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
-      },
-      showGridLines: {
-        type: 'toggle',
-        displayName: 'Show grid lines',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
-      },
+      title: { type: 'code', displayName: 'Title' },
+      data: { type: 'json', displayName: 'Data' },
+      loadingState: { type: 'toggle', displayName: 'Loading State' },
+      markerColor: { type: 'color', displayName: 'Marker color' },
+      showAxes: { type: 'toggle', displayName: 'Show axes' },
+      showGridLines: { type: 'toggle', displayName: 'Show grid lines' },
       type: {
         type: 'select',
         displayName: 'Chart type',
@@ -371,47 +215,15 @@ export const componentTypes = [
           { name: 'Bar', value: 'bar' },
           { name: 'Pie', value: 'pie' },
         ],
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: 'line',
-        },
       },
-      jsonDescription: {
-        type: 'json',
-        displayName: 'Json Description',
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: '{}',
-        },
-      },
-      plotFromJson: {
-        type: 'toggle',
-        displayName: 'Use Plotly JSON schema',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
-      },
+      jsonDescription: { type: 'json', displayName: 'Json Description' },
+      plotFromJson: { type: 'toggle', displayName: 'Use Plotly JSON schema' },
     },
     events: {},
     styles: {
-      padding: { type: 'code', displayName: 'Padding', validation: [{ type: 'number', required: true, default: 50 }] },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
-      },
+      padding: { type: 'code', displayName: 'Padding' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       show: null,
@@ -458,7 +270,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        padding: { value: '{{50}}' },
+        padding: { value: '50' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -478,14 +290,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      title: {
-        type: 'code',
-        displayName: 'Title',
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: '',
-        },
-      },
+      title: { type: 'code', displayName: 'Title' },
       size: {
         type: 'select',
         displayName: 'Modal size',
@@ -494,22 +299,11 @@ export const componentTypes = [
           { name: 'medium', value: 'md' },
           { name: 'large', value: 'lg' },
         ],
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: 'md',
-        },
       },
     },
     events: {},
     styles: {
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
-      },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
       show: null,
@@ -543,25 +337,8 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      value: {
-        type: 'code',
-        displayName: 'Default value',
-        validation: {
-          schemas: [
-            { type: 'string', required: true },
-            { type: 'number', required: true },
-          ],
-          default: '',
-        },
-      },
-      placeholder: {
-        type: 'code',
-        displayName: 'Placeholder',
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: '',
-        },
-      },
+      value: { type: 'code', displayName: 'Default value' },
+      placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     validation: {
       regex: { type: 'code', displayName: 'Regex' },
@@ -573,30 +350,9 @@ export const componentTypes = [
       onChange: { displayName: 'On change' },
     },
     styles: {
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
-      },
-      borderRadius: {
-        type: 'code',
-        displayName: 'Border radius',
-        validation: {
-          schemas: [{ type: 'number', required: true }],
-          default: 0,
-        },
-      },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -638,65 +394,16 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      value: {
-        type: 'code',
-        displayName: 'Default value',
-        validation: {
-          schemas: [{ type: 'number', required: true }],
-          default: 0,
-        },
-      },
-      minValue: {
-        type: 'code',
-        displayName: 'Minimum value',
-        validation: {
-          schemas: [{ type: 'number', required: true }],
-          default: 0,
-        },
-      },
-      maxValue: {
-        type: 'code',
-        displayName: 'Maximum value',
-        validation: {
-          schemas: [{ type: 'number', required: true }],
-          default: 100,
-        },
-      },
-      placeholder: {
-        type: 'code',
-        displayName: 'Placeholder',
-        validation: {
-          schemas: [{ type: 'text', required: true }],
-          default: '',
-        },
-      },
+      value: { type: 'code', displayName: 'Default value' },
+      minValue: { type: 'code', displayName: 'Minimum value' },
+      maxValue: { type: 'code', displayName: 'Maximum value' },
+      placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
     styles: {
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
-      },
-      borderRadius: {
-        type: 'code',
-        displayName: 'Border radius',
-        validation: {
-          schemas: [{ type: 'number', required: true }],
-          default: 0,
-        },
-      },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: 0,
@@ -707,10 +414,10 @@ export const componentTypes = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        value: { value: '{{99}}' },
-        maxValue: { value: '{{100}}' },
-        minValue: { value: '{{0}}' },
-        placeholder: { value: '{{0}}' },
+        value: { value: '99' },
+        maxValue: { value: '' },
+        minValue: { value: '' },
+        placeholder: { value: '0' },
       },
       events: [],
       styles: {
@@ -734,14 +441,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      placeholder: {
-        type: 'code',
-        displayName: 'Placeholder',
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: '',
-        },
-      },
+      placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     validation: {
       regex: { type: 'code', displayName: 'Regex' },
@@ -751,30 +451,9 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
-      },
-      borderRadius: {
-        type: 'code',
-        displayName: 'Border radius',
-        validation: {
-          schemas: [{ type: 'number', required: true }],
-          default: 0,
-        },
-      },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -818,75 +497,19 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      defaultValue: {
-        type: 'code',
-        displayName: 'Default value',
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: '1/09/2021',
-        },
-      },
-      format: {
-        type: 'code',
-        displayName: 'Format',
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: 'DD/MM/YYYY',
-        },
-      },
-      enableTime: {
-        type: 'code',
-        displayName: 'Enable time selection?',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
-      },
-      enableDate: {
-        type: 'code',
-        displayName: 'Enable date selection?',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
-      },
-      disabledDates: {
-        type: 'code',
-        displayName: 'Disabled dates',
-        validation: {
-          schemas: [{ type: 'array', element: { type: 'string', required: true }, required: true }],
-          default: [],
-        },
-      },
+      defaultValue: { type: 'code', displayName: 'Default value' },
+      format: { type: 'code', displayName: 'Format' },
+      enableTime: { type: 'code', displayName: 'Enable time selection?' },
+      enableDate: { type: 'code', displayName: 'Enable date selection?' },
+      disabledDates: { type: 'code', displayName: 'Disabled dates' },
     },
     events: {
       onSelect: { displayName: 'On select' },
     },
     styles: {
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: true,
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schemas: [{ type: 'boolean', required: true }],
-          default: false,
-        },
-      },
-      borderRadius: {
-        type: 'code',
-        displayName: 'Border radius',
-        validation: {
-          schemas: [{ type: 'string', required: true }],
-          default: 0,
-        },
-      },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -929,6 +552,7 @@ export const componentTypes = [
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
+      defaultValue: { type: 'toggle', displayName: 'Default Status' },
     },
     events: {
       onCheck: { displayName: 'On check' },
@@ -940,7 +564,9 @@ export const componentTypes = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      value: false,
+    },
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -948,6 +574,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Checkbox label' },
+        defaultValue: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -1388,7 +1015,10 @@ export const componentTypes = [
       value: { type: 'code', displayName: 'Default value' },
       values: { type: 'code', displayName: 'Option values' },
       display_values: { type: 'code', displayName: 'Option labels' },
-      showAllOption: { type: 'toggle', displayName: 'Enable select All option' },
+      showAllOption: {
+        type: 'toggle',
+        displayName: 'Enable select All option',
+      },
     },
     events: {
       onSelect: { displayName: 'On select' },
@@ -1587,7 +1217,10 @@ export const componentTypes = [
     properties: {
       label: { type: 'code', displayName: 'Label' },
       maxRating: { type: 'code', displayName: 'Number of stars' },
-      defaultSelected: { type: 'code', displayName: 'Default no of selected stars' },
+      defaultSelected: {
+        type: 'code',
+        displayName: 'Default no of selected stars',
+      },
       allowHalfStar: { type: 'toggle', displayName: 'Enable half star' },
       tooltips: { type: 'code', displayName: 'Tooltips' },
     },
@@ -1674,6 +1307,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+      instructionText: { type: 'code', displayName: 'Instruction Text' },
       enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
       enablePicker: { type: 'code', displayName: 'Use File Picker' },
       enableMultiple: { type: 'code', displayName: 'Pick multiple files' },
@@ -1707,6 +1341,7 @@ export const componentTypes = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
+        instructionText: { value: 'Drag and Drop some files here, or click to select files' },
         enableDropzone: { value: '{{true}}' },
         enablePicker: { value: '{{true}}' },
         maxFileCount: { value: '{{2}}' },
@@ -1741,18 +1376,24 @@ export const componentTypes = [
     properties: {
       dateFormat: { type: 'code', displayName: 'Date format' },
       defaultDate: { type: 'code', displayName: 'Default date' },
-      events: {
-        type: 'code',
-        displayName: 'Events',
-      },
+      events: { type: 'code', displayName: 'Events' },
       resources: { type: 'code', displayName: 'Resources' },
       defaultView: { type: 'code', displayName: 'Default view' },
-      startTime: { type: 'code', displayName: 'Start time on week and day view' },
+      startTime: {
+        type: 'code',
+        displayName: 'Start time on week and day view',
+      },
       endTime: { type: 'code', displayName: 'End time on week and day view' },
       displayToolbar: { type: 'toggle', displayName: 'Show toolbar' },
-      displayViewSwitcher: { type: 'toggle', displayName: 'Show view switcher' },
+      displayViewSwitcher: {
+        type: 'toggle',
+        displayName: 'Show view switcher',
+      },
       highlightToday: { type: 'toggle', displayName: 'Highlight today' },
-      showPopOverOnEventClick: { type: 'toggle', displayName: 'Show popover when event is clicked' },
+      showPopOverOnEventClick: {
+        type: 'toggle',
+        displayName: 'Show popover when event is clicked',
+      },
     },
     events: {
       onCalendarEventSelect: { displayName: 'On Event Select' },
@@ -1770,7 +1411,10 @@ export const componentTypes = [
           { name: 'Spacious', value: 'spacious' },
         ],
       },
-      weekDateFormat: { type: 'code', displayName: 'Header date format on week view' },
+      weekDateFormat: {
+        type: 'code',
+        displayName: 'Header date format on week view',
+      },
     },
     exposedVariables: {
       selectedEvent: {},
@@ -1928,7 +1572,7 @@ export const componentTypes = [
       defaultTab: { type: 'code', displayName: 'Default tab' },
       hideTabs: { type: 'toggle', displayName: 'Hide Tabs' },
     },
-    events: {},
+    events: { onTabSwitch: { displayName: 'On tab switch' } },
     styles: {
       highlightColor: { type: 'color', displayName: 'Highlight Color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
@@ -2280,17 +1924,32 @@ export const componentTypes = [
       primaryValueLabel: { type: 'code', displayName: 'Primary value label' },
       primaryValue: { type: 'code', displayName: 'Primary value' },
       hideSecondary: { type: 'toggle', displayName: 'Hide secondary value' },
-      secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
+      secondaryValueLabel: {
+        type: 'code',
+        displayName: 'Secondary value label',
+      },
       secondaryValue: { type: 'code', displayName: 'Secondary value' },
-      secondarySignDisplay: { type: 'code', displayName: 'Secondary sign display' },
+      secondarySignDisplay: {
+        type: 'code',
+        displayName: 'Secondary sign display',
+      },
       loadingState: { type: 'toggle', displayName: 'Loading State' },
     },
     events: {},
     styles: {
-      primaryLabelColour: { type: 'color', displayName: 'Primary Label Colour' },
+      primaryLabelColour: {
+        type: 'color',
+        displayName: 'Primary Label Colour',
+      },
       primaryTextColour: { type: 'color', displayName: 'Primary Text  Colour' },
-      secondaryLabelColour: { type: 'color', displayName: 'Secondary Label Colour' },
-      secondaryTextColour: { type: 'color', displayName: 'Secondary Text Colour' },
+      secondaryLabelColour: {
+        type: 'color',
+        displayName: 'Secondary Label Colour',
+      },
+      secondaryTextColour: {
+        type: 'color',
+        displayName: 'Secondary Text Colour',
+      },
       visibility: { type: 'toggle', displayName: 'Visibility' },
     },
     definition: {
@@ -2455,6 +2114,44 @@ export const componentTypes = [
     },
   },
   {
+    name: 'Html',
+    displayName: 'HTML Viewer',
+    description: 'HTML Viewer',
+    component: 'Html',
+    defaultSize: {
+      width: 10,
+      height: 310,
+    },
+    properties: {
+      rawHtml: { type: 'code', displayName: 'Raw HTML' },
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        rawHtml: {
+          value: `<body><main><section class="hero" style="height:306px;display: flex;
+          justify-content: center;padding:0 1px;align-items: center;text-align:center">You can build your custom HTML-CSS template here</section></main></body>`,
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
     name: 'VerticalDivider',
     displayName: 'Vertical Divider',
     description: 'Vertical Separator between components',
@@ -2541,11 +2238,77 @@ const MyCustomComponent = ({data, updateData, runQuery}) => (
 );
 const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
 ReactDOM.render(<ConnectedComponent />, document.body);`,
+          skipResolve: true,
         },
       },
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'ButtonGroup',
+    displayName: 'Button Group',
+    description: 'ButtonGroup',
+    component: 'ButtonGroup',
+    properties: {
+      label: { type: 'code', displayName: 'label' },
+      values: { type: 'code', displayName: 'values' },
+      labels: { type: 'code', displayName: 'Labels' },
+      defaultSelected: { type: 'code', displayName: 'Default selected' },
+      multiSelection: {
+        type: 'toggle',
+        displayName: 'Enable mutiple selection',
+      },
+    },
+    defaultSize: {
+      width: 12,
+      height: 80,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {
+      onClick: { displayName: 'On click' },
+    },
+    styles: {
+      backgroundColor: { type: 'color', displayName: 'Background color' },
+      textColor: { type: 'color', displayName: 'Text color' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+      borderRadius: { type: 'number', displayName: 'Border radius' },
+      selectedTextColor: { type: 'color', displayName: 'Selected text colour' },
+      selectedBackgroundColor: {
+        type: 'color',
+        displayName: 'Selected background color',
+      },
+    },
+    exposedVariables: {
+      selected: [1],
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        label: { value: `Button group` },
+        defaultSelected: { value: '{{[1]}}' },
+        values: { value: '{{[1,2,3]}}' },
+        labels: { value: '{{[]}}' },
+        multiSelection: { value: '{{false}}' },
+      },
+      events: [],
+      styles: {
+        backgroundColor: { value: '#fff' },
+        textColor: { value: '#000' },
+        visibility: { value: '{{true}}' },
+        borderRadius: { value: '{{0}}' },
+        disabledState: { value: '{{false}}' },
+        selectedTextColor: { value: '#fff' },
+        selectedBackgroundColor: { value: '#4D72FA' },
       },
     },
   },
@@ -2592,6 +2355,138 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
+      },
+    },
+  },
+
+  {
+    name: 'Steps',
+    displayName: 'Steps',
+    description: 'Steps',
+    component: 'Steps',
+    properties: {
+      steps: { type: 'code', displayName: 'Steps' },
+      currentStep: { type: 'code', displayName: 'Current step' },
+      stepsSelectable: { type: 'toggle', displayName: 'Steps selectable' },
+    },
+    defaultSize: {
+      width: 22,
+      height: 38,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {
+      onSelect: { displayName: 'On select' },
+    },
+    styles: {
+      color: {
+        type: 'color',
+        displayName: 'Color',
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text color',
+      },
+      theme: {
+        type: 'select',
+        displayName: 'Theme',
+        options: [
+          { name: 'titles', value: 'titles' },
+          { name: 'numbers', value: 'numbers' },
+          { name: 'plain', value: 'plain' },
+        ],
+      },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      currentStepId: '3',
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        steps: {
+          value: `{{ [{ name: 'step 1', tooltip: 'some tooltip', id: 1},{ name: 'step 2', tooltip: 'some tooltip', id: 2},{ name: 'step 3', tooltip: 'some tooltip', id: 3},{ name: 'step 4', tooltip: 'some tooltip', id: 4},{ name: 'step 5', tooltip: 'some tooltip', id: 5}]}}`,
+        },
+        currentStep: { value: '{{3}}' },
+        stepsSelectable: { value: true },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        theme: { value: 'titles' },
+        color: { value: '#4d72fa' },
+        textColor: { value: '#3e525b' },
+      },
+    },
+  },
+  {
+    name: 'KanbanBoard',
+    displayName: 'Kanban Board',
+    description: 'Kanban Board',
+    component: 'KanbanBoard',
+    defaultSize: {
+      width: 40,
+      height: 490,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      columns: { type: 'code', displayName: 'Columns' },
+      cardData: { type: 'code', displayName: 'Card Data' },
+      enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
+    },
+    events: {
+      onCardAdded: { displayName: 'Card added' },
+      onCardRemoved: { displayName: 'Card removed' },
+      onCardMoved: { displayName: 'Card moved' },
+      onCardSelected: { displayName: 'Card selected' },
+      onCardUpdated: { displayName: 'Card updated' },
+    },
+    styles: {
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      width: { type: 'number', displayName: 'Width' },
+      minWidth: { type: 'number', displayName: 'Min Width' },
+      accentColor: { type: 'color', displayName: 'Accent color' },
+    },
+    exposedVariables: {
+      columns: {},
+      lastAddedCard: {},
+      lastRemovedCard: {},
+      lastCardMovement: {},
+      lastUpdatedCard: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        columns: {
+          value: '{{[{ "id": "1", "title": "to do" },{ "id": "2", "title": "in progress" }]}}',
+        },
+        cardData: {
+          value:
+            '{{[{ id: "01", title: "one", columnId: "1" },{ id: "02", title: "two", columnId: "1" },{ id: "03", title: "three", columnId: "2" }]}}',
+        },
+        enableAddCard: {
+          value: `{{true}}`,
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+        width: { value: '{{400}}' },
+        minWidth: { value: '{{200}}' },
+        textColor: { value: '#4d72fa' },
       },
     },
   },

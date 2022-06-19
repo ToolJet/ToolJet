@@ -38,13 +38,17 @@ import { renderTooltip, getComponentName } from '@/_helpers/appUtils';
 import { RangeSlider } from './Components/RangeSlider';
 import { Timeline } from './Components/Timeline';
 import { SvgImage } from './Components/SvgImage';
+import { Html } from './Components/Html';
+import { ButtonGroup } from './Components/ButtonGroup';
 import { CustomComponent } from './Components/CustomComponent/CustomComponent';
 import { VerticalDivider } from './Components/verticalDivider';
 import { PDF } from './Components/PDF';
+import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
+import { Steps } from './Components/Steps';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
-import { resolveProperties, resolveStyles } from './component-properties-resolution';
 import { validateProperties } from './component-properties-validation';
+import { resolveProperties, resolveStyles, resolveGeneralProperties } from './component-properties-resolution';
 import { validateWidget, resolveReferences } from '@/_helpers/utils';
 import _ from 'lodash';
 
@@ -87,9 +91,13 @@ const AllComponents = {
   RangeSlider,
   Timeline,
   SvgImage,
+  Html,
+  ButtonGroup,
   CustomComponent,
   VerticalDivider,
   PDF,
+  KanbanBoard,
+  Steps,
 };
 
 export const Box = function Box({
@@ -138,10 +146,10 @@ export const Box = function Box({
 
   const properties = resolveProperties(component, currentState, null, customResolvables);
   const [resolvedProperties, propertyErrors] = validateProperties(properties, component.properties);
-
   const componentStyles = resolveStyles(component, currentState, null, customResolvables);
   componentStyles.visibility = componentStyles.visibility !== false ? true : false;
   const [resolvedStyles, styleErrors] = validateProperties(componentStyles, component.styles);
+  const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
 
   useEffect(() => {
     const componentName = getComponentName(currentState, id);
@@ -212,10 +220,12 @@ export const Box = function Box({
 
   return (
     <OverlayTrigger
-      placement="top"
+      placement={inCanvas ? 'auto' : 'top'}
       delay={{ show: 500, hide: 0 }}
-      trigger={!inCanvas ? ['hover', 'focus'] : null}
-      overlay={(props) => renderTooltip({ props, text: `${component.description}` })}
+      trigger={inCanvas && !resolvedGeneralProperties.tooltip?.trim() ? null : ['hover', 'focus']}
+      overlay={(props) =>
+        renderTooltip({ props, text: inCanvas ? `${resolvedGeneralProperties.tooltip}` : `${component.description}` })
+      }
     >
       <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
         {inCanvas ? (
