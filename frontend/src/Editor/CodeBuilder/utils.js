@@ -26,7 +26,7 @@ export function generateHints(word, suggestions, isEnvironmentVariable) {
   return results.filter((result) => {
     if (isEnvironmentVariable && result.includes('globals.environmentVariables')) {
       return result;
-    } else if (!isEnvironmentVariable) {
+    } else if (!isEnvironmentVariable && !result.includes('globals.environmentVariables')) {
       return result;
     }
   });
