@@ -17,6 +17,10 @@ const generateSchemaFromValidationDefinition = (definition) => {
       schema = boolean();
       break;
     }
+    case 'union': {
+      schema = union(definition.schemas?.map((subSchema) => generateSchemaFromValidationDefinition(subSchema)));
+      break;
+    }
     case 'array': {
       const elementSchema = generateSchemaFromValidationDefinition(definition.element ?? {});
       schema = array(elementSchema);
@@ -39,7 +43,7 @@ const generateSchemaFromValidationDefinition = (definition) => {
   return definition.required ? schema : optional(schema);
 };
 
-const validate = (value, schema) => {
+const validate = (value, schema, defaultValue) => {
   let valid = true;
   const errors = [];
 
@@ -47,7 +51,7 @@ const validate = (value, schema) => {
     assert(value, schema);
   } catch (structError) {
     valid = false;
-    errors.push(structError.message);
+    errors.push(structError.message + '. Falling back to default value: ' + defaultValue.toString());
   }
 
   return [valid, errors];
@@ -57,22 +61,22 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
   let allErrors = [];
   const coercedProperties = Object.fromEntries(
     Object.entries(resolvedProperties ?? {}).map(([propertyName, value]) => {
-      const validationDefinition = propertyDefinitions[propertyName]?.validation?.schemas ?? [];
+      const validationDefinition = propertyDefinitions[propertyName]?.validation?.schema;
+      const defaultValue = propertyDefinitions[propertyName]?.validation?.defaultValue;
 
-      const schema = _.isEmpty(validationDefinition)
+      const schema = _.isUndefined(validationDefinition)
         ? any()
-        : validationDefinition.length === 1
-        ? generateSchemaFromValidationDefinition(validationDefinition[0])
-        : union(validationDefinition.map(generateSchemaFromValidationDefinition));
+        : generateSchemaFromValidationDefinition(validationDefinition);
 
-      const [valid, errors] = validate(value, schema);
+      const [valid, errors] = validate(value, schema, defaultValue);
 
       allErrors = [
         ...allErrors,
         ...errors.map((message) => ({ property: propertyDefinitions[propertyName]?.displayName, message })),
       ];
-      return [propertyName, valid ? value : validationDefinition.default];
+      return [propertyName, valid ? value : defaultValue];
     })
   );
+  console.log({ coercedProperties });
   return [coercedProperties, allErrors];
 };

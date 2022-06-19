@@ -151,7 +151,14 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      text: { type: 'code', displayName: 'Button Text' },
+      text: {
+        type: 'code',
+        displayName: 'Button Text',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: 'Button',
+        },
+      },
       loadingState: { type: 'toggle', displayName: 'Loading State' },
     },
     events: {
