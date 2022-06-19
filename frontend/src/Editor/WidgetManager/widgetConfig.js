@@ -155,7 +155,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Button Text',
         validation: {
-          schema: { type: 'string' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
           defaultValue: 'Button',
         },
       },

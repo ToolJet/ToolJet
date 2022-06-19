@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -144,11 +144,13 @@ export const Box = function Box({
   const [renderCount, setRenderCount] = useState(0);
   const [renderStartTime, setRenderStartTime] = useState(new Date());
 
-  const properties = resolveProperties(component, currentState, null, customResolvables);
-  const [resolvedProperties, propertyErrors] = validateProperties(properties, component.properties);
-  const componentStyles = resolveStyles(component, currentState, null, customResolvables);
-  componentStyles.visibility = componentStyles.visibility !== false ? true : false;
-  const [resolvedStyles, styleErrors] = validateProperties(componentStyles, component.styles);
+  const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
+  const [validatedProperties, propertyErrors] =
+    mode === 'edit' ? validateProperties(resolvedProperties, component.properties) : [resolvedProperties, []];
+  const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
+  resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
+  const [validatedStyles, styleErrors] =
+    mode === 'edit' ? validateProperties(resolvedStyles, component.styles) : [resolvedStyles, []];
   const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
 
   useEffect(() => {
@@ -160,8 +162,8 @@ export const Box = function Box({
           type: 'component',
           kind: 'component',
           data: { message: `${error.message}`, status: true },
-          resolvedProperties: properties,
-          effectiveProperties: resolvedProperties,
+          resolvedProperties: resolvedProperties,
+          effectiveProperties: validatedProperties,
         },
       ])
     );
@@ -245,9 +247,9 @@ export const Box = function Box({
             darkMode={darkMode}
             removeComponent={removeComponent}
             canvasWidth={canvasWidth}
-            properties={resolvedProperties}
+            properties={validatedProperties}
             exposedVariables={exposedVariables}
-            styles={resolvedStyles}
+            styles={validatedStyles}
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, extraProps)}
             registerAction={(actionName, func) => onComponentOptionChanged(component, actionName, func)}
             fireEvent={fireEvent}
