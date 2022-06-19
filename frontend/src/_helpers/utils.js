@@ -76,12 +76,22 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
           return [{}, error];
         }
 
+        if (code.includes('globals.environmentVariables')) {
+          error = `${code} is invalid`;
+          return [{}, error];
+        }
+
         return resolveCode(code, state, customObjects, withError, reservedKeyword);
       } else if (object.startsWith('%%') && object.endsWith('%%')) {
         const code = object.replaceAll('%%', '');
 
+        if (!new RegExp('^globals.environmentVariables.(server|client).[A-Za-z0-9]+').test(code)) {
+          error = `${code} is an invalid variable.`;
+          return [{}, error];
+        }
+
         if (code.includes('server') && !new RegExp('^globals.environmentVariables.server.[A-Za-z0-9]+$').test(code)) {
-          error = `${code} is invalid. Server variables can't use like this`;
+          error = `${code} is invalid. Server variables can't be used like this`;
           return [{}, error];
         }
 
