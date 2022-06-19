@@ -12,6 +12,10 @@
       "description": "Single select dropdown for operation",
       "list": [
         {
+          "value": "query",
+          "name": "Query"
+        },
+        {
           "value": "list_datasets",
           "name": "List Datasets"
         },
@@ -20,18 +24,136 @@
           "name": "List Tables"
         },
         {
-          "value": "query",
-          "name": "Query"
+          "value": "create_table",
+          "name": "Create Table"
+        },
+        {
+          "value": "delete_table",
+          "name": "Delete Table"
+        },
+        {
+          "value": "create_view",
+          "name": "Create View"
+        },
+        {
+          "value": "insert_record",
+          "name": "Insert Record"
+        },
+        {
+          "value": "delete_record",
+          "name": "Delete Record"
+        },
+        {
+          "value": "update_record",
+          "name": "Update Record"
         }
       ]
     },
-    "list_tables": {
+
+    "insert_record": {
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table id"
+      },
       "datasetId": {
-        "label": "Dataset",
+        "label": "Dataset id",
         "key": "datasetId",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter dataset",
+        "description": "Enter dataset id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter dataset"
+      },
+      "rows": {
+        "label": "Rows",
+        "key": "rows",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "[{name: 'Tom', age: 30},{name: 'Jane', age: 32}]",
+        "description": "Enter rows",
+        "height": "150px"
+      }
+    },
+
+    "delete_record": {
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table id"
+      },
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter dataset id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter dataset"
+      },
+      "condition": {
+        "label": "Condition",
+        "key": "condition",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "CustomerName='Alfreds Futterkiste'",
+        "description": "Enter condition",
+        "height": "150px"
+      },
+      "queryOptions": {
+        "label": "Query options",
+        "key": "queryOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ location: 'US', dryRun: true }",
+        "description": "Enter query options",
+        "height": "150px"
+      },
+      "queryResultsOptions": {
+        "label": "Query results options",
+        "key": "queryResultsOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ wrapIntegers: true }",
+        "description": "Enter Query results options",
+        "height": "150px"
+      }
+    },
+
+    "create_table": {
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table id"
+      },
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter dataset id",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
@@ -42,21 +164,167 @@
         "key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ filter: 'labels.color:green' }",
+        "placeholder": "{schema: [{name: 'Name', type: 'STRING', mode: 'REQUIRED'},{name: 'Age', type: 'INTEGER'}], location: 'US' }",
         "description": "Enter options",
         "height": "150px"
       }
     },
-    "list_datasets": {
-      "options": {
-        "label": "Options",
-        "key": "options",
+    "delete_table": {
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table id"
+      },
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter dataset id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter dataset id"
+      }
+    },
+    "create_view": {
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table id"
+      },
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter dataset id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter dataset"
+      },
+      "view_name": {
+        "label": "View name",
+        "key": "view_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter view name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter view name"
+      },
+      "viewcolumns": {
+        "label": "View columns",
+        "key": "viewcolumns",
+        "type": "codehinter",
+        "placeholder": "column1, column2, ... ",
+        "description": "Enter viewcolumns",
+        "height": "150px"
+      },
+      "condition": {
+        "label": "Condition",
+        "key": "condition",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ filter: 'labels.color:green' }",
-        "description": "Enter options",
+        "placeholder": "CustomerName='Alfreds Futterkiste'",
+        "description": "Enter condition",
+        "height": "150px"
+      },
+      "queryOptions": {
+        "label": "Query options",
+        "key": "queryOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ location: 'US', dryRun: true }",
+        "description": "Enter query options",
+        "height": "150px"
+      },
+      "queryResultsOptions": {
+        "label": "Query results options",
+        "key": "queryResultsOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ wrapIntegers: true }",
+        "description": "Enter Query results options",
         "height": "150px"
       }
+    },
+    "update_record": {
+      "tableId": {
+        "label": "Table id",
+        "key": "tableId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table id"
+      },
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter dataset id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter dataset"
+      },
+      "columns": {
+        "label": "Columns",
+        "key": "columns",
+        "type": "codehinter",
+        "placeholder": "{{({name:'bob',age:30})}}",
+        "description": "Enter columns",
+        "height": "150px"
+      },
+      "condition": {
+        "label": "Condition",
+        "key": "condition",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "CustomerName='Alfreds Futterkiste'",
+        "description": "Enter condition",
+        "height": "150px"
+      },
+      "queryOptions": {
+        "label": "Query options",
+        "key": "queryOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ location: 'US', dryRun: true }",
+        "description": "Enter query options",
+        "height": "150px"
+      },
+      "queryResultsOptions": {
+        "label": "Query results options",
+        "key": "queryResultsOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ wrapIntegers: true }",
+        "description": "Enter Query results options",
+        "height": "150px"
+      }
+    },
+    "list_datasets": {
+    },
+    "list_tables": {
     },
     "query": {
       "query": {
