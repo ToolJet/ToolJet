@@ -77,6 +77,5 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
       return [propertyName, valid ? value : defaultValue];
     })
   );
-  console.log({ coercedProperties });
   return [coercedProperties, allErrors];
 };
