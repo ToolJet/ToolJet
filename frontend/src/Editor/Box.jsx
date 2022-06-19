@@ -149,13 +149,18 @@ export const Box = function Box({
   const [renderCount, setRenderCount] = useState(0);
   const [renderStartTime, setRenderStartTime] = useState(new Date());
 
+  console.log({ validate: component.validate });
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
   const [validatedProperties, propertyErrors] =
-    mode === 'edit' ? validateProperties(resolvedProperties, componentMeta.properties) : [resolvedProperties, []];
+    mode === 'edit' && component.validate
+      ? validateProperties(resolvedProperties, componentMeta.properties)
+      : [resolvedProperties, []];
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
   resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
   const [validatedStyles, styleErrors] =
-    mode === 'edit' ? validateProperties(resolvedStyles, componentMeta.styles) : [resolvedStyles, []];
+    mode === 'edit' && component.validate
+      ? validateProperties(resolvedStyles, componentMeta.styles)
+      : [resolvedStyles, []];
   const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
 
   useEffect(() => {

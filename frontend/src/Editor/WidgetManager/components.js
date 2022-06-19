@@ -8,6 +8,7 @@ const universalProps = {
   others: {},
   events: {},
   styles: {},
+  validate: true,
   definition: {
     others: {},
     events: [],
@@ -17,6 +18,7 @@ const universalProps = {
 
 const combineProperties = (widget, universal, isArray = false) => {
   return {
+    ...universal,
     ...widget,
     properties: { ...universal.properties, ...widget.properties },
     general: { ...universal.general, ...widget.general },
