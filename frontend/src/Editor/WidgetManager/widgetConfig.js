@@ -155,11 +155,18 @@ export const widgets = [
         type: 'code',
         displayName: 'Button Text',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'string' },
           defaultValue: 'Button',
         },
       },
-      loadingState: { type: 'toggle', displayName: 'Loading State' },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading State',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
     },
     events: {
       onClick: { displayName: 'On click' },

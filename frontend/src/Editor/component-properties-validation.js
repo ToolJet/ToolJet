@@ -51,12 +51,12 @@ const validate = (value, schema, defaultValue) => {
     assert(value, schema);
   } catch (structError) {
     valid = false;
-    errors.push(structError.message + '. Falling back to default value: "' + defaultValue.toString() + '"');
+    errors.push(structError.message + '. Falling back to default value: ' + defaultValue.toString());
   }
 
   if (_.isUndefined(value)) {
     valid = false;
-    errors.push("Received 'undefined'. Falling back to default value: \"" + defaultValue.toString() + '"');
+    errors.push("Received 'undefined'. Falling back to default value: " + defaultValue.toString());
   }
 
   return [valid, errors];

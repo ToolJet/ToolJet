@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -50,6 +50,7 @@ import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
 import { resolveProperties, resolveStyles, resolveGeneralProperties } from './component-properties-resolution';
 import { validateWidget, resolveReferences } from '@/_helpers/utils';
+import { componentTypes } from './WidgetManager/components';
 import _ from 'lodash';
 
 const AllComponents = {
@@ -140,17 +141,21 @@ export const Box = function Box({
     };
   }
 
+  const componentMeta = useMemo(() => {
+    return componentTypes.find((comp) => component.component === comp.component);
+  }, [component]);
+
   const ComponentToRender = AllComponents[component.component];
   const [renderCount, setRenderCount] = useState(0);
   const [renderStartTime, setRenderStartTime] = useState(new Date());
 
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
   const [validatedProperties, propertyErrors] =
-    mode === 'edit' ? validateProperties(resolvedProperties, component.properties) : [resolvedProperties, []];
+    mode === 'edit' ? validateProperties(resolvedProperties, componentMeta.properties) : [resolvedProperties, []];
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
   resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
   const [validatedStyles, styleErrors] =
-    mode === 'edit' ? validateProperties(resolvedStyles, component.styles) : [resolvedStyles, []];
+    mode === 'edit' ? validateProperties(resolvedStyles, componentMeta.styles) : [resolvedStyles, []];
   const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
 
   useEffect(() => {
