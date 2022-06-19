@@ -16,13 +16,20 @@ export function getSuggestionKeys(currentState) {
   return suggestions;
 }
 
-export function generateHints(word, suggestions) {
+export function generateHints(word, suggestions, isEnvironmentVariable) {
   if (word === '') {
     return suggestions;
   }
 
   const fuse = new Fuse(suggestions);
-  return fuse.search(word).map((result) => result.item);
+  const results = fuse.search(word).map((result) => result.item);
+  return results.filter((result) => {
+    if (isEnvironmentVariable && result.includes('globals.environmentVariables')) {
+      return result;
+    } else if (!isEnvironmentVariable) {
+      return result;
+    }
+  });
 }
 
 export function computeCurrentWord(editor, _cursorPosition, ignoreBraces = false) {
@@ -115,7 +122,8 @@ export function handleChange(editor, onChange, suggestions, ignoreBraces = false
 
   const cursor = editor.getCursor();
   const currentWord = computeCurrentWord(editor, cursor.ch, ignoreBraces);
-  const hints = generateHints(currentWord, suggestions);
+  const isEnvironmentVariable = currentWord.startsWith('%%');
+  const hints = generateHints(currentWord, suggestions, isEnvironmentVariable);
 
   const options = {
     alignWithWord: false,
