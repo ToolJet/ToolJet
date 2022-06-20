@@ -30,6 +30,10 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatar_id]);
 
+  const version = config.currentVersion;
+  const [currentVersion, setCurrentVersion] = useState(version);
+  useEffect(() => setCurrentVersion(version), [version]);
+
   function logout() {
     authenticationService.logout();
     history.push('/login');
@@ -95,9 +99,11 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               <Link data-testid="logoutBtn" to="#" onClick={logout} className="dropdown-item" data-cy="logout-link">
                 Logout
               </Link>
-              <Link to="#" className="dropdown-item pe-none text-secondary">
-                v{config.currentVersion}
-              </Link>
+              {currentVersion && (
+                <Link to="#" className="dropdown-item pe-none text-secondary">
+                  v{currentVersion}
+                </Link>
+              )}
             </div>
           </div>
         </div>
