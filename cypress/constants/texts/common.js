@@ -4,6 +4,7 @@ export const path={
     manageUsers: "/users",
     confirmInvite: "/confirm-invite",
     manageGroups: "/groups",
+    manageSSO: "/manage-sso",
 }
 
 export const commonText={
