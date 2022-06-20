@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Request, UseGuards, Body } from '@nestjs/common';
+import { Controller, Get, Post, Query, Request, UseGuards, Body, Delete, Param, Put } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { FoldersService } from '../services/folders.service';
@@ -6,6 +6,7 @@ import { ForbiddenException } from '@nestjs/common';
 import { FoldersAbilityFactory } from 'src/modules/casl/abilities/folders-ability.factory';
 import { Folder } from 'src/entities/folder.entity';
 import { CreateFolderDto } from '@dto/create-folder.dto';
+import { User } from 'src/decorators/user.decorator';
 
 @Controller('folders')
 export class FoldersController {
@@ -30,5 +31,29 @@ export class FoldersController {
 
     const folder = await this.foldersService.create(req.user, folderName);
     return decamelizeKeys(folder);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  async update(@User() user, @Param('id') id, @Body('name') folderName: string) {
+    const ability = await this.foldersAbilityFactory.folderActions(user, {});
+
+    if (!ability.can('updateFolder', Folder)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+    const folder = await this.foldersService.update(id, folderName);
+    return decamelizeKeys(folder);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async delete(@User() user, @Param('id') id) {
+    const ability = await this.foldersAbilityFactory.folderActions(user, {});
+
+    if (!ability.can('deleteFolder', Folder)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    return await this.foldersService.delete(user, id);
   }
 }

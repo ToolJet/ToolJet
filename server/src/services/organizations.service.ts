@@ -93,6 +93,8 @@ export class OrganizationsService {
         appCreate: isAdmin,
         appDelete: isAdmin,
         folderCreate: isAdmin,
+        folderUpdate: isAdmin,
+        folderDelete: isAdmin,
       });
       await this.groupPermissionsRepository.save(groupPermission);
       createdGroupPermissions.push(groupPermission);
