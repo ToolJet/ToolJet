@@ -1126,7 +1126,7 @@ class Editor extends React.Component {
           message={'Do you want to run this query?'}
           onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
           onCancel={() => onQueryCancel(this)}
-          queryConfirmationData={this.state.queryConfirmationData}
+          queryConfirmationData={this.state.queryConfirmationData?.queryName}
           darkMode={this.props.darkMode}
         />
         <Confirm

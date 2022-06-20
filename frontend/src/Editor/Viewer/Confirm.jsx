@@ -29,7 +29,7 @@ export function Confirm({ show, message, onConfirm, onCancel, queryConfirmationD
         contentClassName={darkMode ? 'theme-dark' : ''}
       >
         <div className="modal-status bg-danger"></div>
-        <Modal.Body>{message}</Modal.Body>
+        <Modal.Body>{`${message} ${queryConfirmationData ? queryConfirmationData + '?' : ""}`}</Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             Cancel
