@@ -1123,7 +1123,7 @@ class Editor extends React.Component {
         {/* This is for viewer to show query confirmations */}
         <Confirm
           show={showQueryConfirmation}
-          message={'Do you want to run this query?'}
+          message={'Do you want to run this query -'}
           onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
           onCancel={() => onQueryCancel(this)}
           queryConfirmationData={this.state.queryConfirmationData?.queryName}
