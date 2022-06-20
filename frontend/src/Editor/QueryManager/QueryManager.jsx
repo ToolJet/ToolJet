@@ -494,7 +494,7 @@ let QueryManager = class QueryManager extends React.Component {
                   className={`btn btn-primary ${isUpdating || isCreating ? 'btn-loading' : ''} ${
                     this.state.selectedDataSource ? '' : 'disabled'
                   }`}
-                  style={{ width: '100px', height: '28px' }}
+                  style={{ height: '28px', zIndex: 10 }}
                   onClick={this.createOrUpdateDataQuery}
                   disabled={buttonDisabled}
                 >
@@ -502,7 +502,7 @@ let QueryManager = class QueryManager extends React.Component {
                 </Button>
                 <Dropdown.Toggle
                   split
-                  className="btn btn-primary d-none d-lg-inline"
+                  className="btn btn-primary d-none d-lg-inline create-save-button-dropdown-toggle"
                   style={{ height: '28px', paddingTop: '5px' }}
                 />
                 <Dropdown.Menu className="import-lg-position">

@@ -11,12 +11,12 @@ export function Form({ settings, updateData }) {
         const enabled_tmp = !enabled;
         setEnabled(enabled_tmp);
         updateData('form', { id: data.id, enabled: enabled_tmp });
-        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} Form login`, {
+        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} Password login`, {
           position: 'top-center',
         });
       },
       () => {
-        toast.error('Error saving sso configurations', {
+        toast.error('Error saving SSO configurations', {
           position: 'top-center',
         });
       }
