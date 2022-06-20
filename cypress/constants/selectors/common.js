@@ -21,4 +21,5 @@ export const commonSelectors={
   appCreateButton: "[data-cy=create-new-app-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
+  dropdown: "[data-cy=workspace-dropdown]",
 }
