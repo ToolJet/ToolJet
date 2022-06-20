@@ -35,7 +35,14 @@ describe("Manage SSO for single workspace", ()=>{
     cy.get(ssoSelector.cancelButton).should("be.visible").and("have.text", ssoText.cancelButton);
     cy.get(ssoSelector.saveButton).should("be.visible").and("have.text", ssoText.saveButton);
 
-    SSO.googleSSO()
+    SSO.googleSSO();
+
+    cy.get(ssoSelector.redirectUrlLabel).should("be.visible").and("have.text", ssoText.redirectUrlLabel);
+    cy.get(ssoSelector.redirectUrl).should("be.visible");
+    common.logout();
+    cy.get(ssoSelector.googleTile).should("be.visible");
+    cy.get(ssoSelector.googleIcon).should("be.visible");
+    cy.get(ssoSelector.googleSignInText).should("be.visible").and("have.text", ssoText.googleSignInText); 
   });
 
   it("Should verify Git SSO page elements", ()=>{
@@ -56,6 +63,13 @@ describe("Manage SSO for single workspace", ()=>{
     cy.get(ssoSelector.saveButton).should("be.visible").and("have.text", ssoText.saveButton);
     
     SSO.gitSSO();
+
+    cy.get(ssoSelector.redirectUrlLabel).should("be.visible").and("have.text", ssoText.redirectUrlLabel);
+    cy.get(ssoSelector.redirectUrl).should("be.visible");
+    common.logout();
+    cy.get(ssoSelector.gitTile).should("be.visible");
+    cy.get(ssoSelector.gitIcon).should("be.visible");
+    cy.get(ssoSelector.gitSignInText).should("be.visible").and("have.text", ssoText.gitSignInText);
   });
 
   it("Should verify Password login page elements",()=>{

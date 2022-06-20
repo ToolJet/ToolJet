@@ -34,8 +34,6 @@ export const googleSSO=()=>{
     cy.get(ssoSelector.enableCheckbox).uncheck();
     cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.googleDisableToast);
     cy.get(ssoSelector.statusLabel).should("be.visible").and("have.text",ssoText.disabledLabel);
-    cy.get(ssoSelector.redirectUrlLabel).should("be.visible").and("have.text", ssoText.redirectUrlLabel );
-    cy.get(ssoSelector.redirectUrl).should("be.visible");
     cy.get(ssoSelector.enableCheckbox).check();
     cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.googleEnabledToast);
     cy.get(ssoSelector.statusLabel).should("be.visible").and("have.text",ssoText.enabledLabel);
@@ -46,18 +44,11 @@ export const googleSSO=()=>{
     cy.clearAndType(ssoSelector.clientIdInput, ssoText.testClientId);
     cy.get(ssoSelector.cancelButton).click();
     cy.get(ssoSelector.clientIdInput).should("have.value", ssoText.clientId);
-    
-    common.logout();
-    cy.get(ssoSelector.googleTile).should("be.visible");
-    cy.get(ssoSelector.googleIcon).should("be.visible");
-    cy.get(ssoSelector.googleSignInText).should("be.visible").and("have.text", ssoText.googleSignInText);
    }
    else{
      cy.get(ssoSelector.enableCheckbox).check();
      cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.googleEnabledToast);
      cy.get(ssoSelector.statusLabel).should("be.visible").and("have.text",ssoText.enabledLabel);
-     cy.get(ssoSelector.redirectUrlLabel).should("be.visible").and("have.text", ssoText.redirectUrlLabel );
-     cy.get(ssoSelector.redirectUrl).should("be.visible");
      cy.get(ssoSelector.enableCheckbox).uncheck();
      cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.googleDisableToast);
      cy.get(ssoSelector.statusLabel).should("be.visible").and("have.text",ssoText.disabledLabel);
@@ -70,11 +61,6 @@ export const googleSSO=()=>{
      cy.clearAndType(ssoSelector.clientIdInput, ssoText.testClientId);
      cy.get(ssoSelector.cancelButton).click();
      cy.get(ssoSelector.clientIdInput).should("have.value", ssoText.clientId);
-     
-     common.logout();
-     cy.get(ssoSelector.googleTile).should("be.visible");
-     cy.get(ssoSelector.googleIcon).should("be.visible");
-     cy.get(ssoSelector.googleSignInText).should("be.visible").and("have.text", ssoText.googleSignInText); 
    }
   });
 };
@@ -86,8 +72,6 @@ export const gitSSO=()=>{
     cy.get(ssoSelector.enableCheckbox).uncheck();
     cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.gitDisabledToast);
     cy.get(ssoSelector.statusLabel).should("be.visible").and("have.text",ssoText.disabledLabel);
-    cy.get(ssoSelector.redirectUrlLabel).should("be.visible").and("have.text", ssoText.redirectUrlLabel);
-    cy.get(ssoSelector.redirectUrl).should("be.visible");
     cy.wait(1000);
     cy.get(ssoSelector.enableCheckbox).check();
     cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.gitEnabledToast);
@@ -97,19 +81,12 @@ export const gitSSO=()=>{
     cy.clearAndType(ssoSelector.clientSecretInput, ssoText.testClientId);
     cy.get(ssoSelector.saveButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast2);
- 
-    common.logout();
-    cy.get(ssoSelector.gitTile).should("be.visible");
-    cy.get(ssoSelector.gitIcon).should("be.visible");
-    cy.get(ssoSelector.gitSignInText).should("be.visible").and("have.text", ssoText.gitSignInText);
    }
    else{
     cy.get(ssoSelector.statusLabel).should("be.visible").and("have.text",ssoText.disabledLabel);
     cy.get(ssoSelector.enableCheckbox).check();
     cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.gitEnabledToast);
     cy.get(ssoSelector.statusLabel).should("be.visible").and("have.text",ssoText.enabledLabel);
-    cy.get(ssoSelector.redirectUrlLabel).should("be.visible").and("have.text", ssoText.redirectUrlLabel);
-    cy.get(ssoSelector.redirectUrl).should("be.visible");
     cy.wait(1000);
     cy.get(ssoSelector.enableCheckbox).uncheck();
     cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.gitDisabledToast);
@@ -122,11 +99,6 @@ export const gitSSO=()=>{
     cy.clearAndType(ssoSelector.clientSecretInput, ssoText.testClientId);
     cy.get(ssoSelector.saveButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast2);
- 
-    common.logout();
-    cy.get(ssoSelector.gitTile).should("be.visible");
-    cy.get(ssoSelector.gitIcon).should("be.visible");
-    cy.get(ssoSelector.gitSignInText).should("be.visible").and("have.text", ssoText.gitSignInText);
    }
   });
 }
