@@ -5156,6 +5156,8 @@ div#driver-page-overlay {
   .node-key {
     font-weight: 400 !important;
     margin-left: -0.25rem !important;
+    justify-content: start !important;
+    min-width: fit-content !important;
   }
 
   .node-key-outline {
