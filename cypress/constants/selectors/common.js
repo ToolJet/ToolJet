@@ -6,6 +6,7 @@ export const commonSelectors={
   firstWidget:"[data-cy=widget-list]:eq(0)",
   canvas:"[data-cy=real-canvas]",
   appCardOptions: "[data-cy=app-card-menu-icon]",
+  folderItemOptions: "[data-cy=folder-item-menu-icon]",
   deleteApp: "[data-cy=card-options] :nth-child(5)>span",
   confirmButton: "[data-cy=confirm-yes-button]",
   autoSave: "[data-cy=autosave-indicator]",
@@ -16,4 +17,9 @@ export const commonSelectors={
   passwordField: "[data-cy=password-text-field]",
   signInButton: "[data-cy=login-button]",
   dropdown: "[data-cy=workspace-dropdown]",
+  backButton: "[data-cy=back-button]",
+  emptyAppCreateButton: "[data-cy=create-new-application]",
+  appCreateButton: "[data-cy=create-new-app-button]",
+  createButton: "[data-cy=create-button]",
+  appNameInput: "[data-cy=app-name-input]",
 }

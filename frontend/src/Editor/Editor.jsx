@@ -90,6 +90,8 @@ class Editor extends React.Component {
       },
     };
 
+    this.dataSourceModalRef = React.createRef();
+
     this.state = {
       currentUser: authenticationService.currentUserValue,
       app: {},
@@ -1072,6 +1074,12 @@ class Editor extends React.Component {
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
+  runQuery = (queryId, queryName) => runQuery(this, queryId, queryName);
+
+  dataSourceModalHandler = () => {
+    this.dataSourceModalRef.current.dataSourceModalToggleStateHandler();
+  };
+
   render() {
     const {
       currentSidebarTab,
@@ -1149,6 +1157,7 @@ class Editor extends React.Component {
                     onBlur={(e) => this.saveAppName(this.state.app.id, e.target.value)}
                     className="form-control-plaintext form-control-plaintext-sm"
                     value={this.state.app.name}
+                    data-cy="app-name-input"
                   />
                   <span className="input-icon-addon">
                     <EditIcon />
@@ -1247,6 +1256,7 @@ class Editor extends React.Component {
               runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
               toggleAppMaintenance={this.toggleAppMaintenance}
               is_maintenance_on={this.state.app.is_maintenance_on}
+              ref={this.dataSourceModalRef}
               isSaving={this.state.isSaving}
               isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
             />
@@ -1471,6 +1481,8 @@ class Editor extends React.Component {
                             allComponents={appDefinition.components}
                             isSourceSelected={this.state.isSourceSelected}
                             isQueryPaneDragging={this.state.isQueryPaneDragging}
+                            runQuery={this.runQuery}
+                            dataSourceModalHandler={this.dataSourceModalHandler}
                             setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
                           />
                         </div>

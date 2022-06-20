@@ -280,6 +280,10 @@ class ManageGroupPermissionResources extends React.Component {
       selectedUserIds,
     } = this.state;
 
+    const folder_permission = groupPermission
+      ? groupPermission.folder_create && groupPermission.folder_delete && groupPermission.folder_update
+      : false;
+
     const appSelectOptions = appsNotInGroup.map((app) => {
       return { name: app.name, value: app.id };
     });
@@ -620,15 +624,17 @@ class ManageGroupPermissionResources extends React.Component {
                                             type="checkbox"
                                             onChange={() => {
                                               this.updateGroupPermission(groupPermission.id, {
-                                                folder_create: !groupPermission.folder_create,
+                                                folder_create: !folder_permission,
+                                                folder_delete: !folder_permission,
+                                                folder_update: !folder_permission,
                                               });
                                             }}
-                                            checked={groupPermission.folder_create}
+                                            checked={folder_permission}
                                             disabled={groupPermission.group === 'admin'}
                                             data-cy="folder-create-checkbox"
                                           />
                                           <span className="form-check-label" data-cy="folder-create-label">
-                                            Create
+                                            Create/Update/Delete
                                           </span>
                                         </label>
                                       </div>
