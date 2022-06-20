@@ -66,6 +66,22 @@ Query results can be transformed using transformations. Read our transformations
 
 -  [Query](#query)
 
+-  [Insert Record ](#insert-record)
+
+-  [Delete Record ](#delete-record)
+
+-  [Update Record](#update-record)
+
+
+-  [Create View](#create-view)
+
+
+-  [Create Table](#create-table)
+
+
+-  [Delete Table](#create-table)
+
+
 
 ### List Datasets
 
@@ -103,8 +119,64 @@ Return list of tables within a dataset
 
 Return data based on the `Query`. `Query options` ([Reference](https://cloud.google.com/bigquery/docs/reference/rest/v2/Job)), and `Query result options` ([Reference](https://cloud.google.com/nodejs/docs/reference/bigquery/latest/overview#_google_cloud_bigquery_QueryResultsOptions_type)).
 
+
 <div style={{textAlign: 'center'}}>
 
 ![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/query.png)
 
 </div>
+
+### Insert Record
+- To insert a record.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-insert.png)
+
+</div>
+
+### Delete Record 
+- To delete a record.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-delete.png)
+
+</div>
+
+:::info
+NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be deleted!
+:::
+### Update Record
+- To update a record.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-update.png)
+
+</div>
+
+:::info
+NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be updated!
+:::
+### Create View
+
+- To create a view.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-view.png)
+
+</div>
+
+
+### Create Table
+
+- To create a table.
+
+:::info
+NOTE: visit -https://github.com/googleapis/nodejs-bigquery/blob/main/samples/createTable.js for more info on schema.
+:::
+
+### Delete Table
+- To delete a table.

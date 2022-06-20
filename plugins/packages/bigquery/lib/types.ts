@@ -8,4 +8,11 @@ export type QueryOptions = {
   datasetId: string;
   queryOptions: string;
   queryResultsOptions: string;
+  tableId: string;
+  rows: string;
+  condition: string;
+  columns: object;
+  viewcolumns: string;
+  values: string;
+  view_name: string;
 };
