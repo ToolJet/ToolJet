@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import config from 'config';
 import { validateEmail } from '../_helpers/utils';
 import { authenticationService } from '@/_services';
 
