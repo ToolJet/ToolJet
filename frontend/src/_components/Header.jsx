@@ -9,10 +9,11 @@ import { Organization } from './Organization';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
   // eslint-disable-next-line no-unused-vars
+  const version = config.currentVersion;
+  const [currentVersion, setCurrentVersion] = useState(currentVersion);
   const [pathName, setPathName] = useState(document.location.pathname);
   const [avatar, setAvatar] = useState();
   const { first_name, last_name, avatar_id, admin } = authenticationService.currentUserValue;
-
   useEffect(() => {
     setPathName(document.location.pathname);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -30,6 +31,11 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatar_id]);
 
+  useEffect(() => {
+    console.log(version, 'inside use effect');
+    setCurrentVersion(version);
+  }, [version]);
+
   function logout() {
     authenticationService.logout();
     history.push('/login');
@@ -39,6 +45,9 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
     history.push('/settings');
   }
 
+  {
+    console.log(currentVersion);
+  }
   return (
     <header className="navbar tabbed-navbar navbar-expand-md navbar-light d-print-none">
       <div className="container-xl">
@@ -95,9 +104,11 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               <Link data-testid="logoutBtn" to="#" onClick={logout} className="dropdown-item" data-cy="logout-link">
                 Logout
               </Link>
-              <Link to="#" className="dropdown-item pe-none text-secondary">
-                v{config.currentVersion}
-              </Link>
+              {currentVersion && (
+                <Link to="#" className="dropdown-item pe-none text-secondary">
+                  v{currentVersion}
+                </Link>
+              )}
             </div>
           </div>
         </div>
