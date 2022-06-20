@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { createQueryBuilder, getManager, Repository } from 'typeorm';
+import { createQueryBuilder, Repository } from 'typeorm';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+import { ConfigService } from '@nestjs/config';
 const uuid = require('uuid');
 
 @Injectable()
@@ -16,7 +17,8 @@ export class OrganizationUsersService {
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
     private usersService: UsersService,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private configService: ConfigService
   ) {}
 
   async findOrganization(id: string): Promise<OrganizationUser> {
@@ -49,61 +51,51 @@ export class OrganizationUsersService {
     return await this.organizationUsersRepository.update(id, { role });
   }
 
-  async archive(id: string) {
-    await getManager().transaction(async (manager) => {
-      const organizationUser = await manager.findOne(OrganizationUser, {
-        where: { id },
-      });
-      const user = await manager.findOne(User, {
-        where: { id: organizationUser.userId },
-      });
-
-      await this.usersService.throwErrorIfRemovingLastActiveAdmin(user, undefined, organizationUser.organizationId);
-
-      await manager.update(OrganizationUser, id, { status: 'archived', invitationToken: null });
+  async archive(id: string, organizationId: string): Promise<void> {
+    const organizationUser = await this.organizationUsersRepository.findOneOrFail({
+      where: { id, organizationId },
+      relations: ['user'],
     });
 
-    return true;
+    await this.usersService.throwErrorIfRemovingLastActiveAdmin(organizationUser?.user, undefined, organizationId);
+    await this.organizationUsersRepository.update(id, { status: 'archived', invitationToken: null });
   }
 
-  async unarchive(user: User, id: string) {
+  async unarchive(user: User, id: string): Promise<void> {
     const organizationUser = await this.organizationUsersRepository.findOne({
-      where: { id },
+      where: { id, organizationId: user.organizationId },
+      relations: ['user', 'organization'],
     });
-    if (organizationUser.status !== 'archived') return false;
+
+    if (!(organizationUser && organizationUser.organization && organizationUser.user)) {
+      throw new BadRequestException('User not exist');
+    }
+    if (organizationUser.status !== 'archived') {
+      throw new BadRequestException('User status must be archived to unarchive');
+    }
 
     const invitationToken = uuid.v4();
 
-    await getManager().transaction(async (manager) => {
-      await manager.update(OrganizationUser, organizationUser.id, {
-        status: 'invited',
-        invitationToken,
-      });
-      await manager.update(User, organizationUser.userId, { password: uuid.v4() });
-    });
+    await this.organizationUsersRepository.update(id, { status: 'invited', invitationToken });
 
-    const updatedUser = await this.usersService.findOne(organizationUser.userId);
-
-    const currentOrganization: Organization = (
-      await this.organizationUsersRepository.findOne({
-        where: { userId: user.id, organizationId: user.organizationId },
-        relations: ['organization'],
-      })
-    )?.organization;
+    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+      // Resetting password if single organization
+      await this.usersService.updateUser(id, { password: uuid.v4() });
+    }
 
     await this.emailService.sendOrganizationUserWelcomeEmail(
-      updatedUser.email,
-      updatedUser.firstName,
+      organizationUser.user.email,
+      organizationUser.user.firstName,
       user.firstName,
       invitationToken,
-      currentOrganization.name
+      organizationUser.organization.name
     );
 
-    return true;
+    return;
   }
 
-  async activate(user: OrganizationUser) {
-    await this.organizationUsersRepository.update(user.id, {
+  async activate(organizationUser: OrganizationUser) {
+    await this.organizationUsersRepository.update(organizationUser.id, {
       status: 'active',
     });
   }

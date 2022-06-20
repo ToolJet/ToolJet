@@ -109,6 +109,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
                   v{currentVersion}
                 </Link>
               )}
+
             </div>
           </div>
         </div>

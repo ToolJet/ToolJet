@@ -76,11 +76,15 @@ describe('Authentication', () => {
       expect(adminGroup.appCreate).toBeTruthy();
       expect(adminGroup.appDelete).toBeTruthy();
       expect(adminGroup.folderCreate).toBeTruthy();
+      expect(adminGroup.folderUpdate).toBeTruthy();
+      expect(adminGroup.folderDelete).toBeTruthy();
 
       const allUserGroup = groupPermissions.find((x) => x.group == 'all_users');
       expect(allUserGroup.appCreate).toBeFalsy();
       expect(allUserGroup.appDelete).toBeFalsy();
       expect(allUserGroup.folderCreate).toBeFalsy();
+      expect(allUserGroup.folderUpdate).toBeFalsy();
+      expect(allUserGroup.folderDelete).toBeFalsy();
     });
     describe('Single organization operations', () => {
       beforeEach(async () => {
@@ -120,6 +124,24 @@ describe('Authentication', () => {
           email: 'admin@tooljet.io',
         });
         await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
+
+        await request(app.getHttpServer())
+          .get('/api/organizations/users')
+          .set('Authorization', authHeaderForUser(adminUser))
+          .expect(401);
+      });
+      it('throw 401 if user is invited', async () => {
+        await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'user@tooljet.io', password: 'password' })
+          .expect(401);
+
+        const adminUser = await userRepository.findOneOrFail({
+          email: 'admin@tooljet.io',
+        });
+        await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
 
         await request(app.getHttpServer())
           .get('/api/organizations/users')
@@ -202,11 +224,15 @@ describe('Authentication', () => {
         expect(adminGroup.appCreate).toBeTruthy();
         expect(adminGroup.appDelete).toBeTruthy();
         expect(adminGroup.folderCreate).toBeTruthy();
+        expect(adminGroup.folderUpdate).toBeTruthy();
+        expect(adminGroup.folderDelete).toBeTruthy();
 
         const allUserGroup = groupPermissions.find((x) => x.group == 'all_users');
         expect(allUserGroup.appCreate).toBeFalsy();
         expect(allUserGroup.appDelete).toBeFalsy();
         expect(allUserGroup.folderCreate).toBeFalsy();
+        expect(allUserGroup.folderUpdate).toBeFalsy();
+        expect(allUserGroup.folderDelete).toBeFalsy();
       });
       it('authenticate if valid credentials', async () => {
         await request(app.getHttpServer())
@@ -227,10 +253,10 @@ describe('Authentication', () => {
           .expect(401);
       });
       it('throw 401 if user is archived', async () => {
-        await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
+        const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
 
         await request(app.getHttpServer())
-          .post('/api/authenticate')
+          .post(`/api/authenticate/${orgUser.organizationId}`)
           .send({ email: 'user@tooljet.io', password: 'password' })
           .expect(401);
 
@@ -243,6 +269,46 @@ describe('Authentication', () => {
           .get('/api/organizations/users')
           .set('Authorization', authHeaderForUser(adminUser))
           .expect(401);
+      });
+      it('throw 401 if user is invited', async () => {
+        const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
+
+        const response = await request(app.getHttpServer())
+          .post(`/api/authenticate/${orgUser.organizationId}`)
+          .send({ email: 'user@tooljet.io', password: 'password' })
+          .expect(401);
+
+        const adminUser = await userRepository.findOneOrFail({
+          email: 'admin@tooljet.io',
+        });
+        await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
+
+        await request(app.getHttpServer())
+          .get('/api/organizations/users')
+          .set('Authorization', authHeaderForUser(adminUser))
+          .expect(401);
+      });
+      it('login to new organization if user is archived', async () => {
+        const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
+
+        const response = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'user@tooljet.io', password: 'password' });
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.organization_id).not.toBe(orgUser.organizationId);
+        expect(response.body.organization).toBe('Untitled workspace');
+      });
+      it('login to new organization if user is invited', async () => {
+        const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
+
+        const response = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'user@tooljet.io', password: 'password' });
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.organization_id).not.toBe(orgUser.organizationId);
+        expect(response.body.organization).toBe('Untitled workspace');
       });
       it('throw 401 if invalid credentials', async () => {
         await request(app.getHttpServer())
@@ -322,6 +388,8 @@ describe('Authentication', () => {
             'updated_at',
             'created_at',
             'folder_create',
+            'folder_delete',
+            'folder_update',
           ].sort()
         );
         expect(app_group_permissions).toHaveLength(0);
@@ -383,6 +451,8 @@ describe('Authentication', () => {
             'updated_at',
             'created_at',
             'folder_create',
+            'folder_delete',
+            'folder_update',
           ].sort()
         );
         expect(app_group_permissions).toHaveLength(0);
