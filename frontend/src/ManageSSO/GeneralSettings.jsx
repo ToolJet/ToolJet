@@ -35,7 +35,9 @@ export function GeneralSettings({ settings, updateData }) {
   return (
     <div className="card">
       <div className="card-header">
-        <div className="card-title">General Settings</div>
+        <div className="card-title" data-cy="card-title">
+          General Settings
+        </div>
       </div>
       <div className="card-body">
         <form noValidate>
@@ -46,15 +48,22 @@ export function GeneralSettings({ settings, updateData }) {
                 type="checkbox"
                 onChange={() => setEnableSignUp((enableSignUp) => !enableSignUp)}
                 checked={enableSignUp}
+                data-cy="form-check-input"
               />
-              <span className="form-check-label">Enable signup</span>
+              <span className="form-check-label" data-cy="form-check-label">
+                Enable signup
+              </span>
             </label>
             <div className="help-text">
-              <div>New account will be created for user&apos;s first time SSO sign in</div>
+              <div data-cy="general-settings-help-text">
+                New account will be created for user&apos;s first time SSO sign in
+              </div>
             </div>
           </div>
           <div className="form-group mb-3">
-            <label className="form-label">Allowed domains</label>
+            <label className="form-label" data-cy="allowed-domains-label">
+              Allowed domains
+            </label>
             <div>
               <input
                 type="text"
@@ -63,20 +72,23 @@ export function GeneralSettings({ settings, updateData }) {
                 name="domain"
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
+                data-cy="allowed-domain-input"
               />
             </div>
           </div>
           {!isSingleOrganization && (
             <div className="form-group mb-3">
-              <label className="form-label">Login URL</label>
+              <label className="form-label" data-cy="login-url">
+                Login URL
+              </label>
               <div>{`${window.location.protocol}//${window.location.host}/login/${authenticationService?.currentUserValue?.organization_id}`}</div>
               <div className="help-text mt-1">
-                <div>Use this URL to login directly to this workspace</div>
+                <div data-cy="login-help-text">Use this URL to login directly to this workspace</div>
               </div>
             </div>
           )}
           <div className="form-footer">
-            <button type="button" className="btn btn-light mr-2" onClick={reset}>
+            <button type="button" className="btn btn-light mr-2" onClick={reset} data-cy="cancel-button">
               Cancel
             </button>
             <button
@@ -84,6 +96,7 @@ export function GeneralSettings({ settings, updateData }) {
               className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}
               disabled={isSaving}
               onClick={saveSettings}
+              data-cy="save-button"
             >
               Save
             </button>
