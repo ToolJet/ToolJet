@@ -324,6 +324,8 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
         orgEnvironmentVariableCreate: group == 'admin',
         orgEnvironmentVariableUpdate: group == 'admin',
         orgEnvironmentVariableDelete: group == 'admin',
+        folderUpdate: group == 'admin',
+        folderDelete: group == 'admin',
       });
       await groupPermissionRepository.save(groupPermission);
     }

@@ -134,6 +134,8 @@ export class GroupPermissionsService {
       org_environment_variable_create,
       org_environment_variable_update,
       org_environment_variable_delete,
+      folder_delete,
+      folder_update,
     } = body;
 
     await getManager().transaction(async (manager) => {
@@ -151,6 +153,8 @@ export class GroupPermissionsService {
         ...(typeof org_environment_variable_delete === 'boolean' && {
           orgEnvironmentVariableDelete: org_environment_variable_delete,
         }),
+        ...(typeof folder_delete === 'boolean' && { folderDelete: folder_delete }),
+        ...(typeof folder_update === 'boolean' && { folderUpdate: folder_update }),
       };
       if (Object.keys(groupPermissionUpdateParams).length !== 0) {
         await manager.update(GroupPermission, groupPermissionId, groupPermissionUpdateParams);

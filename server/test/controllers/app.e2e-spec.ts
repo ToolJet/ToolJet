@@ -79,6 +79,8 @@ describe('Authentication', () => {
       expect(adminGroup.orgEnvironmentVariableCreate).toBeTruthy();
       expect(adminGroup.orgEnvironmentVariableUpdate).toBeTruthy();
       expect(adminGroup.orgEnvironmentVariableDelete).toBeTruthy();
+      expect(adminGroup.folderUpdate).toBeTruthy();
+      expect(adminGroup.folderDelete).toBeTruthy();
 
       const allUserGroup = groupPermissions.find((x) => x.group == 'all_users');
       expect(allUserGroup.appCreate).toBeFalsy();
@@ -87,6 +89,8 @@ describe('Authentication', () => {
       expect(allUserGroup.orgEnvironmentVariableCreate).toBeFalsy();
       expect(allUserGroup.orgEnvironmentVariableUpdate).toBeFalsy();
       expect(allUserGroup.orgEnvironmentVariableDelete).toBeFalsy();
+      expect(allUserGroup.folderUpdate).toBeFalsy();
+      expect(allUserGroup.folderDelete).toBeFalsy();
     });
     describe('Single organization operations', () => {
       beforeEach(async () => {
@@ -229,6 +233,8 @@ describe('Authentication', () => {
         expect(adminGroup.orgEnvironmentVariableCreate).toBeTruthy();
         expect(adminGroup.orgEnvironmentVariableUpdate).toBeTruthy();
         expect(adminGroup.orgEnvironmentVariableDelete).toBeTruthy();
+        expect(adminGroup.folderUpdate).toBeTruthy();
+        expect(adminGroup.folderDelete).toBeTruthy();
 
         const allUserGroup = groupPermissions.find((x) => x.group == 'all_users');
         expect(allUserGroup.appCreate).toBeFalsy();
@@ -237,6 +243,8 @@ describe('Authentication', () => {
         expect(allUserGroup.orgEnvironmentVariableCreate).toBeFalsy();
         expect(allUserGroup.orgEnvironmentVariableUpdate).toBeFalsy();
         expect(allUserGroup.orgEnvironmentVariableDelete).toBeFalsy();
+        expect(allUserGroup.folderUpdate).toBeFalsy();
+        expect(allUserGroup.folderDelete).toBeFalsy();
       });
       it('authenticate if valid credentials', async () => {
         await request(app.getHttpServer())
@@ -395,6 +403,8 @@ describe('Authentication', () => {
             'org_environment_variable_create',
             'org_environment_variable_update',
             'org_environment_variable_delete',
+            'folder_delete',
+            'folder_update',
           ].sort()
         );
         expect(app_group_permissions).toHaveLength(0);
@@ -459,6 +469,8 @@ describe('Authentication', () => {
             'org_environment_variable_create',
             'org_environment_variable_update',
             'org_environment_variable_delete',
+            'folder_delete',
+            'folder_update',
           ].sort()
         );
         expect(app_group_permissions).toHaveLength(0);

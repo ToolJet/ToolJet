@@ -96,6 +96,8 @@ export class OrganizationsService {
         orgEnvironmentVariableCreate: isAdmin,
         orgEnvironmentVariableUpdate: isAdmin,
         orgEnvironmentVariableDelete: isAdmin,
+        folderUpdate: isAdmin,
+        folderDelete: isAdmin,
       });
       await this.groupPermissionsRepository.save(groupPermission);
       createdGroupPermissions.push(groupPermission);

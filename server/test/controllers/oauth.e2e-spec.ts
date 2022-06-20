@@ -168,6 +168,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -241,6 +243,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -304,6 +308,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -384,6 +390,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -464,6 +472,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_delete',
+              'folder_update',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -635,6 +645,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -723,6 +735,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -808,6 +822,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -883,6 +899,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -978,6 +996,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1071,6 +1091,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1164,6 +1186,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_delete',
+              'folder_update',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1300,6 +1324,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1373,6 +1399,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1436,6 +1464,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1516,6 +1546,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1596,6 +1628,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_delete',
+              'folder_update',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1767,6 +1801,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1855,6 +1891,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1940,6 +1978,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -2015,6 +2055,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -2110,6 +2152,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -2203,6 +2247,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -2296,6 +2342,8 @@ describe('oauth controller', () => {
               'org_environment_variable_create',
               'org_environment_variable_update',
               'org_environment_variable_delete',
+              'folder_delete',
+              'folder_update',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
