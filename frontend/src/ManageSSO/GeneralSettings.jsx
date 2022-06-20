@@ -78,10 +78,10 @@ export function GeneralSettings({ settings, updateData }) {
           </div>
           {!isSingleOrganization && (
             <div className="form-group mb-3">
-              <label className="form-label" data-cy="login-url">
+              <label className="form-label" data-cy="login-url-label">
                 Login URL
               </label>
-              <div>{`${window.location.protocol}//${window.location.host}/login/${authenticationService?.currentUserValue?.organization_id}`}</div>
+              <div data-cy="login-url">{`${window.location.protocol}//${window.location.host}/login/${authenticationService?.currentUserValue?.organization_id}`}</div>
               <div className="help-text mt-1">
                 <div data-cy="login-help-text">Use this URL to login directly to this workspace</div>
               </div>
