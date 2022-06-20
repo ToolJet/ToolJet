@@ -22,6 +22,7 @@ export const groupsText= {
   resourcesApps: "Apps",
   resourcesFolders: "Folders",
   createLabel: "Create",
+  folderCreateLabel: "Create/Update/Delete",
   deleteLabel: "Delete",
   permissionUpdatedToast: "Group permissions updated",
   confirmText: "This group will be permanently deleted. Do you want to continue?",

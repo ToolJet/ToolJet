@@ -44,7 +44,7 @@ export const manageGroupsElements = () =>{
 
   cy.get(groupsSelector.resourcesFolders).should("be.visible").and("have.text", groupsText.resourcesFolders);
   cy.get(groupsSelector.foldersCreateCheck).should("be.visible").check();
-  cy.get(groupsSelector.foldersCreateLabel).should("be.visible").and("have.text", groupsText.createLabel);
+  cy.get(groupsSelector.foldersCreateLabel).should("be.visible").and("have.text", groupsText.folderCreateLabel);
   cy.get(groupsSelector.foldersCreateCheck).uncheck();
   cy.get(groupsSelector.userGroup).click();
 
@@ -69,7 +69,7 @@ export const manageGroupsElements = () =>{
   cy.get(groupsSelector.resourcesApps).should("be.visible").and("have.text", groupsText.resourcesApps);
   cy.get(groupsSelector.appsCreateCheck).should("be.visible").and("be.disabled");
   cy.get(groupsSelector.appsDeleteCheck).should("be.visible").and("be.disabled");
-  cy.get(groupsSelector.foldersCreateLabel).should("be.visible").and("have.text", groupsText.createLabel);
+  cy.get(groupsSelector.foldersCreateLabel).should("be.visible").and("have.text", groupsText.folderCreateLabel);
   cy.get(groupsSelector.foldersCreateCheck).should("be.visible").and("be.disabled");
   cy.get(groupsSelector.userGroup).click();
 };
