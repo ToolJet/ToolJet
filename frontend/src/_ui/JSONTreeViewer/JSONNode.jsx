@@ -41,7 +41,6 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   const [showHiddenOptionsForNode, setShowHiddenOptionsForNode] = React.useState(false);
   const [showHiddenOptionButtons, setShowHiddenOptionButtons] = React.useState([]);
-  const [onSelectDispatchActions, setOnSelectDispatchActions] = React.useState([]);
 
   React.useEffect(() => {
     if (showHiddenOptionButtons) {
@@ -49,21 +48,6 @@ export const JSONNode = ({ data, ...restProps }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  React.useEffect(() => {
-    if (useActions && currentNode) {
-      const actions = getOnSelectLabelDispatchActions(currentNode, path);
-      const onSelectDispatchActions =
-        Object.prototype.toString.call(actions).slice(8, -1) === 'array'
-          ? actions.filter((action) => action.onSelect)
-          : [];
-      if (onSelectDispatchActions.length > 0) {
-        setOnSelectDispatchActions(onSelectDispatchActions);
-      }
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedNode]);
 
   const toggleExpandNode = (node) => {
     if (expandable) {
@@ -76,7 +60,7 @@ export const JSONNode = ({ data, ...restProps }) => {
   };
 
   const onSelect = (data, currentNode, path) => {
-    const actions = onSelectDispatchActions;
+    const actions = getOnSelectLabelDispatchActions(currentNode, path)?.filter((action) => action.onSelect);
     actions.forEach((action) => action.dispatchAction(data, currentNode));
 
     if (!expandWithLabels) {
