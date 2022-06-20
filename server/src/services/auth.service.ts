@@ -128,10 +128,10 @@ export class AuthService {
       }
     }
 
-    if (user.defaultOrganizationId !== user.organizationId) {
-      // Updating default organization Id
-      await this.usersService.updateDefaultOrganization(user, organization.id);
-    }
+    await this.usersService.updateUser(user.id, {
+      ...(user.defaultOrganizationId !== user.organizationId && { defaultOrganizationId: organization.id }),
+      passwordRetryCount: 0,
+    });
 
     const payload = {
       username: user.id,
@@ -178,7 +178,7 @@ export class AuthService {
     }
 
     // Updating default organization Id
-    await this.usersService.updateDefaultOrganization(newUser, newUser.organizationId);
+    await this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId });
 
     const payload = {
       username: user.id,
