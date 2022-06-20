@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SketchPicker } from 'react-color';
 
-export const ColorPicker = function ({ properties, styles, setExposedVariable, darkMode, height }) {
+export const ColorPicker = function ({ width, properties, styles, setExposedVariable, darkMode, height }) {
   const { visibility } = styles;
   const defaultColor = properties.defaultColor;
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -38,18 +38,23 @@ export const ColorPicker = function ({ properties, styles, setExposedVariable, d
     : { display: 'none' };
 
   return (
-    <div style={baseStyle} className="form-control" onMouseLeave={() => setShowColorPicker(false)}>
-      <div
-        className="d-flex h-100 justify-content-between align-items-center  "
-        onClick={() => setShowColorPicker(true)}
-      >
+    <div style={baseStyle} className="form-control">
+      <div className="d-flex h-100 justify-content-between align-items-center" onClick={() => setShowColorPicker(true)}>
         <span>{color}</span>
         <div style={backgroundColorDivStyle}></div>
       </div>
       {showColorPicker && (
-        <div className="position-absolute bottom-0" style={{ left: 0, right: 0 }}>
-          <SketchPicker color={color} onChangeComplete={handleColorChange} />
-        </div>
+        <>
+          <div
+            className="position-absolute bottom-0"
+            style={{ left: 0, right: 0 }}
+            onMouseLeave={() => setShowColorPicker(false)}
+            width={width}
+          >
+            <SketchPicker color={color} onChangeComplete={handleColorChange} />
+          </div>
+          <div className="color-picker-overlay" onClick={() => setShowColorPicker(false)}></div>
+        </>
       )}
     </div>
   );
