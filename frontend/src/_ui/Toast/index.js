@@ -2,6 +2,7 @@ import React from 'react';
 import { toast, Toaster, ToastBar } from 'react-hot-toast';
 
 const Toast = ({t, icon, message}) => {
+
   return (
     <>
       <Toaster>
@@ -11,9 +12,9 @@ const Toast = ({t, icon, message}) => {
               <>
                 {icon}
                 {message}
-                {t.type !== 'loading' && (
-                  <button onClick={() => toast.dismiss(t.id)}>X</button>
-                )}
+                <button
+                  className="btn-close"
+                  onClick={() => toast.dismiss(t.id)} />
               </>
             )}
           </ToastBar>

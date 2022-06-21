@@ -28,6 +28,7 @@ import { RedirectSso } from '@/RedirectSso/RedirectSso';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import Toast from '@/_ui/Toast'
+
 class App extends React.Component {
   constructor(props) {
     super(props);
