@@ -1,7 +1,6 @@
 import React, { useState, useRef, useLayoutEffect } from 'react';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
-import { v4 as uuidv4 } from 'uuid';
 import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
@@ -16,7 +15,6 @@ import { CustomComponent } from './Components/CustomComponent';
 import useFocus from '@/_hooks/use-focus';
 
 export const Inspector = ({
-  cloneComponent,
   selectedComponentId,
   componentDefinitionChanged,
   dataQueries,
@@ -42,53 +40,6 @@ export const Inspector = ({
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
   useHotkeys('escape', () => switchSidebarTab(2));
-
-  useHotkeys('cmd+d, ctrl+d', (e) => {
-    e.preventDefault();
-    let clonedComponent = JSON.parse(JSON.stringify(component));
-    clonedComponent.id = uuidv4();
-    const selectedComponents = [clonedComponent, ...retrieveChildComponents(clonedComponent, true)];
-    cloneComponent(selectedComponents);
-    toast.success(`${component.component.name} cloned succesfully`);
-    switchSidebarTab(2);
-  });
-
-  useHotkeys('cmd+c, ctrl+c', (e) => {
-    e.preventDefault();
-    let copiedComponent = JSON.parse(JSON.stringify(component));
-    copiedComponent.parent = undefined;
-    const selectedComponents = [copiedComponent, ...retrieveChildComponents(copiedComponent)];
-    localStorage.setItem('widgetClipboard', JSON.stringify(selectedComponents));
-    toast.success(`${component.component.name} copied succesfully`);
-  });
-
-  const retrieveChildComponents = (selectedComponent, isCloning = false) => {
-    let childComponents = [],
-      selectedChildComponents = [];
-
-    if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
-      childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent?.startsWith(component.id));
-    } else {
-      childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
-    }
-
-    childComponents.forEach((componentId) => {
-      let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
-
-      if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
-        const childTabId = childComponent.parent.split('-').at(-1);
-        childComponent.parent = `${selectedComponent.id}-${childTabId}`;
-      } else {
-        childComponent.parent = selectedComponent.id;
-      }
-      if (isCloning) {
-        childComponent.id = uuidv4();
-      }
-      selectedChildComponents.push(childComponent);
-    });
-
-    return selectedChildComponents;
-  };
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 

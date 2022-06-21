@@ -16,7 +16,7 @@ import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 import produce from 'immer';
-import { toast } from 'react-hot-toast';
+import { addComponents } from '@/_helpers/appUtils';
 
 export const Container = ({
   canvasWidth,
@@ -46,8 +46,6 @@ export const Container = ({
   onComponentHover,
   hoveredComponent,
   dataQueries,
-  cloneComponent,
-  switchSidebarTab,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -67,6 +65,7 @@ export const Container = ({
   const [isContainerFocused, setContainerFocus] = useState(false);
   const router = useRouter();
   const canvasRef = useRef(null);
+  const focusedParentIdRef = useRef(undefined);
 
   useHotkeys('⌘+z, control+z', () => handleUndo());
   useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
@@ -75,34 +74,27 @@ export const Container = ({
     '⌘+v, control+v',
     () => {
       if (isContainerFocused) {
-        const pastedComponent = JSON.parse(localStorage.getItem('widgetClipboard'));
-        if (Array.isArray(pastedComponent) && pastedComponent.length > 0) {
-          const selectedComponents = [];
-          const parentComponent = pastedComponent.shift();
-          parentComponent.id = uuidv4();
-          selectedComponents.push(parentComponent);
-          pastedComponent.forEach((component) => {
-            if (parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar') {
-              const childTabId = component.parent.split('-').at(-1);
-              component.parent = `${parentComponent.id}-${childTabId}`;
-            } else {
-              component.parent = parentComponent.id;
-            }
-            component.id = uuidv4();
-            selectedComponents.push(component);
-          });
-          cloneComponent(selectedComponents);
-          toast.success(`${parentComponent.component.name} pasted succesfully`);
-          switchSidebarTab(2);
-        }
+        addComponents(
+          appDefinition,
+          appDefinitionChanged,
+          focusedParentIdRef.current,
+          JSON.parse(localStorage.getItem('ToolJetMeta_widgetClipboard'))
+        );
       }
     },
-    [isContainerFocused]
+    [isContainerFocused, appDefinition, focusedParentIdRef]
   );
 
   useEffect(() => {
     const handleClick = (e) => {
       if (canvasRef.current.contains(e.target)) {
+        const elem = e.target.closest('.real-canvas').getAttribute('id');
+        if (elem === 'real-canvas') {
+          focusedParentIdRef.current = undefined;
+        } else {
+          const parentId = elem.split('canvas-')[1];
+          focusedParentIdRef.current = parentId;
+        }
         if (!isContainerFocused) {
           setContainerFocus(true);
         }

@@ -27,6 +27,7 @@ import {
   setStateAsync,
   computeComponentState,
   getSvgIcon,
+  cloneComponents,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -686,14 +687,10 @@ class Editor extends React.Component {
     this.appDefinitionChanged(appDefinition);
   };
 
-  cloneComponent = (newComponents) => {
-    const appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
-    newComponents.forEach((newComponent) => {
-      newComponent.component.name = computeComponentName(newComponent.component.component, appDefinition.components);
-      appDefinition.components[newComponent.id] = newComponent;
-    });
-    this.appDefinitionChanged(appDefinition);
-  };
+  copyComponents = () => cloneComponents(this, this.appDefinitionChanged, false);
+
+  cloneComponents = () => cloneComponents(this, this.appDefinitionChanged, true);
+
   decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
   globalSettingsChanged = (key, value) => {
@@ -1313,8 +1310,6 @@ class Editor extends React.Component {
                         onComponentHover={this.handleComponentHover}
                         hoveredComponent={hoveredComponent}
                         dataQueries={dataQueries}
-                        cloneComponent={this.cloneComponent}
-                        switchSidebarTab={this.switchSidebarTab}
                       />
                       <CustomDragLayer
                         snapToGrid={true}
@@ -1550,6 +1545,8 @@ class Editor extends React.Component {
 
               <EditorKeyHooks
                 moveComponents={this.moveComponents}
+                cloneComponents={this.cloneComponents}
+                copyComponents={this.copyComponents}
                 handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
                 removeMultipleComponents={this.removeComponents}
               />
@@ -1560,7 +1557,6 @@ class Editor extends React.Component {
                   !isEmpty(appDefinition.components) &&
                   !isEmpty(appDefinition.components[selectedComponents[0].id]) ? (
                     <Inspector
-                      cloneComponent={this.cloneComponent}
                       moveComponents={this.moveComponents}
                       componentDefinitionChanged={this.componentDefinitionChanged}
                       dataQueries={dataQueries}
