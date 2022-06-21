@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 export function Git({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
   const [clientId, setClientId] = useState(settings?.configs?.client_id || '');
+  const [hostName, setHostName] = useState(settings?.configs?.host_name || '');
   const [clientSecret, setClientSecret] = useState(settings?.configs?.client_secret || '');
   const [isSaving, setSaving] = useState(false);
   const [configId, setConfigId] = useState(settings?.id);
@@ -12,15 +13,19 @@ export function Git({ settings, updateData }) {
   const reset = () => {
     setClientId(settings?.configs?.client_id || '');
     setClientSecret(settings?.configs?.client_secret || '');
+    setHostName(settings?.configs?.host_name || '');
   };
 
   const saveSettings = () => {
     setSaving(true);
-    organizationService.editOrganizationConfigs({ type: 'git', configs: { clientId, clientSecret } }).then(
+    organizationService.editOrganizationConfigs({ type: 'git', configs: { clientId, clientSecret, hostName } }).then(
       (data) => {
         setSaving(false);
         data.id && setConfigId(data.id);
-        updateData('git', { id: data.id, configs: { client_id: clientId, client_secret: clientSecret } });
+        updateData('git', {
+          id: data.id,
+          configs: { client_id: clientId, client_secret: clientSecret, host_name: hostName },
+        });
         toast.success('updated SSO configurations', {
           position: 'top-center',
         });
@@ -81,6 +86,24 @@ export function Git({ settings, updateData }) {
       </div>
       <div className="card-body">
         <form noValidate>
+          <div className="form-group mb-3">
+            <label className="form-label" data-cy="host-name-label">
+              Host Name
+            </label>
+            <div>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Enter Host Name"
+                value={hostName}
+                onChange={(e) => setHostName(e.target.value)}
+                data-cy="host-name-input"
+              />
+            </div>
+            <div className="help-text mt-2">
+              <div data-cy="general-settings-help-text">Required if self hosted</div>
+            </div>
+          </div>
           <div className="form-group mb-3">
             <label className="form-label" data-cy="client-id-label">
               Client Id
