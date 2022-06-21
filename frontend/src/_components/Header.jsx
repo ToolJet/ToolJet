@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { authenticationService, userService } from '@/_services';
 import { history } from '@/_helpers';
@@ -30,9 +30,8 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatar_id]);
 
-  const version = config.currentVersion;
-  const [currentVersion, setCurrentVersion] = useState(version);
-  useEffect(() => setCurrentVersion(version), [version]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const currentVersion = useMemo(() => config.currentVersion, [config.currentVersion]);
 
   function logout() {
     authenticationService.logout();
