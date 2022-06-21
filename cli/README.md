@@ -11,7 +11,7 @@ $ npm install -g @tooljet/cli
 $ tooljet COMMAND
 running command...
 $ tooljet (--version)
-@tooljet/cli/0.0.11 darwin-arm64 node-v14.17.3
+@tooljet/cli/0.0.12 darwin-arm64 node-v14.17.3
 $ tooljet --help [COMMAND]
 USAGE
   $ tooljet COMMAND
@@ -39,8 +39,6 @@ USAGE
 DESCRIPTION
   This command returns the information about where tooljet is being run
 ```
-
-_See code: [dist/commands/info.ts](https://github.com/tooljet/tooljet/blob/v0.0.11/dist/commands/info.ts)_
 
 ## `tooljet plugin create PLUGIN_NAME`
 
