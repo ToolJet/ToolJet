@@ -20,7 +20,9 @@ export default function GoogleSSOLoginButton(props) {
                 className="h-4"
                 data-cy="google-icon"
               />
-              <span className="px-1" data-cy="google-sign-in-text">Sign in with Google</span>
+              <span className="px-1" data-cy="google-sign-in-text">
+                Sign in with Google
+              </span>
             </button>
           </div>
         )}
