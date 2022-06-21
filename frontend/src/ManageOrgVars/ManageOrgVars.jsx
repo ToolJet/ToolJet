@@ -290,7 +290,7 @@ class ManageOrgVars extends React.Component {
               />
             ) : (
               <>
-                {variables?.length > 0 && (
+                {variables?.length > 0 ? (
                   <VariablesTable
                     isLoading={isLoading}
                     variables={variables}
@@ -300,6 +300,11 @@ class ManageOrgVars extends React.Component {
                     onEditBtnClicked={this.onEditBtnClicked}
                     onDeleteBtnClicked={this.onDeleteBtnClicked}
                   />
+                ) : (
+                  <span className="no-vars-text">
+                    You haven&apos;t configured any environment variables, press the &apos;<b>Add new variable</b>&apos;
+                    button to create one
+                  </span>
                 )}
               </>
             )}
