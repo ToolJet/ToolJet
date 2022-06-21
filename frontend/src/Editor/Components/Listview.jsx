@@ -18,12 +18,13 @@ export const Listview = function Listview({
   const fallbackStyles = { visibility: true, disabledState: false };
 
   const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
-  const { backgroundColor, visibility, disabledState } = { ...fallbackStyles, ...styles };
+  const { backgroundColor, visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
 
   const computedStyles = {
     backgroundColor,
     height,
     display: visibility ? 'flex' : 'none',
+    borderRadius: borderRadius ?? 0,
   };
 
   const onRowClicked = (index) => {

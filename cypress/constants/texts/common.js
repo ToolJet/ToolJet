@@ -3,7 +3,8 @@ export const path={
     loginPath: "/login",
     profilePath: "/settings",
     manageUsers: "/users",
-    confirmInvite: "/confirm-invite"
+    confirmInvite: "/confirm-invite",
+    manageSSO: "/manage-sso",
 }
 
 export const commonText={
