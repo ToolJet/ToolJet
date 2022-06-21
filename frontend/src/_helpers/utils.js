@@ -36,7 +36,7 @@ export function resolve(data, state) {
   }
 }
 
-function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword) {
+function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
   let result = '';
   let error;
   try {
@@ -44,11 +44,19 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
       ['variables', 'components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects), reservedKeyword],
       `return ${code}`
     );
+    const globals = isJsCode
+      ? {
+          ...state.globals,
+          environmentVariables: undefined,
+        }
+      : {
+          environmentVariables: state.globals.environmentVariables,
+        };
     result = evalFunction(
       state.variables,
       state.components,
       state.queries,
-      state.globals,
+      globals,
       moment,
       _,
       ...Object.values(customObjects),
@@ -77,26 +85,16 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
           return [{}, error];
         }
 
-        if (code.includes('globals.environmentVariables')) {
-          error = `${code} is invalid`;
-          return [{}, error];
-        }
-
-        return resolveCode(code, state, customObjects, withError, reservedKeyword);
+        return resolveCode(code, state, customObjects, withError, reservedKeyword, true);
       } else if (object.startsWith('%%') && object.endsWith('%%')) {
         const code = object.replaceAll('%%', '');
-
-        if (!new RegExp('^globals.environmentVariables.(server|client).[A-Za-z0-9]+').test(code)) {
-          error = `${code} is an invalid variable.`;
-          return [{}, error];
-        }
 
         if (code.includes('server') && !new RegExp('^globals.environmentVariables.server.[A-Za-z0-9]+$').test(code)) {
           error = `${code} is invalid. Server variables can't be used like this`;
           return [{}, error];
         }
 
-        return resolveCode(code, state, customObjects, withError, reservedKeyword);
+        return resolveCode(code, state, customObjects, withError, reservedKeyword, false);
       }
 
       const dynamicVariables = getDynamicVariables(object);
