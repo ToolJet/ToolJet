@@ -1159,7 +1159,18 @@ button {
   color: #4d72fa;
   cursor: pointer;
 }
-
+.fx-container-eventmanager{
+  position: relative;
+}
+.fx-container-eventmanager  * .fx-outer-wrapper{
+  position: absolute !important;
+  top: 5px !important;
+  right: -22px;
+}
+.fx-container-eventmanager  *.fx-common{
+  top:4px !important;
+  right: -30px;
+}
 .unselectable {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
