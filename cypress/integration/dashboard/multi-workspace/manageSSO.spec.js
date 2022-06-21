@@ -3,7 +3,7 @@ import * as common from "Support/utils/common";
 import { ssoText } from "Texts/manageSSO";
 import * as SSO from "Support/utils/manageSSO";
 
-describe("Manage SSO for single workspace", ()=>{
+describe("Manage SSO for multi workspace", ()=>{
   before(()=>{     
     cy.appUILogin();
   });
