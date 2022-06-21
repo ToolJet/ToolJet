@@ -135,7 +135,7 @@ export const LeftSidebarInspector = ({
       <div
         {...content}
         className={`card popover ${open || popoverPinned ? 'show' : 'hide'}`}
-        style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '312px' }}
+        style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}
       >
         <SidebarPinnedButton
           darkMode={darkMode}
