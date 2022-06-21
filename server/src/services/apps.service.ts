@@ -294,6 +294,14 @@ export class AppsService {
       where: { id: versionFromId },
     });
 
+    const isVersionNameExisted = await this.appVersionsRepository.findOne({
+      where: { name: versionName, appId: app.id },
+    });
+
+    if (isVersionNameExisted) {
+      throw new BadRequestException('Version name is already existed!');
+    }
+
     let appVersion: AppVersion;
     await getManager().transaction(async (manager) => {
       appVersion = await manager.save(
@@ -510,6 +518,17 @@ export class AppsService {
     const editableParams = {};
     if (body.definition) editableParams['definition'] = body.definition;
     if (body.name) editableParams['name'] = body.name;
+
+    if ('name' in editableParams && Object.keys(editableParams).length == 1) {
+      //means user is trying to update the name
+      const isVersionNameExisted = await this.appVersionsRepository.findOne({
+        where: { name: body.name, appId: version.appId },
+      });
+
+      if (isVersionNameExisted) {
+        throw new BadRequestException('Version name is already existed!');
+      }
+    }
 
     return await this.appVersionsRepository.update(version.id, editableParams);
   }
