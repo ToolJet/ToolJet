@@ -49,8 +49,8 @@ import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import RealtimeAvatars from './RealtimeAvatars';
-import InitVersionCreateModal from './InitVersionCreateModal';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
+import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 
 setAutoFreeze(false);
 enablePatches();
@@ -129,7 +129,6 @@ class Editor extends React.Component {
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
-      showInitVersionCreateModal: false,
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
       isSaving: false,
@@ -363,7 +362,7 @@ class Editor extends React.Component {
   fetchApp = () => {
     const appId = this.props.match.params.id;
 
-    appService.getApp(appId).then((data) => {
+    appService.getApp(appId).then(async (data) => {
       const dataDefinition = defaults(data.definition, this.defaultDefinition);
       this.setState(
         {
@@ -373,10 +372,8 @@ class Editor extends React.Component {
           appDefinition: dataDefinition,
           slug: data.slug,
         },
-        () => {
-          this.setState({
-            showInitVersionCreateModal: isEmpty(this.state.editingVersion),
-          });
+        async () => {
+          if (isEmpty(this.state.editingVersion)) await this.createInitVersion(appId);
 
           computeComponentState(this, this.state.appDefinition.components).then(() => {
             this.runQueries(data.data_queries);
@@ -388,6 +385,18 @@ class Editor extends React.Component {
       this.fetchDataSources();
       this.fetchDataQueries();
     });
+  };
+
+  createInitVersion = async (appId) => {
+    return appVersionService
+      .create(appId, 'v1')
+      .then(() => {
+        initEditorWalkThrough();
+        this.fetchApp();
+      })
+      .catch((err) => {
+        toast.success(err?.error ?? 'Version creation failed');
+      });
   };
 
   setAppDefinitionFromVersion = (version) => {
@@ -1594,13 +1603,6 @@ class Editor extends React.Component {
               />
             )}
           </div>
-          <InitVersionCreateModal
-            showModal={this.state.showInitVersionCreateModal}
-            hideModal={() => this.setState({ showInitVersionCreateModal: false })}
-            fetchApp={this.fetchApp}
-            darkMode={this.props.darkMode}
-            appId={this.state.appId}
-          />
         </DndProvider>
       </div>
     );
