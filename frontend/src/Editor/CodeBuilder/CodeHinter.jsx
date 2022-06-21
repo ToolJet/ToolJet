@@ -243,7 +243,7 @@ export function CodeHinter({
 
   return (
     <div ref={wrapperRef}>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div className="fx-outer-wrapper" style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy="accordion-components">
             <ToolTip label={paramLabel} meta={fieldMeta} />

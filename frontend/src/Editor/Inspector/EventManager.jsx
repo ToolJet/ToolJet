@@ -119,7 +119,10 @@ export const EventManager = ({
 
   function getComponentActionDefaultParams(componentId, actionHandle) {
     const action = getAction(componentId, actionHandle);
-    const defaultParams = (action.params ?? []).map((param) => ({ handle: param.handle, value: param.defaultValue }));
+    const defaultParams = (action.params ?? []).map((param) => ({
+      handle: param.handle,
+      value: param.defaultValue,
+    }));
     return defaultParams;
   }
 
@@ -544,10 +547,11 @@ export const EventManager = ({
                   (getAction(event?.componentId, event?.componentSpecificActionHandle).params ?? []).map((param) => (
                     <div className="row mt-2" key={param.handle}>
                       <div className="col-3 p-1">{param.displayName}</div>
-                      <div className="col-9">
+                      <div className="col-7 fx-container-eventmanager">
                         <CodeHinter
                           theme={darkMode ? 'monokai' : 'default'}
                           currentState={currentState}
+                          mode="javascript"
                           initialValue={
                             event?.componentSpecificActionParams?.find((paramItem) => paramItem.handle === param.handle)
                               ?.value ?? param.defaultValue
@@ -561,6 +565,7 @@ export const EventManager = ({
                             handlerChanged(index, 'componentSpecificActionParams', newParams);
                           }}
                           enablePreview={true}
+                          type={param?.type}
                         />
                       </div>
                     </div>
