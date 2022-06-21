@@ -105,7 +105,7 @@ class Viewer extends React.Component {
             currentUser: userVars,
             theme: { name: this.props.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
-            environment_variables: variables,
+            environmentVariables: variables,
           },
         },
         dataQueries: data.data_queries,
@@ -128,10 +128,14 @@ class Viewer extends React.Component {
   };
 
   fetchOrgEnvironmentVariables = async () => {
-    const variables = {};
+    const variables = {
+      client: {},
+      server: {},
+    };
     await orgEnvironmentVariableService.getVariables().then((data) => {
       data.variables.map((variable) => {
-        variables[variable.variable_name] = variable.value;
+        variables[variable.variable_type][variable.variable_name] =
+          variable.variable_type === 'server' ? 'SecureValue' : variable.value;
       });
     });
     return variables;
