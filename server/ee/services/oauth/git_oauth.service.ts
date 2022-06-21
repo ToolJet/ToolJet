@@ -7,7 +7,7 @@ export class GitOAuthService {
   private readonly authUrl = '/login/oauth/access_token';
 
   #getAuthUrl(hostName) {
-    return `${hostName ? hostName : 'https://github.com'}${this.authUrl}`;
+    return `${hostName || 'https://github.com'}${this.authUrl}`;
   }
   #getUserUrl(hostName) {
     return `${hostName ? `${hostName}/api/v3` : 'https://github.com'}/user`;

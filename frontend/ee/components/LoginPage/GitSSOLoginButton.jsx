@@ -4,13 +4,10 @@ import { buildURLWithQuery } from '@/_helpers/utils';
 export default function GitSSOLoginButton({ configs }) {
   const gitLogin = (e) => {
     e.preventDefault();
-    window.location.href = buildURLWithQuery(
-      `${configs.host_name ? configs.host_name : 'https://github.com'}/login/oauth/authorize`,
-      {
-        client_id: configs?.client_id,
-        scope: 'user:email',
-      }
-    );
+    window.location.href = buildURLWithQuery(`${configs.host_name || 'https://github.com'}/login/oauth/authorize`, {
+      client_id: configs?.client_id,
+      scope: 'user:email',
+    });
   };
   return (
     <div data-cy="git-tile">

@@ -58,5 +58,5 @@ Lastly, enter `Client Id` and `Client Secret` in GitHub manage SSO page and save
 The GitHub sign-in button will now be available in your ToolJet login screen if you have not enabled Multi-Workspace.
 
 :::info
-Should configure `Host Name` if you are using GitHub Enterprise self hosted.
+Should configure `Host Name` if you are using GitHub Enterprise self hosted. Host name should be a URL and should not ends with `/`, example: `https://github.tooljet.com`
 :::
