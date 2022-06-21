@@ -13,12 +13,18 @@ export const Listview = function Listview({
   styles,
   currentState,
   fireEvent,
+  setExposedVariable,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
 
   const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
   const { backgroundColor, visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
+
+  //memoized value of the data
+  const memoizedData = React.useMemo(() => {
+    return data;
+  }, [data]);
 
   const computedStyles = {
     backgroundColor,
@@ -33,6 +39,11 @@ export const Listview = function Listview({
 
   const parentRef = useRef(null);
 
+  React.useEffect(() => {
+    setExposedVariable(`data`, memoizedData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memoizedData]);
+
   return (
     <div
       data-disabled={disabledState}
@@ -43,7 +54,7 @@ export const Listview = function Listview({
       style={computedStyles}
     >
       <div className="rows w-100">
-        {(_.isArray(data) ? data : []).map((listItem, index) => (
+        {(_.isArray(memoizedData) ? memoizedData : []).map((listItem, index) => (
           <div
             className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
             style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
