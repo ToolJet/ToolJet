@@ -12,6 +12,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   const [pathName, setPathName] = useState(document.location.pathname);
   const [avatar, setAvatar] = useState();
   const { first_name, last_name, avatar_id, admin } = authenticationService.currentUserValue;
+  const currentVersion = config.currentVersion;
 
   useEffect(() => {
     setPathName(document.location.pathname);
@@ -29,10 +30,6 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
     () => avatar && URL.revokeObjectURL(avatar);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatar_id]);
-
-  const version = config.currentVersion;
-  const [currentVersion, setCurrentVersion] = useState(version);
-  useEffect(() => setCurrentVersion(version), [version]);
 
   function logout() {
     authenticationService.logout();
