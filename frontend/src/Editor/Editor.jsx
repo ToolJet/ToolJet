@@ -393,10 +393,9 @@ class Editor extends React.Component {
       .then(() => {
         initEditorWalkThrough();
         this.fetchApp();
-        toast.success('Version Created');
       })
-      .catch(() => {
-        toast.success('Version creation failed');
+      .catch((err) => {
+        toast.success(err?.error ?? 'Version creation failed');
       });
   };
 
