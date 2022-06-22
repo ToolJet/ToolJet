@@ -3834,7 +3834,7 @@ input[type="text"] {
   position: fixed;
   position: absolute;
   left: 50%;
-  top: 40%;
+  top: 5%;
 
   .modal-body {
     width: 500px !important;
@@ -3842,7 +3842,7 @@ input[type="text"] {
     padding: 0px !important;
   }
 
-  transform: translate(-60%, -60%);
+  transform: translate(-60%, 0%);
   height: 350px;
   width: auto;
   max-height: 500px;
