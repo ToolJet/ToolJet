@@ -24,6 +24,7 @@
     "@babel/preset-env": "^7.4.3",
     "@babel/preset-react": "^7.0.0",
     "@cypress/webpack-preprocessor": "^5.11.1",
+    "@tooljet/cli": "^0.0.12",
     "babel-loader": "^8.0.5",
     "eslint": "^7.25.0",
     "faker": "^5.5.3",
