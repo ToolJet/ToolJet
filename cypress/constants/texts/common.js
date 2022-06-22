@@ -1,9 +1,10 @@
 export const path={
-    loginPath:"/login",
     loginPath: "/login",
     profilePath: "/settings",
     manageUsers: "/users",
-    confirmInvite: "/confirm-invite"
+    confirmInvite: "/confirm-invite",
+    manageGroups: "/groups",
+    manageSSO: "/manage-sso",
 }
 
 export const commonText={

@@ -49,8 +49,8 @@ import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import RealtimeAvatars from './RealtimeAvatars';
-import InitVersionCreateModal from './InitVersionCreateModal';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
+import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 
 setAutoFreeze(false);
 enablePatches();
@@ -90,6 +90,8 @@ class Editor extends React.Component {
       },
     };
 
+    this.dataSourceModalRef = React.createRef();
+
     this.state = {
       currentUser: authenticationService.currentUserValue,
       app: {},
@@ -127,7 +129,6 @@ class Editor extends React.Component {
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
-      showInitVersionCreateModal: false,
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
       isSaving: false,
@@ -361,7 +362,7 @@ class Editor extends React.Component {
   fetchApp = () => {
     const appId = this.props.match.params.id;
 
-    appService.getApp(appId).then((data) => {
+    appService.getApp(appId).then(async (data) => {
       const dataDefinition = defaults(data.definition, this.defaultDefinition);
       this.setState(
         {
@@ -371,10 +372,8 @@ class Editor extends React.Component {
           appDefinition: dataDefinition,
           slug: data.slug,
         },
-        () => {
-          this.setState({
-            showInitVersionCreateModal: isEmpty(this.state.editingVersion),
-          });
+        async () => {
+          if (isEmpty(this.state.editingVersion)) await this.createInitVersion(appId);
 
           computeComponentState(this, this.state.appDefinition.components).then(() => {
             this.runQueries(data.data_queries);
@@ -386,6 +385,18 @@ class Editor extends React.Component {
       this.fetchDataSources();
       this.fetchDataQueries();
     });
+  };
+
+  createInitVersion = async (appId) => {
+    return appVersionService
+      .create(appId, 'v1')
+      .then(() => {
+        initEditorWalkThrough();
+        this.fetchApp();
+      })
+      .catch((err) => {
+        toast.success(err?.error ?? 'Version creation failed');
+      });
   };
 
   setAppDefinitionFromVersion = (version) => {
@@ -1072,6 +1083,12 @@ class Editor extends React.Component {
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
+  runQuery = (queryId, queryName) => runQuery(this, queryId, queryName);
+
+  dataSourceModalHandler = () => {
+    this.dataSourceModalRef.current.dataSourceModalToggleStateHandler();
+  };
+
   render() {
     const {
       currentSidebarTab,
@@ -1115,7 +1132,7 @@ class Editor extends React.Component {
         {/* This is for viewer to show query confirmations */}
         <Confirm
           show={showQueryConfirmation}
-          message={'Do you want to run this query?'}
+          message={`Do you want to run this query - ${this.state.queryConfirmationData?.queryName}?`}
           onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
           onCancel={() => onQueryCancel(this)}
           queryConfirmationData={this.state.queryConfirmationData}
@@ -1149,6 +1166,7 @@ class Editor extends React.Component {
                     onBlur={(e) => this.saveAppName(this.state.app.id, e.target.value)}
                     className="form-control-plaintext form-control-plaintext-sm"
                     value={this.state.app.name}
+                    data-cy="app-name-input"
                   />
                   <span className="input-icon-addon">
                     <EditIcon />
@@ -1163,7 +1181,13 @@ class Editor extends React.Component {
                 })}
                 data-cy="autosave-indicator"
               >
-                {this.state.isSaving ? <Spinner size="small" /> : 'All changes are saved'}
+                {this.state.isSaving ? (
+                  <Spinner size="small" />
+                ) : this.state.saveError ? (
+                  'Could not save changes'
+                ) : (
+                  'All changes are saved'
+                )}
               </span>
               {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
               {editingVersion && (
@@ -1241,6 +1265,7 @@ class Editor extends React.Component {
               runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
               toggleAppMaintenance={this.toggleAppMaintenance}
               is_maintenance_on={this.state.app.is_maintenance_on}
+              ref={this.dataSourceModalRef}
               isSaving={this.state.isSaving}
               isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
             />
@@ -1465,6 +1490,8 @@ class Editor extends React.Component {
                             allComponents={appDefinition.components}
                             isSourceSelected={this.state.isSourceSelected}
                             isQueryPaneDragging={this.state.isQueryPaneDragging}
+                            runQuery={this.runQuery}
+                            dataSourceModalHandler={this.dataSourceModalHandler}
                             setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
                           />
                         </div>
@@ -1576,13 +1603,6 @@ class Editor extends React.Component {
               />
             )}
           </div>
-          <InitVersionCreateModal
-            showModal={this.state.showInitVersionCreateModal}
-            hideModal={() => this.setState({ showInitVersionCreateModal: false })}
-            fetchApp={this.fetchApp}
-            darkMode={this.props.darkMode}
-            appId={this.state.appId}
-          />
         </DndProvider>
       </div>
     );

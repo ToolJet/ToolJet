@@ -280,6 +280,10 @@ class ManageGroupPermissionResources extends React.Component {
       selectedUserIds,
     } = this.state;
 
+    const folder_permission = groupPermission
+      ? groupPermission.folder_create && groupPermission.folder_delete && groupPermission.folder_update
+      : false;
+
     const appSelectOptions = appsNotInGroup.map((app) => {
       return { name: app.name, value: app.id };
     });
@@ -306,10 +310,14 @@ class ManageGroupPermissionResources extends React.Component {
                   ) : (
                     <ol className="breadcrumb" aria-label="breadcrumbs">
                       <li className="breadcrumb-item">
-                        <Link to="/groups">User groups</Link>
+                        <Link to="/groups" data-cy="user-groups">
+                          User groups
+                        </Link>
                       </li>
                       <li className="breadcrumb-item">
-                        <a href="#">{this.humanizeIfDefaultGroupName(groupPermission.group)}</a>
+                        <a href="#" data-cy="group-name">
+                          {this.humanizeIfDefaultGroupName(groupPermission.group)}
+                        </a>
                       </li>
                     </ol>
                   )}
@@ -325,18 +333,21 @@ class ManageGroupPermissionResources extends React.Component {
                   <a
                     onClick={() => this.setState({ currentTab: 'apps' })}
                     className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
+                    data-cy="apps-link"
                   >
                     Apps
                   </a>
                   <a
                     onClick={() => this.setState({ currentTab: 'users' })}
                     className={cx('nav-item nav-link', { active: currentTab === 'users' })}
+                    data-cy="users-link"
                   >
                     Users
                   </a>
                   <a
                     onClick={() => this.setState({ currentTab: 'permissions' })}
                     className={cx('nav-item nav-link', { active: currentTab === 'permissions' })}
+                    data-cy="permissions-link"
                   >
                     Permissions
                   </a>
@@ -377,8 +388,8 @@ class ManageGroupPermissionResources extends React.Component {
                           <table className="table table-vcenter">
                             <thead>
                               <tr>
-                                <th>Name</th>
-                                <th>Permissions</th>
+                                <th data-cy="name-header">Name</th>
+                                <th data-cy="permissions-header">Permissions</th>
                                 <th></th>
                               </tr>
                             </thead>
@@ -436,6 +447,7 @@ class ManageGroupPermissionResources extends React.Component {
                                           onClick={() => {
                                             this.removeAppFromGroup(groupPermission.id, app.id);
                                           }}
+                                          data-cy="delete-link"
                                         >
                                           Delete
                                         </Link>
@@ -484,8 +496,8 @@ class ManageGroupPermissionResources extends React.Component {
                           <table className="table table-vcenter">
                             <thead>
                               <tr>
-                                <th>Name</th>
-                                <th>Email</th>
+                                <th data-cy="name-header">Name</th>
+                                <th data-cy="email-header">Email</th>
                                 <th></th>
                               </tr>
                             </thead>
@@ -537,8 +549,8 @@ class ManageGroupPermissionResources extends React.Component {
                           <table className="table table-vcenter">
                             <thead>
                               <tr>
-                                <th>Resource</th>
-                                <th>Permissions</th>
+                                <th data-cy="resource-header">Resource</th>
+                                <th data-cy="permissions-header">Permissions</th>
                                 <th></th>
                               </tr>
                             </thead>
@@ -560,7 +572,7 @@ class ManageGroupPermissionResources extends React.Component {
                               ) : (
                                 <>
                                   <tr>
-                                    <td>Apps</td>
+                                    <td data-cy="resource-apps">Apps</td>
                                     <td className="text-muted">
                                       <div>
                                         <label className="form-check form-check-inline">
@@ -574,8 +586,11 @@ class ManageGroupPermissionResources extends React.Component {
                                             }}
                                             checked={groupPermission.app_create}
                                             disabled={groupPermission.group === 'admin'}
+                                            data-cy="app-create-checkbox"
                                           />
-                                          <span className="form-check-label">Create</span>
+                                          <span className="form-check-label" data-cy="app-create-label">
+                                            Create
+                                          </span>
                                         </label>
                                         <label className="form-check form-check-inline">
                                           <input
@@ -588,8 +603,11 @@ class ManageGroupPermissionResources extends React.Component {
                                             }}
                                             checked={groupPermission.app_delete}
                                             disabled={groupPermission.group === 'admin'}
+                                            data-cy="app-delete-checkbox"
                                           />
-                                          <span className="form-check-label">Delete</span>
+                                          <span className="form-check-label" data-cy="app-delete-label">
+                                            Delete
+                                          </span>
                                         </label>
                                       </div>
                                     </td>
@@ -597,7 +615,7 @@ class ManageGroupPermissionResources extends React.Component {
                                   </tr>
 
                                   <tr>
-                                    <td>Folders</td>
+                                    <td data-cy="resource-folders">Folders</td>
                                     <td className="text-muted">
                                       <div>
                                         <label className="form-check form-check-inline">
@@ -606,13 +624,18 @@ class ManageGroupPermissionResources extends React.Component {
                                             type="checkbox"
                                             onChange={() => {
                                               this.updateGroupPermission(groupPermission.id, {
-                                                folder_create: !groupPermission.folder_create,
+                                                folder_create: !folder_permission,
+                                                folder_delete: !folder_permission,
+                                                folder_update: !folder_permission,
                                               });
                                             }}
-                                            checked={groupPermission.folder_create}
+                                            checked={folder_permission}
                                             disabled={groupPermission.group === 'admin'}
+                                            data-cy="folder-create-checkbox"
                                           />
-                                          <span className="form-check-label">Create</span>
+                                          <span className="form-check-label" data-cy="folder-create-label">
+                                            Create/Update/Delete
+                                          </span>
                                         </label>
                                       </div>
                                     </td>
