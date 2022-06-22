@@ -357,6 +357,7 @@ button {
       .form-control-plaintext {
         padding: 0;
       }
+
       .header {
         padding-left: 20px;
         padding-right: 20px;
@@ -1881,6 +1882,9 @@ button {
   background-color: $primary;
   border-color: rgba(101, 109, 119, 0.24);
 }
+.confirm-input {
+  padding-right: 10px !important ;
+}
 
 .btn:focus,
 .btn:active,
@@ -1982,6 +1986,10 @@ tr:focus {
 
     .form-control-plaintext {
       font-size: 12px;
+    }
+
+    .form-confirm-control {
+        max-width: 300px !important;
     }
 
     .form-control-plaintext:hover,
