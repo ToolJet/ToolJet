@@ -2456,7 +2456,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     description: 'Color Picker Pallete',
     component: 'ColorPicker',
     properties: {
-      defaultColor: { type: 'code', displayName: 'Default Color' },
+      defaultColor: { type: 'color', displayName: 'Default Color' },
     },
     defaultSize: {
       width: 9,
