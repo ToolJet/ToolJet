@@ -21,6 +21,12 @@ export const navigateToManageUsers=()=>{
  cy.url().should("include",path.manageUsers );
 };
 
+export const navigateToManageGroups=()=>{
+  cy.get(commonSelectors.dropdown).invoke("show");
+  cy.contains("Manage Groups").click();
+  cy.url().should("include",path.manageGroups );
+}
+
 export const navigateToManageSSO=()=>{
   cy.get(commonSelectors.dropdown).invoke("show");
   cy.contains("Manage SSO").click();
