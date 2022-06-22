@@ -61,6 +61,7 @@ const sidebars = {
       label: 'Datasource Reference',
       items: [
         'data-sources/airtable',
+        'data-sources/athena',
         'data-sources/s3',
         'data-sources/appwrite',
         'data-sources/baserow',
