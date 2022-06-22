@@ -781,12 +781,12 @@ describe('apps controller', () => {
             delete: false,
           });
 
-          for (const userData of [adminUserData, developerUserData]) {
+          for (const [index, userData] of [adminUserData, developerUserData].entries()) {
             const response = await request(app.getHttpServer())
               .post(`/api/apps/${application.id}/versions`)
               .set('Authorization', authHeaderForUser(userData.user))
               .send({
-                versionName: 'v1',
+                versionName: `v_${index}`,
                 versionFromId: version.id,
               });
 
@@ -1108,7 +1108,7 @@ describe('apps controller', () => {
         });
 
         const version1 = await createApplicationVersion(app, application);
-        const version2 = await createApplicationVersion(app, application);
+        const version2 = await createApplicationVersion(app, application, { name: 'v2', definition: null });
 
         // setup app permissions for developer
         const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
