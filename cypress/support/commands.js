@@ -34,21 +34,37 @@ Cypress.Commands.add("appLogin",()=>{
   cy.visit('/');
 })
 
-Cypress.Commands.add('createAppIfEmptyDashboard', fn => {
-  cy.get('.empty-title').then(($title => {
+Cypress.Commands.add('createApp',(appName) => {
+  cy.get('body').then(($title => {
     if ($title.text().includes('You can get started by creating a new application or by creating an application using a template in ToolJet Library.')) {
-      cy.get(".empty-action > :nth-child(1)").click();
-      cy.get(".modal-footer > .btn").click()
+      cy.get(commonSelectors.emptyAppCreateButton).click();
+      cy.get(commonSelectors.createButton).click();
       cy.wait(1000);
       cy.get('body').then($el =>{
         if($el.text().includes('Skip')){
           cy.get(commonSelectors.skipButton).click();
         }
         else{
-          cy.log("instructions modal is skipped ")
+          cy.log("instructions modal is skipped ");
         }
       });
-      cy.go('back')
+      cy.clearAndType(commonSelectors.appNameInput, appName);
+      cy.get(commonSelectors.backButton).click();
+    }
+    else{
+      cy.get(commonSelectors.appCreateButton).click();
+      cy.get(commonSelectors.createButton).click();
+      cy.wait(1000);
+      cy.get('body').then($el =>{
+        if($el.text().includes('Skip')){
+          cy.get(commonSelectors.skipButton).click();
+        }
+        else{
+          cy.log("instructions modal is skipped ");
+        }
+      });
+      cy.clearAndType(commonSelectors.appNameInput, appName);
+      cy.get(commonSelectors.backButton).click();
     }
   }))
 });

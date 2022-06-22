@@ -93,6 +93,8 @@ export class OrganizationsService {
         appCreate: isAdmin,
         appDelete: isAdmin,
         folderCreate: isAdmin,
+        folderUpdate: isAdmin,
+        folderDelete: isAdmin,
       });
       await this.groupPermissionsRepository.save(groupPermission);
       createdGroupPermissions.push(groupPermission);
@@ -330,7 +332,7 @@ export class OrganizationsService {
     };
 
     let user = await this.usersService.findByEmail(userParams.email);
-    let defaultOrganisation: Organization,
+    let defaultOrganization: Organization,
       shouldSendWelcomeMail = false;
 
     if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
@@ -346,7 +348,7 @@ export class OrganizationsService {
       // User not exist
       shouldSendWelcomeMail = true;
       // Create default organization
-      defaultOrganisation = await this.create('Untitled workspace');
+      defaultOrganization = await this.create('Untitled workspace');
     }
     user = await this.usersService.create(
       userParams,
@@ -354,13 +356,13 @@ export class OrganizationsService {
       ['all_users'],
       user,
       true,
-      defaultOrganisation?.id
+      defaultOrganization?.id
     );
 
-    if (defaultOrganisation) {
+    if (defaultOrganization) {
       // Setting up default organization
-      await this.organizationUserService.create(user, defaultOrganisation, true);
-      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganisation.id, user.id);
+      await this.organizationUserService.create(user, defaultOrganization, true);
+      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id);
     }
 
     const currentOrganization: Organization = (
