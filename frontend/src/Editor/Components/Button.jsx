@@ -26,7 +26,7 @@ export const Button = function Button({ height, properties, styles, fireEvent })
         })}
         style={computedStyles}
         onClick={(event) => {
-          event.stopPropagation();
+          event.preventDefault();
           fireEvent('onClick');
         }}
         data-cy="button-widget"
