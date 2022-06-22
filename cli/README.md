@@ -29,7 +29,7 @@ Command should be executed inside `Tooljet` directory
 
 ## `tooljet plugin create PLUGIN_NAME`
 
-Create a new tooljet plugin
+Creates a new tooljet plugin
 
 ```
 USAGE
@@ -51,7 +51,7 @@ EXAMPLES
 
 ## `tooljet plugin delete PLUGIN_NAME`
 
-Delete a tooljet plugin
+Deletes a tooljet plugin
 
 ```
 USAGE
@@ -64,7 +64,7 @@ FLAGS
   -b, --build
 
 DESCRIPTION
-  Delete a tooljet plugin
+  Deletes a tooljet plugin
 
 EXAMPLES
   $ tooljet plugin delete <name> [--build]
