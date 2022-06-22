@@ -27,7 +27,7 @@ import { RedirectSso } from '@/RedirectSso/RedirectSso';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
 import Toast from '@/_ui/Toast'
-fA
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -75,6 +75,7 @@ class App extends React.Component {
 
     if (darkMode) {
       toastOptions = {
+        className: 'toast-dark-mode',
         style: {
           borderRadius: '10px',
           background: '#333',

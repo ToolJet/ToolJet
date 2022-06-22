@@ -2907,7 +2907,7 @@ input:focus-visible {
   .DateRangePickerInput__withBorder {
     border: 1px solid #1f2936;
   }
-  
+
   .main .canvas-container .canvas-area {
     background: #2f3c4c;
   }
@@ -4187,7 +4187,7 @@ input[type="text"] {
       vertical-align: unset;
     }
   }
-  
+
   .menu-ico:hover {
     background-color: #d2ddec;
   }
@@ -4771,6 +4771,12 @@ div#driver-page-overlay {
   }
 }
 
+.toast-dark-mode {
+   .btn-close {
+    filter: brightness(0) invert(1);
+  }
+}
+
 .editor .editor-sidebar .inspector .form-control-plaintext {
   padding: 2px 4px;
 }
@@ -4807,7 +4813,7 @@ div#driver-page-overlay {
 .hinter-canvas-input{
   width: 180px !important;
   display: flex;
-  padding: 4px; 
+  padding: 4px;
   height: 41.2px !important;
   margin-top: 1px;
   .CodeMirror-sizer{
@@ -5363,12 +5369,12 @@ div#driver-page-overlay {
 
 .kanban-container {
   background-color: #fefefe;
-  
+
   .kanban-column {
     background-color: #f4f4f4;
     padding: 0 !important;
     height: fit-content !important;
-    
+
    .card-body {
     &:hover {
       overflow-y: auto !important;
@@ -5378,10 +5384,10 @@ div#driver-page-overlay {
       }
     }
    }
-    
+
     .card-header {
       background-color: #fefefe;
-      
+
       .badge {
         font-size: 12px !important;
       }
@@ -5534,7 +5540,7 @@ word-break: break-all;
   inset -6px 4px 0 -4px;
   border-radius: 3px
  }
- 
+
  .gg-album::after,
  .gg-album::before {
   content: "";
@@ -5548,11 +5554,11 @@ word-break: break-all;
   top: 5px;
   right: 4px
  }
- 
+
  .gg-album::after {
   transform: rotate(-46deg);
   right: 2px
- } 
+ }
  .sso-helper-header{
    display: flex;
    align-items: center;
