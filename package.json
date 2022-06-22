@@ -1,4 +1,7 @@
 {
+  "name": "tooljet",
+  "version": "1.18.0",
+  "description": "ToolJet is an open-source low-code framework to build and deploy internal tools.",
   "engines": {
     "node": "14.17.3",
     "npm": "7.20.0"
