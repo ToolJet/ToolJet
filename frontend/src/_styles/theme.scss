@@ -1877,6 +1877,10 @@ button {
   border-color: none;
 }
 
+.form-check-input{
+  cursor: pointer;
+}
+
 .form-check-input:checked {
   background-color: $primary;
   border-color: rgba(101, 109, 119, 0.24);
