@@ -299,7 +299,7 @@ export class AppsService {
     });
 
     if (isVersionNameExisted) {
-      throw new BadRequestException('Version name is already existed!');
+      throw new BadRequestException('Version name already exists.');
     }
 
     let appVersion: AppVersion;
