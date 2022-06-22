@@ -44,6 +44,15 @@ export const Listview = function Listview({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memoizedData]);
 
+  const handleChildEvent = (eventName, eventData) => {
+    const { type, target, currentTarget } = eventData;
+    const parent = target.closest('.list-item');
+    if (type == 'click' && parent && parent === currentTarget) {
+      const index = Array.from(parent.parentElement.children).indexOf(parent);
+      onRowClicked(index);
+    }
+  };
+
   return (
     <div
       data-disabled={disabledState}
@@ -61,6 +70,7 @@ export const Listview = function Listview({
             key={index}
             onClick={(event) => {
               event.stopPropagation();
+              handleChildEvent('onclick', event);
               onRowClicked(index);
             }}
           >
