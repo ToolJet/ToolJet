@@ -132,11 +132,17 @@ class ManageGroupPermissions extends React.Component {
               <div className="row align-items-center">
                 <div className="col">
                   <div className="page-pretitle"></div>
-                  <h2 className="page-title">User Groups</h2>
+                  <h2 className="page-title" data-cy="user-groups-title">
+                    User Groups
+                  </h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
                   {!showNewGroupForm && (
-                    <div className="btn btn-primary" onClick={() => this.setState({ showNewGroupForm: true })}>
+                    <div
+                      className="btn btn-primary"
+                      onClick={() => this.setState({ showNewGroupForm: true })}
+                      data-cy="create-new-group-button"
+                    >
                       Create new group
                     </div>
                   )}
@@ -150,7 +156,9 @@ class ManageGroupPermissions extends React.Component {
               <div className="container-xl">
                 <div className="card">
                   <div className="card-header">
-                    <h3 className="card-title">Add new group</h3>
+                    <h3 className="card-title" data-cy="card-title">
+                      Add new group
+                    </h3>
                   </div>
                   <div className="card-body">
                     <form
@@ -170,6 +178,7 @@ class ManageGroupPermissions extends React.Component {
                               onChange={(e) => {
                                 this.changeNewGroupName(e.target.value);
                               }}
+                              data-cy="group-name-input"
                             />
                           </div>
                         </div>
@@ -185,6 +194,7 @@ class ManageGroupPermissions extends React.Component {
                             })
                           }
                           disabled={creatingGroup}
+                          data-cy="cancel-button"
                         >
                           Cancel
                         </button>
@@ -192,6 +202,7 @@ class ManageGroupPermissions extends React.Component {
                           type="submit"
                           className={`btn mx-2 btn-primary ${creatingGroup ? 'btn-loading' : ''}`}
                           disabled={creatingGroup}
+                          data-cy="create-group-button"
                         >
                           Create Group
                         </button>
@@ -208,7 +219,7 @@ class ManageGroupPermissions extends React.Component {
                     <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
                       <thead>
                         <tr>
-                          <th>Name</th>
+                          <th data-cy="table-header">Name</th>
                           <th className="w-1"></th>
                           <th className="w-1"></th>
                         </tr>
@@ -236,13 +247,15 @@ class ManageGroupPermissions extends React.Component {
                           {groups.map((permissionGroup) => (
                             <tr key={permissionGroup.id}>
                               <td>
-                                <Link to={`/groups/${permissionGroup.id}`}>
+                                <Link to={`/groups/${permissionGroup.id}`} data-cy="group-name">
                                   {this.humanizeifDefaultGroupName(permissionGroup.group)}
                                 </Link>
                               </td>
                               <td>
                                 {permissionGroup.group !== 'admin' && permissionGroup.group !== 'all_users' && (
-                                  <Link onClick={() => this.deleteGroup(permissionGroup.id)}>Delete</Link>
+                                  <Link onClick={() => this.deleteGroup(permissionGroup.id)} data-cy="delete-link">
+                                    Delete
+                                  </Link>
                                 )}
                               </td>
                             </tr>
