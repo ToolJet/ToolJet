@@ -13,6 +13,7 @@ export const Listview = function Listview({
   styles,
   currentState,
   fireEvent,
+  exposedVariables,
   setExposedVariable,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
@@ -34,13 +35,19 @@ export const Listview = function Listview({
   };
 
   const onRowClicked = (index) => {
-    fireEvent('onRowClicked', { data: currentState.components[`${component.name}`].data[index], rowId: index });
+    const currentRowData = currentState.components[`${component.name}`].data[index] ?? undefined;
+    if (currentRowData) {
+      fireEvent('onRowClicked', { data: currentRowData, rowId: index });
+    }
   };
 
   const parentRef = useRef(null);
 
   React.useEffect(() => {
-    setExposedVariable(`data`, memoizedData);
+    const { data } = exposedVariables;
+    if (data?.length !== memoizedData.length) {
+      setExposedVariable(`data`, memoizedData);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memoizedData]);
 
@@ -71,7 +78,7 @@ export const Listview = function Listview({
             onClick={(event) => {
               event.stopPropagation();
               handleChildEvent('onclick', event);
-              onRowClicked(index);
+              // onRowClicked(index);
             }}
           >
             <SubContainer
