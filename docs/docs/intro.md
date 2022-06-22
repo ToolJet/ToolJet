@@ -32,7 +32,7 @@ ToolJet is an **open-source low-code framework** to build and deploy custom inte
 ToolJet binds together the data sources, queries and widgets to convert business logic into custom applications.
 ## Getting Started
 
-These resources will help you to quickly build and deploy apps using ToolJet:
+These resources will help you quickly build and deploy apps using ToolJet:
 
 - **[Setup](/docs/setup/docker-local)** - Learn how to setup ToolJet locally using docker.
 - **[Basic Tutorial](/docs/tutorial/creating-app)** - Learn how to build simple UI and connect to data sources.
