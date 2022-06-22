@@ -786,7 +786,6 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      defaultValue: { type: 'code', displayName: 'Default value' },
       text: { type: 'code', displayName: 'Text' },
       loadingState: { type: 'toggle', displayName: 'Show loading state' },
     },
