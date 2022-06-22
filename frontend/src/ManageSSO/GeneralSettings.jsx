@@ -19,7 +19,7 @@ export function GeneralSettings({ settings, updateData }) {
       () => {
         setSaving(false);
         updateData('general', { enable_sign_up: enableSignUp, domain });
-        toast.success('updated sso configurations', {
+        toast.success('updated SSO configurations', {
           position: 'top-center',
         });
       },
@@ -73,6 +73,7 @@ export function GeneralSettings({ settings, updateData }) {
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 data-cy="allowed-domain-input"
+                required
               />
             </div>
           </div>
