@@ -1,5 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
+const AthenaExpress = require('athena-express');
+const AWS = require('aws-sdk');
 
 export default class Athena implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
@@ -38,13 +40,11 @@ export default class Athena implements QueryService {
     };
   }
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const AthenaExpress = require('athena-express'),
-      AWS = require('aws-sdk'),
-      awsCredentials = {
-        region: sourceOptions.region,
-        accessKeyId: sourceOptions.access_key,
-        secretAccessKey: sourceOptions.secret_key,
-      };
+    const awsCredentials = {
+      region: sourceOptions.region,
+      accessKeyId: sourceOptions.access_key,
+      secretAccessKey: sourceOptions.secret_key,
+    };
 
     AWS.config.update(awsCredentials);
 
@@ -53,6 +53,7 @@ export default class Athena implements QueryService {
       db: sourceOptions.database,
       ...(sourceOptions?.output_location?.length > 0 && { s3: sourceOptions?.output_location }),
     };
+    console.log('config', athenaExpressConfig);
 
     const athenaExpress = new AthenaExpress(athenaExpressConfig);
     return athenaExpress;
