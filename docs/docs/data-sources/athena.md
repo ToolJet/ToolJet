@@ -43,3 +43,32 @@ Click on the `run` button to run the query.
 :::tip
 Refer amazon athena docs here for more info: [link](https://docs.aws.amazon.com/athena/latest/ug/what-is.html)
 :::
+
+### Basic queries
+
+:::tip
+**Refer amazon athena docs here for more info:** [link](https://docs.aws.amazon.com/athena/latest/ug/what-is.html)
+:::
+
+- Creating table 
+
+
+```
+CREATE EXTERNAL TABLE student (
+    name STRING,
+    age INT
+)  LOCATION 's3://athena-express-akiatfa53s-2022/';
+```
+
+- Inserting to table
+
+```
+INSERT INTO student
+VALUES ('Lansing',1)
+```
+
+- Select operation
+
+```
+SELECT * from student WHERE AGE=1
+```
