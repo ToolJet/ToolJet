@@ -34,7 +34,7 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
     await Promise.all(
       users.map(async (user) => {
         const { id, email } = user;
-        if (!this.isUpper(email)) {
+        if (this.hasUpperCase(email)) {
           await entityManager.update(
             User,
             { id: id },
@@ -76,20 +76,22 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
     );
   }
 
+  private findOrgUsersNotInSameOrg = (deletingOrgUsers: OrganizationUser[], originalOrgUsers: OrganizationUser[]) => {
+    return deletingOrgUsers.filter(
+      (deletingOrgUser: OrganizationUser) =>
+        !originalOrgUsers.some(
+          (originalOrgUser: OrganizationUser) => deletingOrgUser.organizationId === originalOrgUser.organizationId
+        )
+    );
+  };
+
   private async migrateUsers(originalUser: User, usersToDelete: User[], entityManager: EntityManager) {
     const { organizationUsers } = originalUser;
-    const isSameOrganization = (a: any, b: any) => a.organizationId === b.organizationId;
-    const onlyInLeft = (left: any, right: any, compareFunction) =>
-      left.filter((leftValue: any) => !right.some((rightValue: any) => compareFunction(leftValue, rightValue)));
 
     await (async () => {
       for (const deletingUser of usersToDelete) {
         if (!deletingUser.invitationToken) {
-          const onlyInDeleteUserOrgs = onlyInLeft(
-            deletingUser.organizationUsers,
-            organizationUsers,
-            isSameOrganization
-          );
+          const onlyInDeleteUserOrgs = this.findOrgUsersNotInSameOrg(deletingUser.organizationUsers, organizationUsers);
 
           if (onlyInDeleteUserOrgs.length > 0) {
             // map other orgs to original user
@@ -190,8 +192,8 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
     return group_permission;
   }
 
-  private isUpper(str: string) {
-    return !/[a-z]/.test(str) && /[A-Z]/.test(str);
+  private hasUpperCase(str: string) {
+    return str.toLowerCase() !== str;
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
