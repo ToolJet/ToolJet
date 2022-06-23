@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useContext } from 'react';
 import {
   useTable,
   useFilters,
@@ -25,6 +25,8 @@ import { Toggle } from './Toggle';
 import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
+import { ResolveContext } from '@/Editor/ResolvableContext';
+
 export function Table({
   id,
   width,
@@ -99,6 +101,8 @@ export function Table({
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
   let parsedWidgetVisibility = widgetVisibility;
+
+  const { customResolves, setCustomResolves } = useContext(ResolveContext);
 
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
@@ -354,6 +358,12 @@ export function Table({
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
         const rowData = tableData[cell.row.index];
+
+        if (cell.row.index === 0 && !_.isEqual(customResolves[id]?.rowData, rowData)) {
+          const customResolvables = {};
+          customResolvables[id] = { rowData };
+          setCustomResolves({ ...customResolves, ...customResolvables });
+        }
 
         switch (columnType) {
           case 'string':
@@ -728,6 +738,7 @@ export function Table({
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
+      JSON.stringify(customResolves[id]),
     ] // Hack: need to fix
   );
 

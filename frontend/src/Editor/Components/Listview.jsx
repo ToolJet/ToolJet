@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useRef, useContext } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
+import { ResolveContext } from '../ResolvableContext';
 
 export const Listview = function Listview({
   id,
@@ -19,6 +20,8 @@ export const Listview = function Listview({
 
   const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
   const { backgroundColor, visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
+
+  const { customResolves, setCustomResolves } = useContext(ResolveContext);
 
   const computedStyles = {
     backgroundColor,
@@ -43,30 +46,37 @@ export const Listview = function Listview({
       style={computedStyles}
     >
       <div className="rows w-100">
-        {(_.isArray(data) ? data : []).map((listItem, index) => (
-          <div
-            className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
-            style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
-            key={index}
-            onClick={(event) => {
-              event.stopPropagation();
-              onRowClicked(index);
-            }}
-          >
-            <SubContainer
-              parentComponent={component}
-              containerCanvasWidth={width}
-              parent={`${id}`}
-              parentName={component.name}
-              {...containerProps}
-              readOnly={index !== 0}
-              customResolvables={{ listItem }}
-              parentRef={parentRef}
-              removeComponent={removeComponent}
-              listViewItemOptions={{ index }}
-            />
-          </div>
-        ))}
+        {(_.isArray(data) ? data : []).map((listItem, index) => {
+          if (index === 0 && !_.isEqual(customResolves[id]?.listItem, listItem)) {
+            const customResolvables = {};
+            customResolvables[id] = { listItem };
+            setCustomResolves({ ...customResolves, ...customResolvables });
+          }
+          return (
+            <div
+              className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
+              style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
+              key={index}
+              onClick={(event) => {
+                event.stopPropagation();
+                onRowClicked(index);
+              }}
+            >
+              <SubContainer
+                parentComponent={component}
+                containerCanvasWidth={width}
+                parent={`${id}`}
+                parentName={component.name}
+                {...containerProps}
+                readOnly={index !== 0}
+                customResolvables={{ listItem }}
+                parentRef={parentRef}
+                removeComponent={removeComponent}
+                listViewItemOptions={{ index }}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
