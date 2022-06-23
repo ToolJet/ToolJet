@@ -44,10 +44,6 @@ button {
   }
 }
 
-.confirm-input {
-  padding-right: 10px !important;
-}
-
 .auth-main {
   height: 1000px;
   padding-top: calc(0.25 * 100vh);
@@ -1944,6 +1940,10 @@ th:focus,
 tr:focus {
   outline: none !important;
   box-shadow: none;
+}
+
+.confirm-input {
+  padding-right: 10px !important;
 }
 
 // .jet-container {
