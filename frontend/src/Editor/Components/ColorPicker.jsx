@@ -43,9 +43,9 @@ export const ColorPicker = function ({ width, properties, styles, setExposedVari
       setExposedVariable('selectedColorRGBA', hexToRgba(defaultColor));
       setColor(defaultColor);
     } else {
-      setExposedVariable('selectedColorHex', 'Invalid Color');
-      setExposedVariable('selectedColorRGB', 'Invalid Color');
-      setExposedVariable('selectedColorRGBA', 'Invalid Color');
+      setExposedVariable('selectedColorHex', 'undefined');
+      setExposedVariable('selectedColorRGB', 'undefined');
+      setExposedVariable('selectedColorRGBA', 'undefined');
       setColor(`Invalid Color`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -83,7 +83,7 @@ export const ColorPicker = function ({ width, properties, styles, setExposedVari
   return (
     <div style={baseStyle} className="form-control">
       <div className="d-flex h-100 justify-content-between align-items-center" onClick={() => setShowColorPicker(true)}>
-        <span style={{ color: color === `Invalid Color` ? 'red' : 'inherit' }}>{color}</span>
+        <span>{color}</span>
         {!(color === `Invalid Color`) && <div style={backgroundColorDivStyle}></div>}
       </div>
       {showColorPicker && (
