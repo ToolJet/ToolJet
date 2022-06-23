@@ -27,7 +27,7 @@ The query will now look like this:
 
 </div>
 
-Click the `create` button to create the query. Saved queries can be run using the `run` icon near the query name. Queries run using the run button wil behave just as if it was triggered by an app event like button click and thus will alter the state of the app. You can view the query results using the state inspector on the left side-bar of the app builder.
+Click the `create` button to create the query. Saved queries can be run using the `run` icon near the query name. Queries run using the run button will behave just as if it was triggered by an app event like button click and thus will alter the state of the app. You can view the query results using the state inspector on the left side-bar of the app builder.
 
 <div style={{textAlign: 'center'}}>
 
@@ -35,7 +35,7 @@ Click the `create` button to create the query. Saved queries can be run using th
 
 </div>
 
-We can see that `first_name` and `last_name` is added to all the rows in the `data` object of the query. If you need the original data of the query, it will be available in the `rawData` object of the query.
+We can see that `first_name` and `last_name` are added to all the rows in the `data` object of the query. If you need the original data of the query, it will be available in the `rawData` object of the query.
 
 <div style={{textAlign: 'center'}}>
 
@@ -43,4 +43,4 @@ We can see that `first_name` and `last_name` is added to all the rows in the `da
 
 </div>
 
-In the next section, we will see how we can this data using ToolJet's built-in widgets.
+In the next section, we will see how we can display this data using ToolJet's built-in widgets.
