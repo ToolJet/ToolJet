@@ -34,7 +34,6 @@ function SettingsPage(props) {
         const avatarData = await userService.updateAvatar(formData, token);
         authenticationService.updateCurrentUserDetails({ avatar_id: avatarData.id });
       }
-
       toast.success('Details updated!', {
         duration: 3000,
       });
