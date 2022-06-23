@@ -68,6 +68,22 @@ export const Tabs = function Tabs({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState, currentTab]);
 
+  function computeTabVisibility(componentId, id) {
+    let tabVisibility = 'hidden';
+    if (id !== currentTab) {
+      return tabVisibility;
+    }
+
+    const tabElement = document.getElementById(`${componentId}-${id}`);
+    if (tabElement) {
+      if (window.getComputedStyle(tabElement).visibility === 'hidden') {
+        return 'hidden';
+      }
+    }
+
+    return id === currentTab ? 'visible' : 'hidden';
+  }
+
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -119,7 +135,7 @@ export const Tabs = function Tabs({
           <div
             className={`tab-pane active`}
             style={{
-              visibility: tab.id === currentTab ? 'visible' : 'hidden',
+              visibility: computeTabVisibility(id, tab.id),
               height: parsedHideTabs ? height : height - 41,
               position: 'absolute',
               top: parsedHideTabs ? '0px' : '41px',
