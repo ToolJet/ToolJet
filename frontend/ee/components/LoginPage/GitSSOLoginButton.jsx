@@ -13,7 +13,9 @@ export default function GitSSOLoginButton({ configs }) {
     <div>
       <button onClick={gitLogin} className="btn border-0 rounded-2">
         <img src="/assets/images/sso-buttons/git.svg" className="h-4" />
-        <span className="px-1">Sign in with Github</span>
+        <span className="px-1">
+          Sign in with Github
+        </span>
       </button>
     </div>
   );
