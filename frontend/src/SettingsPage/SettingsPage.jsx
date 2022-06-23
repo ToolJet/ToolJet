@@ -1,74 +1,87 @@
-import React from 'react';
-import { authenticationService, userService } from '@/_services';
-import { Header } from '@/_components';
-import { toast } from 'react-hot-toast';
+import React from "react";
+import { authenticationService, userService } from "@/_services";
+import { Header } from "@/_components";
+import { toast } from "react-hot-toast";
 
 function SettingsPage(props) {
-  const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
+  const [firstName, setFirstName] = React.useState(
+    authenticationService.currentUserValue.first_name
+  );
   const email = authenticationService.currentUserValue.email;
   const token = authenticationService.currentUserValue.auth_token;
-  const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
-  const [currentpassword, setCurrentPassword] = React.useState('');
-  const [newPassword, setNewPassword] = React.useState('');
-  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [lastName, setLastName] = React.useState(
+    authenticationService.currentUserValue.last_name
+  );
+  const [currentpassword, setCurrentPassword] = React.useState("");
+  const [newPassword, setNewPassword] = React.useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState("");
   const [updateInProgress, setUpdateInProgress] = React.useState(false);
-  const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
+  const [passwordChangeInProgress, setPasswordChangeInProgress] =
+    React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState(null);
   const focusRef = React.useRef(null);
 
   const updateDetails = async () => {
     if (!firstName || !lastName) {
       toast.error("Name can't be empty!", {
-        position: 'top-left',
+        position: "top-left",
       });
       return;
     }
     setUpdateInProgress(true);
     try {
-      const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
+      const updatedDetails = await userService.updateCurrentUser(
+        firstName,
+        lastName
+      );
       authenticationService.updateCurrentUserDetails(updatedDetails);
 
       if (selectedFile) {
         const formData = new FormData();
-        formData.append('file', selectedFile);
+        formData.append("file", selectedFile);
         const avatarData = await userService.updateAvatar(formData, token);
-        authenticationService.updateCurrentUserDetails({ avatar_id: avatarData.id });
+        authenticationService.updateCurrentUserDetails({
+          avatar_id: avatarData.id,
+        });
       }
 
-      toast.success('Details updated!', {
+      toast.success("Details updated!", {
         duration: 3000,
       });
       setUpdateInProgress(false);
     } catch (error) {
-      toast.error('Something went wrong');
+      toast.error("Something went wrong");
       setUpdateInProgress(false);
     }
   };
 
   const changePassword = async () => {
     setPasswordChangeInProgress(true);
-    if(currentpassword){
-      if(newPassword === confirmPassword){
+    if (currentpassword) {
+      if (newPassword === confirmPassword) {
         try {
           await userService.changePassword(currentpassword, newPassword);
-          toast.success('Password updated successfully', {
+          toast.success("Password updated successfully", {
             duration: 3000,
           });
-          setCurrentPassword('');
-          setNewPassword('');
-          setConfirmPassword('');
+          setCurrentPassword("");
+          setNewPassword("");
+          setConfirmPassword("");
         } catch (error) {
-          toast.error('Please verify that you have entered the correct password', {
-            duration: 3000,
-          });
+          toast.error(
+            "Please verify that you have entered the correct password",
+            {
+              duration: 3000,
+            }
+          );
         }
-      }else{
-        toast.error('Please verify that confirm new password is incorrect', {
+      } else {
+        toast.error("Please verify that confirm new password is incorrect", {
           duration: 3000,
         });
       }
-    }else{
-      toast.error('Please verify that you have entered the current password', {
+    } else {
+      toast.error("Please verify that you have entered the current password", {
         duration: 3000,
       });
     }
@@ -76,14 +89,14 @@ function SettingsPage(props) {
   };
 
   const newPasswordKeyPressHandler = async (event) => {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       await focusRef.current.focus();
     }
   };
 
   const confirmPasswordKeyPressHandler = async (event) => {
-    if (event.key === 'Enter') {
-          await changePassword();
+    if (event.key === "Enter") {
+      await changePassword();
     }
   };
 
@@ -118,7 +131,7 @@ function SettingsPage(props) {
                   <div className="col">
                     <div className="mb-3">
                       <label className="form-label" data-cy="first-name-label">
-                        First name{' '}
+                        First name{" "}
                       </label>
                       <input
                         type="text"
@@ -152,7 +165,7 @@ function SettingsPage(props) {
                   <div className="col">
                     <div className="mb-3">
                       <label className="form-label" data-cy="email-label">
-                        Email{' '}
+                        Email{" "}
                       </label>
                       <input
                         type="text"
@@ -172,7 +185,9 @@ function SettingsPage(props) {
                         onChange={(e) => {
                           const file = e.target.files[0];
                           if (Math.round(file.size / 1024) > 2048) {
-                            toast.error('File size cannot exceed more than 2MB');
+                            toast.error(
+                              "File size cannot exceed more than 2MB"
+                            );
                             e.target.value = null;
                           } else {
                             setSelectedFile(file);
@@ -187,7 +202,10 @@ function SettingsPage(props) {
                 </div>
                 <a
                   href="#"
-                  className={'btn btn-primary' + (updateInProgress ? '  btn-loading' : '')}
+                  className={
+                    "btn btn-primary" +
+                    (updateInProgress ? "  btn-loading" : "")
+                  }
                   onClick={updateDetails}
                   data-cy="update-button"
                 >
@@ -209,7 +227,10 @@ function SettingsPage(props) {
                 <div className="row">
                   <div className="col">
                     <div className="mb-3">
-                      <label className="form-label" data-cy="current-password-label">
+                      <label
+                        className="form-label"
+                        data-cy="current-password-label"
+                      >
                         Current password
                       </label>
                       <input
@@ -218,14 +239,19 @@ function SettingsPage(props) {
                         name="last-name"
                         placeholder="Enter current password"
                         value={currentpassword}
-                        onChange={(event) => setCurrentPassword(event.target.value)}
+                        onChange={(event) =>
+                          setCurrentPassword(event.target.value)
+                        }
                         data-cy="current-password-input"
                       />
                     </div>
                   </div>
                   <div className="col">
                     <div className="mb-3">
-                      <label className="form-label" data-cy="new-password-label">
+                      <label
+                        className="form-label"
+                        data-cy="new-password-label"
+                      >
                         New password
                       </label>
                       <input
@@ -242,26 +268,31 @@ function SettingsPage(props) {
                   </div>
                 </div>
                 <div className="w-50 confirm-input">
-                    <div className="mb-3">
-                      <label className="form-label" data-cy="new-password-label">
-                        Confirm new password
-                      </label>
-                      <input
-                        type="password"
-                        className="form-control"
-                        name="last-name"
-                        placeholder="Confirm new password"
-                        value={confirmPassword}
-                        ref={focusRef}
-                        onChange={(event) => setConfirmPassword(event.target.value)}
-                        onKeyPress={confirmPasswordKeyPressHandler}
-                        data-cy="new-password-input"
-                      />
-                    </div>
+                  <div className="mb-3">
+                    <label className="form-label" data-cy="new-password-label">
+                      Confirm new password
+                    </label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      name="last-name"
+                      placeholder="Confirm new password"
+                      value={confirmPassword}
+                      ref={focusRef}
+                      onChange={(event) =>
+                        setConfirmPassword(event.target.value)
+                      }
+                      onKeyPress={confirmPasswordKeyPressHandler}
+                      data-cy="new-password-input"
+                    />
                   </div>
+                </div>
                 <a
                   href="#"
-                  className={'btn btn-primary' + (passwordChangeInProgress ? '  btn-loading' : '')}
+                  className={
+                    "btn btn-primary" +
+                    (passwordChangeInProgress ? "  btn-loading" : "")
+                  }
                   onClick={changePassword}
                   data-cy="change-password-button"
                 >
