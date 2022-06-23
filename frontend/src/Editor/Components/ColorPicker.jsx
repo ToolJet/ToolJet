@@ -8,38 +8,46 @@ export const ColorPicker = function ({ width, properties, styles, setExposedVari
   const [color, setColor] = useState(defaultColor);
 
   useEffect(() => {
-    const hex2rgba = (hex) => {
-      let c = hex.substring(1).split('');
-
-      switch (c.length) {
-        case 3:
-          c = [c[0] + c[0], c[1] + c[1], c[2] + c[2], 'ff'];
-          break;
-        case 4:
-          c = [c[0] + c[0], c[1] + c[1], c[2] + c[2], c[3] + c[3]];
-          break;
-        case 6:
-          c = [c[0] + c[1], c[2] + c[3], c[4] + c[5], 'ff'];
-          break;
-        case 8:
-          c = [c[0] + c[1], c[2] + c[3], c[4] + c[5], c[6] + c[7]];
-          break;
-      }
-
-      c = c.map((char) => parseInt(char, 16).toString());
-      c[3] = (Math.round((parseInt(c[3], 10) / 255) * 100) / 100).toString();
-      return `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${c[3]})`;
-    };
-
-    const hex2rgb = (hex) => {
-      const [r, g, b] = hex.match(/\w\w/g).map((x) => parseInt(x, 16));
-      return `rgb(${r},${g},${b})`;
-    };
-    setExposedVariable('selectedColorHex', `${defaultColor}`);
-    setExposedVariable('selectedColorRGB', hex2rgb(defaultColor));
-    setExposedVariable('selectedColorRGBA', hex2rgba(defaultColor));
-    setColor(defaultColor);
-
+    if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(defaultColor)) {
+      const getRGBAValueFromHex = (hex) => {
+        let c = hex.substring(1).split('');
+        switch (c.length) {
+          case 3:
+            c = [c[0] + c[0], c[1] + c[1], c[2] + c[2], 'ff'];
+            break;
+          case 4:
+            c = [c[0] + c[0], c[1] + c[1], c[2] + c[2], c[3] + c[3]];
+            break;
+          case 6:
+            c = [c[0] + c[1], c[2] + c[3], c[4] + c[5], 'ff'];
+            break;
+          case 8:
+            c = [c[0] + c[1], c[2] + c[3], c[4] + c[5], c[6] + c[7]];
+            break;
+        }
+        c = c.map((char) => parseInt(char, 16).toString());
+        c[3] = (Math.round((parseInt(c[3], 10) / 255) * 100) / 100).toString();
+        // return `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${c[3]})`;
+        return c;
+      };
+      const hexToRgba = (hex) => {
+        const rgbaArray = getRGBAValueFromHex(hex);
+        return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]}, ${rgbaArray[3]})`;
+      };
+      const hexToRgb = (hex) => {
+        const rgbaArray = getRGBAValueFromHex(hex);
+        return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
+      };
+      setExposedVariable('selectedColorHex', `${defaultColor}`);
+      setExposedVariable('selectedColorRGB', hexToRgb(defaultColor));
+      setExposedVariable('selectedColorRGBA', hexToRgba(defaultColor));
+      setColor(defaultColor);
+    } else {
+      setExposedVariable('selectedColorHex', 'Invalid Color');
+      setExposedVariable('selectedColorRGB', 'Invalid Color');
+      setExposedVariable('selectedColorRGBA', 'Invalid Color');
+      setColor(`Invalid Color`);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultColor]);
 
@@ -53,7 +61,7 @@ export const ColorPicker = function ({ width, properties, styles, setExposedVari
   };
   //background color style for the div dispaying box filled by selected color
   const backgroundColorDivStyle = {
-    background: color,
+    background: `${color}`,
     width: '20px',
     height: '20px',
     border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(color) && '#c5c8c9'}`,
@@ -63,7 +71,7 @@ export const ColorPicker = function ({ width, properties, styles, setExposedVari
     borderRadius: '5px',
     height,
     padding: '0.5rem',
-    border: `1px solid ${['#ffffff', '#fff', '#1f2936'].includes(color) && '#c5c8c9'}`,
+    border: `1px solid ${['#ffffff', '#fff', '#ffff', '#1f2936'].includes(color) && '#c5c8c9'}`,
     positin: 'relative',
   };
   const baseStyle = visibility
@@ -75,8 +83,8 @@ export const ColorPicker = function ({ width, properties, styles, setExposedVari
   return (
     <div style={baseStyle} className="form-control">
       <div className="d-flex h-100 justify-content-between align-items-center" onClick={() => setShowColorPicker(true)}>
-        <span>{color}</span>
-        <div style={backgroundColorDivStyle}></div>
+        <span style={{ color: color === `Invalid Color` ? 'red' : 'inherit' }}>{color}</span>
+        {!(color === `Invalid Color`) && <div style={backgroundColorDivStyle}></div>}
       </div>
       {showColorPicker && (
         <>
