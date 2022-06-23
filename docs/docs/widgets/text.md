@@ -8,13 +8,12 @@ Text widget can be used to display text.
 
 :::info
 Users cannot enter and edit text.
-:::
+::: 
 
-<div style={{textAlign: 'center'}}>
+## How To Use Text Widget
 
-![ToolJet - Widget Reference - Text](/img/widgets/text/text.png)
+<iframe height="500" src="https://www.youtube.com/embed/mcjYKw2VeAI" title="Text Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
-</div>
 
 ## Properties
 
