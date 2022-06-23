@@ -3942,6 +3942,13 @@ input[type="text"] {
 {
   position: absolute;
   right: -80px;
+  background-color: #232e3c !important;
+  width: 10% !important;
+}
+[data-rb-event-key="close-inpector-light"]
+{
+  position: absolute;
+  right: -80px;
   background-color: #fff !important;
   width: 10% !important;
 }

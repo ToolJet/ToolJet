@@ -325,7 +325,7 @@ export const Inspector = ({
   }
   const handleTabSelect = (key) => {
     setKey(key);
-    if (key == 'close-inpector') {
+    if (key == 'close-inpector' || key == 'close-inpector-light') {
       switchSidebarTab(2);
     }
   };
@@ -389,7 +389,7 @@ export const Inspector = ({
           </Tab>
           <Tab
             className="close-inpector-tab"
-            eventKey={'close-inpector'}
+            eventKey={darkMode ? 'close-inpector' : 'close-inpector-light'}
             title={
               <div className="inspector-close-icon-wrapper">
                 <svg
@@ -399,9 +399,6 @@ export const Inspector = ({
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   className="close-svg"
-                  onClick={() => {
-                    switchSidebarTab(2);
-                  }}
                 >
                   <path
                     fillRule="evenodd"
