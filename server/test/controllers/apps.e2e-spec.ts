@@ -872,6 +872,54 @@ describe('apps controller', () => {
 
           expect(response.statusCode).toBe(403);
         });
+
+        it('should not be able to create app with empty version name', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+          });
+          const application = await createApplication(app, {
+            user: adminUserData.user,
+          });
+          const v1 = await createApplicationVersion(app, application, {
+            name: 'v1',
+            definition: { foo: 'bar' },
+          });
+
+          const response = await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: '',
+              versionFromId: v1.id,
+            });
+
+          expect(response.statusCode).toBe(400);
+          expect(response.body.message[0]).toBe('The version name should not be empty');
+        });
+
+        it('should not be able to create app version name with more than 255 characters', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+          });
+          const application = await createApplication(app, {
+            user: adminUserData.user,
+          });
+          const v1 = await createApplicationVersion(app, application, {
+            name: 'v1',
+            definition: { foo: 'bar' },
+          });
+
+          const response = await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: 'v2'.repeat(200),
+              versionFromId: v1.id,
+            });
+
+          expect(response.statusCode).toBe(400);
+          expect(response.body.message[0]).toBe('The version name cannot be more than 255 characters');
+        });
       });
 
       describe('Data source and query versioning', () => {

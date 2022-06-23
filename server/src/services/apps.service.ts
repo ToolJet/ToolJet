@@ -290,6 +290,14 @@ export class AppsService {
   }
 
   async createVersion(user: User, app: App, versionName: string, versionFromId: string): Promise<AppVersion> {
+    if (!versionName) {
+      throw new BadRequestException('The version name should not be empty');
+    }
+
+    if (versionName.length > 255) {
+      throw new BadRequestException('The version name cannot be more than 255 characters');
+    }
+
     const versionFrom = await this.appVersionsRepository.findOne({
       where: { id: versionFromId },
     });
