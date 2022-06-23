@@ -253,7 +253,7 @@ function SettingsPage(props) {
                       placeholder="Confirm new password"
                       value={confirmPassword}
                       ref={focusRef}
-                      onChange={(event) =>setConfirmPassword(event.target.value)}
+                      onChange={(event) => setConfirmPassword(event.target.value)}
                       onKeyPress={confirmPasswordKeyPressHandler}
                       data-cy="new-password-input"
                     />
