@@ -149,7 +149,7 @@ export const EventManager = ({
                 onChange={(value) => handlerChanged(index, 'eventId', value)}
                 placeholder="Select.."
                 styles={styles}
-                useMenuPortal={true}
+                useMenuPortal={false}
               />
             </div>
           </div>
@@ -166,7 +166,7 @@ export const EventManager = ({
                 onChange={(value) => handlerChanged(index, 'actionId', value)}
                 placeholder="Select.."
                 styles={styles}
-                useMenuPortal={true}
+                useMenuPortal={false}
               />
             </div>
           </div>
@@ -206,7 +206,7 @@ export const EventManager = ({
                       onChange={(value) => handlerChanged(index, 'alertType', value)}
                       placeholder="Select.."
                       styles={styles}
-                      useMenuPortal={true}
+                      useMenuPortal={false}
                     />
                   </div>
                 </div>
@@ -250,7 +250,7 @@ export const EventManager = ({
                     }}
                     placeholder="Select.."
                     styles={styles}
-                    useMenuPortal={true}
+                    useMenuPortal={false}
                   />
                 </div>
               </div>
@@ -270,7 +270,7 @@ export const EventManager = ({
                     }}
                     placeholder="Select.."
                     styles={styles}
-                    useMenuPortal={true}
+                    useMenuPortal={false}
                   />
                 </div>
               </div>
@@ -306,7 +306,7 @@ export const EventManager = ({
                     }}
                     placeholder="Select.."
                     styles={styles}
-                    useMenuPortal={true}
+                    useMenuPortal={false}
                   />
                 </div>
               </div>
@@ -360,7 +360,7 @@ export const EventManager = ({
                       }}
                       placeholder="Select.."
                       styles={styles}
-                      useMenuPortal={true}
+                      useMenuPortal={false}
                     />
                   </div>
                 </div>
@@ -405,7 +405,7 @@ export const EventManager = ({
                       }}
                       placeholder="Select.."
                       styles={styles}
-                      useMenuPortal={true}
+                      useMenuPortal={false}
                     />
                   </div>
                 </div>
