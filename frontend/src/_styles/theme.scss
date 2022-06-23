@@ -3834,7 +3834,7 @@ input[type="text"] {
   position: fixed;
   position: absolute;
   left: 50%;
-  top: 40%;
+  top: 5%;
 
   .modal-body {
     width: 500px !important;
@@ -3842,7 +3842,7 @@ input[type="text"] {
     padding: 0px !important;
   }
 
-  transform: translate(-60%, -60%);
+  transform: translate(-60%, 0%);
   height: 350px;
   width: auto;
   max-height: 500px;
@@ -4255,6 +4255,10 @@ input[type="text"] {
     background-color: $bg-dark !important;
     color: $white !important;
     border-color: $border-grey-dark !important;
+  }
+
+  .text-muted {
+    color: $white !important;
   }
 }
 
@@ -5156,6 +5160,8 @@ div#driver-page-overlay {
   .node-key {
     font-weight: 400 !important;
     margin-left: -0.25rem !important;
+    justify-content: start !important;
+    min-width: fit-content !important;
   }
 
   .node-key-outline {
