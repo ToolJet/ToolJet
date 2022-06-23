@@ -15,7 +15,7 @@ function buildConnectionOptions(filePath: string, env: string | undefined): Type
   const connectionParams = process.env.DATABASE_URL
     ? {
         url: process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false },
+        ssl: { rejectUnauthorized: false, ca: process.env.CA_CERT },
       }
     : {
         database: data.PG_DB,

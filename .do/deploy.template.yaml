@@ -7,6 +7,7 @@ spec:
       registry: tooljet
       repository: tooljet-ce
       tag: latest
+    run_command: npm run start:digitalocean
     envs:
     - key: NODE_ENV
       value: "production"
@@ -27,6 +28,9 @@ spec:
     - key: DATABASE_URL
       scope: RUN_TIME
       value: ${pg-db.DATABASE_URL}
+    - key: CA_CERT
+      scope: RUN_TIME
+      value: ${pg-db.CA_CERT}
     - key: TOOLJET_HOST
       scope: RUN_TIME
       value: ${APP_URL}
