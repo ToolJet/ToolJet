@@ -7,7 +7,7 @@ spec:
       registry: tooljet
       repository: tooljet-ce
       tag: latest
-    run_command: npm run start:digitalocean
+    run_command: "npm run start:digitalocean"
     envs:
     - key: NODE_ENV
       value: "production"
