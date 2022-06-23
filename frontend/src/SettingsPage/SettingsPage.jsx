@@ -10,7 +10,7 @@ function SettingsPage(props) {
   const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
   const [currentpassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
-  const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState('');
   const [updateInProgress, setUpdateInProgress] = React.useState(false);
   const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState(null);
@@ -51,15 +51,14 @@ function SettingsPage(props) {
       if (newPassword === confirmPassword) {
         try {
           await userService.changePassword(currentpassword, newPassword);
-          toast.success("Password updated successfully", {
+          toast.success('Password updated successfully', {
             duration: 3000,
           });
           setCurrentPassword('');
           setNewPassword('');
           setConfirmPassword('');
         } catch (error) {
-          toast.error(
-            'Please verify that you have entered the correct password', {
+          toast.error('Please verify that you have entered the correct password', {
             duration: 3000,
           });
         }
@@ -254,9 +253,7 @@ function SettingsPage(props) {
                       placeholder="Confirm new password"
                       value={confirmPassword}
                       ref={focusRef}
-                      onChange={(event) =>
-                        setConfirmPassword(event.target.value)
-                      }
+                      onChange={(event) =>setConfirmPassword(event.target.value)}
                       onKeyPress={confirmPasswordKeyPressHandler}
                       data-cy="new-password-input"
                     />
