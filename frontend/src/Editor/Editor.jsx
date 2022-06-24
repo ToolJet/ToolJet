@@ -282,6 +282,7 @@ class Editor extends React.Component {
         dataqueryService.getAll(this.state.appId, this.state.editingVersion?.id).then((data) => {
           this.setState(
             {
+              allDataQueries: data.data_queries,
               dataQueries: data.data_queries,
               loadingDataQueries: false,
               app: {
@@ -929,7 +930,7 @@ class Editor extends React.Component {
 
   filterQueries = (value) => {
     if (value) {
-      const fuse = new Fuse(this.state.dataQueries, { keys: ['name'] });
+      const fuse = new Fuse(this.state.allDataQueries, { keys: ['name'] });
       const results = fuse.search(value);
       this.setState({
         dataQueries: results.map((result) => result.item),
