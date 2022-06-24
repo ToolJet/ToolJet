@@ -1,13 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
+// import validateColor from 'validate-color';
 
 export const Text = function Text({ height, properties, styles, darkMode }) {
   const [loadingState, setLoadingState] = useState(false);
 
-  const { textSize, textColor, textAlign, visibility, disabledState } = styles;
+  let {
+    textSize,
+    textColor,
+    textAlign,
+    visibility,
+    disabledState,
+    fontWeight,
+    decoration,
+    transformation,
+    fontStyle,
+    lineHeight,
+    textIndent,
+    letterSpacing,
+    wordSpacing,
+    verticalShadow,
+    horizontalShadow,
+    shadowColor,
+    blur,
+    fontVariant,
+  } = styles;
 
+  verticalShadow = `${verticalShadow ?? '0'}px`;
+  horizontalShadow = `${horizontalShadow ?? '0'}px`;
+  blur = `${blur ?? '0'}px`;
+  // const isShadowColorValidate = validateColor(shadowColor);
   const text = properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
-
+  console.log('shadow', verticalShadow, horizontalShadow, blur, shadowColor);
   const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
 
   useEffect(() => {
@@ -22,6 +46,21 @@ export const Text = function Text({ height, properties, styles, darkMode }) {
     display: visibility ? 'flex' : 'none',
     alignItems: 'center',
     textAlign,
+    fontWeight: fontWeight ? fontWeight : fontWeight === '0' ? 0 : 'normal',
+    lineHeight: lineHeight ?? 1.5,
+    textDecoration: decoration ?? 'none',
+    textTransform: transformation ?? 'none',
+    fontStyle: fontStyle ?? 'none',
+    fontVariant: fontVariant === true ? ['small-caps'] : null,
+    textIndent: `${textIndent}px` ?? '0px',
+    letterSpacing: `${letterSpacing}px` ?? '0px',
+    wordSpacing: `${wordSpacing}px` ?? '0px',
+    // below text shadow pending not working for now
+    // shadowColor: isShadowColorValidate ? `${shadowColor}` : null,
+    // shadowOffset: {
+    //   width: verticalShadow,
+    //   height: horizontalShadow,
+    // },
   };
 
   return (
