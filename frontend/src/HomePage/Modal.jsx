@@ -1,7 +1,16 @@
 import React from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 
-export default function Modal({ title, show, closeModal, customClassName, children }) {
+export default function Modal({
+  title,
+  show,
+  closeModal,
+  customClassName,
+  children,
+  hideOnEsc,
+  hideCloseButton,
+  hideHeader,
+}) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <BootstrapModal
@@ -13,13 +22,15 @@ export default function Modal({ title, show, closeModal, customClassName, childr
       keyboard={true}
       enforceFocus={false}
       animation={false}
-      onEscapeKeyDown={() => closeModal()}
+      onEscapeKeyDown={() => hideOnEsc && closeModal()}
       centered
     >
-      <BootstrapModal.Header>
-        <BootstrapModal.Title>{title}</BootstrapModal.Title>
-        <button className="btn-close" aria-label="Close" onClick={() => closeModal()}></button>
-      </BootstrapModal.Header>
+      {!hideHeader && (
+        <BootstrapModal.Header>
+          <BootstrapModal.Title>{title}</BootstrapModal.Title>
+          <button className="btn-close" aria-label="Close" onClick={() => closeModal()}></button>
+        </BootstrapModal.Header>
+      )}
       <BootstrapModal.Body>{children}</BootstrapModal.Body>
     </BootstrapModal>
   );
