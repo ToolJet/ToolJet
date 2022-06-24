@@ -519,7 +519,7 @@ export class AppsService {
     if (body.definition) editableParams['definition'] = body.definition;
     if (body.name) editableParams['name'] = body.name;
 
-    if ('name' in editableParams && Object.keys(editableParams).length == 1) {
+    if (body.name) {
       //means user is trying to update the name
       const versionNameExists = await this.appVersionsRepository.findOne({
         where: { name: body.name, appId: version.appId },
