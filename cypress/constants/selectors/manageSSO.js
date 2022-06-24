@@ -26,4 +26,7 @@ export const ssoSelector ={
   gitIcon: "[data-cy=git-icon]",
   gitSignInText: "[data-cy=git-sign-in-text]",
   password: "[data-cy=left-menu-items] :eq(3)",
+  loginUrlLabel: "[data-cy=login-url-label]",
+  loginUrl: "[data-cy=login-url]",
+  loginHelpText: "[data-cy=login-help-text]",
 };
