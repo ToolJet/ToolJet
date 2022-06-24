@@ -12,6 +12,9 @@ function buildConnectionOptions(filePath: string, env: string | undefined): Type
 
   /* use the database connection URL if available ( Heroku postgres addon uses connection URL ) */
 
+  console.log(process.env.NODE_EXTRA_CA_CERTS)
+  console.log(process.env.CA_CERT)
+  console.log(process.env.DATABASE_URL)
   const connectionParams = process.env.DATABASE_URL
     ? {
         url: process.env.DATABASE_URL,
