@@ -56,7 +56,7 @@ export const Modal = function Modal({
           <BootstrapModal.Header>
             <BootstrapModal.Title>{title}</BootstrapModal.Title>
             {!hideCloseButton && (
-              <div className="widget-modal-close">
+              <div>
                 <Button variant={darkMode ? 'secondary' : 'light'} size="sm" onClick={() => hideModal()}>
                   x
                 </Button>
