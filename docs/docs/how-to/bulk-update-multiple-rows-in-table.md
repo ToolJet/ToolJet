@@ -57,18 +57,18 @@ Let's create the query that will be getting the data from the database:
 We will create a new Custom JS query(**runjs1**) that will generate SQL query for updating multiple rows.
 
 ```js
-const cols = Object.values(components.table1.changeSet).map((col, index) => {
+const cols = Object.entries(components.table1.changeSet).map((ent) => {
   return {
-    col: Object.keys(col),
-    id: components.table1.dataUpdates[index].id,
-    values: Object.values(col),
+    col: Object.keys(ent[1]),
+    id: components.table1.dataUpdates[ent[0]].uuid,
+    values: Object.values(ent[1]),
   };
 });
 
 const sql = cols.map((column) => {
   const { col, id, values } = column;
   const cols = col.map((col, index) => `${col} = '${values[index]}'`);
-  return `UPDATE users SET ${cols.join(", ")} WHERE id = '${id}';`;
+  return `UPDATE "LocationGroups" SET ${cols.join(", ")} WHERE id = '${id}';`;
 });
 
 return sql
