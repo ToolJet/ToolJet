@@ -1,5 +1,18 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
+import { QueryFailedError } from 'typeorm';
+
+interface ErrorResponse {
+  message: string;
+  status: number;
+}
+
+enum PostgresErrorCode {
+  UniqueViolation = '23505',
+  CheckViolation = '23514',
+  NotNullViolation = '23502',
+  ForeignKeyViolation = '23503',
+}
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -10,19 +23,59 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse();
     const request = ctx.getRequest();
 
-    const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+    let errorResponse: ErrorResponse = { message: exception.message, status: HttpStatus.INTERNAL_SERVER_ERROR };
 
-    const message = exception?.response?.message || exception.message;
+    switch (exception.constructor) {
+      case HttpException:
+        errorResponse = { status: exception.getStatus(), message: exception?.response?.message || exception.message };
+        break;
+      case QueryFailedError:
+        errorResponse = this.handleQueryExceptions(exception);
+        break;
+      default:
+        break;
+    }
 
-    if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
+    if (errorResponse.status === HttpStatus.INTERNAL_SERVER_ERROR) {
       this.logger.error(exception);
     }
 
-    response.status(status).json({
-      statusCode: status,
+    response.status(errorResponse.status).json({
+      statusCode: errorResponse.status,
       timestamp: new Date().toISOString(),
       path: request.url,
-      message,
+      message: errorResponse.message,
     });
+  }
+
+  private handleQueryExceptions(exception: any): ErrorResponse {
+    const status = HttpStatus.UNPROCESSABLE_ENTITY;
+    const code = (exception as any).code;
+    let message: string = (exception as QueryFailedError).message;
+
+    switch (code) {
+      case PostgresErrorCode.UniqueViolation:
+        message = 'Already Existed!';
+        break;
+      case PostgresErrorCode.CheckViolation:
+        message = 'Invalid data';
+        break;
+      case PostgresErrorCode.ForeignKeyViolation:
+        message = 'Resource not found';
+        break;
+      case PostgresErrorCode.NotNullViolation: {
+        const column = (exception as QueryFailedError).driverError.column;
+        message = `${column.replace(/_/g, ' ')} is empty`;
+        break;
+      }
+      default:
+        message = 'Something Went wrong';
+        break;
+    }
+
+    return {
+      message,
+      status,
+    };
   }
 }
