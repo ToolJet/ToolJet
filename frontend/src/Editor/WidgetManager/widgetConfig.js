@@ -1576,6 +1576,14 @@ export const widgets = [
       highlightColor: { type: 'color', displayName: 'Highlight Color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
+      tabWidth: {
+        type: 'select',
+        displayName: 'Tab width',
+        options: [
+          { name: 'Auto', value: 'auto' },
+          { name: 'Equally split', value: 'split' },
+        ],
+      },
     },
     exposedVariables: { currentTab: '' },
     definition: {
@@ -1596,6 +1604,7 @@ export const widgets = [
         highlightColor: { value: '#0565FE' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        tabWidth: { value: 'auto' },
       },
     },
   },
