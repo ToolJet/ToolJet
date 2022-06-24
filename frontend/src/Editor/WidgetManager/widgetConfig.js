@@ -291,7 +291,7 @@ export const widgets = [
     },
     properties: {
       title: { type: 'code', displayName: 'Title' },
-      hideHeader: { type: 'toggle', displayName: 'Hide header' },
+      hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
       hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
       hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
 
@@ -320,7 +320,7 @@ export const widgets = [
       properties: {
         title: { value: 'This title can be changed' },
         size: { value: 'md' },
-        hideHeader: { value: false },
+        hideTitleBar: { value: false },
         hideCloseButton: { value: false },
         hideOnEsc: { value: true },
       },
