@@ -320,9 +320,9 @@ export const widgets = [
       properties: {
         title: { value: 'This title can be changed' },
         size: { value: 'md' },
-        hideTitleBar: { value: false },
-        hideCloseButton: { value: false },
-        hideOnEsc: { value: true },
+        hideTitleBar: { value: '{{false}}' },
+        hideCloseButton: { value: '{{false}}' },
+        hideOnEsc: { value: '{{true}}' },
       },
       events: [],
       styles: {
