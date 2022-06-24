@@ -291,9 +291,9 @@ export const widgets = [
     },
     properties: {
       title: { type: 'code', displayName: 'Title' },
-      hideHeader: { type: 'code', displayName: 'Hide header' },
-      hideCloseButton: { type: 'code', displayName: 'Hide close button' },
-      hideOnEsc: { type: 'code', displayName: 'Hide on escape' },
+      hideHeader: { type: 'toggle', displayName: 'Hide header' },
+      hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
+      hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
 
       size: {
         type: 'select',
@@ -322,7 +322,7 @@ export const widgets = [
         size: { value: 'md' },
         hideHeader: { value: false },
         hideCloseButton: { value: false },
-        hideOnEsc: { value: false },
+        hideOnEsc: { value: true },
       },
       events: [],
       styles: {
