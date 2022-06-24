@@ -166,15 +166,13 @@ export const Container = ({
         const offsetFromLeftOfWindow = canvasBoundingRect.left;
         const currentOffset = monitor.getSourceClientOffset();
         const initialClientOffset = monitor.getInitialClientOffset();
-        const delta = monitor.getDifferenceFromInitialOffset();
-
-        left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+        const delta = monitor?.getDifferenceFromInitialOffset();
+        left = Math.round(currentOffset?.x + currentOffset?.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
         top = Math.round(
-          initialClientOffset.y - 10 + delta.y + initialClientOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow
+          initialClientOffset?.y - 10 + delta.y + initialClientOffset?.y * (1 - zoomLevel) - offsetFromTopOfWindow
         );
 
         id = uuidv4();
-
         const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
         const canvasWidth = bundingRect?.width;
 

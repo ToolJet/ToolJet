@@ -23,7 +23,7 @@ ToolJet is an **open-source low-code framework** to build and deploy custom inte
 
 </div>
 
-**ToolJet has just 3 fundamental principles to build apps:**
+**ToolJet has just 3 fundamental principles for building apps:**
 
 - **Connect to data sources:** Connect to your existing data sources such as PostgreSQL, MySQL, Firestore, Stripe, Google Sheets, API endpoints, etc.
 - **Build queries:** ToolJet comes with query builders for all supported data sources. ToolJet also supports the use of custom JavaScript code to transform the query results.
@@ -32,7 +32,7 @@ ToolJet is an **open-source low-code framework** to build and deploy custom inte
 ToolJet binds together the data sources, queries and widgets to convert business logic into custom applications.
 ## Getting Started
 
-These resources will help you to quickly build and deploy apps using ToolJet:
+These resources will help you quickly build and deploy apps using ToolJet:
 
 - **[Setup](/docs/setup/docker-local)** - Learn how to setup ToolJet locally using docker.
 - **[Basic Tutorial](/docs/tutorial/creating-app)** - Learn how to build simple UI and connect to data sources.
@@ -52,7 +52,7 @@ The references for data sources and widgets:
 - **[Build a coupon code manager app](https://blog.tooljet.com/build-a-coupon-code-manager-app-in-10-minutes/)**
 
 ## Help and Support
-- We have extensively documented the features of ToolJet, but in case you are stuck, please feel to e-mail us at **hello@tooljet.com**
+- We have extensively documented the features of ToolJet, but in case you are stuck, please feel free to e-mail us at **hello@tooljet.com**
 - If you are using ToolJet cloud, click on the chat icon at the bottom-left corner for instant help.
 - If you have found a bug, please create a **[GitHub issue](https://github.com/ToolJet/ToolJet/issues)** for the same.
 - Feel free to join our highly active **[Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg)**.
