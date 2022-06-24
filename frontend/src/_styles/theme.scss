@@ -2612,7 +2612,11 @@ hr {
 .btn-primary {
   border-color: transparent;
 }
-
+.widget-modal-close{
+  position: absolute;
+  top: 14px;
+  right: 23px;
+}
 .text-widget {
   overflow: auto;
 }
