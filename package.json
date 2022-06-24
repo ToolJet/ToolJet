@@ -64,7 +64,6 @@
     "db:drop": "npm --prefix server run db:drop",
     "deploy": "cp -a frontend/build/. public/",
     "heroku-postbuild": "./heroku-postbuild.sh",
-    "start:digitalocean": "npm --prefix server run start:digitalocean",
     "cy:run": "cypress run --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
     "cy:open": "cypress open --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
     "prepare": "husky install"
