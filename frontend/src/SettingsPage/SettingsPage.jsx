@@ -63,7 +63,7 @@ function SettingsPage(props) {
           });
         }
       } else {
-        toast.error('Please verify that confirm new password is incorrect', {
+        toast.error('New password and confirm password are not matching', {
           duration: 3000,
         });
       }
