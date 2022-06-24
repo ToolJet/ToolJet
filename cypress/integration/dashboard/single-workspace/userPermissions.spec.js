@@ -150,5 +150,12 @@ describe("User permissions", ()=>{
    common.logout();
    cy.login(email,usersText.password);
    cy.contains(appName).should("not.exist");
+
+   common.logout();
+   cy.appUILogin();
+   cy.get(commonSelectors.appCardOptions).first().click();
+   cy.contains("Delete app").should("exist");
+   cy.get(commonSelectors.deleteApp).click();
+   cy.get(commonSelectors.confirmButton).click();
   });
 });
