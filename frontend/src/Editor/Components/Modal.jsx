@@ -52,18 +52,16 @@ export const Modal = function Modal({
         {containerProps.mode === 'edit' && (
           <ConfigHandle id={id} component={component} setSelectedComponent={containerProps.onComponentClick} />
         )}
-        {!hideHeader && (
-          <BootstrapModal.Header>
-            <BootstrapModal.Title>{title}</BootstrapModal.Title>
-          </BootstrapModal.Header>
-        )}
-        {!hideCloseButton && (
-          <div className="widget-modal-close">
-            <Button variant={darkMode ? 'secondary' : 'light'} size="sm" onClick={hideModal}>
-              x
-            </Button>
-          </div>
-        )}
+        <BootstrapModal.Header>
+          {!hideHeader && <BootstrapModal.Title>{title}</BootstrapModal.Title>}
+          {!hideCloseButton && (
+            <div className="widget-modal-close">
+              <Button variant={darkMode ? 'secondary' : 'light'} size="sm" onClick={() => hideModal()}>
+                x
+              </Button>
+            </div>
+          )}
+        </BootstrapModal.Header>
 
         <BootstrapModal.Body style={{ height }} ref={parentRef} id={id}>
           <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
