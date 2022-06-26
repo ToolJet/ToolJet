@@ -4957,7 +4957,6 @@ div#driver-page-overlay {
 
 // Left Menu
 .left-menu {
-  background-color: #e8ebf4;
   padding: 1rem 0.5rem;
   border-radius: 5px;
   ul {
@@ -4979,7 +4978,8 @@ div#driver-page-overlay {
       color: $white;
     }
     li:not(.active):hover {
-      background-color: #d2daf0;
+      background-color: $primary;
+      color: $white;
     }
   }
 }
@@ -5009,6 +5009,12 @@ div#driver-page-overlay {
     border: 1px solid #e1e1e1;
   }
 }
+
+.theme-dark .help-text div {
+  background-color: $dark-background;
+  border: 1px solid $dark-background;
+}
+
 .org-invite-or {
   padding: 1rem 0rem;
   h2 {
