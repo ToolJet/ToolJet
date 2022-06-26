@@ -27,13 +27,6 @@ const generateSchemaFromValidationDefinition = (definition) => {
       schema = array(elementSchema);
       break;
     }
-    case 'size': {
-      const sizeConstrainedSchema = generateSchemaFromValidationDefinition(definition.schema ?? {});
-      const minSize = definition?.min ?? 0;
-      const maxSize = definition?.max ?? Infinity;
-      schema = size(sizeConstrainedSchema, minSize, maxSize);
-      break;
-    }
     case 'object': {
       const obJectSchema = Object.fromEntries(
         Object.entries(definition.object ?? {}).map(([key, value]) => {
@@ -46,6 +39,12 @@ const generateSchemaFromValidationDefinition = (definition) => {
     }
     default:
       schema = any();
+  }
+
+  if (definition?.size) {
+    const minSize = definition.size?.min ?? 0;
+    const maxSize = definition.size?.max ?? Infinity;
+    schema = size(schema, minSize, maxSize);
   }
 
   return definition.required ? schema : optional(schema);
