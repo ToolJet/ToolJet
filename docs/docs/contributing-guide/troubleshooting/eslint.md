@@ -11,11 +11,11 @@ Eslint as a code quality tool is a tool that checks your code for errors and hel
 ## Setup
 
 
-1. Install the [ESlint extension](https://eslint.org/docs/latest/user-guide/integrations) for your code editor.
+1. Install the [ESLint extension](https://eslint.org/docs/latest/user-guide/integrations) for your code editor.
 2. Set your editor's default formatter to `ESLint`.
 
 :::tip
-For VSCode users, you can also set the formatter to `ESLint` in the [**settings.json**](https://code.visualstudio.com/docs/getstarted/settings#_settingsjson).
+For VSCode users, you can set the formatter to `ESLint` in the [**settings.json**](https://code.visualstudio.com/docs/getstarted/settings#_settingsjson).
 :::
 
 3. Install the dependencies.
