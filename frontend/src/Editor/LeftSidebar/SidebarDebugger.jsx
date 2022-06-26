@@ -270,24 +270,6 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
             />
           </span>
         )}
-        {/* {errorProps.kind === 'component' && (
-          <span>
-            <ReactJson
-              src={errorProps.effectiveProperties}
-              theme={darkMode ? 'shapeshifter' : 'rjv-default'}
-              name={'effectiveProperties'}
-              style={{ fontSize: '0.7rem', paddingLeft: '0.17rem' }}
-              enableClipboard={false}
-              displayDataTypes={false}
-              collapsed={true}
-              displayObjectSize={false}
-              quotesOnKeys={false}
-              sortKeys={false}
-              collapseStringsAfterLength={1000}
-            />
-          </span>
-        )} */}
-
         <hr className="border-1 border-bottom bg-grey py-0" />
       </div>
     </div>
