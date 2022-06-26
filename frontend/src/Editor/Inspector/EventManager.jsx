@@ -566,6 +566,7 @@ export const EventManager = ({
                           }}
                           enablePreview={true}
                           type={param?.type}
+                          fieldMeta={{ options: param?.options }}
                         />
                       </div>
                     </div>
