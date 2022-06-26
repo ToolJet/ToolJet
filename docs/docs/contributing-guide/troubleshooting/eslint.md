@@ -1,11 +1,11 @@
 ---
 id: eslint
-title: Eslint
+title: EsLint
 ---
 
-# Eslint 
+# ESLint 
 
-Eslint as a code quality tool is a tool that checks your code for errors and helps you to fix them and enforces a coding style. 
+ESLint as a code quality tool is a tool that checks your code for errors and helps you to fix them and enforces a coding style. 
 
 
 ## Setup
