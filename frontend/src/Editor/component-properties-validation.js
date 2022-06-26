@@ -7,7 +7,7 @@ const generateSchemaFromValidationDefinition = (definition) => {
   switch (definition?.type ?? '') {
     case 'string': {
       schema = string();
-      if (definition?.pattern) schema = pattern(schema, definition.pattern);
+      if (definition?.pattern) schema = pattern(schema, RegExp(definition.pattern, 'i'));
       break;
     }
     case 'number': {
@@ -47,7 +47,7 @@ const generateSchemaFromValidationDefinition = (definition) => {
     schema = size(schema, minSize, maxSize);
   }
 
-  return definition.required ? schema : optional(schema);
+  return definition.optional ? optional(schema) : schema;
 };
 
 const validate = (value, schema, _defaultValue) => {

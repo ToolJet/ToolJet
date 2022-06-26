@@ -164,7 +164,6 @@ export const widgets = [
         displayName: 'Loading State',
         validation: {
           schema: { type: 'boolean' },
-          defaultValue: false,
         },
       },
     },
