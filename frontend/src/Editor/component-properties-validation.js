@@ -1,4 +1,4 @@
-const { type, number, string, array, any, optional, assert, boolean, union } = require('superstruct');
+const { type, number, string, array, any, optional, assert, boolean, union, size } = require('superstruct');
 import _ from 'lodash';
 
 const generateSchemaFromValidationDefinition = (definition) => {
@@ -24,6 +24,13 @@ const generateSchemaFromValidationDefinition = (definition) => {
     case 'array': {
       const elementSchema = generateSchemaFromValidationDefinition(definition.element ?? {});
       schema = array(elementSchema);
+      break;
+    }
+    case 'size': {
+      const sizeConstrainedSchema = generateSchemaFromValidationDefinition(definition.schema ?? {});
+      const minSize = definition?.min ?? 0;
+      const maxSize = definition?.max ?? minSize;
+      schema = size(sizeConstrainedSchema, minSize, maxSize);
       break;
     }
     case 'object': {
