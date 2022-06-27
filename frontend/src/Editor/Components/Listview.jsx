@@ -37,10 +37,7 @@ export const Listview = function Listview({
   const onRowClicked = (index) => {
     const currentRowData = currentState.components[`${component.name}`]?.data[index] ?? undefined;
     if (currentRowData) {
-      //hack to set the current row data
-      setTimeout(() => {
-        fireEvent('onRowClicked', { data: data[index], rowId: index });
-      }, 300);
+      fireEvent('onRowClicked', { data: data[index], rowId: index });
     }
   };
 
@@ -70,7 +67,7 @@ export const Listview = function Listview({
             style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
             key={index}
             onClick={(event) => {
-              // event.stopPropagation();
+              event.preventDefault();
               onRowClicked(index);
             }}
           >
