@@ -123,6 +123,7 @@ class Table extends React.Component {
   };
 
   columnPopover = (column, index) => {
+    const columnIsEditable = resolveReferences(column.isEditable, this.props.currentState);
     return (
       <Popover id="popover-basic-2" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
         <Popover.Content>
@@ -214,7 +215,7 @@ class Table extends React.Component {
                   componentName={this.getPopoverFieldSource(column.columnType, 'textColor')}
                 />
               </div>
-              {column.isEditable && (
+              {columnIsEditable && (
                 <div>
                   <div className="hr-text">Validation</div>
                   <div className="field mb-2">
@@ -343,7 +344,7 @@ class Table extends React.Component {
 
           {column.columnType === 'dropdown' && (
             <>
-              {column.isEditable && (
+              {columnIsEditable && (
                 <div>
                   <div className="hr-text">Validation</div>
                   <div className="field mb-2">
@@ -408,14 +409,21 @@ class Table extends React.Component {
             </div>
           )}
 
-          <div className="form-check form-switch my-4">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
-              checked={column.isEditable}
+          <div>
+            <CodeHinter
+              paramLabel={'Make editable'}
+              currentState={this.props.currentState}
+              initialValue={column.isEditable}
+              theme={this.props.darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={'{{false}}'}
+              onChange={(value) => this.onColumnItemChange(index, 'isEditable', value)}
+              componentName={this.getPopoverFieldSource(column.columnType, 'isEditable')}
+              type="toggle"
+              onFxPress={(fxValue) => this.onColumnItemChange(index, 'isEditableFxActive', fxValue)}
+              fxActive={column.isEditableFxActive}
             />
-            <span className="form-check-label">make editable</span>
           </div>
         </Popover.Content>
       </Popover>
