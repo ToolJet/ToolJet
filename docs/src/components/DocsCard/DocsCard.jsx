@@ -8,15 +8,16 @@ export const DocsCard = ({label, imgSrc, link, height=40, width=40,title}) => {
   const imagePath = imgSrc.includes('kubernetes') ? kubernetesSvg : `/img/setup/icons/${imgSrc}.svg`
 
   const description = {
-    Docker: "You should setup a PostgreSQL database manually to be used by the ToolJet server.",
-    Heroku: "You should setup a PostgreSQL database manually to be used by the ToolJet server.",
-    "AWS EC2": "You should setup a PostgreSQL database manually to be used by the ToolJet server.",
-    Kubernetes :"You should setup a PostgreSQL database manually to be used by ToolJet.",
-    "Kubernetes (GKE)":"You should setup a PostgreSQL database manually to be used by ToolJet.",
-    "Kubernetes (AKS)":"You should setup a PostgreSQL database manually to be used by ToolJet.",
-    "Google Cloud Run":"You should setup a PostgreSQL database manually to be used by ToolJet.",
-    "Deploying ToolJet client":"You should setup a PostgreSQL database manually to be used by the ToolJet server.",
-    "Environment variables":"You should setup a PostgreSQL database manually to be used by the ToolJet server."
+    "Try ToolJet locally": "Try out ToolJet locally using Docker.",
+    Docker: "Deploy ToolJet on a server using docker-compose.",
+    Heroku: "Deploy ToolJet on Heroku using the one-click-deployment button.",
+    "AWS EC2": "Deploy ToolJet on AWS EC2 instances.",
+    Kubernetes :"Deploy ToolJet on a Kubernetes cluster.",
+    "Kubernetes (GKE)":"Deploy ToolJet on a GKE Kubernetes cluster.",
+    "Kubernetes (AKS)":"Deploy ToolJet on a AKS Kubernetes cluster.",
+    "Google Cloud Run":"Deploy ToolJet on Cloud Run with GCloud CLI.",
+    "Deploying ToolJet client":"Deploy ToolJet Client on static website hosting services.",
+    "Environment variables":"Environment variables required by ToolJet Client and Server to start running."
   }
 
   return (
