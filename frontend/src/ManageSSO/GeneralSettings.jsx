@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 export function GeneralSettings({ settings, updateData }) {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const [enableSignUp, setEnableSignUp] = useState(settings?.enable_sign_up || false);
+  const [inheritSSO, setInheritSSO] = useState(settings?.inherit_s_s_o || false);
   const [domain, setDomain] = useState(settings?.domain || '');
   const [isSaving, setSaving] = useState(false);
 
@@ -15,7 +16,7 @@ export function GeneralSettings({ settings, updateData }) {
 
   const saveSettings = () => {
     setSaving(true);
-    organizationService.editOrganization({ enableSignUp, domain }).then(
+    organizationService.editOrganization({ enableSignUp, domain, inheritSSO }).then(
       () => {
         setSaving(false);
         updateData('general', { enable_sign_up: enableSignUp, domain });
@@ -60,6 +61,26 @@ export function GeneralSettings({ settings, updateData }) {
               </div>
             </div>
           </div>
+          {!isSingleOrganization &&
+            (window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID || window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID) && (
+              <div className="form-group mb-3">
+                <label className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    onChange={() => setInheritSSO((inheritSSO) => !inheritSSO)}
+                    checked={inheritSSO}
+                    data-cy="form-check-input"
+                  />
+                  <span className="form-check-label" data-cy="form-check-label">
+                    Inherit SSO
+                  </span>
+                </label>
+                <div className="help-text mt-1">
+                  <div data-cy="login-help-text">Allow instance level configured SSO</div>
+                </div>
+              </div>
+            )}
           <div className="form-group mb-3">
             <label className="form-label" data-cy="allowed-domains-label">
               Allowed domains

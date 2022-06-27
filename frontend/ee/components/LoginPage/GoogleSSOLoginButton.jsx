@@ -9,7 +9,9 @@ export default function GoogleSSOLoginButton(props) {
         buttonText="Login"
         cookiePolicy={'single_host_origin'}
         uxMode="redirect"
-        redirectUri={`${window.location.protocol}//${window.location.host}/sso/google/${props.configId}`}
+        redirectUri={`${window.location.protocol}//${window.location.host}/sso/google${
+          props.configId ? `/${props.configId}` : ''
+        }`}
         render={(renderProps) => (
           <div>
             <button {...renderProps} className="btn border-0 rounded-2">

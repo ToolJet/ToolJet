@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import { history, handleResponse } from '@/_helpers';
+import { history, handleResponse, setCookie, getCookie, eraseCookie } from '@/_helpers';
 import config from 'config';
 
 const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('currentUser')));
@@ -17,6 +17,9 @@ export const authenticationService = {
   },
   signInViaOAuth,
   resetPassword,
+  saveLoginOrganizationId,
+  getLoginOrganizationId,
+  deleteLoginOrganizationId,
 };
 
 function login(email, password, organizationId) {
@@ -33,6 +36,18 @@ function login(email, password, organizationId) {
       updateUser(user);
       return user;
     });
+}
+
+function saveLoginOrganizationId(organizationId) {
+  organizationId && setCookie('login-workspace', organizationId);
+}
+
+function getLoginOrganizationId() {
+  return getCookie('login-workspace');
+}
+
+function deleteLoginOrganizationId() {
+  eraseCookie('login-workspace');
 }
 
 function getOrganizationConfigs(organizationId) {
@@ -93,14 +108,17 @@ function clearUser() {
   currentUserSubject.next(null);
 }
 
-function signInViaOAuth(configId, ssoResponse) {
+function signInViaOAuth(configId, ssoType, ssoResponse) {
+  const organizationId = getLoginOrganizationId();
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(ssoResponse),
+    body: JSON.stringify({ ...ssoResponse, organizationId }),
   };
 
-  return fetch(`${config.apiUrl}/oauth/sign-in/${configId}`, requestOptions)
+  const url = configId ? configId : `common/${ssoType}`;
+
+  return fetch(`${config.apiUrl}/oauth/sign-in/${url}`, requestOptions)
     .then((response) => {
       return response.text().then((text) => {
         const data = text && JSON.parse(text);

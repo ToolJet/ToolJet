@@ -23,6 +23,13 @@ import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
+interface JWTPayload {
+  username: string;
+  sub: string;
+  organizationId: string;
+  isSSOLogin?: boolean;
+  isPasswordLogin: boolean;
+}
 @Injectable()
 export class AuthService {
   constructor(
@@ -117,7 +124,7 @@ export class AuthService {
       await this.usersService.updateDefaultOrganization(user, organization.id);
     }
 
-    const payload = {
+    const payload: JWTPayload = {
       username: user.id,
       sub: user.email,
       organizationId: user.organizationId,
@@ -139,7 +146,7 @@ export class AuthService {
   }
 
   async switchOrganization(newOrganizationId: string, user: User, isNewOrganization?: boolean) {
-    if (!(isNewOrganization || user.isPasswordLogin)) {
+    if (!(isNewOrganization || user.isPasswordLogin || user.isSSOLogin)) {
       throw new UnauthorizedException();
     }
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
@@ -156,19 +163,25 @@ export class AuthService {
 
     const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
 
-    if (!formConfigs?.enabled) {
+    if (user.isPasswordLogin && !formConfigs?.enabled) {
       // no configurations in organization side or Form login disabled for the organization
       throw new UnauthorizedException('Password login disabled for the organization');
     }
 
+    if (user.isSSOLogin && !organization.inheritSSO) {
+      // Instance based SSO not allowed
+      throw new UnauthorizedException('SSO login disabled for the organization');
+    }
+
     // Updating default organization Id
-    await this.usersService.updateDefaultOrganization(newUser, newUser.organizationId);
+    user.isPasswordLogin && (await this.usersService.updateDefaultOrganization(newUser, newUser.organizationId));
 
     const payload = {
       username: user.id,
       sub: user.email,
       organizationId: newUser.organizationId,
-      isPasswordLogin: true,
+      isPasswordLogin: user.isPasswordLogin,
+      isSSOLogin: user.isSSOLogin,
     };
 
     return decamelizeKeys({
