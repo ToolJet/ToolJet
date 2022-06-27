@@ -16,8 +16,8 @@ const sidebars = {
       label: 'Setup',
       link: {type: 'doc', id: 'setup/index'},
       items: [
+        'setup/try-tooljet',
         'setup/docker',
-        'setup/docker-local',
         'setup/heroku',
         'setup/ec2',
         'setup/kubernetes',

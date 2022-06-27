@@ -66,20 +66,10 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 ## Quickstart
 The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/setup/architecture).
 
-You can deploy ToolJet for free using either of the one-click-deployment button below.
-
-<div align="center" style="max-height: 40px;">
-  <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main">
-    <img src="https://www.herokucdn.com/deploy/button.svg" />
-  </a>
-  <a href="https://labs.play-with-docker.com/?stack=https://raw.githubusercontent.com/ToolJet/ToolJet/chore/play-with-docker-setup/deploy/docker/play-with-docker.yml">
-    <img src="https://raw.githubusercontent.com/play-with-docker/stacks/master/assets/images/button.png" alt="Try in PWD" height="32"/>
-  </a>
-</div>
-
-> Login credentials  for the deployment: <br/>
-> Email: `dev@tooljet.io` <br/>
-> Password: `password`
+You can deploy ToolJet on Heroku for free using the one-click-deployment button below.
+<p align="center">
+<a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main"><img src="https://www.herokucdn.com/deploy/button.svg" /></a>
+</P>
 
 ### Try using Docker
 Want to give ToolJet a quick spin on your local machine? You can run the following command from your terminal to have ToolJet up and running right away.
