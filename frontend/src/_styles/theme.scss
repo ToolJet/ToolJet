@@ -1165,11 +1165,15 @@ button {
 .fx-container-eventmanager  * .fx-outer-wrapper{
   position: absolute !important;
   top: 5px !important;
-  right: -22px;
+  right: -44px;
+}
+// targeting select component library class 
+.fx-container-eventmanager * .css-1goth4y-control{
+  width: 90%;
 }
 .fx-container-eventmanager  *.fx-common{
   top:4px !important;
-  right: -30px;
+  right:-52px;
 }
 .unselectable {
   -webkit-touch-callout: none;
