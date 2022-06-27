@@ -16,6 +16,7 @@ const sidebars = {
       label: 'Setup',
       link: {type: 'doc', id: 'setup/index'},
       items: [
+        'setup/docker-local',
         'setup/docker',
         'setup/heroku',
         'setup/ec2',
@@ -45,7 +46,7 @@ const sidebars = {
         'tutorial/building-queries',
         'tutorial/transformations',
         'tutorial/adding-widget',
-       'tutorial/actions',
+        'tutorial/actions',
         'tutorial/debugger',
         'tutorial/mobile-layout',
         'tutorial/versioning-and-release',
@@ -85,6 +86,7 @@ const sidebars = {
         'data-sources/postgresql',
         'data-sources/redis',
         'data-sources/restapi',
+        'data-sources/saphana',
         'data-sources/sendgrid',
         'data-sources/smtp',
         'data-sources/snowflake',
@@ -97,6 +99,7 @@ const sidebars = {
       label: 'Widget Reference',
       items: [
         'widgets/button',
+        'widgets/button-group',
         'widgets/calendar',
         'widgets/chart',
         'widgets/checkbox',
@@ -111,6 +114,7 @@ const sidebars = {
         'widgets/file-picker',
         'widgets/iframe',
         'widgets/image',
+        'widgets/kanban',
         'widgets/listview',
         'widgets/map',
         'widgets/modal',
@@ -125,6 +129,7 @@ const sidebars = {
         'widgets/spinner',
         'widgets/star',
         'widgets/statistics',
+        'widgets/steps',
         'widgets/table',
         'widgets/tabs',
         'widgets/tags',
@@ -163,6 +168,7 @@ const sidebars = {
       },
       items: [
         'how-to/bulk-update-multiple-rows',
+        'how-to/access-cellvalue-rowdata',
         'how-to/oauth2-authorization',
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
@@ -187,6 +193,7 @@ const sidebars = {
       },
       collapsed: true,
       items: [
+        'user-authentication/user-lifecycle',
         'user-authentication/general-settings',
         'user-authentication/password-login',
         {
@@ -195,6 +202,22 @@ const sidebars = {
           items: [
             'user-authentication/sso/github',
             'user-authentication/sso/google',
+             {
+          type: 'category',
+          label: 'OpenId Connect',
+          link: {
+            type: 'generated-index',
+            title: 'OpenId Connect',
+            description:" ",
+            keywords: ['okta','openid','azureAD'],
+          },
+          collapsed: false,
+          items: [
+            'user-authentication/sso/setup',
+            'user-authentication/sso/okta',
+            'user-authentication/sso/azuread',
+          ],
+        }
           ],
         },
       ],
@@ -215,6 +238,7 @@ const sidebars = {
           type: 'category',
           label: 'Setup',
           items: [
+            'contributing-guide/setup/architecture',
             'contributing-guide/setup/macos',
             'contributing-guide/setup/docker',
             'contributing-guide/setup/ubuntu',

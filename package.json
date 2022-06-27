@@ -1,4 +1,7 @@
 {
+  "name": "tooljet",
+  "version": "1.18.0",
+  "description": "ToolJet is an open-source low-code framework to build and deploy internal tools.",
   "engines": {
     "node": "14.17.3",
     "npm": "7.20.0"
@@ -21,6 +24,7 @@
     "@babel/preset-env": "^7.4.3",
     "@babel/preset-react": "^7.0.0",
     "@cypress/webpack-preprocessor": "^5.11.1",
+    "@tooljet/cli": "^0.0.12",
     "babel-loader": "^8.0.5",
     "eslint": "^7.25.0",
     "faker": "^5.5.3",
@@ -33,6 +37,7 @@
   },
   "dependencies": {
     "@nestjs/cli": "^8.1.0",
+    "@nestjs/mapped-types": "*",
     "cypress": "^8.3.1",
     "ts-node": "^10.1.0"
   },
@@ -52,8 +57,13 @@
     "build": "npm run build:plugins:prod && npm run build:frontend && npm run build:server",
     "start:prod": "npm --prefix server run start:prod",
     "db:create": "npm --prefix server run db:create",
+    "db:create:prod": "npm --prefix server run db:create:prod",
     "db:migrate": "npm --prefix server run db:migrate",
+    "db:migrate:prod": "npm --prefix server run db:migrate:prod",
     "db:seed": "npm --prefix server run db:seed",
+    "db:seed:prod": "npm --prefix server run db:seed:prod",
+    "db:setup": "npm --prefix server run db:setup",
+    "db:setup:prod": "npm --prefix server run db:setup:prod",
     "db:reset": "npm --prefix server run db:reset",
     "db:drop": "npm --prefix server run db:drop",
     "deploy": "cp -a frontend/build/. public/",

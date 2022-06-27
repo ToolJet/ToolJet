@@ -1,20 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { authenticationService } from '@/_services';
+import { authenticationService, userService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
-
 import LogoIcon from '../Editor/Icons/logo.svg';
 import { Organization } from './Organization';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
   // eslint-disable-next-line no-unused-vars
   const [pathName, setPathName] = useState(document.location.pathname);
+  const [avatar, setAvatar] = useState();
+  const { first_name, last_name, avatar_id, admin } = authenticationService.currentUserValue;
+  const currentVersion = localStorage.getItem('currentVersion');
 
   useEffect(() => {
     setPathName(document.location.pathname);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [document.location.pathname]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    async function fetchAvatar() {
+      const blob = await userService.getAvatar(avatar_id);
+      setAvatar(URL.createObjectURL(blob));
+    }
+    if (avatar_id) fetchAvatar();
+
+    () => avatar && URL.revokeObjectURL(avatar);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [avatar_id]);
 
   function logout() {
     authenticationService.logout();
@@ -24,8 +38,6 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   function openSettings() {
     history.push('/settings');
   }
-
-  const { first_name, last_name, admin } = authenticationService.currentUserValue;
 
   return (
     <header className="navbar tabbed-navbar navbar-expand-md navbar-light d-print-none">
@@ -55,13 +67,22 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               data-testid="userAvatarHeader"
             >
               <div className="d-xl-block" data-cy="user-menu">
-                <span className="avatar bg-secondary-lt">
-                  {first_name ? first_name[0] : ''}
-                  {last_name ? last_name[0] : ''}
-                </span>
+                {avatar_id ? (
+                  <span
+                    className="avatar avatar-sm"
+                    style={{
+                      backgroundImage: `url(${avatar})`,
+                    }}
+                  />
+                ) : (
+                  <span className="avatar bg-secondary-lt">
+                    {first_name ? first_name[0] : ''}
+                    {last_name ? last_name[0] : ''}
+                  </span>
+                )}
               </div>
             </a>
-            <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow end-0">
+            <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow end-0" data-cy="dropdown-menu">
               <Link
                 data-testid="settingsBtn"
                 to="#"
@@ -74,6 +95,11 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               <Link data-testid="logoutBtn" to="#" onClick={logout} className="dropdown-item" data-cy="logout-link">
                 Logout
               </Link>
+              {currentVersion && (
+                <Link to="#" className={`dropdown-item pe-none ${darkMode ? 'color-muted-darkmode' : 'color-muted'}`}>
+                  v{currentVersion}
+                </Link>
+              )}
             </div>
           </div>
         </div>

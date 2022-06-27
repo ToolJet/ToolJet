@@ -45,6 +45,7 @@ export const CustomComponent = function CustomComponent({
         componentName={`widget/${component.component.name}/code`}
         enablePreview={false}
         height={400}
+        hideSuggestion
       />
     ),
   });

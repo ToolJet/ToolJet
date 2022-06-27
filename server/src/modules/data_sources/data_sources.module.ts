@@ -8,6 +8,7 @@ import { Credential } from '../../../src/entities/credential.entity';
 import { EncryptionService } from '../../../src/services/encryption.service';
 import { AppsService } from '@services/apps.service';
 import { App } from 'src/entities/app.entity';
+import { File } from 'src/entities/file.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { CaslModule } from '../casl/casl.module';
@@ -21,6 +22,7 @@ import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
+import { FilesService } from '@services/files.service';
 
 @Module({
   imports: [
@@ -29,6 +31,7 @@ import { AppImportExportService } from '@services/app_import_export.service';
       DataQuery,
       Credential,
       App,
+      File,
       AppVersion,
       AppUser,
       FolderApp,
@@ -48,6 +51,7 @@ import { AppImportExportService } from '@services/app_import_export.service';
     DataQueriesService,
     UsersService,
     AppImportExportService,
+    FilesService,
   ],
   controllers: [DataSourcesController],
 })

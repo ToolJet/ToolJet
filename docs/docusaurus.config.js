@@ -42,6 +42,10 @@ module.exports = {
       },
       items: [
         {
+          type: 'search',
+          position: 'left',
+        },
+        {
           href: 'https://github.com/ToolJet/ToolJet',
           label: 'GitHub',
           position: 'right',

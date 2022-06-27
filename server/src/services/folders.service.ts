@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { Brackets, createQueryBuilder, Repository } from 'typeorm';
+import { Brackets, createQueryBuilder, Repository, UpdateResult } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { Folder } from '../entities/folder.entity';
 import { UsersService } from './users.service';
@@ -29,6 +29,10 @@ export class FoldersService {
         organizationId: user.organizationId,
       })
     );
+  }
+
+  async update(folderId: string, folderName: string): Promise<UpdateResult> {
+    return this.foldersRepository.update({ id: folderId }, { name: folderName });
   }
 
   async allFolders(user: User): Promise<Folder[]> {
@@ -291,5 +295,37 @@ export class FoldersService {
       .getMany();
 
     return viewableAppsInFolder;
+  }
+
+  async delete(user: User, id: string) {
+    const folder = await this.foldersRepository.findOneOrFail({ id, organizationId: user.organizationId });
+    const allViewableApps = await createQueryBuilder(App, 'apps')
+      .select('apps.id')
+      .innerJoin('apps.groupPermissions', 'group_permissions')
+      .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
+      .innerJoin(
+        UserGroupPermission,
+        'user_group_permissions',
+        'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+      )
+      .where('user_group_permissions.user_id = :userId', { userId: user.id })
+      .andWhere('app_group_permissions.read = :value', { value: true })
+      .orWhere('apps.user_id = :userId', {
+        value: true,
+        organizationId: user.organizationId,
+        userId: user.id,
+      })
+      .getMany();
+
+    const allViewableAppIds = allViewableApps.map((app) => app.id);
+
+    folder.folderApps.map((folderApp: FolderApp) => {
+      if (!allViewableAppIds.includes(folderApp.appId)) {
+        throw new ForbiddenException(
+          'Applications not authorised for you are included in the folder, please contact administrator to remove them and try again'
+        );
+      }
+    });
+    return await this.foldersRepository.delete({ id, organizationId: user.organizationId });
   }
 }
