@@ -168,6 +168,7 @@ const sidebars = {
       },
       items: [
         'how-to/bulk-update-multiple-rows',
+        'how-to/access-cellvalue-rowdata',
         'how-to/oauth2-authorization',
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
@@ -237,6 +238,7 @@ const sidebars = {
           type: 'category',
           label: 'Setup',
           items: [
+            'contributing-guide/setup/architecture',
             'contributing-guide/setup/macos',
             'contributing-guide/setup/docker',
             'contributing-guide/setup/ubuntu',
