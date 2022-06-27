@@ -341,6 +341,8 @@ export function Table({
 
     const width = columnSize || defaultColumn.width;
 
+    const isEditable = resolveReferences(column.isEditable, currentState, '', {}) === true;
+
     return {
       id: column.id,
       Header: column.name,
@@ -349,7 +351,7 @@ export function Table({
       width: width,
       columnOptions,
       columnType,
-      isEditable: column.isEditable,
+      isEditable: isEditable,
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
@@ -365,7 +367,7 @@ export function Table({
               color: textColor ?? '',
             };
 
-            if (column.isEditable) {
+            if (isEditable) {
               const validationData = validateWidget({
                 validationObject: {
                   regex: {
@@ -432,15 +434,15 @@ export function Table({
               <textarea
                 rows="1"
                 className="form-control-plaintext text-container text-muted"
-                readOnly={!column.isEditable}
+                readOnly={!isEditable}
                 style={{ maxWidth: width, minWidth: width - 10 }}
                 onBlur={(e) => {
-                  if (column.isEditable) {
+                  if (isEditable) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
                 onChange={(e) => {
-                  if (column.isEditable) {
+                  if (isEditable) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
@@ -483,7 +485,7 @@ export function Table({
                   }}
                   filterOptions={fuzzySearch}
                   placeholder="Select.."
-                  disabled={!column.isEditable}
+                  disabled={!isEditable}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>
@@ -502,7 +504,7 @@ export function Table({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
-                  disabled={!column.isEditable}
+                  disabled={!isEditable}
                 />
               </div>
             );
@@ -540,7 +542,7 @@ export function Table({
                 <Radio
                   options={columnOptions.selectOptions}
                   value={cellValue}
-                  readOnly={!column.isEditable}
+                  readOnly={!isEditable}
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
@@ -553,7 +555,7 @@ export function Table({
               <div>
                 <Toggle
                   value={cellValue}
-                  readOnly={!column.isEditable}
+                  readOnly={!isEditable}
                   activeColor={column.activeColor}
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original).then(
@@ -577,7 +579,7 @@ export function Table({
                   dateDisplayFormat={column.dateFormat}
                   isTimeChecked={column.isTimeChecked}
                   value={cellValue}
-                  readOnly={column.isEditable}
+                  readOnly={isEditable}
                   parseDateFormat={column.parseDateFormat}
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
@@ -955,13 +957,15 @@ export function Table({
                         }
                       }
                       const wrapAction = textWrapActions(cell.column.id);
+                      const cellColumnIsEditable =
+                        resolveReferences(cell.column.isEditable, currentState, '', {}) === true;
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
                         <td
                           className={cx(`${wrapAction ? wrapAction : 'wrap'}-wrapper`, {
                             'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
-                            'has-text': cell.column.columnType === 'text' || cell.column.isEditable,
+                            'has-text': cell.column.columnType === 'text' || cellColumnIsEditable,
                             'has-dropdown': cell.column.columnType === 'dropdown',
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
