@@ -345,6 +345,8 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
 
   if (eventName === 'onRowClicked') {
     const { component, data, rowId } = options;
+    const exposedVariable =
+      component.component === 'Listview' ? { selectedRowId: rowId } : { selectedRow: data, selectedRowId: rowId };
     _self.setState(
       {
         currentState: {
@@ -353,8 +355,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
             ..._self.state.currentState.components,
             [component.name]: {
               ..._self.state.currentState.components[component.name],
-              selectedRow: data,
-              selectedRowId: rowId,
+              ...exposedVariable,
             },
           },
         },

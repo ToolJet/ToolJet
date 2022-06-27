@@ -37,7 +37,7 @@ export const Listview = function Listview({
   const onRowClicked = (index) => {
     const currentRowData = currentState.components[`${component.name}`].data[index] ?? undefined;
     if (currentRowData) {
-      fireEvent('onRowClicked', { data: currentRowData, rowId: index });
+      fireEvent('onRowClicked', { rowId: index });
     }
   };
 
