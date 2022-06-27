@@ -13,6 +13,8 @@ export const Listview = function Listview({
   styles,
   currentState,
   fireEvent,
+  exposedVariables,
+  setExposedVariable,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -40,6 +42,14 @@ export const Listview = function Listview({
   };
 
   const parentRef = useRef(null);
+
+  React.useEffect(() => {
+    const { data } = exposedVariables;
+    if (component?.parent && data?.length !== memoizedData?.length) {
+      setExposedVariable(`data`, memoizedData);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memoizedData]);
 
   return (
     <div
