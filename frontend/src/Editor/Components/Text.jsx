@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
-// import validateColor from 'validate-color';
 
 export const Text = function Text({ height, properties, styles, darkMode }) {
   const [loadingState, setLoadingState] = useState(false);
@@ -29,7 +28,6 @@ export const Text = function Text({ height, properties, styles, darkMode }) {
   verticalShadow = `${verticalShadow ?? '0'}px`;
   horizontalShadow = `${horizontalShadow ?? '0'}px`;
   blur = `${blur ?? '0'}px`;
-  // const isShadowColorValidate = validateColor(shadowColor);
   const text = properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
   console.log('shadow', verticalShadow, horizontalShadow, blur, shadowColor);
   const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
@@ -55,12 +53,6 @@ export const Text = function Text({ height, properties, styles, darkMode }) {
     textIndent: `${textIndent}px` ?? '0px',
     letterSpacing: `${letterSpacing}px` ?? '0px',
     wordSpacing: `${wordSpacing}px` ?? '0px',
-    // below text shadow pending not working for now
-    // shadowColor: isShadowColorValidate ? `${shadowColor}` : null,
-    // shadowOffset: {
-    //   width: verticalShadow,
-    //   height: horizontalShadow,
-    // },
   };
 
   return (

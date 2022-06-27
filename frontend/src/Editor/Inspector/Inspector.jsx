@@ -375,7 +375,7 @@ export const Inspector = ({
                   componentMeta={componentMeta}
                   paramUpdated={paramUpdated}
                   dataQueries={dataQueries}
-                  style={componentMeta.styles}
+                  // style={componentMeta.styles}
                   currentState={currentState}
                   allComponents={allComponents}
                 />

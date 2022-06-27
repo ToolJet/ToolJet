@@ -3,9 +3,9 @@ import Accordion from '@/_ui/Accordion';
 import { renderElement } from '../Utils';
 
 export const Text = ({ componentMeta, ...restProps }) => {
-  const { component, paramUpdated, dataQueries, style, currentState, allComponents } = restProps;
+  const { component, paramUpdated, dataQueries, currentState, allComponents } = restProps;
 
-  const styles = Object.keys(componentMeta.styles);
+  // const styles = Object.keys(componentMeta.styles);
 
   let items = [];
 
@@ -162,54 +162,6 @@ export const Text = ({ componentMeta, ...restProps }) => {
           paramUpdated,
           dataQueries,
           'wordSpacing',
-          'styles',
-          currentState,
-          allComponents
-        )}
-      </>
-    ),
-  });
-  items.push({
-    title: 'Text Shadow',
-    isOpen: false,
-    children: (
-      <>
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'verticalShadow',
-          'styles',
-          currentState,
-          allComponents
-        )}
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'horizontalShadow',
-          'styles',
-          currentState,
-          allComponents
-        )}
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'blur',
-          'styles',
-          currentState,
-          allComponents
-        )}
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'shadowColor',
           'styles',
           currentState,
           allComponents
