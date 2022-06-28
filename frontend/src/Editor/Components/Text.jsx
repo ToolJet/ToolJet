@@ -18,18 +18,10 @@ export const Text = function Text({ height, properties, styles, darkMode }) {
     textIndent,
     letterSpacing,
     wordSpacing,
-    verticalShadow,
-    horizontalShadow,
-    shadowColor,
-    blur,
     fontVariant,
   } = styles;
 
-  verticalShadow = `${verticalShadow ?? '0'}px`;
-  horizontalShadow = `${horizontalShadow ?? '0'}px`;
-  blur = `${blur ?? '0'}px`;
   const text = properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
-  console.log('shadow', verticalShadow, horizontalShadow, blur, shadowColor);
   const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
 
   useEffect(() => {
