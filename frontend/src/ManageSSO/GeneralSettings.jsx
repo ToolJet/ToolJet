@@ -12,6 +12,10 @@ export function GeneralSettings({ settings, updateData }) {
     setEnableSignUp(settings?.enable_sign_up || false);
     setDomain(settings?.domain || '');
   };
+  const copyFunction = (input) => {
+    let text = document.getElementById(input).innerHTML;
+    navigator.clipboard.writeText(text);
+  };
 
   const saveSettings = () => {
     setSaving(true);
@@ -81,7 +85,19 @@ export function GeneralSettings({ settings, updateData }) {
               <label className="form-label" data-cy="login-url-label">
                 Login URL
               </label>
-              <div data-cy="login-url">{`${window.location.protocol}//${window.location.host}/login/${authenticationService?.currentUserValue?.organization_id}`}</div>
+
+              <div className="flexer">
+                <p id="login-url" data-cy="login-url">
+                  {`${window.location.protocol}//${window.location.host}/login/${authenticationService?.currentUserValue?.organization_id}`}
+                </p>
+                <img
+                  onClick={() => copyFunction('login-url')}
+                  src={`/assets/images/icons/copy.svg`}
+                  width="16"
+                  height="16"
+                  className="sso-copy"
+                />
+              </div>
               <div className="help-text mt-1">
                 <div data-cy="login-help-text">Use this URL to login directly to this workspace</div>
               </div>

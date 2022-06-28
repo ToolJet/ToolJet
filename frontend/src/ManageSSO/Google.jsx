@@ -11,7 +11,10 @@ export function Google({ settings, updateData }) {
   const reset = () => {
     setClientId(settings?.configs?.client_id || '');
   };
-
+  const copyFunction = (input) => {
+    let text = document.getElementById(input).innerHTML;
+    navigator.clipboard.writeText(text);
+  };
   const saveSettings = () => {
     setSaving(true);
     organizationService.editOrganizationConfigs({ type: 'google', configs: { clientId } }).then(
@@ -99,7 +102,19 @@ export function Google({ settings, updateData }) {
               <label className="form-label" data-cy="redirect-url-label">
                 Redirect URL
               </label>
-              <div data-cy="redirect-url">{`${window.location.protocol}//${window.location.host}/sso/google/${configId}`}</div>
+              <div className="flexer">
+                <p
+                  data-cy="redirect-url"
+                  id="redirect-url"
+                >{`${window.location.protocol}//${window.location.host}/sso/google/${configId}`}</p>
+                <img
+                  onClick={() => copyFunction('login-url')}
+                  src={`/assets/images/icons/copy.svg`}
+                  width="16"
+                  height="16"
+                  className="sso-copy"
+                />
+              </div>
             </div>
           )}
           <div className="form-footer">
