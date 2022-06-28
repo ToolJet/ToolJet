@@ -3937,6 +3937,28 @@ input[type="text"] {
     @include theme-border($light-theme: false, $outline: true);
   }
 }
+// close icon in inpector
+[data-rb-event-key="close-inpector"]
+{
+  position: absolute;
+  right: -80px;
+  background-color: #232e3c !important;
+  width: 10% !important;
+}
+[data-rb-event-key="close-inpector-light"]
+{
+  position: absolute;
+  right: -80px;
+  background-color: #fff !important;
+  width: 10% !important;
+}
+.inspector-close-icon-wrapper{
+  border-left: 1px solid #e7eaef;
+  svg{
+    margin-left: 10px;
+  }
+
+}
 .tabs-inspector {
   position: sticky;
   top: 0;
