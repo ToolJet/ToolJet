@@ -234,11 +234,11 @@ const sidebars = {
       },
       collapsed: false,
       items: [
+        'contributing-guide/setup/architecture',
         {
           type: 'category',
           label: 'Setup',
           items: [
-            'contributing-guide/setup/architecture',
             'contributing-guide/setup/macos',
             'contributing-guide/setup/docker',
             'contributing-guide/setup/ubuntu',
@@ -250,6 +250,13 @@ const sidebars = {
           items: [
             'contributing-guide/tutorials/creating-widget',
             'contributing-guide/tutorials/creating-a-plugin',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Troubleshooting',
+          items: [
+            'contributing-guide/troubleshooting/eslint',
           ],
         },
         'contributing-guide/code-of-conduct',
