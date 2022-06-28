@@ -197,11 +197,11 @@ export const DraggableBox = function DraggableBox({
           })}
           onMouseEnter={(e) => {
             if (e.currentTarget.className.includes(`widget-${id}`)) {
-              onComponentHover(id);
+              onComponentHover?.(id);
               e.stopPropagation();
             }
           }}
-          onMouseLeave={() => onComponentHover(false)}
+          onMouseLeave={() => onComponentHover?.(false)}
           style={getStyles(isDragging, isSelectedComponent)}
         >
           <Rnd

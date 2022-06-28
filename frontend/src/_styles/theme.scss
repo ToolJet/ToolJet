@@ -1839,8 +1839,8 @@ button {
 }
 
 .jet-data-table:hover {
-  overflow-x: overlay;
-  overflow-y: overlay;
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
 .jet-data-table {
@@ -3834,7 +3834,7 @@ input[type="text"] {
   position: fixed;
   position: absolute;
   left: 50%;
-  top: 40%;
+  top: 5%;
 
   .modal-body {
     width: 500px !important;
@@ -3842,7 +3842,7 @@ input[type="text"] {
     padding: 0px !important;
   }
 
-  transform: translate(-60%, -60%);
+  transform: translate(-60%, 0%);
   height: 350px;
   width: auto;
   max-height: 500px;
@@ -3936,6 +3936,28 @@ input[type="text"] {
   &.dark-mode-border {
     @include theme-border($light-theme: false, $outline: true);
   }
+}
+// close icon in inpector
+[data-rb-event-key="close-inpector"]
+{
+  position: absolute;
+  right: -80px;
+  background-color: #232e3c !important;
+  width: 10% !important;
+}
+[data-rb-event-key="close-inpector-light"]
+{
+  position: absolute;
+  right: -80px;
+  background-color: #fff !important;
+  width: 10% !important;
+}
+.inspector-close-icon-wrapper{
+  border-left: 1px solid #e7eaef;
+  svg{
+    margin-left: 10px;
+  }
+
 }
 .tabs-inspector {
   position: sticky;
@@ -4255,6 +4277,10 @@ input[type="text"] {
     background-color: $bg-dark !important;
     color: $white !important;
     border-color: $border-grey-dark !important;
+  }
+
+  .text-muted {
+    color: $white !important;
   }
 }
 
