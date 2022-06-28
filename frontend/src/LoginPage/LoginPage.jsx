@@ -206,8 +206,9 @@ class LoginPage extends React.Component {
                   </div>
                 )}
                 <div
-                  className={`form-footer d-flex flex-column align-items-center ${!configs?.form?.enabled ? 'mt-0' : ''
-                    }`}
+                  className={`form-footer d-flex flex-column align-items-center ${
+                    !configs?.form?.enabled ? 'mt-0' : ''
+                  }`}
                 >
                   {configs?.form?.enabled && (
                     <button
