@@ -1,28 +1,78 @@
 import _ from 'lodash';
-import Fuse from 'fuse.js';
+
+function getResult(suggestionList, query) {
+  const result = suggestionList.filter((key) => key.includes(query));
+
+  const suggestions = result.filter((key) => {
+    const hintsDelimterCount = countDelimeter(key, '.');
+    const queryDelimiterCount = countDelimeter(query, '.');
+    const hintDept = queryDelimiterCount + 1;
+
+    if (hintsDelimterCount === hintDept || hintsDelimterCount === queryDelimiterCount) {
+      return true;
+    }
+  });
+
+  function countDelimeter(string, delimeter) {
+    var stringsearch = delimeter;
+
+    var str = string;
+    var count = 0;
+    for (var i = (count = 0); i < str.length; count += +(stringsearch === str[i++]));
+
+    return count;
+  }
+
+  return suggestions;
+}
 
 export function getSuggestionKeys(currentState) {
-  let suggestions = [];
-  _.keys(currentState).forEach((key) => {
-    _.keys(currentState[key]).forEach((key2) => {
-      if (key === 'variables') {
-        return suggestions.push(`${key}.${key2}`);
+  const suggestionList = [];
+
+  const map = new Map();
+
+  const buildMap = (data, path = '') => {
+    const keys = Object.keys(data);
+    keys.forEach((key, index) => {
+      const value = data[key];
+      const _type = Object.prototype.toString.call(value).slice(8, -1);
+      const prevType = map.get(path)?.type;
+
+      let newPath = '';
+      if (path === '') {
+        newPath = key;
+      } else if (prevType === 'Array') {
+        newPath = `${path}[${index}]`;
+      } else {
+        newPath = `${path}.${key}`;
       }
-      _.keys(currentState[key][key2]).forEach((key3) => {
-        suggestions.push(`${key}.${key2}.${key3}`);
-      });
+
+      if (_type === 'Object') {
+        map.set(newPath, { type: _type });
+        buildMap(value, newPath);
+      }
+      if (_type === 'Array') {
+        map.set(newPath, { type: _type });
+        buildMap(value, newPath);
+      } else {
+        map.set(newPath, { type: _type });
+      }
     });
-  });
-  return suggestions;
+  };
+
+  buildMap(currentState, '');
+  map.forEach((__, key) => suggestionList.push(key));
+
+  return suggestionList;
 }
 
 export function generateHints(word, suggestions) {
   if (word === '') {
     return suggestions;
   }
+  const hints = getResult(suggestions, word);
 
-  const fuse = new Fuse(suggestions);
-  return fuse.search(word).map((result) => result.item);
+  return hints;
 }
 
 export function computeCurrentWord(editor, _cursorPosition, ignoreBraces = false) {
@@ -103,7 +153,8 @@ export function canShowHint(editor, ignoreBraces = false) {
   return value.slice(ch, ch + 2) === '}}';
 }
 
-export function handleChange(editor, onChange, suggestions, ignoreBraces = false) {
+export function handleChange(editor, onChange, ignoreBraces = false, currentState) {
+  const suggestions = getSuggestionKeys(currentState);
   let state = editor.state.matchHighlighter;
   editor.addOverlay((state.overlay = makeOverlay(state.options.style)));
 
