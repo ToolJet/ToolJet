@@ -1,16 +1,16 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  useTable,
-  useFilters,
-  useSortBy,
-  useGlobalFilter,
   useAsyncDebounce,
-  usePagination,
   useBlockLayout,
+  useFilters,
+  useGlobalFilter,
+  usePagination,
   useResizeColumns,
   useRowSelect,
+  useSortBy,
+  useTable,
 } from 'react-table';
 import cx from 'classnames';
 import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
@@ -24,6 +24,7 @@ import { Radio } from './Radio';
 import { Toggle } from './Toggle';
 import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
+
 var _ = require('lodash');
 export function Table({
   id,
@@ -321,7 +322,8 @@ export function Table({
       columnType === 'multiselect' ||
       columnType === 'badge' ||
       columnType === 'badges' ||
-      columnType === 'radio'
+      columnType === 'radio' ||
+      columnType === 'image'
     ) {
       columnOptions.selectOptions = [];
       const values = resolveReferences(column.values, currentState, []);
@@ -518,6 +520,23 @@ export function Table({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
+                />
+              </div>
+            );
+          }
+          case 'image': {
+            return (
+              <div>
+                <img
+                  src={cellValue}
+                  className={`rounded-circle`}
+                  style={{
+                    objectFit: 'contain',
+                    pointerEvents: 'auto',
+                  }}
+                  onClick={() => fireEvent('onClick')}
+                  alt={cellValue}
+                  width={50}
                 />
               </div>
             );
