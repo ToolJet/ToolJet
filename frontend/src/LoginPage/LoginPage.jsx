@@ -190,7 +190,7 @@ class LoginPage extends React.Component {
                         <span className="input-group-text"></span>
                       </div>
                     </div>
-                    <div className="form-check">
+                    <div className="form-check show-password-label">
                       <input
                         type="checkbox"
                         className="form-check-input"
@@ -199,16 +199,15 @@ class LoginPage extends React.Component {
                         onChange={this.handleOnCheck}
                         data-cy="checkbox-input"
                       />
-                      <label className="form-check-label" htmlFor="check-Input" data-cy="show-password-label">
+                      <label className="form-check-label form-checks" htmlFor="check-input" data-cy="show-password-label">
                         show password
                       </label>
                     </div>
                   </div>
                 )}
                 <div
-                  className={`form-footer d-flex flex-column align-items-center ${
-                    !configs?.form?.enabled ? 'mt-0' : ''
-                  }`}
+                  className={`form-footer d-flex flex-column align-items-center ${!configs?.form?.enabled ? 'mt-0' : ''
+                    }`}
                 >
                   {configs?.form?.enabled && (
                     <button
