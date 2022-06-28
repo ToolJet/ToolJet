@@ -44,3 +44,13 @@ div[data-disabled='true'] {
 .animate-width-change {
   transition: width 0.2s ease-in-out;
 }
+
+.color-picker-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background: transparent;
+  height: 1000vh;
+}
