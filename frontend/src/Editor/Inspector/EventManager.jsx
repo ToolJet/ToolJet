@@ -31,9 +31,6 @@ export const EventManager = ({
     menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
     menuList: (base) => ({
       ...base,
-      '::-webkit-scrollbar': {
-        width: '2px',
-      },
     }),
   };
 
