@@ -90,7 +90,7 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
         const code = object.replaceAll('%%', '');
 
         if (code.includes('server') && !new RegExp('^globals.environmentVariables.server.[A-Za-z0-9]+$').test(code)) {
-          error = `${code} is invalid. Server variables can't be used like this`;
+          error = `${code} is invalid. Server variables can only be used inside non-RunJS queries.`;
           return [{}, error];
         }
 
