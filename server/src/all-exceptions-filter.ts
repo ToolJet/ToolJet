@@ -58,19 +58,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = 'Already Existed!';
         break;
       case PostgresErrorCode.CheckViolation:
-        message = 'Invalid data';
+        message = 'Validation Failed!';
         break;
       case PostgresErrorCode.ForeignKeyViolation:
-        message = 'Resource not found';
+        message = 'Foreign key validation error.';
         break;
       case PostgresErrorCode.NotNullViolation: {
         const column = (exception as QueryFailedError).driverError.column;
         message = `${column.replace(/_/g, ' ')} is empty`;
         break;
       }
-      default:
-        message = 'Something Went wrong';
-        break;
     }
 
     return {
