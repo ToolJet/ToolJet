@@ -43,7 +43,9 @@ export const LeftSidebarInspector = ({
 
     //*Sorted components and queries alphabetically
     const sortedComponents = Object.keys(jsontreeData['components'])
-      .sort()
+      .sort((a, b) => {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      })
       .reduce((accumulator, key) => {
         accumulator[key] = jsontreeData['components'][key];
 
@@ -51,7 +53,9 @@ export const LeftSidebarInspector = ({
       }, {});
 
     const sortedQueries = Object.keys(jsontreeData['queries'])
-      .sort()
+      .sort((a, b) => {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      })
       .reduce((accumulator, key) => {
         accumulator[key] = jsontreeData['queries'][key];
 
