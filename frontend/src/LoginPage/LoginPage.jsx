@@ -199,7 +199,7 @@ class LoginPage extends React.Component {
                         onChange={this.handleOnCheck}
                         data-cy="checkbox-input"
                       />
-                      <label className="form-check-label" htmlFor="check-input" data-cy="show-password-label">
+                      <label className="form-check-label" data-cy="show-password-label">
                         show password
                       </label>
                     </div>
