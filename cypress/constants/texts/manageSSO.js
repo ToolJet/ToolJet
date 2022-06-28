@@ -26,6 +26,8 @@ export const ssoText ={
   gitDisabledToast: "Disabled GitHub SSO",
   gitSignInText: "Sign in with Github",
   passwordTitle: "Password Login",
-  passwordEnabledToast: "Enabled Form login",
-  passwordDisabledToast: "Disabled Form login",
+  passwordEnabledToast: "Enabled Password login",
+  passwordDisabledToast: "Disabled Password login",
+  loginUrlLabel: "Login URL",
+  loginHelpText: "Use this URL to login directly to this workspace",
 };

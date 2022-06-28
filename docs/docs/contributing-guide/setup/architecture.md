@@ -1,6 +1,6 @@
 ---
-id: introduction
-title: Introduction
+id: architecture
+title: Architecture
 ---
 # Introduction
 
