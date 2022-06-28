@@ -30,11 +30,8 @@ export default class Athena implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const athenaClient = await this.getConnection(sourceOptions);
-    try {
-      await athenaClient.query('SHOW TABLES');
-    } catch (error) {
-      throw new Error(error);
-    }
+    await athenaClient.query('SHOW TABLES');
+
     return {
       status: 'ok',
     };
@@ -53,7 +50,6 @@ export default class Athena implements QueryService {
       db: sourceOptions.database,
       ...(sourceOptions?.output_location?.length > 0 && { s3: sourceOptions?.output_location }),
     };
-    console.log('config', athenaExpressConfig);
 
     const athenaExpress = new AthenaExpress(athenaExpressConfig);
     return athenaExpress;
