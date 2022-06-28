@@ -74,12 +74,11 @@ export const Container = ({
     '⌘+v, control+v',
     () => {
       if (isContainerFocused) {
-        addComponents(
-          appDefinition,
-          appDefinitionChanged,
-          focusedParentIdRef.current,
-          JSON.parse(localStorage.getItem('ToolJetMeta_widgetClipboard'))
-        );
+        navigator.clipboard
+          .readText()
+          .then((cliptext) =>
+            addComponents(appDefinition, appDefinitionChanged, focusedParentIdRef.current, JSON.parse(cliptext))
+          );
       }
     },
     [isContainerFocused, appDefinition, focusedParentIdRef]

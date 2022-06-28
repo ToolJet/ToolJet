@@ -892,7 +892,7 @@ export const cloneComponents = (_ref, updateAppDefinition, isCloning = true) => 
     addComponents(appDefinition, updateAppDefinition, undefined, newComponents, true);
     toast.success('Component cloned succesfully');
   } else {
-    localStorage.setItem('ToolJetMeta_widgetClipboard', JSON.stringify(newComponents));
+    navigator.clipboard.writeText(JSON.stringify(newComponents));
     toast.success('Component copied succesfully');
   }
   _ref.setState({ currentSidebarTab: 2 });
