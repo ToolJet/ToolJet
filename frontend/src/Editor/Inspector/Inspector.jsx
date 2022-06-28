@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
-import { Text } from './Components/Text';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
@@ -368,29 +367,17 @@ export const Inspector = ({
             {getAccordion(componentMeta.component)}
           </Tab>
           <Tab eventKey="styles" title="Styles">
-            <div className="">
-              {componentMeta.name === 'Text' ? (
-                <Text
-                  component={component}
-                  componentMeta={componentMeta}
-                  paramUpdated={paramUpdated}
-                  dataQueries={dataQueries}
-                  // style={componentMeta.styles}
-                  currentState={currentState}
-                  allComponents={allComponents}
-                />
-              ) : (
-                Object.keys(componentMeta.styles).map((style) =>
-                  renderElement(
-                    component,
-                    componentMeta,
-                    paramUpdated,
-                    dataQueries,
-                    style,
-                    'styles',
-                    currentState,
-                    allComponents
-                  )
+            <div className="p-3">
+              {Object.keys(componentMeta.styles).map((style) =>
+                renderElement(
+                  component,
+                  componentMeta,
+                  paramUpdated,
+                  dataQueries,
+                  style,
+                  'styles',
+                  currentState,
+                  allComponents
                 )
               )}
             </div>
