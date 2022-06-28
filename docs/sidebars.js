@@ -238,6 +238,7 @@ const sidebars = {
           type: 'category',
           label: 'Setup',
           items: [
+            'contributing-guide/setup/architecture',
             'contributing-guide/setup/macos',
             'contributing-guide/setup/docker',
             'contributing-guide/setup/ubuntu',
