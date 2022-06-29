@@ -270,7 +270,7 @@ export function validateEmail(email) {
   return emailRegex.test(email);
 }
 
-export async function executeMultilineJS(_ref, code, isPreview, confirmed = undefined, mode = '') {
+export async function executeMultilineJS(_ref, code, editorState, isPreview, confirmed = undefined, mode = '') {
   const { currentState } = _ref.state;
   let result = {},
     error = null;
@@ -280,7 +280,7 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
       const query = _ref.state.dataQueries.find((query) => query.name === queryName);
       if (_.isEmpty(query)) return;
       if (isPreview) {
-        return previewQuery(_ref, query, true);
+        return previewQuery(_ref, query, editorState, true);
       } else {
         const event = {
           actionId: 'run-query',
@@ -335,7 +335,7 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
         actionId: 'show-modal',
         modal,
       };
-      return executeAction(_ref, event, mode, {});
+      return executeAction(editorState, event, mode, {});
     },
     closeModal: function (modalName = '') {
       let modal = '';
@@ -349,9 +349,9 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
         actionId: 'close-modal',
         modal,
       };
-      return executeAction(_ref, event, mode, {});
+      return executeAction(editorState, event, mode, {});
     },
-    setLocalstorage: function (key = '', value = '') {
+    setLocalStorage: function (key = '', value = '') {
       const event = {
         actionId: 'set-localstorage-value',
         key,
@@ -359,14 +359,14 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
       };
       return executeAction(_ref, event, mode, {});
     },
-    copyToclipboard: function (contentToCopy = '') {
+    copyToClipboard: function (contentToCopy = '') {
       const event = {
         actionId: 'copy-to-clipboard',
         contentToCopy,
       };
       return executeAction(_ref, event, mode, {});
     },
-    gotoApp: function (slug = '', queryParams = []) {
+    goToApp: function (slug = '', queryParams = []) {
       const event = {
         actionId: 'go-to-app',
         slug,

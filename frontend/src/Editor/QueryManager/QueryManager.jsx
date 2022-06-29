@@ -58,7 +58,6 @@ let QueryManager = class QueryManager extends React.Component {
     this.setState(
       {
         appId: props.appId,
-        appDefinition: props.appDefinition,
         dataSources: props.dataSources,
         dataQueries: dataQueries,
         mode: props.mode,
@@ -473,7 +472,7 @@ let QueryManager = class QueryManager extends React.Component {
                     options: _options,
                     kind: selectedDataSource.kind,
                   };
-                  previewQuery(this, query)
+                  previewQuery(this, query, this.props.editorState)
                     .then(() => {
                       this.previewPanelRef.current.scrollIntoView();
                     })
