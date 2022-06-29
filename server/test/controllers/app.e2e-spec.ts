@@ -316,6 +316,119 @@ describe('Authentication', () => {
           .send({ email: 'amdin@tooljet.io', password: 'pwd' })
           .expect(401);
       });
+      it('throw 401 if invalid credentials, maximum retry limit reached error after 5 retries', async () => {
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        const invalidCredentialResp = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+
+        expect(invalidCredentialResp.statusCode).toBe(401);
+        expect(invalidCredentialResp.body.message).toBe('Invalid credentials');
+
+        const response = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+
+        expect(response.statusCode).toBe(401);
+        expect(response.body.message).toBe(
+          'Maximum password retry limit reached, please reset your password using forget password option'
+        );
+      });
+      it('throw 401 if invalid credentials, maximum retry limit reached error will not throw if DISABLE_PASSWORD_RETRY_LIMIT is set to true', async () => {
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'DISABLE_PASSWORD_RETRY_LIMIT':
+              return 'true';
+            default:
+              return process.env[key];
+          }
+        });
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        const response = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+
+        expect(response.statusCode).toBe(401);
+        expect(response.body.message).toBe('Invalid credentials');
+      });
+      it('throw 401 if invalid credentials, maximum retry limit reached error will not throw after the count configured in PASSWORD_RETRY_LIMIT', async () => {
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'PASSWORD_RETRY_LIMIT':
+              return '3';
+            default:
+              return process.env[key];
+          }
+        });
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        const invalidCredentialResp = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+
+        expect(invalidCredentialResp.statusCode).toBe(401);
+        expect(invalidCredentialResp.body.message).toBe('Invalid credentials');
+
+        const response = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+
+        expect(response.statusCode).toBe(401);
+        expect(response.body.message).toBe(
+          'Maximum password retry limit reached, please reset your password using forget password option'
+        );
+      });
       it('should throw 401 if form login is disabled', async () => {
         await ssoConfigsRepository.update({ organizationId: current_organization.id }, { enabled: false });
         await request(app.getHttpServer())
@@ -332,7 +445,7 @@ describe('Authentication', () => {
         expect(response.body.organization_id).not.toBe(current_organization.id);
         expect(response.body.organization).toBe('Untitled workspace');
       });
-      it('should be able to switch between organizations with admin privilage', async () => {
+      it('should be able to switch between organizations with admin privilege', async () => {
         const { organization: invited_organization } = await createUser(
           app,
           { organizationName: 'New Organization' },
@@ -396,7 +509,7 @@ describe('Authentication', () => {
         await current_user.reload();
         expect(current_user.defaultOrganizationId).toBe(invited_organization.id);
       });
-      it('should be able to switch between organizations with user privilage', async () => {
+      it('should be able to switch between organizations with user privilege', async () => {
         const { organization: invited_organization } = await createUser(
           app,
           { groups: ['all_users'], organizationName: 'New Organization' },
@@ -462,7 +575,7 @@ describe('Authentication', () => {
     });
   });
 
-  describe('POST /api/forgot_password', () => {
+  describe('POST /api/forgot-password', () => {
     beforeEach(async () => {
       await createUser(app, {
         email: 'admin@tooljet.io',
@@ -471,7 +584,7 @@ describe('Authentication', () => {
       });
     });
     it('should return error if required params are not present', async () => {
-      const response = await request(app.getHttpServer()).post('/api/forgot_password');
+      const response = await request(app.getHttpServer()).post('/api/forgot-password');
 
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toStrictEqual(['email should not be empty', 'email must be an email']);
@@ -482,7 +595,7 @@ describe('Authentication', () => {
       emailServiceMock.mockImplementation();
 
       const response = await request(app.getHttpServer())
-        .post('/api/forgot_password')
+        .post('/api/forgot-password')
         .send({ email: 'admin@tooljet.io' });
 
       expect(response.statusCode).toBe(201);
@@ -495,7 +608,7 @@ describe('Authentication', () => {
     });
   });
 
-  describe('POST /api/reset_password', () => {
+  describe('POST /api/reset-password', () => {
     beforeEach(async () => {
       await createUser(app, {
         email: 'admin@tooljet.io',
@@ -504,7 +617,7 @@ describe('Authentication', () => {
       });
     });
     it('should return error if required params are not present', async () => {
-      const response = await request(app.getHttpServer()).post('/api/reset_password');
+      const response = await request(app.getHttpServer()).post('/api/reset-password');
 
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toStrictEqual([
@@ -523,7 +636,7 @@ describe('Authentication', () => {
       user.forgotPasswordToken = 'token';
       await user.save();
 
-      const response = await request(app.getHttpServer()).post('/api/reset_password').send({
+      const response = await request(app.getHttpServer()).post('/api/reset-password').send({
         password: 'new_password',
         token: 'token',
       });
@@ -827,7 +940,7 @@ describe('Authentication', () => {
   });
 
   describe('POST /api/accept-invite', () => {
-    describe('Multi-Worlspace Enabled', () => {
+    describe('Multi-Workspace Enabled', () => {
       beforeEach(() => {
         jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
           switch (key) {
@@ -876,7 +989,7 @@ describe('Authentication', () => {
       });
     });
 
-    describe('Multi-Worlspace Disabled', () => {
+    describe('Multi-Workspace Disabled', () => {
       beforeEach(() => {
         jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
           switch (key) {
