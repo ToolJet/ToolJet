@@ -517,12 +517,12 @@ export const EventManager = ({
                 </div>
               </>
             )}
-            {/* {event.actionId === 'control-component' && (
+            {event.actionId === 'control-component' && (
               <>
                 <div className="row">
                   <div className="col-3 p-1">Component</div>
                   <div className="col-9">
-                    <SelectSearch
+                    <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={getComponentOptionsOfComponentsWithActions()}
                       value={event?.componentId}
@@ -531,15 +531,16 @@ export const EventManager = ({
                         handlerChanged(index, 'componentSpecificActionHandle', undefined);
                         handlerChanged(index, 'componentId', value);
                       }}
-                      filterOptions={fuzzySearch}
                       placeholder="Select.."
+                      styles={styles}
+                      useMenuPortal={false}
                     />
                   </div>
                 </div>
                 <div className="row mt-2">
                   <div className="col-3 p-1">Action</div>
                   <div className="col-9">
-                    <SelectSearch
+                    <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={getComponentActionOptions(event?.componentId)}
                       value={event?.componentSpecificActionHandle}
@@ -552,8 +553,9 @@ export const EventManager = ({
                           getComponentActionDefaultParams(event?.componentId, value)
                         );
                       }}
-                      filterOptions={fuzzySearch}
                       placeholder="Select.."
+                      styles={styles}
+                      useMenuPortal={false}
                     />
                   </div>
                 </div>
@@ -587,7 +589,7 @@ export const EventManager = ({
                     </div>
                   ))}
               </>
-            )} */}
+            )}
           </div>
         </Popover.Content>
       </Popover>
