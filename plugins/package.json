@@ -21,6 +21,7 @@
   "dependencies": {
     "@tooljet-plugins/airtable": "file:packages/airtable",
     "@tooljet-plugins/appwrite": "file:packages/appwrite",
+    "@tooljet-plugins/athena": "file:packages/athena",
     "@tooljet-plugins/baserow": "file:packages/baserow",
     "@tooljet-plugins/bigquery": "file:packages/bigquery",
     "@tooljet-plugins/common": "file:packages/common",

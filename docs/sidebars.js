@@ -63,6 +63,7 @@ const sidebars = {
         'data-sources/airtable',
         'data-sources/s3',
         'data-sources/appwrite',
+        'data-sources/athena',
         'data-sources/baserow',
         'data-sources/bigquery',
         'data-sources/firestore',
