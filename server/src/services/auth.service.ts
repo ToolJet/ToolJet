@@ -341,6 +341,12 @@ export class AuthService {
           })
         );
       }
+
+      this.usersService
+        .updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId })
+        .catch((error) => {
+          console.error('Error while setting default organization', error);
+        });
     }
   }
 
@@ -384,6 +390,12 @@ export class AuthService {
           passwordRetryCount: 0,
         })
       );
+    } else {
+      this.usersService
+        .updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId })
+        .catch((error) => {
+          console.error('Error while setting default organization', error);
+        });
     }
 
     await this.organizationUsersRepository.save(
