@@ -141,7 +141,6 @@ function showModal(_ref, modal, show) {
   }
 
   const modalMeta = _ref.state.appDefinition.components[modalId];
-  console.log('meta', modalMeta);
   const newState = {
     currentState: {
       ..._ref.state.currentState,
