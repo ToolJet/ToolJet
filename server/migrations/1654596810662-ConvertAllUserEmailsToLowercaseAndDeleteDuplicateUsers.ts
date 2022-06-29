@@ -22,6 +22,7 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
     const usersQuery = entityManager
       .getRepository(User)
       .createQueryBuilder('users')
+      .select(['users.id', 'users.email', 'users.invitationToken'])
       .leftJoinAndSelect('users.organizationUsers', 'organizationUsers')
       .leftJoinAndSelect('users.apps', 'apps')
       .leftJoinAndSelect('users.groupPermissions', 'groupPermissions')
