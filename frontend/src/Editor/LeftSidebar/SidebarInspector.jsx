@@ -7,6 +7,8 @@ import _ from 'lodash';
 import { allSvgs } from '@tooljet/plugins/client';
 import RunjsIcon from '../Icons/runjs.svg';
 import { toast } from 'react-hot-toast';
+import { Rnd } from 'react-rnd';
+import { ReactPortal } from '@/_components/Portal/ReactPortal';
 
 export const LeftSidebarInspector = ({
   darkMode,
@@ -16,7 +18,7 @@ export const LeftSidebarInspector = ({
   removeComponent,
   runQuery,
 }) => {
-  const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
+  const [open, trigger, content, popoverPinned, updatePopoverPinnedState, setOpen] = usePinnedPopover(false);
 
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const queryDefinitions = appDefinition['queries'];
@@ -123,8 +125,28 @@ export const LeftSidebarInspector = ({
     },
   ];
 
+  const clsName = open || popoverPinned ? 'show' : 'hide';
+
+  //funcyion to close portal when user clicks outside of it
+
+  const wrapperRef = React.useRef(null);
+
+  //function to remove portal
+  const removePortal = () => {
+    const portal = document.getElementsByClassName('portal-container inspector')[0];
+    portal.remove();
+    setOpen(false);
+    setVisible(false);
+  };
+
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    if (open) {
+      setVisible(true);
+    }
+  }, [open]);
   return (
-    <>
+    <div ref={wrapperRef}>
       <LeftSidebarItem
         tip="Inspector"
         {...trigger}
@@ -132,36 +154,51 @@ export const LeftSidebarInspector = ({
         className={`left-sidebar-item left-sidebar-layout ${open && 'active'} left-sidebar-inspector`}
         text={'Inspector'}
       />
-      <div
-        {...content}
-        className={`card popover ${open || popoverPinned ? 'show' : 'hide'}`}
-        style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}
-      >
-        <SidebarPinnedButton
-          darkMode={darkMode}
-          component={'Inspector'}
-          state={popoverPinned}
-          updateState={updatePopoverPinnedState}
-        />
-        <div style={{ marginTop: '1rem' }} className="card-body">
-          <JSONTreeViewer
-            data={memoizedJSONData}
-            useIcons={true}
-            iconsList={iconsList}
-            useIndentedBlock={true}
-            enableCopyToClipboard={true}
-            useActions={true}
-            actionsList={callbackActions}
-            currentState={appDefinition}
-            actionIdentifier="id"
-            expandWithLabels={false}
-            selectedComponent={selectedComponent}
-            treeType="inspector"
-            parentPopoverState={popoverPinned}
-            updateParentState={updatePinnedParentState}
-          />
-        </div>
-      </div>
-    </>
+      {visible && (
+        <ReactPortal className={'inspector'}>
+          <Rnd
+            default={{
+              x: 40,
+              y: 25,
+            }}
+            style={{
+              resize: 'horizontal',
+              maxWidth: '60%',
+              minWidth: '312px',
+              display: `${clsName === 'show' ? 'block' : 'none'}`,
+            }}
+            bounds="body"
+            minWidth={'500px'}
+            className={`card popover `}
+          >
+            <SidebarPinnedButton
+              darkMode={darkMode}
+              component={'Inspector'}
+              state={popoverPinned}
+              updateState={updatePopoverPinnedState}
+            />
+            <button onClick={() => removePortal()}>Show</button>
+            <div style={{ marginTop: '1rem' }} className="card-body">
+              <JSONTreeViewer
+                data={memoizedJSONData}
+                useIcons={true}
+                iconsList={iconsList}
+                useIndentedBlock={true}
+                enableCopyToClipboard={true}
+                useActions={true}
+                actionsList={callbackActions}
+                currentState={appDefinition}
+                actionIdentifier="id"
+                expandWithLabels={false}
+                selectedComponent={selectedComponent}
+                treeType="inspector"
+                parentPopoverState={popoverPinned}
+                updateParentState={updatePinnedParentState}
+              />
+            </div>
+          </Rnd>
+        </ReactPortal>
+      )}
+    </div>
   );
 };
