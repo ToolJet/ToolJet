@@ -58,6 +58,7 @@ let QueryManager = class QueryManager extends React.Component {
     this.setState(
       {
         appId: props.appId,
+        appDefinition: props.appDefinition,
         dataSources: props.dataSources,
         dataQueries: dataQueries,
         mode: props.mode,

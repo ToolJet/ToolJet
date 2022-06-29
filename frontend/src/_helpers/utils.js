@@ -324,34 +324,30 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
       return executeAction(_ref, event, mode, {});
     },
     showModal: function (modalName = '') {
-      console.log('xxx', _ref.state?.currentState?.components);
-      let modal = {};
-      // const modal = Object.entri(_ref.state?.currentState?.components).find((item) => );
-      for (const [key, value] of Object.entries(_ref.state?.currentState?.components)) {
-        if (key == modalName) modal = value;
+      let modal = '';
+      for (const [key, value] of Object.entries(_ref.state.appDefinition.components)) {
+        if (value.component.name === modalName) {
+          modal = key;
+        }
       }
-      console.log('xxx', modal);
 
       const event = {
         actionId: 'show-modal',
-        modal: modal,
+        modal,
       };
       return executeAction(_ref, event, mode, {});
     },
     closeModal: function (modalName = '') {
-      console.log('xxx', _ref.state?.currentState?.components);
-      const modal = (_ref.state?.currentState?.components).map((item) => console.log('xxxdd', item));
-      console.log('xxx2', modal);
+      let modal = '';
+      for (const [key, value] of Object.entries(_ref.state.appDefinition.components)) {
+        if (value.component.name === modalName) {
+          modal = key;
+        }
+      }
+
       const event = {
         actionId: 'close-modal',
-        modal: modalName,
-      };
-      return executeAction(_ref, event, mode, {});
-    },
-    openWebpage: function (url = '') {
-      const event = {
-        actionId: 'open-webpage',
-        url,
+        modal,
       };
       return executeAction(_ref, event, mode, {});
     },
@@ -370,19 +366,19 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
       };
       return executeAction(_ref, event, mode, {});
     },
-    gotoApp: function (contentToCopy = '') {
+    gotoApp: function (slug = '', queryParams = [{}]) {
       const event = {
-        actionId: 'copy-to-clipboard',
-        contentToCopy,
+        actionId: 'go-to-app',
+        slug,
+        queryParams,
       };
       return executeAction(_ref, event, mode, {});
     },
-    generateFile: function (fileType = '', fileName = '', data = '') {
+    generateFile: function (fileName = '', data = '') {
       const event = {
-        actionId: 'copy-to-clipboard',
-        data,
+        actionId: 'generate-file',
         fileName,
-        fileType,
+        data,
       };
       return executeAction(_ref, event, mode, {});
     },
