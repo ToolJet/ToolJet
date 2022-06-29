@@ -1893,6 +1893,16 @@ tr:focus {
   box-shadow: none;
 }
 
+.show-password-field {
+  width: fit-content;
+  .form-check-input {
+    cursor: pointer;
+  }
+  .show-password-label {
+    cursor: pointer;
+  }
+}
+
 // .jet-container {
 //   // width: 100%;
 // }
