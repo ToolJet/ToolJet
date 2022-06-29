@@ -71,7 +71,7 @@ You can deploy ToolJet on Heroku for free using the one-click-deployment button 
   <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main">
      <img src="https://www.herokucdn.com/deploy/button.svg" />
   </a>
-  <a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/ToolJet/ToolJet/tree/chore/one-click-digitalocean-deploy">
+  <a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/ToolJet/ToolJet/tree/main">
      <img src="https://www.deploytodo.com/do-btn-blue.svg" alt="Deploy to DO" height=32>
   </a>
 </P>
