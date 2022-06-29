@@ -105,7 +105,7 @@ module.exports = {
     },
     algolia: {
       appId: 'O8HQRLI0WA',
-      apiKey: process.env.ALGOLIA_API_KEY, // Public API key: it is safe to commit it
+      apiKey: process.env.ALGOLIA_API_KEY || 'development', // Public API key: it is safe to commit it
       indexName: 'tooljet',
       contextualSearch: true,
       externalUrlRegex: 'external\\.com|domain\\.com',
