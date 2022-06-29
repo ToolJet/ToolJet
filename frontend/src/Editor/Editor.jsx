@@ -1579,6 +1579,7 @@ class Editor extends React.Component {
                       switchSidebarTab={this.switchSidebarTab}
                       apps={apps}
                       darkMode={this.props.darkMode}
+                      setSelectedComponent={this.setSelectedComponent}
                     ></Inspector>
                   ) : (
                     <center className="mt-5 p-2">Please select a component to inspect</center>

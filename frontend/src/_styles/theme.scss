@@ -1839,8 +1839,8 @@ button {
 }
 
 .jet-data-table:hover {
-  overflow-x: overlay;
-  overflow-y: overlay;
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
 .jet-data-table {
@@ -1891,6 +1891,16 @@ th:focus,
 tr:focus {
   outline: none !important;
   box-shadow: none;
+}
+
+.show-password-field {
+  width: fit-content;
+  .form-check-input {
+    cursor: pointer;
+  }
+  .show-password-label {
+    cursor: pointer;
+  }
 }
 
 // .jet-container {
@@ -3937,6 +3947,28 @@ input[type="text"] {
     @include theme-border($light-theme: false, $outline: true);
   }
 }
+// close icon in inpector
+[data-rb-event-key="close-inpector"]
+{
+  position: absolute;
+  right: -80px;
+  background-color: #232e3c !important;
+  width: 10% !important;
+}
+[data-rb-event-key="close-inpector-light"]
+{
+  position: absolute;
+  right: -80px;
+  background-color: #fff !important;
+  width: 10% !important;
+}
+.inspector-close-icon-wrapper{
+  border-left: 1px solid #e7eaef;
+  svg{
+    margin-left: 10px;
+  }
+
+}
 .tabs-inspector {
   position: sticky;
   top: 0;
@@ -4957,7 +4989,6 @@ div#driver-page-overlay {
 
 // Left Menu
 .left-menu {
-  background-color: #e8ebf4;
   padding: 1rem 0.5rem;
   border-radius: 5px;
   ul {
@@ -4979,7 +5010,8 @@ div#driver-page-overlay {
       color: $white;
     }
     li:not(.active):hover {
-      background-color: #d2daf0;
+      background-color: $primary;
+      color: $white;
     }
   }
 }
@@ -5009,6 +5041,12 @@ div#driver-page-overlay {
     border: 1px solid #e1e1e1;
   }
 }
+
+.theme-dark .help-text div {
+  background-color: $dark-background;
+  border: 1px solid $dark-background;
+}
+
 .org-invite-or {
   padding: 1rem 0rem;
   h2 {

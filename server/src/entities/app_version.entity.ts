@@ -8,12 +8,14 @@ import {
   JoinColumn,
   BaseEntity,
   OneToMany,
+  Unique,
 } from 'typeorm';
 import { App } from './app.entity';
 import { DataQuery } from './data_query.entity';
 import { DataSource } from './data_source.entity';
 
 @Entity({ name: 'app_versions' })
+@Unique(['name', 'appId'])
 export class AppVersion extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

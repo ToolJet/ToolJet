@@ -24,7 +24,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 ---
 
-### Visual application builder 
+### Visual application builder
 <p align="center">
   <kbd>
     <img src="https://user-images.githubusercontent.com/7828962/152667206-aaa0ae52-1260-48ce-9d0d-0f2e478f9fd1.png"/>
@@ -47,7 +47,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 - *Visual app builder:* 35+ built-in responsive widgets such as Tables, Charts, Lists, Forms, Progressbars, and more.
 - *20+ data sources:* connect to databases, cloud storages and APIs.
-- *Desktop & mobile*: ;layout widths can be customised to support different screens. 
+- *Desktop & mobile*: ;layout widths can be customised to support different screens.
 - *Self-host:* (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
 - *Collaborate:* add comments anywhere on the canvas and tag your team members.
 - *Extend with plugins:*: use our [commandline tool](https://www.npmjs.com/package/@tooljet/cli) to easily bootstrap new connectors.
@@ -56,19 +56,24 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 - *Granular access control* on organization-level and app-level.
 - *low-code:* write JS code almost anywhere in the builder. For example, the color property of text can be set to `status === 'success' ? 'green' : 'red'`
 - *no-code query editors* for all supported data sources.
-- *Join and transform data:* transform query results using just JavaScript code. 
+- *Join and transform data:* transform query results using just JavaScript code.
 - *Secure:* All the credentials are securely encrypted using `aes-256-gcm`.
 - *Doesn't store data:* ToolJet acts only as a proxy and doesn't store any data.
 - *SSO:* Supports multiple SSO providers
 
 <hr>
 
-## Quickstart 
+## Quickstart
 The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/setup/architecture).
 
 You can deploy ToolJet on Heroku for free using the one-click-deployment button below.
 <p align="center">
-<a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main"><img src="https://www.herokucdn.com/deploy/button.svg" /></a>
+  <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main">
+     <img src="https://www.herokucdn.com/deploy/button.svg" />
+  </a>
+  <a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/ToolJet/ToolJet/tree/main">
+     <img src="https://www.deploytodo.com/do-btn-blue.svg" alt="Deploy to DO" height=32>
+  </a>
 </P>
 
 ### Try using Docker
@@ -83,7 +88,7 @@ docker run \
   tooljet/try:latest
 ```
 
-## Tutorials and examples 
+## Tutorials and examples
 
 [GitHub contributor leaderboard using ToolJet](https://blog.tooljet.io/building-a-github-contributor-leaderboard-using-tooljet/)<br>
 [Cryptocurrency dashboard using ToolJet](https://blog.tooljet.com/how-to-build-a-cryptocurrency-dashboard-in-10-minutes/)<br>
