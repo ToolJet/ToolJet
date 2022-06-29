@@ -41,22 +41,27 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
   let error;
   try {
     const evalFunction = Function(
-      ['variables', 'components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects), reservedKeyword],
+      [
+        'variables',
+        'components',
+        'queries',
+        'globals',
+        'client',
+        'server',
+        'moment',
+        '_',
+        ...Object.keys(customObjects),
+        reservedKeyword,
+      ],
       `return ${code}`
     );
-    const globals = isJsCode
-      ? {
-          ...state.globals,
-          environmentVariables: undefined,
-        }
-      : {
-          environmentVariables: state.globals.environmentVariables,
-        };
     result = evalFunction(
-      state.variables,
-      state.components,
-      state.queries,
-      globals,
+      isJsCode ? state.variables : undefined,
+      isJsCode ? state.components : undefined,
+      isJsCode ? state.queries : undefined,
+      isJsCode ? state.globals : undefined,
+      isJsCode ? undefined : state.client,
+      isJsCode ? undefined : state.server,
       moment,
       _,
       ...Object.values(customObjects),
@@ -89,7 +94,7 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
       } else if (object.startsWith('%%') && object.endsWith('%%')) {
         const code = object.replaceAll('%%', '');
 
-        if (code.includes('server') && !new RegExp('^globals.environmentVariables.server.[A-Za-z0-9]+$').test(code)) {
+        if (code.includes('server.') && !new RegExp('^server.[A-Za-z0-9]+$').test(code)) {
           error = `${code} is invalid. Server variables can't be used like this`;
           return [{}, error];
         }

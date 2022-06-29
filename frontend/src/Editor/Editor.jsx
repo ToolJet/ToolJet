@@ -126,10 +126,11 @@ class Editor extends React.Component {
           currentUser: userVars,
           theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
-          environmentVariables: {},
         },
         errors: {},
         variables: {},
+        client: {},
+        server: {},
       },
       apps: [],
       dataQueriesDefaultText: "You haven't created queries yet.",
@@ -187,7 +188,7 @@ class Editor extends React.Component {
       const server_variables = {};
       data.variables.map((variable) => {
         if (variable.variable_type === 'server') {
-          server_variables[variable.variable_name] = 'SecureValue';
+          server_variables[variable.variable_name] = 'HiddenEnvironmentVariable';
         } else {
           client_variables[variable.variable_name] = variable.value;
         }
@@ -195,13 +196,8 @@ class Editor extends React.Component {
       this.setState({
         currentState: {
           ...this.state.currentState,
-          globals: {
-            ...this.state.currentState.globals,
-            environmentVariables: {
-              server: server_variables,
-              client: client_variables,
-            },
-          },
+          server: server_variables,
+          client: client_variables,
         },
       });
     });

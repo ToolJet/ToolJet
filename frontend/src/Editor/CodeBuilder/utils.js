@@ -8,6 +8,9 @@ export function getSuggestionKeys(currentState) {
       if (key === 'variables') {
         return suggestions.push(`${key}.${key2}`);
       }
+      if (key === 'client' || key === 'server') {
+        return suggestions.push(`${key}.${key2}`);
+      }
       _.keys(currentState[key][key2]).forEach((key3) => {
         suggestions.push(`${key}.${key2}.${key3}`);
       });
@@ -24,9 +27,9 @@ export function generateHints(word, suggestions, isEnvironmentVariable) {
   const fuse = new Fuse(suggestions);
   const results = fuse.search(word).map((result) => result.item);
   return results.filter((result) => {
-    if (isEnvironmentVariable && result.includes('globals.environmentVariables')) {
+    if (isEnvironmentVariable && new RegExp('^server|client.[A-Za-z0-9]+$').test(result)) {
       return result;
-    } else if (!isEnvironmentVariable && !result.includes('globals.environmentVariables')) {
+    } else if (!isEnvironmentVariable && !new RegExp('^server|client.[A-Za-z0-9]+$').test(result)) {
       return result;
     }
   });
