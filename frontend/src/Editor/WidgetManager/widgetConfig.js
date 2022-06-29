@@ -786,7 +786,6 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      defaultValue: { type: 'code', displayName: 'Default value' },
       text: { type: 'code', displayName: 'Text' },
       loadingState: { type: 'toggle', displayName: 'Show loading state' },
     },
@@ -1307,6 +1306,7 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+      instructionText: { type: 'code', displayName: 'Instruction Text' },
       enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
       enablePicker: { type: 'code', displayName: 'Use File Picker' },
       enableMultiple: { type: 'code', displayName: 'Pick multiple files' },
@@ -1340,6 +1340,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
+        instructionText: { value: 'Drag and Drop some files here, or click to select files' },
         enableDropzone: { value: '{{true}}' },
         enablePicker: { value: '{{true}}' },
         maxFileCount: { value: '{{2}}' },
@@ -1570,7 +1571,7 @@ export const widgets = [
       defaultTab: { type: 'code', displayName: 'Default tab' },
       hideTabs: { type: 'toggle', displayName: 'Hide Tabs' },
     },
-    events: {},
+    events: { onTabSwitch: { displayName: 'On tab switch' } },
     styles: {
       highlightColor: { type: 'color', displayName: 'Highlight Color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
@@ -1695,6 +1696,7 @@ export const widgets = [
       backgroundColor: { type: 'color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
+      borderRadius: { type: 'number', displayName: 'Border radius' },
     },
     exposedVariables: {
       data: [{}],
@@ -1719,6 +1721,7 @@ export const widgets = [
         backgroundColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -2112,6 +2115,44 @@ export const widgets = [
     },
   },
   {
+    name: 'Html',
+    displayName: 'HTML Viewer',
+    description: 'HTML Viewer',
+    component: 'Html',
+    defaultSize: {
+      width: 10,
+      height: 310,
+    },
+    properties: {
+      rawHtml: { type: 'code', displayName: 'Raw HTML' },
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        rawHtml: {
+          value: `<body><main><section class="hero" style="height:306px;display: flex;
+          justify-content: center;padding:0 1px;align-items: center;text-align:center">You can build your custom HTML-CSS template here</section></main></body>`,
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
     name: 'VerticalDivider',
     displayName: 'Vertical Divider',
     description: 'Vertical Separator between components',
@@ -2310,6 +2351,179 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         },
         pageControls: {
           value: `{{true}}`,
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+
+  {
+    name: 'Steps',
+    displayName: 'Steps',
+    description: 'Steps',
+    component: 'Steps',
+    properties: {
+      steps: { type: 'code', displayName: 'Steps' },
+      currentStep: { type: 'code', displayName: 'Current step' },
+      stepsSelectable: { type: 'toggle', displayName: 'Steps selectable' },
+    },
+    defaultSize: {
+      width: 22,
+      height: 38,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {
+      onSelect: { displayName: 'On select' },
+    },
+    styles: {
+      color: {
+        type: 'color',
+        displayName: 'Color',
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text color',
+      },
+      theme: {
+        type: 'select',
+        displayName: 'Theme',
+        options: [
+          { name: 'titles', value: 'titles' },
+          { name: 'numbers', value: 'numbers' },
+          { name: 'plain', value: 'plain' },
+        ],
+      },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      currentStepId: '3',
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        steps: {
+          value: `{{ [{ name: 'step 1', tooltip: 'some tooltip', id: 1},{ name: 'step 2', tooltip: 'some tooltip', id: 2},{ name: 'step 3', tooltip: 'some tooltip', id: 3},{ name: 'step 4', tooltip: 'some tooltip', id: 4},{ name: 'step 5', tooltip: 'some tooltip', id: 5}]}}`,
+        },
+        currentStep: { value: '{{3}}' },
+        stepsSelectable: { value: true },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        theme: { value: 'titles' },
+        color: { value: '#4d72fa' },
+        textColor: { value: '#3e525b' },
+      },
+    },
+  },
+  {
+    name: 'KanbanBoard',
+    displayName: 'Kanban Board',
+    description: 'Kanban Board',
+    component: 'KanbanBoard',
+    defaultSize: {
+      width: 40,
+      height: 490,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      columns: { type: 'code', displayName: 'Columns' },
+      cardData: { type: 'code', displayName: 'Card Data' },
+      enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
+    },
+    events: {
+      onCardAdded: { displayName: 'Card added' },
+      onCardRemoved: { displayName: 'Card removed' },
+      onCardMoved: { displayName: 'Card moved' },
+      onCardSelected: { displayName: 'Card selected' },
+      onCardUpdated: { displayName: 'Card updated' },
+    },
+    styles: {
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      width: { type: 'number', displayName: 'Width' },
+      minWidth: { type: 'number', displayName: 'Min Width' },
+      accentColor: { type: 'color', displayName: 'Accent color' },
+    },
+    exposedVariables: {
+      columns: {},
+      lastAddedCard: {},
+      lastRemovedCard: {},
+      lastCardMovement: {},
+      lastUpdatedCard: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        columns: {
+          value: '{{[{ "id": "1", "title": "to do" },{ "id": "2", "title": "in progress" }]}}',
+        },
+        cardData: {
+          value:
+            '{{[{ id: "01", title: "one", columnId: "1" },{ id: "02", title: "two", columnId: "1" },{ id: "03", title: "three", columnId: "2" }]}}',
+        },
+        enableAddCard: {
+          value: `{{true}}`,
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+        width: { value: '{{400}}' },
+        minWidth: { value: '{{200}}' },
+        textColor: { value: '#4d72fa' },
+      },
+    },
+  },
+  {
+    name: 'ColorPicker',
+    displayName: 'Color Picker',
+    description: 'Color Picker Pallete',
+    component: 'ColorPicker',
+    properties: {
+      defaultColor: { type: 'color', displayName: 'Default Color' },
+    },
+    defaultSize: {
+      width: 9,
+      height: 40,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      selectedColorHex: '#000000',
+      selectedColorRGB: 'rgb(0,0,0)',
+      selectedColorRGBA: 'rgba(0, 0, 0, 1)',
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        defaultColor: {
+          value: '#000000',
         },
       },
       events: [],

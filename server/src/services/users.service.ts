@@ -31,12 +31,13 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  async findByEmail(email: string, organisationId?: string): Promise<User> {
+  async findByEmail(email: string, organisationId?: string, status?: string | Array<string>): Promise<User> {
     if (!organisationId) {
       return this.usersRepository.findOne({
         where: { email },
       });
     } else {
+      const statusList = status ? (typeof status === 'object' ? status : [status]) : ['active', 'invited', 'archived'];
       return await createQueryBuilder(User, 'users')
         .innerJoinAndSelect(
           'users.organizationUsers',
@@ -44,7 +45,9 @@ export class UsersService {
           'organization_users.organizationId = :organisationId',
           { organisationId }
         )
-        .where('organization_users.status = :active', { active: 'active' })
+        .where('organization_users.status IN(:...statusList)', {
+          statusList,
+        })
         .andWhere('users.email = :email', { email })
         .getOne();
     }
@@ -115,11 +118,6 @@ export class UsersService {
     });
   }
 
-  async status(user: User) {
-    const orgUser = await this.organizationUsersRepository.findOne({ where: { user } });
-    return orgUser.status;
-  }
-
   async findOrCreateByEmail(userParams: any, organizationId: string): Promise<{ user: User; newUserCreated: boolean }> {
     let user: User;
     let newUserCreated = false;
@@ -147,7 +145,7 @@ export class UsersService {
 
     const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
 
-    const updateableParams = {
+    const updatableParams = {
       forgotPasswordToken,
       firstName,
       lastName,
@@ -155,16 +153,14 @@ export class UsersService {
     };
 
     // removing keys with undefined values
-    cleanObject(updateableParams);
+    cleanObject(updatableParams);
 
     let user: User;
 
     const performUpdateInTransaction = async (manager) => {
-      await manager.update(User, userId, { ...updateableParams });
+      await manager.update(User, userId, updatableParams);
       user = await manager.findOne(User, { where: { id: userId } });
-
       await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups, organizationId);
-
       await this.addUserGroupPermissions(manager, user, addGroups, organizationId);
     };
 
@@ -177,6 +173,10 @@ export class UsersService {
     }
 
     return user;
+  }
+
+  async updateUser(userId, updatableParams) {
+    await this.usersRepository.update(userId, updatableParams);
   }
 
   async addUserGroupPermissions(manager: EntityManager, user: User, addGroups: string[], organizationId?: string) {
@@ -312,6 +312,12 @@ export class UsersService {
     switch (action) {
       case 'create':
         permissionGrant = this.canAnyGroupPerformAction('folderCreate', await this.groupPermissions(user));
+        break;
+      case 'update':
+        permissionGrant = this.canAnyGroupPerformAction('folderUpdate', await this.groupPermissions(user));
+        break;
+      case 'delete':
+        permissionGrant = this.canAnyGroupPerformAction('folderDelete', await this.groupPermissions(user));
         break;
       default:
         permissionGrant = false;

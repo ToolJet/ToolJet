@@ -16,9 +16,8 @@ const sidebars = {
       label: 'Setup',
       link: {type: 'doc', id: 'setup/index'},
       items: [
-        'setup/introduction',
-        'setup/docker',
         'setup/docker-local',
+        'setup/docker',
         'setup/heroku',
         'setup/ec2',
         'setup/kubernetes',
@@ -115,6 +114,7 @@ const sidebars = {
         'widgets/file-picker',
         'widgets/iframe',
         'widgets/image',
+        'widgets/kanban',
         'widgets/listview',
         'widgets/map',
         'widgets/modal',
@@ -129,6 +129,7 @@ const sidebars = {
         'widgets/spinner',
         'widgets/star',
         'widgets/statistics',
+        'widgets/steps',
         'widgets/table',
         'widgets/tabs',
         'widgets/tags',
@@ -167,6 +168,7 @@ const sidebars = {
       },
       items: [
         'how-to/bulk-update-multiple-rows',
+        'how-to/access-cellvalue-rowdata',
         'how-to/oauth2-authorization',
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
@@ -191,6 +193,7 @@ const sidebars = {
       },
       collapsed: true,
       items: [
+        'user-authentication/user-lifecycle',
         'user-authentication/general-settings',
         'user-authentication/password-login',
         {
@@ -199,6 +202,22 @@ const sidebars = {
           items: [
             'user-authentication/sso/github',
             'user-authentication/sso/google',
+             {
+          type: 'category',
+          label: 'OpenId Connect',
+          link: {
+            type: 'generated-index',
+            title: 'OpenId Connect',
+            description:" ",
+            keywords: ['okta','openid','azureAD'],
+          },
+          collapsed: false,
+          items: [
+            'user-authentication/sso/setup',
+            'user-authentication/sso/okta',
+            'user-authentication/sso/azuread',
+          ],
+        }
           ],
         },
       ],
@@ -215,6 +234,7 @@ const sidebars = {
       },
       collapsed: false,
       items: [
+        'contributing-guide/setup/architecture',
         {
           type: 'category',
           label: 'Setup',
@@ -230,6 +250,13 @@ const sidebars = {
           items: [
             'contributing-guide/tutorials/creating-widget',
             'contributing-guide/tutorials/creating-a-plugin',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Troubleshooting',
+          items: [
+            'contributing-guide/troubleshooting/eslint',
           ],
         },
         'contributing-guide/code-of-conduct',

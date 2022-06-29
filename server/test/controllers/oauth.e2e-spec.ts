@@ -165,6 +165,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -235,6 +237,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -295,6 +299,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -372,9 +378,92 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
+        });
+        it('should return login info when the user exist but invited status', async () => {
+          const { orgUser } = await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'userExist',
+            email: 'anotherUser1@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+            status: 'invited',
+          });
+          const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+          googleVerifyMock.mockImplementation(() => ({
+            getPayload: () => ({
+              sub: 'someSSOId',
+              email: 'anotherUser1@tooljet.io',
+              name: 'SSO User',
+              hd: 'tooljet.io',
+            }),
+          }));
+
+          const response = await request(app.getHttpServer())
+            .post('/api/oauth/sign-in/' + sso_configs.id)
+            .send({ token });
+
+          expect(googleVerifyMock).toHaveBeenCalledWith({
+            idToken: token,
+            audience: sso_configs.configs.clientId,
+          });
+
+          expect(response.statusCode).toBe(201);
+          expect(Object.keys(response.body).sort()).toEqual(
+            [
+              'id',
+              'email',
+              'first_name',
+              'last_name',
+              'auth_token',
+              'admin',
+              'organization_id',
+              'organization',
+              'group_permissions',
+              'app_group_permissions',
+            ].sort()
+          );
+
+          const {
+            email,
+            first_name,
+            last_name,
+            admin,
+            group_permissions,
+            app_group_permissions,
+            organization_id,
+            organization,
+          } = response.body;
+
+          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(first_name).toEqual('SSO');
+          expect(last_name).toEqual('userExist');
+          expect(admin).toBeFalsy();
+          expect(organization_id).toBe(current_organization.id);
+          expect(organization).toBe(current_organization.name);
+          expect(group_permissions).toHaveLength(1);
+          expect(group_permissions[0].group).toEqual('all_users');
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(
+            [
+              'id',
+              'organization_id',
+              'group',
+              'app_create',
+              'app_delete',
+              'updated_at',
+              'created_at',
+              'folder_create',
+              'folder_delete',
+              'folder_update',
+            ].sort()
+          );
+          expect(app_group_permissions).toHaveLength(0);
+          await orgUser.reload();
+          expect(orgUser.status).toEqual('active');
         });
       });
       describe('sign in via Git OAuth', () => {
@@ -538,6 +627,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -623,6 +714,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -705,6 +798,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -777,6 +872,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -869,6 +966,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -959,9 +1058,105 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
+        });
+        it('should return login info when the user exist with invited status', async () => {
+          const { orgUser } = await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'userExist',
+            email: 'anotherUser1@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+            status: 'invited',
+          });
+
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO userExist',
+                  email: 'anotherUser1@tooljet.io',
+                };
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+
+          const response = await request(app.getHttpServer())
+            .post('/api/oauth/sign-in/' + sso_configs.id)
+            .send({ token });
+
+          expect(response.statusCode).toBe(201);
+          expect(Object.keys(response.body).sort()).toEqual(
+            [
+              'id',
+              'email',
+              'first_name',
+              'last_name',
+              'auth_token',
+              'admin',
+              'organization_id',
+              'organization',
+              'group_permissions',
+              'app_group_permissions',
+            ].sort()
+          );
+
+          const {
+            email,
+            first_name,
+            last_name,
+            admin,
+            group_permissions,
+            app_group_permissions,
+            organization_id,
+            organization,
+          } = response.body;
+
+          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(first_name).toEqual('SSO');
+          expect(last_name).toEqual('userExist');
+          expect(admin).toBeFalsy();
+          expect(organization_id).toBe(current_organization.id);
+          expect(organization).toBe(current_organization.name);
+          expect(group_permissions).toHaveLength(1);
+          expect(group_permissions[0].group).toEqual('all_users');
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(
+            [
+              'id',
+              'organization_id',
+              'group',
+              'app_create',
+              'app_delete',
+              'updated_at',
+              'created_at',
+              'folder_create',
+              'folder_delete',
+              'folder_update',
+            ].sort()
+          );
+          expect(app_group_permissions).toHaveLength(0);
+          await orgUser.reload();
+          expect(orgUser.status).toEqual('active');
         });
       });
     });
@@ -1090,6 +1285,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1160,6 +1357,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1220,6 +1419,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1297,9 +1498,92 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
+        });
+        it('should return login info when the user exist with invited status', async () => {
+          const { orgUser } = await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'userExist',
+            email: 'anotherUser1@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+            status: 'invited',
+          });
+          const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+          googleVerifyMock.mockImplementation(() => ({
+            getPayload: () => ({
+              sub: 'someSSOId',
+              email: 'anotherUser1@tooljet.io',
+              name: 'SSO User',
+              hd: 'tooljet.io',
+            }),
+          }));
+
+          const response = await request(app.getHttpServer())
+            .post('/api/oauth/sign-in/' + sso_configs.id)
+            .send({ token });
+
+          expect(googleVerifyMock).toHaveBeenCalledWith({
+            idToken: token,
+            audience: sso_configs.configs.clientId,
+          });
+
+          expect(response.statusCode).toBe(201);
+          expect(Object.keys(response.body).sort()).toEqual(
+            [
+              'id',
+              'email',
+              'first_name',
+              'last_name',
+              'auth_token',
+              'admin',
+              'organization_id',
+              'organization',
+              'group_permissions',
+              'app_group_permissions',
+            ].sort()
+          );
+
+          const {
+            email,
+            first_name,
+            last_name,
+            admin,
+            group_permissions,
+            app_group_permissions,
+            organization_id,
+            organization,
+          } = response.body;
+
+          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(first_name).toEqual('SSO');
+          expect(last_name).toEqual('userExist');
+          expect(admin).toBeFalsy();
+          expect(organization_id).toBe(current_organization.id);
+          expect(organization).toBe(current_organization.name);
+          expect(group_permissions).toHaveLength(1);
+          expect(group_permissions[0].group).toEqual('all_users');
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(
+            [
+              'id',
+              'organization_id',
+              'group',
+              'app_create',
+              'app_delete',
+              'updated_at',
+              'created_at',
+              'folder_create',
+              'folder_delete',
+              'folder_update',
+            ].sort()
+          );
+          expect(app_group_permissions).toHaveLength(0);
+          await orgUser.reload();
+          expect(orgUser.status).toEqual('active');
         });
       });
       describe('sign in via Git OAuth', () => {
@@ -1463,6 +1747,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1548,6 +1834,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1630,6 +1918,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1702,6 +1992,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1794,6 +2086,8 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
@@ -1884,9 +2178,105 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'folder_update',
+              'folder_delete',
             ].sort()
           );
           expect(app_group_permissions).toHaveLength(0);
+        });
+        it('should return login info when the user exist with invited status', async () => {
+          const { orgUser } = await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'userExist',
+            email: 'anotherUser1@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+            status: 'invited',
+          });
+
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO userExist',
+                  email: 'anotherUser1@tooljet.io',
+                };
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+
+          const response = await request(app.getHttpServer())
+            .post('/api/oauth/sign-in/' + sso_configs.id)
+            .send({ token });
+
+          expect(response.statusCode).toBe(201);
+          expect(Object.keys(response.body).sort()).toEqual(
+            [
+              'id',
+              'email',
+              'first_name',
+              'last_name',
+              'auth_token',
+              'admin',
+              'organization_id',
+              'organization',
+              'group_permissions',
+              'app_group_permissions',
+            ].sort()
+          );
+
+          const {
+            email,
+            first_name,
+            last_name,
+            admin,
+            group_permissions,
+            app_group_permissions,
+            organization_id,
+            organization,
+          } = response.body;
+
+          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(first_name).toEqual('SSO');
+          expect(last_name).toEqual('userExist');
+          expect(admin).toBeFalsy();
+          expect(organization_id).toBe(current_organization.id);
+          expect(organization).toBe(current_organization.name);
+          expect(group_permissions).toHaveLength(1);
+          expect(group_permissions[0].group).toEqual('all_users');
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(
+            [
+              'id',
+              'organization_id',
+              'group',
+              'app_create',
+              'app_delete',
+              'updated_at',
+              'created_at',
+              'folder_create',
+              'folder_delete',
+              'folder_update',
+            ].sort()
+          );
+          expect(app_group_permissions).toHaveLength(0);
+          await orgUser.reload();
+          expect(orgUser.status).toEqual('active');
         });
       });
     });

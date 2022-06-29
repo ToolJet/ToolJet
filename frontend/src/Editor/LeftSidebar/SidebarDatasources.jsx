@@ -18,9 +18,10 @@ export const LeftSidebarDataSources = ({
   dataSources = [],
   dataSourcesChanged,
   dataQueriesChanged,
+  toggleDataSourceManagerModal,
+  showDataSourceManagerModal,
 }) => {
   const [open, trigger, content] = usePopover(false);
-  const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);

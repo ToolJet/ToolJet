@@ -58,13 +58,21 @@ export function Google({ settings, updateData }) {
     <div className="card">
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
-          <div className="card-title">
+          <div className="card-title" data-cy="card-title">
             Google
-            <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`}>{enabled ? 'Enabled' : 'Disabled'}</span>
+            <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`} data-cy="status-label">
+              {enabled ? 'Enabled' : 'Disabled'}
+            </span>
           </div>
           <div>
             <label className="form-check form-switch">
-              <input className="form-check-input" type="checkbox" checked={enabled} onChange={changeStatus} />
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={enabled}
+                onChange={changeStatus}
+                data-cy="form-check-input"
+              />
             </label>
           </div>
         </div>
@@ -72,7 +80,9 @@ export function Google({ settings, updateData }) {
       <div className="card-body">
         <form noValidate>
           <div className="form-group mb-3">
-            <label className="form-label">Client Id</label>
+            <label className="form-label" data-cy="client-id-label">
+              Client Id
+            </label>
             <div>
               <input
                 type="text"
@@ -80,17 +90,20 @@ export function Google({ settings, updateData }) {
                 placeholder="Enter Client Id"
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
+                data-cy="client-id-input"
               />
             </div>
           </div>
           {configId && (
             <div className="form-group mb-3">
-              <label className="form-label">Redirect URL</label>
-              <div>{`${window.location.protocol}//${window.location.host}/sso/google/${configId}`}</div>
+              <label className="form-label" data-cy="redirect-url-label">
+                Redirect URL
+              </label>
+              <div data-cy="redirect-url">{`${window.location.protocol}//${window.location.host}/sso/google/${configId}`}</div>
             </div>
           )}
           <div className="form-footer">
-            <button type="button" className="btn btn-light mr-2" onClick={reset}>
+            <button type="button" className="btn btn-light mr-2" onClick={reset} data-cy="cancel-button">
               Cancel
             </button>
             <button
@@ -98,6 +111,7 @@ export function Google({ settings, updateData }) {
               className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}
               disabled={isSaving}
               onClick={saveSettings}
+              data-cy="save-button"
             >
               Save
             </button>

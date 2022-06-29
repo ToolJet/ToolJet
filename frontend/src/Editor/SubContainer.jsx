@@ -192,14 +192,13 @@ export const SubContainer = ({
           const initialClientOffset = monitor.getInitialClientOffset();
           const delta = monitor.getDifferenceFromInitialOffset();
 
-          left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+          left = Math.round(currentOffset?.x + currentOffset?.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
           top = Math.round(
-            initialClientOffset.y - 10 + delta.y + initialClientOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow
+            initialClientOffset?.y - 10 + delta.y + initialClientOffset?.y * (1 - zoomLevel) - offsetFromTopOfWindow
           );
 
           id = uuidv4();
         }
-
         const subContainerWidth = canvasBoundingRect.width;
         if (snapToGrid) {
           [left, top] = doSnapToGrid(subContainerWidth, left, top);
@@ -239,7 +238,7 @@ export const SubContainer = ({
 
   function getContainerCanvasWidth() {
     if (containerCanvasWidth !== undefined) {
-      return containerCanvasWidth;
+      return containerCanvasWidth - 2;
     }
     let width = 0;
     if (parentRef.current) {
@@ -302,7 +301,11 @@ export const SubContainer = ({
     const subContainerWidth = canvasBoundingRect.width;
 
     top = y;
-    left = (x * 100) / subContainerWidth;
+    if (deltaWidth !== 0) {
+      // onResizeStop is triggered for a single click on the border, therefore this conditional logic
+      // should not be removed.
+      left = (x * 100) / subContainerWidth;
+    }
 
     width = width + (deltaWidth * 43) / subContainerWidth;
     height = height + deltaHeight;
