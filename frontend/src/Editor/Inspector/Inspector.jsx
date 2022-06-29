@@ -26,6 +26,7 @@ export const Inspector = ({
   darkMode,
   switchSidebarTab,
   removeComponent,
+  setSelectedComponent,
 }) => {
   const component = {
     id: selectedComponentId,
@@ -323,7 +324,13 @@ export const Inspector = ({
       }
     }
   }
-
+  const handleTabSelect = (key) => {
+    setKey(key);
+    if (key == 'close-inpector' || key == 'close-inpector-light') {
+      switchSidebarTab(2);
+      setSelectedComponent(null);
+    }
+  };
   return (
     <div className="inspector">
       <ConfirmDialog
@@ -336,7 +343,7 @@ export const Inspector = ({
         onCancel={() => setWidgetDeleteConfirmation(false)}
       />
       <div ref={tabsRef}>
-        <Tabs activeKey={key} onSelect={(k) => setKey(k)} className={`tabs-inspector ${darkMode && 'dark'}`}>
+        <Tabs activeKey={key} onSelect={(k) => handleTabSelect(k)} className={`tabs-inspector ${darkMode && 'dark'}`}>
           <Tab style={{ marginBottom: 100 }} eventKey="properties" title="Properties">
             <div className="header py-1 row">
               <div>
@@ -382,33 +389,30 @@ export const Inspector = ({
               )}
             </div>
           </Tab>
+          <Tab
+            className="close-inpector-tab"
+            eventKey={darkMode ? 'close-inpector' : 'close-inpector-light'}
+            title={
+              <div className="inspector-close-icon-wrapper">
+                <svg
+                  width="20"
+                  height="21"
+                  viewBox="0 0 20 21"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="close-svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M9.99931 10.9751L15.0242 16.0014L16 15.027L10.9737 10.0007L16 4.97577L15.0256 4L9.99931 9.0263L4.97439 4L4 4.97577L9.02492 10.0007L4 15.0256L4.97439 16.0014L9.99931 10.9751Z"
+                    fill="#8092AC"
+                  />
+                </svg>
+              </div>
+            }
+          ></Tab>
         </Tabs>
-      </div>
-
-      <div
-        className="close-icon"
-        style={{ backgroundColor: darkMode && '#232e3c', height: darkMode ? tabHeight + 1 : tabHeight }}
-      >
-        <div className="svg-wrapper">
-          <svg
-            width="20"
-            height="21"
-            viewBox="0 0 20 21"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="close-svg"
-            onClick={() => {
-              switchSidebarTab(2);
-            }}
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M9.99931 10.9751L15.0242 16.0014L16 15.027L10.9737 10.0007L16 4.97577L15.0256 4L9.99931 9.0263L4.97439 4L4 4.97577L9.02492 10.0007L4 15.0256L4.97439 16.0014L9.99931 10.9751Z"
-              fill="#8092AC"
-            />
-          </svg>
-        </div>
       </div>
 
       <div className="widget-documentation-link p-2">
