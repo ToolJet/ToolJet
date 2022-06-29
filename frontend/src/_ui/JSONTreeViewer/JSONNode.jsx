@@ -253,7 +253,7 @@ export const JSONNode = ({ data, ...restProps }) => {
         )}
         {renderOptions()}
 
-        {moreActions.actions?.length > 0 && (
+        {moreActions?.actions?.length > 0 && (
           <OverlayTrigger
             rootClose={true}
             rootCloseEvent="mousedown"
