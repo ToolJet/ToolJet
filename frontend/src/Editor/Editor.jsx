@@ -133,6 +133,7 @@ class Editor extends React.Component {
       isSourceSelected: false,
       isSaving: false,
       isUnsavedQueriesAvailable: false,
+      isHotKeyDragActive: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -662,6 +663,7 @@ class Editor extends React.Component {
   };
 
   moveComponents = (direction) => {
+    this.setState({ isHotKeyDragActive: true });
     let appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
     let newComponents = appDefinition.components;
 
@@ -693,6 +695,10 @@ class Editor extends React.Component {
     }
     appDefinition.components = newComponents;
     this.appDefinitionChanged(appDefinition);
+
+    setTimeout(() => {
+      this.setState({ isHotKeyDragActive: false });
+    }, 400);
   };
 
   cloneComponent = (newComponent) => {
@@ -1322,6 +1328,7 @@ class Editor extends React.Component {
                         onComponentHover={this.handleComponentHover}
                         hoveredComponent={hoveredComponent}
                         dataQueries={dataQueries}
+                        isHotKeyDragActive={this.state.isHotKeyDragActive}
                       />
                       <CustomDragLayer
                         snapToGrid={true}
