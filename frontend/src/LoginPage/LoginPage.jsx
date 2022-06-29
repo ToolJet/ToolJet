@@ -190,7 +190,7 @@ class LoginPage extends React.Component {
                         <span className="input-group-text"></span>
                       </div>
                     </div>
-                    <div className="form-check">
+                    <div className="form-check show-password-field">
                       <input
                         type="checkbox"
                         className="form-check-input"
@@ -199,7 +199,11 @@ class LoginPage extends React.Component {
                         onChange={this.handleOnCheck}
                         data-cy="checkbox-input"
                       />
-                      <label className="form-check-label" htmlFor="check-input" data-cy="show-password-label">
+                      <label
+                        className="form-check-label show-password-label"
+                        htmlFor="check-input"
+                        data-cy="show-password-label"
+                      >
                         show password
                       </label>
                     </div>
