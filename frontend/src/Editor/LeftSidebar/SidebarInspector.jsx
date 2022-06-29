@@ -139,7 +139,7 @@ export const LeftSidebarInspector = ({
   }, [open]);
 
   return (
-    <div ref={wrapperRef}>
+    <>
       <LeftSidebarItem
         tip="Inspector"
         {...trigger}
@@ -184,6 +184,6 @@ export const LeftSidebarInspector = ({
           </Rnd>
         </ReactPortal>
       )}
-    </div>
+    </>
   );
 };
