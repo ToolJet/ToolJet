@@ -148,7 +148,7 @@ export const LeftSidebarInspector = ({
         text={'Inspector'}
       />
       {visible && (
-        <ReactPortal className={'inspector'}>
+        <ReactPortal className={`inspector ${darkMode && 'theme-dark'}`}>
           <Rnd
             default={{
               x: 40,
@@ -179,6 +179,7 @@ export const LeftSidebarInspector = ({
                 expandWithLabels={false}
                 selectedComponent={selectedComponent}
                 treeType="inspector"
+                darktheme={darkMode}
               />
             </div>
           </Rnd>
