@@ -18,7 +18,7 @@ export const LeftSidebarInspector = ({
   removeComponent,
   runQuery,
 }) => {
-  const [open, trigger, content, popoverPinned, updatePopoverPinnedState, setOpen] = usePinnedPopover(false);
+  const [open, trigger, popoverPinned, updatePopoverPinnedState, setOpen] = usePinnedPopover(false);
 
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const queryDefinitions = appDefinition['queries'];
@@ -127,11 +127,8 @@ export const LeftSidebarInspector = ({
 
   const clsName = open || popoverPinned ? 'show' : 'hide';
 
-  //funcyion to close portal when user clicks outside of it
-
   const wrapperRef = React.useRef(null);
 
-  //function to remove portal
   const removePortal = () => {
     const portal = document.getElementsByClassName('portal-container inspector')[0];
     portal.remove();
