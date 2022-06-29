@@ -136,10 +136,6 @@ export class UsersService {
     return { user, newUserCreated };
   }
 
-  async updateDefaultOrganization(user: User, organizationId: string) {
-    await this.usersRepository.update(user.id, { defaultOrganizationId: organizationId });
-  }
-
   async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
     const { forgotPasswordToken, password, firstName, lastName, addGroups, removeGroups } = params;
 
@@ -175,7 +171,10 @@ export class UsersService {
     return user;
   }
 
-  async updateUser(userId, updatableParams) {
+  async updateUser(userId: string, updatableParams: Partial<User>) {
+    if (updatableParams.password) {
+      updatableParams.password = bcrypt.hashSync(updatableParams.password, 10);
+    }
     await this.usersRepository.update(userId, updatableParams);
   }
 

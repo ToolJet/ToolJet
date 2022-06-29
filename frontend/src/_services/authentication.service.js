@@ -20,6 +20,7 @@ export const authenticationService = {
   saveLoginOrganizationId,
   getLoginOrganizationId,
   deleteLoginOrganizationId,
+  forgotPassword,
 };
 
 function login(email, password, organizationId) {
@@ -84,17 +85,26 @@ function signup(email) {
     });
 }
 
+function forgotPassword(email) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  };
+
+  return fetch(`${config.apiUrl}/forgot-password`, requestOptions).then(handleResponse);
+}
+
 function resetPassword(params) {
   const { token, password } = params;
-  const body = JSON.stringify({ token, password });
 
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body,
+    body: JSON.stringify({ token, password }),
   };
 
-  return fetch(`${config.apiUrl}/reset_password`, requestOptions);
+  return fetch(`${config.apiUrl}/reset-password`, requestOptions).then(handleResponse);
 }
 
 function logout() {
