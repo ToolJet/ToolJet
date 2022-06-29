@@ -205,7 +205,10 @@ export const Box = function Box({
         renderTooltip({ props, text: inCanvas ? `${resolvedGeneralProperties.tooltip}` : `${component.description}` })
       }
     >
-      <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
+      <div
+        style={{ ...styles, backgroundColor, boxShadow: resolvedStyles.boxShadow }}
+        role={preview ? 'BoxPreview' : 'Box'}
+      >
         {inCanvas ? (
           <ComponentToRender
             onComponentClick={onComponentClick}
