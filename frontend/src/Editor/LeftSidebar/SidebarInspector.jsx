@@ -1,14 +1,14 @@
 import React, { useMemo } from 'react';
-import usePinnedPopover from '@/_hooks/usePinnedPopover';
-import { LeftSidebarItem } from './SidebarItem';
-import { SidebarPinnedButton } from './SidebarPinnedButton';
-import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
+import { LeftSidebarItem } from './SidebarItem';
+import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import { allSvgs } from '@tooljet/plugins/client';
 import RunjsIcon from '../Icons/runjs.svg';
 import { toast } from 'react-hot-toast';
 import { Rnd } from 'react-rnd';
 import { ReactPortal } from '@/_components/Portal/ReactPortal';
+import usePopover from '@/_hooks/use-popover';
+import { SidebarCloseButton } from './SidebarCloseButton';
 
 export const LeftSidebarInspector = ({
   darkMode,
@@ -18,7 +18,8 @@ export const LeftSidebarInspector = ({
   removeComponent,
   runQuery,
 }) => {
-  const [open, trigger, popoverPinned, updatePopoverPinnedState, setOpen] = usePinnedPopover(false);
+  // eslint-disable-next-line no-unused-vars
+  const [open, trigger, content, setOpen] = usePopover(false);
 
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const queryDefinitions = appDefinition['queries'];
@@ -88,12 +89,6 @@ export const LeftSidebarInspector = ({
     return toast.success('Copied to the clipboard', { position: 'top-center' });
   };
 
-  const updatePinnedParentState = () => {
-    if (!popoverPinned) {
-      updatePopoverPinnedState();
-    }
-  };
-
   const callbackActions = [
     {
       for: 'queries',
@@ -125,14 +120,14 @@ export const LeftSidebarInspector = ({
     },
   ];
 
-  const clsName = open || popoverPinned ? 'show' : 'hide';
+  const clsName = open ? 'show' : 'hide';
 
   const wrapperRef = React.useRef(null);
 
   const removePortal = () => {
+    setOpen(false);
     const portal = document.getElementsByClassName('portal-container inspector')[0];
     portal.remove();
-    setOpen(false);
     setVisible(false);
   };
 
@@ -142,6 +137,7 @@ export const LeftSidebarInspector = ({
       setVisible(true);
     }
   }, [open]);
+
   return (
     <div ref={wrapperRef}>
       <LeftSidebarItem
@@ -168,13 +164,7 @@ export const LeftSidebarInspector = ({
             minWidth={'500px'}
             className={`card popover `}
           >
-            <SidebarPinnedButton
-              darkMode={darkMode}
-              component={'Inspector'}
-              state={popoverPinned}
-              updateState={updatePopoverPinnedState}
-            />
-            <button onClick={() => removePortal()}>Show</button>
+            <SidebarCloseButton darkMode={darkMode} component={'Inspector'} state={open} updateState={removePortal} />
             <div style={{ marginTop: '1rem' }} className="card-body">
               <JSONTreeViewer
                 data={memoizedJSONData}
@@ -189,8 +179,6 @@ export const LeftSidebarInspector = ({
                 expandWithLabels={false}
                 selectedComponent={selectedComponent}
                 treeType="inspector"
-                parentPopoverState={popoverPinned}
-                updateParentState={updatePinnedParentState}
               />
             </div>
           </Rnd>
