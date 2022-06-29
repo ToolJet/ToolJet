@@ -206,7 +206,7 @@ export const Box = function Box({
       }
     >
       <div
-        style={{ ...styles, backgroundColor, boxShadow: resolvedStyles.boxShadow }}
+        style={{ ...styles, backgroundColor, boxShadow: resolvedStyles?.boxShadow }}
         role={preview ? 'BoxPreview' : 'Box'}
       >
         {inCanvas ? (

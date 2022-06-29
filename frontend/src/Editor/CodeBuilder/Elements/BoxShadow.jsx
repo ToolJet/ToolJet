@@ -59,7 +59,7 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
           <Slider
             min={0}
             max={20}
-            defaultValue={5}
+            defaultValue={0}
             value={value}
             onChange={(updatedValue) => setBoxShadowValue(item, updatedValue)}
             trackStyle={{ backgroundColor: '#4D72FA' }}
