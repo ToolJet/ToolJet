@@ -60,6 +60,7 @@ let QueryManager = class QueryManager extends React.Component {
         appId: props.appId,
         dataSources: props.dataSources,
         dataQueries: dataQueries,
+        appDefinition: props.appDefinition,
         mode: props.mode,
         currentTab: 1,
         addingQuery: props.addingQuery,
