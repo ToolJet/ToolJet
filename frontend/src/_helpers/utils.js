@@ -366,7 +366,7 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
       };
       return executeAction(_ref, event, mode, {});
     },
-    gotoApp: function (slug = '', queryParams = [{}]) {
+    gotoApp: function (slug = '', queryParams = []) {
       const event = {
         actionId: 'go-to-app',
         slug,
@@ -374,11 +374,12 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
       };
       return executeAction(_ref, event, mode, {});
     },
-    generateFile: function (fileName = '', data = '') {
+    generateFile: function (fileName, fileType, data) {
       const event = {
         actionId: 'generate-file',
         fileName,
         data,
+        fileType,
       };
       return executeAction(_ref, event, mode, {});
     },
