@@ -826,6 +826,13 @@ export const widgets = [
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {},
+    actions: [
+      {
+        handle: 'setText',
+        displayName: 'Set Text',
+        params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
