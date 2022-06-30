@@ -18,42 +18,38 @@ export class EmailService {
   }
 
   async sendEmail(to: string, subject: string, html: string) {
-    try {
-      const port = +process.env.SMTP_PORT || 587;
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_DOMAIN,
-        port: port,
-        secure: port == 465,
-        auth: {
-          user: process.env.SMTP_USERNAME,
-          pass: process.env.SMTP_PASSWORD,
-        },
-      });
+    if (this.NODE_ENV === 'test' || (this.NODE_ENV !== 'development' && !process.env.SMTP_DOMAIN)) return;
 
-      const message = {
-        from: `"ToolJet" <${this.FROM_EMAIL}>`,
-        to,
-        subject,
-        html,
-      };
+    const port = +process.env.SMTP_PORT || 587;
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_DOMAIN,
+      port: port,
+      secure: port == 465,
+      auth: {
+        user: process.env.SMTP_USERNAME,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    });
 
-      /* if development environment, log the content of email instead of sending actual emails */
-      if (this.NODE_ENV !== 'development') {
-        console.log('Captured email');
-        console.log('to: ', to);
-        console.log('Subject: ', subject);
-        console.log('content: ', html);
+    const message = {
+      from: `"ToolJet" <${this.FROM_EMAIL}>`,
+      to,
+      subject,
+      html,
+    };
 
-        previewEmail(message).then(console.log).catch(console.error);
-      } else {
-        console.log('Captured email------------');
-        const info = await transporter.sendMail(message);
-        console.log('Message sent: %s', info);
-      }
-    } catch (error) {
-      console.log(error);
+    /* if development environment, log the content of email instead of sending actual emails */
+    if (this.NODE_ENV === 'development') {
+      console.log('Captured email');
+      console.log('to: ', to);
+      console.log('Subject: ', subject);
+      console.log('content: ', html);
+
+      previewEmail(message).then(console.log).catch(console.error);
+    } else {
+      const info = await transporter.sendMail(message);
+      console.log('Message sent: %s', info);
     }
-    // if (this.NODE_ENV === 'test' || (this.NODE_ENV !== 'development' && !process.env.SMTP_DOMAIN)) return;
   }
 
   stripTrailingSlash(hostname: string) {
