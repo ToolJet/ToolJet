@@ -374,7 +374,7 @@ export const Inspector = ({
             {getAccordion(componentMeta.component)}
           </Tab>
           <Tab eventKey="styles" title="Styles">
-            <div className="p-3">
+            <div className="p-3 mb-5">
               {Object.keys(componentMeta.styles).map((style) =>
                 renderElement(
                   component,

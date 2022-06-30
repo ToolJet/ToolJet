@@ -22,7 +22,8 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
 
   const input = ['X', 'Y', 'Blur', 'Spread'];
 
-  const [boxShadow, setBoxShadow] = useState(() => computeBoxShadow());
+  const [boxShadow, setBoxShadow] = useState(defaultValue);
+  const [debouncedShadow, setDebouncedShadow] = useState(defaultValue);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -32,36 +33,52 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
   };
 
   useEffect(() => {
-    onChange(Object.values(boxShadow).join('px '));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boxShadow]);
-
-  function computeBoxShadow() {
     if (value) {
       const valueArr = value.split('px ');
-      return { X: valueArr[0], Y: valueArr[1], Blur: valueArr[2], Spread: valueArr[3], Color: valueArr[4] };
+      const newValue = {
+        X: valueArr[0],
+        Y: valueArr[1],
+        Blur: valueArr[2],
+        Spread: valueArr[3],
+        Color: valueArr[4],
+      };
+      setBoxShadow(newValue);
+      setDebouncedShadow(newValue);
     }
-    return defaultValue;
-  }
+  }, []);
 
-  const setBoxShadowValue = (item, value) => {
+  useEffect(() => {
+    onChange(Object.values(debouncedShadow).join('px '));
+    if (boxShadow !== debouncedShadow) {
+      setBoxShadow(debouncedShadow);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedShadow]);
+
+  const setBoxShadowValue = (item, value, debounced = false) => {
     const newValue = { ...boxShadow };
-    newValue[item] = value;
-    setBoxShadow(newValue);
+    if (item === 'Blur' && value < 0) {
+      newValue[item] = 0;
+      debounced ? setDebouncedShadow(newValue) : setBoxShadow(newValue);
+    } else {
+      newValue[item] = value;
+      debounced ? setDebouncedShadow(newValue) : setBoxShadow(newValue);
+    }
   };
 
-  const clearBoxShadow = () => setBoxShadow(defaultValue);
+  const clearBoxShadow = () => setDebouncedShadow(defaultValue);
 
   const renderSlider = (item, value) => {
     return (
       <div className="range-slider">
         {
           <Slider
-            min={0}
+            min={item === 'Blur' || item === 'Spread' ? 0 : -20}
             max={20}
             defaultValue={0}
             value={value}
             onChange={(updatedValue) => setBoxShadowValue(item, updatedValue)}
+            onAfterChange={(updatedValue) => setBoxShadowValue(item, updatedValue, true)}
             trackStyle={{ backgroundColor: '#4D72FA' }}
             railStyle={{ backgroundColor: '#E9E9E9' }}
             handleStyle={{
@@ -92,12 +109,12 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
                       {item}
                     </small>
                     <input
-                      type="text"
+                      type="number"
                       value={boxShadow[item]}
-                      className="form-control"
+                      className="form-control hide-input-arrows"
                       placeholder="10"
                       style={popoverInputstyle}
-                      onChange={(e) => setBoxShadowValue(item, e.target.value)}
+                      onChange={(e) => setBoxShadowValue(item, e.target.value, true)}
                     />
                     <span className="input-group-text">px</span>
                   </div>
@@ -106,7 +123,7 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
               </div>
             ))}
             <Color
-              onChange={(hexCode) => setBoxShadowValue('Color', hexCode)}
+              onChange={(hexCode) => setBoxShadowValue('Color', hexCode, true)}
               value={boxShadow.Color}
               hideFx
               pickerStyle={colorPickerStyle}

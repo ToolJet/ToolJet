@@ -5626,3 +5626,11 @@ a.step-item-disabled {
   color: var(--textColor) !important;;
 }
 // steps-widget end
+
+input.hide-input-arrows{
+  -moz-appearance: none;
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button{
+    -webkit-appearance: none;
+  }
+}
