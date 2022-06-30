@@ -567,7 +567,11 @@ export const EventManager = ({
                   (getAction(event?.componentId, event?.componentSpecificActionHandle).params ?? []).map((param) => (
                     <div className="row mt-2" key={param.handle}>
                       <div className="col-3 p-1">{param.displayName}</div>
-                      <div className="col-7 fx-container-eventmanager">
+                      <div
+                        className={`${
+                          param?.type ? 'col-7' : 'col-9 fx-container-eventmanager-code'
+                        } fx-container-eventmanager`}
+                      >
                         <CodeHinter
                           theme={darkMode ? 'monokai' : 'default'}
                           currentState={currentState}
