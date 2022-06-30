@@ -1,6 +1,5 @@
 import { commonSelectors } from "Selectors/common";
 import { ssoSelector } from "Selectors/manageSSO";
-import * as common from "Support/utils/common";
 import { ssoText } from "Texts/manageSSO";
 
 export const generalSettings=()=>{
@@ -19,6 +18,7 @@ export const generalSettings=()=>{
     cy.get(ssoSelector.enableCheckbox).check()
     cy.get(ssoSelector.cancelButton).click();
     cy.get(ssoSelector.enableCheckbox).should("not.be.checked");
+
     cy.get(ssoSelector.enableCheckbox).check();
     cy.clearAndType(ssoSelector.domainInput, ssoText.allowedDomain);
     cy.get(ssoSelector.saveButton).click();
@@ -129,4 +129,3 @@ export const password=()=>{
    }
   });
 };
-

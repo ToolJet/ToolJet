@@ -127,8 +127,21 @@ class App extends React.Component {
             <Route path="/sso/:origin/:configId" component={Oauth} />
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
-            <Route path="/reset-password" component={ResetPassword} />
             <Route path="/multiworkspace" component={RedirectSso} />
+            <Route
+              path="/reset-password/:token"
+              render={(props) => (
+                <Redirect
+                  to={{
+                    pathname: '/reset-password',
+                    state: {
+                      token: props.match.params.token,
+                    },
+                  }}
+                />
+              )}
+            />
+            <Route path="/reset-password" component={ResetPassword} />
             <Route
               path="/invitations/:token"
               render={(props) => (

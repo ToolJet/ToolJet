@@ -211,7 +211,8 @@ export class GroupPermissionsService {
 
   async findAll(user: User): Promise<GroupPermission[]> {
     return this.groupPermissionsRepository.find({
-      organizationId: user.organizationId,
+      where: { organizationId: user.organizationId },
+      order: { createdAt: 'ASC' },
     });
   }
 
