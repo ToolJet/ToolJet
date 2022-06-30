@@ -124,6 +124,7 @@ export class GroupPermissionsService {
     });
 
     const {
+      name,
       app_create,
       app_delete,
       add_apps,
@@ -136,6 +137,31 @@ export class GroupPermissionsService {
     } = body;
 
     await getManager().transaction(async (manager) => {
+      //update user group name
+      if (name) {
+        const reservedGroups = ['admin', 'all_users'];
+        if (reservedGroups.includes(groupPermission.group)) {
+          throw new BadRequestException('Cannot update a defualt group name');
+        }
+
+        if (['All Users', 'Admin'].includes(name)) {
+          throw new BadRequestException('Group name already exists');
+        }
+
+        const groupToFind = await this.groupPermissionsRepository.findOne({
+          where: {
+            organizationId: user.organizationId,
+            group: name,
+          },
+        });
+
+        if (groupToFind) {
+          throw new ConflictException('Group name already exists');
+        }
+
+        await manager.update(GroupPermission, groupPermissionId, { group: name });
+      }
+
       // update group permissions
       const groupPermissionUpdateParams = {
         ...(typeof app_create === 'boolean' && { appCreate: app_create }),

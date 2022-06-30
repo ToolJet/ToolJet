@@ -5636,3 +5636,8 @@ a.step-item-disabled {
   color: var(--textColor) !important;;
 }
 // steps-widget end
+
+.user-group-actions {
+  display: flex;
+  gap: 8px;
+}
