@@ -5,16 +5,59 @@ import { Comment } from '../entities/comment.entity';
 import { CommentRepository } from '../repositories/comment.repository';
 import { CreateCommentDto, UpdateCommentDto } from '../dto/comment.dto';
 import { groupBy, head } from 'lodash';
+import { EmailService } from './email.service';
+import { Repository } from 'typeorm';
+import { App } from 'src/entities/app.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
+import { User } from 'src/entities/user.entity';
+import { CommentUsers } from 'src/entities/comment_user.entity';
 
 @Injectable()
 export class CommentService {
   constructor(
     @InjectRepository(CommentRepository)
-    private commentRepository: CommentRepository
+    private commentRepository: CommentRepository,
+    @InjectRepository(App)
+    private appsRepository: Repository<App>,
+    @InjectRepository(AppVersion)
+    private appVersionsRepository: Repository<AppVersion>,
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+    @InjectRepository(CommentUsers)
+    private commentUsersRepository: Repository<CommentUsers>,
+    private emailService: EmailService
   ) {}
 
   public async createComment(createCommentDto: CreateCommentDto, id: string, organizationId: string): Promise<Comment> {
-    return await this.commentRepository.createComment(createCommentDto, id, organizationId);
+    try {
+      const comment = await this.commentRepository.createComment(createCommentDto, id, organizationId);
+      const user = await this.usersRepository.findOne(createCommentDto.userId);
+      const appVersion = await this.appVersionsRepository.findOne(createCommentDto.appVersionsId);
+      const app = await this.appsRepository.findOne(appVersion.appId);
+      const appLink = process.env.TOOLJET_HOST + '/apps/' + app.id;
+      const commentLink = appLink + '?threadId=' + comment.threadId + '&commentId=' + comment.id;
+
+      for (const userId of createCommentDto.mentionedUsers) {
+        const mentionedUser = await this.usersRepository.findOne(userId, { relations: ['avatar'] });
+        if (!mentionedUser) return null; // todo: invite user
+        void this.emailService.sendCommentMentionEmail(
+          mentionedUser.email,
+          user.firstName,
+          app.name,
+          appLink,
+          commentLink,
+          comment.createdAt.toUTCString(),
+          comment.comment,
+          mentionedUser.avatar?.data.toString('base64')
+        );
+        void this.commentUsersRepository.save(
+          this.commentUsersRepository.create({ commentId: comment.id, userId: mentionedUser.id })
+        );
+      }
+      return comment;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   public async getComments(threadId: string, appVersionsId: string): Promise<Comment[]> {

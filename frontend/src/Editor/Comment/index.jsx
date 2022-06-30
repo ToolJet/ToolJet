@@ -27,6 +27,7 @@ const Comment = ({
   const [editComment, setEditComment] = React.useState('');
   const [editCommentId, setEditCommentId] = React.useState('');
   const [thread, setThread] = React.useState([]);
+  const [mentionedUsers, setMentionedUsers] = React.useState([]);
   const [placement, setPlacement] = React.useState('left');
   const [open, trigger, content, setOpen] = usePopover(false);
   const [, drag] = useDrag(() => ({
@@ -81,6 +82,7 @@ const Comment = ({
       threadId,
       comment: DOMPurify.sanitize(comment),
       appVersionsId,
+      mentionedUsers,
     });
     socket.send(
       JSON.stringify({
@@ -166,6 +168,7 @@ const Comment = ({
           />
           <CommentFooter
             users={users}
+            setMentionedUsers={setMentionedUsers}
             editComment={editComment}
             editCommentId={editCommentId}
             setEditCommentId={setEditCommentId}

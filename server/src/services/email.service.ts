@@ -1,4 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import handlebars from 'handlebars';
+const path = require('path');
+const fs = require('fs');
 const nodemailer = require('nodemailer');
 const previewEmail = require('preview-email');
 
@@ -15,38 +18,42 @@ export class EmailService {
   }
 
   async sendEmail(to: string, subject: string, html: string) {
-    if (this.NODE_ENV === 'test' || (this.NODE_ENV !== 'development' && !process.env.SMTP_DOMAIN)) return;
+    try {
+      const port = +process.env.SMTP_PORT || 587;
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_DOMAIN,
+        port: port,
+        secure: port == 465,
+        auth: {
+          user: process.env.SMTP_USERNAME,
+          pass: process.env.SMTP_PASSWORD,
+        },
+      });
 
-    const port = +process.env.SMTP_PORT || 587;
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_DOMAIN,
-      port: port,
-      secure: port == 465,
-      auth: {
-        user: process.env.SMTP_USERNAME,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
+      const message = {
+        from: `"ToolJet" <${this.FROM_EMAIL}>`,
+        to,
+        subject,
+        html,
+      };
 
-    const message = {
-      from: `"ToolJet" <${this.FROM_EMAIL}>`,
-      to,
-      subject,
-      html,
-    };
+      /* if development environment, log the content of email instead of sending actual emails */
+      if (this.NODE_ENV !== 'development') {
+        console.log('Captured email');
+        console.log('to: ', to);
+        console.log('Subject: ', subject);
+        console.log('content: ', html);
 
-    /* if development environment, log the content of email instead of sending actual emails */
-    if (this.NODE_ENV === 'development') {
-      console.log('Captured email');
-      console.log('to: ', to);
-      console.log('Subject: ', subject);
-      console.log('content: ', html);
-
-      previewEmail(message).then(console.log).catch(console.error);
-    } else {
-      const info = await transporter.sendMail(message);
-      console.log('Message sent: %s', info);
+        previewEmail(message).then(console.log).catch(console.error);
+      } else {
+        console.log('Captured email------------');
+        const info = await transporter.sendMail(message);
+        console.log('Message sent: %s', info);
+      }
+    } catch (error) {
+      console.log(error);
     }
+    // if (this.NODE_ENV === 'test' || (this.NODE_ENV !== 'development' && !process.env.SMTP_DOMAIN)) return;
   }
 
   stripTrailingSlash(hostname: string) {
@@ -139,6 +146,36 @@ export class EmailService {
     const html = `
       Please use this link to reset your password: <a href="${url}">${url}</a>
     `;
+    await this.sendEmail(to, subject, html);
+  }
+
+  async sendCommentMentionEmail(
+    to: string,
+    from: string,
+    appName: string,
+    appLink: string,
+    commentLink: string,
+    timestamp: string,
+    comment: string,
+    fromAvatar: string
+  ) {
+    const filePath = path.join(__dirname, '../assets/email-templates/comment-mention.html');
+    const source = fs.readFileSync(filePath, 'utf-8').toString();
+    const template = handlebars.compile(source);
+    const replacements = {
+      to,
+      from,
+      appName,
+      appLink,
+      timestamp,
+      commentLink,
+      comment,
+      fromAvatar,
+    };
+    const htmlToSend = template(replacements);
+    const subject = `You were mentioned on ${appName}`;
+    const html = htmlToSend;
+
     await this.sendEmail(to, subject, html);
   }
 }

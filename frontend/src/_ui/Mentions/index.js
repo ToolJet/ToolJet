@@ -1,7 +1,7 @@
 import React from 'react';
 import { MentionsInput, Mention } from 'react-mentions';
 
-const Mentions = ({ users, value, setValue, placeholder, darkMode }) => {
+const Mentions = ({ users, value = '', setValue, setMentionedUsers, placeholder, darkMode }) => {
   return (
     <MentionsInput
       style={{
@@ -63,6 +63,9 @@ const Mentions = ({ users, value, setValue, placeholder, darkMode }) => {
           <div
             style={{
               display: 'flex',
+            }}
+            onClick={() => {
+              setMentionedUsers(suggestion.userId);
             }}
           >
             <div
