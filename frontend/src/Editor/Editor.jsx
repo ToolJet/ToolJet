@@ -152,6 +152,7 @@ class Editor extends React.Component {
     this.setState({
       currentSidebarTab: 2,
       selectedComponents: [],
+      showComments: !!queryString.parse(this.props.location.search).threadId,
     });
   }
 

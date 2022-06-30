@@ -41,11 +41,7 @@ function CommentFooter({ users, editComment = '', setMentionedUsers, editComment
           <div className="col-8">
             <TextareaMentions
               users={users}
-              setMentionedUsers={(userId) => {
-                if (setMentionedUsers.indexOf(userId) === -1) {
-                  setMentionedUsers([...setMentionedUsers, userId]);
-                }
-              }}
+              setMentionedUsers={setMentionedUsers}
               value={comment}
               setValue={setComment}
               placeholder="Type your comment here"
