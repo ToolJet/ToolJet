@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import _ from 'lodash';
+import cx from 'classnames';
 import { LeftSidebarItem } from './SidebarItem';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import { allSvgs } from '@tooljet/plugins/client';
@@ -122,8 +123,6 @@ export const LeftSidebarInspector = ({
 
   const clsName = open ? 'show' : 'hide';
 
-  const wrapperRef = React.useRef(null);
-
   const removePortal = () => {
     setOpen(false);
     const portal = document.getElementsByClassName('portal-container inspector')[0];
@@ -138,6 +137,8 @@ export const LeftSidebarInspector = ({
     }
   }, [open]);
 
+  const cls = darkMode ? 'theme-dark inspector' : 'inspector';
+
   return (
     <>
       <LeftSidebarItem
@@ -148,7 +149,7 @@ export const LeftSidebarInspector = ({
         text={'Inspector'}
       />
       {visible && (
-        <ReactPortal className={`inspector ${darkMode && 'theme-dark'}`}>
+        <ReactPortal>
           <Rnd
             default={{
               x: 40,
@@ -162,7 +163,7 @@ export const LeftSidebarInspector = ({
             }}
             bounds="body"
             minWidth={'500px'}
-            className={`card popover `}
+            className={cx('card popover inspector', { 'theme-dark': darkMode })}
           >
             <SidebarCloseButton darkMode={darkMode} component={'Inspector'} state={open} updateState={removePortal} />
             <div style={{ marginTop: '1rem' }} className="card-body">
