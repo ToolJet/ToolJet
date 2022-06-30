@@ -89,7 +89,10 @@ export const EventManager = ({
   function getComponentOptionsOfComponentsWithActions(componentType = '') {
     let componentOptions = [];
     Object.keys(components || {}).forEach((key) => {
-      if ((components[key].component.actions?.length ?? 0) > 0) {
+      const targetComponentMeta = componentTypes.find(
+        (componentType) => components[key].component.component === componentType.component
+      );
+      if ((targetComponentMeta?.actions?.length ?? 0) > 0) {
         if (componentType === '' || components[key].component.component === componentType) {
           componentOptions.push({
             name: components[key].component.name,
