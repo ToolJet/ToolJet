@@ -2534,7 +2534,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'TreeSelect',
-    displayName: 'TreeSelect',
+    displayName: 'Tree Select',
     description: 'Select multiple values from options',
     defaultSize: {
       width: 12,
