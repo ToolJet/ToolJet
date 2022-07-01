@@ -1159,7 +1159,29 @@ button {
   color: #4d72fa;
   cursor: pointer;
 }
+.fx-container-eventmanager{
+  position: relative;
+}
+.fx-container-eventmanager  * .fx-outer-wrapper{
+  position: absolute !important;
+  top: 7px !important;
+  right: -26px;
+}
+// targeting select component library class 
 
+.component-action-select *.css-1nfapid-container
+{
+  width: 184px !important;
+}
+
+.fx-container-eventmanager  *.fx-common{
+  top: 6px !important;
+  right: -34px;
+}
+.fx-container-eventmanager-code
+{
+  padding-right: 15px !important;
+}
 .unselectable {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
