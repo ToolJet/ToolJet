@@ -71,8 +71,6 @@ const Comment = ({
   React.useEffect(() => {
     if (router.query.threadId === threadId) {
       setOpen(true);
-    } else {
-      setOpen(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);

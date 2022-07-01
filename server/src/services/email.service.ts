@@ -5,6 +5,10 @@ const fs = require('fs');
 const nodemailer = require('nodemailer');
 const previewEmail = require('preview-email');
 
+handlebars.registerHelper('capitalize', function (value) {
+  return value.charAt(0);
+});
+
 @Injectable()
 export class EmailService {
   private FROM_EMAIL;
