@@ -220,7 +220,7 @@ export class DataQueriesService {
   async resolveVariable(str: string, organization_id: string) {
     const tempStr: string = str.replace(/%%/g, '');
     let result = tempStr;
-    if (new RegExp('^globals.environmentVariables.server.[A-Za-z0-9]+$').test(tempStr)) {
+    if (new RegExp('^server.[A-Za-z0-9]+$').test(tempStr)) {
       const splitArray = tempStr.split('.');
       const variableResult = await this.orgEnvironmentVariablesRepository.findOne({
         variableType: 'server',
@@ -261,7 +261,7 @@ export class DataQueriesService {
         return object;
       } else {
         if (object.startsWith('%%') && object.endsWith('%%') && (object.match(/%%/g) || []).length === 2) {
-          if (object.includes(`globals.environmentVariables.server`)) {
+          if (object.includes(`server.`)) {
             object = await this.resolveVariable(object, organization_id);
           } else {
             object = options[object];
@@ -272,7 +272,7 @@ export class DataQueriesService {
 
           if (variables?.length > 0) {
             for (const variable of variables) {
-              if (variable.includes(`globals.environmentVariables.server`)) {
+              if (variable.includes(`server.`)) {
                 const secret_value = await this.resolveVariable(variable, organization_id);
                 object = object.replace(variable, secret_value);
               } else {
