@@ -53,7 +53,6 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
         placeholder={placeholder}
         styles={useStyles}
         formatOptionLabel={(option) => renderCustomOption(option)}
-        menuPortalTarget={useMenuPortal ? document.body : null}
         menuPlacement="auto"
         maxMenuHeight={maxMenuHeight}
       />

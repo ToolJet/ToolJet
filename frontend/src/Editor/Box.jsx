@@ -227,7 +227,13 @@ export const Box = function Box({
             exposedVariables={exposedVariables}
             styles={resolvedStyles}
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, extraProps)}
-            registerAction={(actionName, func) => onComponentOptionChanged(component, actionName, func)}
+            registerAction={(actionName, func, paramHandles = []) => {
+              if (Object.keys(exposedVariables).includes(actionName)) return Promise.resolve();
+              else {
+                func.paramHandles = paramHandles;
+                return onComponentOptionChanged(component, actionName, func);
+              }
+            }}
             fireEvent={fireEvent}
             validate={validate}
             parentId={parentId}

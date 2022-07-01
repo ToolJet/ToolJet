@@ -804,16 +804,15 @@ export function Table({
     }
   );
 
-  const registerSetPageAction = () => {
-    registerAction('setPage', (targetPageIndex) => {
+  registerAction(
+    'setPage',
+    async function (targetPageIndex) {
       setPaginationInternalPageIndex(targetPageIndex);
       setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
-    });
-  };
-
-  useEffect(registerSetPageAction, []);
-  useEffect(registerSetPageAction, [serverSidePagination, clientSidePagination]);
+    },
+    ['targetPageIndex']
+  );
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
