@@ -25,8 +25,8 @@ export const TreeSelect = function ({
       },
       Portugal: {
         states: {
-          Alentejo: 'Alentejo',
-          Beira: 'Beira',
+          Alentejo: ['Aveiro', 'Beja', 'Braga'],
+          Beira: ['Faro', 'Guarda', 'Leiria'],
         },
       },
     },
@@ -50,6 +50,7 @@ export const TreeSelect = function ({
               expandWithLabels={true}
               showNodeType={false}
               customComponent={CustomComponent}
+              hideArrayKeys={true}
             />
           </div>
         }

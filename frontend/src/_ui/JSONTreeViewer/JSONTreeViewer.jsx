@@ -222,6 +222,7 @@ export class JSONTreeViewer extends React.Component {
             updateParentState={this.state.updateParentState}
             showNodeType={this.props.showNodeType ?? true}
             customComponent={this.props.customComponent ?? undefined}
+            hideArrayKeys={this.props.hideArrayKeys ?? false}
           />
         </ErrorBoundary>
       </div>
