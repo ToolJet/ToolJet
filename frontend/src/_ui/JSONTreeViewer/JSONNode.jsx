@@ -302,7 +302,7 @@ export const JSONNode = ({ data, ...restProps }) => {
           <JSONNode.InputSelector
             toShow={useInputSelector}
             type={inputSelectorType}
-            callBack={() => inputSelectorCallback(currentNode, currentNodePath)}
+            callBack={(state) => inputSelectorCallback(currentNode, currentNodePath, state)}
           />
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {showNodeType && $NODEType}
@@ -379,9 +379,15 @@ const useRenderNode = ({
 };
 
 const InputSelector = ({ toShow, type, callBack }) => {
+  const [state, set] = React.useState(false);
+  const handleOnClick = () => {
+    const currentState = state;
+    set(!currentState);
+    callBack(!currentState);
+  };
   if (!toShow) return null;
 
-  return <input type={type} className={`json-tree-${type}`} onChange={callBack} />;
+  return <input type={type} className={`json-tree-${type}`} onChange={handleOnClick} />;
 };
 
 JSONNode.DisplayNodeLabel = DisplayNodeLabel;

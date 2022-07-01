@@ -17,7 +17,7 @@ export const TreeSelect = function ({
   currentState,
 }) {
   // console.log(component, currentState);
-  const [selectedValues, setSelectedValues] = useState(['Manish']);
+  const [selectedValues, setSelectedValues] = useState([]);
   const data = {
     countries: {
       India: {
@@ -32,8 +32,16 @@ export const TreeSelect = function ({
     },
   };
 
-  const onChange = (selectedValue, path) => {
-    console.log('selectedValue', selectedValue, path);
+  const onChange = (selectedValue, path, state) => {
+    const newSelectedValues = [...selectedValues];
+
+    if (state) {
+      newSelectedValues.push(selectedValue);
+    } else {
+      newSelectedValues.splice(newSelectedValues.indexOf(selectedValue), 1);
+    }
+
+    setSelectedValues(newSelectedValues);
   };
 
   return (
@@ -63,7 +71,10 @@ export const TreeSelect = function ({
           </div>
         }
       >
-        <div style={{ padding: '0.25rem 0' }}>{selectedValues}</div>
+        <div style={{ padding: '0.25rem 0' }}>
+          <span>Select</span>
+          <span className="mx-2">{selectedValues}</span>
+        </div>
       </OverlayTrigger>
     </div>
   );
