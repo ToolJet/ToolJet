@@ -26,7 +26,7 @@ export function GeneralSettings({ settings, updateData }) {
       },
       () => {
         setSaving(false);
-        toast.error('Error saving sso configurations', {
+        toast.error('Error while saving SSO configurations', {
           position: 'top-center',
         });
       }

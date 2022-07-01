@@ -870,7 +870,7 @@ describe('Authentication', () => {
       const updatedUser = await getManager().findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
       expect(updatedUser.firstName).toEqual('signupuser');
       expect(updatedUser.lastName).toEqual('user');
-      expect(updatedUser.defaultOrganizationId).not.toBe(org.id);
+      expect(updatedUser.defaultOrganizationId).toBe(org.id);
       const organizationUser = await getManager().findOneOrFail(OrganizationUser, {
         where: { userId: Not(adminUser.id), organizationId: org.id },
       });

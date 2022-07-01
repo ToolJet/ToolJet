@@ -208,7 +208,7 @@ export class OrganizationsService {
     addInstanceLevelSSO?: boolean
   ): Promise<DeepPartial<Organization>> {
     const result: DeepPartial<Organization> = await createQueryBuilder(Organization, 'organization')
-      .innerJoinAndSelect(
+      .leftJoinAndSelect(
         'organization.ssoConfigs',
         'organisation_sso',
         'organisation_sso.enabled IN (:...statusList)',
