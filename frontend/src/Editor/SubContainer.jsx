@@ -361,9 +361,9 @@ export const SubContainer = ({
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
 
-  function onComponentOptionChangedForSubcontainer(component, optionName, value, extraProps) {
-    onOptionChange({ component, optionName, value, extraProps });
-    return onComponentOptionChanged(component, optionName, value, extraProps);
+  function onComponentOptionChangedForSubcontainer(component, optionName, value) {
+    onOptionChange({ component, optionName, value });
+    return onComponentOptionChanged(component, optionName, value);
   }
 
   function customRemoveComponent(component) {
@@ -398,7 +398,6 @@ export const SubContainer = ({
           onDragStop={onDragStop}
           paramUpdated={paramUpdated}
           id={key}
-          extraProps={{}}
           allComponents={allComponents}
           {...childComponents[key]}
           mode={mode}

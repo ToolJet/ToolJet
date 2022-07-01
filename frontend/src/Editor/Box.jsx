@@ -120,8 +120,6 @@ export const Box = function Box({
   mode,
   customResolvables,
   parentId,
-  allComponents,
-  extraProps,
   dataQueries,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
@@ -160,13 +158,7 @@ export const Box = function Box({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
 
-  let exposedVariables = {};
-
-  if (component.parent) {
-    exposedVariables = currentState?.components[component.name] ?? {};
-  } else {
-    exposedVariables = currentState?.components[component.name] ?? {};
-  }
+  let exposedVariables = currentState?.components[component.name] ?? {};
 
   const fireEvent = (eventName, options) => {
     if (mode === 'edit' && eventName === 'onClick') {
@@ -211,7 +203,7 @@ export const Box = function Box({
             properties={resolvedProperties}
             exposedVariables={exposedVariables}
             styles={resolvedStyles}
-            setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, extraProps)}
+            setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
             registerAction={(actionName, func) => onComponentOptionChanged(component, actionName, func)}
             fireEvent={fireEvent}
             validate={validate}
