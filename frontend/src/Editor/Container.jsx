@@ -45,6 +45,7 @@ export const Container = ({
   onComponentHover,
   hoveredComponent,
   dataQueries,
+  isHotKeyDragActive,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -406,7 +407,7 @@ export const Container = ({
       ref={drop}
       style={styles}
       className={cx('real-canvas', {
-        'show-grid': isDragging || isResizing,
+        'show-grid': isDragging || isResizing || isHotKeyDragActive,
       })}
       id="real-canvas"
       data-cy="real-canvas"
@@ -496,6 +497,7 @@ export const Container = ({
                 onComponentHover,
                 hoveredComponent,
                 dataQueries,
+                isHotKeyDragActive,
               }}
             />
           );

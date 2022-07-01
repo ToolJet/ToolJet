@@ -38,6 +38,7 @@ export const SubContainer = ({
   onComponentHover,
   hoveredComponent,
   selectedComponents,
+  isHotKeyDragActive,
 }) => {
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
 
@@ -394,7 +395,7 @@ export const SubContainer = ({
       ref={drop}
       style={styles}
       id={`canvas-${parent}`}
-      className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
+      className={`real-canvas ${(isDragging || isResizing || isHotKeyDragActive) && !readOnly ? ' show-grid' : ''}`}
     >
       {Object.keys(childComponents).map((key) => (
         <DraggableBox
