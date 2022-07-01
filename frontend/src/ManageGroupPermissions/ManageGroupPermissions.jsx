@@ -21,6 +21,7 @@ class ManageGroupPermissions extends React.Component {
       showGroupDeletionConfirmation: false,
       showGroupNameUpdateForm: false,
       groupToBeUpdated: null,
+      isSaveBtnDisabled: false,
     };
   }
 
@@ -44,7 +45,13 @@ class ManageGroupPermissions extends React.Component {
   changeNewGroupName = (value) => {
     this.setState({
       newGroupName: value,
+      isSaveBtnDisabled: false,
     });
+    if ((this.state.groupToBeUpdated && this.state.groupToBeUpdated.group === value) || !value) {
+      this.setState({
+        isSaveBtnDisabled: true,
+      });
+    }
   };
 
   humanizeifDefaultGroupName = (groupName) => {
@@ -88,11 +95,12 @@ class ManageGroupPermissions extends React.Component {
     });
   };
 
-  updateGroupName = (groupPermissionId, currentName) => {
+  updateGroupName = (groupPermission) => {
     this.setState({
       showGroupNameUpdateForm: true,
-      groupToBeUpdated: groupPermissionId,
-      newGroupName: currentName,
+      groupToBeUpdated: groupPermission,
+      newGroupName: groupPermission.group,
+      isSaveBtnDisabled: true,
     });
   };
 
@@ -125,7 +133,7 @@ class ManageGroupPermissions extends React.Component {
   executeGroupUpdation = () => {
     this.setState({ isUpdatingGroupName: true });
     groupPermissionService
-      .update(this.state.groupToBeUpdated, { name: this.state.newGroupName })
+      .update(this.state.groupToBeUpdated?.id, { name: this.state.newGroupName })
       .then(() => {
         toast.success('Group name updated successfully', {
           position: 'top-center',
@@ -180,10 +188,10 @@ class ManageGroupPermissions extends React.Component {
                   </h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
-                  {!showNewGroupForm && (
+                  {!showNewGroupForm && !showGroupNameUpdateForm && (
                     <div
                       className="btn btn-primary"
-                      onClick={() => this.setState({ showNewGroupForm: true })}
+                      onClick={() => this.setState({ showNewGroupForm: true, isSaveBtnDisabled: true })}
                       data-cy="create-new-group-button"
                     >
                       Create new group
@@ -252,7 +260,7 @@ class ManageGroupPermissions extends React.Component {
                           className={`btn mx-2 btn-primary ${
                             creatingGroup || isUpdatingGroupName ? 'btn-loading' : ''
                           }`}
-                          disabled={creatingGroup}
+                          disabled={creatingGroup || this.state.isSaveBtnDisabled}
                           data-cy="create-group-button"
                         >
                           {showGroupNameUpdateForm ? 'Save' : 'Create Group'}
@@ -305,10 +313,7 @@ class ManageGroupPermissions extends React.Component {
                               <td>
                                 {permissionGroup.group !== 'admin' && permissionGroup.group !== 'all_users' && (
                                   <div className="user-group-actions">
-                                    <Link
-                                      onClick={() => this.updateGroupName(permissionGroup.id, permissionGroup.group)}
-                                      data-cy="update-link"
-                                    >
+                                    <Link onClick={() => this.updateGroupName(permissionGroup)} data-cy="update-link">
                                       Update
                                     </Link>
                                     <Link

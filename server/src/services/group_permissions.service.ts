@@ -155,7 +155,7 @@ export class GroupPermissionsService {
           },
         });
 
-        if (groupToFind) {
+        if (groupToFind && groupToFind.id !== groupPermission.id) {
           throw new ConflictException('Group name already exists');
         }
 
