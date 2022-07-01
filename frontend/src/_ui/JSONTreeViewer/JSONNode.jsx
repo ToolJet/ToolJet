@@ -32,6 +32,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     expandWithLabels,
     getAbsoluteNodePath,
     actionsList,
+    showNodeType,
     updateParentState = () => null,
   } = restProps;
 
@@ -323,7 +324,7 @@ export const JSONNode = ({ data, ...restProps }) => {
           onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
         >
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
-          {$key} {$NODEType}
+          {$key} {showNodeType && $NODEType}
           {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
           <div className="action-icons-group">{showHiddenOptionsForNode && renderHiddenOptionsForNode()}</div>
         </div>

@@ -39,22 +39,16 @@ export const TreeSelect = function ({
         placement="bottom-end"
         delay={{ show: 800, hide: 100 }}
         overlay={
-          <div style={{ position: 'absolute', top: '10', width, background: 'white' }}>
+          <div style={{ position: 'absolute', top: '10', width, background: 'white', padding: '1rem' }}>
             <JSONTreeViewer
               data={data}
               useIcons={false}
-              //   iconsList={iconsList}
               useIndentedBlock={true}
-              enableCopyToClipboard={true}
-              useActions={true}
-              //   actionsList={callbackActions}
-              //   currentState={appDefinition}
+              enableCopyToClipboard={false}
+              useActions={false}
               actionIdentifier="id"
-              expandWithLabels={false}
-              // selectedComponent={selectedComponent}
-              treeType="selectTree"
-              //   parentPopoverState={popoverPinned}
-              // updateParentState={updatePinnedParentState}
+              expandWithLabels={true}
+              showNodeType={false}
             />
           </div>
         }
