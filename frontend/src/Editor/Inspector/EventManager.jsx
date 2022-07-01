@@ -570,7 +570,7 @@ export const EventManager = ({
                       <div
                         className={`${
                           param?.type ? 'col-7' : 'col-9 fx-container-eventmanager-code'
-                        } fx-container-eventmanager`}
+                        } fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
                       >
                         <CodeHinter
                           theme={darkMode ? 'monokai' : 'default'}

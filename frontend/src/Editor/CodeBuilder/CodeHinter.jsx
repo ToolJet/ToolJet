@@ -263,7 +263,7 @@ export function CodeHinter({
       </div>
       <div
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''}`}
-        style={{ width: width, display: codeShow ? 'flex' : 'none', marginBottom: codeShow && '5px' }}
+        style={{ width: width, display: codeShow ? 'flex' : 'none', marginBottom: codeShow && '8.5px' }}
       >
         <div className={`col code-hinter-col`} style={{ marginBottom: '0.5rem' }}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>

@@ -1168,9 +1168,12 @@ button {
   right: -26px;
 }
 // targeting select component library class 
-.fx-container-eventmanager * .css-1goth4y-control{
-  width: 85%;
+
+.component-action-select *.css-1nfapid-container
+{
+  width: 184px !important;
 }
+
 .fx-container-eventmanager  *.fx-common{
   top: 6px !important;
   right: -34px;
