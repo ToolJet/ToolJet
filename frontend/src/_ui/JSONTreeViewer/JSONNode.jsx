@@ -87,8 +87,6 @@ export const JSONNode = ({ data, ...restProps }) => {
   const numberOfEntries = getLength(typeofCurrentNode, data);
   const toRenderSelector = (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array') && numberOfEntries > 0;
 
-  let $VALUE = null;
-  let $NODEType = null;
   let $NODEIcon = null;
 
   const checkSelectedNode = (_selectedNode, _currentNode, parent, toExpand) => {
@@ -133,44 +131,15 @@ export const JSONNode = ({ data, ...restProps }) => {
     $NODEIcon = renderNodeIcons(currentNode);
   }
 
-  switch (typeofCurrentNode) {
-    case 'String':
-    case 'Boolean':
-    case 'Number':
-    case 'Null':
-    case 'Undefined':
-    case 'Function':
-      $VALUE = <JSONNodeValue data={data} type={typeofCurrentNode} />;
-      $NODEType = <JSONNode.DisplayNodeLabel type={typeofCurrentNode} />;
-      break;
-
-    case 'Object':
-      $VALUE = <JSONNodeObject data={data} path={currentNodePath} {...restProps} />;
-      $NODEType = (
-        <JSONNode.DisplayNodeLabel type={'Object'}>
-          <span className="mx-1 fs-9 node-length-color">
-            {`${numberOfEntries} ${numberOfEntries > 1 ? 'entries' : 'entry'}`}{' '}
-          </span>
-        </JSONNode.DisplayNodeLabel>
-      );
-      break;
-
-    case 'Array':
-      $VALUE = <JSONNodeArray data={data} path={currentNodePath} {...restProps} />;
-      $NODEType = (
-        <JSONNode.DisplayNodeLabel type={'Array'}>
-          <span className="mx-1 fs-9 node-length-color">
-            {`${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}{' '}
-          </span>
-        </JSONNode.DisplayNodeLabel>
-      );
-
-      break;
-
-    default:
-      $VALUE = <span>{String(data)}</span>;
-      $NODEType = typeofCurrentNode;
-  }
+  const { $VALUE, $NODEType } = useRenderNode({
+    typeofCurrentNode,
+    $VALUE,
+    $NODEType,
+    data,
+    currentNodePath,
+    numberOfEntries,
+    ...restProps,
+  });
 
   let $key = (
     <span
@@ -344,6 +313,57 @@ const DisplayNodeLabel = ({ type = '', children }) => {
       {children}
     </>
   );
+};
+
+const useRenderNode = ({
+  typeofCurrentNode,
+  $VALUE,
+  $NODEType,
+  data,
+  currentNodePath,
+  numberOfEntries,
+  ...restProps
+}) => {
+  switch (typeofCurrentNode) {
+    case 'String':
+    case 'Boolean':
+    case 'Number':
+    case 'Null':
+    case 'Undefined':
+    case 'Function':
+      $VALUE = <JSONNodeValue data={data} type={typeofCurrentNode} />;
+      $NODEType = <JSONNode.DisplayNodeLabel type={typeofCurrentNode} />;
+      break;
+
+    case 'Object':
+      $VALUE = <JSONNodeObject data={data} path={currentNodePath} {...restProps} />;
+      $NODEType = (
+        <JSONNode.DisplayNodeLabel type={'Object'}>
+          <span className="mx-1 fs-9 node-length-color">
+            {`${numberOfEntries} ${numberOfEntries > 1 ? 'entries' : 'entry'}`}{' '}
+          </span>
+        </JSONNode.DisplayNodeLabel>
+      );
+      break;
+
+    case 'Array':
+      $VALUE = <JSONNodeArray data={data} path={currentNodePath} {...restProps} />;
+      $NODEType = (
+        <JSONNode.DisplayNodeLabel type={'Array'}>
+          <span className="mx-1 fs-9 node-length-color">
+            {`${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}{' '}
+          </span>
+        </JSONNode.DisplayNodeLabel>
+      );
+
+      break;
+
+    default:
+      $VALUE = <span>{String(data)}</span>;
+      $NODEType = typeofCurrentNode;
+  }
+
+  return { $VALUE, $NODEType };
 };
 
 JSONNode.DisplayNodeLabel = DisplayNodeLabel;

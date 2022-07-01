@@ -43,12 +43,13 @@ export const TreeSelect = function ({
             <JSONTreeViewer
               data={data}
               useIcons={false}
-              useIndentedBlock={true}
+              useIndentedBlock={false}
               enableCopyToClipboard={false}
               useActions={false}
               actionIdentifier="id"
               expandWithLabels={true}
               showNodeType={false}
+              customComponent={CustomComponent}
             />
           </div>
         }
@@ -57,4 +58,8 @@ export const TreeSelect = function ({
       </OverlayTrigger>
     </div>
   );
+};
+
+const CustomComponent = ({ data, type, ...restProps }) => {
+  return <p>{String(data)}</p>;
 };
