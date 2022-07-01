@@ -3209,6 +3209,27 @@ input:focus-visible {
     }
   }
 
+  .org-variables-page {
+    .user-email,
+    .user-status {
+      filter: brightness(0) invert(1);
+    }
+
+    .btn-org-env {
+      background: transparent;
+    }
+  }
+
+  .org-variables-page {
+    .select-search__option.is-selected {
+      background: $primary;
+      color: $white;
+    }
+    .select-search__option:not(.is-selected):hover {
+      background: rgba(66, 153, 225, 0.1);
+    }
+  }
+
   .react-json-view {
     background-color: transparent !important;
   }
@@ -5391,9 +5412,23 @@ div#driver-page-overlay {
   }
 }
 
+.org-variables-page{
+  .btn-org-env {
+    width: 36px;
+  }
+  
+  .encryption-input {
+    width: fit-content;
+  }
+
+  .no-vars-text {    
+    display: block;
+    text-align: center;
+    margin-top: 100px;
+  }
+}
 
 //Kanban board
-
 .kanban-container.dark-themed {
   background-color: $bg-dark-light !important;
   .kanban-column {
@@ -5636,3 +5671,6 @@ a.step-item-disabled {
   color: var(--textColor) !important;;
 }
 // steps-widget end
+.btn-org-env {
+  width: 36px;
+}
