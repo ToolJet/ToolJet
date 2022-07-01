@@ -21,12 +21,26 @@ export const TreeSelect = function ({
   const data = {
     countries: {
       India: {
-        states: ['Maharashtra', 'Assam'],
+        states: {
+          Maharashtra: ['Pune', 'Mumbai'],
+          Gujarat: ['Surat', 'Vadodara'],
+          Rajasthan: ['Jaipur', 'Ajmer'],
+          locaton: {
+            latitude: '18.5204',
+            longitude: '73.8567',
+            climate: ['cool', 'warm'],
+          },
+        },
       },
       Portugal: {
         states: {
           Alentejo: ['Aveiro', 'Beja', 'Braga'],
           Beira: ['Faro', 'Guarda', 'Leiria'],
+        },
+        location: {
+          latitude: '40.636',
+          longitude: '-8.65',
+          climate: ['cool', 'warm'],
         },
       },
     },

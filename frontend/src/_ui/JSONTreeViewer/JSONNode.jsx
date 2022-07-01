@@ -266,7 +266,12 @@ export const JSONNode = ({ data, ...restProps }) => {
     );
   };
 
-  console.log('---onChange---', selectedNodes);
+  const shouldCheck =
+    Object.prototype.toString.call(selectedNodes).slice(8, -1) === 'Array'
+      ? selectedNodes.find((node) => node.path === getAbsoluteNodePath(currentNodePath))
+        ? true
+        : false
+      : false;
 
   return (
     <div
@@ -309,6 +314,7 @@ export const JSONNode = ({ data, ...restProps }) => {
               const value = typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array' ? data : currentNode;
               inputSelectorCallback(value, state, getAbsoluteNodePath(currentNodePath), currentNodePath);
             }}
+            checkedNode={shouldCheck}
           />
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {showNodeType && $NODEType}
@@ -386,13 +392,17 @@ const useRenderNode = ({
 };
 
 const InputSelector = ({ toShow, type, callBack, checkedNode }) => {
-  // console.log('checkedNode', checkedNode);
-  const [state, set] = React.useState(() => false);
+  const [state, set] = React.useState(false);
   const handleOnClick = () => {
     const currentState = state;
     set(!currentState);
     callBack(!currentState);
   };
+
+  React.useEffect(() => {
+    set(checkedNode);
+  }, [checkedNode]);
+
   if (!toShow) return null;
 
   return <input type={type} checked={state} className={`json-tree-${type}`} onChange={handleOnClick} />;
