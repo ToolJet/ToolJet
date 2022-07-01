@@ -4,6 +4,11 @@ import { uniqBy } from 'lodash';
 
 const Mentions = ({ users, value = '', setValue, setMentionedUsers, placeholder, darkMode }) => {
   const [mentionsInputValue, setMentionsInputValue] = React.useState(value);
+
+  React.useEffect(() => {
+    if (value === '') setMentionsInputValue('');
+  }, [value]);
+
   return (
     <MentionsInput
       style={{
