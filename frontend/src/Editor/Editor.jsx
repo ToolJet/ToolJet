@@ -1,7 +1,14 @@
 /* eslint-disable import/no-named-as-default */
 import React, { createRef } from 'react';
 import cx from 'classnames';
-import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
+import {
+  datasourceService,
+  dataqueryService,
+  appService,
+  authenticationService,
+  appVersionService,
+  orgEnvironmentVariableService,
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { computeComponentName } from '@/_helpers/utils';
@@ -122,6 +129,8 @@ class Editor extends React.Component {
         },
         errors: {},
         variables: {},
+        client: {},
+        server: {},
       },
       apps: [],
       dataQueriesDefaultText: "You haven't created queries yet.",
@@ -146,6 +155,7 @@ class Editor extends React.Component {
   componentDidMount() {
     this.fetchApps(0);
     this.fetchApp();
+    this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
     this.initRealtimeSave();
     this.initEventListeners();
@@ -169,6 +179,27 @@ class Editor extends React.Component {
       if (isEqual(this.state.appDefinition, this.props.ymap?.get('appDef').newDefinition)) return;
 
       this.realtimeSave(this.props.ymap?.get('appDef').newDefinition, { skipAutoSave: true, skipYmapUpdate: true });
+    });
+  };
+
+  fetchOrgEnvironmentVariables = () => {
+    orgEnvironmentVariableService.getVariables().then((data) => {
+      const client_variables = {};
+      const server_variables = {};
+      data.variables.map((variable) => {
+        if (variable.variable_type === 'server') {
+          server_variables[variable.variable_name] = 'HiddenEnvironmentVariable';
+        } else {
+          client_variables[variable.variable_name] = variable.value;
+        }
+      });
+      this.setState({
+        currentState: {
+          ...this.state.currentState,
+          server: server_variables,
+          client: client_variables,
+        },
+      });
     });
   };
 
