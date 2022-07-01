@@ -7,6 +7,7 @@ import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from './all-exceptions-filter';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { bootstrap as globalAgentBootstrap } from 'global-agent';
 
 const fs = require('fs');
 
@@ -73,5 +74,6 @@ async function bootstrap() {
   });
 }
 
+globalAgentBootstrap();
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();

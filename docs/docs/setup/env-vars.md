@@ -179,6 +179,17 @@ Tooljet needs to be configured for custom CA certificate to be able to trust and
 
 Pings our server to update the total user count every 24 hours. You can disable this by setting the value of `DISABLE_TOOLJET_TELEMETRY` environment variable to `true`. This feature is enabled by default.
 
+
+#### HTTP proxy
+
+Server will connect to internet via the configured HTTP proxy when this variable is set. This uses global-agent package under the hood.
+All the [env vars](https://github.com/gajus/global-agent#environment-variables) supported by the package can be configured.
+
+| variable                | description                           |
+| ----------------------- | ------------------------------------- |
+| GLOBAL_AGENT_HTTP_PROXY | used for both HTTP and HTTPS requests |
+
+
 ## ToolJet client
 
 #### Server URL ( optionally required )
