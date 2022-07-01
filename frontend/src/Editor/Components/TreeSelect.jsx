@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
+import _ from 'lodash';
 
 export const TreeSelect = function ({
   id,
@@ -16,7 +17,6 @@ export const TreeSelect = function ({
   fireEvent,
   currentState,
 }) {
-  // console.log(component, currentState);
   const [selectedValues, setSelectedValues] = useState([]);
   const data = {
     countries: {
@@ -32,10 +32,11 @@ export const TreeSelect = function ({
     },
   };
 
-  const onChange = (selectedValue, path, state) => {
+  const onChange = (selectedValue, state) => {
     const newSelectedValues = [...selectedValues];
 
     if (state) {
+      console.log('selectedValue', selectedValue);
       newSelectedValues.push(selectedValue);
     } else {
       newSelectedValues.splice(newSelectedValues.indexOf(selectedValue), 1);

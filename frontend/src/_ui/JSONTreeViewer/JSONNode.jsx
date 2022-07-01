@@ -302,7 +302,10 @@ export const JSONNode = ({ data, ...restProps }) => {
           <JSONNode.InputSelector
             toShow={useInputSelector}
             type={inputSelectorType}
-            callBack={(state) => inputSelectorCallback(currentNode, currentNodePath, state)}
+            callBack={(state) => {
+              const value = typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array' ? data : currentNode;
+              inputSelectorCallback(value, state);
+            }}
           />
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {showNodeType && $NODEType}
@@ -334,6 +337,7 @@ const useRenderNode = ({
   data,
   currentNodePath,
   numberOfEntries,
+
   ...restProps
 }) => {
   switch (typeofCurrentNode) {
@@ -387,7 +391,7 @@ const InputSelector = ({ toShow, type, callBack }) => {
   };
   if (!toShow) return null;
 
-  return <input type={type} className={`json-tree-${type}`} onChange={handleOnClick} />;
+  return <input type={type} checked={state} className={`json-tree-${type}`} onChange={handleOnClick} />;
 };
 
 JSONNode.DisplayNodeLabel = DisplayNodeLabel;
