@@ -29,14 +29,16 @@ const JSONTreeNodeIndicator = ({ toExpand, toShowNodeIndicator, handleToggle, ..
   };
 
   const renderDefaultIndicator = () => (
-    <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M1.02063 1L5.01032 5.01028L1.00003 8.99997"
-        stroke={`${toExpand && isSelected ? '#4D72FA' : '#61656F'}`}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <div className="d-flex">
+      <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M1.02063 1L5.01032 5.01028L1.00003 8.99997"
+          stroke={`${toExpand && isSelected ? '#4D72FA' : '#61656F'}`}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </div>
   );
 
   if (!toShowNodeIndicator && (typeofCurrentNode !== 'Object' || typeofCurrentNode !== 'Array')) return null;

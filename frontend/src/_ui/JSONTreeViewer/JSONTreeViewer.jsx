@@ -3,6 +3,7 @@ import React from 'react';
 import { JSONNode } from './JSONNode';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 
+const noop = () => {};
 export class JSONTreeViewer extends React.Component {
   constructor(props) {
     super(props);
@@ -223,6 +224,9 @@ export class JSONTreeViewer extends React.Component {
             showNodeType={this.props.showNodeType ?? true}
             customComponent={this.props.customComponent ?? undefined}
             hideArrayKeys={this.props.hideArrayKeys ?? false}
+            useInputSelector={this.props.useInputSelector ?? false}
+            inputSelectorType={this.props.inputSelectorType ?? 'checkbox'}
+            inputSelectorCallback={this.props.inputSelectorCallback ?? noop}
           />
         </ErrorBoundary>
       </div>

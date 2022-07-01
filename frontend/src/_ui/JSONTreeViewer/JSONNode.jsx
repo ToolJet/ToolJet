@@ -34,6 +34,9 @@ export const JSONNode = ({ data, ...restProps }) => {
     actionsList,
     showNodeType,
     hideArrayKeys,
+    useInputSelector,
+    inputSelectorType,
+    inputSelectorCallback,
     updateParentState = () => null,
   } = restProps;
 
@@ -296,6 +299,11 @@ export const JSONNode = ({ data, ...restProps }) => {
           })}
           onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
         >
+          <JSONNode.InputSelector
+            toShow={useInputSelector}
+            type={inputSelectorType}
+            callBack={() => inputSelectorCallback(currentNode, currentNodePath)}
+          />
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {showNodeType && $NODEType}
           {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
@@ -370,4 +378,11 @@ const useRenderNode = ({
   return { $VALUE, $NODEType };
 };
 
+const InputSelector = ({ toShow, type, callBack }) => {
+  if (!toShow) return null;
+
+  return <input type={type} className={`json-tree-${type}`} onChange={callBack} />;
+};
+
 JSONNode.DisplayNodeLabel = DisplayNodeLabel;
+JSONNode.InputSelector = InputSelector;

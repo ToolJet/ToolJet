@@ -31,6 +31,11 @@ export const TreeSelect = function ({
       },
     },
   };
+
+  const onChange = (selectedValue, path) => {
+    console.log('selectedValue', selectedValue, path);
+  };
+
   return (
     <div style={{ width, position: 'relative' }} className="">
       <OverlayTrigger
@@ -51,6 +56,9 @@ export const TreeSelect = function ({
               showNodeType={false}
               customComponent={CustomComponent}
               hideArrayKeys={true}
+              useInputSelector={true}
+              inputSelectorType={'checkbox'}
+              inputSelectorCallback={onChange}
             />
           </div>
         }
