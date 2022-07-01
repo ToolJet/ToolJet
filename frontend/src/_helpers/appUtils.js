@@ -313,6 +313,19 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           },
         });
       }
+
+      case 'control-component': {
+        const component = Object.values(_ref.state.currentState?.components ?? {}).filter(
+          (component) => component.id === event.componentId
+        )[0];
+        const action = component[event.componentSpecificActionHandle];
+        const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
+          ...param,
+          value: resolveReferences(param.value, _ref.state.currentState, undefined, customVariables),
+        }));
+        const actionPromise = action(...actionArguments.map((argument) => argument.value));
+        return actionPromise ?? Promise.resolve();
+      }
     }
   }
 };

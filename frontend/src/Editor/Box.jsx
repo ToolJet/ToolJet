@@ -43,6 +43,7 @@ import { ButtonGroup } from './Components/ButtonGroup';
 import { CustomComponent } from './Components/CustomComponent/CustomComponent';
 import { VerticalDivider } from './Components/verticalDivider';
 import { PDF } from './Components/PDF';
+import { ColorPicker } from './Components/ColorPicker';
 import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import { Steps } from './Components/Steps';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -97,6 +98,7 @@ const AllComponents = {
   CustomComponent,
   VerticalDivider,
   PDF,
+  ColorPicker,
   KanbanBoard,
   Steps,
 };
@@ -264,7 +266,13 @@ export const Box = function Box({
             exposedVariables={exposedVariables}
             styles={validatedStyles}
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, extraProps)}
-            registerAction={(actionName, func) => onComponentOptionChanged(component, actionName, func)}
+            registerAction={(actionName, func, paramHandles = []) => {
+              if (Object.keys(exposedVariables).includes(actionName)) return Promise.resolve();
+              else {
+                func.paramHandles = paramHandles;
+                return onComponentOptionChanged(component, actionName, func);
+              }
+            }}
             fireEvent={fireEvent}
             validate={validate}
             parentId={parentId}

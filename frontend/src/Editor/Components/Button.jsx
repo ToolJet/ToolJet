@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
-export const Button = function Button({ height, properties, styles, fireEvent }) {
+export const Button = function Button({ height, properties, styles, fireEvent, registerAction }) {
   const { loadingState, text } = properties;
   const { backgroundColor, textColor, borderRadius, visibility, disabledState, loaderColor } = styles;
+
+  const [label, setLabel] = useState(text);
+  useEffect(() => setLabel(text), [text]);
 
   const computedStyles = {
     backgroundColor,
@@ -16,6 +19,14 @@ export const Button = function Button({ height, properties, styles, fireEvent })
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
   };
+
+  registerAction('click', async function () {
+    fireEvent('onClick');
+  });
+
+  registerAction('setLabel', async function (label) {
+    setLabel(label);
+  });
 
   return (
     <div className="widget-button">
@@ -31,7 +42,7 @@ export const Button = function Button({ height, properties, styles, fireEvent })
         }}
         data-cy="button-widget"
       >
-        {text}
+        {label}
       </button>
     </div>
   );

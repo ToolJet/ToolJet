@@ -40,6 +40,8 @@ export const LeftSidebarInspector = ({
     const data = _.merge(currentState, { queries });
     const jsontreeData = { ...data };
     delete jsontreeData.errors;
+    delete jsontreeData.client;
+    delete jsontreeData.server;
     return jsontreeData;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState]);
