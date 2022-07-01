@@ -37,7 +37,7 @@ export const Listview = function Listview({
 
   const parentRef = useRef(null);
 
-  const [childrenData, setChildrenData] = useState({ changeTrigger: 1, data: {} });
+  const [childrenData, setChildrenData] = useState({});
 
   useEffect(() => {
     setExposedVariable('data', {});
@@ -45,13 +45,13 @@ export const Listview = function Listview({
   }, []);
 
   useEffect(() => {
-    setExposedVariable('data', childrenData.data);
+    setExposedVariable('data', childrenData);
     if (selectedRowIndex != undefined) {
       setExposedVariable('selectedRowId', selectedRowIndex);
       setExposedVariable('selectedRow', childrenData[selectedRowIndex]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childrenData.changeTrigger]);
+  }, [childrenData]);
 
   return (
     <div
@@ -85,8 +85,7 @@ export const Listview = function Listview({
               removeComponent={removeComponent}
               listViewItemOptions={{ index }}
               onOptionChange={function ({ component, optionName, value }) {
-                setChildrenData((prevState) => {
-                  const prevData = prevState.data;
+                setChildrenData((prevData) => {
                   const changedData = { [component.name]: { [optionName]: value } };
                   const existingDataAtIndex = prevData[index] ?? {};
                   const newDataAtIndex = {
@@ -94,10 +93,7 @@ export const Listview = function Listview({
                     [component.name]: { ...existingDataAtIndex[component.name], ...changedData[component.name] },
                   };
                   const newChildrenData = { ...prevData, [index]: newDataAtIndex };
-                  return {
-                    data: { ...prevData, ...newChildrenData },
-                    changeTrigger: prevState.changeTrigger + 1,
-                  };
+                  return { ...prevData, ...newChildrenData };
                 });
               }}
             />
