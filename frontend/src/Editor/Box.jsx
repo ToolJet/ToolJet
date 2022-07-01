@@ -161,18 +161,9 @@ export const Box = function Box({
   }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
 
   let exposedVariables = {};
-  let isListView = false;
 
   if (component.parent) {
-    const parentComponent = allComponents[component.parent];
-    isListView = parentComponent?.component?.component === 'Listview';
-
-    if (isListView) {
-      const itemsAtIndex = currentState?.components[parentId]?.data[extraProps.listviewItemIndex];
-      exposedVariables = itemsAtIndex !== undefined ? itemsAtIndex[component.name] || {} : {};
-    } else {
-      exposedVariables = currentState?.components[component.name] ?? {};
-    }
+    exposedVariables = currentState?.components[component.name] ?? {};
   } else {
     exposedVariables = currentState?.components[component.name] ?? {};
   }
@@ -181,17 +172,13 @@ export const Box = function Box({
     if (mode === 'edit' && eventName === 'onClick') {
       onComponentClick(id, component);
     }
-    const listItem = isListView
-      ? resolveReferences(allComponents[component.parent].component.definition.properties.data.value, currentState)[
-          extraProps.listviewItemIndex
-        ] ?? {}
-      : {};
-    onEvent(eventName, { ...options, customVariables: { listItem }, component });
+    onEvent(eventName, { ...options, customVariables: { ...customResolvables }, component });
   };
   const validate = (value) =>
     validateWidget({
       ...{ widgetValue: value },
       ...{ validationObject: component.definition.validation, currentState },
+      customResolveObjects: customResolvables,
     });
 
   return (

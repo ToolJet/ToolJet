@@ -305,6 +305,7 @@ export const DraggableBox = function DraggableBox({
               currentState={currentState}
               darkMode={darkMode}
               removeComponent={removeComponent}
+              customResolvables={customResolvables}
             />
           </ErrorBoundary>
         </div>
