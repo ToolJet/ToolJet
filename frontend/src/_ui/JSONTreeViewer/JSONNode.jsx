@@ -335,7 +335,7 @@ const useRenderNode = ({
     case 'Null':
     case 'Undefined':
     case 'Function':
-      $VALUE = <JSONNodeValue data={data} type={typeofCurrentNode} />;
+      $VALUE = <JSONNodeValue data={data} type={typeofCurrentNode} {...restProps} />;
       $NODEType = <JSONNode.DisplayNodeLabel type={typeofCurrentNode} />;
       break;
 
