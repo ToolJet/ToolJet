@@ -9,6 +9,11 @@ handlebars.registerHelper('capitalize', function (value) {
   return value.charAt(0);
 });
 
+handlebars.registerHelper('highlightMentionedUser', function (comment) {
+  const regex = /(\()([^)]+)(\))/g;
+  return comment.replace(regex, '<span style="color: #218DE3">$2</span>');
+});
+
 @Injectable()
 export class EmailService {
   private FROM_EMAIL;
