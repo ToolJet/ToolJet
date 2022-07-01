@@ -2532,4 +2532,58 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
   },
+  {
+    name: 'TreeSelect',
+    displayName: 'TreeSelect',
+    description: 'Select multiple values from options',
+    defaultSize: {
+      width: 12,
+      height: 30,
+    },
+    component: 'TreeSelect',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      label: { type: 'code', displayName: 'Label' },
+      value: { type: 'code', displayName: 'Default value' },
+      values: { type: 'code', displayName: 'Option values' },
+      display_values: { type: 'code', displayName: 'Option labels' },
+      showAllOption: {
+        type: 'toggle',
+        displayName: 'Enable select All option',
+      },
+    },
+    events: {
+      onSelect: { displayName: 'On select' },
+    },
+    styles: {
+      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      values: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        label: { value: 'Select' },
+        value: { value: '{{[2,3]}}' },
+        values: { value: '{{[1,2,3]}}' },
+        display_values: { value: '{{["one", "two", "three"]}}' },
+        visible: { value: '{{true}}' },
+      },
+      events: [],
+      styles: {
+        borderRadius: { value: '0' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];

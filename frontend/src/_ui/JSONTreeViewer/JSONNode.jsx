@@ -223,7 +223,7 @@ export const JSONNode = ({ data, ...restProps }) => {
   }
 
   const renderHiddenOptionsForNode = () => {
-    const moreActions = actionsList.filter((action) => action.for === 'all')[0];
+    const moreActions = actionsList.length >= 1 && actionsList.filter((action) => action.for === 'all')[0];
 
     const renderOptions = () => {
       if (!useActions || showHiddenOptionButtons?.length === 0) return null;
