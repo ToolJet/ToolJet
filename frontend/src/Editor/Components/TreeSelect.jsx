@@ -32,14 +32,19 @@ export const TreeSelect = function ({
     },
   };
 
-  const onChange = (selectedValue, state) => {
-    const newSelectedValues = [...selectedValues];
+  const onChange = (selectedValue, state, path, currentPathArr) => {
+    const newSelectedValues = JSON.parse(JSON.stringify(selectedValues));
 
     if (state) {
-      console.log('selectedValue', selectedValue);
-      newSelectedValues.push(selectedValue);
+      newSelectedValues.push({ value: selectedValue, path, parent: currentPathArr[currentPathArr.length - 2] });
+      const evalautedValue = eval(`data.${path}`);
+
+      addChildren(evalautedValue, path, selectedValue, newSelectedValues);
     } else {
       newSelectedValues.splice(newSelectedValues.indexOf(selectedValue), 1);
+      const evalautedValue = eval(`data.${path}`);
+
+      removeChildren(evalautedValue, path, selectedValue, newSelectedValues);
     }
 
     setSelectedValues(newSelectedValues);
@@ -63,24 +68,89 @@ export const TreeSelect = function ({
               actionIdentifier="id"
               expandWithLabels={true}
               showNodeType={false}
-              customComponent={CustomComponent}
               hideArrayKeys={true}
               useInputSelector={true}
               inputSelectorType={'checkbox'}
               inputSelectorCallback={onChange}
+              selectedNodes={selectedValues}
+              treeType="treeSelectWidget"
             />
           </div>
         }
       >
         <div style={{ padding: '0.25rem 0' }}>
-          <span>Select</span>
-          <span className="mx-2">{selectedValues}</span>
+          <strong>Select</strong>
+          {selectedValues.map((selectedValue) => (
+            <span key={selectedValue.path} className="mx-1">
+              {selectedValue.value}
+            </span>
+          ))}
         </div>
       </OverlayTrigger>
     </div>
   );
 };
 
-const CustomComponent = ({ data, type, ...restProps }) => {
-  return <p>{String(data)}</p>;
+// !utils
+
+const addChildren = (evalValue, path, selectedValue, arr) => {
+  if (Object.prototype.toString.call(evalValue).slice(8, -1) === 'Array') {
+    evalValue.forEach((val, index) => {
+      arr.push({
+        value: val,
+        path: `${path}[${index}]`,
+        parent: selectedValue,
+      });
+      if (Object.prototype.toString.call(val).slice(8, -1) === 'Array') {
+        addChildren(val, `${path}[${index}]`, val, arr);
+      }
+
+      if (Object.prototype.toString.call(val).slice(8, -1) === 'Object') {
+        addChildren(val, `${path}[${index}]`, val, arr);
+      }
+    });
+  }
+
+  if (Object.prototype.toString.call(evalValue).slice(8, -1) === 'Object') {
+    Object.keys(evalValue).forEach((key) => {
+      arr.push({
+        value: key,
+        path: `${path}.${key}`,
+        parent: selectedValue,
+      });
+      if (Object.prototype.toString.call(evalValue[key]).slice(8, -1) === 'Array') {
+        addChildren(evalValue[key], `${path}.${key}`, evalValue[key], arr);
+      }
+      if (Object.prototype.toString.call(evalValue[key]).slice(8, -1) === 'Object') {
+        addChildren(evalValue[key], `${path}.${key}`, evalValue[key], arr);
+      }
+    });
+  }
+};
+
+const removeChildren = (evalValue, path, selectedValue, arr) => {
+  if (Object.prototype.toString.call(evalValue).slice(8, -1) === 'Array') {
+    evalValue.forEach((val, index) => {
+      arr.splice(arr.indexOf({ value: val, path: `${path}[${index}]`, parent: selectedValue }), 1);
+      if (Object.prototype.toString.call(val).slice(8, -1) === 'Array') {
+        removeChildren(val, `${path}[${index}]`, val, arr);
+      }
+
+      if (Object.prototype.toString.call(val).slice(8, -1) === 'Object') {
+        removeChildren(val, `${path}[${index}]`, val, arr);
+      }
+    });
+  }
+
+  if (Object.prototype.toString.call(evalValue).slice(8, -1) === 'Object') {
+    Object.keys(evalValue).forEach((key) => {
+      arr.splice(arr.indexOf({ value: key, path: `${path}.${key}`, parent: selectedValue }), 1);
+      if (Object.prototype.toString.call(evalValue[key]).slice(8, -1) === 'Array') {
+        removeChildren(evalValue[key], `${path}.${key}`, evalValue[key], arr);
+      }
+      if (Object.prototype.toString.call(evalValue[key]).slice(8, -1) === 'Object') {
+        removeChildren(evalValue[key], `${path}.${key}`, evalValue[key], arr);
+      }
+    });
+  }
 };

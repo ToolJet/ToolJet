@@ -222,11 +222,11 @@ export class JSONTreeViewer extends React.Component {
             getAbsoluteNodePath={this.getAbsoluteNodePath}
             updateParentState={this.state.updateParentState}
             showNodeType={this.props.showNodeType ?? true}
-            customComponent={this.props.customComponent ?? undefined}
             hideArrayKeys={this.props.hideArrayKeys ?? false}
             useInputSelector={this.props.useInputSelector ?? false}
             inputSelectorType={this.props.inputSelectorType ?? 'checkbox'}
             inputSelectorCallback={this.props.inputSelectorCallback ?? noop}
+            selectedNodes={this.props.treeType === 'treeSelectWidget' ? this.props.selectedNodes : null}
           />
         </ErrorBoundary>
       </div>

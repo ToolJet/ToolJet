@@ -37,6 +37,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     useInputSelector,
     inputSelectorType,
     inputSelectorCallback,
+    selectedNodes,
     updateParentState = () => null,
   } = restProps;
 
@@ -265,6 +266,8 @@ export const JSONNode = ({ data, ...restProps }) => {
     );
   };
 
+  console.log('---onChange---', selectedNodes);
+
   return (
     <div
       className={cx('d-flex row-flex mt-1 font-monospace container-fluid px-1', {
@@ -304,7 +307,7 @@ export const JSONNode = ({ data, ...restProps }) => {
             type={inputSelectorType}
             callBack={(state) => {
               const value = typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array' ? data : currentNode;
-              inputSelectorCallback(value, state);
+              inputSelectorCallback(value, state, getAbsoluteNodePath(currentNodePath), currentNodePath);
             }}
           />
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
@@ -382,8 +385,9 @@ const useRenderNode = ({
   return { $VALUE, $NODEType };
 };
 
-const InputSelector = ({ toShow, type, callBack }) => {
-  const [state, set] = React.useState(false);
+const InputSelector = ({ toShow, type, callBack, checkedNode }) => {
+  // console.log('checkedNode', checkedNode);
+  const [state, set] = React.useState(() => false);
   const handleOnClick = () => {
     const currentState = state;
     set(!currentState);
