@@ -169,7 +169,6 @@ export const widgets = [
         displayName: 'Button Text',
         validation: {
           schema: { type: 'string' },
-          defaultValue: 'Button',
         },
       },
       loadingState: {
