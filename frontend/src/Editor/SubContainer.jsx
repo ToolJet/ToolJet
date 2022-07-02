@@ -362,7 +362,7 @@ export const SubContainer = ({
   };
 
   function onComponentOptionChangedForSubcontainer(component, optionName, value) {
-    onOptionChange({ component, optionName, value });
+    onOptionChange && onOptionChange({ component, optionName, value });
     return onComponentOptionChanged(component, optionName, value);
   }
 
