@@ -196,6 +196,7 @@ export class JSONTreeViewer extends React.Component {
   };
 
   render() {
+    //Todo: Add a SearchBar to search for a node/nodes [feat: treeSelect widget]
     return (
       <div className="json-tree-container row-flex container-fluid p-0">
         <ErrorBoundary showFallback={true}>

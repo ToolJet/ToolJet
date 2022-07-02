@@ -79,7 +79,7 @@ export const TreeSelect = function ({
         trigger="click"
         rootClose={true}
         placement="bottom-end"
-        delay={{ show: 800, hide: 100 }}
+        // delay={{ show: 800, hide: 100 }}
         overlay={
           <div style={{ position: 'absolute', top: '10', width, background: 'white', padding: '1rem' }}>
             <JSONTreeViewer
