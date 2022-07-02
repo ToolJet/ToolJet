@@ -343,7 +343,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
-  if (eventName === 'onRowClicked') {
+  if (eventName === 'onRowClicked' && options?.component?.component === 'Table') {
     const { component, data, rowId } = options;
     _self.setState(
       {
@@ -363,6 +363,10 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         executeActionsForEventId(_ref, 'onRowClicked', component, mode, customVariables);
       }
     );
+  }
+
+  if (eventName === 'onRowClicked' && options?.component?.component === 'ListView') {
+    executeActionsForEventId(_ref, 'onRowClicked', options.component, mode, customVariables);
   }
 
   if (eventName === 'onCalendarEventSelect') {
