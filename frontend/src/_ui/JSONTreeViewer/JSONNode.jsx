@@ -146,22 +146,21 @@ export const JSONNode = ({ data, ...restProps }) => {
     ...restProps,
   });
 
-  const toHideArrayKeys = toHideArrayKeys && toExpandNode;
+  const toHideArrayKeys = hideArrayKeys && !isNaN(Number(currentNode));
 
-  let $key =
-    hideArrayKeys && !toExpandNode ? null : (
-      <span
-        onClick={() => toExpandNode && handleOnClickLabels(data, currentNode, path)}
-        style={{ marginTop: '1px', cursor: 'pointer', textTransform: 'none' }}
-        className={cx('node-key fs-12 mx-0 badge badge-outline', {
-          'color-primary': applySelectedNodeStyles && !showHiddenOptionsForNode,
-          'hovered-node': showHiddenOptionsForNode,
-          'node-key-outline': !applySelectedNodeStyles && !showHiddenOptionsForNode,
-        })}
-      >
-        {String(currentNode)}
-      </span>
-    );
+  let $key = !toHideArrayKeys ? (
+    <span
+      onClick={() => toExpandNode && handleOnClickLabels(data, currentNode, path)}
+      style={{ marginTop: '1px', cursor: 'pointer', textTransform: 'none' }}
+      className={cx('node-key fs-12 mx-0 badge badge-outline', {
+        'color-primary': applySelectedNodeStyles && !showHiddenOptionsForNode,
+        'hovered-node': showHiddenOptionsForNode,
+        'node-key-outline': !applySelectedNodeStyles && !showHiddenOptionsForNode,
+      })}
+    >
+      {String(currentNode)}
+    </span>
+  ) : null;
 
   if (!currentNode) {
     return $VALUE;
