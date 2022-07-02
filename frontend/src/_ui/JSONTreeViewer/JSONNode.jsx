@@ -38,6 +38,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     inputSelectorType,
     inputSelectorCallback,
     selectedNodes,
+    isOptionHovered,
     updateParentState = () => null,
   } = restProps;
 
@@ -277,7 +278,7 @@ export const JSONNode = ({ data, ...restProps }) => {
       className={cx('d-flex row-flex mt-1 font-monospace container-fluid px-1', {
         'json-node-element': !expandable,
       })}
-      onMouseLeave={() => updateHoveredNode(null)}
+      onMouseLeave={() => isOptionHovered && updateHoveredNode(null)}
     >
       <div className={`json-tree-icon-container  mx-2 ${applySelectedNodeStyles && 'selected-node'}`}>
         <JSONNodeIndicator
@@ -304,7 +305,7 @@ export const JSONNode = ({ data, ...restProps }) => {
             'group-object-container': shouldDisplayIntendedBlock,
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
           })}
-          onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
+          onMouseEnter={() => isOptionHovered && updateHoveredNode(currentNode, currentNodePath)}
         >
           <JSONNode.InputSelector
             toShow={useInputSelector}
@@ -404,7 +405,7 @@ const InputSelector = ({ toShow, type, callBack, checkedNode }) => {
 
   if (!toShow) return null;
 
-  return <input type={type} checked={state} className={`json-tree-${type}`} onChange={handleOnClick} />;
+  return <input type={type} checked={state} className={`json-tree-${type} mx-1`} onChange={handleOnClick} />;
 };
 
 JSONNode.DisplayNodeLabel = DisplayNodeLabel;

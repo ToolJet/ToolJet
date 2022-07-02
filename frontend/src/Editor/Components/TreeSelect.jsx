@@ -97,6 +97,7 @@ export const TreeSelect = function ({
               inputSelectorCallback={onChange}
               selectedNodes={selectedValues}
               treeType="treeSelectWidget"
+              isOptionHovered={false}
             />
           </div>
         }

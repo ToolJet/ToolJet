@@ -227,6 +227,7 @@ export class JSONTreeViewer extends React.Component {
             inputSelectorType={this.props.inputSelectorType ?? 'checkbox'}
             inputSelectorCallback={this.props.inputSelectorCallback ?? noop}
             selectedNodes={this.props.treeType === 'treeSelectWidget' ? this.props.selectedNodes : null}
+            isOptionHovered={this.props.isOptionHovered ?? true}
           />
         </ErrorBoundary>
       </div>
