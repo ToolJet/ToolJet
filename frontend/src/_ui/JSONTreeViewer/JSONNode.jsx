@@ -38,7 +38,8 @@ export const JSONNode = ({ data, ...restProps }) => {
     inputSelectorType,
     inputSelectorCallback,
     selectedNodes,
-    isOptionHovered,
+    showOptionHovered,
+    showOptionSelected,
     updateParentState = () => null,
   } = restProps;
 
@@ -105,9 +106,8 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   const parent = path && typeof path?.length === 'number' ? path[path.length - 2] : null;
 
-  const applySelectedNodeStyles = toExpandNode
-    ? checkSelectedNode(selectedNode, currentNode, parent, expandable)
-    : false;
+  const applySelectedNodeStyles =
+    showOptionSelected && toExpandNode ? checkSelectedNode(selectedNode, currentNode, parent, expandable) : false;
 
   React.useEffect(() => {
     if (!expandable) {
@@ -278,7 +278,7 @@ export const JSONNode = ({ data, ...restProps }) => {
       className={cx('d-flex row-flex mt-1 font-monospace container-fluid px-1', {
         'json-node-element': !expandable,
       })}
-      onMouseLeave={() => isOptionHovered && updateHoveredNode(null)}
+      onMouseLeave={() => showOptionHovered && updateHoveredNode(null)}
     >
       <div className={`json-tree-icon-container  mx-2 ${applySelectedNodeStyles && 'selected-node'}`}>
         <JSONNodeIndicator
@@ -305,7 +305,7 @@ export const JSONNode = ({ data, ...restProps }) => {
             'group-object-container': shouldDisplayIntendedBlock,
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
           })}
-          onMouseEnter={() => isOptionHovered && updateHoveredNode(currentNode, currentNodePath)}
+          onMouseEnter={() => showOptionHovered && updateHoveredNode(currentNode, currentNodePath)}
         >
           <JSONNode.InputSelector
             toShow={useInputSelector}
