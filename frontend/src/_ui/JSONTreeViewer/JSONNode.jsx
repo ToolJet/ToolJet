@@ -405,7 +405,19 @@ const InputSelector = ({ toShow, type, callBack, checkedNode }) => {
 
   if (!toShow) return null;
 
-  return <input type={type} checked={state} className={`json-tree-${type} mx-1`} onChange={handleOnClick} />;
+  const defaultStyles = {
+    marginTop: '2px',
+  };
+
+  return (
+    <input
+      style={defaultStyles}
+      type={type}
+      checked={state}
+      className={`json-tree-${type} mx-1`}
+      onChange={handleOnClick}
+    />
+  );
 };
 
 JSONNode.DisplayNodeLabel = DisplayNodeLabel;
