@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
@@ -18,6 +18,7 @@ export const TreeSelect = function ({
   currentState,
 }) {
   const [selectedValues, setSelectedValues] = useState([]);
+  const [displayValues, setDisplayValues] = useState([]);
   const data = {
     countries: {
       India: {
@@ -64,6 +65,14 @@ export const TreeSelect = function ({
     setSelectedValues(newSelectedValues);
   };
 
+  useEffect(() => {
+    const newDisplayValues = [];
+    selectedValues.forEach((val) => {
+      newDisplayValues.push(val.value);
+    });
+    setDisplayValues(newDisplayValues);
+  }, [selectedValues]);
+
   return (
     <div style={{ width, position: 'relative' }} className="">
       <OverlayTrigger
@@ -94,9 +103,9 @@ export const TreeSelect = function ({
       >
         <div style={{ padding: '0.25rem 0' }}>
           <strong>Select</strong>
-          {selectedValues.map((selectedValue) => (
-            <span key={selectedValue.path} className="mx-1">
-              {selectedValue.value}
+          {displayValues.map((value, index) => (
+            <span key={index} className="mx-1">
+              {value}
             </span>
           ))}
         </div>
