@@ -1,11 +1,11 @@
 ---
 id: html
-title: HTML Component
+title: HTML 
 ---
 
-# HTML Component
+# HTML
 
-HTML Component can be used to do create your own HTML-CSS layout.
+HTML widget can be used to do create your own HTML-CSS layout.
 
 <div style={{textAlign: 'center'}}>
 
