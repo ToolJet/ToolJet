@@ -1,11 +1,11 @@
 ---
 id: color-picker
-title: Color Picker Component
+title: Color Picker
 ---
 
-# Color Picker Component
+# Color Picker
 
-Color Picker component is used to select the desired color from the color picker
+Color Picker widget is used to select the desired color from the color picker
 
 <div style={{textAlign: 'center'}}>
 
