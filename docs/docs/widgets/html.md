@@ -3,7 +3,7 @@ id: html
 title: HTML Component
 ---
 
-# Custom Component
+# HTML Component
 
 HTML Component can be used to do create your own HTML-CSS layout.
 
