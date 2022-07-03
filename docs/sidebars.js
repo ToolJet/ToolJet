@@ -131,6 +131,7 @@ const sidebars = {
         'widgets/star',
         'widgets/statistics',
         'widgets/steps',
+        'widgets/html',
         'widgets/table',
         'widgets/tabs',
         'widgets/tags',
