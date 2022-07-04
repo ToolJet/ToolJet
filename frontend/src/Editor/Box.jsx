@@ -157,11 +157,11 @@ export const Box = function Box({
       ? validateProperties(resolvedProperties, componentMeta.properties)
       : [resolvedProperties, []];
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
-  resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
   const [validatedStyles, styleErrors] =
     mode === 'edit' && component.validate
       ? validateProperties(resolvedStyles, componentMeta.styles)
       : [resolvedStyles, []];
+  validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
   const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
   const [validatedGeneralProperties, generalPropertiesErrors] =
     mode === 'edit' && component.validate
