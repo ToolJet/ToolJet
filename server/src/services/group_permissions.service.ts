@@ -144,7 +144,7 @@ export class GroupPermissionsService {
           throw new BadRequestException('Cannot update a defualt group name');
         }
 
-        if (['All Users', 'Admin'].includes(name)) {
+        if (reservedGroups.includes(name.replace(/ /g, '_').toLowerCase())) {
           throw new BadRequestException('Group name already exists');
         }
 
