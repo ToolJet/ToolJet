@@ -19,6 +19,7 @@ export const TreeSelect = function ({
 }) {
   const [selectedValues, setSelectedValues] = useState([]);
   const [displayValues, setDisplayValues] = useState([]);
+
   const data = {
     countries: {
       India: {
@@ -89,7 +90,7 @@ export const TreeSelect = function ({
               enableCopyToClipboard={false}
               useActions={false}
               actionIdentifier="id"
-              expandWithLabels={true}
+              expandWithLabels={false}
               showNodeType={false}
               hideArrayKeys={true}
               useInputSelector={true}
