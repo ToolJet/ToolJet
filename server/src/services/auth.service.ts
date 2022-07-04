@@ -179,19 +179,15 @@ export class AuthService {
 
     const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
 
-    if (user.isPasswordLogin && !formConfigs?.enabled) {
+    if ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO)) {
       // no configurations in organization side or Form login disabled for the organization
-      throw new UnauthorizedException('Password login disabled for the organization');
-    }
-
-    if (user.isSSOLogin && !organization.inheritSSO) {
-      // Instance based SSO not allowed
-      throw new UnauthorizedException('SSO login disabled for the organization');
+      throw new UnauthorizedException('Please log in to continue');
     }
 
     // Updating default organization Id
-    user.isPasswordLogin &&
-      (await this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId }));
+    this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId }).catch((error) => {
+      console.error('Error while updating default organization id', error);
+    });
 
     const payload = {
       username: user.id,
