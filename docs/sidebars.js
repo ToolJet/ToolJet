@@ -16,7 +16,7 @@ const sidebars = {
       label: 'Setup',
       link: {type: 'doc', id: 'setup/index'},
       items: [
-        'setup/docker-local',
+        'setup/try-tooljet',
         'setup/docker',
         'setup/heroku',
         'setup/ec2',
@@ -63,6 +63,7 @@ const sidebars = {
         'data-sources/airtable',
         'data-sources/s3',
         'data-sources/appwrite',
+        'data-sources/athena',
         'data-sources/baserow',
         'data-sources/bigquery',
         'data-sources/firestore',
