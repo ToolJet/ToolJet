@@ -97,7 +97,6 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
         id="popover-basic"
         style={{ width: '350px', maxWidth: '350px' }}
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow`}
-        data-cy="popover-card"
       >
         <Popover.Content>
           <>
