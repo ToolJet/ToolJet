@@ -17,6 +17,7 @@ export const Modal = function Modal({
   setExposedVariable,
 }) {
   const [showModal, setShowModal] = useState(false);
+  const { hideOnEsc, hideCloseButton, hideTitleBar } = properties;
   const parentRef = useRef(null);
 
   const title = properties.title ?? '';
@@ -46,19 +47,23 @@ export const Modal = function Modal({
         keyboard={true}
         enforceFocus={false}
         animation={false}
-        onEscapeKeyDown={() => hideModal()}
+        onEscapeKeyDown={() => hideOnEsc && hideModal()}
       >
         {containerProps.mode === 'edit' && (
           <ConfigHandle id={id} component={component} setSelectedComponent={containerProps.onComponentClick} />
         )}
-        <BootstrapModal.Header>
-          <BootstrapModal.Title>{title}</BootstrapModal.Title>
-          <div>
-            <Button variant={darkMode ? 'secondary' : 'light'} size="sm" onClick={hideModal}>
-              x
-            </Button>
-          </div>
-        </BootstrapModal.Header>
+        {!hideTitleBar && (
+          <BootstrapModal.Header>
+            <BootstrapModal.Title>{title}</BootstrapModal.Title>
+            {!hideCloseButton && (
+              <div>
+                <Button variant={darkMode ? 'secondary' : 'light'} size="sm" onClick={() => hideModal()}>
+                  x
+                </Button>
+              </div>
+            )}
+          </BootstrapModal.Header>
+        )}
 
         <BootstrapModal.Body style={{ height }} ref={parentRef} id={id}>
           <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
