@@ -859,7 +859,6 @@ export const widgets = [
       },
       events: [],
       styles: {
-        groupActions: { value: 'left' },
         textSize: { value: 14 },
         textColor: { value: '#000' },
         textAlign: { value: 'left' },
