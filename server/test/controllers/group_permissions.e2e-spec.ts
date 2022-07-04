@@ -177,6 +177,30 @@ describe('group permissions controller', () => {
       expect(response.statusCode).toBe(403);
     });
 
+    it('should allow admin to update a group name', async () => {
+      const {
+        organization: { adminUser },
+      } = await setupOrganizations(nestApp);
+
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/group_permissions')
+        .set('Authorization', authHeaderForUser(adminUser))
+        .send({ group: 'avengers' });
+
+      expect(createResponse.statusCode).toBe(201);
+
+      //update a group name
+      const updateResponse = await request(nestApp.getHttpServer())
+        .put(`/api/group_permissions/${createResponse.body.id}`)
+        .set('Authorization', authHeaderForUser(adminUser))
+        .send({ name: 'titans' });
+
+      expect(updateResponse.statusCode).toBe(200);
+
+      const updatedGroup = await getManager().findOne(GroupPermission, createResponse.body.id);
+      expect(updatedGroup.group).toEqual('titans');
+    });
+
     it('should allow admin to add and remove apps to group permission', async () => {
       const {
         organization: { adminUser, app },
