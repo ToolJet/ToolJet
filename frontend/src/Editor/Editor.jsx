@@ -73,7 +73,6 @@ class Editor extends React.Component {
     const { socket } = createWebsocketConnection(appId);
 
     this.socket = socket;
-
     let userVars = {};
 
     if (currentUser) {
@@ -314,6 +313,7 @@ class Editor extends React.Component {
           this.setState(
             {
               dataQueries: data.data_queries,
+              filterDataQueries: data.data_queries,
               loadingDataQueries: false,
               app: {
                 ...this.state.app,
@@ -960,10 +960,10 @@ class Editor extends React.Component {
 
   filterQueries = (value) => {
     if (value) {
-      const fuse = new Fuse(this.state.dataQueries, { keys: ['name'] });
+      const fuse = new Fuse(this.state.filterDataQueries, { keys: ['name'] });
       const results = fuse.search(value);
       this.setState({
-        dataQueries: results.map((result) => result.item),
+        filterDataQueries: results.map((result) => result.item),
         dataQueriesDefaultText: 'No Queries found.',
       });
     } else {
@@ -1472,8 +1472,8 @@ class Editor extends React.Component {
                         </div>
                       ) : (
                         <div className="query-list p-1 mt-1">
-                          <div>{dataQueries.map((query) => this.renderDataQuery(query))}</div>
-                          {dataQueries.length === 0 && (
+                          <div>{this.state.filterDataQueries.map((query) => this.renderDataQuery(query))}</div>
+                          {this.state.filterDataQueries.length === 0 && (
                             <div className="mt-5">
                               <center>
                                 <span className="mute-text">{dataQueriesDefaultText}</span> <br />
