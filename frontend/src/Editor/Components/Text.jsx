@@ -1,30 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
-// export const Text = function Text({ height, properties, styles, darkMode }) {
-//   const [loadingState, setLoadingState] = useState(false);
-
-//   let {
-//     textSize,
-//     textColor,
-//     textAlign,
-//     visibility,
-//     disabledState,
-//     fontWeight,
-//     decoration,
-//     transformation,
-//     fontStyle,
-//     lineHeight,
-//     textIndent,
-//     letterSpacing,
-//     wordSpacing,
-//     fontVariant,
-//   } = styles;
-
-//   const text = properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
 export const Text = function Text({ height, properties, styles, darkMode, registerAction }) {
-  // const { textSize, textColor, textAlign, visibility, disabledState } = styles;
-
   let {
     textSize,
     textColor,
