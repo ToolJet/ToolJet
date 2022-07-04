@@ -2,7 +2,7 @@ import React from 'react';
 
 export function Menu({ onChange, items, selected }) {
   return (
-    <div className="left-menu">
+    <div className="left-menu card">
       <ul data-cy="left-menu-items">
         {items &&
           items.map((item) => (
