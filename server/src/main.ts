@@ -74,6 +74,10 @@ async function bootstrap() {
   });
 }
 
-globalAgentBootstrap();
+// Bootstrap global agent only if TOOLJET_HTTP_PROXY is set
+if (process.env.TOOLJET_HTTP_PROXY) {
+  process.env['GLOBAL_AGENT_ENVIRONMENT_VARIABLE_NAMESPACE'] = 'TOOLJET';
+  globalAgentBootstrap();
+}
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
