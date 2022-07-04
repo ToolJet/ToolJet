@@ -93,6 +93,9 @@ export class OrganizationsService {
         appCreate: isAdmin,
         appDelete: isAdmin,
         folderCreate: isAdmin,
+        orgEnvironmentVariableCreate: isAdmin,
+        orgEnvironmentVariableUpdate: isAdmin,
+        orgEnvironmentVariableDelete: isAdmin,
         folderUpdate: isAdmin,
         folderDelete: isAdmin,
       });

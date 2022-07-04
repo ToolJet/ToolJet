@@ -87,6 +87,19 @@ export const widgets = [
       searchText: '',
       selectedRows: [],
     },
+    actions: [
+      {
+        handle: 'setPage',
+        displayName: 'Set page',
+        params: [
+          {
+            handle: 'page',
+            displayName: 'Page',
+            defaultValue: '{{1}}',
+          },
+        ],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -166,6 +179,17 @@ export const widgets = [
       borderRadius: { type: 'number', displayName: 'Border radius' },
     },
     exposedVariables: {},
+    actions: [
+      {
+        handle: 'click',
+        displayName: 'Click',
+      },
+      {
+        handle: 'setLabel',
+        displayName: 'Set label',
+        params: [{ handle: 'label', displayName: 'Label', defaultValue: 'New label' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -802,6 +826,13 @@ export const widgets = [
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {},
+    actions: [
+      {
+        handle: 'setText',
+        displayName: 'Set Text',
+        params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
