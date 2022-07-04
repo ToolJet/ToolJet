@@ -16,6 +16,35 @@ describe('oauth controller', () => {
   let orgRepository: Repository<Organization>;
   let mockConfig;
 
+  const authResponseKeys = [
+    'id',
+    'email',
+    'first_name',
+    'last_name',
+    'auth_token',
+    'admin',
+    'organization_id',
+    'organization',
+    'group_permissions',
+    'app_group_permissions',
+  ].sort();
+
+  const groupPermissionsKeys = [
+    'id',
+    'organization_id',
+    'group',
+    'app_create',
+    'app_delete',
+    'updated_at',
+    'created_at',
+    'folder_create',
+    'folder_update',
+    'folder_delete',
+    'org_environment_variable_create',
+    'org_environment_variable_delete',
+    'org_environment_variable_update',
+  ].sort();
+
   beforeEach(async () => {
     await clearDB();
   });
@@ -166,20 +195,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const {
             email,
@@ -200,23 +216,7 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_update',
-              'folder_delete',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
         });
 
@@ -256,20 +256,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const {
             email,
@@ -290,23 +277,7 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_update',
-              'folder_delete',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
         });
 
@@ -343,20 +314,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const {
             email,
@@ -377,23 +335,7 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_update',
-              'folder_delete',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
         });
         it('should return login info when the user does not exist and name not available and sign up is enabled', async () => {
@@ -429,20 +371,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
             response.body;
@@ -454,23 +383,7 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_update',
-              'folder_delete',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
         });
         it('should return login info when the user does not exist and email id not available and sign up is enabled', async () => {
@@ -526,20 +439,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
             response.body;
@@ -551,23 +451,7 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_update',
-              'folder_delete',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
         });
         it('should return login info when the user exist', async () => {
@@ -612,20 +496,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const {
             email,
@@ -646,23 +517,7 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_update',
-              'folder_delete',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
         });
         it('should return login info when the user exist with invited status', async () => {
@@ -707,20 +562,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const {
             email,
@@ -892,20 +734,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const {
             email,
@@ -926,23 +755,7 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_update',
-              'folder_delete',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
         });
 
@@ -982,20 +795,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const {
             email,
@@ -1016,23 +816,7 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_update',
-              'folder_delete',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
         });
 
@@ -1069,20 +853,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const {
             email,
@@ -1103,23 +874,7 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_update',
-              'folder_delete',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
         });
         it('should return login info when the user does not exist and name not available and sign up is enabled', async () => {
@@ -1155,20 +910,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
             response.body;
@@ -1180,23 +922,7 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_update',
-              'folder_delete',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
         });
         it('should return login info when the user does not exist and email id not available and sign up is enabled', async () => {
@@ -1252,20 +978,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
             response.body;
@@ -1277,23 +990,7 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_update',
-              'folder_delete',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
         });
         it('should return login info when the user exist', async () => {
@@ -1338,20 +1035,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const {
             email,
@@ -1372,23 +1056,7 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_update',
-              'folder_delete',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
         });
         it('should return login info when the user exist with invited status', async () => {
@@ -1433,20 +1101,7 @@ describe('oauth controller', () => {
             .send({ token });
 
           expect(response.statusCode).toBe(201);
-          expect(Object.keys(response.body).sort()).toEqual(
-            [
-              'id',
-              'email',
-              'first_name',
-              'last_name',
-              'auth_token',
-              'admin',
-              'organization_id',
-              'organization',
-              'group_permissions',
-              'app_group_permissions',
-            ].sort()
-          );
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const {
             email,
