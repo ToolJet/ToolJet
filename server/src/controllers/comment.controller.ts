@@ -55,6 +55,20 @@ export class CommentController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('/notifications')
+  public async getMentionedNotifications(@User() user, @Query() query) {
+    const notifications = await this.commentService.getMentionedNotifications(user.id, query.isRead);
+    return notifications;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('/notifications/:id')
+  public async updateCommentUser(@Param('id') id: string, @Body() body: any) {
+    const notification = await this.commentService.updateCommentUser(id, body.isRead);
+    return notification;
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('/:appId/notifications')
   public async getNotifications(@User() user, @Param('appId') appId: string, @Query() query): Promise<Comment[]> {
     const ability = await this.commentsAbilityFactory.appsActions(user, { id: appId });

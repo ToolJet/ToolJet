@@ -21,6 +21,9 @@ export class CommentUsers {
   @Column({ name: 'user_id' })
   userId: string;
 
+  @Column({ default: false, name: 'is_read' })
+  isRead: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

@@ -84,6 +84,44 @@ export class CommentService {
     });
   }
 
+  public async getMentionedNotifications(userId: string, isRead = false) {
+    const notifications = await this.commentUsersRepository.find({
+      where: {
+        userId,
+        isRead,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+      relations: ['comment'],
+    });
+
+    const _notifications = notifications.map(async (notification) => {
+      const appVersion = await this.appVersionsRepository.findOne(notification.comment.appVersionsId);
+      const app = await this.appsRepository.findOne(appVersion.appId);
+      const appLink = process.env.TOOLJET_HOST + '/apps/' + app.id;
+      const commentLink =
+        appLink + '?threadId=' + notification.comment.threadId + '&commentId=' + notification.comment.id;
+      const user = await this.usersRepository.findOne(notification.comment.user.id, { relations: ['avatar'] });
+      const creator = {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatar: user.avatar?.data.toString('base64'),
+      };
+      return {
+        id: notification.id,
+        creator,
+        comment: notification.comment.comment,
+        createdAt: notification.comment.createdAt,
+        updatedAt: notification.comment.updatedAt,
+        commentLink,
+        isRead: notification.isRead,
+      };
+    });
+
+    return Promise.all(_notifications);
+  }
+
   public async getNotifications(
     appId: string,
     userId: string,
@@ -118,6 +156,11 @@ export class CommentService {
       throw new NotFoundException('Comment not found');
     }
     return foundComment;
+  }
+
+  public async updateCommentUser(commentUserId: string, isRead: boolean) {
+    const item = await this.commentUsersRepository.update(commentUserId, { isRead });
+    return item;
   }
 
   public async editComment(commentId: string, updateCommentDto: UpdateCommentDto): Promise<Comment> {
