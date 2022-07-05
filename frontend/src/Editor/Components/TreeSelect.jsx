@@ -121,12 +121,13 @@ const checkIfAllChildrenSelected = (selected, data) => {
 
   return Object.keys(parentCount)
     .map((parent) => {
-      const parentObj = selected.find((item) => item?.parent === parent);
-
-      const parentPath = parentObj?.path;
-
+      const parentPath =
+        selected
+          .find((item) => console.log('checkIfAllChildrenSelected', item) && item?.parent === parent)
+          ?.path?.split('[')[0] || '';
       if (parentPath) {
         const numberOfChildren = eval(`data.${parentPath}`).length;
+        // console.log('checkIfAllChildrenSelected', parent, parentPath, numberOfChildren, parentCount);
         if (parentCount[parent] === numberOfChildren) {
           return { [parent]: true };
         }
@@ -166,7 +167,6 @@ const addChildren = (evalValue, path, selectedValue, arr, data) => {
           value: val,
           path: `${path}[${index}]`,
           parent: selectedValue,
-          nodeType: 'array',
         });
       }
 
@@ -187,7 +187,6 @@ const addChildren = (evalValue, path, selectedValue, arr, data) => {
           value: key,
           path: `${path}.${key}`,
           parent: selectedValue,
-          nodeType: 'object',
         });
       }
 
