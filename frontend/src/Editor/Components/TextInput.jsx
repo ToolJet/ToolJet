@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from 'react';
 
-export const TextInput = function TextInput({ height, validate, properties, styles, setExposedVariable, fireEvent }) {
+export const TextInput = function TextInput({
+  height,
+  validate,
+  properties,
+  styles,
+  setExposedVariable,
+  fireEvent,
+  registerAction,
+}) {
   const [value, setValue] = useState(properties.value);
   const { isValid, validationError } = validate(value);
 
@@ -13,6 +21,13 @@ export const TextInput = function TextInput({ height, validate, properties, styl
     setExposedVariable('value', properties.value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
+
+  registerAction('setText', async function (text) {
+    setValue(text);
+  });
+  registerAction('clear', async function () {
+    setValue(' ');
+  });
 
   return (
     <div className="text-input">

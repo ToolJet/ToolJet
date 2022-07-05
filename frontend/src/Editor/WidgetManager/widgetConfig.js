@@ -381,6 +381,17 @@ export const widgets = [
     exposedVariables: {
       value: '',
     },
+    actions: [
+      {
+        handle: 'setText',
+        displayName: 'Set text',
+        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
+      },
+      {
+        handle: 'clear',
+        displayName: 'Clear',
+      },
+    ],
     definition: {
       validation: {
         regex: { value: '' },
