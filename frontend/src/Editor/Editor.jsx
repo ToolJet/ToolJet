@@ -623,6 +623,8 @@ class Editor extends React.Component {
         skipAutoSave: this.isVersionReleased(),
       });
       this.handleInspectorView();
+    } else if (this.isVersionReleased()) {
+      this.setState({ showCreateVersionModalPrompt: true });
     }
   };
 
@@ -655,6 +657,8 @@ class Editor extends React.Component {
         skipAutoSave: this.isVersionReleased(),
       });
       this.handleInspectorView();
+    } else {
+      this.setState({ showCreateVersionModalPrompt: true });
     }
   };
 
