@@ -98,7 +98,7 @@ export const AppVersionsManager = function AppVersionsManager({
         })
         .catch((_error) => {
           setIsCreatingVersion(false);
-          toast.error('Oops, something went wrong');
+          toast.error(_error?.error);
         });
     } else {
       toast.error('The name of version should not be empty');
@@ -163,7 +163,7 @@ export const AppVersionsManager = function AppVersionsManager({
         .catch((_error) => {
           setIsEditingVersion(false);
           setShowVersionDeletionConfirmation(false);
-          toast.error('Oops, something went wrong');
+          toast.error(_error?.error);
         });
     } else {
       toast.error('The name of version should not be empty');

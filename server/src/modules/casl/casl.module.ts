@@ -16,6 +16,7 @@ import { FoldersAbilityFactory } from './abilities/folders-ability.factory';
 import { AuditLoggerService } from '@services/audit_logger.service';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { FilesService } from '@services/files.service';
+import { OrgEnvironmentVariablesAbilityFactory } from './abilities/org-environment-variables-ability.factory';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App, AuditLog])],
@@ -30,6 +31,7 @@ import { FilesService } from '@services/files.service';
     CommentsAbilityFactory,
     FoldersAbilityFactory,
     AuditLoggerService,
+    OrgEnvironmentVariablesAbilityFactory,
   ],
   exports: [
     CaslAbilityFactory,
@@ -37,6 +39,7 @@ import { FilesService } from '@services/files.service';
     ThreadsAbilityFactory,
     CommentsAbilityFactory,
     FoldersAbilityFactory,
+    OrgEnvironmentVariablesAbilityFactory,
   ],
 })
 export class CaslModule {}

@@ -192,14 +192,13 @@ export const SubContainer = ({
           const initialClientOffset = monitor.getInitialClientOffset();
           const delta = monitor.getDifferenceFromInitialOffset();
 
-          left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+          left = Math.round(currentOffset?.x + currentOffset?.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
           top = Math.round(
-            initialClientOffset.y - 10 + delta.y + initialClientOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow
+            initialClientOffset?.y - 10 + delta.y + initialClientOffset?.y * (1 - zoomLevel) - offsetFromTopOfWindow
           );
 
           id = uuidv4();
         }
-
         const subContainerWidth = canvasBoundingRect.width;
         if (snapToGrid) {
           [left, top] = doSnapToGrid(subContainerWidth, left, top);

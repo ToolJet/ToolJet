@@ -27,7 +27,7 @@ If you rather want to try out ToolJet locally with docker, you can follow the st
 3. Setup a PostgreSQL database and make sure that the database is accessible. (Optional)
   :::info
   We recommend to use managed postgres service on production for ease of administration, security and management (backups, monitoring etc).
-  If you'd want to run posgres with persistent volume rather, curl for the alternate docker compose file shared in the next step.
+  If you'd want to run postgres with persistent volume rather, curl for the alternate docker compose file shared in the next step.
   :::
 
 4. Download our production docker-compose file into the server.

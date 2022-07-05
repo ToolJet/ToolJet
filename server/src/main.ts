@@ -8,6 +8,7 @@ import { AllExceptionsFilter } from './all-exceptions-filter';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
+import { bootstrap as globalAgentBootstrap } from 'global-agent';
 
 const fs = require('fs');
 
@@ -78,5 +79,10 @@ async function bootstrap() {
   });
 }
 
+// Bootstrap global agent only if TOOLJET_HTTP_PROXY is set
+if (process.env.TOOLJET_HTTP_PROXY) {
+  process.env['GLOBAL_AGENT_HTTP_PROXY'] = process.env.TOOLJET_HTTP_PROXY;
+  globalAgentBootstrap();
+}
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();

@@ -58,6 +58,7 @@
     "cookie-parser": "^1.4.6",
     "dotenv": "^10.0.0",
     "futoin-hkdf": "^1.4.2",
+    "global-agent": "^3.0.0",
     "google-auth-library": "^7.9.2",
     "got": "^11.8.2",
     "helmet": "^4.6.0",

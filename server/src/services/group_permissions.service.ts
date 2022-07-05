@@ -177,6 +177,9 @@ export class GroupPermissionsService {
       add_users,
       remove_users,
       folder_create,
+      org_environment_variable_create,
+      org_environment_variable_update,
+      org_environment_variable_delete,
       folder_delete,
       folder_update,
     } = body;
@@ -187,6 +190,15 @@ export class GroupPermissionsService {
         ...(typeof app_create === 'boolean' && { appCreate: app_create }),
         ...(typeof app_delete === 'boolean' && { appDelete: app_delete }),
         ...(typeof folder_create === 'boolean' && { folderCreate: folder_create }),
+        ...(typeof org_environment_variable_create === 'boolean' && {
+          orgEnvironmentVariableCreate: org_environment_variable_create,
+        }),
+        ...(typeof org_environment_variable_update === 'boolean' && {
+          orgEnvironmentVariableUpdate: org_environment_variable_update,
+        }),
+        ...(typeof org_environment_variable_delete === 'boolean' && {
+          orgEnvironmentVariableDelete: org_environment_variable_delete,
+        }),
         ...(typeof folder_delete === 'boolean' && { folderDelete: folder_delete }),
         ...(typeof folder_update === 'boolean' && { folderUpdate: folder_update }),
       };
@@ -270,7 +282,8 @@ export class GroupPermissionsService {
 
   async findAll(user: User): Promise<GroupPermission[]> {
     return this.groupPermissionsRepository.find({
-      organizationId: user.organizationId,
+      where: { organizationId: user.organizationId },
+      order: { createdAt: 'ASC' },
     });
   }
 
