@@ -144,7 +144,7 @@ export class GroupPermissionsService {
       if (name) {
         const reservedGroups = ['admin', 'all_users'];
         if (reservedGroups.includes(groupPermission.group)) {
-          throw new BadRequestException('Cannot update a defualt group name');
+          throw new BadRequestException('Cannot update a default group name');
         }
 
         if (reservedGroups.includes(name.replace(/ /g, '_').toLowerCase())) {
