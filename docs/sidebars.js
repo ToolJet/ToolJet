@@ -26,6 +26,7 @@ const sidebars = {
         'setup/google-cloud-run',
         'setup/client',
         'setup/env-vars',
+        'setup/http-proxy',
       ],
     },
     'security',
