@@ -144,10 +144,6 @@ export class UsersService {
     return { user, newUserCreated };
   }
 
-  async updateDefaultOrganization(user: User, organizationId: string) {
-    await this.usersRepository.update(user.id, { defaultOrganizationId: organizationId });
-  }
-
   async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
     const { forgotPasswordToken, password, firstName, lastName, addGroups, removeGroups } = params;
 
@@ -183,7 +179,10 @@ export class UsersService {
     return user;
   }
 
-  async updateUser(userId, updatableParams) {
+  async updateUser(userId: string, updatableParams: Partial<User>) {
+    if (updatableParams.password) {
+      updatableParams.password = bcrypt.hashSync(updatableParams.password, 10);
+    }
     await this.usersRepository.update(userId, updatableParams);
   }
 
@@ -282,6 +281,9 @@ export class UsersService {
       case 'Folder':
         return await this.canUserPerformActionOnFolder(user, action);
 
+      case 'OrgEnvironmentVariable':
+        return await this.canUserPerformActionOnEnvironmentVariable(user, action);
+
       default:
         return false;
     }
@@ -326,6 +328,36 @@ export class UsersService {
         break;
       case 'delete':
         permissionGrant = this.canAnyGroupPerformAction('folderDelete', await this.groupPermissions(user));
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async canUserPerformActionOnEnvironmentVariable(user: User, action: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentVariableCreate',
+          await this.groupPermissions(user)
+        );
+        break;
+      case 'update':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentVariableUpdate',
+          await this.groupPermissions(user)
+        );
+        break;
+      case 'delete':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentVariableDelete',
+          await this.groupPermissions(user)
+        );
         break;
       default:
         permissionGrant = false;

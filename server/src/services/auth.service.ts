@@ -58,7 +58,23 @@ export class AuthService {
   private async validateUser(email: string, password: string, organizationId?: string): Promise<User> {
     const user = await this.usersService.findByEmail(email, organizationId, 'active');
 
-    if (!(user && (await bcrypt.compare(password, user.password)))) {
+    if (!user) return;
+
+    const passwordRetryConfig = this.configService.get<string>('PASSWORD_RETRY_LIMIT');
+
+    const passwordRetryAllowed = passwordRetryConfig ? parseInt(passwordRetryConfig) : 5;
+
+    if (
+      this.configService.get<string>('DISABLE_PASSWORD_RETRY_LIMIT') !== 'true' &&
+      user.passwordRetryCount >= passwordRetryAllowed
+    ) {
+      throw new UnauthorizedException(
+        'Maximum password retry limit reached, please reset your password using forget password option'
+      );
+    }
+
+    if (!(await bcrypt.compare(password, user.password))) {
+      await this.usersService.updateUser(user.id, { passwordRetryCount: user.passwordRetryCount + 1 });
       return;
     }
 
@@ -118,10 +134,10 @@ export class AuthService {
       }
     }
 
-    if (user.defaultOrganizationId !== user.organizationId) {
-      // Updating default organization Id
-      await this.usersService.updateDefaultOrganization(user, organization.id);
-    }
+    await this.usersService.updateUser(user.id, {
+      ...(user.defaultOrganizationId !== user.organizationId && { defaultOrganizationId: organization.id }),
+      passwordRetryCount: 0,
+    });
 
     await this.auditLoggerService.perform({
       request,
@@ -198,7 +214,7 @@ export class AuthService {
     }
 
     // Updating default organization Id
-    await this.usersService.updateDefaultOrganization(newUser, newUser.organizationId);
+    await this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId });
 
     const payload = {
       username: user.id,
@@ -283,19 +299,23 @@ export class AuthService {
 
   async forgotPassword(email: string) {
     const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException('Email address not found');
+    }
     const forgotPasswordToken = uuid.v4();
-    await this.usersService.update(user.id, { forgotPasswordToken });
+    await this.usersService.updateUser(user.id, { forgotPasswordToken });
     await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken);
   }
 
   async resetPassword(token: string, password: string) {
     const user = await this.usersService.findByPasswordResetToken(token);
     if (!user) {
-      throw new NotFoundException('Invalid token');
+      throw new NotFoundException('Invalid URL');
     } else {
-      await this.usersService.update(user.id, {
+      await this.usersService.updateUser(user.id, {
         password,
         forgotPasswordToken: null,
+        passwordRetryCount: 0,
       });
     }
   }
@@ -453,6 +473,7 @@ export class AuthService {
         Object.assign(user, {
           ...(password ? { password } : {}),
           invitationToken: null,
+          passwordRetryCount: 0,
         })
       );
     }
