@@ -16,7 +16,7 @@ export const KanbanBoard = ({
   removeComponent,
   fireEvent,
 }) => {
-  const { columns, cardData, enableAddCard } = properties;
+  const { columns, cardData } = properties;
 
   const { visibility, disabledState, width, minWidth, accentColor } = styles;
 
@@ -107,9 +107,7 @@ export const KanbanBoard = ({
   }
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
-    <BoardContext.Provider
-      value={{ id, currentState, enableAddCard, accentColor, containerProps, removeComponent, darkMode }}
-    >
+    <BoardContext.Provider value={{ id, currentState, accentColor, containerProps, removeComponent, darkMode }}>
       <div
         id={id}
         style={{ display: visibility ? '' : 'none' }}
