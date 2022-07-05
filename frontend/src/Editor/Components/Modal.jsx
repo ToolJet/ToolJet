@@ -15,6 +15,7 @@ export const Modal = function Modal({
   styles,
   exposedVariables,
   setExposedVariable,
+  registerAction,
 }) {
   const [showModal, setShowModal] = useState(false);
   const parentRef = useRef(null);
@@ -23,6 +24,15 @@ export const Modal = function Modal({
   const size = properties.size ?? 'lg';
 
   const { disabledState } = styles;
+
+  registerAction('setShow', async function () {
+    setExposedVariable('show', true);
+    setShowModal(true);
+  });
+  registerAction('setClose', async function () {
+    setShowModal(false);
+    setExposedVariable('show', false);
+  });
 
   useEffect(() => {
     const canShowModal = exposedVariables.show ?? false;
