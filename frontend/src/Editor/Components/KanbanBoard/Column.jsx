@@ -113,6 +113,11 @@ const Column = ({
             ))}
 
             {dndProps.placeholder}
+            {enableAddCard && (
+              <button className="btn btn-primary w-100 add-card-btn" onClick={() => addNewItem(state, keyIndex)}>
+                Add card
+              </button>
+            )}
           </div>
         </div>
       )}

@@ -2441,6 +2441,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       columns: { type: 'code', displayName: 'Columns' },
       cardData: { type: 'code', displayName: 'Card Data' },
+      enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
     },
     events: {
       onCardAdded: { displayName: 'Card added' },
@@ -2475,6 +2476,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         cardData: {
           value:
             '{{[{ id: "01", title: "one", columnId: "1" },{ id: "02", title: "two", columnId: "1" },{ id: "03", title: "three", columnId: "2" }]}}',
+        },
+        enableAddCard: {
+          value: `{{true}}`,
         },
       },
       events: [],
