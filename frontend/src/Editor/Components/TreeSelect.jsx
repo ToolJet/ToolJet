@@ -27,22 +27,12 @@ export const TreeSelect = function ({
           Maharashtra: ['Pune', 'Mumbai'],
           Gujarat: ['Surat', 'Vadodara'],
           Rajasthan: ['Jaipur', 'Ajmer'],
-          locaton: {
-            latitude: '18.5204',
-            longitude: '73.8567',
-            climate: ['cool', 'warm'],
-          },
         },
       },
       Portugal: {
         states: {
           Alentejo: ['Aveiro', 'Beja', 'Braga'],
           Beira: ['Faro', 'Guarda', 'Leiria'],
-        },
-        location: {
-          latitude: '40.636',
-          longitude: '-8.65',
-          climate: ['cool', 'warm'],
         },
       },
     },
@@ -55,7 +45,7 @@ export const TreeSelect = function ({
       newSelectedValues.push({ value: selectedValue, path, parent: currentPathArr[currentPathArr.length - 2] });
       const evalautedValue = eval(`data.${path}`);
 
-      addChildren(evalautedValue, path, selectedValue, newSelectedValues);
+      addChildren(evalautedValue, path, selectedValue, newSelectedValues, data);
     } else {
       newSelectedValues.splice(newSelectedValues.indexOf(selectedValue), 1);
       const evalautedValue = eval(`data.${path}`);
@@ -119,14 +109,67 @@ export const TreeSelect = function ({
 
 // !utils
 
-const addChildren = (evalValue, path, selectedValue, arr) => {
+const checkIfAllChildrenSelected = (selected, data) => {
+  const parentCount = {};
+  selected.map((item) => {
+    if (item.parent in parentCount) {
+      parentCount[item.parent] += 1;
+    } else {
+      parentCount[item.parent] = 1;
+    }
+  });
+
+  return Object.keys(parentCount)
+    .map((parent) => {
+      const parentObj = selected.find((item) => item?.parent === parent);
+
+      const parentPath = parentObj?.path;
+
+      if (parentPath) {
+        const numberOfChildren = eval(`data.${parentPath}`).length;
+        if (parentCount[parent] === numberOfChildren) {
+          return { [parent]: true };
+        }
+
+        return { [parent]: false };
+      }
+    })
+    .filter((item) => item !== undefined);
+};
+
+function updateSelectedParent(parentName, selected) {
+  function toGetParent(path) {
+    const x = path.split('.');
+    return x[x.length - 2];
+  }
+
+  if (selected.length > 0) {
+    const children = selected.filter((item) => item.parent === parentName);
+    const parentPath = new Set(children.map((item) => item.path.split('[')[0]));
+    const parentObj = {
+      value: parentName,
+      path: Array.from(parentPath)[0],
+      parent: toGetParent(Array.from(parentPath)[0]),
+    };
+
+    return parentObj;
+  }
+
+  return undefined;
+}
+
+const addChildren = (evalValue, path, selectedValue, arr, data) => {
   if (Object.prototype.toString.call(evalValue).slice(8, -1) === 'Array') {
     evalValue.forEach((val, index) => {
-      arr.push({
-        value: val,
-        path: `${path}[${index}]`,
-        parent: selectedValue,
-      });
+      if (!arr.map((item) => item.path).includes(`${path}[${index}]`)) {
+        arr.push({
+          value: val,
+          path: `${path}[${index}]`,
+          parent: selectedValue,
+          nodeType: 'array',
+        });
+      }
+
       if (Object.prototype.toString.call(val).slice(8, -1) === 'Array') {
         addChildren(val, `${path}[${index}]`, val, arr);
       }
@@ -139,16 +182,45 @@ const addChildren = (evalValue, path, selectedValue, arr) => {
 
   if (Object.prototype.toString.call(evalValue).slice(8, -1) === 'Object') {
     Object.keys(evalValue).forEach((key) => {
-      arr.push({
-        value: key,
-        path: `${path}.${key}`,
-        parent: selectedValue,
-      });
+      if (!arr.map((item) => item.path).includes(`${path}.${key}`)) {
+        arr.push({
+          value: key,
+          path: `${path}.${key}`,
+          parent: selectedValue,
+          nodeType: 'object',
+        });
+      }
+
       if (Object.prototype.toString.call(evalValue[key]).slice(8, -1) === 'Array') {
         addChildren(evalValue[key], `${path}.${key}`, evalValue[key], arr);
       }
       if (Object.prototype.toString.call(evalValue[key]).slice(8, -1) === 'Object') {
         addChildren(evalValue[key], `${path}.${key}`, evalValue[key], arr);
+      }
+    });
+  }
+
+  const isAllChildChecked = checkIfAllChildrenSelected(arr, data);
+
+  if (isAllChildChecked.length > 0) {
+    isAllChildChecked.forEach((item) => {
+      const parentNode = _.uniq(arr.map((val) => (item[val.parent] === true ? val.parent : null))).filter(
+        (val) => val !== null
+      )[0];
+      if (parentNode) {
+        const parentIndex = arr.findIndex((val) => val.value === parentNode);
+
+        if (parentIndex === -1) {
+          const parentObj = updateSelectedParent(parentNode, arr);
+
+          if (
+            Object.prototype.hasOwnProperty.call(parentObj, 'value') &&
+            Object.prototype.hasOwnProperty.call(parentObj, 'path') &&
+            Object.prototype.hasOwnProperty.call(parentObj, 'parent')
+          ) {
+            arr.push(parentObj);
+          }
+        }
       }
     });
   }
