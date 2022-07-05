@@ -77,6 +77,9 @@ You can specify a different server for backend if it is hosted on another server
 
 If you want to disable Multi-Workspace feature, set the environment variable `DISABLE_MULTI_WORKSPACE` to `true`.
 
+### Hide account setup link
+
+If you want to hide account setup link from admin in manage user page, set the environment variable `HIDE_ACCOUNT_SETUP_LINK` to `true`, please make sure you have configured SMTP to receive welcome mail for users. Valid only if `DISABLE_MULTI_WORKSPACE` is not `true`.
 
 #### Disabling signups ( optional )
 
@@ -204,3 +207,12 @@ This can be an absolute path, or relative to main HTML file.
 | variable           | description                                                   |
 | ------------------ | -----------------------------------------------------------   |
 | ASSET_PATH         | the asset path for the website ( eg: https://app.tooljet.com/) |
+
+
+#### Password Retry Limit (Optional)
+The maximum retry limit of login password for a user is by default set to 5, account will be locked after 5 unsuccessful login attempts. Use the variables mentioned below to control this behavior:
+
+| variable                              | description                                                   |
+| ------------------------------------- | -----------------------------------------------------------   |
+| DISABLE_PASSWORD_RETRY_LIMIT          | (true/false) To disable the password retry check, if value is `true` then no limits for password retry |
+| PASSWORD_RETRY_LIMIT                  | To change the default password retry limit (5) |

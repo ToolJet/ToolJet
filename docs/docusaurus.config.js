@@ -42,6 +42,10 @@ module.exports = {
       },
       items: [
         {
+          type: 'search',
+          position: 'left',
+        },
+        {
           href: 'https://github.com/ToolJet/ToolJet',
           label: 'GitHub',
           position: 'right',
@@ -98,6 +102,13 @@ module.exports = {
         },
       ],
       copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc.`,
+    },
+    algolia: {
+      appId: 'O8HQRLI0WA',
+      apiKey: process.env.ALGOLIA_API_KEY || 'development', // Public API key: it is safe to commit it
+      indexName: 'tooljet',
+      contextualSearch: true,
+      externalUrlRegex: 'external\\.com|domain\\.com',
     },
   },
   presets: [

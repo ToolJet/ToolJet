@@ -38,13 +38,18 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { RangeSlider } from './Components/RangeSlider';
 import { Timeline } from './Components/Timeline';
 import { SvgImage } from './Components/SvgImage';
+import { Html } from './Components/Html';
+import { ButtonGroup } from './Components/ButtonGroup';
 import { CustomComponent } from './Components/CustomComponent/CustomComponent';
 import { VerticalDivider } from './Components/verticalDivider';
 import { PDF } from './Components/PDF';
+import { ColorPicker } from './Components/ColorPicker';
+import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
+import { Steps } from './Components/Steps';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
-import { resolveProperties, resolveStyles } from './component-properties-resolution';
-import { validateWidget, resolveReferences } from '@/_helpers/utils';
+import { resolveProperties, resolveStyles, resolveGeneralProperties } from './component-properties-resolution';
+import { validateWidget } from '@/_helpers/utils';
 
 const AllComponents = {
   Button,
@@ -85,9 +90,14 @@ const AllComponents = {
   RangeSlider,
   Timeline,
   SvgImage,
+  Html,
+  ButtonGroup,
   CustomComponent,
   VerticalDivider,
   PDF,
+  ColorPicker,
+  KanbanBoard,
+  Steps,
 };
 
 export const Box = function Box({
@@ -112,8 +122,6 @@ export const Box = function Box({
   mode,
   customResolvables,
   parentId,
-  allComponents,
-  extraProps,
   dataQueries,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
@@ -135,6 +143,7 @@ export const Box = function Box({
 
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
+  const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
   resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
 
   useEffect(() => {
@@ -151,46 +160,29 @@ export const Box = function Box({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
 
-  let exposedVariables = {};
-  let isListView = false;
-
-  if (component.parent) {
-    const parentComponent = allComponents[component.parent];
-    isListView = parentComponent?.component?.component === 'Listview';
-
-    if (isListView) {
-      const itemsAtIndex = currentState?.components[parentId]?.data[extraProps.listviewItemIndex];
-      exposedVariables = itemsAtIndex !== undefined ? itemsAtIndex[component.name] || {} : {};
-    } else {
-      exposedVariables = currentState?.components[component.name] ?? {};
-    }
-  } else {
-    exposedVariables = currentState?.components[component.name] ?? {};
-  }
+  let exposedVariables = currentState?.components[component.name] ?? {};
 
   const fireEvent = (eventName, options) => {
     if (mode === 'edit' && eventName === 'onClick') {
       onComponentClick(id, component);
     }
-    const listItem = isListView
-      ? resolveReferences(allComponents[component.parent].component.definition.properties.data.value, currentState)[
-          extraProps.listviewItemIndex
-        ] ?? {}
-      : {};
-    onEvent(eventName, { ...options, customVariables: { listItem }, component });
+    onEvent(eventName, { ...options, customVariables: { ...customResolvables }, component });
   };
   const validate = (value) =>
     validateWidget({
       ...{ widgetValue: value },
       ...{ validationObject: component.definition.validation, currentState },
+      customResolveObjects: customResolvables,
     });
 
   return (
     <OverlayTrigger
-      placement="top"
+      placement={inCanvas ? 'auto' : 'top'}
       delay={{ show: 500, hide: 0 }}
-      trigger={!inCanvas ? ['hover', 'focus'] : null}
-      overlay={(props) => renderTooltip({ props, text: `${component.description}` })}
+      trigger={inCanvas && !resolvedGeneralProperties.tooltip?.trim() ? null : ['hover', 'focus']}
+      overlay={(props) =>
+        renderTooltip({ props, text: inCanvas ? `${resolvedGeneralProperties.tooltip}` : `${component.description}` })
+      }
     >
       <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
         {inCanvas ? (
@@ -213,8 +205,14 @@ export const Box = function Box({
             properties={resolvedProperties}
             exposedVariables={exposedVariables}
             styles={resolvedStyles}
-            setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, extraProps)}
-            registerAction={(actionName, func) => onComponentOptionChanged(component, actionName, func)}
+            setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
+            registerAction={(actionName, func, paramHandles = []) => {
+              if (Object.keys(exposedVariables).includes(actionName)) return Promise.resolve();
+              else {
+                func.paramHandles = paramHandles;
+                return onComponentOptionChanged(component, actionName, func);
+              }
+            }}
             fireEvent={fireEvent}
             validate={validate}
             parentId={parentId}
@@ -226,6 +224,7 @@ export const Box = function Box({
             <div
               className="component-image-holder p-2 d-flex flex-column justify-content-center"
               style={{ height: '100%' }}
+              data-cy="widget-list"
             >
               <center>
                 <div

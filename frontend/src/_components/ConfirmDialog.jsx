@@ -28,9 +28,9 @@ export function ConfirmDialog({ show, message, onConfirm, onCancel, confirmButto
         contentClassName={darkMode ? 'theme-dark' : ''}
       >
         <div className="modal-status bg-danger"></div>
-        <Modal.Body>{message}</Modal.Body>
+        <Modal.Body data-cy="modal-message">{message}</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button variant="secondary" onClick={handleClose} data-cy="confirm-cancel-button">
             Cancel
           </Button>
           <Button
@@ -38,6 +38,7 @@ export function ConfirmDialog({ show, message, onConfirm, onCancel, confirmButto
             autoFocus
             className={`${confirmButtonLoading ? 'btn-loading' : ''}`}
             onClick={handleConfirm}
+            data-cy="confirm-yes-button"
           >
             Yes
           </Button>

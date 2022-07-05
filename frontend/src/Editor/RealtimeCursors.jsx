@@ -1,27 +1,44 @@
 /* eslint-disable import/no-unresolved */
 import React from 'react';
-import { useOthers, useSelf } from 'y-presence';
+import { useOthers, useSelf, useUpdatePresence } from '@y-presence/react';
+import { useEventListener } from '@/_hooks/use-event-listener';
 import { xorWith, isEqual } from 'lodash';
-import { Editor } from '@/Editor';
+import { Cursor } from './Cursor';
 import { USER_COLORS } from '@/_helpers/constants';
+import { userService } from '@/_services';
 
-const RealtimeCursors = (props) => {
+const RealtimeCursors = ({ editingVersionId }) => {
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
   const others = useOthers();
 
   const unavailableColors = others.map((other) => other?.presence?.color);
   const availableColors = xorWith(USER_COLORS, unavailableColors, isEqual);
 
-  const { self, updatePresence } = useSelf({
-    firstName: currentUser.first_name,
-    lastName: currentUser.last_name,
-    image: '', // todo: add image feature for a user avatar
-    editingVersionId: '',
-    x: 0,
-    y: 0,
-    color: availableColors[Math.floor(Math.random() * availableColors.length)],
-  });
+  const self = useSelf();
+  const updatePresence = useUpdatePresence();
+
+  React.useEffect(() => {
+    updatePresence({ color: availableColors[Math.floor(Math.random() * availableColors.length)] });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  React.useEffect(() => {
+    updatePresence({ editingVersionId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingVersionId]);
+
+  React.useEffect(() => {
+    async function fetchAvatar() {
+      const blob = await userService.getAvatar(currentUser.avatar_id);
+      const fileReader = new FileReader();
+      fileReader.onload = (e) => {
+        updatePresence({ image: e.target.result });
+      };
+      fileReader.readAsDataURL(blob);
+    }
+    if (currentUser.avatar_id) fetchAvatar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser.avatar_id]);
 
   const othersOnSameVersion = others.filter(
     (other) => other?.presence?.editingVersionId === self?.presence.editingVersionId
@@ -46,16 +63,15 @@ const RealtimeCursors = (props) => {
     [updatePresence]
   );
 
+  useEventListener('mousemove', handlePointerMove);
+
   return (
-    <div onPointerMove={handlePointerMove}>
-      <Editor
-        {...props}
-        othersOnSameVersion={othersOnSameVersion}
-        self={self}
-        updatePresence={updatePresence}
-        ymap={props.ymap}
-      />
-    </div>
+    <>
+      {othersOnSameVersion?.map(({ id, presence }) => {
+        if (!presence) return null;
+        return <Cursor key={id} name={presence.firstName} color={presence.color} x={presence.x} y={presence.y} />;
+      })}
+    </>
   );
 };
 

@@ -110,6 +110,25 @@ export const baseComponentProperties = (
   }
 
   items.push({
+    title: 'General',
+    isOpen: false,
+    children: (
+      <>
+        {renderElement(
+          component,
+          componentMeta,
+          layoutPropertyChanged,
+          dataQueries,
+          'tooltip',
+          'general',
+          currentState,
+          allComponents
+        )}
+      </>
+    ),
+  });
+
+  items.push({
     title: 'Layout',
     isOpen: false,
     children: (

@@ -94,15 +94,15 @@ const DynamicForm = ({
         };
       case 'toggle':
         return {
-          defaultChecked: options[key],
-          checked: options[key]?.value,
+          defaultChecked: options?.[key],
+          checked: options?.[key]?.value,
           onChange: (e) => optionchanged(key, e.target.checked),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
         return {
           options: list,
-          value: options[key]?.value || options[key],
+          value: options?.[key]?.value || options?.[key],
           onChange: (value) => optionchanged(key, value),
           width: width || '100%',
           useMenuPortal: queryName ? true : false,
@@ -120,6 +120,7 @@ const DynamicForm = ({
           add_token_to: options.add_token_to?.value,
           header_prefix: options.header_prefix?.value,
           access_token_url: options.access_token_url?.value,
+          access_token_custom_headers: options.access_token_custom_headers?.value,
           client_id: options.client_id?.value,
           client_secret: options.client_secret?.value,
           client_auth: options.client_auth?.value,
@@ -229,7 +230,7 @@ const DynamicForm = ({
     if (flipComponentDropdown) {
       // options[key].value for datasource
       // options[key] for dataquery
-      const selector = options[flipComponentDropdown.key]?.value || options[flipComponentDropdown.key];
+      const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
 
       return (
         <>

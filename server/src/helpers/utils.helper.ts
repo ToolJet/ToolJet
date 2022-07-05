@@ -48,3 +48,7 @@ export function sanitizeInput(value: string) {
     disallowedTagsMode: 'recursiveEscape',
   });
 }
+
+export function lowercaseString(value: string) {
+  return value?.toLowerCase();
+}

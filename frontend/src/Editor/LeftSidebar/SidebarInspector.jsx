@@ -40,6 +40,8 @@ export const LeftSidebarInspector = ({
     const data = _.merge(currentState, { queries });
     const jsontreeData = { ...data };
     delete jsontreeData.errors;
+    delete jsontreeData.client;
+    delete jsontreeData.server;
     return jsontreeData;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState]);
@@ -135,7 +137,7 @@ export const LeftSidebarInspector = ({
       <div
         {...content}
         className={`card popover ${open || popoverPinned ? 'show' : 'hide'}`}
-        style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '312px' }}
+        style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}
       >
         <SidebarPinnedButton
           darkMode={darkMode}

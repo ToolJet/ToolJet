@@ -41,7 +41,6 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   const [showHiddenOptionsForNode, setShowHiddenOptionsForNode] = React.useState(false);
   const [showHiddenOptionButtons, setShowHiddenOptionButtons] = React.useState([]);
-  const [onSelectDispatchActions, setOnSelectDispatchActions] = React.useState([]);
 
   React.useEffect(() => {
     if (showHiddenOptionButtons) {
@@ -49,19 +48,6 @@ export const JSONNode = ({ data, ...restProps }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  React.useEffect(() => {
-    if (useActions && currentNode) {
-      const onSelectDispatchActions = getOnSelectLabelDispatchActions(currentNode, path).filter(
-        (action) => action.onSelect
-      );
-      if (onSelectDispatchActions.length > 0) {
-        setOnSelectDispatchActions(onSelectDispatchActions);
-      }
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedNode]);
 
   const toggleExpandNode = (node) => {
     if (expandable) {
@@ -74,7 +60,7 @@ export const JSONNode = ({ data, ...restProps }) => {
   };
 
   const onSelect = (data, currentNode, path) => {
-    const actions = onSelectDispatchActions;
+    const actions = getOnSelectLabelDispatchActions(currentNode, path)?.filter((action) => action.onSelect);
     actions.forEach((action) => action.dispatchAction(data, currentNode));
 
     if (!expandWithLabels) {
@@ -307,6 +293,7 @@ export const JSONNode = ({ data, ...restProps }) => {
       className={cx('d-flex row-flex mt-1 font-monospace container-fluid px-1', {
         'json-node-element': !expandable,
       })}
+      onMouseLeave={() => updateHoveredNode(null)}
     >
       <div className={`json-tree-icon-container  mx-2 ${applySelectedNodeStyles && 'selected-node'}`}>
         <JSONNodeIndicator
@@ -327,14 +314,13 @@ export const JSONNode = ({ data, ...restProps }) => {
       <div
         style={{ width: 'inherit' }}
         className={`${shouldDisplayIntendedBlock && 'group-border'} ${applySelectedNodeStyles && 'selected-node'}`}
-        onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
-        onMouseLeave={() => updateHoveredNode(null)}
       >
         <div
           className={cx('d-flex', {
             'group-object-container': shouldDisplayIntendedBlock,
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
           })}
+          onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
         >
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {$NODEType}

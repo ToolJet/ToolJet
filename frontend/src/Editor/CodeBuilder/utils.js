@@ -2,52 +2,37 @@ import _ from 'lodash';
 import Fuse from 'fuse.js';
 
 export function getSuggestionKeys(currentState) {
-  const suggestionList = [];
-
-  const map = new Map();
-
-  const buildMap = (data, path = '') => {
-    const keys = Object.keys(data);
-    keys.forEach((key, index) => {
-      const value = data[key];
-      const _type = Object.prototype.toString.call(value).slice(8, -1);
-      const prevType = map.get(path)?.type;
-
-      let newPath = '';
-      if (path === '') {
-        newPath = key;
-      } else if (prevType === 'Array') {
-        newPath = `${path}[${index}]`;
-      } else {
-        newPath = `${path}.${key}`;
+  let suggestions = [];
+  _.keys(currentState).forEach((key) => {
+    _.keys(currentState[key]).forEach((key2) => {
+      if (key === 'variables') {
+        return suggestions.push(`${key}.${key2}`);
       }
-
-      if (_type === 'Object') {
-        map.set(newPath, { type: _type });
-        buildMap(value, newPath);
+      if (key === 'client' || key === 'server') {
+        return suggestions.push(`${key}.${key2}`);
       }
-      if (_type === 'Array') {
-        map.set(newPath, { type: _type });
-        buildMap(value, newPath);
-      } else {
-        map.set(newPath, { type: _type });
-      }
+      _.keys(currentState[key][key2]).forEach((key3) => {
+        suggestions.push(`${key}.${key2}.${key3}`);
+      });
     });
-  };
-
-  buildMap(currentState, '');
-  map.forEach((__, key) => suggestionList.push(key));
-
-  return suggestionList;
+  });
+  return suggestions;
 }
 
-export function generateHints(word, suggestions) {
+export function generateHints(word, suggestions, isEnvironmentVariable) {
   if (word === '') {
     return suggestions;
   }
 
   const fuse = new Fuse(suggestions);
-  return fuse.search(word).map((result) => result.item);
+  const results = fuse.search(word).map((result) => result.item);
+  return results.filter((result) => {
+    if (isEnvironmentVariable && new RegExp('^server|client.[A-Za-z0-9]+$').test(result)) {
+      return result;
+    } else if (!isEnvironmentVariable && !new RegExp('^server|client.[A-Za-z0-9]+$').test(result)) {
+      return result;
+    }
+  });
 }
 
 export function computeCurrentWord(editor, _cursorPosition, ignoreBraces = false) {
@@ -56,9 +41,15 @@ export function computeCurrentWord(editor, _cursorPosition, ignoreBraces = false
   const value = editor.getLine(line);
   const sliced = value.slice(0, _cursorPosition);
 
-  const splitter = ignoreBraces ? ' ' : '{{';
+  let split;
+  if (ignoreBraces && sliced.includes('{{')) {
+    split = sliced.split('{{');
+  } else if (ignoreBraces && sliced.includes('%%')) {
+    split = sliced.split('%%');
+  } else {
+    split = sliced.split(' ');
+  }
 
-  const split = sliced.split(splitter);
   const splittedWord = split.slice(-1).pop();
 
   // Check if the word still has spaces, to avoid replacing entire code
@@ -125,7 +116,7 @@ export function canShowHint(editor, ignoreBraces = false) {
 
   if (ignoreBraces && value.length > 0) return true;
 
-  return value.slice(ch, ch + 2) === '}}';
+  return value.slice(ch, ch + 2) === '}}' || value.slice(ch, ch + 2) === '%%';
 }
 
 export function handleChange(editor, onChange, suggestions, ignoreBraces = false) {
@@ -134,7 +125,8 @@ export function handleChange(editor, onChange, suggestions, ignoreBraces = false
 
   const cursor = editor.getCursor();
   const currentWord = computeCurrentWord(editor, cursor.ch, ignoreBraces);
-  const hints = generateHints(currentWord, suggestions);
+  const isEnvironmentVariable = currentWord.startsWith('%%');
+  const hints = generateHints(currentWord, suggestions, isEnvironmentVariable);
 
   const options = {
     alignWithWord: false,

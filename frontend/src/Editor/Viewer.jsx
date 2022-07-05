@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, authenticationService } from '@/_services';
+import { appService, authenticationService, orgEnvironmentVariableService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -18,6 +18,7 @@ import queryString from 'query-string';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import LogoIcon from './Icons/logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
+import { resolveReferences } from '@/_helpers/utils';
 
 class Viewer extends React.Component {
   constructor(props) {
@@ -40,6 +41,7 @@ class Viewer extends React.Component {
           currentUser: {},
           theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: {},
+          environment_variables: {},
         },
       },
     };
@@ -53,7 +55,7 @@ class Viewer extends React.Component {
     });
   };
 
-  setStateForContainer = (data) => {
+  setStateForContainer = async (data) => {
     const currentUser = authenticationService.currentUserValue;
     let userVars = {};
 
@@ -83,6 +85,8 @@ class Viewer extends React.Component {
       };
     });
 
+    const variables = await this.fetchOrgEnvironmentVariables();
+
     this.setState(
       {
         currentSidebarTab: 2,
@@ -102,6 +106,7 @@ class Viewer extends React.Component {
             theme: { name: this.props.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
           },
+          ...variables,
         },
         dataQueries: data.data_queries,
       },
@@ -120,6 +125,20 @@ class Viewer extends React.Component {
         runQuery(this, query.id, query.name);
       }
     });
+  };
+
+  fetchOrgEnvironmentVariables = async () => {
+    const variables = {
+      client: {},
+      server: {},
+    };
+    await orgEnvironmentVariableService.getVariables().then((data) => {
+      data.variables.map((variable) => {
+        variables[variable.variable_type][variable.variable_name] =
+          variable.variable_type === 'server' ? 'HiddenEnvironmentVariable' : variable.value;
+      });
+    });
+    return variables;
   };
 
   loadApplicationBySlug = (slug) => {
@@ -188,7 +207,6 @@ class Viewer extends React.Component {
       canvasWidth,
       dataQueries,
     } = this.state;
-
     if (this.state.app?.is_maintenance_on) {
       return (
         <div className="maintenance_container">
@@ -237,7 +255,14 @@ class Viewer extends React.Component {
                       minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                       maxWidth: +appDefinition.globalSettings?.canvasMaxWidth || 1292,
                       maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
-                      backgroundColor: appDefinition.globalSettings?.canvasBackgroundColor || '#edeff5',
+                      backgroundColor: resolveReferences(
+                        appDefinition.globalSettings?.backgroundFxQuery,
+                        this.state.currentState
+                      )
+                        ? resolveReferences(appDefinition.globalSettings?.backgroundFxQuery, this.state.currentState)
+                        : appDefinition.globalSettings?.canvasBackgroundColor
+                        ? appDefinition.globalSettings?.canvasBackgroundColor
+                        : '#edeff5',
                     }}
                   >
                     {defaultComponentStateComputed && (

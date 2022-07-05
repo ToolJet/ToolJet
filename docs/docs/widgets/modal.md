@@ -26,6 +26,14 @@ Title that should be shown on the header of the modal.
 
 Size of the modal. Options are `medium`, `small` and `large`. The default is `small`. You can also programmatically configure the value by clicking on the `Fx` and set the value to `sm`, `md` or `lg`.
 
+### Hide title bar
+To hide modal header , default is false.
+### Hide close button
+To hide modal close button , default is false.
+
+### Hide on escape
+To disable modal hide on pressing escape key  , default is true.
+
 ## Layout
 
 ### Show on desktop

@@ -7,12 +7,13 @@
   "scripts": {
     "create:client": "node create-client-entry",
     "create:server": "node create-server-entry",
+    "create:operations": "node create-operations-file",
     "build:server": "rimraf dist/ && tsc -b",
     "start": "tsc -b --watch",
-    "build": "npm run create:client && npm run create:server && npm run build:packages && npm run build:server",
+    "build": "npm run create:client && npm run create:server && npm run build:packages && npm run build:server && npm run create:operations",
     "prebuild:packages": "npm run clean:packages",
-    "build:packages": "npx lerna run build --stream",
-    "clean:packages": "npx lerna run clean --parallel",
+    "build:packages": "node build-packages.js",
+    "clean:packages": "node clean-packages.js",
     "lint": "eslint .  '**/*.ts'",
     "format": "eslint . --fix '**/*.ts'",
     "test": "NODE_ENV=test jest"
@@ -20,6 +21,7 @@
   "dependencies": {
     "@tooljet-plugins/airtable": "file:packages/airtable",
     "@tooljet-plugins/appwrite": "file:packages/appwrite",
+    "@tooljet-plugins/athena": "file:packages/athena",
     "@tooljet-plugins/baserow": "file:packages/baserow",
     "@tooljet-plugins/bigquery": "file:packages/bigquery",
     "@tooljet-plugins/common": "file:packages/common",
@@ -45,13 +47,15 @@
     "@tooljet-plugins/restapi": "file:packages/restapi",
     "@tooljet-plugins/rethinkdb": "file:packages/rethinkdb",
     "@tooljet-plugins/s3": "file:packages/s3",
+    "@tooljet-plugins/saphana": "file:packages/saphana",
     "@tooljet-plugins/sendgrid": "file:packages/sendgrid",
     "@tooljet-plugins/slack": "file:packages/slack",
     "@tooljet-plugins/smtp": "file:packages/smtp",
     "@tooljet-plugins/snowflake": "file:packages/snowflake",
     "@tooljet-plugins/stripe": "file:packages/stripe",
     "@tooljet-plugins/twilio": "file:packages/twilio",
-    "@tooljet-plugins/typesense": "file:packages/typesense"
+    "@tooljet-plugins/typesense": "file:packages/typesense",
+    "@tooljet-plugins/woocommerce": "file:packages/woocommerce"
   },
   "devDependencies": {
     "@types/jest": "^27.4.1",

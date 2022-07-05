@@ -14,7 +14,7 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
     <>
       <div className="row fx-container">
         <div className="col">
-          <div className="field form-control" style={{ padding: '0.225rem 0.35rem' }}>
+          <div className="field form-control" style={{ padding: '0.225rem 0.35rem' }} data-cy="border-radius-input">
             <input
               style={numberTheme}
               type="text"
@@ -26,7 +26,7 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
             />
           </div>
         </div>
-        <div className="col-auto pt-2 style-fx fx-common">
+        <div className="col-auto pt-0 style-fx fx-common">
           <FxButton active={false} onPress={forceCodeBox} />
         </div>
       </div>
