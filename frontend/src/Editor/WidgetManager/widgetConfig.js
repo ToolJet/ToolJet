@@ -2007,36 +2007,58 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      primaryValueLabel: { type: 'code', displayName: 'Primary value label' },
-      primaryValue: { type: 'code', displayName: 'Primary value' },
-      hideSecondary: { type: 'toggle', displayName: 'Hide secondary value' },
+      primaryValueLabel: {
+        type: 'code',
+        displayName: 'Primary value label',
+        validation: { schema: { type: 'string' } },
+      },
+      primaryValue: { type: 'code', displayName: 'Primary value', validation: { schema: { type: 'number' } } },
+      hideSecondary: {
+        type: 'toggle',
+        displayName: 'Hide secondary value',
+        validation: { schema: { type: 'boolean' } },
+      },
       secondaryValueLabel: {
         type: 'code',
         displayName: 'Secondary value label',
+        validation: { schema: { type: 'string' } },
       },
-      secondaryValue: { type: 'code', displayName: 'Secondary value' },
+      secondaryValue: { type: 'code', displayName: 'Secondary value', validation: { schema: { type: 'number' } } },
       secondarySignDisplay: {
         type: 'code',
         displayName: 'Secondary sign display',
+
+        validation: { schema: { type: 'string' } },
       },
-      loadingState: { type: 'toggle', displayName: 'Loading State' },
+      loadingState: { type: 'toggle', displayName: 'Loading State', validation: { schema: { type: 'boolean' } } },
     },
     events: {},
     styles: {
       primaryLabelColour: {
         type: 'color',
         displayName: 'Primary Label Colour',
+        validation: { schema: { type: 'string', defaultValue: false } },
       },
-      primaryTextColour: { type: 'color', displayName: 'Primary Text  Colour' },
+      primaryTextColour: {
+        type: 'color',
+        displayName: 'Primary Text  Colour',
+        validation: { schema: { type: 'string', defaultValue: false } },
+      },
       secondaryLabelColour: {
         type: 'color',
         displayName: 'Secondary Label Colour',
+        validation: { schema: { type: 'string', defaultValue: false } },
       },
       secondaryTextColour: {
         type: 'color',
         displayName: 'Secondary Text Colour',
+        validation: { schema: { type: 'string', defaultValue: false } },
       },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean', defaultValue: false } },
+      },
     },
     definition: {
       others: {
