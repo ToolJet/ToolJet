@@ -55,13 +55,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     switch (code) {
       case PostgresErrorCode.UniqueViolation:
-        message = 'Already Existed!';
-        break;
-      case PostgresErrorCode.CheckViolation:
-        message = 'Validation Failed!';
-        break;
-      case PostgresErrorCode.ForeignKeyViolation:
-        message = 'Foreign key validation error.';
+        message = 'Already exists!';
         break;
       case PostgresErrorCode.NotNullViolation: {
         const column = (exception as QueryFailedError).driverError.column;
