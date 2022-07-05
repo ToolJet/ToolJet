@@ -13,11 +13,17 @@ export const DropDown = function DropDown({
   id,
   component,
   exposedVariables,
+  registerAction,
 }) {
   let { label, value, display_values, values } = properties;
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
   const { value: exposedValue } = exposedVariables;
+
+  registerAction('setSelect', async function (value) {
+    setCurrentValue(value);
+    setExposedVariable('value', value);
+  });
 
   if (!_.isArray(values)) {
     values = [];

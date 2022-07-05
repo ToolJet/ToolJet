@@ -1002,6 +1002,13 @@ export const widgets = [
       value: 2,
       searchText: '',
     },
+    actions: [
+      {
+        handle: 'setSelect',
+        displayName: 'Set Select',
+        params: [{ handle: 'select', displayName: 'Select', type: 'select' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
