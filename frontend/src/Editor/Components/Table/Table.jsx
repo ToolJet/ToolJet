@@ -348,6 +348,7 @@ export function Table({
       filter: customFilter,
       width: width,
       columnOptions,
+      cellBackgroundColor: column.cellBackgroundColor,
       columnType,
       isEditable: column.isEditable,
       Cell: function (cell) {
@@ -720,6 +721,7 @@ export function Table({
     () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [
       JSON.stringify(columnData),
+      JSON.stringify(tableData),
       JSON.stringify(actions),
       leftActionsCellData.length,
       rightActionsCellData.length,
@@ -803,16 +805,15 @@ export function Table({
     }
   );
 
-  const registerSetPageAction = () => {
-    registerAction('setPage', (targetPageIndex) => {
+  registerAction(
+    'setPage',
+    async function (targetPageIndex) {
       setPaginationInternalPageIndex(targetPageIndex);
       setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
-    });
-  };
-
-  useEffect(registerSetPageAction, []);
-  useEffect(registerSetPageAction, [serverSidePagination, clientSidePagination]);
+    },
+    ['targetPageIndex']
+  );
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
@@ -954,6 +955,18 @@ export function Table({
                         }
                       }
                       const wrapAction = textWrapActions(cell.column.id);
+                      const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
+                      const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
+                      const rowData = tableData[cell.row.index];
+                      const cellBackgroundColor = resolveReferences(
+                        cell.column?.cellBackgroundColor,
+                        currentState,
+                        '',
+                        {
+                          cellValue,
+                          rowData,
+                        }
+                      );
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
@@ -968,6 +981,7 @@ export function Table({
                             [cellSizeType]: true,
                           })}
                           {...cellProps}
+                          style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                         >
                           <div className="td-container">{cell.render('Cell')}</div>
                         </td>

@@ -1,7 +1,7 @@
 import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@tooljet-plugins/common';
 import { getDocument, updateDocument } from './operations';
 import { indexDocument, search } from './operations';
-import { Client } from '@opensearch-project/opensearch';
+import { Client, ClientOptions } from '@opensearch-project/opensearch';
 import { SourceOptions, QueryOptions } from './types';
 
 export default class ElasticsearchService implements QueryService {
@@ -62,7 +62,9 @@ export default class ElasticsearchService implements QueryService {
     const port = sourceOptions.port;
     const username = sourceOptions.username;
     const password = sourceOptions.password;
+    const sslEnabled = sourceOptions.ssl_enabled;
     const protocol = this.determineProtocol(sourceOptions);
+    const sslCertificate = sourceOptions.ssl_certificate;
 
     let url = '';
 
@@ -72,6 +74,22 @@ export default class ElasticsearchService implements QueryService {
       url = `${protocol}://${host}:${port}`;
     }
 
-    return new Client({ node: url });
+    const options: ClientOptions = { node: url };
+
+    if (sslEnabled) {
+      if (sslCertificate === 'ca_certificate') {
+        options['ssl'] = {
+          ca: sourceOptions.ca_cert ?? undefined,
+        };
+      } else if (sslCertificate === 'client_certificate') {
+        options['ssl'] = {
+          ca: sourceOptions.root_cert ?? undefined,
+          cert: sourceOptions.client_cert ?? undefined,
+          key: sourceOptions.client_key ?? undefined,
+        };
+      }
+    }
+
+    return new Client(options);
   }
 }

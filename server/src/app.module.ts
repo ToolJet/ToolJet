@@ -1,4 +1,4 @@
-import { Module, OnApplicationBootstrap, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs/common';
+import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs/common';
 
 import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -18,9 +18,11 @@ import { MetaModule } from './modules/meta/meta.module';
 import { AppController } from './controllers/app.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { FilesModule } from './modules/files/files.module';
 import { AppConfigModule } from './modules/app_config/app_config.module';
 import { AppsModule } from './modules/apps/apps.module';
 import { FoldersModule } from './modules/folders/folders.module';
+import { OrgEnvironmentVariablesModule } from './modules/org_environment_variables/org_environment_variables.module';
 import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
 import { DataQueriesModule } from './modules/data_queries/data_queries.module';
 import { DataSourcesModule } from './modules/data_sources/data_sources.module';
@@ -69,6 +71,7 @@ const imports = [
   UsersModule,
   AppsModule,
   FoldersModule,
+  OrgEnvironmentVariablesModule,
   FolderAppsModule,
   DataQueriesModule,
   DataSourcesModule,
@@ -77,6 +80,7 @@ const imports = [
   MetaModule,
   LibraryAppModule,
   GroupPermissionsModule,
+  FilesModule,
   EventsModule,
 ];
 
@@ -107,7 +111,7 @@ if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
   controllers: [AppController],
   providers: [EmailService, SeedsService],
 })
-export class AppModule implements OnModuleInit, OnApplicationBootstrap {
+export class AppModule implements OnModuleInit {
   constructor(private connection: Connection) {}
 
   configure(consumer: MiddlewareConsumer): void {
@@ -118,10 +122,7 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
   }
 
   onModuleInit(): void {
-    console.log(`Initializing ToolJet server modules 📡 `);
-  }
-
-  onApplicationBootstrap(): void {
-    console.log(`Initialized ToolJet server, waiting for requests 🚀`);
+    console.log(`Version: ${globalThis.TOOLJET_VERSION}`);
+    console.log(`Initializing server modules 📡 `);
   }
 }

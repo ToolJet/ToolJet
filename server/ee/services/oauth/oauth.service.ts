@@ -48,29 +48,38 @@ export class OauthService {
   }
 
   async #findOrCreateUser({ firstName, lastName, email }: UserResponse, organization: Organization): Promise<User> {
-    const { user, newUserCreated } = await this.usersService.findOrCreateByEmail(
-      { firstName, lastName, email },
-      organization.id
-    );
+    const existingUser = await this.usersService.findByEmail(email, organization.id, ['active', 'invited']);
+    const organizationUser = existingUser?.organizationUsers?.[0];
 
-    if (newUserCreated) {
-      const organizationUser = await this.organizationUsersService.create(user, organization);
-      await this.organizationUsersService.activate(organizationUser);
+    if (!organizationUser) {
+      // User not exist in the workspace
+      const { user, newUserCreated } = await this.usersService.findOrCreateByEmail(
+        { firstName, lastName, email },
+        organization.id
+      );
+
+      if (newUserCreated) {
+        const organizationUser = await this.organizationUsersService.create(user, organization);
+        await this.organizationUsersService.activate(organizationUser);
+      }
+      return user;
+    } else {
+      if (organizationUser.status !== 'active') await this.organizationUsersService.activate(organizationUser);
+      return existingUser;
     }
-    return user;
   }
 
   async #findAndActivateUser(email: string, organizationId: string): Promise<User> {
-    const user = await this.usersService.findByEmail(email, organizationId);
+    const user = await this.usersService.findByEmail(email, organizationId, ['active', 'invited']);
     if (!user) {
-      throw new UnauthorizedException('User not exist in the workspace');
+      throw new UnauthorizedException('User does not exist in the workspace');
     }
     const organizationUser: OrganizationUser = user.organizationUsers?.[0];
 
     if (!organizationUser) {
-      throw new UnauthorizedException('User not exist in the workspace');
+      throw new UnauthorizedException('User does not exist in the workspace');
     }
-    if (organizationUser.status != 'active') await this.organizationUsersService.activate(organizationUser);
+    if (organizationUser.status !== 'active') await this.organizationUsersService.activate(organizationUser);
     return user;
   }
 
@@ -125,8 +134,8 @@ export class OauthService {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
     }
 
-    // If name not found
-    if (!(userResponse.firstName && userResponse.lastName)) {
+    // If firstName not found
+    if (!userResponse.firstName) {
       userResponse.firstName = userResponse.email?.split('@')?.[0];
     }
     const user: User = await (!enableSignUp

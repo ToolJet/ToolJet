@@ -96,6 +96,7 @@ export const Organization = function Organization() {
           position: 'top-center',
         });
         setOrganization(newOrgName);
+        getOrganizations();
       },
       () => {
         toast.error('Error while editing workspace', {
@@ -109,11 +110,10 @@ export const Organization = function Organization() {
 
   const switchOrganization = (orgId) => {
     organizationService.switchOrganization(orgId).then((response) => {
-      response.text().then((text) => {
-        if (!response.ok) {
-          return (window.location.href = `/login/${orgId}`);
-        }
-        const data = text && JSON.parse(text);
+      if (!response.ok) {
+        return (window.location.href = `/login/${orgId}`);
+      }
+      response.json().then((data) => {
         authenticationService.updateCurrentUserDetails(data);
         window.location.href = '/';
       });
@@ -124,7 +124,7 @@ export const Organization = function Organization() {
     return (
       organizationList &&
       organizationList
-        .filter((org) => org.name.toLowerCase().includes(searchText ? searchText.toLowerCase() : ''))
+        .filter((org) => org.name?.toLowerCase().includes(searchText ? searchText.toLowerCase() : ''))
         .map((org) => {
           return (
             <div
@@ -252,6 +252,7 @@ export const Organization = function Organization() {
                     fill="none"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    data-cy="workspace-arrow-icon"
                   >
                     <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                     <polyline points="9 6 15 12 9 18"></polyline>
@@ -266,9 +267,9 @@ export const Organization = function Organization() {
             <div onClick={showCreateModal}>Add workspace</div>
           </div>
         )}
+        <div className="dropdown-divider"></div>
         {admin && (
           <>
-            <div className="dropdown-divider"></div>
             <Link data-testid="settingsBtn" to="/users" className="dropdown-item" data-cy="manage-users">
               Manage Users
             </Link>
@@ -280,6 +281,9 @@ export const Organization = function Organization() {
             </Link>
           </>
         )}
+        <Link data-tesid="settingsBtn" to="/manage-environment-vars" className="dropdown-item">
+          {admin ? 'Manage Environment Variables' : 'Environment Variables'}
+        </Link>
       </div>
     );
   };
@@ -295,7 +299,7 @@ export const Organization = function Organization() {
           <div>{organization}</div>
         </a>
         {(!isSingleOrganization || admin) && (
-          <div className="dropdown-menu end-0">
+          <div className="dropdown-menu end-0" data-cy="workspace-dropdown">
             {isListOrganizations ? getListOrganizations() : getOrganizationMenu()}
           </div>
         )}

@@ -3,6 +3,7 @@ import moment from 'moment';
 import _ from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
+import { previewQuery, executeAction } from '@/_helpers/appUtils';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -35,6 +36,45 @@ export function resolve(data, state) {
   }
 }
 
+function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
+  let result = '';
+  let error;
+  try {
+    const evalFunction = Function(
+      [
+        'variables',
+        'components',
+        'queries',
+        'globals',
+        'client',
+        'server',
+        'moment',
+        '_',
+        ...Object.keys(customObjects),
+        reservedKeyword,
+      ],
+      `return ${code}`
+    );
+    result = evalFunction(
+      isJsCode ? state.variables : undefined,
+      isJsCode ? state.components : undefined,
+      isJsCode ? state.queries : undefined,
+      isJsCode ? state.globals : undefined,
+      isJsCode ? undefined : state.client,
+      isJsCode ? undefined : state.server,
+      moment,
+      _,
+      ...Object.values(customObjects),
+      null
+    );
+  } catch (err) {
+    error = err;
+    console.log('eval_error', err);
+  }
+  if (withError) return [result, error];
+  return result;
+}
+
 export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
   const reservedKeyword = ['app']; //Keywords that slows down the app
   object = _.clone(object);
@@ -44,43 +84,22 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
     case 'string': {
       if (object.startsWith('{{') && object.endsWith('}}')) {
         const code = object.replace('{{', '').replace('}}', '');
-        let result = '';
 
         if (reservedKeyword.includes(code)) {
           error = `${code} is a reserved keyword`;
           return [{}, error];
         }
 
-        try {
-          const evalFunction = Function(
-            [
-              'variables',
-              'components',
-              'queries',
-              'globals',
-              'moment',
-              '_',
-              ...Object.keys(customObjects),
-              reservedKeyword,
-            ],
-            `return ${code}`
-          );
-          result = evalFunction(
-            state.variables,
-            state.components,
-            state.queries,
-            state.globals,
-            moment,
-            _,
-            ...Object.values(customObjects),
-            null
-          );
-        } catch (err) {
-          error = err;
-          console.log('eval_error', err);
+        return resolveCode(code, state, customObjects, withError, reservedKeyword, true);
+      } else if (object.startsWith('%%') && object.endsWith('%%')) {
+        const code = object.replaceAll('%%', '');
+
+        if (code.includes('server.') && !new RegExp('^server.[A-Za-z0-9]+$').test(code)) {
+          error = `${code} is invalid. Server variables can't be used like this`;
+          return [{}, error];
         }
-        if (withError) return [result, error];
-        return result;
+
+        return resolveCode(code, state, customObjects, withError, reservedKeyword, false);
       }
 
       const dynamicVariables = getDynamicVariables(object);
@@ -133,7 +152,7 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
 }
 
 export function getDynamicVariables(text) {
-  const matchedParams = text.match(/\{\{(.*?)\}\}/g);
+  const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
   return matchedParams;
 }
 
@@ -269,13 +288,67 @@ export function validateEmail(email) {
   return emailRegex.test(email);
 }
 
-export async function executeMultilineJS(currentState, code) {
+export async function executeMultilineJS(_ref, code, isPreview, confirmed = undefined, mode = '') {
+  const { currentState } = _ref.state;
   let result = {},
     error = null;
 
+  const actions = {
+    runQuery: function (queryName = '') {
+      const query = _ref.state.dataQueries.find((query) => query.name === queryName);
+      if (_.isEmpty(query)) return;
+      if (isPreview) {
+        return previewQuery(_ref, query, true);
+      } else {
+        const event = {
+          actionId: 'run-query',
+          queryId: query.id,
+          queryName: query.name,
+        };
+        return executeAction(_ref, event, mode, {});
+      }
+    },
+    setVariable: function (key = '', value = '') {
+      if (key) {
+        const event = {
+          actionId: 'set-custom-variable',
+          key,
+          value,
+        };
+        return executeAction(_ref, event, mode, {});
+      }
+    },
+    unSetVariable: function (key = '') {
+      if (key) {
+        const event = {
+          actionId: 'unset-custom-variable',
+          key,
+        };
+        return executeAction(_ref, event, mode, {});
+      }
+    },
+  };
+
+  for (const key of Object.keys(currentState.queries)) {
+    currentState.queries[key] = {
+      ...currentState.queries[key],
+      run: () => actions.runQuery(key),
+    };
+  }
+
   try {
     const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
-    var evalFn = new AsyncFunction('moment', '_', 'components', 'queries', 'globals', 'axios', 'variables', code);
+    var evalFn = new AsyncFunction(
+      'moment',
+      '_',
+      'components',
+      'queries',
+      'globals',
+      'axios',
+      'variables',
+      'actions',
+      code
+    );
     result = {
       status: 'ok',
       data: await evalFn(
@@ -285,7 +358,8 @@ export async function executeMultilineJS(currentState, code) {
         currentState.queries,
         currentState.globals,
         axios,
-        currentState.variables
+        currentState.variables,
+        actions
       ),
     };
   } catch (err) {

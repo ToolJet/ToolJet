@@ -12,7 +12,7 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
   const menuItems = [
     { id: 'general-settings', label: 'General Settings' },
     { id: 'google', label: 'Google' },
-    { id: 'git', label: 'Git' },
+    { id: 'git', label: 'GitHub' },
     { id: 'form', label: 'Password Login' },
   ];
   const changePage = useCallback(
@@ -89,7 +89,9 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
             <div className="row align-items-center">
               <div className="col">
                 <div className="page-pretitle"></div>
-                <h2 className="page-title">Manage SSO</h2>
+                <h2 className="page-title" data-cy="manage-sso-page-title">
+                  Manage SSO
+                </h2>
               </div>
             </div>
           </div>

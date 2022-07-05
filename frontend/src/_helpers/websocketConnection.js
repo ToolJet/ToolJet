@@ -9,9 +9,9 @@ class WebSocketConnection {
 
   getWebsocketUrl() {
     const re = /https?:\/\//g;
-    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '');
+    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '/ws');
 
-    return window.location.host;
+    return window.location.host + '/ws';
   }
 
   addListeners(appId) {

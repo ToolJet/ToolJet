@@ -2,7 +2,6 @@ import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
 import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
-import { history } from '@/_helpers';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ReactTooltip from 'react-tooltip';
 
@@ -26,7 +25,6 @@ class ManageOrgUsers extends React.Component {
   }
 
   validateEmail(email) {
-    console.log(email);
     const re =
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
@@ -38,17 +36,9 @@ class ManageOrgUsers extends React.Component {
     //Name
     if (!fields['firstName']) {
       errors['firstName'] = 'This field is required';
-    } else if (typeof fields['firstName'] !== 'undefined') {
-      if (!/^[a-zA-Z]+$/.test(fields['firstName'])) {
-        errors['firstName'] = 'Only letters are allowed';
-      }
     }
     if (!fields['lastName']) {
       errors['lastName'] = 'This field is required';
-    } else if (typeof fields['lastName'] !== 'undefined') {
-      if (!/^[a-zA-Z]+$/.test(fields['lastName'])) {
-        errors['lastName'] = 'Only letters are allowed';
-      }
     }
     //Email
     if (!fields['email']) {
@@ -168,12 +158,12 @@ class ManageOrgUsers extends React.Component {
     }
   };
 
-  logout = () => {
-    authenticationService.logout();
-    history.push('/login');
+  generateInvitationURL = (user) => {
+    if (user.account_setup_token) {
+      return `${window.location.origin}/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}`;
+    }
+    return `${window.location.origin}/organization-invitations/${user.invitation_token}`;
   };
-
-  generateInvitationURL = (user) => window.location.origin + '/organization-invitations/' + user.invitation_token;
 
   invitationLinkCopyHandler = () => {
     toast.success('Invitation URL copied', {
@@ -194,11 +184,17 @@ class ManageOrgUsers extends React.Component {
               <div className="row align-items-center">
                 <div className="col">
                   <div className="page-pretitle"></div>
-                  <h2 className="page-title">Users & Permissions</h2>
+                  <h2 className="page-title" data-cy="users-page-title">
+                    Users & Permissions
+                  </h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
                   {!showNewUserForm && (
-                    <div className="btn btn-primary" onClick={() => this.setState({ showNewUserForm: true })}>
+                    <div
+                      className="btn btn-primary"
+                      onClick={() => this.setState({ showNewUserForm: true })}
+                      data-cy="invite-new-user"
+                    >
                       Invite new user
                     </div>
                   )}
@@ -212,7 +208,9 @@ class ManageOrgUsers extends React.Component {
               <div className="container-xl">
                 <div className="card">
                   <div className="card-header">
-                    <h3 className="card-title">Add new user</h3>
+                    <h3 className="card-title" data-cy="add-new-user">
+                      Add new user
+                    </h3>
                   </div>
                   <div className="card-body">
                     <form onSubmit={this.createUser} noValidate>
@@ -226,8 +224,11 @@ class ManageOrgUsers extends React.Component {
                               name="firstName"
                               onChange={this.changeNewUserOption.bind(this, 'firstName')}
                               value={this.state.fields['firstName']}
+                              data-cy="first-name-input"
                             />
-                            <span className="text-danger">{this.state.errors['firstName']}</span>
+                            <span className="text-danger" data-cy="first-name-error">
+                              {this.state.errors['firstName']}
+                            </span>
                           </div>
                           <div className="col">
                             <input
@@ -237,13 +238,18 @@ class ManageOrgUsers extends React.Component {
                               name="lastName"
                               onChange={this.changeNewUserOption.bind(this, 'lastName')}
                               value={this.state.fields['lastName']}
+                              data-cy="last-name-input"
                             />
-                            <span className="text-danger">{this.state.errors['lastName']}</span>
+                            <span className="text-danger" data-cy="last-name-error">
+                              {this.state.errors['lastName']}
+                            </span>
                           </div>
                         </div>
                       </div>
                       <div className="form-group mb-3 ">
-                        <label className="form-label">Email address</label>
+                        <label className="form-label" data-cy="email-label">
+                          Email address
+                        </label>
                         <div>
                           <input
                             type="text"
@@ -253,8 +259,11 @@ class ManageOrgUsers extends React.Component {
                             name="email"
                             onChange={this.changeNewUserOption.bind(this, 'email')}
                             value={this.state.fields['email']}
+                            data-cy="email-input"
                           />
-                          <span className="text-danger">{this.state.errors['email']}</span>
+                          <span className="text-danger" data-cy="email-error">
+                            {this.state.errors['email']}
+                          </span>
                         </div>
                       </div>
                       <div className="form-footer">
@@ -267,6 +276,7 @@ class ManageOrgUsers extends React.Component {
                               newUser: {},
                             })
                           }
+                          data-cy="cancel-button"
                         >
                           Cancel
                         </button>
@@ -274,6 +284,7 @@ class ManageOrgUsers extends React.Component {
                           type="submit"
                           className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
                           disabled={creatingUser}
+                          data-cy="create-user-button"
                         >
                           Create User
                         </button>
@@ -290,14 +301,16 @@ class ManageOrgUsers extends React.Component {
                   <div
                     className="card-table fixedHeader table-responsive table-bordered"
                     ref={this.tableRef}
-                    style={{ maxHeight: this.tableRef.current && this.calculateOffset() }}
+                    style={{
+                      maxHeight: this.tableRef.current && this.calculateOffset(),
+                    }}
                   >
                     <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
                       <thead>
                         <tr>
-                          <th>Name</th>
-                          <th>Email</th>
-                          <th>Status</th>
+                          <th data-cy="name-title">Name</th>
+                          <th data-cy="email-title">Email</th>
+                          <th data-cy="status-title">Status</th>
                           <th className="w-1"></th>
                         </tr>
                       </thead>
@@ -334,7 +347,7 @@ class ManageOrgUsers extends React.Component {
                           {users.map((user) => (
                             <tr key={user.id}>
                               <td>
-                                <span className="avatar bg-azure-lt avatar-sm">
+                                <span className="avatar bg-azure-lt avatar-sm" data-cy="user-avatar">
                                   {user.first_name ? user.first_name[0] : ''}
                                   {user.last_name ? user.last_name[0] : ''}
                                 </span>
@@ -344,12 +357,15 @@ class ManageOrgUsers extends React.Component {
                                     display: 'inline-flex',
                                     marginBottom: '7px',
                                   }}
+                                  data-cy="user-name"
                                 >
                                   {user.name}
                                 </span>
                               </td>
                               <td className="text-muted">
-                                <a className="text-reset user-email">{user.email}</a>
+                                <a className="text-reset user-email" data-cy="user-email">
+                                  {user.email}
+                                </a>
                               </td>
                               <td className="text-muted">
                                 <span
@@ -360,8 +376,11 @@ class ManageOrgUsers extends React.Component {
                                       ? 'danger'
                                       : 'success'
                                   } me-1 m-1`}
+                                  data-cy="status-badge"
                                 ></span>
-                                <small className="user-status">{user.status}</small>
+                                <small className="user-status" data-cy="user-status">
+                                  {user.status}
+                                </small>
                                 {user.status === 'invited' && 'invitation_token' in user ? (
                                   <CopyToClipboard
                                     text={this.generateInvitationURL(user)}
@@ -376,6 +395,7 @@ class ManageOrgUsers extends React.Component {
                                       style={{
                                         cursor: 'pointer',
                                       }}
+                                      data-cy="copy-invitation-link"
                                     ></img>
                                   </CopyToClipboard>
                                 ) : (
@@ -383,17 +403,22 @@ class ManageOrgUsers extends React.Component {
                                 )}
                               </td>
                               <td>
-                                <a
+                                <button
+                                  type="button"
+                                  style={{ minWidth: '100px' }}
+                                  className={`btn btn-sm btn-outline-${
+                                    user.status === 'archived' ? 'success' : 'danger'
+                                  } ${unarchivingUser === user.id || archivingUser === user.id ? 'btn-loading' : ''}`}
+                                  disabled={unarchivingUser === user.id || archivingUser === user.id}
                                   onClick={() => {
                                     user.status === 'archived'
                                       ? this.unarchiveOrgUser(user.id)
                                       : this.archiveOrgUser(user.id);
                                   }}
+                                  data-cy="user-state"
                                 >
                                   {user.status === 'archived' ? 'Unarchive' : 'Archive'}
-
-                                  {unarchivingUser === user.id || archivingUser === user.id ? '...' : ''}
-                                </a>
+                                </button>
                               </td>
                             </tr>
                           ))}

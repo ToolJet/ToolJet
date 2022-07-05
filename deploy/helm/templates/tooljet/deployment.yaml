@@ -63,3 +63,5 @@ spec:
                 secretKeyRef:
                   name: "{{ .Values.apps.tooljet.secret.name }}"
                   key: secret_key_base
+            - name: DEPLOYMENT_PLATFORM
+              value: "k8s:helm"

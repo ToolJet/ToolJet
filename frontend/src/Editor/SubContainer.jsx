@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import React, { useCallback, useState, useEffect } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { v4 as uuidv4 } from 'uuid';
@@ -5,7 +6,7 @@ import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
-import { componentTypes } from './Components/components';
+import { componentTypes } from './WidgetManager/components';
 import { computeComponentName } from '@/_helpers/utils';
 import produce from 'immer';
 
@@ -33,10 +34,10 @@ export const SubContainer = ({
   readOnly,
   customResolvables,
   parentComponent,
-  listViewItemOptions,
   onComponentHover,
   hoveredComponent,
   selectedComponents,
+  onOptionChange,
 }) => {
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
 
@@ -191,14 +192,13 @@ export const SubContainer = ({
           const initialClientOffset = monitor.getInitialClientOffset();
           const delta = monitor.getDifferenceFromInitialOffset();
 
-          left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+          left = Math.round(currentOffset?.x + currentOffset?.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
           top = Math.round(
-            initialClientOffset.y - 10 + delta.y + initialClientOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow
+            initialClientOffset?.y - 10 + delta.y + initialClientOffset?.y * (1 - zoomLevel) - offsetFromTopOfWindow
           );
 
           id = uuidv4();
         }
-
         const subContainerWidth = canvasBoundingRect.width;
         if (snapToGrid) {
           [left, top] = doSnapToGrid(subContainerWidth, left, top);
@@ -238,7 +238,7 @@ export const SubContainer = ({
 
   function getContainerCanvasWidth() {
     if (containerCanvasWidth !== undefined) {
-      return containerCanvasWidth;
+      return containerCanvasWidth - 2;
     }
     let width = 0;
     if (parentRef.current) {
@@ -301,7 +301,11 @@ export const SubContainer = ({
     const subContainerWidth = canvasBoundingRect.width;
 
     top = y;
-    left = (x * 100) / subContainerWidth;
+    if (deltaWidth !== 0) {
+      // onResizeStop is triggered for a single click on the border, therefore this conditional logic
+      // should not be removed.
+      left = (x * 100) / subContainerWidth;
+    }
 
     width = width + (deltaWidth * 43) / subContainerWidth;
     height = height + deltaHeight;
@@ -356,33 +360,22 @@ export const SubContainer = ({
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
 
-  function onComponentOptionChangedForSubcontainer(component, optionName, value, extraProps) {
-    if (parentComponent?.component === 'Listview') {
-      let newData = currentState.components[parentComponent.name]?.data || [];
-      newData[listViewItemOptions.index] = {
-        ...newData[listViewItemOptions.index],
-        [component.name]: {
-          ...(newData[listViewItemOptions.index] ? newData[listViewItemOptions.index][component.name] : {}),
-          [optionName]: value,
-        },
-      };
-      return onComponentOptionChanged(parentComponent, 'data', newData);
-    } else {
-      return onComponentOptionChanged(component, optionName, value, extraProps);
-    }
+  function onComponentOptionChangedForSubcontainer(component, optionName, value) {
+    onOptionChange && onOptionChange({ component, optionName, value });
+    return onComponentOptionChanged(component, optionName, value);
   }
 
   function customRemoveComponent(component) {
-    const componentName = appDefinition.components[component.id]['component'].name;
+    // const componentName = appDefinition.components[component.id]['component'].name;
     removeComponent(component);
-    if (parentComponent.component === 'Listview') {
-      const currentData = currentState.components[parentComponent.name]?.data || [];
-      const newData = currentData.map((widget) => {
-        delete widget[componentName];
-        return widget;
-      });
-      onComponentOptionChanged(parentComponent, 'data', newData);
-    }
+    // if (parentComponent.component === 'Listview') {
+    //   const currentData = currentState.components[parentComponent.name]?.data || [];
+    //   const newData = currentData.map((widget) => {
+    //     delete widget[componentName];
+    //     return widget;
+    //   });
+    //   onComponentOptionChanged(parentComponent, 'data', newData);
+    // }
   }
 
   return (
@@ -404,7 +397,6 @@ export const SubContainer = ({
           onDragStop={onDragStop}
           paramUpdated={paramUpdated}
           id={key}
-          extraProps={{ listviewItemIndex: listViewItemOptions?.index }}
           allComponents={allComponents}
           {...childComponents[key]}
           mode={mode}
