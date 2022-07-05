@@ -2012,7 +2012,7 @@ export const widgets = [
         displayName: 'Primary value label',
         validation: { schema: { type: 'string' } },
       },
-      primaryValue: { type: 'code', displayName: 'Primary value', validation: { schema: { type: 'number' } } },
+      primaryValue: { type: 'code', displayName: 'Primary value', validation: { schema: { type: 'string' } } },
       hideSecondary: {
         type: 'toggle',
         displayName: 'Hide secondary value',
@@ -2023,7 +2023,7 @@ export const widgets = [
         displayName: 'Secondary value label',
         validation: { schema: { type: 'string' } },
       },
-      secondaryValue: { type: 'code', displayName: 'Secondary value', validation: { schema: { type: 'number' } } },
+      secondaryValue: { type: 'code', displayName: 'Secondary value', validation: { schema: { type: 'string' } } },
       secondarySignDisplay: {
         type: 'code',
         displayName: 'Secondary sign display',
