@@ -2147,7 +2147,11 @@ export const widgets = [
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+      },
     },
     exposedVariables: {
       value: {},
