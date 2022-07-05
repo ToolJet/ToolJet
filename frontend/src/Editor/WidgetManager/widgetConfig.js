@@ -2122,8 +2122,20 @@ export const widgets = [
     description: 'Visual representation of a sequence of events',
     component: 'Timeline',
     properties: {
-      data: { type: 'code', displayName: 'Timeline data' },
-      hideDate: { type: 'toggle', displayName: 'Hide Date' },
+      data: {
+        type: 'code',
+        displayName: 'Timeline data',
+        validation: {
+          schema: { type: 'array', element: { type: 'object' } },
+        },
+      },
+      hideDate: {
+        type: 'toggle',
+        displayName: 'Hide Date',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     defaultSize: {
       width: 20,
@@ -2146,12 +2158,11 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        visible: { value: '{{true}}' },
         data: {
           value:
             "{{ [ \n\t\t{ title: 'Product Launched', subTitle: 'First version of our product released to public', date: '20/10/2021', iconBackgroundColor: '#4d72fa'},\n\t\t { title: 'First Signup', subTitle: 'Congratulations! We got our first signup', date: '22/10/2021', iconBackgroundColor: '#4d72fa'}, \n\t\t { title: 'First Payment', subTitle: 'Hurray! We got our first payment', date: '01/11/2021', iconBackgroundColor: '#4d72fa'} \n] }}",
         },
-        hideDate: { value: false },
+        hideDate: { value: '{{false}}' },
       },
       events: [],
       styles: {
