@@ -106,6 +106,7 @@ const sidebars = {
         'widgets/checkbox',
         'widgets/circular-progress-bar',
         'widgets/code-editor',
+        'widgets/color-picker',
         'widgets/container',
         'widgets/custom-component',
         'widgets/date-range-picker',
