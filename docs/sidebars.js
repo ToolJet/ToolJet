@@ -114,6 +114,7 @@ const sidebars = {
         'widgets/divider',
         'widgets/dropdown',
         'widgets/file-picker',
+        'widgets/html',
         'widgets/iframe',
         'widgets/image',
         'widgets/kanban',
