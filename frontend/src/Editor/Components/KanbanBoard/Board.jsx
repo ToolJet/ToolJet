@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import React from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
-import { v4 as uuidv4 } from 'uuid';
 import Column from './Column';
 import { reorderCards, moveCards } from './utils';
 
@@ -23,19 +22,7 @@ const getItemStyle = (isDragging, draggableStyle) => {
 
 function Board({ height, state, colStyles, setState, fireEvent, setExposedVariable }) {
   const addNewItem = (state, keyIndex) => {
-    const newItem = {
-      id: uuidv4(),
-      title: 'New card',
-      columnId: state[keyIndex].id,
-    };
-
     setExposedVariable('selectedColumn', _.omit(state[keyIndex], 'cards')).then(() => fireEvent('onCardAddRequested'));
-    // const newState = [...state];
-    // if (!newState[keyIndex]['cards']) [(newState[keyIndex]['cards'] = [])];
-    // newState[keyIndex]['cards'].push(newItem);
-    // setState(newState);
-    // setExposedVariable('lastAddedCard', newItem).then(() => fireEvent('onCardAdded'));
-    // setExposedVariable('lastAddedCard', newItem).then(() => fireEvent('onCardAddRequested'));
   };
 
   function onDragEnd(result) {
