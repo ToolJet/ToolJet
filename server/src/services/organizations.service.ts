@@ -133,60 +133,51 @@ export class OrganizationsService {
     });
   }
 
-  async fetchOrganisations(user: any): Promise<Organization[]> {
+  async fetchOrganizations(user: any): Promise<Organization[]> {
     return await createQueryBuilder(Organization, 'organization')
       .innerJoin(
         'organization.organizationUsers',
-        'organisation_users',
-        'organisation_users.status IN(:...statusList)',
+        'organization_users',
+        'organization_users.status IN(:...statusList)',
         {
           statusList: ['active'],
         }
       )
-      .andWhere('organisation_users.userId = :userId', {
+      .andWhere('organization_users.userId = :userId', {
         userId: user.id,
       })
       .orderBy('name', 'ASC')
       .getMany();
   }
 
-  async findOrganizationSupportsFormLogin(user: User): Promise<Organization[]> {
-    return await createQueryBuilder(Organization, 'organization')
-      .innerJoin('organization.ssoConfigs', 'organisation_sso', 'organisation_sso.sso = :form', {
+  async findOrganizationWithLoginSupport(user: User, loginType: string): Promise<Organization[]> {
+    const query = createQueryBuilder(Organization, 'organization')
+      .innerJoin('organization.ssoConfigs', 'organization_sso', 'organization_sso.sso = :form', {
         form: 'form',
       })
       .innerJoin(
         'organization.organizationUsers',
-        'organisation_users',
-        'organisation_users.status IN(:...statusList)',
+        'organization_users',
+        'organization_users.status IN(:...statusList)',
         {
           statusList: ['active'],
         }
-      )
-      .where('organisation_sso.enabled = :enabled', {
-        enabled: true,
-      })
-      .andWhere('organisation_users.userId = :userId', {
-        userId: user.id,
-      })
-      .orderBy('name', 'ASC')
-      .getMany();
-  }
+      );
 
-  async findOrganizationSupportsInstanceSSO(user: User): Promise<Organization[]> {
-    return await createQueryBuilder(Organization, 'organization')
-      .innerJoin(
-        'organization.organizationUsers',
-        'organisation_users',
-        'organisation_users.status IN(:...statusList)',
-        {
-          statusList: ['active'],
-        }
-      )
-      .where('organization.inheritSSO = :inheritSSO', {
+    if (loginType === 'form') {
+      query.where('organization_sso.enabled = :enabled', {
+        enabled: true,
+      });
+    } else if (loginType === 'sso') {
+      query.where('organization.inheritSSO = :inheritSSO', {
         inheritSSO: true,
-      })
-      .andWhere('organisation_users.userId = :userId', {
+      });
+    } else {
+      return;
+    }
+
+    return await query
+      .andWhere('organization_users.userId = :userId', {
         userId: user.id,
       })
       .orderBy('name', 'ASC')

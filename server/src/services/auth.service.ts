@@ -104,8 +104,9 @@ export class AuthService {
         }
       } else {
         // Multi organization
-        const organizationList: Organization[] = await this.organizationsService.findOrganizationSupportsFormLogin(
-          user
+        const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
+          user,
+          'form'
         );
 
         const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);

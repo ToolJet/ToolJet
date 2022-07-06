@@ -236,8 +236,9 @@ export class OauthService {
 
       if (!organizationDetails) {
         // Finding organization to be loaded
-        const organizationList: Organization[] = await this.organizationService.findOrganizationSupportsInstanceSSO(
-          userDetails
+        const organizationList: Organization[] = await this.organizationService.findOrganizationWithLoginSupport(
+          userDetails,
+          'sso'
         );
 
         const defaultOrgDetails: Organization = organizationList?.find(

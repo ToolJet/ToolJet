@@ -40,7 +40,7 @@ export class OrganizationsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async get(@User() user) {
-    const result = await this.organizationsService.fetchOrganisations(user);
+    const result = await this.organizationsService.fetchOrganizations(user);
     return decamelizeKeys({ organizations: result });
   }
 

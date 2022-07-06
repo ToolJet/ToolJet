@@ -21,10 +21,6 @@ export class OrganizationUsersService {
     private configService: ConfigService
   ) {}
 
-  async findOrganization(id: string): Promise<OrganizationUser> {
-    return await this.organizationUsersRepository.findOne({ where: { id } });
-  }
-
   async create(user: User, organization: DeepPartial<Organization>, isInvite?: boolean): Promise<OrganizationUser> {
     return await this.organizationUsersRepository.save(
       this.organizationUsersRepository.create({
