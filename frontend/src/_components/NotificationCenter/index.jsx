@@ -1,18 +1,23 @@
 import React from 'react';
 import { commentsService } from '@/_services';
 import { Notification } from './Notification';
+import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
 
 export const NotificationCenter = () => {
   const [loading, setLoading] = React.useState(false);
   const [isRead, setIsRead] = React.useState(false);
-  const [commentNotifications, setcommentNotifications] = React.useState([]);
+  const [commentNotifications, setCommentNotifications] = React.useState([]);
 
   async function fetchData() {
     setLoading(true);
-    const { data } = await commentsService.getMentionedNotifications(isRead);
+    const { data, error } = await commentsService.getMentionedNotifications(isRead);
     setLoading(false);
-    setcommentNotifications(data);
+    if (error) {
+      toast.error('Unable to fetch notification');
+      return;
+    }
+    setCommentNotifications(data);
   }
 
   React.useEffect(() => {
