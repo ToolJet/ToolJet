@@ -52,7 +52,7 @@ export async function getObject(client: S3Client, options: object): Promise<obje
 
 export async function uploadObject(client: S3Client, options: object): Promise<object> {
   const encoding = options['encoding'] || 'utf8';
-  const body = new Buffer(uploadData(options['data']), encoding);
+  const body = new Buffer(uploadData(options['data'], options['contentType']), encoding);
   const command = new PutObjectCommand({
     Bucket: options['bucket'],
     Key: options['key'],
@@ -75,9 +75,9 @@ export async function signedUrlForPut(client: S3Client, options: object): Promis
   });
   return { url };
 }
-function uploadData(data: any) {
+function uploadData(data: string, contentType: string) {
   if (!data) {
     return;
   }
-  return typeof data === 'string' ? data : JSON.stringify(data);
+  return typeof data === 'object' && contentType == 'application/json' ? JSON.stringify(data) : data;
 }
