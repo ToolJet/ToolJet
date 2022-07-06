@@ -28,10 +28,11 @@ export class CommentService {
     private emailService: EmailService
   ) {}
 
-  public async createComment(createCommentDto: CreateCommentDto, id: string, organizationId: string): Promise<Comment> {
+  public async createComment(createCommentDto: CreateCommentDto, user: User): Promise<Comment> {
     try {
-      const comment = await this.commentRepository.createComment(createCommentDto, id, organizationId);
-      const user = await this.usersRepository.findOne({ where: { id: createCommentDto.userId } });
+      const comment = await this.commentRepository.createComment(createCommentDto, user.id, user.organizationId);
+
+      // todo: move mentioned user emails to a queue service
       const [appLink, commentLink, appName] = await this.getAppLinks(createCommentDto.appVersionsId, comment);
 
       for (const userId of createCommentDto.mentionedUsers) {
