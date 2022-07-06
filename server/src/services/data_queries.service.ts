@@ -8,14 +8,22 @@ import { CredentialsService } from './credentials.service';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
 import got from 'got';
+import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
+import { EncryptionService } from './encryption.service';
+import { App } from 'src/entities/app.entity';
 
 @Injectable()
 export class DataQueriesService {
   constructor(
     private credentialsService: CredentialsService,
     private dataSourcesService: DataSourcesService,
+    private encryptionService: EncryptionService,
     @InjectRepository(DataQuery)
-    private dataQueriesRepository: Repository<DataQuery>
+    private dataQueriesRepository: Repository<DataQuery>,
+    @InjectRepository(OrgEnvironmentVariable)
+    private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>,
+    @InjectRepository(App)
+    private appsRespository: Repository<App>
   ) {}
 
   async findOne(dataQueryId: string): Promise<DataQuery> {
@@ -73,20 +81,27 @@ export class DataQueriesService {
     return dataQuery;
   }
 
-  async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions) {
+  async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id) {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
-    const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
+    const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id);
     const kind = dataQuery.kind;
     const service = new allPlugins[kind]();
     return { service, sourceOptions, parsedQueryOptions };
   }
 
+  async getOrgIdfromApp(id: string) {
+    const app = await this.appsRespository.findOneOrFail({ id });
+    return app.organizationId;
+  }
+
   async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
     const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
+    const organizationId = user ? user.organizationId : await this.getOrgIdfromApp(dataQuery.appId);
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,
       dataQuery,
-      queryOptions
+      queryOptions,
+      organizationId
     );
     let result;
 
@@ -108,7 +123,8 @@ export class DataQueriesService {
         ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
           dataSource,
           dataQuery,
-          queryOptions
+          queryOptions,
+          organizationId
         ));
 
         result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
@@ -201,10 +217,32 @@ export class DataQueriesService {
     return parsedOptions;
   }
 
-  async parseQueryOptions(object: any, options: object): Promise<object> {
+  async resolveVariable(str: string, organization_id: string) {
+    const tempStr: string = str.replace(/%%/g, '');
+    let result = tempStr;
+    if (new RegExp('^server.[A-Za-z0-9]+$').test(tempStr)) {
+      const splitArray = tempStr.split('.');
+      const variableResult = await this.orgEnvironmentVariablesRepository.findOne({
+        variableType: 'server',
+        organizationId: organization_id,
+        variableName: splitArray[splitArray.length - 1],
+      });
+
+      if (variableResult) {
+        result = await this.encryptionService.decryptColumnValue(
+          'org_environment_variables',
+          organization_id,
+          variableResult.value
+        );
+      }
+    }
+    return result;
+  }
+
+  async parseQueryOptions(object: any, options: object, organization_id: string): Promise<object> {
     if (typeof object === 'object' && object !== null) {
       for (const key of Object.keys(object)) {
-        object[key] = await this.parseQueryOptions(object[key], options);
+        object[key] = await this.parseQueryOptions(object[key], options, organization_id);
       }
       return object;
     } else if (typeof object === 'string') {
@@ -212,7 +250,7 @@ export class DataQueriesService {
       if (object.startsWith('{{') && object.endsWith('}}') && (object.match(/{{/g) || []).length === 1) {
         object = options[object];
         return object;
-      } else {
+      } else if (object.match(/\{\{(.*?)\}\}/g)?.length > 0) {
         const variables = object.match(/\{\{(.*?)\}\}/g);
 
         if (variables?.length > 0) {
@@ -220,14 +258,36 @@ export class DataQueriesService {
             object = object.replace(variable, options[variable]);
           }
         }
-
         return object;
+      } else {
+        if (object.startsWith('%%') && object.endsWith('%%') && (object.match(/%%/g) || []).length === 2) {
+          if (object.includes(`server.`)) {
+            object = await this.resolveVariable(object, organization_id);
+          } else {
+            object = options[object];
+          }
+          return object;
+        } else {
+          const variables = object.match(/%%(.*?)%%/g);
+
+          if (variables?.length > 0) {
+            for (const variable of variables) {
+              if (variable.includes(`server.`)) {
+                const secret_value = await this.resolveVariable(variable, organization_id);
+                object = object.replace(variable, secret_value);
+              } else {
+                object = object.replace(variable, options[variable]);
+              }
+            }
+          }
+          return object;
+        }
       }
     } else if (Array.isArray(object)) {
       object.forEach((element) => {});
 
       for (const [index, element] of object) {
-        object[index] = await this.parseQueryOptions(element, options);
+        object[index] = await this.parseQueryOptions(element, options, organization_id);
       }
       return object;
     }
