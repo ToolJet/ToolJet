@@ -1,13 +1,9 @@
 import React from 'react';
 import moment from 'moment';
 import { commentsService } from '@/_services';
+import { hightlightMentionedUserInComment } from '@/_helpers/utils';
 
 export const Notification = ({ id, creator, comment, updatedAt, commentLink, isRead, fetchData }) => {
-  const getComment = (comment) => {
-    var regex = /(\()([^)]+)(\))/g;
-    return comment.replace(regex, '<span class=mentioned-user>$2</span>');
-  };
-
   const updateMentionedNotification = async () => {
     try {
       await commentsService.updateMentionedNotification(id, !isRead);
@@ -38,7 +34,7 @@ export const Notification = ({ id, creator, comment, updatedAt, commentLink, isR
             {creator.firstName} mentioned you
             <div
               className="d-block text-muted text-truncate mt-n1"
-              dangerouslySetInnerHTML={{ __html: getComment(comment) }}
+              dangerouslySetInnerHTML={{ __html: hightlightMentionedUserInComment(comment) }}
             />
             <div className="text-muted text-truncate mt-n1">
               <span>{updated === 'just now' ? updated : `${updated} ago`}</span>
