@@ -13,6 +13,7 @@ export const Tabs = function Tabs({
   removeComponent,
   setExposedVariable,
   fireEvent,
+  registerAction,
 }) {
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -83,6 +84,10 @@ export const Tabs = function Tabs({
 
     return id === currentTab ? 'visible' : 'hidden';
   }
+
+  registerAction('setTab', async function (id) {
+    id && setCurrentTab(id);
+  });
 
   return (
     <div

@@ -1615,6 +1615,18 @@ export const widgets = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
+    actions: [
+      {
+        handle: 'setTab',
+        displayName: 'Set current tab',
+        params: [
+          {
+            handle: 'id',
+            displayName: 'Id',
+          },
+        ],
+      },
+    ],
     exposedVariables: { currentTab: '' },
     definition: {
       others: {
