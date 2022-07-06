@@ -644,6 +644,18 @@ export const widgets = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
+    actions: [
+      {
+        handle: 'selectOption',
+        displayName: 'Select Option',
+        params: [
+          {
+            handle: 'option',
+            displayName: 'Option',
+          },
+        ],
+      },
+    ],
     exposedVariables: {},
     definition: {
       others: {
