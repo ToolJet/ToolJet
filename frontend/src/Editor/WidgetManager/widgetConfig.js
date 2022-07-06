@@ -315,6 +315,10 @@ export const widgets = [
     },
     properties: {
       title: { type: 'code', displayName: 'Title' },
+      hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
+      hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
+      hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
+
       size: {
         type: 'select',
         displayName: 'Modal size',
@@ -340,6 +344,9 @@ export const widgets = [
       properties: {
         title: { value: 'This title can be changed' },
         size: { value: 'md' },
+        hideTitleBar: { value: '{{false}}' },
+        hideCloseButton: { value: '{{false}}' },
+        hideOnEsc: { value: '{{true}}' },
       },
       events: [],
       styles: {
