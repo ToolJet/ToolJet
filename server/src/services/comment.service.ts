@@ -28,10 +28,14 @@ export class CommentService {
     private emailService: EmailService
   ) {}
 
-  public async createComment(createCommentDto: CreateCommentDto, id: string, organizationId: string): Promise<Comment> {
+  public async createComment(
+    createCommentDto: CreateCommentDto,
+    userId: string,
+    organizationId: string
+  ): Promise<Comment> {
     try {
-      const comment = await this.commentRepository.createComment(createCommentDto, id, organizationId);
-      const user = await this.usersRepository.findOne({ where: { id: createCommentDto.userId } });
+      const comment = await this.commentRepository.createComment(createCommentDto, userId, organizationId);
+      const user = await this.usersRepository.findOne({ where: { id: userId } });
       const appVersion = await this.appVersionsRepository.findOne({ where: { id: createCommentDto.appVersionsId } });
       const app = await this.appsRepository.findOne({ where: { id: appVersion.appId } });
       const appLink = `${process.env.TOOLJET_HOST}/apps/${app.id}`;
