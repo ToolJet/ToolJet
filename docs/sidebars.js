@@ -218,9 +218,10 @@ const sidebars = {
           },
           collapsed: false,
           items: [
-            'user-authentication/sso/setup',
-            'user-authentication/sso/okta',
-            'user-authentication/sso/azuread',
+            'user-authentication/sso/openid/setup',
+            'user-authentication/sso/openid/azuread',
+            'user-authentication/sso/openid/okta',
+            'user-authentication/sso/openid/google-openid',
           ],
         }
           ],
