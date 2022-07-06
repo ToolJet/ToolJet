@@ -22,6 +22,7 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
     const usersQuery = entityManager
       .getRepository(User)
       .createQueryBuilder('users')
+      .select(['users.id', 'users.email', 'users.invitationToken'])
       .leftJoinAndSelect('users.organizationUsers', 'organizationUsers')
       .leftJoinAndSelect('users.apps', 'apps')
       .leftJoinAndSelect('users.groupPermissions', 'groupPermissions')
@@ -149,7 +150,13 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
   }
 
   private async migrateThreads(entityManager: EntityManager, deletingUserId: string, originalUser: User) {
-    const threads = await entityManager.find(Thread, { userId: deletingUserId });
+    const threads = await entityManager
+      .getRepository(Thread)
+      .createQueryBuilder('threads')
+      .select(['threads.id'])
+      .where('threads.userId = :userId', { userId: deletingUserId })
+      .getMany();
+
     return await Promise.all(
       threads.map(async (thread) => {
         await entityManager.update(Thread, thread.id, {
@@ -161,7 +168,13 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
 
   //error here
   private async migrateComments(entityManager: EntityManager, deletingUserId: string, originalUser: User) {
-    const comments = await entityManager.find(Comment, { userId: deletingUserId });
+    const comments = await entityManager
+      .getRepository(Comment)
+      .createQueryBuilder('comments')
+      .select(['comments.id'])
+      .where('comments.userId = :userId', { userId: deletingUserId })
+      .getMany();
+
     return await Promise.all(
       comments.map(async (comment) => {
         await entityManager.update(Comment, comment.id, {

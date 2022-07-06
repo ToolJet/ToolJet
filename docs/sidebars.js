@@ -26,6 +26,7 @@ const sidebars = {
         'setup/google-cloud-run',
         'setup/client',
         'setup/env-vars',
+        'setup/http-proxy',
       ],
     },
     'security',
@@ -106,6 +107,7 @@ const sidebars = {
         'widgets/checkbox',
         'widgets/circular-progress-bar',
         'widgets/code-editor',
+        'widgets/color-picker',
         'widgets/container',
         'widgets/custom-component',
         'widgets/date-range-picker',
@@ -113,6 +115,7 @@ const sidebars = {
         'widgets/divider',
         'widgets/dropdown',
         'widgets/file-picker',
+        'widgets/html',
         'widgets/iframe',
         'widgets/image',
         'widgets/kanban',
@@ -140,6 +143,7 @@ const sidebars = {
         'widgets/timeline',
         'widgets/timer',
         'widgets/toggle-switch',
+        'widgets/vertical-divider'
       ],
     },
     {

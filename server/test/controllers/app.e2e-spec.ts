@@ -76,6 +76,9 @@ describe('Authentication', () => {
       expect(adminGroup.appCreate).toBeTruthy();
       expect(adminGroup.appDelete).toBeTruthy();
       expect(adminGroup.folderCreate).toBeTruthy();
+      expect(adminGroup.orgEnvironmentVariableCreate).toBeTruthy();
+      expect(adminGroup.orgEnvironmentVariableUpdate).toBeTruthy();
+      expect(adminGroup.orgEnvironmentVariableDelete).toBeTruthy();
       expect(adminGroup.folderUpdate).toBeTruthy();
       expect(adminGroup.folderDelete).toBeTruthy();
 
@@ -83,6 +86,9 @@ describe('Authentication', () => {
       expect(allUserGroup.appCreate).toBeFalsy();
       expect(allUserGroup.appDelete).toBeFalsy();
       expect(allUserGroup.folderCreate).toBeFalsy();
+      expect(allUserGroup.orgEnvironmentVariableCreate).toBeFalsy();
+      expect(allUserGroup.orgEnvironmentVariableUpdate).toBeFalsy();
+      expect(allUserGroup.orgEnvironmentVariableDelete).toBeFalsy();
       expect(allUserGroup.folderUpdate).toBeFalsy();
       expect(allUserGroup.folderDelete).toBeFalsy();
     });
@@ -224,6 +230,9 @@ describe('Authentication', () => {
         expect(adminGroup.appCreate).toBeTruthy();
         expect(adminGroup.appDelete).toBeTruthy();
         expect(adminGroup.folderCreate).toBeTruthy();
+        expect(adminGroup.orgEnvironmentVariableCreate).toBeTruthy();
+        expect(adminGroup.orgEnvironmentVariableUpdate).toBeTruthy();
+        expect(adminGroup.orgEnvironmentVariableDelete).toBeTruthy();
         expect(adminGroup.folderUpdate).toBeTruthy();
         expect(adminGroup.folderDelete).toBeTruthy();
 
@@ -231,6 +240,9 @@ describe('Authentication', () => {
         expect(allUserGroup.appCreate).toBeFalsy();
         expect(allUserGroup.appDelete).toBeFalsy();
         expect(allUserGroup.folderCreate).toBeFalsy();
+        expect(allUserGroup.orgEnvironmentVariableCreate).toBeFalsy();
+        expect(allUserGroup.orgEnvironmentVariableUpdate).toBeFalsy();
+        expect(allUserGroup.orgEnvironmentVariableDelete).toBeFalsy();
         expect(allUserGroup.folderUpdate).toBeFalsy();
         expect(allUserGroup.folderDelete).toBeFalsy();
       });
@@ -501,6 +513,9 @@ describe('Authentication', () => {
             'updated_at',
             'created_at',
             'folder_create',
+            'org_environment_variable_create',
+            'org_environment_variable_update',
+            'org_environment_variable_delete',
             'folder_delete',
             'folder_update',
           ].sort()
@@ -564,6 +579,9 @@ describe('Authentication', () => {
             'updated_at',
             'created_at',
             'folder_create',
+            'org_environment_variable_create',
+            'org_environment_variable_update',
+            'org_environment_variable_delete',
             'folder_delete',
             'folder_update',
           ].sort()
