@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
 
@@ -11,8 +11,8 @@ export const Listview = function Listview({
   removeComponent,
   properties,
   styles,
-  currentState,
   fireEvent,
+  setExposedVariable,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -27,11 +27,32 @@ export const Listview = function Listview({
     borderRadius: borderRadius ?? 0,
   };
 
-  const onRowClicked = (index) => {
-    fireEvent('onRowClicked', { data: currentState.components[`${component.name}`].data[index], rowId: index });
-  };
+  const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
+  function onRowClicked(index) {
+    setSelectedRowIndex(index);
+    setExposedVariable('selectedRowId', index);
+    setExposedVariable('selectedRow', childrenData[index]);
+    fireEvent('onRowClicked');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }
 
   const parentRef = useRef(null);
+
+  const [childrenData, setChildrenData] = useState({});
+
+  useEffect(() => {
+    setExposedVariable('data', {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setExposedVariable('data', childrenData);
+    if (selectedRowIndex != undefined) {
+      setExposedVariable('selectedRowId', selectedRowIndex);
+      setExposedVariable('selectedRow', childrenData[selectedRowIndex]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childrenData]);
 
   return (
     <div
@@ -64,6 +85,18 @@ export const Listview = function Listview({
               parentRef={parentRef}
               removeComponent={removeComponent}
               listViewItemOptions={{ index }}
+              onOptionChange={function ({ component, optionName, value }) {
+                setChildrenData((prevData) => {
+                  const changedData = { [component.name]: { [optionName]: value } };
+                  const existingDataAtIndex = prevData[index] ?? {};
+                  const newDataAtIndex = {
+                    ...prevData[index],
+                    [component.name]: { ...existingDataAtIndex[component.name], ...changedData[component.name] },
+                  };
+                  const newChildrenData = { ...prevData, [index]: newDataAtIndex };
+                  return { ...prevData, ...newChildrenData };
+                });
+              }}
             />
           </div>
         ))}
