@@ -64,7 +64,7 @@ export class CommentController {
   @UseGuards(JwtAuthGuard)
   @Patch('/notifications/:id')
   public async updateCommentUser(@Param('id') id: string, @Body() body: any) {
-    const notification = await this.commentService.updateCommentUser(id, body.isRead);
+    const notification = await this.commentService.updateCommentUser(id, body);
     return notification;
   }
 
