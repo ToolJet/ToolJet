@@ -17,6 +17,7 @@ export function Git({ settings, updateData }) {
   const copyFunction = (input) => {
     let text = document.getElementById(input).innerHTML;
     navigator.clipboard.writeText(text);
+    toast.success('URL copied');
   };
   const saveSettings = () => {
     setSaving(true);
@@ -130,7 +131,7 @@ export function Git({ settings, updateData }) {
                   id="redirect-url"
                 >{`${window.location.protocol}//${window.location.host}/sso/git/${configId}`}</p>
                 <img
-                  onClick={() => copyFunction('login-url')}
+                  onClick={() => copyFunction('redirect-url')}
                   src={`/assets/images/icons/copy.svg`}
                   width="16"
                   height="16"

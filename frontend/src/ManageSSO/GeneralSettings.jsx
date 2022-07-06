@@ -15,6 +15,7 @@ export function GeneralSettings({ settings, updateData }) {
   const copyFunction = (input) => {
     let text = document.getElementById(input).innerHTML;
     navigator.clipboard.writeText(text);
+    toast.success('URL copied');
   };
 
   const saveSettings = () => {
