@@ -77,7 +77,7 @@ export async function signedUrlForPut(client: S3Client, options: object): Promis
 }
 function uploadData(data: any) {
   if (!data) {
-    return undefined;
+    return;
   }
   return typeof data === 'string' ? data : JSON.stringify(data);
 }
