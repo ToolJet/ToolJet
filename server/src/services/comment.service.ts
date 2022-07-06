@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Comment } from '../entities/comment.entity';
@@ -31,14 +31,14 @@ export class CommentService {
   public async createComment(createCommentDto: CreateCommentDto, id: string, organizationId: string): Promise<Comment> {
     try {
       const comment = await this.commentRepository.createComment(createCommentDto, id, organizationId);
-      const user = await this.usersRepository.findOne(createCommentDto.userId);
-      const appVersion = await this.appVersionsRepository.findOne(createCommentDto.appVersionsId);
-      const app = await this.appsRepository.findOne(appVersion.appId);
-      const appLink = process.env.TOOLJET_HOST + '/apps/' + app.id;
-      const commentLink = appLink + '?threadId=' + comment.threadId + '&commentId=' + comment.id;
+      const user = await this.usersRepository.findOne({ where: { id: createCommentDto.userId } });
+      const appVersion = await this.appVersionsRepository.findOne({ where: { id: createCommentDto.appVersionsId } });
+      const app = await this.appsRepository.findOne({ where: { id: appVersion.appId } });
+      const appLink = `${process.env.TOOLJET_HOST}/apps/${app.id}`;
+      const commentLink = `${appLink}?threadId=${comment.threadId}&commentId=${comment.id}`;
 
       for (const userId of createCommentDto.mentionedUsers) {
-        const mentionedUser = await this.usersRepository.findOne(userId, { relations: ['avatar'] });
+        const mentionedUser = await this.usersRepository.findOne({ where: { id: userId }, relations: ['avatar'] });
         if (!mentionedUser) return null; // todo: invite user
         void this.emailService.sendCommentMentionEmail(
           mentionedUser.email,
@@ -56,7 +56,7 @@ export class CommentService {
       }
       return comment;
     } catch (error) {
-      console.log(error);
+      throw new InternalServerErrorException(error);
     }
   }
 
