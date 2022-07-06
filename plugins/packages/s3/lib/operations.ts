@@ -75,7 +75,7 @@ export async function signedUrlForPut(client: S3Client, options: object): Promis
   });
   return { url };
 }
-function uploadData(data: string, contentType: string) {
+function uploadData(data: any, contentType: string) {
   if (!data) {
     return;
   }
