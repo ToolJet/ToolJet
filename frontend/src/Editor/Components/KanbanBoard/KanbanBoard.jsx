@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
 import Board from './Board';
-import { isCardColoumnIdUpdated, updateCardData, updateColumnData, getData, isArray, isValidCardData } from './utils';
+import { getData } from './utils';
 
 export const BoardContext = React.createContext({});
 
@@ -31,7 +31,9 @@ export const KanbanBoard = ({
   }, [state]);
 
   React.useEffect(() => {
-    if (isArray(rawColumnData) || isArray(rawCardData)) {
+    const isEqualCol = _.isEqual(rawColumnData, columns);
+    const isEqualCard = _.isEqual(rawCardData, cardData);
+    if (!isEqualCol || !isEqualCard) {
       const colData = JSON.parse(JSON.stringify(columns));
       const _cardData = JSON.parse(JSON.stringify(cardData));
       setRawColumnData(colData);
@@ -40,58 +42,7 @@ export const KanbanBoard = ({
       setState(data);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  React.useEffect(() => {
-    if (JSON.stringify(columns) !== JSON.stringify(rawColumnData) && isArray(columns)) {
-      const newData = updateColumnData(state, rawColumnData, columns);
-
-      if (newData && isArray(newData)) {
-        setState(newData);
-      }
-
-      if (!newData && columns.length !== rawColumnData.length) {
-        setState(() => getData(columns, rawCardData));
-      }
-      setRawColumnData(columns);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columns]);
-
-  React.useEffect(() => {
-    if (isValidCardData(cardData)) {
-      if (cardData.length !== rawCardData.length) {
-        setState(() => getData(columns, cardData));
-      } else if (JSON.stringify(cardData) !== JSON.stringify(rawCardData) && isArray(cardData)) {
-        if (cardData.length === 0) {
-          return;
-        }
-
-        const isColumnIdUpdated = isCardColoumnIdUpdated(rawCardData, cardData);
-
-        if (isColumnIdUpdated) {
-          const newData = getData(columns, cardData);
-          if (newData && isArray(newData)) {
-            setState(newData);
-          }
-        }
-
-        if (!isColumnIdUpdated) {
-          const newData = updateCardData(state, rawCardData, cardData);
-
-          if (newData && isArray(newData)) {
-            setState(newData);
-          }
-          if (newData === null) {
-            return setState(() => getData(columns, cardData));
-          }
-        }
-      }
-
-      setRawCardData(cardData);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cardData]);
+  }, [columns, cardData]);
 
   const colStyles = {
     width: !width ? '100%' : width,

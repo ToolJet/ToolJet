@@ -31,9 +31,9 @@ export const Card = ({
   const { id, darkMode } = React.useContext(BoardContext);
 
   const removeCardHandler = (colIndex, cardIndex) => {
-    const newState = [...state];
+    const newState = _.cloneDeep(state);
     const removedCard = newState[colIndex]['cards'].splice(cardIndex, 1)[0];
-    updateCb(newState);
+    // updateCb(newState);
     setExposedVariable('lastRemovedCard', removedCard).then(() => fireEvent('onCardRemoved'));
   };
 

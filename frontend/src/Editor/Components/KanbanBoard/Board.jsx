@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,11 +28,14 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
       title: 'New card',
       columnId: state[keyIndex].id,
     };
-    const newState = [...state];
-    if (!newState[keyIndex]['cards']) [(newState[keyIndex]['cards'] = [])];
-    newState[keyIndex]['cards'].push(newItem);
-    setState(newState);
-    setExposedVariable('lastAddedCard', newItem).then(() => fireEvent('onCardAdded'));
+
+    setExposedVariable('selectedColumn', _.omit(state[keyIndex], 'cards')).then(() => fireEvent('onCardAddRequested'));
+    // const newState = [...state];
+    // if (!newState[keyIndex]['cards']) [(newState[keyIndex]['cards'] = [])];
+    // newState[keyIndex]['cards'].push(newItem);
+    // setState(newState);
+    // setExposedVariable('lastAddedCard', newItem).then(() => fireEvent('onCardAdded'));
+    // setExposedVariable('lastAddedCard', newItem).then(() => fireEvent('onCardAddRequested'));
   };
 
   function onDragEnd(result) {
@@ -43,10 +47,13 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
       const dInd = +destination.droppableId;
       const originColumnId = state[sInd].id;
       const destinationColumnId = state[dInd].id;
+      const originalCardIndex = source.index;
+      const destinationCardIndex = destination.index;
 
       const card = state[sInd]['cards'][source.index];
       const cardDetails = {
         title: card.title,
+        id: card.id,
       };
 
       if (sInd === dInd) {
@@ -67,8 +74,8 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
       const movementDetails = {
         originColumnId,
         destinationColumnId,
-        originCardIndex: sInd,
-        destinationCardIndex: dInd,
+        originalCardIndex,
+        destinationCardIndex,
         cardDetails,
       };
       setExposedVariable('lastCardMovement', movementDetails).then(() => fireEvent('onCardMoved'));

@@ -493,6 +493,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCalendarViewChange',
       'onSearchTextChanged',
       'onPageChange',
+      'onCardAddRequested',
       'onCardAdded',
       'onCardRemoved',
       'onCardMoved',

@@ -2444,6 +2444,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
     },
     events: {
+      onCardAddRequested: { displayName: 'Card add request' },
       onCardAdded: { displayName: 'Card added' },
       onCardRemoved: { displayName: 'Card removed' },
       onCardMoved: { displayName: 'Card moved' },
