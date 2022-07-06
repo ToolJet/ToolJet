@@ -570,6 +570,24 @@ export const widgets = [
       width: 5,
       height: 30,
     },
+    actions: [
+      {
+        handle: 'checkOption',
+        displayName: 'Check option',
+      },
+      {
+        handle: 'unCheckOption',
+        displayName: 'Uncheck option',
+      },
+      {
+        handle: 'clearAll',
+        displayName: 'Clear all',
+      },
+      {
+        handle: 'selectAll',
+        displayName: 'Select all',
+      },
+    ],
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
