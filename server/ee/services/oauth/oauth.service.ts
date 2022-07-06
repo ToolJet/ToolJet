@@ -168,7 +168,7 @@ export class OauthService {
       throw new UnauthorizedException();
     }
 
-    if (!organization) {
+    if (!organization || !ssoConfigs) {
       // Should obtain organization configs
       throw new UnauthorizedException();
     }
