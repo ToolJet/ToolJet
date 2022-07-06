@@ -14,7 +14,7 @@ export const NotificationCenter = () => {
     const { data, error } = await commentsService.getMentionedNotifications(isRead);
     setLoading(false);
     if (error) {
-      toast.error('Unable to fetch notification');
+      toast.error('Unable to fetch notifications');
       return;
     }
     setCommentNotifications(data);
