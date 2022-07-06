@@ -1260,6 +1260,14 @@ button {
       overflow: hidden;
     }
   }
+
+  .left-menu {
+    ul {
+      li:not(.active):hover {
+        color: $black;
+      }
+    }
+  }
 }
 
 .pagination {
@@ -5053,8 +5061,7 @@ div#driver-page-overlay {
       color: $white;
     }
     li:not(.active):hover {
-      background-color: $primary;
-      color: $white;
+      background-color: #d2daf0;
     }
   }
 }
