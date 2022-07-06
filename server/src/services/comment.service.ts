@@ -32,10 +32,7 @@ export class CommentService {
     try {
       const comment = await this.commentRepository.createComment(createCommentDto, id, organizationId);
       const user = await this.usersRepository.findOne({ where: { id: createCommentDto.userId } });
-      const appVersion = await this.appVersionsRepository.findOne({ where: { id: createCommentDto.appVersionsId } });
-      const app = await this.appsRepository.findOne({ where: { id: appVersion.appId } });
-      const appLink = `${process.env.TOOLJET_HOST}/apps/${app.id}`;
-      const commentLink = `${appLink}?threadId=${comment.threadId}&commentId=${comment.id}`;
+      const [appLink, commentLink, appName] = await this.getAppLinks(createCommentDto.appVersionsId, comment);
 
       for (const userId of createCommentDto.mentionedUsers) {
         const mentionedUser = await this.usersRepository.findOne({ where: { id: userId }, relations: ['avatar'] });
@@ -43,7 +40,7 @@ export class CommentService {
         void this.emailService.sendCommentMentionEmail(
           mentionedUser.email,
           user.firstName,
-          app.name,
+          appName,
           appLink,
           commentLink,
           comment.createdAt.toUTCString(),
@@ -58,6 +55,15 @@ export class CommentService {
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
+  }
+
+  private async getAppLinks(appVersionsId: string, comment: Comment) {
+    const appVersion = await this.appVersionsRepository.findOne({ where: { id: appVersionsId } });
+    const app = await this.appsRepository.findOne({ where: { id: appVersion.appId } });
+    const appLink = `${process.env.TOOLJET_HOST}/apps/${app.id}`;
+    const commentLink = `${appLink}?threadId=${comment.threadId}&commentId=${comment.id}`;
+
+    return [appLink, commentLink, app.name];
   }
 
   public async getComments(threadId: string, appVersionsId: string): Promise<Comment[]> {
@@ -102,11 +108,11 @@ export class CommentService {
 
     try {
       const _notifications = notifications.map(async (notification) => {
-        const appVersion = await this.appVersionsRepository.findOne(notification.comment.appVersionsId);
-        const app = await this.appsRepository.findOne(appVersion.appId);
-        const appLink = `${process.env.TOOLJET_HOST}/apps/${app.id}`;
-        const commentLink = `${appLink}?threadId=${notification.comment.threadId}&commentId=${notification.comment.id}`;
-        const user = await this.usersRepository.findOne(notification.comment.user.id, { relations: ['avatar'] });
+        const [, commentLink] = await this.getAppLinks(notification.comment.appVersionsId, notification.comment);
+        const user = await this.usersRepository.findOne({
+          where: { id: notification.comment.user.id },
+          relations: ['avatar'],
+        });
         const creator = {
           firstName: user.firstName,
           lastName: user.lastName,

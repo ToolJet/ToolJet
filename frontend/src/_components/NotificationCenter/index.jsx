@@ -51,13 +51,13 @@ export const NotificationCenter = () => {
           <path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"></path>
           <path d="M9 17v1a3 3 0 0 0 6 0v-1"></path>
         </svg>
-        {commentNotifications.length !== 0 && <spa style={{ top: 10, right: 10 }} className="badge bg-red" />}
+        {commentNotifications.length !== 0 && <span className="notification-center-badge badge bg-red" />}
       </a>
       <div
         className="notification-center dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card"
         data-bs-popper="static"
       >
-        <div className="card" style={{ minWidth: 400 }}>
+        <div className="card">
           <div className="card-header">
             <h1 className="card-title">Notifications</h1>
           </div>
@@ -67,9 +67,7 @@ export const NotificationCenter = () => {
             ))}
             {!loading && commentNotifications.length === 0 && (
               <div className="empty">
-                <div className="empty-img pb-3" style={{ fontSize: '2.5em' }}>
-                  🔔
-                </div>
+                <div className="empty-img pb-3">🔔</div>
                 <p className="empty-title mb-1">You&apos;re all caught up!</p>
                 <p className="empty-subtitle text-muted">
                   You don&apos;t have any {!isRead && 'un'}read notifications!

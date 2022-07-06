@@ -5949,12 +5949,25 @@ a.step-item-disabled {
   ;
 }
 
+.notification-center-badge {
+  top: 10;
+  right: 10;
+}
+
 .notification-center {
   max-height: 500px;
   overflow: auto;
 
   .empty {
     padding: 0 !important;
+
+    .empty-img {
+      font-size: 2.5em;
+    }
+  }
+
+  .card {
+    min-width: 400;
   }
 
   .spinner {
