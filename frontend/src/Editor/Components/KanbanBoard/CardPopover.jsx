@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { SubContainer } from '../../SubContainer';
+import { SubCustomDragLayer } from '../../SubCustomDragLayer';
 
 export const CardEventPopover = function ({
   show,
@@ -9,6 +11,8 @@ export const CardEventPopover = function ({
   updateCardProperty,
   index,
   keyIndex,
+  containerProps,
+  removeComponent,
 }) {
   const parentRef = useRef(null);
   const [showPopover, setShow] = useState(show);
@@ -77,78 +81,20 @@ export const CardEventPopover = function ({
     >
       {parentRef.current && showPopover && (
         <div className="popover-body" style={{ padding: 'unset', width: '100%', height: 100, zIndex: 11 }}>
-          <div className="rows p-2 overflow-auto">
-            <div
-              className="row overflow-auto"
-              onMouseEnter={() => setTitleHovered(true)}
-              onMouseLeave={() => setTitleHovered(false)}
-            >
-              {titleEditMode ? (
-                <div>
-                  <input
-                    type="text"
-                    className="form-control"
-                    defaultValue={titleInputBoxValue}
-                    onChange={(event) => setTitleInputBoxValue(event.target.value)}
-                    onBlur={() => {
-                      updateCardProperty(keyIndex, index, 'title', titleInputBoxValue);
-                      setTitleEditMode(false);
-                    }}
-                  />
-                </div>
-              ) : (
-                <h3>
-                  {card?.title ?? ''}
-                  <img
-                    src="/assets/images/icons/editor/edit.svg"
-                    style={{ visibility: titleHovered ? 'visible' : 'hidden', height: 15, width: 15, paddingLeft: 1 }}
-                    onClick={() => setTitleEditMode(true)}
-                  />
-                </h3>
-              )}
-            </div>
-            <div
-              className="row overflow-auto d-flex align-items-center flex-column"
-              onMouseEnter={() => setDescriptionHovered(true)}
-              onMouseLeave={() => setDescriptionHovered(false)}
-              style={{ maxHeight: 250 }}
-            >
-              {descriptionEditMode ? (
-                <textarea
-                  className="form-control"
-                  style={{ width: '95%' }}
-                  onChange={(event) => setDescriptionTextAreaValue(event.target.value)}
-                  onBlur={() => {
-                    updateCardProperty(keyIndex, index, 'description', descriptionTextAreaValue);
-                    setDescriptionEditMode(false);
-                  }}
-                  rows={10}
-                >
-                  {descriptionTextAreaValue}
-                </textarea>
-              ) : (
-                <p>
-                  {['', undefined].includes(card.description) ? (
-                    <a style={{ color: 'grey' }} onClick={() => setDescriptionEditMode(true)}>
-                      Add description
-                    </a>
-                  ) : (
-                    card.description
-                  )}
-                  <img
-                    src="/assets/images/icons/editor/edit.svg"
-                    style={{
-                      visibility: descriptionHovered ? 'visible' : 'hidden',
-                      height: 15,
-                      width: 15,
-                      paddingLeft: 1,
-                    }}
-                    onClick={() => setDescriptionEditMode(true)}
-                  />
-                </p>
-              )}
-            </div>
-          </div>
+          <>
+            <SubContainer
+              containerCanvasWidth={300}
+              parent={`${kanbanCardWidgetId}-popover`}
+              {...containerProps}
+              parentRef={parentRef}
+              removeComponent={removeComponent}
+            />
+            <SubCustomDragLayer
+              parent={kanbanCardWidgetId}
+              parentRef={parentRef}
+              currentLayout={containerProps.currentLayout}
+            />
+          </>
         </div>
       )}
     </div>

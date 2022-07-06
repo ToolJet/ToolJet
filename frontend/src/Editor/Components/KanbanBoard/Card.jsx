@@ -28,7 +28,7 @@ export const Card = ({
     });
   }
 
-  const { id, darkMode } = React.useContext(BoardContext);
+  const { id, darkMode, containerProps, removeComponent } = React.useContext(BoardContext);
 
   const removeCardHandler = (colIndex, cardIndex) => {
     const newState = _.cloneDeep(state);
@@ -100,6 +100,8 @@ export const Card = ({
                   updateCardProperty={updateCardProperty}
                   index={index}
                   keyIndex={keyIndex}
+                  containerProps={containerProps}
+                  removeComponent={removeComponent}
                 />
               </ReactPortal>
             )}
