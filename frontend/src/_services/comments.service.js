@@ -40,6 +40,10 @@ function getMentionedNotifications(isRead = false) {
   return adapter.get(`/comments/notifications?isRead=${isRead}`);
 }
 
+function updateAllNotifications(isRead) {
+  return adapter.patch(`/comments/notifications`, { isRead });
+}
+
 function updateMentionedNotification(id, isRead) {
   return adapter.patch(`/comments/notifications/${id}`, { isRead });
 }
@@ -59,5 +63,6 @@ export const commentsService = {
   deleteComment,
   getMentionedNotifications,
   updateMentionedNotification,
+  updateAllNotifications,
   getNotifications,
 };

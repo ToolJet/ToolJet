@@ -20,6 +20,17 @@ export const NotificationCenter = () => {
     setCommentNotifications(data);
   }
 
+  const updateAllNotifications = async () => {
+    setLoading(true);
+    const { error } = await commentsService.updateAllNotifications(!isRead);
+    setLoading(false);
+    if (error) {
+      toast.error('Unable to update notifications');
+      return;
+    }
+    fetchData();
+  };
+
   React.useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -60,9 +71,14 @@ export const NotificationCenter = () => {
         <div className="card">
           <div className="card-header">
             <h1 className="card-title">Notifications</h1>
+            {commentNotifications?.length > 0 && (
+              <a href="#" onClick={updateAllNotifications} className="text-muted text-decoration-none ms-auto">
+                Mark all as {isRead && 'un'}read
+              </a>
+            )}
           </div>
           <div className="list-group list-group-flush list-group-hoverable p-3">
-            {commentNotifications.map((commentNotification) => (
+            {commentNotifications?.map((commentNotification) => (
               <Notification key={commentNotification.id} fetchData={fetchData} {...commentNotification} />
             ))}
             {!loading && commentNotifications.length === 0 && (
@@ -81,7 +97,7 @@ export const NotificationCenter = () => {
             )}
           </div>
           <div className="card-footer text-center margin-auto">
-            <a href="#" className="text-muted" onClick={() => setIsRead(!isRead)}>
+            <a href="#" className="text-muted text-decoration-none" onClick={() => setIsRead(!isRead)}>
               View {isRead && 'un'}read notifications
             </a>
           </div>

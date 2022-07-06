@@ -34,7 +34,7 @@ export class CommentController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const comment = await this.commentService.createComment(createCommentDto, user.id, user.organizationId);
+    const comment = await this.commentService.createComment(createCommentDto, user);
     return comment;
   }
 
@@ -58,6 +58,13 @@ export class CommentController {
   @Get('/notifications')
   public async getMentionedNotifications(@User() user, @Query() query) {
     const notifications = await this.commentService.getMentionedNotifications(user.id, query.isRead);
+    return notifications;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('/notifications')
+  public async updateAllCommentUser(@Body() body: any) {
+    const notifications = await this.commentService.updateAllCommentUser(body);
     return notifications;
   }
 

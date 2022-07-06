@@ -176,6 +176,11 @@ export class CommentService {
     return item;
   }
 
+  public async updateAllCommentUser(body: any) {
+    const item = await this.commentUsersRepository.update({}, { ...body });
+    return item;
+  }
+
   public async editComment(commentId: string, updateCommentDto: UpdateCommentDto): Promise<Comment> {
     const editedComment = await this.commentRepository.findOne({ where: { id: commentId } });
     if (!editedComment) {
