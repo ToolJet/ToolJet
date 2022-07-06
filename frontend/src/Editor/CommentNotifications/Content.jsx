@@ -21,7 +21,7 @@ const Content = ({ notifications, loading }) => {
   }, [router]);
 
   const getComment = (comment) => {
-    var regex = /(\()([^)]+)(\))/g;
+    const regex = /(\()([^)]+)(\))/g;
     return comment.replace(regex, '<span class=mentioned-user>$2</span>');
   };
 

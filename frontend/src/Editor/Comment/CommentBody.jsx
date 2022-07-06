@@ -32,7 +32,7 @@ const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditComment
   }, []);
 
   const getComment = (comment) => {
-    var regex = /(\()([^)]+)(\))/g;
+    const regex = /(\()([^)]+)(\))/g;
     return comment.replace(regex, '<span class=mentioned-user>$2</span>');
   };
 
