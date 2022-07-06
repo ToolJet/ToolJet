@@ -1,5 +1,12 @@
 import { BehaviorSubject } from 'rxjs';
-import { history, handleResponse, setCookie, getCookie, eraseCookie } from '@/_helpers';
+import {
+  history,
+  handleResponse,
+  setCookie,
+  getCookie,
+  eraseCookie,
+  handleResponseWithoutValidation,
+} from '@/_helpers';
 import config from 'config';
 
 const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('currentUser')));
@@ -31,7 +38,7 @@ function login(email, password, organizationId) {
   };
 
   return fetch(`${config.apiUrl}/authenticate${organizationId ? `/${organizationId}` : ''}`, requestOptions)
-    .then(handleResponse)
+    .then(handleResponseWithoutValidation)
     .then((user) => {
       // store user details and jwt token in local storage to keep user logged in between page refreshes
       updateUser(user);
@@ -129,16 +136,7 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
   const url = configId ? configId : `common/${ssoType}`;
 
   return fetch(`${config.apiUrl}/oauth/sign-in/${url}`, requestOptions)
-    .then((response) => {
-      return response.text().then((text) => {
-        const data = text && JSON.parse(text);
-        if (!response.ok) {
-          const error = (data && data.message) || response.statusText;
-          return Promise.reject({ error, data });
-        }
-        return data;
-      });
-    })
+    .then(handleResponseWithoutValidation)
     .then((user) => {
       updateUser(user);
       return user;
