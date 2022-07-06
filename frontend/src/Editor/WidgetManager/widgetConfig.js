@@ -87,6 +87,19 @@ export const widgets = [
       searchText: '',
       selectedRows: [],
     },
+    actions: [
+      {
+        handle: 'setPage',
+        displayName: 'Set page',
+        params: [
+          {
+            handle: 'page',
+            displayName: 'Page',
+            defaultValue: '{{1}}',
+          },
+        ],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -166,6 +179,17 @@ export const widgets = [
       borderRadius: { type: 'number', displayName: 'Border radius' },
     },
     exposedVariables: {},
+    actions: [
+      {
+        handle: 'click',
+        displayName: 'Click',
+      },
+      {
+        handle: 'setLabel',
+        displayName: 'Set label',
+        params: [{ handle: 'label', displayName: 'Label', defaultValue: 'New label' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -802,6 +826,13 @@ export const widgets = [
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {},
+    actions: [
+      {
+        handle: 'setText',
+        displayName: 'Set Text',
+        params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -2488,6 +2519,47 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         width: { value: '{{400}}' },
         minWidth: { value: '{{200}}' },
         textColor: { value: '#4d72fa' },
+      },
+    },
+  },
+  {
+    name: 'ColorPicker',
+    displayName: 'Color Picker',
+    description: 'Color Picker Pallete',
+    component: 'ColorPicker',
+    properties: {
+      defaultColor: { type: 'color', displayName: 'Default Color' },
+    },
+    defaultSize: {
+      width: 9,
+      height: 40,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      selectedColorHex: '#000000',
+      selectedColorRGB: 'rgb(0,0,0)',
+      selectedColorRGBA: 'rgba(0, 0, 0, 1)',
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        defaultColor: {
+          value: '#000000',
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
       },
     },
   },
