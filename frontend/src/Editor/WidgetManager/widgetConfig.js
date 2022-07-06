@@ -572,20 +572,9 @@ export const widgets = [
     },
     actions: [
       {
-        handle: 'checkOption',
-        displayName: 'Check option',
-      },
-      {
-        handle: 'unCheckOption',
-        displayName: 'Uncheck option',
-      },
-      {
-        handle: 'clearAll',
-        displayName: 'Clear all',
-      },
-      {
-        handle: 'selectAll',
-        displayName: 'Select all',
+        handle: 'setChecked',
+        displayName: 'Set checked',
+        params: [{ handle: 'status', displayName: 'status' }],
       },
     ],
     others: {

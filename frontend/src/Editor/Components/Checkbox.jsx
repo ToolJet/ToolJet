@@ -31,19 +31,13 @@ export const Checkbox = function Checkbox({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValueFromProperties]);
 
-  registerAction('checkOption', async function () {
-    setChecked(true);
-    fireEvent('onCheck');
-  });
-  registerAction('unCheckOption', async function () {
-    setChecked(false);
-    fireEvent('unCheck');
-  });
-  registerAction('clearAll', async function () {
-    setChecked(false);
-  });
-  registerAction('selectAll', async function () {
-    setChecked(true);
+  registerAction('setChecked', async function (status) {
+    setChecked(status);
+    if (status) {
+      fireEvent('onCheck');
+    } else {
+      fireEvent('onUnCheck');
+    }
   });
 
   return (
