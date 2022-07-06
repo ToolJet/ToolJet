@@ -79,5 +79,5 @@ function uploadData(data: any, contentType: string) {
   if (!data) {
     return;
   }
-  return typeof data === 'object' && contentType == 'application/json' ? JSON.stringify(data) : data;
+  return typeof data === 'object' && contentType.includes('application/json') ? JSON.stringify(data) : data;
 }
