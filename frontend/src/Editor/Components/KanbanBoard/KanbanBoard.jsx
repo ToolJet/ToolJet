@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
 import Board from './Board';
-import { getData } from './utils';
+import { cardDiff, getData } from './utils';
 
 export const BoardContext = React.createContext({});
 
@@ -33,12 +33,18 @@ export const KanbanBoard = ({
   React.useEffect(() => {
     const isEqualCol = _.isEqual(rawColumnData, columns);
     const isEqualCard = _.isEqual(rawCardData, cardData);
-    if (!isEqualCol || !isEqualCard) {
-      const colData = JSON.parse(JSON.stringify(columns));
-      const _cardData = JSON.parse(JSON.stringify(cardData));
+    const notEmpty = !_.isEmpty(columns) && !_.isEmpty(cardData);
+    if (notEmpty && (!isEqualCol || !isEqualCard)) {
+      const colData = _.cloneDeep(columns);
+      const _cardData = _.cloneDeep(cardData);
+
       setRawColumnData(colData);
       setRawCardData(_cardData);
       const data = getData(colData, _cardData);
+      const [diffSize, diff, { type }] = cardDiff(state, data);
+      if (diffSize === 1 && type === 'ADD') {
+        setExposedVariable('lastAddedCard', diff).then(() => fireEvent('onCardAdded'));
+      }
       setState(data);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

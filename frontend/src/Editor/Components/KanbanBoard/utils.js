@@ -5,9 +5,14 @@ export const getData = (_columns, _cards) => {
   const cards = _.cloneDeep(_cards);
 
   if (_.isArray(cards) && _.isArray(columns)) {
-    const clonedColumns = [...columns];
+    columns.forEach((column) => {
+      if (!column.hasOwnProperty('cards')) {
+        defObjectProperty(column, 'cards', []);
+      }
+    });
+
     cards.forEach((card) => {
-      const column = clonedColumns.find((column) => column.id === card.columnId);
+      const column = columns.find((column) => column.id === card.columnId);
       if (column) {
         column['cards'] = column?.cards ? _.uniq([...column.cards, card]) : [card];
 
@@ -24,7 +29,7 @@ export const getData = (_columns, _cards) => {
       }
     });
 
-    return clonedColumns;
+    return columns;
   }
   return null;
 };
@@ -50,3 +55,55 @@ export const moveCards = (source, destination, droppableSource, droppableDestina
 
   return result;
 };
+
+export const cardDiff = (prevState, nextState) => {
+  const copyPrevState = _.cloneDeep(prevState);
+  const copyNextState = _.cloneDeep(nextState);
+  let prevCards = [];
+  let newCards = [];
+
+  if (_.isArray(copyPrevState)) {
+    prevCards = copyPrevState.reduce((acc, column) => {
+      if (_.isArray(column?.cards)) {
+        acc = [...acc, ...column?.cards];
+      }
+      return acc;
+    }, []);
+  }
+  if (_.isArray(copyNextState)) {
+    newCards = copyNextState.reduce((acc, column) => {
+      if (_.isArray(column?.cards)) {
+        acc = [...acc, ...column?.cards];
+      }
+      return acc;
+    }, []);
+  }
+
+  const diff = _.differenceWith(newCards, prevCards, _.isEqual);
+  const diffSize = diff.length;
+
+  if (diffSize === 1) {
+    return [diffSize, diff[0], { type: diffType.ADD }];
+  }
+
+  if (diffSize === 0) {
+    return [diffSize, [], { type: diffType.UPDATE }];
+  }
+
+  return [diffSize, undefined, { type: diffType.UPDATE }];
+};
+
+const diffType = Object.freeze({
+  ADD: 'ADD',
+  REMOVE: 'REMOVE',
+  UPDATE: 'UPDATE',
+});
+
+const defObjectProperty = (obj, key, value) =>
+  Object.defineProperties(obj, {
+    [key]: {
+      value: value,
+      writable: true,
+      enumerable: true,
+    },
+  });
