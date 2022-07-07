@@ -6,9 +6,24 @@ import { reorderCards, moveCards, defObjectProperty } from './utils';
 
 const grid = 8;
 
-const getItemStyle = (isDragging, draggableStyle) => {
+const getItemStyle = (isDragging, draggableStyle, windowWidth) => {
+  const leftDisplacement =
+    windowWidth > 1800 && windowWidth < 2160
+      ? 150
+      : windowWidth == 2160
+      ? 300
+      : windowWidth > 2160 && windowWidth <= 2560
+      ? 400
+      : windowWidth > 2560
+      ? 700
+      : 100;
+
   const _draggableStyle = isDragging
-    ? { ...draggableStyle, left: draggableStyle.left - 100, top: draggableStyle.top - 100 }
+    ? {
+        ...draggableStyle,
+        left: draggableStyle.left - leftDisplacement,
+        top: draggableStyle.top - 100,
+      }
     : draggableStyle;
 
   return {
