@@ -5488,6 +5488,9 @@ div#driver-page-overlay {
 
     .card-body .dnd-card {
       border-radius: 5px !important;
+      &:hover {
+        border-color: $primary-light;
+      }
     }
     .dnd-card.card {
       height: 52px !important;
