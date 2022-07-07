@@ -629,18 +629,54 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' },
-      defaultValue: { type: 'toggle', displayName: 'Default Status' },
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      defaultValue: {
+        type: 'toggle',
+        displayName: 'Default Status',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onCheck: { displayName: 'On check' },
       onUnCheck: { displayName: 'On uncheck' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text Color' },
-      checkboxColor: { type: 'color', displayName: 'Checkbox Color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string', defaultValue: false },
+        },
+      },
+      checkboxColor: {
+        type: 'color',
+        displayName: 'Checkbox Color',
+        validation: {
+          schema: { type: 'string', defaultValue: false },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'strbooleaning', defaultValue: false },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean', defaultValue: false },
+        },
+      },
     },
     exposedVariables: {
       value: false,
