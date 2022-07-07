@@ -28,7 +28,7 @@ export const Card = ({
     });
   }
 
-  const { id, darkMode, containerProps, removeComponent, component } = React.useContext(BoardContext);
+  const { id, darkMode, containerProps, removeComponent, component, enableDeleteCard } = React.useContext(BoardContext);
 
   const removeCardHandler = (colIndex, cardIndex) => {
     const newState = _.cloneDeep(state);
@@ -80,7 +80,7 @@ export const Card = ({
             <span ref={target} onClick={handleCardClick} className="text-muted flex-grow-1 cursor-pointer fw-bold">
               {item.title}
             </span>
-            {isHovered && !item.isEditing && (
+            {enableDeleteCard && isHovered && !item.isEditing && (
               <span
                 className="cursor-pointer"
                 type="btn btn-sm btn-danger"
