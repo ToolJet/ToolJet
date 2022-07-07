@@ -24,6 +24,7 @@ export const TextInput = function TextInput({
 
   registerAction('setText', async function (text) {
     setValue(text);
+    setExposedVariable('value', text);
   });
   registerAction('clear', async function () {
     setValue(' ');
