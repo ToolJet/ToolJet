@@ -11,6 +11,7 @@ import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { User } from 'src/entities/user.entity';
 import { CommentUsers } from 'src/entities/comment_user.entity';
+import { UpdateCommentUserDto } from '@dto/comment-user.dto';
 
 @Injectable()
 export class CommentService {
@@ -171,13 +172,14 @@ export class CommentService {
     return foundComment;
   }
 
-  public async updateCommentUser(commentUserId: string, body: any) {
-    const item = await this.commentUsersRepository.update(commentUserId, { ...body });
+  public async updateCommentUser(commentUserId: string, body: UpdateCommentUserDto) {
+    const item = await this.commentUsersRepository.update(commentUserId, { isRead: body.isRead });
     return item;
   }
 
-  public async updateAllCommentUser(body: any) {
-    const item = await this.commentUsersRepository.update({}, { ...body });
+  public async updateAllCommentUser(body: UpdateCommentUserDto) {
+    const { isRead } = body;
+    const item = await this.commentUsersRepository.update({ isRead: !isRead }, { isRead });
     return item;
   }
 

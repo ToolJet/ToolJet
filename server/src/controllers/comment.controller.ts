@@ -17,6 +17,7 @@ import { Thread } from '../entities/thread.entity';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { CommentsAbilityFactory } from 'src/modules/casl/abilities/comments-ability.factory';
 import { User } from 'src/decorators/user.decorator';
+import { UpdateCommentUserDto } from '@dto/comment-user.dto';
 
 @Controller('comments')
 export class CommentController {
@@ -63,14 +64,14 @@ export class CommentController {
 
   @UseGuards(JwtAuthGuard)
   @Patch('/notifications')
-  public async updateAllCommentUser(@Body() body: any) {
+  public async updateAllCommentUser(@Body() body: UpdateCommentUserDto) {
     const notifications = await this.commentService.updateAllCommentUser(body);
     return notifications;
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch('/notifications/:id')
-  public async updateCommentUser(@Param('id') id: string, @Body() body: any) {
+  public async updateCommentUser(@Param('id') id: string, @Body() body: UpdateCommentUserDto) {
     const notification = await this.commentService.updateCommentUser(id, body);
     return notification;
   }

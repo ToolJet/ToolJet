@@ -62,7 +62,7 @@ export const NotificationCenter = () => {
           <path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"></path>
           <path d="M9 17v1a3 3 0 0 0 6 0v-1"></path>
         </svg>
-        {commentNotifications.length !== 0 && <span className="notification-center-badge badge bg-red" />}
+        {commentNotifications?.length !== 0 && <span className="notification-center-badge badge bg-red" />}
       </a>
       <div
         className="notification-center dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card"
@@ -71,16 +71,17 @@ export const NotificationCenter = () => {
         <div className="card">
           <div className="card-header">
             <h1 className="card-title">Notifications</h1>
-            {commentNotifications?.length > 0 && (
+            {!loading && commentNotifications?.length > 0 && (
               <a href="#" onClick={updateAllNotifications} className="text-muted text-decoration-none ms-auto">
                 Mark all as {isRead && 'un'}read
               </a>
             )}
           </div>
           <div className="list-group list-group-flush list-group-hoverable p-3">
-            {commentNotifications?.map((commentNotification) => (
-              <Notification key={commentNotification.id} fetchData={fetchData} {...commentNotification} />
-            ))}
+            {!loading &&
+              commentNotifications?.map((commentNotification) => (
+                <Notification key={commentNotification.id} fetchData={fetchData} {...commentNotification} />
+              ))}
             {!loading && commentNotifications.length === 0 && (
               <div className="empty">
                 <div className="empty-img pb-3">🔔</div>
