@@ -87,6 +87,7 @@ const Column = ({
                 />
               ) : (
                 <span
+                  title="Click to edit"
                   style={colAccentColor}
                   onClick={() => flipTitleToEditMode(keyIndex)}
                   className="bade-component cursor-text"
