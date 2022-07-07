@@ -5696,3 +5696,22 @@ a.step-item-disabled {
 .btn-org-env {
   width: 36px;
 }
+
+//sidebar popovers
+.info-icon {
+  margin-left: 10px;
+}
+
+#maintenance-popover-container {
+  margin-left: 130px !important;
+}
+
+#canvas-height-popover-container {
+  margin-left: 110px !important;
+}
+
+.sidebar-popover {
+  padding: 14px;
+  font-weight: 500;
+  margin-bottom: 0px;
+}
