@@ -85,6 +85,7 @@ export const Listview = function Listview({
               parentRef={parentRef}
               removeComponent={removeComponent}
               listViewItemOptions={{ index }}
+              exposedVariables={childrenData[index]}
               onOptionChange={function ({ component, optionName, value }) {
                 setChildrenData((prevData) => {
                   const changedData = { [component.name]: { [optionName]: value } };
