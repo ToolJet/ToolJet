@@ -142,6 +142,10 @@ export class GroupPermissionsService {
     await getManager().transaction(async (manager) => {
       //update user group name
       if (name) {
+        if (!name.trim()) {
+          throw new BadRequestException('Group name should not be empty');
+        }
+
         const reservedGroups = ['admin', 'all_users'];
         if (reservedGroups.includes(groupPermission.group)) {
           throw new BadRequestException('Cannot update a default group name');
