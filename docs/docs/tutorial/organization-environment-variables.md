@@ -1,72 +1,65 @@
 ---
 id: organization-environment-variables
-title: Organization environment variables
+title: Organization Environment Variables
 ---
 
-# Organization environment variables
-
-## What is organization environment variables 
-
-Organization environment variables are key value pairs that can be used in different apps across same organization. 
+Organization environment variables are the variables with some value(usually tokens/secret keys/API keys) that can be used in different apps across the same organization.
 
 ## How can we add these variables to an organization?
 
-Let us say, if we have a common `apikey` or a common value that can be used in queries or widgets in multiple apps of the same organization then an admin or user who has permission to do, can add a particular variable to this table 
+Suppose there is an `API key` or a value that you want to use in the queries or widgets in the multiple apps of the same organization then the organization admin or the user with permissions can add an environment variable.
 
-To add an environment variable, go to 
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - Data source - Airtable](/img/tutorial/use-env-org-vars/add-variable.gif)
-
-</div>
-
-### There are two types of variables
-
-1. Client
-2. Server
+#### Adding the environment variable
+- Go to the ToolJet Dashboard, and click on the dropdown on the navigation bar to show `Workspace` options
+- Select `Manage Environment Variables`
+- Click on `Add New Variable` button
+- Give a `Name` to the variable, set the value, choose `Type`, toggle `Encryption`, and click **Add Variable** button
+- Now this variable can be used inside any application of this organization
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Airtable](/img/tutorial/use-env-org-vars/variable-type.png)
+![ToolJet - Organization environment variables](/img/tutorial/use-env-org-vars/add-variable.gif)
 
 </div>
 
-#### Client
+### Types of variables
 
-The client variable can be used in widgets and queries.
+- **Client**: The client variable can be used in widgets and queries.
 
-#### Server
+- **Server**: The server variables can be used with all the queries except the `RunJS`. The reason why we don't allow the server variables to be used with the widgets is that these variables are only resolved during the runtime so they're highly secured.
 
-The major difference with the server variable is, that it's only resolved when runtime, so it's highly secured and because of that we can't use the server variables with widgets, currently its only work with queries except for `RunJs`.
+:::info
+Variable Type cannot be changed once it has beed created.
+:::
 
-**Important**
-Once a variable has been created, we can't change the variable type
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Organization environment variables](/img/tutorial/use-env-org-vars/variable-type.png)
+
+</div>
 
 ### Encryption
 
-This feature enables us to add a client variable with and without `encryption`. But the server variables are always encrypted by default.
+This feature enables us to add a client variable with and without `encryption`. The server variables are always encrypted by default.
 
-### How to use a variable inside an app
+### Using variable in an app
 
-Let us use a variable that created before in this tutorial inside an app.
+Let's use the variable that we created [here](organization-environment-variables#adding-the-environment-variable). If you have used ToolJet before, then you know that for getting the values from any variable we use JS notation i.e. `{{}}` but for using the organization variables we have different opening and closing notation `%% %%`. The environment variables will not work inside js code `{{}}`.
 
-We have different opening and closing notation for environment variables `%% %%`. The environment variables will not work inside js code `{{}}`
+So, the syntax for using the variable that we created before will be `%%client.pi%%`
 
-`%%client.pi%%`
-
-Example for client variable usage :
+**Example for client variable usage:**
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Airtable](/img/tutorial/use-env-org-vars/variable-usage.png)
+![ToolJet - Organization environment variables](/img/tutorial/use-env-org-vars/variable-usage.png)
 
 </div>
 
-Example for server variable usage :
+**Example for server variable usage:**
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Airtable](/img/tutorial/use-env-org-vars/server-variable-usage.png)
+![ToolJet - Organization environment variables](/img/tutorial/use-env-org-vars/server-variable-usage.png)
 
 </div>
