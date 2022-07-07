@@ -20,6 +20,7 @@ export const Multiselect = function Multiselect({
   onComponentClick,
   darkMode,
   fireEvent,
+  registerAction,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState } = styles;
@@ -64,12 +65,27 @@ export const Multiselect = function Multiselect({
   }, []);
 
   const onChangeHandler = (items) => {
+    console.log('items', items);
     setSelected(items);
     setExposedVariable(
       'values',
       items.map((item) => item.value)
     ).then(() => fireEvent('onSelect'));
   };
+
+  registerAction('selectOption', async function (option) {
+    onChangeHandler([...selected, option]);
+  });
+  registerAction('deselectOption', async function (option) {
+    let filterArr = [];
+    filterArr = selected.filter(function (item) {
+      return item.value !== option.value;
+    });
+    onChangeHandler(filterArr);
+  });
+  registerAction('clearSelections', async function () {
+    onChangeHandler([]);
+  });
 
   return (
     <div

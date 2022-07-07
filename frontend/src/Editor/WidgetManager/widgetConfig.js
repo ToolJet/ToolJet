@@ -1047,6 +1047,32 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
+    actions: [
+      {
+        handle: 'selectOption',
+        displayName: 'Select Option',
+        params: [
+          {
+            handle: 'option',
+            displayName: 'Option',
+          },
+        ],
+      },
+      {
+        handle: 'deselectOption',
+        displayName: 'Select Option',
+        params: [
+          {
+            handle: 'option',
+            displayName: 'Option',
+          },
+        ],
+      },
+      {
+        handle: 'clearSelections',
+        displayName: 'Clear selections',
+      },
+    ],
     properties: {
       label: { type: 'code', displayName: 'Label' },
       value: { type: 'code', displayName: 'Default value' },
