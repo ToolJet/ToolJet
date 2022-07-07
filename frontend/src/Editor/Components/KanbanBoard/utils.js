@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { defineObjectProperty } from '@/_helpers/utils';
 
 export const getData = (_columns, _cards) => {
   const columns = _.cloneDeep(_columns);
@@ -7,7 +8,7 @@ export const getData = (_columns, _cards) => {
   if (_.isArray(cards) && _.isArray(columns)) {
     columns.forEach((column) => {
       if (!column.hasOwnProperty('cards')) {
-        defObjectProperty(column, 'cards', []);
+        defineObjectProperty(column, 'cards', []);
       }
     });
 
@@ -98,12 +99,3 @@ const diffType = Object.freeze({
   REMOVE: 'REMOVE',
   UPDATE: 'UPDATE',
 });
-
-export const defObjectProperty = (obj, key, value) =>
-  Object.defineProperties(obj, {
-    [key]: {
-      value: value,
-      writable: true,
-      enumerable: true,
-    },
-  });

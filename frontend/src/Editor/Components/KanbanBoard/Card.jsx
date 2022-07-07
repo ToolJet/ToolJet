@@ -5,19 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { CardEventPopover } from './CardPopover';
 import { ReactPortal } from '@/_components/Portal/ReactPortal';
 import _ from 'lodash';
-
-// a custom hook to check widow's width
-export const useWindowWidth = () => {
-  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
-
-  React.useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  return windowWidth;
-};
+import { useWindowWidth } from '@/_hooks/use-window-width';
 
 export const Card = ({
   item,

@@ -1,8 +1,9 @@
 import _ from 'lodash';
 import React from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
+import { defineObjectProperty } from '@/_helpers/utils';
 import Column from './Column';
-import { reorderCards, moveCards, defObjectProperty } from './utils';
+import { reorderCards, moveCards } from './utils';
 
 const grid = 8;
 
@@ -97,7 +98,7 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
     const updatedCard = { ...cardToBeUpdated, [property]: newValue };
 
     if (!cardToBeUpdated.hasOwnProperty('data')) {
-      defObjectProperty(cardToBeUpdated, 'data', {});
+      defineObjectProperty(cardToBeUpdated, 'data', {});
     }
 
     const updatedCardSet = cardSetOfTheCardToBeUpdated.map((card, index) => (index === cardIndex ? updatedCard : card));
