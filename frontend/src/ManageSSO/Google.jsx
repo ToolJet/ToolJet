@@ -13,6 +13,7 @@ export function Google({ settings, updateData }) {
   };
   const copyFunction = (input) => {
     let text = document.getElementById(input).innerHTML;
+    console.log(text);
     navigator.clipboard.writeText(text);
     toast.success('URL copied');
   };
@@ -103,7 +104,7 @@ export function Google({ settings, updateData }) {
               <label className="form-label" data-cy="redirect-url-label">
                 Redirect URL
               </label>
-              <div className="flexer">
+              <div className="flexer-sso-input">
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"

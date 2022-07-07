@@ -125,7 +125,7 @@ export function Git({ settings, updateData }) {
               <label className="form-label" data-cy="redirect-url-label">
                 Redirect URL
               </label>
-              <div className="flexer">
+              <div className="flexer-sso-input">
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"

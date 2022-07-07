@@ -87,7 +87,7 @@ export function GeneralSettings({ settings, updateData }) {
                 Login URL
               </label>
 
-              <div className="flexer">
+              <div className="flexer-sso-input">
                 <p id="login-url" data-cy="login-url">
                   {`${window.location.protocol}//${window.location.host}/login/${authenticationService?.currentUserValue?.organization_id}`}
                 </p>
