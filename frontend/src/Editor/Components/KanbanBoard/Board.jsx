@@ -2,7 +2,7 @@ import _ from 'lodash';
 import React from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 import Column from './Column';
-import { reorderCards, moveCards } from './utils';
+import { reorderCards, moveCards, defObjectProperty } from './utils';
 
 const grid = 8;
 
@@ -77,12 +77,18 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
 
   const updateCardProperty = (columnIndex, cardIndex, property, newValue) => {
     const columnOfCardToBeUpdated = state[columnIndex];
-    const cardSetOfTheCardToBeUpdated = columnOfCardToBeUpdated.cards;
+    const cardSetOfTheCardToBeUpdated = columnOfCardToBeUpdated['cards'];
     const cardToBeUpdated = cardSetOfTheCardToBeUpdated[cardIndex];
     const updatedCard = { ...cardToBeUpdated, [property]: newValue };
+
+    if (!cardToBeUpdated.hasOwnProperty('data')) {
+      defObjectProperty(cardToBeUpdated, 'data', {});
+    }
+
     const updatedCardSet = cardSetOfTheCardToBeUpdated.map((card, index) => (index === cardIndex ? updatedCard : card));
     const updatedColumn = { ...columnOfCardToBeUpdated, cards: updatedCardSet };
     const newState = state.map((column, index) => (index === columnIndex ? updatedColumn : column));
+
     setState(newState);
 
     setExposedVariable('lastUpdatedCard', updatedCard).then(() => fireEvent('onCardUpdated'));

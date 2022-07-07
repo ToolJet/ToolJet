@@ -99,7 +99,7 @@ const diffType = Object.freeze({
   UPDATE: 'UPDATE',
 });
 
-const defObjectProperty = (obj, key, value) =>
+export const defObjectProperty = (obj, key, value) =>
   Object.defineProperties(obj, {
     [key]: {
       value: value,

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SubContainer } from '../../SubContainer';
-import { SubCustomDragLayer } from '../../SubCustomDragLayer';
 
 export const CardEventPopover = function ({
   show,
@@ -13,18 +12,13 @@ export const CardEventPopover = function ({
   keyIndex,
   containerProps,
   removeComponent,
+  component,
+  id,
 }) {
   const parentRef = useRef(null);
   const [showPopover, setShow] = useState(show);
   const [top, setTop] = useState(0);
   const [left, setLeft] = useState(0);
-
-  const [titleInputBoxValue, setTitleInputBoxValue] = useState(card.title ?? '');
-  const [descriptionTextAreaValue, setDescriptionTextAreaValue] = useState(card.description ?? '');
-  const [titleHovered, setTitleHovered] = useState(false);
-  const [descriptionHovered, setDescriptionHovered] = useState(false);
-  const [titleEditMode, setTitleEditMode] = useState(false);
-  const [descriptionEditMode, setDescriptionEditMode] = useState(false);
 
   let kanbanBounds;
 
@@ -61,6 +55,13 @@ export const CardEventPopover = function ({
     kanbanBounds = kanbanElement.getBoundingClientRect();
   }
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const [childrenData, setChildrenData] = useState({});
+
+  React.useEffect(() => {
+    updateCardProperty(keyIndex, index, 'data', childrenData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childrenData]);
+
   return (
     <div
       style={{
@@ -77,24 +78,33 @@ export const CardEventPopover = function ({
       x-placement="left"
       className={`popover bs-popover-left shadow-lg ${darkMode && 'popover-dark-themed theme-dark'}`}
       ref={parentRef}
-      id={`${kanbanCardWidgetId}-popover`}
+      id={kanbanCardWidgetId}
     >
       {parentRef.current && showPopover && (
         <div className="popover-body" style={{ padding: 'unset', width: '100%', height: 100, zIndex: 11 }}>
-          <>
-            <SubContainer
-              containerCanvasWidth={300}
-              parent={`${kanbanCardWidgetId}-popover`}
-              {...containerProps}
-              parentRef={parentRef}
-              removeComponent={removeComponent}
-            />
-            <SubCustomDragLayer
-              parent={kanbanCardWidgetId}
-              parentRef={parentRef}
-              currentLayout={containerProps.currentLayout}
-            />
-          </>
+          <SubContainer
+            parentComponent={component}
+            containerCanvasWidth={300}
+            parent={id}
+            parentName={component.name}
+            {...containerProps}
+            readOnly={index !== 0}
+            customResolvables={{ card }}
+            parentRef={parentRef}
+            removeComponent={removeComponent}
+            onOptionChange={function ({ component, optionName, value }) {
+              setChildrenData((prevData) => {
+                const changedData = { [component.name]: { [optionName]: value } };
+                const existingDataAtIndex = prevData ?? {};
+                const newData = {
+                  ...prevData,
+                  [component.name]: { ...existingDataAtIndex[component.name], ...changedData[component.name] },
+                };
+
+                return newData;
+              });
+            }}
+          />
         </div>
       )}
     </div>

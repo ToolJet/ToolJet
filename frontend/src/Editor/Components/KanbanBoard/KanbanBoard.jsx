@@ -7,12 +7,13 @@ export const BoardContext = React.createContext({});
 
 export const KanbanBoard = ({
   id,
+  component,
+  containerProps,
   height,
   properties,
   styles,
   currentState,
   setExposedVariable,
-  containerProps,
   removeComponent,
   fireEvent,
 }) => {
@@ -65,7 +66,7 @@ export const KanbanBoard = ({
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <BoardContext.Provider
-      value={{ id, currentState, enableAddCard, accentColor, containerProps, removeComponent, darkMode }}
+      value={{ id, currentState, enableAddCard, accentColor, containerProps, removeComponent, component, darkMode }}
     >
       <div
         id={id}

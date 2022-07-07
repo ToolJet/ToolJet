@@ -846,14 +846,16 @@ export function computeComponentState(_ref, components = {}) {
 
     if (component.parent) {
       const parentComponent = components[component.parent];
-      let isListView = false;
+      let isMultiSubContainerWidget = false;
+      //* Multiple SubContainer are used in the same widget: [Listview, KanbanBoard]
       try {
-        isListView = parentComponent.component.component === 'Listview';
+        isMultiSubContainerWidget =
+          parentComponent.component.component === 'Listview' || parentComponent.component.component === 'KanbanBoard';
       } catch {
         console.log('error');
       }
 
-      if (!isListView) {
+      if (!isMultiSubContainerWidget) {
         componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
       }
     } else {
