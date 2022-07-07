@@ -524,7 +524,6 @@ export const widgets = [
         displayName: 'Border radius',
         validation: {
           schema: { type: 'number' },
-          defaultValue: false,
         },
       },
     },
