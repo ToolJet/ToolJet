@@ -9,6 +9,7 @@ import update from 'immutability-helper';
 import { componentTypes } from './WidgetManager/components';
 import { computeComponentName } from '@/_helpers/utils';
 import produce from 'immer';
+import _ from 'lodash';
 
 export const SubContainer = ({
   mode,
@@ -38,6 +39,7 @@ export const SubContainer = ({
   hoveredComponent,
   selectedComponents,
   onOptionChange,
+  exposedVariables,
 }) => {
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
 
@@ -361,6 +363,9 @@ export const SubContainer = ({
   };
 
   function onComponentOptionChangedForSubcontainer(component, optionName, value) {
+    if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
+      return Promise.resolve();
+    }
     onOptionChange && onOptionChange({ component, optionName, value });
     return onComponentOptionChanged(component, optionName, value);
   }
@@ -418,6 +423,7 @@ export const SubContainer = ({
           hoveredComponent={hoveredComponent}
           parentId={parentComponent?.name}
           isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+          exposedVariables={exposedVariables ?? {}}
           containerProps={{
             mode,
             snapToGrid,

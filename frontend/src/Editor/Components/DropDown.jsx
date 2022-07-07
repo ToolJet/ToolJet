@@ -48,7 +48,7 @@ export const DropDown = function DropDown({
     if (values?.includes(value)) {
       newValue = value;
     }
-    setExposedVariable('value', value);
+    setExposedVariable('value', newValue);
     setCurrentValue(newValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
