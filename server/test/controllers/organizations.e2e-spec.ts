@@ -101,7 +101,7 @@ describe('organizations controller', () => {
           .post('/api/organizations')
           .send({ name: 'My workspace' })
           .set('Authorization', authHeaderForUser(user))
-          .expect(401);
+          .expect(403);
       });
 
       it('should create new organization if Multi-Workspace supported and user logged in via SSO', async () => {
