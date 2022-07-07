@@ -334,7 +334,7 @@ export const widgets = [
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
-      show: null,
+      show: false,
     },
     definition: {
       others: {
