@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -13,7 +13,7 @@ import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/theme/base16-light.css';
 import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
-import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
+import { onBeforeChange, handleChange } from './utils';
 import { resolveReferences, hasCircularDependency, handleCircularStructureToJSON } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
 import usePortal from '@/_hooks/use-portal';
@@ -60,7 +60,7 @@ export function CodeHinter({
   fieldMeta,
   onFxPress,
   fxActive,
-  hideSuggestion = false,
+  // hideSuggestion = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
