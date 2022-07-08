@@ -116,14 +116,8 @@ export function CodeHinter({
     };
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
-  let suggestions = useMemo(() => {
-    if (hideSuggestion) return [];
-    return getSuggestionKeys(realState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [realState.components, realState.queries]);
-
-  function valueChanged(editor, onChange, suggestions, ignoreBraces) {
-    handleChange(editor, onChange, suggestions, ignoreBraces);
+  function valueChanged(editor, onChange, ignoreBraces) {
+    handleChange(editor, onChange, ignoreBraces, realState);
     setCurrentValue(editor.getValue()?.trim());
   }
 
@@ -243,7 +237,7 @@ export function CodeHinter({
 
   return (
     <div ref={wrapperRef}>
-      <div className="fx-outer-wrapper" style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy="accordion-components">
             <ToolTip label={paramLabel} meta={fieldMeta} />
@@ -263,13 +257,13 @@ export function CodeHinter({
       </div>
       <div
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''}`}
-        style={{ width: width, display: codeShow ? 'flex' : 'none', marginBottom: codeShow && '8.5px' }}
+        style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`} style={{ marginBottom: '0.5rem' }}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
             <div
               className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
-              key={suggestions.length}
+              key={componentName}
               style={{
                 height: height || 'auto',
                 minHeight,
@@ -290,7 +284,7 @@ export function CodeHinter({
                 isOpen={isOpen}
                 callback={setIsOpen}
                 componentName={componentName}
-                key={suggestions.length}
+                key={componentName}
                 customComponent={getPreview}
                 forceUpdate={forceUpdate}
                 optionalProps={{ styles: { height: 300 }, cls: className }}
@@ -311,7 +305,7 @@ export function CodeHinter({
                       setFocused(false);
                     }
                   }}
-                  onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
+                  onChange={(editor) => valueChanged(editor, onChange, ignoreBraces)}
                   onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
                   options={options}
                   viewportMargin={Infinity}
