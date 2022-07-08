@@ -1967,8 +1967,20 @@ export const widgets = [
     properties: {},
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      colour: { type: 'color', displayName: 'Colour' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      colour: {
+        type: 'color',
+        displayName: 'Colour',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       size: {
         type: 'select',
         displayName: 'Size',
@@ -1976,6 +1988,9 @@ export const widgets = [
           { name: 'small', value: 'sm' },
           { name: 'large', value: 'lg' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
     },
     exposedVariables: {},
