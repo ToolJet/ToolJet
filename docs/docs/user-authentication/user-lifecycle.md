@@ -158,9 +158,10 @@ Check Multi-workspace docs [here](/docs/tutorial/multiworkspace).
 | archived | No               | Not able to activate. Invite from `Manage Users` page, status will be changed to invited |
 
 ## Multi-Workspace SSO flow
+  - Diagram shows how SSO configurations are chosen in common login page and workspace login page. Instance level SSO is configured in environment variables and Workspace level SSO is configured in respective `Manage SSO` page.
 
-<div style={{textAlign: 'center'}}>
+  <div style={{textAlign: 'center'}}>
 
-  ![ToolJet - SSO Flow](/img/user-lifecycle/sso-flow.png)
+    ![ToolJet - SSO Flow](/img/user-lifecycle/sso-flow.png)
 
-</div>
+  </div>
