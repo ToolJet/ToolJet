@@ -727,17 +727,53 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' },
-      defaultValue: { type: 'toggle', displayName: 'Default Status' },
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      defaultValue: {
+        type: 'toggle',
+        displayName: 'Default Status',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onChange: { displayName: 'On change' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text Color' },
-      toggleSwitchColor: { type: 'color', displayName: 'Toggle Switch Color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      toggleSwitchColor: {
+        type: 'color',
+        displayName: 'Toggle Switch Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       value: false,
