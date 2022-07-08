@@ -29,9 +29,19 @@ function getResult(suggestionList, query) {
   return suggestions;
 }
 
-export function getSuggestionKeys(currentState) {
-  const suggestionList = [];
+export function getSuggestionKeys(refState) {
+  const state = _.cloneDeep(refState);
+  const queries = state['queries'];
 
+  // eslint-disable-next-line no-unused-vars
+  _.forIn(queries, (query, key) => {
+    if (!query.hasOwnProperty('run')) {
+      query.run = true;
+    }
+  });
+
+  const currentState = _.merge(state, { queries });
+  const suggestionList = [];
   const map = new Map();
 
   const buildMap = (data, path = '') => {
@@ -64,7 +74,12 @@ export function getSuggestionKeys(currentState) {
   };
 
   buildMap(currentState, '');
-  map.forEach((__, key) => suggestionList.push(key));
+  map.forEach((__, key) => {
+    if (key.endsWith('run') && key.startsWith('queries')) {
+      return suggestionList.push(`${key}()`);
+    }
+    return suggestionList.push(key);
+  });
 
   return suggestionList;
 }
