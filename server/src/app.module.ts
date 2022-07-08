@@ -22,7 +22,6 @@ import { FilesModule } from './modules/files/files.module';
 import { AppConfigModule } from './modules/app_config/app_config.module';
 import { AppsModule } from './modules/apps/apps.module';
 import { FoldersModule } from './modules/folders/folders.module';
-import { OrgEnvironmentVariablesModule } from './modules/org_environment_variables/org_environment_variables.module';
 import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
 import { DataQueriesModule } from './modules/data_queries/data_queries.module';
 import { DataSourcesModule } from './modules/data_sources/data_sources.module';
@@ -71,7 +70,6 @@ const imports = [
   UsersModule,
   AppsModule,
   FoldersModule,
-  OrgEnvironmentVariablesModule,
   FolderAppsModule,
   DataQueriesModule,
   DataSourcesModule,

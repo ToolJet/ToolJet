@@ -87,19 +87,6 @@ export const widgets = [
       searchText: '',
       selectedRows: [],
     },
-    actions: [
-      {
-        handle: 'setPage',
-        displayName: 'Set page',
-        params: [
-          {
-            handle: 'page',
-            displayName: 'Page',
-            defaultValue: '{{1}}',
-          },
-        ],
-      },
-    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -179,17 +166,6 @@ export const widgets = [
       borderRadius: { type: 'number', displayName: 'Border radius' },
     },
     exposedVariables: {},
-    actions: [
-      {
-        handle: 'click',
-        displayName: 'Click',
-      },
-      {
-        handle: 'setLabel',
-        displayName: 'Set label',
-        params: [{ handle: 'label', displayName: 'Label', defaultValue: 'New label' }],
-      },
-    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -315,10 +291,6 @@ export const widgets = [
     },
     properties: {
       title: { type: 'code', displayName: 'Title' },
-      hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
-      hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
-      hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
-
       size: {
         type: 'select',
         displayName: 'Modal size',
@@ -334,7 +306,7 @@ export const widgets = [
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
-      show: false,
+      show: null,
     },
     definition: {
       others: {
@@ -344,9 +316,6 @@ export const widgets = [
       properties: {
         title: { value: 'This title can be changed' },
         size: { value: 'md' },
-        hideTitleBar: { value: '{{false}}' },
-        hideCloseButton: { value: '{{false}}' },
-        hideOnEsc: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -833,13 +802,6 @@ export const widgets = [
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {},
-    actions: [
-      {
-        handle: 'setText',
-        displayName: 'Set Text',
-        params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
-      },
-    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },

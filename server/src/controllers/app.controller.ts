@@ -45,13 +45,13 @@ export class AppController {
     return this.authService.signup(appAuthDto.email);
   }
 
-  @Post('/forgot-password')
+  @Post('/forgot_password')
   async forgotPassword(@Body() appAuthDto: AppForgotPasswordDto) {
     await this.authService.forgotPassword(appAuthDto.email);
     return {};
   }
 
-  @Post('/reset-password')
+  @Post('/reset_password')
   async resetPassword(@Body() appAuthDto: AppPasswordResetDto) {
     const { token, password } = appAuthDto;
     await this.authService.resetPassword(token, password);

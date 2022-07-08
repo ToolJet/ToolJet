@@ -6,9 +6,11 @@ title: Datepicker
 
 The Datepicker widget allows users to select a single value for date and time from a pre-determined set.
 
-## How To Use Datepicker Widget
+<div style={{textAlign: 'center'}}>
 
-<iframe height="500" src="https://www.youtube.com/embed/mcjYKw2VeAI" title="Datepicker Widget" frameborder="0" allowfullscreen width="100%"></iframe>
+![ToolJet - Widget Reference - Date range picker](/img/widgets/datepicker/datepicker.png)
+
+</div>
 
 ## Events
 ### Event: On select

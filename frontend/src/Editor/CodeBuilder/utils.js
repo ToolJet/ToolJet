@@ -66,19 +66,13 @@ export function getSuggestionKeys(currentState) {
   return suggestionList;
 }
 
-export function generateHints(word, suggestions, isEnvironmentVariable) {
+export function generateHints(word, suggestions) {
   if (word === '') {
     return suggestions;
   }
-  const results = getResult(suggestions, word);
+  const hints = getResult(suggestions, word);
 
-  return results.filter((result) => {
-    if (isEnvironmentVariable && new RegExp('^server|client.[A-Za-z0-9]+$').test(result)) {
-      return result;
-    } else if (!isEnvironmentVariable && !new RegExp('^server|client.[A-Za-z0-9]+$').test(result)) {
-      return result;
-    }
-  });
+  return hints;
 }
 
 export function computeCurrentWord(editor, _cursorPosition, ignoreBraces = false) {
@@ -87,15 +81,9 @@ export function computeCurrentWord(editor, _cursorPosition, ignoreBraces = false
   const value = editor.getLine(line);
   const sliced = value.slice(0, _cursorPosition);
 
-  let split;
-  if (ignoreBraces && sliced.includes('{{')) {
-    split = sliced.split('{{');
-  } else if (ignoreBraces && sliced.includes('%%')) {
-    split = sliced.split('%%');
-  } else {
-    split = sliced.split(' ');
-  }
+  const splitter = ignoreBraces ? ' ' : '{{';
 
+  const split = sliced.split(splitter);
   const splittedWord = split.slice(-1).pop();
 
   // Check if the word still has spaces, to avoid replacing entire code
@@ -162,7 +150,7 @@ export function canShowHint(editor, ignoreBraces = false) {
 
   if (ignoreBraces && value.length > 0) return true;
 
-  return value.slice(ch, ch + 2) === '}}' || value.slice(ch, ch + 2) === '%%';
+  return value.slice(ch, ch + 2) === '}}';
 }
 
 export function handleChange(editor, onChange, ignoreBraces = false, currentState) {
@@ -172,8 +160,7 @@ export function handleChange(editor, onChange, ignoreBraces = false, currentStat
 
   const cursor = editor.getCursor();
   const currentWord = computeCurrentWord(editor, cursor.ch, ignoreBraces);
-  const isEnvironmentVariable = currentWord.startsWith('%%');
-  const hints = generateHints(currentWord, suggestions, isEnvironmentVariable);
+  const hints = generateHints(currentWord, suggestions);
 
   const options = {
     alignWithWord: false,

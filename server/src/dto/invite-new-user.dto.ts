@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { lowercaseString, sanitizeInput } from '../helpers/utils.helper';
+import { sanitizeInput } from '../helpers/utils.helper';
 
 export class InviteNewUserDto {
   @IsString()
@@ -16,6 +16,5 @@ export class InviteNewUserDto {
   last_name: string;
 
   @IsEmail()
-  @Transform(({ value }) => lowercaseString(value))
   email: string;
 }

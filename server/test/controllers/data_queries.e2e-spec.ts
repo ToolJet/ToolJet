@@ -431,7 +431,7 @@ describe('data queries controller', () => {
       app_version_id: applicationVersion.id,
     };
 
-    // Forbidden if data source belongs to another app
+    // Fordbidden if data source belongs to another app
     response = await request(app.getHttpServer())
       .post(`/api/data_queries`)
       .set('Authorization', authHeaderForUser(adminUserData.user))

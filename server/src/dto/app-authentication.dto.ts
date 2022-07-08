@@ -1,12 +1,9 @@
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { lowercaseString } from 'src/helpers/utils.helper';
-import { Transform } from 'class-transformer';
 
 export class AppAuthenticationDto {
   @IsEmail()
   @IsOptional()
   @IsNotEmpty()
-  @Transform(({ value }) => lowercaseString(value))
   email: string;
 
   @IsString()
@@ -23,7 +20,6 @@ export class AppAuthenticationDto {
 export class AppForgotPasswordDto {
   @IsEmail()
   @IsNotEmpty()
-  @Transform(({ value }) => lowercaseString(value))
   email: string;
 }
 

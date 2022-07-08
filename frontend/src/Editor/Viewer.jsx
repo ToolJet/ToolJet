@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, authenticationService, orgEnvironmentVariableService } from '@/_services';
+import { appService, authenticationService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -41,7 +41,6 @@ class Viewer extends React.Component {
           currentUser: {},
           theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: {},
-          environment_variables: {},
         },
       },
     };
@@ -55,7 +54,7 @@ class Viewer extends React.Component {
     });
   };
 
-  setStateForContainer = async (data) => {
+  setStateForContainer = (data) => {
     const currentUser = authenticationService.currentUserValue;
     let userVars = {};
 
@@ -85,8 +84,6 @@ class Viewer extends React.Component {
       };
     });
 
-    const variables = await this.fetchOrgEnvironmentVariables();
-
     this.setState(
       {
         currentSidebarTab: 2,
@@ -106,7 +103,6 @@ class Viewer extends React.Component {
             theme: { name: this.props.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
           },
-          ...variables,
         },
         dataQueries: data.data_queries,
       },
@@ -125,20 +121,6 @@ class Viewer extends React.Component {
         runQuery(this, query.id, query.name);
       }
     });
-  };
-
-  fetchOrgEnvironmentVariables = async () => {
-    const variables = {
-      client: {},
-      server: {},
-    };
-    await orgEnvironmentVariableService.getVariables().then((data) => {
-      data.variables.map((variable) => {
-        variables[variable.variable_type][variable.variable_name] =
-          variable.variable_type === 'server' ? 'HiddenEnvironmentVariable' : variable.value;
-      });
-    });
-    return variables;
   };
 
   loadApplicationBySlug = (slug) => {

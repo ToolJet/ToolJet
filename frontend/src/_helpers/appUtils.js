@@ -313,19 +313,6 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           },
         });
       }
-
-      case 'control-component': {
-        const component = Object.values(_ref.state.currentState?.components ?? {}).filter(
-          (component) => component.id === event.componentId
-        )[0];
-        const action = component[event.componentSpecificActionHandle];
-        const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
-          ...param,
-          value: resolveReferences(param.value, _ref.state.currentState, undefined, customVariables),
-        }));
-        const actionPromise = action(...actionArguments.map((argument) => argument.value));
-        return actionPromise ?? Promise.resolve();
-      }
     }
   }
 };
@@ -356,7 +343,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
-  if (eventName === 'onRowClicked' && options?.component?.component === 'Table') {
+  if (eventName === 'onRowClicked') {
     const { component, data, rowId } = options;
     _self.setState(
       {
@@ -376,10 +363,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         executeActionsForEventId(_ref, 'onRowClicked', component, mode, customVariables);
       }
     );
-  }
-
-  if (eventName === 'onRowClicked' && options?.component?.component === 'ListView') {
-    executeActionsForEventId(_ref, 'onRowClicked', options.component, mode, customVariables);
   }
 
   if (eventName === 'onCalendarEventSelect') {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -13,7 +13,7 @@ import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/theme/base16-light.css';
 import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
-import { onBeforeChange, handleChange } from './utils';
+import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 import { resolveReferences, hasCircularDependency, handleCircularStructureToJSON } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
 import usePortal from '@/_hooks/use-portal';
@@ -237,7 +237,7 @@ export function CodeHinter({
 
   return (
     <div ref={wrapperRef}>
-      <div className="fx-outer-wrapper" style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy="accordion-components">
             <ToolTip label={paramLabel} meta={fieldMeta} />
@@ -257,7 +257,7 @@ export function CodeHinter({
       </div>
       <div
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''}`}
-        style={{ width: width, display: codeShow ? 'flex' : 'none', marginBottom: codeShow && '8.5px' }}
+        style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`} style={{ marginBottom: '0.5rem' }}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>

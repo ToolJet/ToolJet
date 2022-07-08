@@ -36,45 +36,6 @@ export function resolve(data, state) {
   }
 }
 
-function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
-  let result = '';
-  let error;
-  try {
-    const evalFunction = Function(
-      [
-        'variables',
-        'components',
-        'queries',
-        'globals',
-        'client',
-        'server',
-        'moment',
-        '_',
-        ...Object.keys(customObjects),
-        reservedKeyword,
-      ],
-      `return ${code}`
-    );
-    result = evalFunction(
-      isJsCode ? state.variables : undefined,
-      isJsCode ? state.components : undefined,
-      isJsCode ? state.queries : undefined,
-      isJsCode ? state.globals : undefined,
-      isJsCode ? undefined : state.client,
-      isJsCode ? undefined : state.server,
-      moment,
-      _,
-      ...Object.values(customObjects),
-      null
-    );
-  } catch (err) {
-    error = err;
-    console.log('eval_error', err);
-  }
-  if (withError) return [result, error];
-  return result;
-}
-
 export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
   const reservedKeyword = ['app']; //Keywords that slows down the app
   object = _.clone(object);
@@ -84,22 +45,43 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
     case 'string': {
       if (object.startsWith('{{') && object.endsWith('}}')) {
         const code = object.replace('{{', '').replace('}}', '');
+        let result = '';
 
         if (reservedKeyword.includes(code)) {
           error = `${code} is a reserved keyword`;
           return [{}, error];
         }
 
-        return resolveCode(code, state, customObjects, withError, reservedKeyword, true);
-      } else if (object.startsWith('%%') && object.endsWith('%%')) {
-        const code = object.replaceAll('%%', '');
-
-        if (code.includes('server.') && !new RegExp('^server.[A-Za-z0-9]+$').test(code)) {
-          error = `${code} is invalid. Server variables can't be used like this`;
-          return [{}, error];
+        try {
+          const evalFunction = Function(
+            [
+              'variables',
+              'components',
+              'queries',
+              'globals',
+              'moment',
+              '_',
+              ...Object.keys(customObjects),
+              reservedKeyword,
+            ],
+            `return ${code}`
+          );
+          result = evalFunction(
+            state.variables,
+            state.components,
+            state.queries,
+            state.globals,
+            moment,
+            _,
+            ...Object.values(customObjects),
+            null
+          );
+        } catch (err) {
+          error = err;
+          console.log('eval_error', err);
         }
-
-        return resolveCode(code, state, customObjects, withError, reservedKeyword, false);
+        if (withError) return [result, error];
+        return result;
       }
 
       const dynamicVariables = getDynamicVariables(object);
@@ -152,7 +134,7 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
 }
 
 export function getDynamicVariables(text) {
-  const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
+  const matchedParams = text.match(/\{\{(.*?)\}\}/g);
   return matchedParams;
 }
 
@@ -288,7 +270,6 @@ export function validateEmail(email) {
   return emailRegex.test(email);
 }
 
-// eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, isPreview, confirmed = undefined, mode = '') {
   const { currentState } = _ref.state;
   let result = {},

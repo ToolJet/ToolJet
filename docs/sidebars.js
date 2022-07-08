@@ -16,7 +16,7 @@ const sidebars = {
       label: 'Setup',
       link: {type: 'doc', id: 'setup/index'},
       items: [
-        'setup/try-tooljet',
+        'setup/docker-local',
         'setup/docker',
         'setup/heroku',
         'setup/ec2',
@@ -26,7 +26,6 @@ const sidebars = {
         'setup/google-cloud-run',
         'setup/client',
         'setup/env-vars',
-        'setup/http-proxy',
       ],
     },
     'security',
@@ -64,7 +63,6 @@ const sidebars = {
         'data-sources/airtable',
         'data-sources/s3',
         'data-sources/appwrite',
-        'data-sources/athena',
         'data-sources/baserow',
         'data-sources/bigquery',
         'data-sources/firestore',
@@ -107,7 +105,6 @@ const sidebars = {
         'widgets/checkbox',
         'widgets/circular-progress-bar',
         'widgets/code-editor',
-        'widgets/color-picker',
         'widgets/container',
         'widgets/custom-component',
         'widgets/date-range-picker',
@@ -115,7 +112,6 @@ const sidebars = {
         'widgets/divider',
         'widgets/dropdown',
         'widgets/file-picker',
-        'widgets/html',
         'widgets/iframe',
         'widgets/image',
         'widgets/kanban',
@@ -143,7 +139,6 @@ const sidebars = {
         'widgets/timeline',
         'widgets/timer',
         'widgets/toggle-switch',
-        'widgets/vertical-divider'
       ],
     },
     {
@@ -218,10 +213,9 @@ const sidebars = {
           },
           collapsed: false,
           items: [
-            'user-authentication/sso/openid/setup',
-            'user-authentication/sso/openid/azuread',
-            'user-authentication/sso/openid/okta',
-            'user-authentication/sso/openid/google-openid',
+            'user-authentication/sso/setup',
+            'user-authentication/sso/okta',
+            'user-authentication/sso/azuread',
           ],
         }
           ],
