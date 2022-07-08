@@ -141,7 +141,6 @@ function showModal(_ref, modal, show) {
   }
 
   const modalMeta = _ref.state.appDefinition.components[modalId];
-
   const newState = {
     currentState: {
       ..._ref.state.currentState,
@@ -154,7 +153,6 @@ function showModal(_ref, modal, show) {
       },
     },
   };
-
   _ref.setState(newState);
 
   return Promise.resolve();
@@ -273,7 +271,6 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           resolveReferences(event.fileName, _ref.state.currentState, undefined, customVariables) ?? 'data.txt';
         const fileType =
           resolveReferences(event.fileType, _ref.state.currentState, undefined, customVariables) ?? 'csv';
-
         const fileData = {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
@@ -565,7 +562,7 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, calledFromQuery = false) {
+export function previewQuery(_ref, query, editorState, calledFromQuery = false) {
   const options = getQueryVariables(query.options, _ref.props.currentState);
 
   _ref.setState({ previewLoading: true });
@@ -573,7 +570,7 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, true);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, true);
     } else {
       queryExecutionPromise = dataqueryService.preview(query, options);
     }
@@ -665,8 +662,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
-        console.log('here');
-        queryExecutionPromise = executeMultilineJS(_self, query.options.code, false, confirmed, mode);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, false, confirmed, mode);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }
