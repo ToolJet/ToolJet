@@ -864,8 +864,20 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      text: { type: 'code', displayName: 'Text' },
-      loadingState: { type: 'toggle', displayName: 'Show loading state' },
+      text: {
+        type: 'code',
+        displayName: 'Text',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Show loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     defaultSize: {
       width: 6,
@@ -873,11 +885,42 @@ export const widgets = [
     },
     events: [],
     styles: {
-      textSize: { type: 'number', displayName: 'Text Size' },
-      textColor: { type: 'color', displayName: 'Text Color' },
-      textAlign: { type: 'alignButtons', displayName: 'Align Text' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      textSize: {
+        type: 'number',
+        displayName: 'Text Size',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      textAlign: {
+        type: 'alignButtons',
+        displayName: 'Align Text',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {},
     actions: [
