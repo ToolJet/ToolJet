@@ -1607,15 +1607,51 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      enableLineNumber: { type: 'code', displayName: 'Show Line Number' },
-      mode: { type: 'code', displayName: 'Mode' },
-      placeholder: { type: 'code', displayName: 'Placeholder' },
+      enableLineNumber: {
+        type: 'code',
+        displayName: 'Show Line Number',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      mode: {
+        type: 'code',
+        displayName: 'Mode',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
     },
     exposedVariables: {
       value: '',
