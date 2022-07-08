@@ -1824,11 +1824,29 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      data: { type: 'code', displayName: 'Tags' },
+      data: {
+        type: 'code',
+        displayName: 'Tags',
+        validation: {
+          schema: {
+            type: 'array',
+            element: {
+              type: 'object',
+              object: { title: { type: 'string' }, color: { type: 'string' }, textColor: { type: 'string' } },
+            },
+          },
+        },
+      },
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {},
     definition: {
