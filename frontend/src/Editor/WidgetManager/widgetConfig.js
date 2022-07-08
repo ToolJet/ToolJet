@@ -519,7 +519,13 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      placeholder: { type: 'code', displayName: 'Placeholder' },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     validation: {
       regex: { type: 'code', displayName: 'Regex' },
@@ -529,9 +535,27 @@ export const widgets = [
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
     },
     exposedVariables: {
       value: '',
