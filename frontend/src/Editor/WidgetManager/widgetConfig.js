@@ -1095,22 +1095,67 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' },
-      value: { type: 'code', displayName: 'Default value' },
-      values: { type: 'code', displayName: 'Option values' },
-      display_values: { type: 'code', displayName: 'Option labels' },
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: { type: 'array', element: { type: 'number' } },
+        },
+      },
+      values: {
+        type: 'code',
+        displayName: 'Option values',
+        validation: {
+          schema: { type: 'array', element: { type: 'number' } },
+        },
+      },
+      display_values: {
+        type: 'code',
+        displayName: 'Option labels',
+        validation: {
+          schema: { type: 'array', element: { type: 'string' } },
+        },
+      },
       showAllOption: {
         type: 'toggle',
         displayName: 'Enable select All option',
+      },
+      validation: {
+        schema: { type: 'boolean' },
       },
     },
     events: {
       onSelect: { displayName: 'On select' },
     },
     styles: {
-      borderRadius: { type: 'code', displayName: 'Border radius' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       values: {},
