@@ -998,7 +998,8 @@ export const widgets = [
         displayName: 'Padding',
         validation: {
           schema: {
-            type: 'string',
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
           },
         },
       },
