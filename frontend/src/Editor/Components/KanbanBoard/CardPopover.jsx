@@ -92,6 +92,7 @@ export const CardEventPopover = function ({
             customResolvables={{ card }}
             parentRef={parentRef}
             removeComponent={removeComponent}
+            exposedVariables={card.data ?? {}}
             onOptionChange={function ({ component, optionName, value }) {
               setChildrenData((prevData) => {
                 const changedData = { [component.name]: { [optionName]: value } };
