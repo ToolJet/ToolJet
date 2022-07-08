@@ -1,6 +1,6 @@
 import { IsString, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { sanitizeInput } from 'src/helpers/utils.helper';
+import { sanitizeInput, lowercaseString } from 'src/helpers/utils.helper';
 
 export class UserOnboardingDto {
   @IsString()
@@ -10,7 +10,10 @@ export class UserOnboardingDto {
 
   @IsString()
   @IsOptional()
-  @Transform(({ value }) => sanitizeInput(value))
+  @Transform(({ value }) => {
+    const newValue = sanitizeInput(value);
+    return lowercaseString(newValue);
+  })
   email: string;
 
   @IsString()

@@ -19,6 +19,7 @@ import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { ManageSSO } from '@/ManageSSO';
+import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
 import { Toaster } from 'react-hot-toast';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
@@ -127,8 +128,21 @@ class App extends React.Component {
             <Route path="/sso/:origin/:configId" component={Oauth} />
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
-            <Route path="/reset-password" component={ResetPassword} />
             <Route path="/multiworkspace" component={RedirectSso} />
+            <Route
+              path="/reset-password/:token"
+              render={(props) => (
+                <Redirect
+                  to={{
+                    pathname: '/reset-password',
+                    state: {
+                      token: props.match.params.token,
+                    },
+                  }}
+                />
+              )}
+            />
+            <Route path="/reset-password" component={ResetPassword} />
             <Route
               path="/invitations/:token"
               render={(props) => (
@@ -210,6 +224,13 @@ class App extends React.Component {
               exact
               path="/manage-sso"
               component={ManageSSO}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/manage-environment-vars"
+              component={ManageOrgVars}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
