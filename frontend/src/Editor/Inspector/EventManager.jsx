@@ -4,6 +4,8 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
+import _ from 'lodash';
+import { componentTypes } from '../WidgetManager/components';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 
@@ -71,10 +73,10 @@ export const EventManager = ({
       };
     });
 
-  function getComponentOptions(componentType) {
+  function getComponentOptions(componentType = '') {
     let componentOptions = [];
     Object.keys(components || {}).forEach((key) => {
-      if (components[key].component.component === componentType) {
+      if (componentType === '' || components[key].component.component === componentType) {
         componentOptions.push({
           name: components[key].component.name,
           value: key,
@@ -82,6 +84,59 @@ export const EventManager = ({
       }
     });
     return componentOptions;
+  }
+
+  function getComponentOptionsOfComponentsWithActions(componentType = '') {
+    let componentOptions = [];
+    Object.keys(components || {}).forEach((key) => {
+      const targetComponentMeta = componentTypes.find(
+        (componentType) => components[key].component.component === componentType.component
+      );
+      if ((targetComponentMeta?.actions?.length ?? 0) > 0) {
+        if (componentType === '' || components[key].component.component === componentType) {
+          componentOptions.push({
+            name: components[key].component.name,
+            value: key,
+          });
+        }
+      }
+    });
+    return componentOptions;
+  }
+
+  function getComponentActionOptions(componentId) {
+    if (componentId == undefined) return [];
+    const component = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId)[0][1];
+    const targetComponentMeta = componentTypes.find(
+      (componentType) => component.component.component === componentType.component
+    );
+    const actions = targetComponentMeta.actions;
+
+    const options = actions.map((action) => ({
+      name: action.displayName,
+      value: action.handle,
+    }));
+
+    return options;
+  }
+
+  function getAction(componentId, actionHandle) {
+    if (componentId == undefined || actionHandle == undefined) return {};
+    const component = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId)[0][1];
+    const targetComponentMeta = componentTypes.find(
+      (componentType) => component.component.component === componentType.component
+    );
+    const actions = targetComponentMeta.actions;
+    return actions.find((action) => action.handle === actionHandle);
+  }
+
+  function getComponentActionDefaultParams(componentId, actionHandle) {
+    const action = getAction(componentId, actionHandle);
+    const defaultParams = (action.params ?? []).map((param) => ({
+      handle: param.handle,
+      value: param.defaultValue,
+    }));
+    return defaultParams;
   }
 
   function getAllApps() {
@@ -463,6 +518,83 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
+              </>
+            )}
+            {event.actionId === 'control-component' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-1">Component</div>
+                  <div className="col-9">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                      options={getComponentOptionsOfComponentsWithActions()}
+                      value={event?.componentId}
+                      search={true}
+                      onChange={(value) => {
+                        handlerChanged(index, 'componentSpecificActionHandle', '');
+                        handlerChanged(index, 'componentId', value);
+                      }}
+                      placeholder="Select.."
+                      styles={styles}
+                      useMenuPortal={false}
+                    />
+                  </div>
+                </div>
+                <div className="row mt-2">
+                  <div className="col-3 p-1">Action</div>
+                  <div className="col-9">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                      options={getComponentActionOptions(event?.componentId)}
+                      value={event?.componentSpecificActionHandle}
+                      search={true}
+                      onChange={(value) => {
+                        handlerChanged(index, 'componentSpecificActionHandle', value);
+                        handlerChanged(
+                          index,
+                          'componentSpecificActionParams',
+                          getComponentActionDefaultParams(event?.componentId, value)
+                        );
+                      }}
+                      placeholder="Select.."
+                      styles={styles}
+                      useMenuPortal={false}
+                    />
+                  </div>
+                </div>
+                {event?.componentId &&
+                  event?.componentSpecificActionHandle &&
+                  (getAction(event?.componentId, event?.componentSpecificActionHandle).params ?? []).map((param) => (
+                    <div className="row mt-2" key={param.handle}>
+                      <div className="col-3 p-1">{param.displayName}</div>
+                      <div
+                        className={`${
+                          param?.type ? 'col-7' : 'col-9 fx-container-eventmanager-code'
+                        } fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                      >
+                        <CodeHinter
+                          theme={darkMode ? 'monokai' : 'default'}
+                          currentState={currentState}
+                          mode="javascript"
+                          initialValue={
+                            event?.componentSpecificActionParams?.find((paramItem) => paramItem.handle === param.handle)
+                              ?.value ?? param.defaultValue
+                          }
+                          onChange={(value) => {
+                            const newParam = { ...param, value: value };
+                            const params = event?.componentSpecificActionParams ?? [];
+                            const newParams = params.map((paramOfParamList) =>
+                              paramOfParamList.handle === param.handle ? newParam : param
+                            );
+                            handlerChanged(index, 'componentSpecificActionParams', newParams);
+                          }}
+                          enablePreview={true}
+                          type={param?.type}
+                          fieldMeta={{ options: param?.options }}
+                        />
+                      </div>
+                    </div>
+                  ))}
               </>
             )}
           </div>

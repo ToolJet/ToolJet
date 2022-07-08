@@ -83,4 +83,12 @@ export const ActionTypes = [
     id: 'unset-custom-variable',
     options: [{ name: 'key', type: 'code', default: '' }],
   },
+  {
+    name: 'Control component',
+    id: 'control-component',
+    options: [
+      { name: 'component', type: 'text', default: '' },
+      { name: 'action', type: 'text', default: '' },
+    ],
+  },
 ];

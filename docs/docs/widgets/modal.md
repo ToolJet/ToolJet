@@ -6,11 +6,10 @@ title: Modal
 
 Modal widget renders in front of a backdrop, and it blocks interaction with the rest of the application until the modal is closed. It can be used to add dialog boxes to your app for lightboxes, user notifications, forms, etc.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Modal](/img/widgets/modal/modal1.gif)
+## How To Use Datepicker Widget
 
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/co-UZCGpfMI" title="Datepicker Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Add widgets to Modal
 
@@ -25,6 +24,14 @@ Title that should be shown on the header of the modal.
 ### Modal size
 
 Size of the modal. Options are `medium`, `small` and `large`. The default is `small`. You can also programmatically configure the value by clicking on the `Fx` and set the value to `sm`, `md` or `lg`.
+
+### Hide title bar
+To hide modal header , default is false.
+### Hide close button
+To hide modal close button , default is false.
+
+### Hide on escape
+To disable modal hide on pressing escape key  , default is true.
 
 ## Layout
 

@@ -23,6 +23,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
 import { FilesService } from '@services/files.service';
+import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { FilesService } from '@services/files.service';
       DataSource,
       DataQuery,
       Credential,
+      OrgEnvironmentVariable,
       App,
       File,
       AppVersion,
