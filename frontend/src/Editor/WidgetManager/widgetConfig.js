@@ -1770,18 +1770,54 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      data: { type: 'code', displayName: 'List data' },
-      rowHeight: { type: 'code', displayName: 'Row height' },
-      showBorder: { type: 'code', displayName: 'Show bottom border' },
+      data: {
+        type: 'code',
+        displayName: 'List data',
+        validation: {
+          schema: { type: 'array', element: { type: 'object' } },
+        },
+      },
+      rowHeight: {
+        type: 'code',
+        displayName: 'Row height',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      showBorder: {
+        type: 'code',
+        displayName: 'Show bottom border',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onRowClicked: { displayName: 'Row clicked' },
     },
     styles: {
       backgroundColor: { type: 'color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'number', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      borderRadius: {
+        type: 'number',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
     },
     exposedVariables: {
       data: [{}],
