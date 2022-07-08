@@ -2570,4 +2570,59 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
   },
+  {
+    name: 'TreeSelect',
+    displayName: 'Tree Select',
+    description: 'Select values from a tree view',
+    defaultSize: {
+      width: 12,
+      height: 200,
+    },
+    component: 'TreeSelect',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      label: { type: 'code', displayName: 'Label' },
+      data: { type: 'code', displayName: 'Structure' },
+      checkedData: { type: 'code', displayName: 'Checked Values' },
+      expandedData: { type: 'code', displayName: 'Expanded Values' },
+    },
+    events: {
+      onChange: { displayName: 'On change' },
+    },
+    styles: {
+      textColor: { type: 'color', displayName: 'Text Color' },
+      checkboxColor: { type: 'color', displayName: 'Checkbox Color' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      checked: [],
+      expanded: [],
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        label: { value: 'Countries' },
+        data: {
+          value:
+            '{{[{"label":"Asia","value":"asia","children":[{"label":"China","value":"china","children":[{"label":"Beijing","value":"beijing"},{"label":"Shanghai","value":"shanghai"}]},{"label":"Japan","value":"japan"},{"label":"India","value":"india","children":[{"label":"Delhi","value":"delhi"},{"label":"Mumbai","value":"mumbai"},{"label":"Bengaluru","value":"bengaluru"}]}]},{"label":"Europe","value":"europe","children":[{"label":"France","value":"france"},{"label":"Spain","value":"spain"},{"label":"England","value":"england"}]},{"label":"Africa","value":"africa"}]}}',
+        },
+        checkedData: { value: '{{[]}}' },
+        expandedData: { value: '{{[]}}' },
+      },
+      events: [],
+      styles: {
+        textColor: { value: '#000' },
+        checkboxColor: { value: '#4D72FA' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];
