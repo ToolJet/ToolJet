@@ -212,9 +212,15 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent);
   }
 
-  function eventsChanged(newEvents) {
-    let newDefinition = { ...component.component.definition };
-    newDefinition.events = newEvents;
+  function eventsChanged(newEvents, isReordered = false) {
+    let newDefinition;
+    if (isReordered) {
+      newDefinition = { ...component.component };
+      newDefinition.definition.events = newEvents;
+    } else {
+      newDefinition = { ...component.component.definition };
+      newDefinition.events = newEvents;
+    }
 
     let newComponent = {
       ...component,
