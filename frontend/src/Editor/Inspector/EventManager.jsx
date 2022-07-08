@@ -606,10 +606,10 @@ export const EventManager = ({
   }
 
   const reorderEvents = (startIndex, endIndex) => {
-    const result = component.component.definition.events;
+    const result = [...component.component.definition.events];
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
-    eventsChanged(result);
+    eventsChanged(result, true);
   };
 
   const onDragEnd = ({ source, destination }) => {
