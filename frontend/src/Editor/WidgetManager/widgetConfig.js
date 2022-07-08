@@ -995,10 +995,33 @@ export const widgets = [
     properties: {},
     events: {},
     styles: {
-      backgroundColor: { type: 'color' },
-      borderRadius: { type: 'code', displayName: 'Border Radius' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      backgroundColor: {
+        type: 'color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border Radius',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {},
     definition: {
