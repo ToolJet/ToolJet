@@ -1862,16 +1862,40 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      numberOfPages: { type: 'code', displayName: 'Number of pages' },
-      defaultPageIndex: { type: 'code', displayName: 'Default page index' },
+      numberOfPages: {
+        type: 'code',
+        displayName: 'Number of pages',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      defaultPageIndex: {
+        type: 'code',
+        displayName: 'Default page index',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
     },
     validation: {},
     events: {
       onPageChange: { displayName: 'On Page Change' },
     },
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       totalPages: null,
