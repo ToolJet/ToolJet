@@ -575,19 +575,67 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      defaultValue: { type: 'code', displayName: 'Default value' },
-      format: { type: 'code', displayName: 'Format' },
-      enableTime: { type: 'code', displayName: 'Enable time selection?' },
-      enableDate: { type: 'code', displayName: 'Enable date selection?' },
-      disabledDates: { type: 'code', displayName: 'Disabled dates' },
+      defaultValue: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      format: {
+        type: 'code',
+        displayName: 'Format',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      enableTime: {
+        type: 'code',
+        displayName: 'Enable time selection?',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      enableDate: {
+        type: 'code',
+        displayName: 'Enable date selection?',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledDates: {
+        type: 'code',
+        displayName: 'Disabled dates',
+        validation: {
+          schema: { type: 'array', element: { type: 'string' } },
+        },
+      },
     },
     events: {
       onSelect: { displayName: 'On select' },
     },
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
     },
     exposedVariables: {
       value: '',
