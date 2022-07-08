@@ -6,6 +6,10 @@ title: Chart
 
 Chart widget takes the chart type, data and styles to draw charts using Plotly.js.
 
+## How To Use Chart Widget
+
+<iframe height="500" src="https://www.youtube.com/embed/F3OALU_B5PE" title="Chart Widget" frameborder="0" allowfullscreen width="100%"></iframe>
+
 ## Chart types
 ### Line charts
 
