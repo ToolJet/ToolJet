@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({ height, properties, styles, darkMode }) {
-  const [loadingState, setLoadingState] = useState(false);
-
+export const Text = function Text({ height, properties, styles, darkMode, registerAction }) {
   const { textSize, textColor, textAlign, visibility, disabledState } = styles;
 
-  const text = properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
+  const [loadingState, setLoadingState] = useState(false);
+  const [text, setText] = useState(() => computeText());
 
   const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => setText(() => computeText()), [properties.text]);
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
     setLoadingState(loadingStateProperty);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.loadingState]);
+
+  registerAction('setText', async function (text) {
+    setText(text);
+  });
+
+  function computeText() {
+    return properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
+  }
 
   const computedStyles = {
     color,

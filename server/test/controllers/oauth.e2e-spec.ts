@@ -165,6 +165,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -237,6 +240,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -299,6 +305,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -378,6 +387,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -457,6 +469,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_delete',
               'folder_update',
             ].sort()
@@ -627,6 +642,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -714,6 +732,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -798,6 +819,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -872,6 +896,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -966,6 +993,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -1058,6 +1088,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -1150,6 +1183,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_delete',
               'folder_update',
             ].sort()
@@ -1285,6 +1321,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -1357,6 +1396,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -1419,6 +1461,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -1498,6 +1543,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -1577,6 +1625,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_delete',
               'folder_update',
             ].sort()
@@ -1747,6 +1798,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -1834,6 +1888,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -1918,6 +1975,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -1992,6 +2052,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -2086,6 +2149,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -2178,6 +2244,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_update',
               'folder_delete',
             ].sort()
@@ -2270,6 +2339,9 @@ describe('oauth controller', () => {
               'updated_at',
               'created_at',
               'folder_create',
+              'org_environment_variable_create',
+              'org_environment_variable_update',
+              'org_environment_variable_delete',
               'folder_delete',
               'folder_update',
             ].sort()

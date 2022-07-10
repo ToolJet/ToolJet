@@ -38,14 +38,14 @@ export default class StripeQueryService implements QueryService {
         response = await got(url, {
           method: operation,
           headers: this.authHeader(apiKey),
-          json: bodyParams,
+          form: bodyParams,
           searchParams: queryParams,
         });
       }
 
       result = JSON.parse(response.body);
     } catch (error) {
-      throw new QueryError('Query could not be completed', error.message, {});
+      throw new QueryError('Query could not be completed', error.response.body, {});
     }
 
     return {

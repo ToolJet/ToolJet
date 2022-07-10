@@ -62,6 +62,9 @@ export class User extends BaseEntity {
   @Column({ name: 'role' })
   role: string;
 
+  @Column({ name: 'password_retry_count' })
+  passwordRetryCount: number;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
