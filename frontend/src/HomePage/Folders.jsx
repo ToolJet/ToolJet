@@ -171,6 +171,7 @@ export const Folders = function Folders({
                 setNewFolderName('');
                 setShowForm(true);
               }}
+              data-cy="create-new-folder-button"
             >
               + Create new folder
             </div>
@@ -238,6 +239,7 @@ export const Folders = function Folders({
                 disabled={isCreating || isUpdating}
                 value={newFolderName}
                 maxLength={25}
+                data-cy="folder-name-input"
               />
             </div>
           </div>
@@ -246,12 +248,14 @@ export const Folders = function Folders({
               <button
                 className="btn btn-light"
                 onClick={() => (showUpdateForm ? setShowUpdateForm(false) : setShowForm(false))}
+                data-cy="cancel-button"
               >
                 Cancel
               </button>
               <button
                 className={`btn btn-primary ${isCreating || isUpdating ? 'btn-loading' : ''}`}
                 onClick={showUpdateForm ? executeEditFolder : saveFolder}
+                data-cy={`${showUpdateForm ? 'update-folder' : 'create-folder'}-button`}
               >
                 {showUpdateForm ? 'Update folder' : 'Create folder'}
               </button>
