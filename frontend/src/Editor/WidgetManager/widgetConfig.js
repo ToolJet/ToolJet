@@ -796,7 +796,6 @@ export const widgets = [
         displayName: 'Visibility',
         validation: {
           schema: { type: 'boolean' },
-          defaultValue: false,
         },
       },
       disabledState: {
@@ -804,14 +803,13 @@ export const widgets = [
         displayName: 'Disable',
         validation: {
           schema: { type: 'boolean' },
-          defaultValue: false,
         },
       },
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'number' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
     },
