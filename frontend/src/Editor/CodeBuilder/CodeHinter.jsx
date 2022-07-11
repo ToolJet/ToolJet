@@ -24,6 +24,7 @@ import { Toggle } from './Elements/Toggle';
 import { AlignButtons } from './Elements/AlignButtons';
 import { TypeMapping } from './TypeMapping';
 import { Number } from './Elements/Number';
+import { BoxShadow } from './Elements/BoxShadow';
 import FxButton from './Elements/FxButton';
 import { ToolTip } from '../Inspector/Elements/Components/ToolTip';
 import { toast } from 'react-hot-toast';
@@ -35,6 +36,7 @@ const AllElements = {
   Select,
   AlignButtons,
   Number,
+  BoxShadow,
 };
 
 export function CodeHinter({
