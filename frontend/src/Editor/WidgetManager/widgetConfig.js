@@ -2451,9 +2451,30 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     description: 'Steps',
     component: 'Steps',
     properties: {
-      steps: { type: 'code', displayName: 'Steps' },
-      currentStep: { type: 'code', displayName: 'Current step' },
-      stepsSelectable: { type: 'toggle', displayName: 'Steps selectable' },
+      steps: {
+        type: 'code',
+        displayName: 'Steps',
+        validation: {
+          schema: {
+            type: 'array',
+            element: { type: 'object', object: { id: { type: 'number' } } },
+          },
+        },
+      },
+      currentStep: {
+        type: 'code',
+        displayName: 'Current step',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      stepsSelectable: {
+        type: 'toggle',
+        displayName: 'Steps selectable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     defaultSize: {
       width: 22,
@@ -2470,10 +2491,16 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       color: {
         type: 'color',
         displayName: 'Color',
+        validation: {
+          schema: { type: 'string' },
+        },
       },
       textColor: {
         type: 'color',
         displayName: 'Text color',
+        validation: {
+          schema: { type: 'string' },
+        },
       },
       theme: {
         type: 'select',
@@ -2483,8 +2510,17 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           { name: 'numbers', value: 'numbers' },
           { name: 'plain', value: 'plain' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       currentStepId: '3',
