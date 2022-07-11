@@ -125,16 +125,16 @@ export function Git({ settings, updateData }) {
               <label className="form-label" data-cy="redirect-url-label">
                 Redirect URL
               </label>
-              <div className="flexer-sso-input">
+              <div className="flexer-sso-input form-control">
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"
                 >{`${window.location.protocol}//${window.location.host}/sso/git/${configId}`}</p>
                 <img
                   onClick={() => copyFunction('redirect-url')}
-                  src={`/assets/images/icons/copy.svg`}
-                  width="16"
-                  height="16"
+                  src={`/assets/images/icons/copy-dark.svg`}
+                  width="22"
+                  height="22"
                   className="sso-copy"
                 />
               </div>

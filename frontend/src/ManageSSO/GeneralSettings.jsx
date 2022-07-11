@@ -87,15 +87,15 @@ export function GeneralSettings({ settings, updateData }) {
                 Login URL
               </label>
 
-              <div className="flexer-sso-input">
+              <div className="flexer-sso-input form-control">
                 <p id="login-url" data-cy="login-url">
                   {`${window.location.protocol}//${window.location.host}/login/${authenticationService?.currentUserValue?.organization_id}`}
                 </p>
                 <img
                   onClick={() => copyFunction('login-url')}
-                  src={`/assets/images/icons/copy.svg`}
-                  width="16"
-                  height="16"
+                  src={`/assets/images/icons/copy-dark.svg`}
+                  width="22"
+                  height="22"
                   className="sso-copy"
                 />
               </div>
