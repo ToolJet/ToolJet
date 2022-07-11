@@ -13,6 +13,7 @@ export const TextInput = function TextInput({ height, validate, properties, styl
     setExposedVariable('value', properties.value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
+
   return (
     <div className="text-input">
       <input

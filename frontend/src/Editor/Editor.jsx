@@ -1,7 +1,14 @@
 /* eslint-disable import/no-named-as-default */
 import React, { createRef } from 'react';
 import cx from 'classnames';
-import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
+import {
+  datasourceService,
+  dataqueryService,
+  appService,
+  authenticationService,
+  appVersionService,
+  orgEnvironmentVariableService,
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { computeComponentName } from '@/_helpers/utils';
@@ -66,7 +73,6 @@ class Editor extends React.Component {
     const { socket } = createWebsocketConnection(appId);
 
     this.socket = socket;
-
     let userVars = {};
 
     if (currentUser) {
@@ -122,6 +128,8 @@ class Editor extends React.Component {
         },
         errors: {},
         variables: {},
+        client: {},
+        server: {},
       },
       apps: [],
       dataQueriesDefaultText: "You haven't created queries yet.",
@@ -146,6 +154,7 @@ class Editor extends React.Component {
   componentDidMount() {
     this.fetchApps(0);
     this.fetchApp();
+    this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
     this.initRealtimeSave();
     this.initEventListeners();
@@ -169,6 +178,27 @@ class Editor extends React.Component {
       if (isEqual(this.state.appDefinition, this.props.ymap?.get('appDef').newDefinition)) return;
 
       this.realtimeSave(this.props.ymap?.get('appDef').newDefinition, { skipAutoSave: true, skipYmapUpdate: true });
+    });
+  };
+
+  fetchOrgEnvironmentVariables = () => {
+    orgEnvironmentVariableService.getVariables().then((data) => {
+      const client_variables = {};
+      const server_variables = {};
+      data.variables.map((variable) => {
+        if (variable.variable_type === 'server') {
+          server_variables[variable.variable_name] = 'HiddenEnvironmentVariable';
+        } else {
+          client_variables[variable.variable_name] = variable.value;
+        }
+      });
+      this.setState({
+        currentState: {
+          ...this.state.currentState,
+          server: server_variables,
+          client: client_variables,
+        },
+      });
     });
   };
 
@@ -283,6 +313,7 @@ class Editor extends React.Component {
           this.setState(
             {
               dataQueries: data.data_queries,
+              filterDataQueries: data.data_queries,
               loadingDataQueries: false,
               app: {
                 ...this.state.app,
@@ -929,10 +960,10 @@ class Editor extends React.Component {
 
   filterQueries = (value) => {
     if (value) {
-      const fuse = new Fuse(this.state.dataQueries, { keys: ['name'] });
+      const fuse = new Fuse(this.state.filterDataQueries, { keys: ['name'] });
       const results = fuse.search(value);
       this.setState({
-        dataQueries: results.map((result) => result.item),
+        filterDataQueries: results.map((result) => result.item),
         dataQueriesDefaultText: 'No Queries found.',
       });
     } else {
@@ -1441,8 +1472,8 @@ class Editor extends React.Component {
                         </div>
                       ) : (
                         <div className="query-list p-1 mt-1">
-                          <div>{dataQueries.map((query) => this.renderDataQuery(query))}</div>
-                          {dataQueries.length === 0 && (
+                          <div>{this.state.filterDataQueries.map((query) => this.renderDataQuery(query))}</div>
+                          {this.state.filterDataQueries.length === 0 && (
                             <div className="mt-5">
                               <center>
                                 <span className="mute-text">{dataQueriesDefaultText}</span> <br />
@@ -1493,6 +1524,8 @@ class Editor extends React.Component {
                             runQuery={this.runQuery}
                             dataSourceModalHandler={this.dataSourceModalHandler}
                             setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
+                            appDefinition={appDefinition}
+                            editorState={this}
                           />
                         </div>
                       </div>

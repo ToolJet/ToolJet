@@ -243,7 +243,7 @@ export function CodeHinter({
 
   return (
     <div ref={wrapperRef}>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div className="fx-outer-wrapper" style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy="accordion-components">
             <ToolTip label={paramLabel} meta={fieldMeta} />
@@ -263,7 +263,7 @@ export function CodeHinter({
       </div>
       <div
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''}`}
-        style={{ width: width, display: codeShow ? 'flex' : 'none' }}
+        style={{ width: width, display: codeShow ? 'flex' : 'none', marginBottom: codeShow && '8.5px' }}
       >
         <div className={`col code-hinter-col`} style={{ marginBottom: '0.5rem' }}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
