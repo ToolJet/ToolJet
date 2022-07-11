@@ -2037,27 +2037,27 @@ export const widgets = [
       primaryLabelColour: {
         type: 'color',
         displayName: 'Primary Label Colour',
-        validation: { schema: { type: 'string' }, defaultValue: false },
+        validation: { schema: { type: 'string' } },
       },
       primaryTextColour: {
         type: 'color',
         displayName: 'Primary Text  Colour',
-        validation: { schema: { type: 'string' }, defaultValue: false },
+        validation: { schema: { type: 'string' } },
       },
       secondaryLabelColour: {
         type: 'color',
         displayName: 'Secondary Label Colour',
-        validation: { schema: { type: 'string' }, defaultValue: false },
+        validation: { schema: { type: 'string' } },
       },
       secondaryTextColour: {
         type: 'color',
         displayName: 'Secondary Text Colour',
-        validation: { schema: { type: 'string' }, defaultValue: false },
+        validation: { schema: { type: 'string' } },
       },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
-        validation: { schema: { type: 'boolean' }, defaultValue: false },
+        validation: { schema: { type: 'boolean' } },
       },
     },
     definition: {
