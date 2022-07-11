@@ -7,7 +7,8 @@ const universalProps = {
   },
   others: {},
   events: {},
-  styles: {
+  styles: {},
+  generalStyles: {
     boxShadow: { type: 'boxShadow', displayName: 'Box Shadow' },
   },
   definition: {
@@ -24,7 +25,8 @@ const combineProperties = (widget, universal, isArray = false) => {
     general: { ...universal.general, ...widget.general },
     others: { ...universal.others, ...widget.others },
     events: isArray ? [...universal.events, ...widget.events] : { ...universal.events, ...widget.events },
-    styles: { ...widget.styles, ...universal.styles },
+    styles: { ...universal.styles, ...widget.styles },
+    generalStyles: { ...universal.generalStyles, ...widget.generalStyles },
     exposedVariables: { ...universal.exposedVariables, ...widget.exposedVariables },
   };
 };
