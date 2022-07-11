@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -13,7 +13,7 @@ import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/theme/base16-light.css';
 import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
-import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
+import { onBeforeChange, handleChange } from './utils';
 import { resolveReferences, hasCircularDependency, handleCircularStructureToJSON } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
 import usePortal from '@/_hooks/use-portal';
@@ -62,7 +62,7 @@ export function CodeHinter({
   fieldMeta,
   onFxPress,
   fxActive,
-  hideSuggestion = false,
+  // hideSuggestion = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -118,14 +118,8 @@ export function CodeHinter({
     };
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
-  let suggestions = useMemo(() => {
-    if (hideSuggestion) return [];
-    return getSuggestionKeys(realState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [realState.components, realState.queries]);
-
-  function valueChanged(editor, onChange, suggestions, ignoreBraces) {
-    handleChange(editor, onChange, suggestions, ignoreBraces);
+  function valueChanged(editor, onChange, ignoreBraces) {
+    handleChange(editor, onChange, ignoreBraces, realState);
     setCurrentValue(editor.getValue()?.trim());
   }
 
@@ -158,6 +152,8 @@ export function CodeHinter({
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
 
     if (error) {
+      const err = String(error);
+      const errorMessage = err.includes('.run()') ? `${err} in ${componentName.split('::')[0]}'s field` : err;
       return (
         <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
           <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
@@ -165,7 +161,7 @@ export function CodeHinter({
               <div className="heading my-1">
                 <span>Error</span>
               </div>
-              {error.toString()}
+              {errorMessage}
             </div>
           </div>
         </animated.div>
@@ -245,7 +241,7 @@ export function CodeHinter({
 
   return (
     <div ref={wrapperRef}>
-      <div className="fx-outer-wrapper" style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy="accordion-components">
             <ToolTip label={paramLabel} meta={fieldMeta} />
@@ -265,13 +261,13 @@ export function CodeHinter({
       </div>
       <div
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''}`}
-        style={{ width: width, display: codeShow ? 'flex' : 'none', marginBottom: codeShow && '8.5px' }}
+        style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`} style={{ marginBottom: '0.5rem' }}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
             <div
               className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
-              key={suggestions.length}
+              key={componentName}
               style={{
                 height: height || 'auto',
                 minHeight,
@@ -292,7 +288,7 @@ export function CodeHinter({
                 isOpen={isOpen}
                 callback={setIsOpen}
                 componentName={componentName}
-                key={suggestions.length}
+                key={componentName}
                 customComponent={getPreview}
                 forceUpdate={forceUpdate}
                 optionalProps={{ styles: { height: 300 }, cls: className }}
@@ -313,7 +309,7 @@ export function CodeHinter({
                       setFocused(false);
                     }
                   }}
-                  onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
+                  onChange={(editor) => valueChanged(editor, onChange, ignoreBraces)}
                   onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
                   options={options}
                   viewportMargin={Infinity}

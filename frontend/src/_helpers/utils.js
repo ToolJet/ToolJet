@@ -39,38 +39,45 @@ export function resolve(data, state) {
 function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
   let result = '';
   let error;
-  try {
-    const evalFunction = Function(
-      [
-        'variables',
-        'components',
-        'queries',
-        'globals',
-        'client',
-        'server',
-        'moment',
-        '_',
-        ...Object.keys(customObjects),
-        reservedKeyword,
-      ],
-      `return ${code}`
-    );
-    result = evalFunction(
-      isJsCode ? state.variables : undefined,
-      isJsCode ? state.components : undefined,
-      isJsCode ? state.queries : undefined,
-      isJsCode ? state.globals : undefined,
-      isJsCode ? undefined : state.client,
-      isJsCode ? undefined : state.server,
-      moment,
-      _,
-      ...Object.values(customObjects),
-      null
-    );
-  } catch (err) {
-    error = err;
-    console.log('eval_error', err);
+
+  // dont resolve if code starts with "queries." and ends with "run()"
+  if (code.startsWith('queries.') && code.endsWith('run()')) {
+    error = `Cannot resolve function call ${code}`;
+  } else {
+    try {
+      const evalFunction = Function(
+        [
+          'variables',
+          'components',
+          'queries',
+          'globals',
+          'client',
+          'server',
+          'moment',
+          '_',
+          ...Object.keys(customObjects),
+          reservedKeyword,
+        ],
+        `return ${code}`
+      );
+      result = evalFunction(
+        isJsCode ? state.variables : undefined,
+        isJsCode ? state.components : undefined,
+        isJsCode ? state.queries : undefined,
+        isJsCode ? state.globals : undefined,
+        isJsCode ? undefined : state.client,
+        isJsCode ? undefined : state.server,
+        moment,
+        _,
+        ...Object.values(customObjects),
+        null
+      );
+    } catch (err) {
+      error = err;
+      console.log('eval_error', err);
+    }
   }
+
   if (withError) return [result, error];
   return result;
 }
