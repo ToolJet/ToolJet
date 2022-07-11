@@ -2183,7 +2183,13 @@ export const widgets = [
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility', schema: { type: 'boolean', defaultValue: false } },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean', defaultValue: false },
+        },
+      },
     },
     exposedVariables: {
       value: {},
