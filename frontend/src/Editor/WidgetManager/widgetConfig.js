@@ -315,6 +315,10 @@ export const widgets = [
     },
     properties: {
       title: { type: 'code', displayName: 'Title' },
+      hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
+      hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
+      hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
+
       size: {
         type: 'select',
         displayName: 'Modal size',
@@ -330,7 +334,7 @@ export const widgets = [
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
-      show: null,
+      show: false,
     },
     definition: {
       others: {
@@ -340,6 +344,9 @@ export const widgets = [
       properties: {
         title: { value: 'This title can be changed' },
         size: { value: 'md' },
+        hideTitleBar: { value: '{{false}}' },
+        hideCloseButton: { value: '{{false}}' },
+        hideOnEsc: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -1607,6 +1614,14 @@ export const widgets = [
       highlightColor: { type: 'color', displayName: 'Highlight Color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
+      tabWidth: {
+        type: 'select',
+        displayName: 'Tab width',
+        options: [
+          { name: 'Auto', value: 'auto' },
+          { name: 'Equally split', value: 'split' },
+        ],
+      },
     },
     exposedVariables: { currentTab: '' },
     definition: {
@@ -1627,6 +1642,7 @@ export const widgets = [
         highlightColor: { value: '#0565FE' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        tabWidth: { value: 'auto' },
       },
     },
   },
