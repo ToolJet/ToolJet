@@ -1,12 +1,12 @@
 import React from 'react';
 import moment from 'moment';
 import { toast } from 'react-hot-toast';
-import { commentsService } from '@/_services';
+import { commentNotificationsService } from '@/_services';
 import { hightlightMentionedUserInComment } from '@/_helpers/utils';
 
 export const Notification = ({ id, creator, comment, updatedAt, commentLink, isRead, fetchData }) => {
   const updateMentionedNotification = async () => {
-    const { error } = await commentsService.updateMentionedNotification(id, !isRead);
+    const { error } = await commentNotificationsService.update(id, !isRead);
     if (error) {
       toast.error('Unable to update notification');
       return;

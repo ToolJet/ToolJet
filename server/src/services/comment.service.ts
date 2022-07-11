@@ -7,19 +7,15 @@ import { CreateCommentDto, UpdateCommentDto } from '../dto/comment.dto';
 import { groupBy, head } from 'lodash';
 import { EmailService } from './email.service';
 import { Repository } from 'typeorm';
-import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { User } from 'src/entities/user.entity';
 import { CommentUsers } from 'src/entities/comment_user.entity';
-import { UpdateCommentUserDto } from '@dto/comment-user.dto';
 
 @Injectable()
 export class CommentService {
   constructor(
     @InjectRepository(CommentRepository)
     private commentRepository: CommentRepository,
-    @InjectRepository(App)
-    private appsRepository: Repository<App>,
     @InjectRepository(AppVersion)
     private appVersionsRepository: Repository<AppVersion>,
     @InjectRepository(User)
@@ -60,12 +56,11 @@ export class CommentService {
   }
 
   private async getAppLinks(appVersionsId: string, comment: Comment) {
-    const appVersion = await this.appVersionsRepository.findOne({ where: { id: appVersionsId } });
-    const app = await this.appsRepository.findOne({ where: { id: appVersion.appId } });
-    const appLink = `${process.env.TOOLJET_HOST}/apps/${app.id}`;
+    const appVersion = await this.appVersionsRepository.findOne({ where: { id: appVersionsId }, relations: ['app'] });
+    const appLink = `${process.env.TOOLJET_HOST}/apps/${appVersion.app.id}`;
     const commentLink = `${appLink}?threadId=${comment.threadId}&commentId=${comment.id}`;
 
-    return [appLink, commentLink, app.name];
+    return [appLink, commentLink, appVersion.app.name];
   }
 
   public async getComments(threadId: string, appVersionsId: string): Promise<Comment[]> {
@@ -90,50 +85,6 @@ export class CommentService {
         createdAt: 'ASC',
       },
     });
-  }
-
-  public async getMentionedNotifications(userId: string, isRead = false) {
-    const notifications = await this.commentUsersRepository.find({
-      where: {
-        userId,
-        isRead,
-      },
-      order: {
-        createdAt: 'DESC',
-      },
-      relations: ['comment'],
-    });
-
-    if (!notifications) {
-      throw new NotFoundException('User notifications not found');
-    }
-
-    try {
-      const _notifications = notifications.map(async (notification) => {
-        const [, commentLink] = await this.getAppLinks(notification.comment.appVersionsId, notification.comment);
-        const user = await this.usersRepository.findOne({
-          where: { id: notification.comment.user.id },
-          relations: ['avatar'],
-        });
-        const creator = {
-          firstName: user.firstName,
-          lastName: user.lastName,
-          avatar: user.avatar?.data.toString('base64'),
-        };
-        return {
-          id: notification.id,
-          creator,
-          comment: notification.comment.comment,
-          createdAt: notification.comment.createdAt,
-          updatedAt: notification.comment.updatedAt,
-          commentLink,
-          isRead: notification.isRead,
-        };
-      });
-      return Promise.all(_notifications);
-    } catch (error) {
-      throw new InternalServerErrorException(error);
-    }
   }
 
   public async getNotifications(
@@ -170,17 +121,6 @@ export class CommentService {
       throw new NotFoundException('Comment not found');
     }
     return foundComment;
-  }
-
-  public async updateCommentUser(commentUserId: string, body: UpdateCommentUserDto) {
-    const item = await this.commentUsersRepository.update(commentUserId, { isRead: body.isRead });
-    return item;
-  }
-
-  public async updateAllCommentUser(body: UpdateCommentUserDto) {
-    const { isRead } = body;
-    const item = await this.commentUsersRepository.update({ isRead: !isRead }, { isRead });
-    return item;
   }
 
   public async editComment(commentId: string, updateCommentDto: UpdateCommentDto): Promise<Comment> {

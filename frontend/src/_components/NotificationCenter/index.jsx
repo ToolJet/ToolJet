@@ -1,5 +1,5 @@
 import React from 'react';
-import { commentsService } from '@/_services';
+import { commentNotificationsService } from '@/_services';
 import { Notification } from './Notification';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
@@ -11,7 +11,7 @@ export const NotificationCenter = () => {
 
   async function fetchData() {
     setLoading(true);
-    const { data, error } = await commentsService.getMentionedNotifications(isRead);
+    const { data, error } = await commentNotificationsService.findAll(isRead);
     setLoading(false);
     if (error) {
       toast.error('Unable to fetch notifications');
@@ -22,7 +22,7 @@ export const NotificationCenter = () => {
 
   const updateAllNotifications = async () => {
     setLoading(true);
-    const { error } = await commentsService.updateAllNotifications(!isRead);
+    const { error } = await commentNotificationsService.updateAll(!isRead);
     setLoading(false);
     if (error) {
       toast.error('Unable to update notifications');

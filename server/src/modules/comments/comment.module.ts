@@ -5,7 +5,6 @@ import { CommentService } from '@services/comment.service';
 import { CommentRepository } from '../../repositories/comment.repository';
 import { CaslModule } from '../casl/casl.module';
 import { EmailService } from '@services/email.service';
-import { App } from 'src/entities/app.entity';
 import { User } from 'src/entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -13,10 +12,7 @@ import { CommentUsers } from 'src/entities/comment_user.entity';
 
 @Module({
   controllers: [CommentController],
-  imports: [
-    TypeOrmModule.forFeature([CommentRepository, CommentUsers, App, AppVersion, User, Organization]),
-    CaslModule,
-  ],
+  imports: [TypeOrmModule.forFeature([CommentRepository, CommentUsers, AppVersion, User, Organization]), CaslModule],
   providers: [CommentService, EmailService],
 })
 export class CommentModule {}
