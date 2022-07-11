@@ -2165,7 +2165,13 @@ export const widgets = [
     description: 'Svg image',
     component: 'SvgImage',
     properties: {
-      data: { type: 'code', displayName: 'Svg  data' },
+      data: {
+        type: 'code',
+        displayName: 'Svg  data',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     defaultSize: {
       width: 4,
@@ -2177,7 +2183,13 @@ export const widgets = [
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       value: {},
