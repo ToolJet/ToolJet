@@ -1391,15 +1391,82 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      instructionText: { type: 'code', displayName: 'Instruction Text' },
-      enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
-      enablePicker: { type: 'code', displayName: 'Use File Picker' },
-      enableMultiple: { type: 'code', displayName: 'Pick multiple files' },
-      maxFileCount: { type: 'code', displayName: 'Max file count' },
-      fileType: { type: 'code', displayName: 'Accept file types' },
-      maxSize: { type: 'code', displayName: 'Max size limit (Bytes)' },
-      minSize: { type: 'code', displayName: 'Min size limit (Bytes)' },
-      parseContent: { type: 'toggle', displayName: 'Parse content' },
+      instructionText: {
+        type: 'code',
+        displayName: 'Instruction Text',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      enableDropzone: {
+        type: 'code',
+        displayName: 'Use Drop zone',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      enablePicker: {
+        type: 'code',
+        displayName: 'Use File Picker',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      enableMultiple: {
+        type: 'code',
+        displayName: 'Pick multiple files',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      maxFileCount: {
+        type: 'code',
+        displayName: 'Max file count',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
+          },
+        },
+      },
+      fileType: {
+        type: 'code',
+        displayName: 'Accept file types',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      maxSize: {
+        type: 'code',
+        displayName: 'Max size limit (Bytes)',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
+          },
+        },
+      },
+      minSize: {
+        type: 'code',
+        displayName: 'Min size limit (Bytes)',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
+          },
+        },
+      },
+      parseContent: {
+        type: 'toggle',
+        displayName: 'Parse content',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
       parseFileType: {
         type: 'select',
         displayName: 'File type',
@@ -1407,13 +1474,43 @@ export const widgets = [
           { name: 'Autodetect from extension', value: 'auto-detect' },
           { name: 'CSV', value: 'csv' },
         ],
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
       },
     },
     events: { onFileSelected: { displayName: 'On File Selected' } },
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
+          },
+        },
+      },
     },
     exposedVariables: {
       file: [{ name: '', content: '', dataURL: '', type: '', parsedData: '' }],
