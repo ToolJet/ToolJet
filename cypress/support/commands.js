@@ -1,6 +1,7 @@
 import { commonSelectors } from "Selectors/common";
 import { loginSelectors} from "Selectors/login";
 import { commonText } from "Texts/common";
+import { emptyDashboardText } from "Texts/dashboard";
 
 Cypress.Commands.add("login",(email,password)=>{
   cy.visit("/");
@@ -36,13 +37,12 @@ Cypress.Commands.add("appLogin",()=>{
 
 Cypress.Commands.add('createApp',(appName) => {
   cy.get('body').then(($title => {
-    if ($title.text().includes('You can get started by creating a new application or by creating an application using a template in ToolJet Library.')) {
+    if($title.text().includes(emptyDashboardText.emptyPageDescription)){
       cy.get(commonSelectors.emptyAppCreateButton).click();
-      cy.get(commonSelectors.createButton).click();
-      cy.wait(1000);
+      cy.wait(2000);
       cy.get('body').then($el =>{
         if($el.text().includes('Skip')){
-          cy.get(commonSelectors.skipButton).click();
+          Cypress.$(commonSelectors.skipButton).trigger('click');
         }
         else{
           cy.log("instructions modal is skipped ");
@@ -53,11 +53,10 @@ Cypress.Commands.add('createApp',(appName) => {
     }
     else{
       cy.get(commonSelectors.appCreateButton).click();
-      cy.get(commonSelectors.createButton).click();
-      cy.wait(1000);
+      cy.wait(2000);
       cy.get('body').then($el =>{
         if($el.text().includes('Skip')){
-          cy.get(commonSelectors.skipButton).click();
+          Cypress.$(commonSelectors.skipButton).trigger('click');
         }
         else{
           cy.log("instructions modal is skipped ");
