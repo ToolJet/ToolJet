@@ -979,7 +979,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Padding',
         validation: {
-          schema: { type: 'string' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       visibility: {
