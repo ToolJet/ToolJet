@@ -31,11 +31,11 @@ The format of the date selected by the date picker. Default date format is **DD/
 
 ### Enable time selection?
 
-Allows to select time if enabled. Time selection is disabled by default. This field requires a boolean value: `{{true}}` or `{{false}}`.
+Allows to select time if enabled. Time selection is disabled by default. Click on `Fx` button to programmatically determine the field value to `{{true}}` or `{{false}}`.
 
 ### Enable date selection?
 
-Allows to select date if enabled. Date selection is enabled by default. This field requires a boolean value: `{{true}}` or `{{false}}`.
+Allows to select date if enabled. Date selection is enabled by default. Click on `Fx` button to programmatically determine the field value to `{{true}}` or `{{false}}`.
 
 ## Validation
 
