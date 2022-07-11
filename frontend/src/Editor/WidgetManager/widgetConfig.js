@@ -2455,7 +2455,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         type: 'code',
         displayName: 'Steps',
         validation: {
-          schema: { type: 'array', element: { type: 'object' } },
+          schema: {
+            type: 'array',
+            element: { type: 'object', object: { id: { type: 'number' } } },
+          },
         },
       },
       currentStep: {
