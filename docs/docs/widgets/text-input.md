@@ -78,7 +78,8 @@ This property only accepts boolean values. If set to `{{true}}`, the widget will
 
 | Action      | Description | Properties |
 | ----------- | ----------- | ------------------ |
-| setText | Set the input  text. | text |
+| setText | Set the input text. | `text` |
+| clear | Clear the input text. |  |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
