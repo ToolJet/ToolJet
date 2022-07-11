@@ -150,6 +150,10 @@ export function CodeHinter({
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
 
     if (error) {
+      const err = String(error);
+      const errorMessage = err.includes('Cannot resolve function call')
+        ? `${err} in ${componentName.split('::')[0]}'s field`
+        : err;
       return (
         <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
           <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
@@ -157,7 +161,7 @@ export function CodeHinter({
               <div className="heading my-1">
                 <span>Error</span>
               </div>
-              {error.toString()}
+              {errorMessage}
             </div>
           </div>
         </animated.div>
