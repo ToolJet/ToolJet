@@ -40,6 +40,8 @@ export const LeftSidebarInspector = ({
     const data = _.merge(currentState, { queries });
     const jsontreeData = { ...data };
     delete jsontreeData.errors;
+    delete jsontreeData.client;
+    delete jsontreeData.server;
 
     //*Sorted components and queries alphabetically
     const sortedComponents = Object.keys(jsontreeData['components'])
@@ -64,6 +66,7 @@ export const LeftSidebarInspector = ({
 
     jsontreeData['components'] = sortedComponents;
     jsontreeData['queries'] = sortedQueries;
+
     return jsontreeData;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState]);

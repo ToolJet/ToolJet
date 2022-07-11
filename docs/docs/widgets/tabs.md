@@ -16,7 +16,13 @@ A Tabs widget contains a number of defined containers that can be navigated thro
 
 ### Tabs
 
-This property lets you add and remove containers from the tabs widget. Each container in the tab has its unique `id` and `title`. This field expects an array of objects.
+This property lets you add and remove containers from the tabs widget. Each container in the tab has its unique `id` , `title` and  `disabled` for disabling individual tabs . This field expects an array of objects.
+
+`{{[ 
+		{ title: 'Home', id: '0' }, 
+		{ title: 'Profile', id: '1',disabled:'true' }, 
+		{ title: 'Settings', id: '2' } 
+ ]}}`
 
 ### Default tab
 
@@ -36,6 +42,10 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 ### Highlight Color
 
 You can change the highlight color of the selected tab by entering the Hex color code or choosing a color of your choice from the color picker.
+
+### Tab width
+
+You have 2 options auto and equally split.
 
 ### Visibility
 

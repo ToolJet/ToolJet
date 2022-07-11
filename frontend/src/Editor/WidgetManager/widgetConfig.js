@@ -87,6 +87,19 @@ export const widgets = [
       searchText: '',
       selectedRows: [],
     },
+    actions: [
+      {
+        handle: 'setPage',
+        displayName: 'Set page',
+        params: [
+          {
+            handle: 'page',
+            displayName: 'Page',
+            defaultValue: '{{1}}',
+          },
+        ],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -166,6 +179,17 @@ export const widgets = [
       borderRadius: { type: 'number', displayName: 'Border radius' },
     },
     exposedVariables: {},
+    actions: [
+      {
+        handle: 'click',
+        displayName: 'Click',
+      },
+      {
+        handle: 'setLabel',
+        displayName: 'Set label',
+        params: [{ handle: 'label', displayName: 'Label', defaultValue: 'New label' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -291,6 +315,10 @@ export const widgets = [
     },
     properties: {
       title: { type: 'code', displayName: 'Title' },
+      hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
+      hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
+      hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
+
       size: {
         type: 'select',
         displayName: 'Modal size',
@@ -306,7 +334,7 @@ export const widgets = [
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
-      show: null,
+      show: false,
     },
     definition: {
       others: {
@@ -316,6 +344,9 @@ export const widgets = [
       properties: {
         title: { value: 'This title can be changed' },
         size: { value: 'md' },
+        hideTitleBar: { value: '{{false}}' },
+        hideCloseButton: { value: '{{false}}' },
+        hideOnEsc: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -802,6 +833,13 @@ export const widgets = [
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {},
+    actions: [
+      {
+        handle: 'setText',
+        displayName: 'Set Text',
+        params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -1576,6 +1614,14 @@ export const widgets = [
       highlightColor: { type: 'color', displayName: 'Highlight Color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
+      tabWidth: {
+        type: 'select',
+        displayName: 'Tab width',
+        options: [
+          { name: 'Auto', value: 'auto' },
+          { name: 'Equally split', value: 'split' },
+        ],
+      },
     },
     exposedVariables: { currentTab: '' },
     definition: {
@@ -1596,6 +1642,7 @@ export const widgets = [
         highlightColor: { value: '#0565FE' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        tabWidth: { value: 'auto' },
       },
     },
   },
@@ -2488,6 +2535,47 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         width: { value: '{{400}}' },
         minWidth: { value: '{{200}}' },
         textColor: { value: '#4d72fa' },
+      },
+    },
+  },
+  {
+    name: 'ColorPicker',
+    displayName: 'Color Picker',
+    description: 'Color Picker Pallete',
+    component: 'ColorPicker',
+    properties: {
+      defaultColor: { type: 'color', displayName: 'Default Color' },
+    },
+    defaultSize: {
+      width: 9,
+      height: 40,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      selectedColorHex: '#000000',
+      selectedColorRGB: 'rgb(0,0,0)',
+      selectedColorRGBA: 'rgba(0, 0, 0, 1)',
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        defaultColor: {
+          value: '#000000',
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
       },
     },
   },
