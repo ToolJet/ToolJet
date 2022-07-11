@@ -25,11 +25,11 @@ export const Modal = function Modal({
 
   const { disabledState } = styles;
 
-  registerAction('setShow', async function () {
+  registerAction('open', async function () {
     setExposedVariable('show', true);
     setShowModal(true);
   });
-  registerAction('setClose', async function () {
+  registerAction('close', async function () {
     setShowModal(false);
     setExposedVariable('show', false);
   });

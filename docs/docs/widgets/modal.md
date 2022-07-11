@@ -45,7 +45,7 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 
 | Action      | Description | Properties |
 | ----------- | ----------- | ------------------ |
-| show | Show the modal. |  |
+| open | Open the modal. |  |
 | close | Close the  modal. |  |
 
 :::info

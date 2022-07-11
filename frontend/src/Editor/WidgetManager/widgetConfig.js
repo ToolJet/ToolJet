@@ -334,11 +334,11 @@ export const widgets = [
     },
     actions: [
       {
-        handle: 'setShow',
-        displayName: 'Show',
+        handle: 'open',
+        displayName: 'Open',
       },
       {
-        handle: 'setClose',
+        handle: 'close',
         displayName: 'Close',
       },
     ],
