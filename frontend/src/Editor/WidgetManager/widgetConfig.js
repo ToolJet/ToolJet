@@ -1149,13 +1149,41 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      placeholder: { type: 'code', displayName: 'Placeholder' },
-      defaultValue: { type: 'code', displayName: 'Default Value' },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      defaultValue: {
+        type: 'code',
+        displayName: 'Default Value',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     exposedVariables: {
       value: '',
