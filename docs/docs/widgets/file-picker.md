@@ -138,3 +138,9 @@ Use this property to modify the border radius of the filepicker widget. The fiel
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Actions
+
+| Action  | Description | Properties |
+| ----------- | ----------- | ------------ |
+| `clearFiles()` | It will clear the selected files | None |
