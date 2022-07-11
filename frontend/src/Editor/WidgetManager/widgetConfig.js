@@ -1170,6 +1170,16 @@ export const widgets = [
       onCreateMarker: { displayName: 'On create marker' },
       onMarkerClick: { displayName: 'On marker click' },
     },
+    actions: [
+      {
+        handle: 'setLocation',
+        displayName: 'Set Location',
+        params: [
+          { handle: 'lat', displayName: 'Latitude' },
+          { handle: 'lng', displayName: 'Longitude' },
+        ],
+      },
+    ],
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
