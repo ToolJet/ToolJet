@@ -653,28 +653,28 @@ export const widgets = [
         type: 'color',
         displayName: 'Text Color',
         validation: {
-          schema: { type: 'string', defaultValue: false },
+          schema: { type: 'string' },
         },
       },
       checkboxColor: {
         type: 'color',
         displayName: 'Checkbox Color',
         validation: {
-          schema: { type: 'string', defaultValue: false },
+          schema: { type: 'string' },
         },
       },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
         validation: {
-          schema: { type: 'strbooleaning', defaultValue: false },
+          schema: { type: 'strbooleaning' },
         },
       },
       disabledState: {
         type: 'toggle',
         displayName: 'Disable',
         validation: {
-          schema: { type: 'boolean', defaultValue: false },
+          schema: { type: 'boolean' },
         },
       },
     },
