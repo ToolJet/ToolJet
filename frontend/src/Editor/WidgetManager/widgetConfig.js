@@ -5,38 +5,110 @@ export const widgets = [
     description: 'Display paginated tabular data',
     component: 'Table',
     properties: {
-      title: { type: 'string', displayName: 'Title' },
-      data: { type: 'code', displayName: 'Table data' },
-      loadingState: { type: 'toggle', displayName: 'Loading state' },
-      columns: { type: 'array', displayName: 'Table Columns' },
+      title: {
+        type: 'string',
+        displayName: 'Title',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      data: {
+        type: 'code',
+        displayName: 'Table data',
+        validation: {
+          schema: { type: 'array', element: { type: 'object', object: {} }, optional: 'true' },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      columns: {
+        type: 'array',
+        displayName: 'Table Columns',
+        validation: {
+          schema: { type: 'array', element: { type: 'object', object: {} } },
+        },
+      },
       serverSidePagination: {
         type: 'toggle',
         displayName: 'Server-side pagination',
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
       clientSidePagination: {
         type: 'toggle',
         displayName: 'Client-side pagination',
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
-      serverSideSearch: { type: 'toggle', displayName: 'Server-side search' },
+      serverSideSearch: {
+        type: 'toggle',
+        displayName: 'Server-side search',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       actionButtonBackgroundColor: {
         type: 'color',
         displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+        },
       },
-      actionButtonTextColor: { type: 'color', displayName: 'Text color' },
-      displaySearchBox: { type: 'toggle', displayName: 'Show search box' },
+      actionButtonTextColor: {
+        type: 'color',
+        displayName: 'Text color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      displaySearchBox: {
+        type: 'toggle',
+        displayName: 'Show search box',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       showDownloadButton: {
         type: 'toggle',
         displayName: 'Show download button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
-      showFilterButton: { type: 'toggle', displayName: 'Show filter button' },
+      showFilterButton: {
+        type: 'toggle',
+        displayName: 'Show filter button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       showBulkUpdateActions: {
         type: 'toggle',
         displayName: 'Show bulk update actions',
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
-      showBulkSelector: { type: 'toggle', displayName: 'Bulk selection' },
+      showBulkSelector: {
+        type: 'toggle',
+        displayName: 'Bulk selection',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       highlightSelectedRow: {
         type: 'toggle',
         displayName: 'Highlight selected row',
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
     },
     others: {
@@ -54,8 +126,20 @@ export const widgets = [
       onSearch: { displayName: 'Search' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text Color' },
-      actionButtonRadius: { type: 'code', displayName: 'Action Button Radius' },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      actionButtonRadius: {
+        type: 'code',
+        displayName: 'Action Button Radius',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
+        },
+      },
       tableType: {
         type: 'select',
         displayName: 'Table type',
@@ -66,6 +150,9 @@ export const widgets = [
           { name: 'Striped', value: 'table-striped' },
           { name: 'Striped & bordered', value: 'table-striped table-bordered' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
       cellSize: {
         type: 'select',
@@ -74,10 +161,31 @@ export const widgets = [
           { name: 'Compact', value: 'compact' },
           { name: 'Spacious', value: 'spacious' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
-      borderRadius: { type: 'code', displayName: 'Border Radius' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border Radius',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'booleam' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'booleam' },
+        },
+      },
     },
     exposedVariables: {
       selectedRow: {},
