@@ -16,7 +16,11 @@ export const widgets = [
         type: 'code',
         displayName: 'Table data',
         validation: {
-          schema: { type: 'array', element: { type: 'object', object: {} }, optional: 'true' },
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'array', element: { type: 'object', object: {} } }, { type: 'string' }],
+            optional: true,
+          },
         },
       },
       loadingState: {
@@ -30,7 +34,104 @@ export const widgets = [
         type: 'array',
         displayName: 'Table Columns',
         validation: {
-          schema: { type: 'array', element: { type: 'object', object: {} } },
+          schema: {
+            type: 'array',
+            element: {
+              type: 'union',
+              schemas: [
+                {
+                  type: 'object',
+                  object: {
+                    columnType: { type: 'string' },
+                    name: { type: 'string' },
+                    textWrap: { type: 'string' },
+                    key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+                    textColor: { type: 'string' },
+                    regex: { type: 'string' },
+                    minLength: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+                    maxLength: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+                    customRule: { type: 'string' },
+                  },
+                },
+                {
+                  type: 'object',
+                  object: {
+                    columnType: { type: 'string' },
+                    name: { type: 'string' },
+                    key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+                  },
+                  isEditable: { type: 'boolean' },
+                },
+                {
+                  type: 'object',
+                  object: {
+                    columnType: { type: 'string' },
+                    name: { type: 'string' },
+                    activeColor: { type: 'string' },
+                    isEditable: { type: 'boolean' },
+                  },
+                },
+                {
+                  type: 'object',
+                  object: {
+                    columnType: { type: 'string' },
+                    name: { type: 'string' },
+                    key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+                    values: {
+                      type: 'union',
+                      schemas: [
+                        { type: 'array', element: { type: 'string' } },
+                        { type: 'array', element: { type: 'number' } },
+                      ],
+                    },
+                    labels: {
+                      type: 'union',
+                      schemas: [
+                        { type: 'array', element: { type: 'string' } },
+                        { type: 'array', element: { type: 'number' } },
+                      ],
+                    },
+                  },
+                  isEditable: { type: 'boolean' },
+                },
+                {
+                  type: 'object',
+                  object: {
+                    columnType: { type: 'string' },
+                    name: { type: 'string' },
+                    key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+                    values: {
+                      type: 'union',
+                      schemas: [
+                        { type: 'array', element: { type: 'string' } },
+                        { type: 'array', element: { type: 'number' } },
+                      ],
+                    },
+                    labels: {
+                      type: 'union',
+                      schemas: [
+                        { type: 'array', element: { type: 'string' } },
+                        { type: 'array', element: { type: 'number' } },
+                      ],
+                    },
+                  },
+                  isEditable: { type: 'boolean' },
+                },
+                {
+                  type: 'object',
+                  object: {
+                    columnType: { type: 'string' },
+                    name: { type: 'string' },
+                    key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+                    dateFormat: { type: 'string' },
+                    parseDateFormat: { type: 'string' },
+                    isTimeChecked: { type: 'boolean' },
+                    isEditable: { type: 'boolean' },
+                  },
+                },
+              ],
+            },
+          },
         },
       },
       serverSidePagination: {
