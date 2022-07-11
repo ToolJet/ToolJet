@@ -415,8 +415,22 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      value: { type: 'code', displayName: 'Default value' },
-      placeholder: { type: 'code', displayName: 'Placeholder' },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     validation: {
       regex: { type: 'code', displayName: 'Regex' },
@@ -428,9 +442,13 @@ export const widgets = [
       onChange: { displayName: 'On change' },
     },
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: { type: 'toggle', displayName: 'Visibility', validation: { schema: { type: 'boolean' } } },
+      disabledState: { type: 'toggle', displayName: 'Disable', validation: { schema: { type: 'boolean' } } },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      },
     },
     exposedVariables: {
       value: '',
