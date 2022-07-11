@@ -1649,7 +1649,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'number' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
     },
