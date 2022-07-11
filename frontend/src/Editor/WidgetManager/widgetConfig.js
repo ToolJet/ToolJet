@@ -2187,7 +2187,7 @@ export const widgets = [
         type: 'toggle',
         displayName: 'Visibility',
         validation: {
-          schema: { type: 'boolean', defaultValue: false },
+          schema: { type: 'boolean' },
         },
       },
     },
