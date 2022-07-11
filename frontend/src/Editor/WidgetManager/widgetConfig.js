@@ -2278,7 +2278,7 @@ export const widgets = [
     description: 'Visual representation of a sequence of events',
     component: 'CustomComponent',
     properties: {
-      data: { type: 'code', displayName: 'Data' },
+      data: { type: 'code', displayName: 'Data', validation: { schema: { type: 'object' } } },
       code: { type: 'code', displayName: 'Code' },
     },
     defaultSize: {
@@ -2291,7 +2291,11 @@ export const widgets = [
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+      },
     },
     exposedVariables: {
       data: { value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}` },
@@ -2481,9 +2485,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     description: 'Embed PDF file',
     component: 'PDF',
     properties: {
-      url: { type: 'code', displayName: 'File URL' },
-      scale: { type: 'toggle', displayName: 'Scale page to width' },
-      pageControls: { type: 'toggle', displayName: 'Show page controls' },
+      url: { type: 'code', displayName: 'File URL', validation: { schema: { type: 'string' } } },
+      scale: { type: 'toggle', displayName: 'Scale page to width', validation: { schema: { type: 'boolean' } } },
+      pageControls: { type: 'toggle', displayName: 'Show page controls', validation: { schema: { type: 'boolean' } } },
     },
     defaultSize: {
       width: 20,
@@ -2495,7 +2499,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+      },
     },
     exposedVariables: {},
     definition: {
