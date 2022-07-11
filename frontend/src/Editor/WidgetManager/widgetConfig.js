@@ -1923,7 +1923,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Progress',
         validation: {
-          schema: { type: 'number' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
     },
@@ -1947,14 +1947,14 @@ export const widgets = [
         type: 'code',
         displayName: 'Text Size',
         validation: {
-          schema: { type: 'number' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       strokeWidth: {
         type: 'code',
         displayName: 'Stroke Width',
         validation: {
-          schema: { type: 'number' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       counterClockwise: {
@@ -1968,7 +1968,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Circle Ratio',
         validation: {
-          schema: { type: 'number' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       visibility: {
