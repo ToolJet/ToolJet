@@ -702,7 +702,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Option labels',
         validation: {
-          schema: { type: 'array', element: { type: 'string' } },
+          schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         },
       },
     },
