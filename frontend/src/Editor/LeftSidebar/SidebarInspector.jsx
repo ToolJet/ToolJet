@@ -135,9 +135,9 @@ export const LeftSidebarInspector = ({
     if (open) {
       setVisible(true);
     }
-  }, [open]);
 
-  const cls = darkMode ? 'theme-dark inspector' : 'inspector';
+    return () => setVisible(false);
+  }, [open]);
 
   return (
     <>
