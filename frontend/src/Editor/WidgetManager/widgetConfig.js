@@ -476,21 +476,21 @@ export const widgets = [
         type: 'code',
         displayName: 'Default value',
         validation: {
-          schema: { type: 'string' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       minValue: {
         type: 'code',
         displayName: 'Minimum value',
         validation: {
-          schema: { type: 'string' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       maxValue: {
         type: 'code',
         displayName: 'Maximum value',
         validation: {
-          schema: { type: 'string' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       placeholder: {
@@ -508,7 +508,6 @@ export const widgets = [
         displayName: 'Visibility',
         validation: {
           schema: { type: 'boolean' },
-          defaultValue: false,
         },
       },
       disabledState: {
@@ -516,14 +515,13 @@ export const widgets = [
         displayName: 'Disable',
         validation: {
           schema: { type: 'boolean' },
-          defaultValue: false,
         },
       },
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'number' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
     },
