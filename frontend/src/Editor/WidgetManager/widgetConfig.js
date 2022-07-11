@@ -1781,7 +1781,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Row height',
         validation: {
-          schema: { type: 'string' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       showBorder: {
@@ -1815,7 +1815,7 @@ export const widgets = [
         type: 'number',
         displayName: 'Border radius',
         validation: {
-          schema: { type: 'number' },
+          schemschema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
     },
