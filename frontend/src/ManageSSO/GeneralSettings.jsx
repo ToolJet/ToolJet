@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { organizationService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { copyToClipboard } from '@/_helpers/appUtils';
 
 export function GeneralSettings({ settings, updateData }) {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
@@ -14,8 +15,7 @@ export function GeneralSettings({ settings, updateData }) {
   };
   const copyFunction = (input) => {
     let text = document.getElementById(input).innerHTML;
-    navigator.clipboard.writeText(text);
-    toast.success('URL copied');
+    copyToClipboard(text);
   };
 
   const saveSettings = () => {

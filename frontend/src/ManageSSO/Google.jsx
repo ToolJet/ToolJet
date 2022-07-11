@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { copyToClipboard } from '@/_helpers/appUtils';
 
 export function Google({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -13,9 +14,7 @@ export function Google({ settings, updateData }) {
   };
   const copyFunction = (input) => {
     let text = document.getElementById(input).innerHTML;
-    console.log(text);
-    navigator.clipboard.writeText(text);
-    toast.success('URL copied');
+    copyToClipboard(text);
   };
   const saveSettings = () => {
     setSaving(true);
