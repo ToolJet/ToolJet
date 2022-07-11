@@ -36,18 +36,6 @@ function deleteComment(commentId) {
   return adapter.delete(`/comments/${commentId}`);
 }
 
-function getMentionedNotifications(isRead = false) {
-  return adapter.get(`/comments/notifications?isRead=${isRead}`);
-}
-
-function updateAllNotifications(isRead) {
-  return adapter.patch(`/comments/notifications`, { isRead });
-}
-
-function updateMentionedNotification(id, isRead) {
-  return adapter.patch(`/comments/notifications/${id}`, { isRead });
-}
-
 function getNotifications(appId, isResolved, appVersionsId) {
   return adapter.get(`/comments/${appId}/notifications?isResolved=${isResolved}&appVersionsId=${appVersionsId}`);
 }
@@ -61,8 +49,5 @@ export const commentsService = {
   createComment,
   updateComment,
   deleteComment,
-  getMentionedNotifications,
-  updateMentionedNotification,
-  updateAllNotifications,
   getNotifications,
 };
