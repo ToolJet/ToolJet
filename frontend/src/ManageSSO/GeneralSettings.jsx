@@ -1,5 +1,5 @@
+import { authenticationService, organizationService } from '@/_services';
 import React, { useState } from 'react';
-import { organizationService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 
 export function GeneralSettings({ settings, updateData }) {
@@ -30,6 +30,56 @@ export function GeneralSettings({ settings, updateData }) {
           position: 'top-center',
         });
       }
+    );
+  };
+
+  const tickIcon = () => {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="icon icon-tabler icon-tabler-check"
+        width={24}
+        height={24}
+        viewBox="0 0 24 24"
+        strokeWidth="2"
+        stroke="currentColor"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+        <path d="M5 12l5 5l10 -10"></path>
+      </svg>
+    );
+  };
+
+  const crossIcon = () => {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="icon icon-tabler icon-tabler-x"
+        width={24}
+        height={24}
+        viewBox="0 0 24 24"
+        strokeWidth="2"
+        stroke="currentColor"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+        <line x1={18} y1={6} x2={6} y2={18}></line>
+        <line x1={6} y1={6} x2={18} y2={18}></line>
+      </svg>
+    );
+  };
+
+  const ssoButtons = (type) => {
+    return (
+      <div className={`d-flex main-box ${inheritSSO ? 'tick' : 'cross'}-box`}>
+        <div className="icon-box">{inheritSSO ? tickIcon() : crossIcon()}</div>
+        <img width="35px" src={`/assets/images/sso-buttons/${type}.svg`} />
+      </div>
     );
   };
 
@@ -73,11 +123,18 @@ export function GeneralSettings({ settings, updateData }) {
                     data-cy="form-check-input"
                   />
                   <span className="form-check-label" data-cy="form-check-label">
-                    Inherit SSO
+                    Allow default SSO
                   </span>
                 </label>
+                <div className="d-flex tick-cross-info mb-2">
+                  {window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID && ssoButtons('google')}
+                  {window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID && ssoButtons('git')}
+                </div>
                 <div className="help-text mt-1">
-                  <div data-cy="login-help-text">Allow instance level configured SSO</div>
+                  <div data-cy="login-help-text">
+                    Allow users to authenticate via default SSO. Default SSO configurations can be overridden by
+                    workspace level SSO.
+                  </div>
                 </div>
               </div>
             )}

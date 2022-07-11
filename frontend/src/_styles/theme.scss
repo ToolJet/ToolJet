@@ -5703,3 +5703,36 @@ a.step-item-disabled {
 .btn-org-env {
   width: 36px;
 }
+
+// sso enable/disable box
+.tick-cross-info {
+  .main-box {
+    margin-right: 10px;
+    border-radius: 5px;
+  }
+
+  .icon-box {
+    padding: 7px 5px 7px 2px;
+    color: #fff;
+
+    .icon {
+      stroke-width: 4.5px;
+    }
+  }
+
+  .tick-box {
+    border: 3px solid $primary;
+
+    .icon-box {
+      background: $primary;
+    }
+  }
+
+  .cross-box {
+    border: 3px solid $disabled;
+
+    .icon-box {
+      background: $disabled;
+    }
+  }
+}
