@@ -90,8 +90,8 @@ export class OrganizationUsersService {
     return;
   }
 
-  async activate(organizationUser: OrganizationUser) {
-    await this.organizationUsersRepository.update(organizationUser.id, {
+  async activate(id: string) {
+    await this.organizationUsersRepository.update(id, {
       status: 'active',
     });
   }

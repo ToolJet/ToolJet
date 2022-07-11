@@ -291,38 +291,39 @@ export class AuthService {
 
     const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
 
-    if (!user?.organizationUsers) {
+    if (user?.organizationUsers) {
+      const organizationUser: OrganizationUser = user.organizationUsers.find(
+        (ou) => ou.organizationId === user.defaultOrganizationId
+      );
+
+      if (!organizationUser) {
+        throw new BadRequestException('Invalid invitation link');
+      }
+
+      await this.usersRepository.save(
+        Object.assign(user, {
+          firstName,
+          lastName,
+          password,
+          role,
+          invitationToken: null,
+        })
+      );
+
+      await this.organizationUsersRepository.save(
+        Object.assign(organizationUser, {
+          invitationToken: null,
+          status: 'active',
+        })
+      );
+
+      if (organization) {
+        await this.organizationsRepository.update(user.defaultOrganizationId, {
+          name: organization,
+        });
+      }
+    } else if (!organizationToken) {
       throw new BadRequestException('Invalid invitation link');
-    }
-    const organizationUser: OrganizationUser = user.organizationUsers.find(
-      (ou) => ou.organizationId === user.defaultOrganizationId
-    );
-
-    if (!organizationUser) {
-      throw new BadRequestException('Invalid invitation link');
-    }
-
-    await this.usersRepository.save(
-      Object.assign(user, {
-        firstName,
-        lastName,
-        password,
-        role,
-        invitationToken: null,
-      })
-    );
-
-    await this.organizationUsersRepository.save(
-      Object.assign(organizationUser, {
-        invitationToken: null,
-        status: 'active',
-      })
-    );
-
-    if (organization) {
-      await this.organizationsRepository.update(user.defaultOrganizationId, {
-        name: organization,
-      });
     }
 
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && organizationToken) {
@@ -337,6 +338,8 @@ export class AuthService {
             status: 'active',
           })
         );
+      } else {
+        throw new BadRequestException('Invalid workspace invitation link');
       }
 
       this.usersService
