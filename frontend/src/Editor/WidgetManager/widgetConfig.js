@@ -2209,7 +2209,13 @@ export const widgets = [
       height: 310,
     },
     properties: {
-      rawHtml: { type: 'code', displayName: 'Raw HTML' },
+      rawHtml: {
+        type: 'code',
+        displayName: 'Raw HTML',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -2217,7 +2223,13 @@ export const widgets = [
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {},
     definition: {
