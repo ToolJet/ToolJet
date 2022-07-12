@@ -2075,17 +2075,65 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      min: { type: 'number', displayName: 'Min' },
-      max: { type: 'number', displayName: 'Max' },
-      value: { type: 'code', displayName: 'Value' },
-      enableTwoHandle: { type: 'toggle', displayName: 'Two handles' },
+      min: {
+        type: 'number',
+        displayName: 'Min',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      max: {
+        type: 'number',
+        displayName: 'Max',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      value: {
+        type: 'code',
+        displayName: 'Value',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      enableTwoHandle: {
+        type: 'toggle',
+        displayName: 'Two handles',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {},
     styles: {
-      lineColor: { type: 'color', displayName: 'Line color' },
-      handleColor: { type: 'color', displayName: 'Handle color' },
-      trackColor: { type: 'color', displayName: 'Track color' },
-      visibility: { type: 'code', displayName: 'Visibility' },
+      lineColor: {
+        type: 'color',
+        displayName: 'Line color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      handleColor: {
+        type: 'color',
+        displayName: 'Handle color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      trackColor: {
+        type: 'color',
+        displayName: 'Track color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'code',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       value: null,
