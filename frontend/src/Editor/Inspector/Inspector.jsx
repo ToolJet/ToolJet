@@ -1,7 +1,6 @@
 import React, { useState, useRef, useLayoutEffect } from 'react';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
-import { v4 as uuidv4 } from 'uuid';
 import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
@@ -17,7 +16,6 @@ import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 
 export const Inspector = ({
-  cloneComponent,
   selectedComponentId,
   componentDefinitionChanged,
   dataQueries,
@@ -44,36 +42,6 @@ export const Inspector = ({
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
   useHotkeys('escape', () => switchSidebarTab(2));
-
-  useHotkeys('cmd+d, ctrl+d', (e) => {
-    e.preventDefault();
-    let clonedComponent = JSON.parse(JSON.stringify(component));
-    clonedComponent.id = uuidv4();
-    cloneComponent(clonedComponent);
-
-    let childComponents = [];
-
-    if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
-      childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent?.startsWith(component.id));
-    } else {
-      childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
-    }
-
-    childComponents.forEach((componentId) => {
-      let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
-      childComponent.id = uuidv4();
-
-      if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
-        const childTabId = childComponent.parent.split('-').at(-1);
-        childComponent.parent = `${clonedComponent.id}-${childTabId}`;
-      } else {
-        childComponent.parent = clonedComponent.id;
-      }
-      cloneComponent(childComponent);
-    });
-    toast.success(`${component.component.name} cloned succesfully`);
-    switchSidebarTab(2);
-  });
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 
