@@ -1652,15 +1652,71 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      tabs: { type: 'code', displayName: 'Tabs' },
-      defaultTab: { type: 'code', displayName: 'Default tab' },
-      hideTabs: { type: 'toggle', displayName: 'Hide Tabs' },
+      tabs: {
+        type: 'code',
+        displayName: 'Tabs',
+        validation: {
+          schema: {
+            type: 'array',
+            element: {
+              type: 'object',
+              object: {
+                id: {
+                  type: 'union',
+                  schemas: [{ type: 'string' }, { type: 'number' }],
+                },
+              },
+            },
+          },
+        },
+      },
+      defaultTab: {
+        type: 'code',
+        displayName: 'Default tab',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
+          },
+        },
+      },
+      hideTabs: {
+        type: 'toggle',
+        displayName: 'Hide Tabs',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     events: { onTabSwitch: { displayName: 'On tab switch' } },
     styles: {
-      highlightColor: { type: 'color', displayName: 'Highlight Color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      highlightColor: {
+        type: 'color',
+        displayName: 'Highlight Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     exposedVariables: { currentTab: '' },
     definition: {
