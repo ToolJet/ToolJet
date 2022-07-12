@@ -1912,18 +1912,72 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      text: { type: 'code', displayName: 'Text' },
-      progress: { type: 'code', displayName: 'Progress' },
+      text: {
+        type: 'code',
+        displayName: 'Text',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      progress: {
+        type: 'code',
+        displayName: 'Progress',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
     },
     events: {},
     styles: {
-      color: { type: 'color', displayName: 'Color' },
-      textColor: { type: 'color', displayName: 'Text Color' },
-      textSize: { type: 'code', displayName: 'Text Size' },
-      strokeWidth: { type: 'code', displayName: 'Stroke Width' },
-      counterClockwise: { type: 'code', displayName: 'Counter Clockwise' },
-      circleRatio: { type: 'code', displayName: 'Circle Ratio' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      color: {
+        type: 'color',
+        displayName: 'Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      textSize: {
+        type: 'code',
+        displayName: 'Text Size',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      strokeWidth: {
+        type: 'code',
+        displayName: 'Stroke Width',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      counterClockwise: {
+        type: 'code',
+        displayName: 'Counter Clockwise',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      circleRatio: {
+        type: 'code',
+        displayName: 'Circle Ratio',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {},
     definition: {
