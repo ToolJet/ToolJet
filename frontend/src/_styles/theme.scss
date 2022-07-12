@@ -5190,6 +5190,9 @@ div#driver-page-overlay {
   .json-tree-node-null {
     color: red;
   }
+  .json-tree-node-date {
+    color: rgb(98, 107, 103);
+  }
 
   .group-border {
     border-left: 0.5px solid #dadcde;
@@ -5693,6 +5696,15 @@ a.step-item-disabled {
   color: var(--textColor) !important;;
 }
 // steps-widget end
+
+input.hide-input-arrows{
+  -moz-appearance: none;
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button{
+    -webkit-appearance: none;
+  }
+}
+
 .btn-org-env {
   width: 36px;
 }

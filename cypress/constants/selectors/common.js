@@ -12,7 +12,7 @@ export const commonSelectors={
   autoSave: "[data-cy=autosave-indicator]",
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
-  homePageLogo: "[data-cy=home-page-logo]",
+  homePageLogo: "[data-cy=home-page-logo]:eq(1)",
   emailField: "[data-cy=email-text-field]",
   passwordField: "[data-cy=password-text-field]",
   signInButton: "[data-cy=login-button]",
@@ -23,4 +23,9 @@ export const commonSelectors={
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
   dropdown: "[data-cy=workspace-dropdown]",
+  launchButton: "[data-cy=launch-button]",
+  createFolderButton: "[data-cy=create-new-folder-button]",
+  folderNameInput: "[data-cy=folder-name-input]",
+  folderCreateButton: "[data-cy=create-folder-button]",
+  deleteFolder: "[data-cy=card-options]> :eq(1)",
 }
