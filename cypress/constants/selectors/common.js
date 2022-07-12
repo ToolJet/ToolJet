@@ -60,7 +60,7 @@ export const commonWidgetSelector = {
   },
 
   accordion: (accordionName) => {
-    return `[data-cy="widget-accordion-${accordionName.toLowerCase()}"]`;
+    return `[data-cy="widget-accordion-${accordionName.toLowerCase()}"]:eq(0)`;
   },
 
   buttonCloseEditorSideBar: "[data-rb-event-key='close-inpector-light']",
