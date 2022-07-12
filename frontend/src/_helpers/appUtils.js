@@ -882,7 +882,7 @@ export const getSvgIcon = (key, height = 50, width = 50) => {
 const updateNewComponents = (appDefinition, newComponents, updateAppDefinition) => {
   const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
   newComponents.forEach((newComponent) => {
-    newComponent.component.name = computeComponentName(newComponent.component.component, appDefinition.components);
+    newComponent.component.name = computeComponentName(newComponent.component.component, newAppDefinition.components);
     newAppDefinition.components[newComponent.id] = newComponent;
   });
   updateAppDefinition(newAppDefinition);
