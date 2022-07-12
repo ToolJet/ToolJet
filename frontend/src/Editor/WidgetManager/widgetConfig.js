@@ -1358,8 +1358,20 @@ export const widgets = [
     properties: {},
     events: {},
     styles: {
-      dividerColor: { type: 'color', displayName: 'Divider Color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      dividerColor: {
+        type: 'color',
+        displayName: 'Divider Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       value: {},
