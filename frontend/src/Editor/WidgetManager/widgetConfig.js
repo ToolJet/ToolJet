@@ -1106,14 +1106,14 @@ export const widgets = [
         type: 'code',
         displayName: 'Default value',
         validation: {
-          schema: { type: 'array', element: { type: 'number' } },
+          schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         },
       },
       values: {
         type: 'code',
         displayName: 'Option values',
         validation: {
-          schema: { type: 'array', element: { type: 'number' } },
+          schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         },
       },
       display_values: {
@@ -1126,9 +1126,9 @@ export const widgets = [
       showAllOption: {
         type: 'toggle',
         displayName: 'Enable select All option',
-      },
-      validation: {
-        schema: { type: 'boolean' },
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
     },
     events: {
