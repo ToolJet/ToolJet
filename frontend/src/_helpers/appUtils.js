@@ -124,7 +124,7 @@ export function onQueryCancel(_ref) {
   });
 }
 
-async function copyToClipboard(text) {
+export async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard!');

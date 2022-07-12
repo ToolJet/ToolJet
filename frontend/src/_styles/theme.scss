@@ -5574,6 +5574,13 @@ div#driver-page-overlay {
 .flexer{
   display: flex;
 }
+.flexer-sso-input{
+  display: flex;
+  justify-content: space-between;
+  p{
+    margin-bottom: 0 !important;
+  }
+}
 .sso-copy{
   margin-left: 10px;
   cursor: pointer;
