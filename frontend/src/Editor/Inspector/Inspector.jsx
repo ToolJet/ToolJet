@@ -14,6 +14,7 @@ import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
 import { CustomComponent } from './Components/CustomComponent';
 import useFocus from '@/_hooks/use-focus';
+import Accordion from '@/_ui/Accordion';
 
 export const Inspector = ({
   cloneComponent,
@@ -212,9 +213,15 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent);
   }
 
-  function eventsChanged(newEvents) {
-    let newDefinition = { ...component.component.definition };
-    newDefinition.events = newEvents;
+  function eventsChanged(newEvents, isReordered = false) {
+    let newDefinition;
+    if (isReordered) {
+      newDefinition = { ...component.component };
+      newDefinition.definition.events = newEvents;
+    } else {
+      newDefinition = { ...component.component.definition };
+      newDefinition.events = newEvents;
+    }
 
     let newComponent = {
       ...component,
@@ -324,6 +331,32 @@ export const Inspector = ({
       }
     }
   }
+
+  const buildGeneralStyle = () => {
+    const items = [];
+
+    items.push({
+      title: 'General',
+      isOpen: false,
+      children: (
+        <>
+          {renderElement(
+            component,
+            componentMeta,
+            layoutPropertyChanged,
+            dataQueries,
+            'boxShadow',
+            'generalStyles',
+            currentState,
+            allComponents
+          )}
+        </>
+      ),
+    });
+
+    return <Accordion items={items} />;
+  };
+
   const handleTabSelect = (key) => {
     setKey(key);
     if (key == 'close-inpector' || key == 'close-inpector-light') {
@@ -374,19 +407,22 @@ export const Inspector = ({
             {getAccordion(componentMeta.component)}
           </Tab>
           <Tab eventKey="styles" title="Styles">
-            <div className="p-3">
-              {Object.keys(componentMeta.styles).map((style) =>
-                renderElement(
-                  component,
-                  componentMeta,
-                  paramUpdated,
-                  dataQueries,
-                  style,
-                  'styles',
-                  currentState,
-                  allComponents
-                )
-              )}
+            <div style={{ marginBottom: '6rem' }}>
+              <div className="p-3">
+                {Object.keys(componentMeta.styles).map((style) =>
+                  renderElement(
+                    component,
+                    componentMeta,
+                    paramUpdated,
+                    dataQueries,
+                    style,
+                    'styles',
+                    currentState,
+                    allComponents
+                  )
+                )}
+              </div>
+              {buildGeneralStyle()}
             </div>
           </Tab>
           <Tab

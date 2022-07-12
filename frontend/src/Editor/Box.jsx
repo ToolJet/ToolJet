@@ -49,7 +49,12 @@ import { Steps } from './Components/Steps';
 import { TreeSelect } from './Components/TreeSelect';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
-import { resolveProperties, resolveStyles, resolveGeneralProperties } from './component-properties-resolution';
+import {
+  resolveProperties,
+  resolveStyles,
+  resolveGeneralProperties,
+  resolveGeneralStyles,
+} from './component-properties-resolution';
 import { validateWidget } from '@/_helpers/utils';
 
 const AllComponents = {
@@ -146,6 +151,7 @@ export const Box = function Box({
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
   const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
+  const resolvedGeneralStyles = resolveGeneralStyles(component, currentState, null, customResolvables);
   resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
 
   useEffect(() => {
@@ -186,7 +192,10 @@ export const Box = function Box({
         renderTooltip({ props, text: inCanvas ? `${resolvedGeneralProperties.tooltip}` : `${component.description}` })
       }
     >
-      <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
+      <div
+        style={{ ...styles, backgroundColor, boxShadow: resolvedGeneralStyles?.boxShadow }}
+        role={preview ? 'BoxPreview' : 'Box'}
+      >
         {inCanvas ? (
           <ComponentToRender
             onComponentClick={onComponentClick}

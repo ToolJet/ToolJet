@@ -15,6 +15,7 @@ export const Map = function Map({
   onComponentOptionsChanged,
   onEvent,
   // canvasWidth,
+  registerAction,
 }) {
   const center = component.definition.properties.initialLocation.value;
   const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
@@ -121,6 +122,10 @@ export const Map = function Map({
   function onAutocompleteLoad(autocompleteInstance) {
     setAutoComplete(autocompleteInstance);
   }
+
+  registerAction('setLocation', async function (lat, lng) {
+    if (lat && lng) setMapCenter(resolveReferences({ lat, lng }, currentState));
+  });
 
   return (
     <div
