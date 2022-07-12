@@ -65,7 +65,6 @@ export const Multiselect = function Multiselect({
   }, []);
 
   const onChangeHandler = (items) => {
-    console.log('items', items);
     setSelected(items);
     setExposedVariable(
       'values',
@@ -74,7 +73,6 @@ export const Multiselect = function Multiselect({
   };
 
   registerAction('selectOption', async function (value) {
-    console.log('state', selected);
     setSelected((prevSelected) => [...prevSelected, ...selectOptions.filter((option) => option.value === value)]);
   });
   registerAction('deselectOption', async function (value) {
