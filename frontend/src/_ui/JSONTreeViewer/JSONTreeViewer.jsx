@@ -173,7 +173,12 @@ export class JSONTreeViewer extends React.Component {
         currentPath = prevRelPath ? `${prevRelPath}.${node}` : node;
 
         if (prevType === 'Object') {
-          abs = `${prevPath}.${node}`;
+          //use bracket notation if the node starts with a numeric digit
+          if (node.match(/^\d/)) {
+            abs = `${prevPath}["${node}"]`;
+          } else {
+            abs = `${prevPath}.${node}`;
+          }
         } else if (prevType === 'Array') {
           abs = `${prevPath}[${node}]`;
         } else {
