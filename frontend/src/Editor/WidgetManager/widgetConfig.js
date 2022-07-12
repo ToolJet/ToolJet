@@ -1035,22 +1035,100 @@ export const widgets = [
       customRule: { type: 'code', displayName: 'Custom validation' },
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' },
-      value: { type: 'code', displayName: 'Default value' },
-      values: { type: 'code', displayName: 'Option values' },
-      display_values: { type: 'code', displayName: 'Option labels' },
-      loadingState: { type: 'toggle', displayName: 'Options loading state' },
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
+          },
+        },
+      },
+      values: {
+        type: 'code',
+        displayName: 'Option values',
+        validation: {
+          schema: {
+            type: 'array',
+            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
+          },
+        },
+      },
+      display_values: {
+        type: 'code',
+        displayName: 'Option labels',
+        validation: {
+          schema: {
+            type: 'array',
+            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
+          },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Options loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onSelect: { displayName: 'On select' },
       onSearchTextChanged: { displayName: 'On search text changed' },
     },
     styles: {
-      borderRadius: { type: 'code', displayName: 'Border radius' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      selectedTextColor: { type: 'color', displayName: 'Selected Text Color' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      justifyContent: { type: 'alignButtons', displayName: 'Align Text' },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'number' }, { type: 'string' }],
+          },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      selectedTextColor: {
+        type: 'color',
+        displayName: 'Selected Text Color',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      justifyContent: {
+        type: 'alignButtons',
+        displayName: 'Align Text',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
     },
     exposedVariables: {
       value: 2,
