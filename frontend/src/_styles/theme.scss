@@ -5704,6 +5704,11 @@ a.step-item-disabled {
 }
 // steps-widget end
 
+.user-group-actions {
+  display: flex;
+  gap: 8px;
+}
+
 input.hide-input-arrows{
   -moz-appearance: none;
   &::-webkit-outer-spin-button,
