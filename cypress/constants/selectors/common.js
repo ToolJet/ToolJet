@@ -1,10 +1,14 @@
-export const commonSelectors={
+export const cyParamName = (paramName) => {
+  return paramName.toLowerCase().replace(/\s+/g, "-");
+};
+
+export const commonSelectors = {
   toastMessage: ".go318386747",
   appCard: "[data-cy=app-card]",
   editButton: "[data-cy=edit-button]",
-  searchField:"[data-cy=widget-search-box]",
-  firstWidget:"[data-cy=widget-list]:eq(0)",
-  canvas:"[data-cy=real-canvas]",
+  searchField: "[data-cy=widget-search-box]",
+  firstWidget: "[data-cy=widget-list]:eq(0)",
+  canvas: "[data-cy=real-canvas]",
   appCardOptions: "[data-cy=app-card-menu-icon]",
   folderItemOptions: "[data-cy=folder-item-menu-icon]",
   deleteApp: "[data-cy=card-options] :nth-child(5)>span",
@@ -28,4 +32,47 @@ export const commonSelectors={
   folderNameInput: "[data-cy=folder-name-input]",
   folderCreateButton: "[data-cy=create-folder-button]",
   deleteFolder: "[data-cy=card-options]> :eq(1)",
-}
+};
+
+export const commonWidgetSelector = {
+  widgetBox: (widgetName) => {
+    return `[data-cy=widget-list-box-${cyParamName(widgetName)}]`;
+  },
+
+  parameterLabel: (paramName) => {
+    return `[data-cy="${cyParamName(paramName)}-widget-parameter-label"]`;
+  },
+
+  parameterInputField: (paramName) => {
+    return `[data-cy="${cyParamName(paramName)}-input-field"]`;
+  },
+
+  parameterTogglebutton: (paramName) => {
+    return `[data-cy="${cyParamName(paramName)}-toggle-button"]`;
+  },
+
+  parameterFxButton: (paramName, childIndex = "") => {
+    return `[data-cy="${cyParamName(paramName)}-fx-button"]${childIndex}`;
+  },
+
+  widgetConfigHandle: (widgetName) => {
+    return `[data-cy="${cyParamName(widgetName)}-config-handle"]`;
+  },
+
+  accordion: (accordionName) => {
+    return `[data-cy="widget-accordion-${accordionName.toLowerCase()}"]`;
+  },
+
+  buttonCloseEditorSideBar: "[data-rb-event-key='close-inpector-light']",
+  buttonStylesEditorSideBar: "[data-rb-event-key='styles']",
+  WidgetNameInputField: "[data-cy=edit-widget-name]",
+
+  tooltipInputField: "[data-cy='tooltip-input-field']",
+  tooltipLabel: "[id=button-tooltip]",
+
+  noEventHandlerMessage: "[data-cy='no-event-handler-message']",
+  addEventHandlerLink: "[data-cy='add-event-handler']",
+  eventHandlerCard: "[data-cy='event-handler-card']",
+  alertMessageInputField: "[data-cy='alert-message-input-field']",
+  changeLayoutButton: "[data-cy= 'change-layout-button']",
+};
