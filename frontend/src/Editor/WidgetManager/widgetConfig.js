@@ -1698,7 +1698,13 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      value: { type: 'code', displayName: 'Default value' },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       type: {
         type: 'select',
         displayName: 'Timer type',
@@ -1706,6 +1712,9 @@ export const widgets = [
           { name: 'Count Up', value: 'countUp' },
           { name: 'Count Down', value: 'countDown' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
     },
     validation: {},
@@ -1717,8 +1726,20 @@ export const widgets = [
       onReset: { displayName: 'On Reset' },
     },
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       value: '',
