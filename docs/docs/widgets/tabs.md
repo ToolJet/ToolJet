@@ -5,7 +5,7 @@ title: Tabs
 
 # Tabs
 
-A Tabs widget contains a number of defined containers that can be navigated through the tabs. Each tab acts as a <a href="https://docs.tooljet.com/docs/widgets/tabs/" target="_blank">container</a> that can have different widgets placed inside
+A Tabs widget contains a number of defined containers that can be navigated through the tabs. Each tab acts as a <a href="https://docs.tooljet.com/docs/widgets/tabs/" target="_blank">container</a> that can have different widgets placed inside it.
 
 <div style={{textAlign: 'center'}}>
 
