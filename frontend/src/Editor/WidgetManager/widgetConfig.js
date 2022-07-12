@@ -1199,6 +1199,12 @@ export const widgets = [
           theme: 'duotone-light',
           className: 'map-location-input pr-2',
         },
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'array', element: { type: 'object' } }, { type: 'object' }],
+          },
+        },
       },
       defaultMarkers: {
         type: 'code',
@@ -1208,9 +1214,31 @@ export const widgets = [
           theme: 'duotone-light',
           className: 'map-location-input pr-2',
         },
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'array', element: { type: 'object' } }, { type: 'object' }],
+          },
+        },
       },
-      addNewMarkers: { type: 'toggle', displayName: 'Add new markers' },
-      canSearch: { type: 'toggle', displayName: 'Search for places' },
+      addNewMarkers: {
+        type: 'toggle',
+        displayName: 'Add new markers',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      canSearch: {
+        type: 'toggle',
+        displayName: 'Search for places',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     events: {
       onBoundsChange: { displayName: 'On bounds change' },
@@ -1218,8 +1246,24 @@ export const widgets = [
       onMarkerClick: { displayName: 'On marker click' },
     },
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     exposedVariables: {
       center: {},
