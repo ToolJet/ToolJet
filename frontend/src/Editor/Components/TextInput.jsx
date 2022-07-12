@@ -27,7 +27,8 @@ export const TextInput = function TextInput({
     setExposedVariable('value', text);
   });
   registerAction('clear', async function () {
-    setValue(' ');
+    setValue('');
+    setExposedVariable('value', '');
   });
 
   return (
