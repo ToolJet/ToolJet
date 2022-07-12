@@ -1331,7 +1331,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Tooltips',
         validation: {
-          schema: { type: 'array', element: { type: 'string' } },
+          schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         },
       },
     },
