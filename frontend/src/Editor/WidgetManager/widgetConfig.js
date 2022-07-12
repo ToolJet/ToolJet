@@ -1656,7 +1656,18 @@ export const widgets = [
         type: 'code',
         displayName: 'Tabs',
         validation: {
-          schema: { type: 'array', element: { type: 'object' } },
+          schema: {
+            type: 'array',
+            element: {
+              type: 'object',
+              object: {
+                id: {
+                  type: 'union',
+                  schemas: [{ type: 'string' }, { type: 'number' }],
+                },
+              },
+            },
+          },
         },
       },
       defaultTab: {
