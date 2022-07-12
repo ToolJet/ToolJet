@@ -1815,7 +1815,7 @@ export const widgets = [
         type: 'number',
         displayName: 'Border radius',
         validation: {
-          schemschema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
     },
