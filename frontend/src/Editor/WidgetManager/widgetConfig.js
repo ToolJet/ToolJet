@@ -1057,8 +1057,8 @@ export const widgets = [
         displayName: 'Option values',
         validation: {
           schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
+            type: 'array',
+            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
           },
         },
       },
@@ -1067,8 +1067,8 @@ export const widgets = [
         displayName: 'Option labels',
         validation: {
           schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
+            type: 'array',
+            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
           },
         },
       },
