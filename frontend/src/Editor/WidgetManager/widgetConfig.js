@@ -2566,6 +2566,13 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       width: 9,
       height: 40,
     },
+    actions: [
+      {
+        displayName: 'Set Color',
+        handle: 'setColor',
+        params: [{ handle: 'color', displayName: 'color', defaultValue: '#ffffff', type: 'color' }],
+      },
+    ],
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
