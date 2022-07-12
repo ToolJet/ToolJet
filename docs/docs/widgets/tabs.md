@@ -2,9 +2,10 @@
 id: tabs
 title: Tabs
 ---
+
 # Tabs
 
-A Tabs widget contains a number of defined containers that can be navigated through the tabs. Each tab acts as a container and can have different components or widgets.
+A Tabs widget contains a number of defined containers that can be navigated through the tabs. Each tab acts as a <a href="https://docs.tooljet.com/docs/widgets/tabs/" target="_blank">container</a> that can have different widgets placed inside it.
 
 <div style={{textAlign: 'center'}}>
 
@@ -16,23 +17,20 @@ A Tabs widget contains a number of defined containers that can be navigated thro
 
 ### Tabs
 
-This property lets you add and remove containers from the tabs widget. Each container in the tab has its unique `id` , `title` and  `disabled` for disabling individual tabs . This field expects an array of objects.
+This property lets you add and remove containers from the tabs widget. Each container in the tab has its unique `id` , `title` and `disabled` for disabling individual tabs . This field expects an array of objects.
 
-`{{[ 
-		{ title: 'Home', id: '0' }, 
-		{ title: 'Profile', id: '1',disabled:'true' }, 
-		{ title: 'Settings', id: '2' } 
- ]}}`
+`{{[ { title: 'Home', id: '0' }, { title: 'Profile', id: '1',disabled:'true' }, { title: 'Settings', id: '2' } ]}}`
 
 ### Default tab
 
-This property selects the container in the tab which matches the corresponding `id`. By default, the value is set to `0`. 
+This property selects the container in the tab which matches the corresponding `id`. By default, the value is set to `0`.
 
 ## Layout
 
 ### Show on desktop
 
 Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+
 ### Show on mobile
 
 Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
