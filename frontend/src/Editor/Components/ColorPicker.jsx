@@ -104,7 +104,6 @@ export const ColorPicker = function ({
 
   return (
     <div style={baseStyle} className="form-control">
-      {console.log('render')}
       <div className="d-flex h-100 justify-content-between align-items-center" onClick={() => setShowColorPicker(true)}>
         <span>{color}</span>
         {!(color === `Invalid Color`) && <div style={backgroundColorDivStyle}></div>}
