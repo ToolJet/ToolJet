@@ -59,10 +59,7 @@ export class JSONTreeViewer extends React.Component {
   }
 
   getCurrentNodeType(node) {
-    const typeofCurrentNode = Object.prototype.toString.call(node).slice(8, -1);
-    //Todo: Handle more types (Custom type or Iterable type)
-
-    return typeofCurrentNode;
+    return Object.prototype.toString.call(node).slice(8, -1);
   }
 
   getLength(type, collection) {

@@ -5190,6 +5190,9 @@ div#driver-page-overlay {
   .json-tree-node-null {
     color: red;
   }
+  .json-tree-node-date {
+    color: rgb(98, 107, 103);
+  }
 
   .group-border {
     border-left: 0.5px solid #dadcde;
@@ -5571,6 +5574,13 @@ div#driver-page-overlay {
 .flexer{
   display: flex;
 }
+.flexer-sso-input{
+  display: flex;
+  justify-content: space-between;
+  p{
+    margin-bottom: 0 !important;
+  }
+}
 .sso-copy{
   margin-left: 10px;
   cursor: pointer;
@@ -5698,6 +5708,15 @@ a.step-item-disabled {
   display: flex;
   gap: 8px;
 }
+
+input.hide-input-arrows{
+  -moz-appearance: none;
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button{
+    -webkit-appearance: none;
+  }
+}
+
 .btn-org-env {
   width: 36px;
 }

@@ -315,6 +315,10 @@ export const widgets = [
     },
     properties: {
       title: { type: 'code', displayName: 'Title' },
+      hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
+      hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
+      hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
+
       size: {
         type: 'select',
         displayName: 'Modal size',
@@ -330,7 +334,7 @@ export const widgets = [
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
-      show: null,
+      show: false,
     },
     definition: {
       others: {
@@ -340,6 +344,9 @@ export const widgets = [
       properties: {
         title: { value: 'This title can be changed' },
         size: { value: 'md' },
+        hideTitleBar: { value: '{{false}}' },
+        hideCloseButton: { value: '{{false}}' },
+        hideOnEsc: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -1163,6 +1170,16 @@ export const widgets = [
       onCreateMarker: { displayName: 'On create marker' },
       onMarkerClick: { displayName: 'On marker click' },
     },
+    actions: [
+      {
+        handle: 'setLocation',
+        displayName: 'Set Location',
+        params: [
+          { handle: 'lat', displayName: 'Latitude' },
+          { handle: 'lng', displayName: 'Longitude' },
+        ],
+      },
+    ],
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
@@ -1336,6 +1353,12 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
+    actions: [
+      {
+        handle: 'clearFiles',
+        displayName: 'Clear Files',
+      },
+    ],
     properties: {
       instructionText: { type: 'code', displayName: 'Instruction Text' },
       enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
@@ -1607,6 +1630,14 @@ export const widgets = [
       highlightColor: { type: 'color', displayName: 'Highlight Color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
+      tabWidth: {
+        type: 'select',
+        displayName: 'Tab width',
+        options: [
+          { name: 'Auto', value: 'auto' },
+          { name: 'Equally split', value: 'split' },
+        ],
+      },
     },
     exposedVariables: { currentTab: '' },
     definition: {
@@ -1627,6 +1658,7 @@ export const widgets = [
         highlightColor: { value: '#0565FE' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        tabWidth: { value: 'auto' },
       },
     },
   },

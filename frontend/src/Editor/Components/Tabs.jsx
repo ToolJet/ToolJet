@@ -13,7 +13,10 @@ export const Tabs = function Tabs({
   removeComponent,
   setExposedVariable,
   fireEvent,
+  styles,
 }) {
+  const { tabWidth } = styles;
+
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
   const defaultTab = component.definition.properties.defaultTab.value;
@@ -98,9 +101,10 @@ export const Tabs = function Tabs({
         {parsedTabs.map((tab) => (
           <li
             className="nav-item"
+            style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
             onClick={() => {
-              setCurrentTab(tab.id);
-              setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
+              !tab?.disabled && setCurrentTab(tab.id);
+              !tab?.disabled && setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
             }}
             key={tab.id}
           >
@@ -109,6 +113,7 @@ export const Tabs = function Tabs({
               style={{
                 color: currentTab == tab.id && parsedHighlightColor,
                 borderBottom: currentTab == tab.id && `1px solid ${parsedHighlightColor}`,
+                overflowWrap: 'anywhere',
               }}
               ref={(el) => {
                 if (el && currentTab == tab.id) {

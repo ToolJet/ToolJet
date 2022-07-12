@@ -1524,6 +1524,8 @@ class Editor extends React.Component {
                             runQuery={this.runQuery}
                             dataSourceModalHandler={this.dataSourceModalHandler}
                             setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
+                            appDefinition={appDefinition}
+                            editorState={this}
                           />
                         </div>
                       </div>
