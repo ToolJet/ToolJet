@@ -868,7 +868,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Text',
         validation: {
-          schema: { type: 'string' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       loadingState: {
