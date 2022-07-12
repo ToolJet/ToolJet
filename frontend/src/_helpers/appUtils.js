@@ -5,6 +5,7 @@ import {
   resolveReferences,
   executeMultilineJS,
   serializeNestedObjectToQueryParams,
+  computeComponentName,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
@@ -14,6 +15,7 @@ import { componentTypes } from '@/Editor/WidgetManager/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import { allSvgs } from '@tooljet/plugins/client';
+import { v4 as uuidv4 } from 'uuid';
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -871,4 +873,147 @@ export const getSvgIcon = (key, height = 50, width = 50) => {
   const Icon = allSvgs[key];
 
   return <Icon style={{ height, width }} />;
+};
+
+const updateNewComponents = (appDefinition, newComponents, updateAppDefinition) => {
+  const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+  newComponents.forEach((newComponent) => {
+    newComponent.component.name = computeComponentName(newComponent.component.component, newAppDefinition.components);
+    newAppDefinition.components[newComponent.id] = newComponent;
+  });
+  updateAppDefinition(newAppDefinition);
+};
+
+export const cloneComponents = (_ref, updateAppDefinition, isCloning = true) => {
+  const { selectedComponents, appDefinition } = _ref.state;
+  const { components: allComponents } = appDefinition;
+  let newComponents = [];
+  for (let selectedComponent of selectedComponents) {
+    const component = {
+      id: selectedComponent.id,
+      component: allComponents[selectedComponent.id]?.component,
+      layouts: allComponents[selectedComponent.id]?.layouts,
+      parent: allComponents[selectedComponent.id]?.parent,
+    };
+    let clonedComponent = JSON.parse(JSON.stringify(component));
+    clonedComponent.parent = undefined;
+    clonedComponent.children = [];
+    clonedComponent.children = [...getChildComponents(allComponents, component, clonedComponent)];
+    newComponents = [...newComponents, clonedComponent];
+  }
+  if (isCloning) {
+    addComponents(appDefinition, updateAppDefinition, undefined, newComponents, true);
+    toast.success('Component cloned succesfully');
+  } else {
+    navigator.clipboard.writeText(JSON.stringify(newComponents));
+    toast.success('Component copied succesfully');
+  }
+  _ref.setState({ currentSidebarTab: 2 });
+};
+
+const getChildComponents = (allComponents, component, parentComponent) => {
+  let childComponents = [],
+    selectedChildComponents = [];
+
+  if (component.component.component === 'Tabs' || component.component.component === 'Calendar') {
+    childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent?.startsWith(component.id));
+  } else {
+    childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
+  }
+
+  childComponents.forEach((componentId) => {
+    let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
+    childComponent.id = componentId;
+    const newComponent = JSON.parse(
+      JSON.stringify({
+        id: componentId,
+        component: allComponents[componentId]?.component,
+        layouts: allComponents[componentId]?.layouts,
+        parent: allComponents[componentId]?.parent,
+      })
+    );
+
+    if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
+      const childTabId = childComponent.parent.split('-').at(-1);
+      childComponent.parent = `${parentComponent.id}-${childTabId}`;
+    } else {
+      childComponent.parent = parentComponent.id;
+    }
+    parentComponent.children = [...(parentComponent.children || []), childComponent];
+    childComponent.children = [...getChildComponents(allComponents, newComponent, childComponent)];
+    selectedChildComponents.push(childComponent);
+  });
+
+  return selectedChildComponents;
+};
+
+const updateComponentLayout = (components, parentId) => {
+  let prevComponent;
+  components.forEach((component, index) => {
+    Object.keys(component.layouts).map((layout) => {
+      if (parentId !== undefined) {
+        if (index > 0) {
+          component.layouts[layout].top = prevComponent.layouts[layout].top + prevComponent.layouts[layout].height;
+          component.layouts[layout].left = 0;
+        } else {
+          component.layouts[layout].top = 0;
+          component.layouts[layout].left = 0;
+        }
+        prevComponent = component;
+      } else {
+        component.layouts[layout].top = component.layouts[layout].top + component.layouts[layout].height;
+      }
+    });
+  });
+};
+
+export const addComponents = (
+  appDefinition,
+  appDefinitionChanged,
+  parentId = undefined,
+  pastedComponent = [],
+  isCloning = false
+) => {
+  const finalComponents = [];
+  let parentComponent = undefined;
+
+  if (parentId) {
+    const id = Object.keys(appDefinition.components).filter((key) => parentId.startsWith(key));
+    parentComponent = JSON.parse(JSON.stringify(appDefinition.components[id[0]]));
+    parentComponent.id = parentId;
+  }
+
+  !isCloning && updateComponentLayout(pastedComponent, parentId);
+
+  const buildComponents = (components, parentComponent = undefined, skipTabCalendarCheck = false) => {
+    if (Array.isArray(components) && components.length > 0) {
+      components.forEach((component) => {
+        const newComponent = {
+          id: uuidv4(),
+          component: component?.component,
+          layouts: component?.layouts,
+        };
+        if (parentComponent) {
+          if (
+            !skipTabCalendarCheck &&
+            (parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar')
+          ) {
+            const childTabId = component.parent.split('-').at(-1);
+            newComponent.parent = `${parentComponent.id}-${childTabId}`;
+          } else {
+            newComponent.parent = parentComponent.id;
+          }
+        }
+        finalComponents.push(newComponent);
+        if (component.children.length > 0) {
+          buildComponents(component.children, newComponent);
+        }
+      });
+    }
+  };
+
+  buildComponents(pastedComponent, parentComponent, true);
+
+  updateNewComponents(appDefinition, finalComponents, appDefinitionChanged);
+  !isCloning && toast.success('Component pasted succesfully');
 };
