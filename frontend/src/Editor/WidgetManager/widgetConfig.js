@@ -922,10 +922,34 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      source: { type: 'code', displayName: 'URL' },
-      loadingState: { type: 'toggle', displayName: 'Loading state' },
-      alternativeText: { type: 'code', displayName: 'Alternative text' },
-      zoomButtons: { type: 'toggle', displayName: 'Zoom button' },
+      source: {
+        type: 'code',
+        displayName: 'URL',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      alternativeText: {
+        type: 'code',
+        displayName: 'Alternative text',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      zoomButtons: {
+        type: 'toggle',
+        displayName: 'Zoom button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -940,11 +964,38 @@ export const widgets = [
           { name: 'Circle', value: 'rounded-circle' },
           { name: 'Thumbnail', value: 'img-thumbnail' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
-      backgroundColor: { type: 'color', displayName: 'Background color' },
-      padding: { type: 'code', displayName: 'Padding' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      padding: {
+        type: 'code',
+        displayName: 'Padding',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       imageFit: {
         type: 'select',
         displayName: 'Image fit',
@@ -954,6 +1005,9 @@ export const widgets = [
           { name: 'cover', value: 'cover' },
           { name: 'scale-down', value: 'scale-down' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
     },
     exposedVariables: {},
