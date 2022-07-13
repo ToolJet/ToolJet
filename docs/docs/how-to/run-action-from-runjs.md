@@ -108,7 +108,7 @@ actions.closeModal('modalName')
 **Syntax:**
 
 ```javascript
-actions.setLocalStorage('key':'value')
+actions.setLocalStorage('key','value')
 ```
 
 <div style={{textAlign: 'center'}}>
@@ -152,7 +152,7 @@ actions.generateFile('fileName', 'fileType', 'data')
 **Syntax:**
 
 ```javascript
-actions.goToApp('slug') //slug can be found in URL of the released app after the application/ or in the `Share` modal
+actions.goToApp('slug',queryparams) //slug can be found in URL of the released app after the application/ or in the `Share` modal
 ```
 
 <div style={{textAlign: 'center'}}>
