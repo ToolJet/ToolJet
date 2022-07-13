@@ -292,9 +292,7 @@ export const widgets = [
         type: 'json',
         displayName: 'Data',
         validation: {
-          schema: {
-            type: 'string',
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'array' }] },
         },
       },
       loadingState: {
