@@ -38,7 +38,7 @@ function buildConnectionOptions(filePath: string, env: string | undefined): Type
     synchronize: false,
     uuidExtension: 'pgcrypto',
     migrationsRun: false,
-    migrationsTransactionMode: 'each',
+    migrationsTransactionMode: 'all',
     logging: data.ORM_LOGGING || false,
     migrations: [__dirname + '/data-migrations/**/*{.ts,.js}'],
     keepConnectionAlive: true,
