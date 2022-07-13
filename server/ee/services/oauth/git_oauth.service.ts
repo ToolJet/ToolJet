@@ -1,17 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import got from 'got';
 import UserResponse from './models/user_response';
 
 @Injectable()
 export class GitOAuthService {
-  constructor(private readonly configService: ConfigService) {}
-  private readonly authUrl = 'https://github.com/login/oauth/access_token';
-  private readonly getUserUrl = 'https://api.github.com/user';
-  private readonly getUserEmailUrl = 'https://api.github.com/user/emails';
+  private readonly authUrl = '/login/oauth/access_token';
 
-  async #getUserDetails({ access_token }: AuthResponse): Promise<UserResponse> {
-    const response: any = await got(this.getUserUrl, {
+  #getAuthUrl(hostName) {
+    return `${hostName || 'https://github.com'}${this.authUrl}`;
+  }
+  #getUserUrl(hostName) {
+    return `${hostName ? `${hostName}/api/v3` : 'https://github.com'}/user`;
+  }
+  #getUserEmailUrl(hostName) {
+    return `${hostName ? `${hostName}/api/v3` : 'https://github.com'}/user/emails`;
+  }
+  async #getUserDetails({ access_token }: AuthResponse, hostName: string): Promise<UserResponse> {
+    const response: any = await got(this.#getUserUrl(hostName), {
       method: 'get',
       headers: { Accept: 'application/json', Authorization: `token ${access_token}` },
     }).json();
@@ -24,14 +29,14 @@ export class GitOAuthService {
 
     if (!email) {
       // email visibility not set to public
-      email = await this.#getEmailId(access_token);
+      email = await this.#getEmailId(access_token, hostName);
     }
 
     return { userSSOId: access_token, firstName, lastName, email, sso: 'git' };
   }
 
-  async #getEmailId(access_token: string) {
-    const response: any = await got(this.getUserEmailUrl, {
+  async #getEmailId(access_token: string, hostName: string) {
+    const response: any = await got(this.#getUserEmailUrl(hostName), {
       method: 'get',
       headers: { Accept: 'application/json', Authorization: `token ${access_token}` },
     }).json();
@@ -40,13 +45,13 @@ export class GitOAuthService {
   }
 
   async signIn(code: string, configs: any): Promise<any> {
-    const response: any = await got(this.authUrl, {
+    const response: any = await got(this.#getAuthUrl(configs.hostName), {
       method: 'post',
       headers: { Accept: 'application/json' },
       json: { client_id: configs.clientId, client_secret: configs.clientSecret, code },
     }).json();
 
-    return await this.#getUserDetails(response);
+    return await this.#getUserDetails(response, configs.hostName);
   }
 }
 

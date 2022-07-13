@@ -15,6 +15,7 @@ type Google = {
 type Git = {
   clientId: string;
   clientSecret: string;
+  hostName?: string;
 };
 @Entity({ name: 'sso_configs' })
 export class SSOConfigs {
