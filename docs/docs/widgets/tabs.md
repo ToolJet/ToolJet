@@ -9,7 +9,7 @@ A Tabs widget contains a number of defined containers that can be navigated thro
 
 ## How To Use Tabs Widget
 
-<iframe height="500" src="https://www.youtube.com/embed/YmAhpO4Ku5w" title="Datepicker Widget" frameborder="0" allowfullscreen width="100%"></iframe>
+<iframe height="500" src="https://www.youtube.com/embed/YmAhpO4Ku5w" title="Tabs Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Properties
 
