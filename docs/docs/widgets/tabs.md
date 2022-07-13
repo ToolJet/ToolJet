@@ -7,11 +7,9 @@ title: Tabs
 
 A Tabs widget contains a number of defined containers that can be navigated through the tabs. Each tab acts as a <a href="https://docs.tooljet.com/docs/widgets/tabs/" target="_blank">container</a> that can have different widgets placed inside it.
 
-<div style={{textAlign: 'center'}}>
+## How To Use Tabs Widget
 
-![ToolJet - Widget Reference - Tabs](/img/widgets/tabs/tabs.png)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/YmAhpO4Ku5w" title="Tabs Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Properties
 
