@@ -161,9 +161,13 @@ export const LeftSidebarInspector = ({
   React.useEffect(() => {
     if (open) {
       setVisible(true);
+      document.querySelector('#app').setAttribute('inert', 'true');
     }
 
-    return () => setVisible(false);
+    return () => {
+      setVisible(false);
+      document.querySelector('#app').removeAttribute('inert');
+    };
   }, [open]);
 
   return (
