@@ -677,19 +677,67 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' },
-      value: { type: 'code', displayName: 'Default value' },
-      values: { type: 'code', displayName: 'Option values' },
-      display_values: { type: 'code', displayName: 'Option labels' },
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      values: {
+        type: 'code',
+        displayName: 'Option values',
+        validation: {
+          schema: { type: 'array', element: { type: 'boolean' } },
+        },
+      },
+      display_values: {
+        type: 'code',
+        displayName: 'Option labels',
+        validation: {
+          schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        },
+      },
     },
     events: {
       onSelectionChange: { displayName: 'On select' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text Color' },
-      activeColor: { type: 'color', displayName: 'Active Color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      activeColor: {
+        type: 'color',
+        displayName: 'Active Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {},
     definition: {
