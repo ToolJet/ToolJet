@@ -334,7 +334,7 @@ export const widgets = [
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
-      show: null,
+      show: false,
     },
     definition: {
       others: {
@@ -948,7 +948,7 @@ export const widgets = [
     properties: {},
     events: {},
     styles: {
-      backgroundColor: { type: 'color' },
+      backgroundColor: { type: 'color', displayName: 'Background Color' },
       borderRadius: { type: 'code', displayName: 'Border Radius' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
@@ -1170,6 +1170,16 @@ export const widgets = [
       onCreateMarker: { displayName: 'On create marker' },
       onMarkerClick: { displayName: 'On marker click' },
     },
+    actions: [
+      {
+        handle: 'setLocation',
+        displayName: 'Set Location',
+        params: [
+          { handle: 'lat', displayName: 'Latitude' },
+          { handle: 'lng', displayName: 'Longitude' },
+        ],
+      },
+    ],
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
@@ -1343,6 +1353,12 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
+    actions: [
+      {
+        handle: 'clearFiles',
+        displayName: 'Clear Files',
+      },
+    ],
     properties: {
       instructionText: { type: 'code', displayName: 'Instruction Text' },
       enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
@@ -1614,6 +1630,14 @@ export const widgets = [
       highlightColor: { type: 'color', displayName: 'Highlight Color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
+      tabWidth: {
+        type: 'select',
+        displayName: 'Tab width',
+        options: [
+          { name: 'Auto', value: 'auto' },
+          { name: 'Equally split', value: 'split' },
+        ],
+      },
     },
     exposedVariables: { currentTab: '' },
     definition: {
@@ -1634,6 +1658,7 @@ export const widgets = [
         highlightColor: { value: '#0565FE' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        tabWidth: { value: 'auto' },
       },
     },
   },
@@ -2541,6 +2566,13 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       width: 9,
       height: 40,
     },
+    actions: [
+      {
+        displayName: 'Set Color',
+        handle: 'setColor',
+        params: [{ handle: 'color', displayName: 'color', defaultValue: '#ffffff', type: 'color' }],
+      },
+    ],
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },

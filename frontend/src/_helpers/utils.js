@@ -39,38 +39,45 @@ export function resolve(data, state) {
 function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
   let result = '';
   let error;
-  try {
-    const evalFunction = Function(
-      [
-        'variables',
-        'components',
-        'queries',
-        'globals',
-        'client',
-        'server',
-        'moment',
-        '_',
-        ...Object.keys(customObjects),
-        reservedKeyword,
-      ],
-      `return ${code}`
-    );
-    result = evalFunction(
-      isJsCode ? state.variables : undefined,
-      isJsCode ? state.components : undefined,
-      isJsCode ? state.queries : undefined,
-      isJsCode ? state.globals : undefined,
-      isJsCode ? undefined : state.client,
-      isJsCode ? undefined : state.server,
-      moment,
-      _,
-      ...Object.values(customObjects),
-      null
-    );
-  } catch (err) {
-    error = err;
-    console.log('eval_error', err);
+
+  // dont resolve if code starts with "queries." and ends with "run()"
+  if (code.startsWith('queries.') && code.endsWith('run()')) {
+    error = `Cannot resolve function call ${code}`;
+  } else {
+    try {
+      const evalFunction = Function(
+        [
+          'variables',
+          'components',
+          'queries',
+          'globals',
+          'client',
+          'server',
+          'moment',
+          '_',
+          ...Object.keys(customObjects),
+          reservedKeyword,
+        ],
+        `return ${code}`
+      );
+      result = evalFunction(
+        isJsCode ? state.variables : undefined,
+        isJsCode ? state.components : undefined,
+        isJsCode ? state.queries : undefined,
+        isJsCode ? state.globals : undefined,
+        isJsCode ? undefined : state.client,
+        isJsCode ? undefined : state.server,
+        moment,
+        _,
+        ...Object.values(customObjects),
+        null
+      );
+    } catch (err) {
+      error = err;
+      console.log('eval_error', err);
+    }
   }
+
   if (withError) return [result, error];
   return result;
 }
@@ -288,7 +295,7 @@ export function validateEmail(email) {
   return emailRegex.test(email);
 }
 
-export async function executeMultilineJS(_ref, code, isPreview, confirmed = undefined, mode = '') {
+export async function executeMultilineJS(_ref, code, editorState, isPreview, confirmed = undefined, mode = '') {
   const { currentState } = _ref.state;
   let result = {},
     error = null;
@@ -298,7 +305,7 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
       const query = _ref.state.dataQueries.find((query) => query.name === queryName);
       if (_.isEmpty(query)) return;
       if (isPreview) {
-        return previewQuery(_ref, query, true);
+        return previewQuery(_ref, query, editorState, true);
       } else {
         const event = {
           actionId: 'run-query',
@@ -326,6 +333,80 @@ export async function executeMultilineJS(_ref, code, isPreview, confirmed = unde
         };
         return executeAction(_ref, event, mode, {});
       }
+    },
+    showAlert: function (alertType = '', message = '') {
+      const event = {
+        actionId: 'show-alert',
+        alertType,
+        message,
+      };
+      return executeAction(_ref, event, mode, {});
+    },
+    logout: function () {
+      const event = {
+        actionId: 'logout',
+      };
+      return executeAction(_ref, event, mode, {});
+    },
+    showModal: function (modalName = '') {
+      let modal = '';
+      for (const [key, value] of Object.entries(_ref.state.appDefinition.components)) {
+        if (value.component.name === modalName) {
+          modal = key;
+        }
+      }
+
+      const event = {
+        actionId: 'show-modal',
+        modal,
+      };
+      return executeAction(editorState, event, mode, {});
+    },
+    closeModal: function (modalName = '') {
+      let modal = '';
+      for (const [key, value] of Object.entries(_ref.state.appDefinition.components)) {
+        if (value.component.name === modalName) {
+          modal = key;
+        }
+      }
+
+      const event = {
+        actionId: 'close-modal',
+        modal,
+      };
+      return executeAction(editorState, event, mode, {});
+    },
+    setLocalStorage: function (key = '', value = '') {
+      const event = {
+        actionId: 'set-localstorage-value',
+        key,
+        value,
+      };
+      return executeAction(_ref, event, mode, {});
+    },
+    copyToClipboard: function (contentToCopy = '') {
+      const event = {
+        actionId: 'copy-to-clipboard',
+        contentToCopy,
+      };
+      return executeAction(_ref, event, mode, {});
+    },
+    goToApp: function (slug = '', queryParams = []) {
+      const event = {
+        actionId: 'go-to-app',
+        slug,
+        queryParams,
+      };
+      return executeAction(_ref, event, mode, {});
+    },
+    generateFile: function (fileName, fileType, data) {
+      const event = {
+        actionId: 'generate-file',
+        fileName,
+        data,
+        fileType,
+      };
+      return executeAction(_ref, event, mode, {});
     },
   };
 
