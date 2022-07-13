@@ -279,12 +279,56 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      title: { type: 'code', displayName: 'Title' },
-      data: { type: 'json', displayName: 'Data' },
-      loadingState: { type: 'toggle', displayName: 'Loading State' },
-      markerColor: { type: 'color', displayName: 'Marker color' },
-      showAxes: { type: 'toggle', displayName: 'Show axes' },
-      showGridLines: { type: 'toggle', displayName: 'Show grid lines' },
+      title: {
+        type: 'code',
+        displayName: 'Title',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      data: {
+        type: 'json',
+        displayName: 'Data',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'array' }] },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading State',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      markerColor: {
+        type: 'color',
+        displayName: 'Marker color',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      showAxes: {
+        type: 'toggle',
+        displayName: 'Show axes',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      showGridLines: {
+        type: 'toggle',
+        displayName: 'Show grid lines',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
       type: {
         type: 'select',
         displayName: 'Chart type',
@@ -293,15 +337,62 @@ export const widgets = [
           { name: 'Bar', value: 'bar' },
           { name: 'Pie', value: 'pie' },
         ],
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'boolean' }, { type: 'number' }],
+          },
+        },
       },
-      jsonDescription: { type: 'json', displayName: 'Json Description' },
-      plotFromJson: { type: 'toggle', displayName: 'Use Plotly JSON schema' },
+      jsonDescription: {
+        type: 'json',
+        displayName: 'Json Description',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      plotFromJson: {
+        type: 'toggle',
+        displayName: 'Use Plotly JSON schema',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     events: {},
     styles: {
-      padding: { type: 'code', displayName: 'Padding' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      padding: {
+        type: 'code',
+        displayName: 'Padding',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'number' }, { type: 'string' }],
+          },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     exposedVariables: {
       show: null,
