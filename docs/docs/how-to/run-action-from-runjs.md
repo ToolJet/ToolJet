@@ -152,12 +152,15 @@ actions.generateFile('fileName', 'fileType', 'data')
 **Syntax:**
 
 ```javascript
-actions.goToApp('slug',queryparams) //slug can be found in URL of the released app after the application/ or in the `Share` modal
+actions.goToApp('slug',queryparams) 
 ```
+
+- `slug` can be found in URL of the released app after the `application/`, or in the `Share` modal
+- `queryparams` can be provided like this `[{"key":"value"}, {"key2":"value2"}]`
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - How To - Run Actions from RunJS query](/img/how-to/run-actions-from-runjs/gotoapp.png)
+![ToolJet - How To - Run Actions from RunJS query](/img/how-to/run-actions-from-runjs/gotoapp1.png)
 
 </div>
 
