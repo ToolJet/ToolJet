@@ -815,6 +815,34 @@ export function Table({
     ['targetPageIndex']
   );
 
+  registerAction('selectRowByKeyAndValue', async function (key, value) {
+    const item = currentState.components[component.name]['currentData'].filter((item) => item[key] == value);
+
+    let rowId = '';
+    let original = '';
+
+    page.map((item, index) => {
+      if (item.original[key] == value) {
+        rowId = item.id;
+        original = item.original;
+      }
+    });
+    setcomponentState((prevState) => {
+      return { ...prevState, selectedRow: item[0], selectedRowId: rowId };
+    });
+    onEvent('onRowClicked', { component, data: original, rowId: rowId });
+  });
+
+  registerAction('selectRowByIndex', async function (index) {
+    const rowId = page?.[index]?.id;
+    const original = page?.[index]?.original;
+
+    setcomponentState((prevState) => {
+      return { ...prevState, selectedRow: original, selectedRowId: rowId };
+    });
+    onEvent('onRowClicked', { component, data: original, rowId: rowId });
+  });
+
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
     onComponentOptionChanged(component, 'selectedRows', selectedRowsOriginalData);

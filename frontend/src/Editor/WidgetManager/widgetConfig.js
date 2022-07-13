@@ -99,6 +99,33 @@ export const widgets = [
           },
         ],
       },
+      {
+        handle: 'selectRowByKeyAndValue ',
+        displayName: 'Select row by key and value ',
+        params: [
+          {
+            handle: 'key',
+            displayName: 'Key',
+            defaultValue: 'id',
+          },
+          {
+            handle: 'value',
+            displayName: 'Value',
+            defaultValue: '{{1}}',
+          },
+        ],
+      },
+      {
+        handle: 'selectRowByIndex ',
+        displayName: 'Select row by index ',
+        params: [
+          {
+            handle: 'index',
+            displayName: 'Index',
+            defaultValue: '0',
+          },
+        ],
+      },
     ],
     definition: {
       others: {
