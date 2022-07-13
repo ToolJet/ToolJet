@@ -6,7 +6,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { App } from 'src/entities/app.entity';
 import { Thread } from 'src/entities/thread.entity';
 import { Comment } from 'src/entities/comment.entity';
-import { AuditLog } from 'src/entities/audit_log.entity';
+// import { AuditLog } from 'src/entities/audit_log.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 
 export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662 implements MigrationInterface {
@@ -105,7 +105,7 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
         await this.migrateComments(entityManager, deletingUser.id, originalUser);
 
         //delete duplicate user
-        await entityManager.delete(AuditLog, { userId: deletingUser.id });
+        // await entityManager.delete(AuditLog, { userId: deletingUser.id });
         await entityManager.delete(AppUser, { userId: deletingUser.id });
         await entityManager.delete(User, deletingUser.id);
     }
