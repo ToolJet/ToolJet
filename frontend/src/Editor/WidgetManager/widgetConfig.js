@@ -459,7 +459,13 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      title: { type: 'code', displayName: 'Title' },
+      title: {
+        type: 'code',
+        displayName: 'Title',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       size: {
         type: 'select',
         displayName: 'Modal size',
@@ -468,11 +474,20 @@ export const widgets = [
           { name: 'medium', value: 'md' },
           { name: 'large', value: 'lg' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
     },
     events: {},
     styles: {
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       show: null,
