@@ -63,13 +63,9 @@ const Mentions = ({ users, value = '', setValue, setMentionedUsers, placeholder,
     >
       <Mention
         trigger="@"
-        // regex={/@(\S+)/}
         displayTransform={(_, display) => `(@${display})`}
         markup="(@__display__){__id__}"
         data={users}
-        // style={{
-        //   backgroundColor: '#218DE3',
-        // }}
         appendSpaceOnAdd
         renderSuggestion={(suggestion) => (
           <div
