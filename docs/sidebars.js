@@ -55,6 +55,7 @@ const sidebars = {
         'tutorial/manage-users-groups',
         'tutorial/keyboard-shortcuts',
         'tutorial/multiworkspace',
+        'tutorial/organization-environment-variables'
       ],
     },
     {

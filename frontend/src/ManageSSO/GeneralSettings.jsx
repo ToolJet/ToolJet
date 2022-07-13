@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { organizationService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { copyToClipboard } from '@/_helpers/appUtils';
 
 export function GeneralSettings({ settings, updateData }) {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
@@ -11,6 +12,10 @@ export function GeneralSettings({ settings, updateData }) {
   const reset = () => {
     setEnableSignUp(settings?.enable_sign_up || false);
     setDomain(settings?.domain || '');
+  };
+  const copyFunction = (input) => {
+    let text = document.getElementById(input).innerHTML;
+    copyToClipboard(text);
   };
 
   const saveSettings = () => {
@@ -81,7 +86,19 @@ export function GeneralSettings({ settings, updateData }) {
               <label className="form-label" data-cy="login-url-label">
                 Login URL
               </label>
-              <div data-cy="login-url">{`${window.location.protocol}//${window.location.host}/login/${authenticationService?.currentUserValue?.organization_id}`}</div>
+
+              <div className="flexer-sso-input form-control">
+                <p id="login-url" data-cy="login-url">
+                  {`${window.location.protocol}//${window.location.host}/login/${authenticationService?.currentUserValue?.organization_id}`}
+                </p>
+                <img
+                  onClick={() => copyFunction('login-url')}
+                  src={`/assets/images/icons/copy-dark.svg`}
+                  width="22"
+                  height="22"
+                  className="sso-copy"
+                />
+              </div>
               <div className="help-text mt-1">
                 <div data-cy="login-help-text">Use this URL to login directly to this workspace</div>
               </div>
