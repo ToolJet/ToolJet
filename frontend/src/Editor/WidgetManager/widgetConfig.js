@@ -2623,6 +2623,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     events: {
       onChange: { displayName: 'On change' },
+      onCheck: { displayName: 'On check' },
+      onUnCheck: { displayName: 'On uncheck' },
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
@@ -2645,8 +2647,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           value:
             '{{[{"label":"Asia","value":"asia","children":[{"label":"China","value":"china","children":[{"label":"Beijing","value":"beijing"},{"label":"Shanghai","value":"shanghai"}]},{"label":"Japan","value":"japan"},{"label":"India","value":"india","children":[{"label":"Delhi","value":"delhi"},{"label":"Mumbai","value":"mumbai"},{"label":"Bengaluru","value":"bengaluru"}]}]},{"label":"Europe","value":"europe","children":[{"label":"France","value":"france"},{"label":"Spain","value":"spain"},{"label":"England","value":"england"}]},{"label":"Africa","value":"africa"}]}}',
         },
-        checkedData: { value: '{{[]}}' },
-        expandedData: { value: '{{[]}}' },
+        checkedData: { value: '{{["asia"]}}' },
+        expandedData: { value: '{{["asia"]}}' },
       },
       events: [],
       styles: {

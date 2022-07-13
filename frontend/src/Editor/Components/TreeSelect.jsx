@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import CheckboxTree from 'react-checkbox-tree';
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 
@@ -34,8 +34,33 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(expandedData)]);
 
-  const onCheck = (checked) => {
-    setExposedVariable('checked', checked).then(() => fireEvent('onChange'));
+  const pathObj = useMemo(() => {
+    let nodePath = {};
+    function checkedPath(n, arr = []) {
+      for (let i = 0; i < n.length; i++) {
+        nodePath[n[i].value] = [...arr, n[i].value];
+        if (n[i]?.children?.length > 0) {
+          checkedPath(n[i].children, [...arr, n[i].value]);
+        }
+      }
+    }
+    checkedPath(data, []);
+    return nodePath;
+  }, [JSON.stringify(data)]);
+
+  const onCheck = (checked, updatedNode) => {
+    const checkedPathArray = [],
+      checkedPathString = [];
+    checked.forEach((item) => {
+      checkedPathArray.push(pathObj[item]);
+      checkedPathString.push(pathObj[item].join('-'));
+    });
+    setExposedVariable('checkedPathArray', checkedPathArray);
+    setExposedVariable('checkedPathString', checkedPathString);
+    setExposedVariable('checked', checked).then(() => {
+      updatedNode.checked ? fireEvent('onCheck') : fireEvent('onUnCheck');
+      fireEvent('onChange');
+    });
     setChecked(checked);
   };
 
