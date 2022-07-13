@@ -24,8 +24,8 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
     fireEvent('onClick');
   });
 
-  registerAction('setLabel', async function (label) {
-    setLabel(label);
+  registerAction('setText', async function (text) {
+    setLabel(text);
   });
 
   return (
