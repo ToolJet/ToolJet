@@ -1146,15 +1146,64 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      defaultStartDate: { type: 'code', displayName: 'Default start date' },
-      defaultEndDate: { type: 'code', displayName: 'Default end date' },
-      format: { type: 'code', displayName: 'Format' },
+      defaultStartDate: {
+        type: 'code',
+        displayName: 'Default start date',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      defaultEndDate: {
+        type: 'code',
+        displayName: 'Default end date',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      format: {
+        type: 'code',
+        displayName: 'Format',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
     },
     events: {},
     styles: {
-      borderRadius: { type: 'code', displayName: 'Border radius' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'number' }, { type: 'string' }],
+          },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     exposedVariables: {
       endDate: {},
