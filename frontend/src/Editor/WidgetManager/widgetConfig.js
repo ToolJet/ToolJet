@@ -1006,7 +1006,7 @@ export const widgets = [
       {
         handle: 'setSelect',
         displayName: 'Set Select',
-        params: [{ handle: 'select', displayName: 'Select', type: 'select' }],
+        params: [{ handle: 'select', displayName: 'Select' }],
       },
     ],
     definition: {
