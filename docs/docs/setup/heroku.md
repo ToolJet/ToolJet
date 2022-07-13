@@ -35,7 +35,7 @@ title: Heroku
 
 4. Click on `Deploy app` button at the bottom to initiate the build.
 
-5. After the succesful build, you'll see two buttons at the bottom: `Manage App` and `View`. Click on the `View` to open the app or click on `Manage App` to configure any settings.
+5. After the successful build, you'll see two buttons at the bottom: `Manage App` and `View`. Click on the `View` to open the app or click on `Manage App` to configure any settings.
 
 <div style={{textAlign: 'center'}}>
 
