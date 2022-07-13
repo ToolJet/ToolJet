@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export class CreateCommentUsers1656312830145 implements MigrationInterface {
+export class CreateCommentUsers1656312830147 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -22,6 +22,12 @@ export class CreateCommentUsers1656312830145 implements MigrationInterface {
             name: 'user_id',
             type: 'uuid',
             isNullable: false,
+          },
+          {
+            name: 'is_read',
+            type: 'boolean',
+            default: false,
+            isNullable: true,
           },
           {
             name: 'created_at',
