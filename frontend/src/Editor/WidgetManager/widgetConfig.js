@@ -1762,7 +1762,7 @@ export const widgets = [
     displayName: 'List View',
     description: 'Wrapper for multiple components',
     defaultSize: {
-      width: 5,
+      width: 8,
       height: 200,
     },
     component: 'Listview',
@@ -1794,7 +1794,7 @@ export const widgets = [
       },
       properties: {
         data: {
-          value: "{{ [ { image: 'https://reqres.in/img/faces/8-image.jpg' }] }}",
+          value: '{{ [1,2,3,4] }}',
         },
         rowHeight: {
           value: '100',

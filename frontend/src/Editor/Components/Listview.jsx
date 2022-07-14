@@ -54,6 +54,34 @@ export const Listview = function Listview({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenData]);
 
+  const childWidgets = [
+    {
+      componentName: 'Image',
+      layout: {
+        top: 15,
+        left: 6.976744186046512,
+        height: 100,
+      },
+    },
+    {
+      componentName: 'Text',
+      layout: {
+        top: 20,
+        left: 30,
+        height: 30,
+      },
+    },
+    {
+      componentName: 'Button',
+      layout: {
+        top: 50,
+        left: 30,
+        height: 30,
+      },
+      incrementWidth: 2,
+    },
+  ];
+
   return (
     <div
       data-disabled={disabledState}
@@ -76,6 +104,7 @@ export const Listview = function Listview({
           >
             <SubContainer
               parentComponent={component}
+              defaultChildComponents={childWidgets}
               containerCanvasWidth={width}
               parent={`${id}`}
               parentName={component.name}

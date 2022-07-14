@@ -11,6 +11,15 @@ import { computeComponentName } from '@/_helpers/utils';
 import produce from 'immer';
 import _ from 'lodash';
 
+//hook to check props when mounted
+const useMounted = () => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  return mounted;
+};
+
 export const SubContainer = ({
   mode,
   snapToGrid,
@@ -40,6 +49,7 @@ export const SubContainer = ({
   selectedComponents,
   onOptionChange,
   exposedVariables,
+  defaultChildComponents = [],
 }) => {
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
 
@@ -71,6 +81,51 @@ export const SubContainer = ({
   useEffect(() => {
     setBoxes(allComponents);
   }, [allComponents]);
+
+  const mounted = useMounted();
+
+  useEffect(() => {
+    if (mounted) {
+      //find children with parent prop
+      const children = Object.keys(allComponents).filter((key) => {
+        return allComponents[key].parent === parent;
+      });
+
+      if (children.length === 0) {
+        //if no children, add a default child
+        const childrenBoxes = {};
+        defaultChildComponents.forEach((child) => {
+          const { componentName, layout, incrementWidth } = child;
+          const componentMeta = componentTypes.find((component) => component.component === componentName);
+          const componentData = JSON.parse(JSON.stringify(componentMeta));
+          const componentId = uuidv4();
+          componentData.name = computeComponentName(componentData.component, boxes);
+
+          const width = (componentMeta.defaultSize.width * 100) / 43;
+          const height = componentMeta.defaultSize.height;
+
+          _.set(childrenBoxes, componentId, {
+            component: componentData,
+            parent: parentRef.current.id,
+            layouts: {
+              [currentLayout]: {
+                ...layout,
+                width: incrementWidth ? width * incrementWidth : width,
+                height: height,
+              },
+            },
+          });
+        });
+
+        setBoxes({
+          ...allComponents,
+          ...childrenBoxes,
+        });
+      }
+    }
+  }, [mounted]);
+
+  console.log('child boxes', boxes);
 
   const moveBox = useCallback(
     (id, left, top) => {
@@ -136,6 +191,52 @@ export const SubContainer = ({
     return (x * canvasWidth) / 100;
   }
 
+  function addChildComponent(childComponent) {
+    // const componentMeta = componentTypes.find(
+    //   (component) => component.component === childComponent.component.component
+    // );
+    // const componentData = JSON.parse(JSON.stringify(componentMeta));
+    // componentData.name = computeComponentName(componentData.component, boxes);
+
+    console.log(
+      'from Subcontainer layer ==>',
+      childComponent
+      // JSON.stringify(componentMeta),
+      // 'data =>',
+      // JSON.stringify(componentData)
+    );
+
+    // const offsetFromTopOfWindow = canvasBoundingRect.top;
+    // const offsetFromLeftOfWindow = canvasBoundingRect.left;
+    // const currentOffset = monitor.getSourceClientOffset();
+    // const initialClientOffset = monitor.getInitialClientOffset();
+    // const delta = monitor.getDifferenceFromInitialOffset();
+
+    // const left = Math.round(currentOffset?.x + currentOffset?.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+    // const top = Math.round(
+    //   initialClientOffset?.y - 10 + delta.y + initialClientOffset?.y * (1 - zoomLevel) - offsetFromTopOfWindow
+    // );
+
+    // const id = uuidv4();
+    // const width = (componentMeta.defaultSize.width * 100) / 43;
+
+    // setBoxes({
+    //   ...boxes,
+    //   [id]: {
+    //     component: componentData,
+    //     parent: parentRef.current.id,
+    //     layouts: {
+    //       [childComponent.currentLayout]: {
+    //         top: top,
+    //         left: left,
+    //         width: width,
+    //         height: componentMeta.defaultSize.height,
+    //       },
+    //     },
+    //   },
+    // });
+  }
+
   const [, drop] = useDrop(
     () => ({
       accept: ItemTypes.BOX,
@@ -155,6 +256,7 @@ export const SubContainer = ({
         // Component already exists and this is just a reposition event
         if (id) {
           const delta = monitor.getDifferenceFromInitialOffset();
+
           componentData = item.component;
           left = Math.round(convertXFromPercentage(currentLayoutOptions.left, canvasBoundingRect.width) + delta.x);
           top = Math.round(currentLayoutOptions.top + delta.y);
