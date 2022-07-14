@@ -656,7 +656,7 @@ export const widgets = [
         ],
       },
     ],
-    exposedVariables: {},
+    exposedVariables: { value: true },
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
