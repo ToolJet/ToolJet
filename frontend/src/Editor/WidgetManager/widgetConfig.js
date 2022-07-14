@@ -336,6 +336,16 @@ export const widgets = [
     exposedVariables: {
       show: false,
     },
+    actions: [
+      {
+        handle: 'open',
+        displayName: 'Open',
+      },
+      {
+        handle: 'close',
+        displayName: 'Close',
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
