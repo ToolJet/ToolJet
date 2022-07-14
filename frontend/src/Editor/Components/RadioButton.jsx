@@ -9,6 +9,7 @@ export const RadioButton = function RadioButton({
   fireEvent,
   exposedVariables,
   setExposedVariable,
+  registerAction,
 }) {
   const { label, value, values, display_values } = properties;
   const { visibility, disabledState, textColor, activeColor } = styles;
@@ -32,6 +33,10 @@ export const RadioButton = function RadioButton({
     setExposedVariable('value', value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+
+  registerAction('selectOption', async function (option) {
+    onSelect(option);
+  });
 
   return (
     <div data-disabled={disabledState} className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>

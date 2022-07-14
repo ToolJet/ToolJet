@@ -1159,7 +1159,29 @@ button {
   color: #4d72fa;
   cursor: pointer;
 }
+.fx-container-eventmanager{
+  position: relative;
+}
+.fx-container-eventmanager  * .fx-outer-wrapper{
+  position: absolute !important;
+  top: 7px !important;
+  right: -26px;
+}
+// targeting select component library class 
 
+.component-action-select *.css-1nfapid-container
+{
+  width: 184px !important;
+}
+
+.fx-container-eventmanager  *.fx-common{
+  top: 6px !important;
+  right: -34px;
+}
+.fx-container-eventmanager-code
+{
+  padding-right: 15px !important;
+}
 .unselectable {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -1891,6 +1913,16 @@ th:focus,
 tr:focus {
   outline: none !important;
   box-shadow: none;
+}
+
+.show-password-field {
+  width: fit-content;
+  .form-check-input {
+    cursor: pointer;
+  }
+  .show-password-label {
+    cursor: pointer;
+  }
 }
 
 // .jet-container {
@@ -3190,6 +3222,27 @@ input:focus-visible {
   }
 
   .org-users-page {
+    .select-search__option.is-selected {
+      background: $primary;
+      color: $white;
+    }
+    .select-search__option:not(.is-selected):hover {
+      background: rgba(66, 153, 225, 0.1);
+    }
+  }
+
+  .org-variables-page {
+    .user-email,
+    .user-status {
+      filter: brightness(0) invert(1);
+    }
+
+    .btn-org-env {
+      background: transparent;
+    }
+  }
+
+  .org-variables-page {
     .select-search__option.is-selected {
       background: $primary;
       color: $white;
@@ -5137,6 +5190,9 @@ div#driver-page-overlay {
   .json-tree-node-null {
     color: red;
   }
+  .json-tree-node-date {
+    color: rgb(98, 107, 103);
+  }
 
   .group-border {
     border-left: 0.5px solid #dadcde;
@@ -5381,9 +5437,23 @@ div#driver-page-overlay {
   }
 }
 
+.org-variables-page{
+  .btn-org-env {
+    width: 36px;
+  }
+  
+  .encryption-input {
+    width: fit-content;
+  }
+
+  .no-vars-text {    
+    display: block;
+    text-align: center;
+    margin-top: 100px;
+  }
+}
 
 //Kanban board
-
 .kanban-container.dark-themed {
   background-color: $bg-dark-light !important;
   .kanban-column {
@@ -5503,6 +5573,13 @@ div#driver-page-overlay {
 }
 .flexer{
   display: flex;
+}
+.flexer-sso-input{
+  display: flex;
+  justify-content: space-between;
+  p{
+    margin-bottom: 0 !important;
+  }
 }
 .sso-copy{
   margin-left: 10px;
@@ -5626,3 +5703,24 @@ a.step-item-disabled {
   color: var(--textColor) !important;;
 }
 // steps-widget end
+
+// profile-settings css
+.confirm-input {
+  padding-right: 8px !important;
+
+.user-group-actions {
+  display: flex;
+  gap: 8px;
+}
+
+input.hide-input-arrows{
+  -moz-appearance: none;
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button{
+    -webkit-appearance: none;
+  }
+}
+
+.btn-org-env {
+  width: 36px;
+}
