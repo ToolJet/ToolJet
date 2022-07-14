@@ -91,7 +91,7 @@ export const Multiselect = function Multiselect({
     ).then(() => fireEvent('onSelect'));
   });
   registerAction('clearSelections', async function () {
-    onChangeHandler([]);
+    setSelected([]);
   });
 
   return (
