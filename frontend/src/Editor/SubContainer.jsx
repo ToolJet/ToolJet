@@ -10,15 +10,7 @@ import { componentTypes } from './WidgetManager/components';
 import { computeComponentName } from '@/_helpers/utils';
 import produce from 'immer';
 import _ from 'lodash';
-
-//hook to check props when mounted
-const useMounted = () => {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  return mounted;
-};
+import { useMounted } from '@/_hooks/use-mounted';
 
 export const SubContainer = ({
   mode,
@@ -51,6 +43,7 @@ export const SubContainer = ({
   exposedVariables,
   defaultChildComponents = [],
 }) => {
+  const mounted = useMounted();
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
 
   useEffect(() => {
@@ -81,8 +74,6 @@ export const SubContainer = ({
   useEffect(() => {
     setBoxes(allComponents);
   }, [allComponents]);
-
-  const mounted = useMounted();
 
   useEffect(() => {
     if (mounted) {
@@ -123,9 +114,8 @@ export const SubContainer = ({
         });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
-
-  console.log('child boxes', boxes);
 
   const moveBox = useCallback(
     (id, left, top) => {
@@ -189,52 +179,6 @@ export const SubContainer = ({
 
   function convertXFromPercentage(x, canvasWidth) {
     return (x * canvasWidth) / 100;
-  }
-
-  function addChildComponent(childComponent) {
-    // const componentMeta = componentTypes.find(
-    //   (component) => component.component === childComponent.component.component
-    // );
-    // const componentData = JSON.parse(JSON.stringify(componentMeta));
-    // componentData.name = computeComponentName(componentData.component, boxes);
-
-    console.log(
-      'from Subcontainer layer ==>',
-      childComponent
-      // JSON.stringify(componentMeta),
-      // 'data =>',
-      // JSON.stringify(componentData)
-    );
-
-    // const offsetFromTopOfWindow = canvasBoundingRect.top;
-    // const offsetFromLeftOfWindow = canvasBoundingRect.left;
-    // const currentOffset = monitor.getSourceClientOffset();
-    // const initialClientOffset = monitor.getInitialClientOffset();
-    // const delta = monitor.getDifferenceFromInitialOffset();
-
-    // const left = Math.round(currentOffset?.x + currentOffset?.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
-    // const top = Math.round(
-    //   initialClientOffset?.y - 10 + delta.y + initialClientOffset?.y * (1 - zoomLevel) - offsetFromTopOfWindow
-    // );
-
-    // const id = uuidv4();
-    // const width = (componentMeta.defaultSize.width * 100) / 43;
-
-    // setBoxes({
-    //   ...boxes,
-    //   [id]: {
-    //     component: componentData,
-    //     parent: parentRef.current.id,
-    //     layouts: {
-    //       [childComponent.currentLayout]: {
-    //         top: top,
-    //         left: left,
-    //         width: width,
-    //         height: componentMeta.defaultSize.height,
-    //       },
-    //     },
-    //   },
-    // });
   }
 
   const [, drop] = useDrop(
