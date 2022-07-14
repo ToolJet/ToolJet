@@ -22,7 +22,7 @@ export const DropDown = function DropDown({
 
   registerAction('selectOption', async function (value) {
     setCurrentValue(value);
-    setExposedVariable('value', value);
+    setExposedVariable('value', value).then(fireEvent('onSelect'));
   });
 
   if (!_.isArray(values)) {
