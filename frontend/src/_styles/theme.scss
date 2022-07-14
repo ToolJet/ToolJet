@@ -5704,6 +5704,15 @@ a.step-item-disabled {
 }
 // steps-widget end
 
+// profile-settings css
+.confirm-input {
+  padding-right: 8px !important;
+
+.user-group-actions {
+  display: flex;
+  gap: 8px;
+}
+
 input.hide-input-arrows{
   -moz-appearance: none;
   &::-webkit-outer-spin-button,

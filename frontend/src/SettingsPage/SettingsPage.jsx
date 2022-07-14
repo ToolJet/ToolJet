@@ -10,9 +10,11 @@ function SettingsPage(props) {
   const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
   const [currentpassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
   const [updateInProgress, setUpdateInProgress] = React.useState(false);
   const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState(null);
+  const focusRef = React.useRef(null);
 
   const updateDetails = async () => {
     if (!firstName || !lastName) {
@@ -45,15 +47,28 @@ function SettingsPage(props) {
 
   const changePassword = async () => {
     setPasswordChangeInProgress(true);
-    try {
-      await userService.changePassword(currentpassword, newPassword);
-      toast.success('Password updated successfully', {
-        duration: 3000,
-      });
-      setCurrentPassword('');
-      setNewPassword('');
-    } catch (error) {
-      toast.error('Please verify that you have entered the correct password', {
+    if (currentpassword) {
+      if (newPassword === confirmPassword) {
+        try {
+          await userService.changePassword(currentpassword, newPassword);
+          toast.success('Password updated successfully', {
+            duration: 3000,
+          });
+          setCurrentPassword('');
+          setNewPassword('');
+          setConfirmPassword('');
+        } catch (error) {
+          toast.error('Please verify that you have entered the correct password', {
+            duration: 3000,
+          });
+        }
+      } else {
+        toast.error('New password and confirm password are not matching', {
+          duration: 3000,
+        });
+      }
+    } else {
+      toast.error('Please verify that you have entered the current password', {
         duration: 3000,
       });
     }
@@ -61,6 +76,12 @@ function SettingsPage(props) {
   };
 
   const newPasswordKeyPressHandler = async (event) => {
+    if (event.key === 'Enter') {
+      await focusRef.current.focus();
+    }
+  };
+
+  const confirmPasswordKeyPressHandler = async (event) => {
     if (event.key === 'Enter') {
       await changePassword();
     }
@@ -218,6 +239,24 @@ function SettingsPage(props) {
                         data-cy="new-password-input"
                       />
                     </div>
+                  </div>
+                </div>
+                <div className="w-50 confirm-input">
+                  <div className="mb-3">
+                    <label className="form-label" data-cy="new-password-label">
+                      Confirm new password
+                    </label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      name="last-name"
+                      placeholder="Confirm new password"
+                      value={confirmPassword}
+                      ref={focusRef}
+                      onChange={(event) => setConfirmPassword(event.target.value)}
+                      onKeyPress={confirmPasswordKeyPressHandler}
+                      data-cy="new-password-input"
+                    />
                   </div>
                 </div>
                 <a
