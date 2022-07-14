@@ -1794,8 +1794,9 @@ export const widgets = [
       },
       properties: {
         data: {
-          value: `{{[{"image":{"source":"https://picsum.photos/200/300"},"text":{"text":"Hello 1"},"button":{"text":"btn"} 
-},{"image":{"source":"https://picsum.photos/200/300"},"text":{"text":"Hello 2"},"button":{"text":"btn2"}
+          value: `{{[{"image":{"source":"https://www.svgrepo.com/show/34217/image.svg"},"text":{"text":"Row one"},"button":{"text":"Button 1"} 
+},{"image":{"source":"https://www.svgrepo.com/show/34217/image.svg"},"text":{"text":"Row two"},"button":{"text":"Button 2"}
+},{"image":{"source":"https://www.svgrepo.com/show/34217/image.svg"},"text": {"text":"Row three"}, "button":{"text":"Button 3"}
 }]}}`,
         },
         rowHeight: {
