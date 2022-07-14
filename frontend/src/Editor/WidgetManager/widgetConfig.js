@@ -2616,7 +2616,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' },
+      label: { type: 'code', displayName: 'Title' },
       data: { type: 'code', displayName: 'Structure' },
       checkedData: { type: 'code', displayName: 'Checked Values' },
       expandedData: { type: 'code', displayName: 'Expanded Values' },

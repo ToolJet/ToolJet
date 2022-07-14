@@ -9,14 +9,16 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
   const [checked, setChecked] = useState(checkedData);
   const [expanded, setExpanded] = useState(expandedData);
 
+  let pathObj = {};
+
   useEffect(() => {
-    setExposedVariable('checked', checkedData);
-    setChecked(checkedData);
-    const arr = [];
+    const checkedArr = [],
+      checkedPathArray = [],
+      checkedPathString = [];
     const updateCheckedArr = (array = [], selected, isSelected = false) => {
       array.forEach((node) => {
         if (isSelected || selected.includes(node.value)) {
-          arr.push(node.value);
+          checkedArr.push(node.value);
           updateCheckedArr(node.children, selected, true);
         } else {
           updateCheckedArr(node.children, selected);
@@ -24,7 +26,14 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
       });
     };
     updateCheckedArr(data, checkedData);
-    setChecked(arr);
+    setChecked(checkedArr);
+    setExposedVariable('checked', checkedArr);
+    checkedArr.forEach((item) => {
+      checkedPathArray.push(pathObj[item]);
+      checkedPathString.push(pathObj[item].join('-'));
+    });
+    setExposedVariable('checkedPathArray', checkedPathArray);
+    setExposedVariable('checkedPathStrings', checkedPathString);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(checkedData), JSON.stringify(data)]);
 
@@ -34,13 +43,13 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(expandedData)]);
 
-  const pathObj = useMemo(() => {
+  pathObj = useMemo(() => {
     let nodePath = {};
-    function checkedPath(n, arr = []) {
-      for (let i = 0; i < n.length; i++) {
-        nodePath[n[i].value] = [...arr, n[i].value];
-        if (n[i]?.children?.length > 0) {
-          checkedPath(n[i].children, [...arr, n[i].value]);
+    function checkedPath(nodes, arr = []) {
+      for (const node of nodes) {
+        nodePath[node.value] = [...arr, node.value];
+        if (node?.children?.length > 0) {
+          checkedPath(node.children, [...arr, node.value]);
         }
       }
     }
@@ -56,7 +65,7 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
       checkedPathString.push(pathObj[item].join('-'));
     });
     setExposedVariable('checkedPathArray', checkedPathArray);
-    setExposedVariable('checkedPathString', checkedPathString);
+    setExposedVariable('checkedPathStrings', checkedPathString);
     setExposedVariable('checked', checked).then(() => {
       updatedNode.checked ? fireEvent('onCheck') : fireEvent('onUnCheck');
       fireEvent('onChange');
