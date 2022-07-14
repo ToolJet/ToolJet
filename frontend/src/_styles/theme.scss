@@ -5736,3 +5736,23 @@ a.step-item-disabled {
     }
   }
 }
+
+.separator-bottom {
+  .separator {
+    width: 100%;
+
+    h2 {
+      width: 100%; 
+      text-align: center; 
+      border-bottom: 1px solid $primary; 
+      line-height: 0.1em;
+      margin: 10px 0 20px; 
+    } 
+    
+    h2 span { 
+      color: $primary;
+      background:#fff; 
+      padding:0 10px; 
+    }
+  }
+}

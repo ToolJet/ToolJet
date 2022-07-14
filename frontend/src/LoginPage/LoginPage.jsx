@@ -6,6 +6,7 @@ import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
+import { ShowLoading } from '@/_components';
 
 class LoginPage extends React.Component {
   constructor(props) {
@@ -134,22 +135,6 @@ class LoginPage extends React.Component {
     this.setState({ isLoading: false });
   };
 
-  showLoading = () => {
-    return (
-      <div className="card-body">
-        <div className="skeleton-heading"></div>
-        <div className="skeleton-line"></div>
-        <div className="skeleton-line"></div>
-        <div className="skeleton-line"></div>
-        <div className="mb-2"></div>
-        <div className="skeleton-heading"></div>
-        <div className="skeleton-line"></div>
-        <div className="skeleton-line"></div>
-        <div className="skeleton-line"></div>
-      </div>
-    );
-  };
-
   render() {
     const { isLoading, configs, isGettingConfigs } = this.state;
     return (
@@ -162,7 +147,7 @@ class LoginPage extends React.Component {
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
             {isGettingConfigs ? (
-              this.showLoading()
+              <ShowLoading />
             ) : (
               <div className="card-body">
                 {!configs && <div className="text-center">No login methods enabled for this workspace</div>}

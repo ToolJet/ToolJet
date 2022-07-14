@@ -263,11 +263,11 @@ export class OrganizationsService {
       }
       return result;
     }
-    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name);
+    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name, result?.enableSignUp);
   }
 
-  private hideSSOSensitiveData(ssoConfigs: DeepPartial<SSOConfigs>[], organizationName): any {
-    const configs = { name: organizationName };
+  private hideSSOSensitiveData(ssoConfigs: DeepPartial<SSOConfigs>[], organizationName, enableSignUp): any {
+    const configs = { name: organizationName, enableSignUp };
     if (ssoConfigs?.length > 0) {
       for (const config of ssoConfigs) {
         const configId = config['id'];
@@ -437,7 +437,7 @@ export class OrganizationsService {
           user.email,
           user.firstName,
           user.invitationToken,
-          organizationUser.invitationToken,
+          `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
           currentOrganization.name,
           `${currentUser.firstName} ${currentUser.lastName}`
         )

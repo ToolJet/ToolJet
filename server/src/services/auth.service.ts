@@ -373,7 +373,7 @@ export class AuthService {
           user.email,
           `${user.firstName} ${user.lastName}`,
           user.invitationToken,
-          organizationUser.invitationToken
+          `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`
         )
         .catch((err) => console.error('Error while sending welcome mail', err));
       throw new UnauthorizedException(

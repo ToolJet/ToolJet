@@ -166,6 +166,7 @@ class App extends React.Component {
                     state: {
                       token: props.match.params.token,
                       organizationToken: props.match.params.organizationToken,
+                      search: props.location.search,
                     },
                   }}
                 />
