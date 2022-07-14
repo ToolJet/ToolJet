@@ -5,7 +5,6 @@ export class modalProperties1656061763136 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
     const appVersions = await entityManager.find(AppVersion);
-
     for (const version of appVersions) {
       const definition = version['definition'];
 
