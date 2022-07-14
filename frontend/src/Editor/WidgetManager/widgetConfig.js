@@ -117,7 +117,7 @@ export const widgets = [
       },
       {
         handle: 'selectRowByIndex ',
-        displayName: 'Select row by index ',
+        displayName: 'Select row by index',
         params: [
           {
             handle: 'index',
@@ -125,6 +125,20 @@ export const widgets = [
             defaultValue: '0',
           },
         ],
+      },
+      {
+        handle: 'setData ',
+        displayName: 'Set data',
+        params: [
+          {
+            handle: 'data',
+            displayName: 'Data',
+          },
+        ],
+      },
+      {
+        handle: 'clear ',
+        displayName: 'Clear data',
       },
     ],
     definition: {

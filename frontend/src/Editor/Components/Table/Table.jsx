@@ -594,14 +594,14 @@ export function Table({
     };
   });
 
-  let tableData = [];
-  if (currentState) {
-    tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
-    if (!Array.isArray(tableData)) tableData = [];
-    console.log('resolved param', tableData);
-  }
-
-  tableData = tableData || [];
+  const [tableData, setTableData] = useState([]);
+  useEffect(() => {
+    if (currentState) {
+      setTableData(resolveReferences(component.definition.properties.data.value, currentState, []));
+      if (!Array.isArray(tableData)) setTableData([]);
+      console.log('resolved param', tableData);
+    }
+  }, [component.definition.properties.data.value]);
 
   const leftActions = () => actions.value.filter((action) => action.position === 'left');
   const rightActions = () => actions.value.filter((action) => [undefined, 'right'].includes(action.position));
@@ -804,7 +804,7 @@ export function Table({
         ]);
     }
   );
-
+  const [pageCopy, setPageCopy] = useState(page);
   registerAction(
     'setPage',
     async function (targetPageIndex) {
@@ -832,15 +832,26 @@ export function Table({
     });
     onEvent('onRowClicked', { component, data: original, rowId: rowId });
   });
+  console.log('state outside', tableData, page);
 
   registerAction('selectRowByIndex', async function (index) {
+    // setTableData(())
     const rowId = page?.[index]?.id;
     const original = page?.[index]?.original;
+    console.log('state inside', page, tableData, componentState);
 
     setcomponentState((prevState) => {
       return { ...prevState, selectedRow: original, selectedRowId: rowId };
     });
     onEvent('onRowClicked', { component, data: original, rowId: rowId });
+  });
+
+  registerAction('clear', async function () {
+    setTableData([]);
+  });
+
+  registerAction('setData', async function (data) {
+    setTableData(data);
   });
 
   useEffect(() => {
