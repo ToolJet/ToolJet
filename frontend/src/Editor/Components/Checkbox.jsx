@@ -32,12 +32,8 @@ export const Checkbox = function Checkbox({
   }, [defaultValueFromProperties]);
 
   registerAction('setChecked', async function (status) {
+    setExposedVariable('value', status).then(() => (status ? fireEvent('onCheck') : fireEvent('onUnCheck')));
     setChecked(status);
-    if (status) {
-      fireEvent('onCheck');
-    } else {
-      fireEvent('onUnCheck');
-    }
   });
 
   return (
