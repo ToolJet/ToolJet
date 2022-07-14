@@ -54,7 +54,6 @@ function SettingsPage(props) {
   };
 
   const changePassword = async () => {
-    setPasswordChangeInProgress(true);
     const errorMsg =
       (currentpassword.match(/^ *$/) !== null && 'Current password') ||
       (newPassword.match(/^ *$/) !== null && 'New password') ||
@@ -64,24 +63,22 @@ function SettingsPage(props) {
       toast.error(errorMsg + " can't be empty!", {
         duration: 3000,
       });
-      setPasswordChangeInProgress(false);
       return;
     }
     if (currentpassword === newPassword) {
       toast.error("New password can't be the same as the current one!", {
         duration: 3000,
       });
-      setPasswordChangeInProgress(false);
       return;
     }
     if (newPassword !== confirmPassword) {
       toast.error('New password and confirm new password should be same', {
         duration: 3000,
       });
-      setPasswordChangeInProgress(false);
       return;
     }
 
+    setPasswordChangeInProgress(true);
     try {
       await userService.changePassword(currentpassword, newPassword);
       toast.success('Password updated successfully', {
