@@ -20,11 +20,6 @@ export const DropDown = function DropDown({
   const [currentValue, setCurrentValue] = useState(() => value);
   const { value: exposedValue } = exposedVariables;
 
-  registerAction('selectOption', async function (value) {
-    setCurrentValue(value);
-    setExposedVariable('value', value).then(fireEvent('onSelect'));
-  });
-
   if (!_.isArray(values)) {
     values = [];
   }
@@ -40,7 +35,22 @@ export const DropDown = function DropDown({
   } catch (err) {
     console.log(err);
   }
-
+  registerAction('selectOption', async function (value) {
+    let isValueIsPresentInSelectedOptions = selectOptions.reduce((acc, cv) => {
+      if (cv.value === value) {
+        acc = true;
+      } else {
+        acc = false;
+      }
+      return acc;
+    }, false);
+    if (isValueIsPresentInSelectedOptions) {
+      setCurrentValue(value);
+      setExposedVariable('value', value).then(fireEvent('onSelect'));
+    } else {
+      setExposedVariable('value', undefined).then(fireEvent('onSelect'));
+    }
+  });
   const validationData = validate(value);
   const { isValid, validationError } = validationData;
 
