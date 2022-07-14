@@ -139,6 +139,7 @@ export const JSONNode = ({ data, ...restProps }) => {
     case 'Null':
     case 'Undefined':
     case 'Function':
+    case 'Date':
       $VALUE = <JSONNodeValue data={data} type={typeofCurrentNode} />;
       $NODEType = <JSONNode.DisplayNodeLabel type={typeofCurrentNode} />;
       break;

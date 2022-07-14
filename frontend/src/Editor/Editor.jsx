@@ -34,6 +34,7 @@ import {
   setStateAsync,
   computeComponentState,
   getSvgIcon,
+  cloneComponents,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -623,6 +624,8 @@ class Editor extends React.Component {
         skipAutoSave: this.isVersionReleased(),
       });
       this.handleInspectorView();
+    } else if (this.isVersionReleased()) {
+      this.setState({ showCreateVersionModalPrompt: true });
     }
   };
 
@@ -655,6 +658,8 @@ class Editor extends React.Component {
         skipAutoSave: this.isVersionReleased(),
       });
       this.handleInspectorView();
+    } else {
+      this.setState({ showCreateVersionModalPrompt: true });
     }
   };
 
@@ -726,14 +731,10 @@ class Editor extends React.Component {
     this.appDefinitionChanged(appDefinition);
   };
 
-  cloneComponent = (newComponent) => {
-    const appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
+  copyComponents = () => cloneComponents(this, this.appDefinitionChanged, false);
 
-    newComponent.component.name = computeComponentName(newComponent.component.component, appDefinition.components);
+  cloneComponents = () => cloneComponents(this, this.appDefinitionChanged, true);
 
-    appDefinition.components[newComponent.id] = newComponent;
-    this.appDefinitionChanged(appDefinition);
-  };
   decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
   globalSettingsChanged = (key, value) => {
@@ -1524,6 +1525,8 @@ class Editor extends React.Component {
                             runQuery={this.runQuery}
                             dataSourceModalHandler={this.dataSourceModalHandler}
                             setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
+                            appDefinition={appDefinition}
+                            editorState={this}
                           />
                         </div>
                       </div>
@@ -1588,6 +1591,8 @@ class Editor extends React.Component {
 
               <EditorKeyHooks
                 moveComponents={this.moveComponents}
+                cloneComponents={this.cloneComponents}
+                copyComponents={this.copyComponents}
                 handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
                 removeMultipleComponents={this.removeComponents}
               />
@@ -1598,7 +1603,6 @@ class Editor extends React.Component {
                   !isEmpty(appDefinition.components) &&
                   !isEmpty(appDefinition.components[selectedComponents[0].id]) ? (
                     <Inspector
-                      cloneComponent={this.cloneComponent}
                       moveComponents={this.moveComponents}
                       componentDefinitionChanged={this.componentDefinitionChanged}
                       dataQueries={dataQueries}

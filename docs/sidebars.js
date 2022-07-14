@@ -55,6 +55,7 @@ const sidebars = {
         'tutorial/manage-users-groups',
         'tutorial/keyboard-shortcuts',
         'tutorial/multiworkspace',
+        'tutorial/organization-environment-variables'
       ],
     },
     {
@@ -172,6 +173,7 @@ const sidebars = {
         keywords: ['how to'],
       },
       items: [
+        'how-to/run-actions-from-runjs',
         'how-to/bulk-update-multiple-rows',
         'how-to/access-cellvalue-rowdata',
         'how-to/oauth2-authorization',
@@ -218,9 +220,10 @@ const sidebars = {
           },
           collapsed: false,
           items: [
-            'user-authentication/sso/setup',
-            'user-authentication/sso/okta',
-            'user-authentication/sso/azuread',
+            'user-authentication/sso/openid/setup',
+            'user-authentication/sso/openid/azuread',
+            'user-authentication/sso/openid/okta',
+            'user-authentication/sso/openid/google-openid',
           ],
         }
           ],

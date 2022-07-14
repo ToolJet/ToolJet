@@ -4,6 +4,8 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import useDraggableInPortal from '@/_hooks/useDraggableInPortal';
 import _ from 'lodash';
 import { componentTypes } from '../WidgetManager/components';
 import Select from '@/_ui/Select';
@@ -603,62 +605,156 @@ export const EventManager = ({
     );
   }
 
-  function renderHandlers(events) {
-    return events.map((event, index) => {
-      const actionMeta = ActionTypes.find((action) => action.id === event.actionId);
-      const rowClassName = `row g-0 border-bottom pb-2 pt-2 px-2 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
+  const reorderEvents = (startIndex, endIndex) => {
+    const result = [...component.component.definition.events];
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    eventsChanged(result, true);
+  };
 
-      return (
-        <div key={index}>
-          <OverlayTrigger
-            trigger="click"
-            placement={popoverPlacement || 'left'}
-            rootClose={true}
-            overlay={eventPopover(event, index)}
-            onHide={() => setFocusedEventIndex(null)}
-            onToggle={(showing) => {
-              if (showing) {
-                setFocusedEventIndex(index);
-              } else {
-                setFocusedEventIndex(null);
-              }
-              if (typeof popOverCallback === 'function') popOverCallback(showing);
-            }}
-          >
-            <div className="card mb-1">
-              <div className="card-body p-0" data-cy="event-handler-card">
-                <div className={rowClassName} role="button">
-                  <div className="col" data-cy="event-handler">
-                    {componentMeta.events[event.eventId]['displayName']}
-                  </div>
-                  <div className="col" data-cy="event-name">
-                    <small className="event-action font-weight-light">{actionMeta.name}</small>
-                  </div>
-                  <div className="col-auto">
-                    <span
-                      className="text-danger"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeHandler(index);
-                      }}
-                      data-cy="delete-button"
-                    >
-                      <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          d="M0 13.8333C0 14.75 0.75 15.5 1.66667 15.5H8.33333C9.25 15.5 10 14.75 10 13.8333V3.83333H0V13.8333ZM1.66667 5.5H8.33333V13.8333H1.66667V5.5ZM7.91667 1.33333L7.08333 0.5H2.91667L2.08333 1.33333H0V3H10V1.33333H7.91667Z"
-                          fill="#8092AC"
-                        />
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-              </div>
+  const onDragEnd = ({ source, destination }) => {
+    if (!destination || source?.index === destination?.index) {
+      return;
+    }
+    reorderEvents(source.index, destination.index);
+  };
+
+  const renderDraggable = useDraggableInPortal();
+
+  const renderHandlers = (events) => {
+    return (
+      <DragDropContext
+        onDragEnd={(result) => {
+          onDragEnd(result);
+        }}
+        className="w-100"
+      >
+        <Droppable droppableId="droppable">
+          {({ innerRef, droppableProps, placeholder }) => (
+            <div {...droppableProps} ref={innerRef}>
+              {events.map((event, index) => {
+                const actionMeta = ActionTypes.find((action) => action.id === event.actionId);
+                const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
+                return (
+                  <Draggable key={`${event.eventId}-${index}`} draggableId={`${event.eventId}-${index}`} index={index}>
+                    {renderDraggable((provided, snapshot) => {
+                      if (snapshot.isDragging && focusedEventIndex !== null) {
+                        setFocusedEventIndex(null);
+                        document.body.click(); // Hack: Close overlay while dragging
+                      }
+                      return (
+                        <OverlayTrigger
+                          trigger="click"
+                          placement={popoverPlacement || 'left'}
+                          rootClose={true}
+                          overlay={eventPopover(event, index)}
+                          onHide={() => setFocusedEventIndex(null)}
+                          onToggle={(showing) => {
+                            if (showing) {
+                              setFocusedEventIndex(index);
+                            } else {
+                              setFocusedEventIndex(null);
+                            }
+                            if (typeof popOverCallback === 'function') popOverCallback(showing);
+                          }}
+                        >
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className="mb-1"
+                          >
+                            <div className="card column-sort-row">
+                              <div className={rowClassName} data-cy="event-handler-card">
+                                <div className="row p-2" role="button">
+                                  <div className="col-auto" style={{ cursor: 'grab' }}>
+                                    <svg
+                                      width="8"
+                                      height="14"
+                                      viewBox="0 0 8 14"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M0.666667 1.66667C0.666667 2.03486 0.965143 2.33333 1.33333 2.33333C1.70152 2.33333 2 2.03486 2 1.66667C2 1.29848 1.70152 1 1.33333 1C0.965143 1 0.666667 1.29848 0.666667 1.66667Z"
+                                        stroke="#8092AC"
+                                        strokeWidth="1.33333"
+                                      />
+                                      <path
+                                        d="M5.99992 1.66667C5.99992 2.03486 6.2984 2.33333 6.66659 2.33333C7.03478 2.33333 7.33325 2.03486 7.33325 1.66667C7.33325 1.29848 7.03478 1 6.66659 1C6.2984 1 5.99992 1.29848 5.99992 1.66667Z"
+                                        stroke="#8092AC"
+                                        strokeWidth="1.33333"
+                                      />
+                                      <path
+                                        d="M0.666667 7.00001C0.666667 7.3682 0.965143 7.66668 1.33333 7.66668C1.70152 7.66668 2 7.3682 2 7.00001C2 6.63182 1.70152 6.33334 1.33333 6.33334C0.965143 6.33334 0.666667 6.63182 0.666667 7.00001Z"
+                                        stroke="#8092AC"
+                                        strokeWidth="1.33333"
+                                      />
+                                      <path
+                                        d="M5.99992 7.00001C5.99992 7.3682 6.2984 7.66668 6.66659 7.66668C7.03478 7.66668 7.33325 7.3682 7.33325 7.00001C7.33325 6.63182 7.03478 6.33334 6.66659 6.33334C6.2984 6.33334 5.99992 6.63182 5.99992 7.00001Z"
+                                        stroke="#8092AC"
+                                        strokeWidth="1.33333"
+                                      />
+                                      <path
+                                        d="M0.666667 12.3333C0.666667 12.7015 0.965143 13 1.33333 13C1.70152 13 2 12.7015 2 12.3333C2 11.9651 1.70152 11.6667 1.33333 11.6667C0.965143 11.6667 0.666667 11.9651 0.666667 12.3333Z"
+                                        stroke="#8092AC"
+                                        strokeWidth="1.33333"
+                                      />
+                                      <path
+                                        d="M5.99992 12.3333C5.99992 12.7015 6.2984 13 6.66659 13C7.03478 13 7.33325 12.7015 7.33325 12.3333C7.33325 11.9651 7.03478 11.6667 6.66659 11.6667C6.2984 11.6667 5.99992 11.9651 5.99992 12.3333Z"
+                                        stroke="#8092AC"
+                                        strokeWidth="1.33333"
+                                      />
+                                    </svg>
+                                  </div>
+                                  <div className="col text-truncate" data-cy="event-handler">
+                                    {componentMeta.events[event.eventId]['displayName']}
+                                  </div>
+                                  <div className="col text-truncate" data-cy="event-name">
+                                    <small className="event-action font-weight-light text-truncate">
+                                      {actionMeta.name}
+                                    </small>
+                                  </div>
+                                  <div className="col-auto">
+                                    <span
+                                      className="text-danger"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeHandler(index);
+                                      }}
+                                      data-cy="delete-button"
+                                    >
+                                      <svg
+                                        width="10"
+                                        height="16"
+                                        viewBox="0 0 10 16"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path
+                                          d="M0 13.8333C0 14.75 0.75 15.5 1.66667 15.5H8.33333C9.25 15.5 10 14.75 10 13.8333V3.83333H0V13.8333ZM1.66667 5.5H8.33333V13.8333H1.66667V5.5ZM7.91667 1.33333L7.08333 0.5H2.91667L2.08333 1.33333H0V3H10V1.33333H7.91667Z"
+                                          fill="#8092AC"
+                                        />
+                                      </svg>
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </OverlayTrigger>
+                      );
+                    })}
+                  </Draggable>
+                );
+              })}
+              {placeholder}
             </div>
-          </OverlayTrigger>
-        </div>
-      );
-    });
-  }
+          )}
+        </Droppable>
+      </DragDropContext>
+    );
+  };
 
   const events = component.component.definition.events || [];
   const componentName = componentMeta.name ? componentMeta.name : 'query';
