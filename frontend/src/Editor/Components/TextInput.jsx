@@ -24,11 +24,11 @@ export const TextInput = function TextInput({
 
   registerAction('setText', async function (text) {
     setValue(text);
-    setExposedVariable('value', text);
+    setExposedVariable('value', text).then(fireEvent('onChange'));
   });
   registerAction('clear', async function () {
     setValue('');
-    setExposedVariable('value', '');
+    setExposedVariable('value', '').then(fireEvent('onChange'));
   });
 
   return (
