@@ -86,7 +86,10 @@ export const Tabs = function Tabs({
   }
 
   registerAction('setTab', async function (id) {
-    id && setCurrentTab(id);
+    if (id) {
+      setCurrentTab(id);
+      setExposedVariable('currentTab', id).then(() => fireEvent('onTabSwitch'));
+    }
   });
 
   return (
