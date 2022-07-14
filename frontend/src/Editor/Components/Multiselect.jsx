@@ -74,6 +74,10 @@ export const Multiselect = function Multiselect({
 
   registerAction('selectOption', async function (value) {
     setSelected((prevSelected) => [...prevSelected, ...selectOptions.filter((option) => option.value === value)]);
+    setExposedVariable(
+      'values',
+      selected.map((item) => item.value)
+    ).then(() => fireEvent('onSelect'));
   });
   registerAction('deselectOption', async function (value) {
     setSelected((prevSelected) => [
@@ -81,17 +85,14 @@ export const Multiselect = function Multiselect({
         return item.value !== value;
       }),
     ]);
-  });
-  registerAction('clearSelections', async function () {
-    onChangeHandler([]);
-  });
-  useEffect(() => {
     setExposedVariable(
       'values',
       selected.map((item) => item.value)
     ).then(() => fireEvent('onSelect'));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(selected)]);
+  });
+  registerAction('clearSelections', async function () {
+    onChangeHandler([]);
+  });
 
   return (
     <div
