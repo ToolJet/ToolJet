@@ -185,9 +185,9 @@ export const widgets = [
         displayName: 'Click',
       },
       {
-        handle: 'setLabel',
-        displayName: 'Set label',
-        params: [{ handle: 'label', displayName: 'Label', defaultValue: 'New label' }],
+        handle: 'setText',
+        displayName: 'Set Text',
+        params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
       },
     ],
     definition: {
@@ -644,6 +644,18 @@ export const widgets = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
+    actions: [
+      {
+        handle: 'selectOption',
+        displayName: 'Select Option',
+        params: [
+          {
+            handle: 'option',
+            displayName: 'Option',
+          },
+        ],
+      },
+    ],
     exposedVariables: {},
     definition: {
       others: {
@@ -740,6 +752,17 @@ export const widgets = [
       value:
         'ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀',
     },
+    actions: [
+      {
+        handle: 'setText',
+        displayName: 'Set Text',
+        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
+      },
+      {
+        handle: 'clear',
+        displayName: 'Clear',
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
