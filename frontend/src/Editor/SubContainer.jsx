@@ -71,6 +71,9 @@ export const SubContainer = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 
+  //Todo add custom resolve vars for other widgets too
+  const customResolverVariable = parentComponent?.component === 'Listview' ? 'listItem' : 'item';
+
   useEffect(() => {
     setBoxes(allComponents);
   }, [allComponents]);
@@ -86,7 +89,8 @@ export const SubContainer = ({
         //if no children, add a default child
         const childrenBoxes = {};
         defaultChildComponents.forEach((child) => {
-          const { componentName, layout, incrementWidth } = child;
+          const { componentName, layout, incrementWidth, properties } = child;
+
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
           const componentId = uuidv4();
@@ -94,6 +98,17 @@ export const SubContainer = ({
 
           const width = (componentMeta.defaultSize.width * 100) / 43;
           const height = componentMeta.defaultSize.height;
+          const newComponentDefinition = {
+            ...componentData.definition.properties,
+          };
+
+          properties.forEach((prop) => {
+            _.set(newComponentDefinition, prop, {
+              value: `{{${customResolverVariable}.${componentName.toLowerCase()}.${prop}}}`,
+            });
+          });
+
+          _.set(componentData, 'definition.properties', newComponentDefinition);
 
           _.set(childrenBoxes, componentId, {
             component: componentData,

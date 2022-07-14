@@ -1794,7 +1794,9 @@ export const widgets = [
       },
       properties: {
         data: {
-          value: '{{ [1,2,3,4] }}',
+          value: `{{[{"image":{"source":"https://picsum.photos/200/300"},"text":{"text":"Hello 1"},"button":{"text":"btn"} 
+},{"image":{"source":"https://picsum.photos/200/300"},"text":{"text":"Hello 2"},"button":{"text":"btn2"}
+}]}}`,
         },
         rowHeight: {
           value: '100',
