@@ -2635,6 +2635,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     exposedVariables: {
       checked: [],
       expanded: [],
+      checkedPathArray: [],
+      checkedPathStrings: [],
     },
     definition: {
       others: {

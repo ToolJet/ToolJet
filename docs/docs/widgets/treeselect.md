@@ -15,7 +15,7 @@ Tree Select widget is a group checkboxes in a TreeView which can be expanded or 
 
 ## Properties
 
-### Label
+### Title
 
 The text is to be used as the title for the tree select. This field expects a `String` input.
 
@@ -64,6 +64,10 @@ The text is to be used as the title for the tree select. This field expects a `S
 ]
 ```
 
+:::info
+Note: The `value` should be unique throughout the structure array.
+:::
+
 ### Checked Values
 
 Checked values is an array of values passed to select the checkboxes by default.
@@ -99,6 +103,14 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 #### On change
 
 On check event is triggered whenever the checkbox value is changed (checked or unchecked).
+
+#### On check
+
+On check event is triggered whenever the checkbox value is checked.
+
+#### On uncheck
+
+On uncheck event is triggered whenever the checkbox value is unchecked.
 
 ### Layout
 
