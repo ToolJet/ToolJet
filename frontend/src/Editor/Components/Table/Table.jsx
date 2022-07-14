@@ -231,11 +231,13 @@ export function Table({
   }
 
   function handleChangesSaved() {
+    let tableDataCopy = tableData;
     Object.keys(changeSet).forEach((key) => {
-      tableData[key] = {
-        ..._.merge(tableData[key], changeSet[key]),
+      tableDataCopy[key] = {
+        ..._.merge(tableDataCopy[key], changeSet[key]),
       };
     });
+    setTableData(tableDataCopy);
 
     onComponentOptionChanged(component, 'changeSet', {});
     onComponentOptionChanged(component, 'dataUpdates', []);
