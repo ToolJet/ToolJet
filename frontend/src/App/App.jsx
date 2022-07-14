@@ -38,6 +38,7 @@ class App extends React.Component {
       fetchedMetadata: false,
       onboarded: true,
       darkMode: localStorage.getItem('darkMode') === 'true',
+      fetchMetadataInterval: null,
     };
   }
 
@@ -55,8 +56,15 @@ class App extends React.Component {
 
   componentDidMount() {
     authenticationService.currentUser.subscribe((x) => {
-      this.setState({ currentUser: x }, this.fetchMetadata);
-      setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+      this.setState({ currentUser: x });
+      if (x != null) {
+        this.fetchMetadata();
+        this.setState({ fetchMetadataInterval: setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1) });
+      } else {
+        // stop fetching the metadata when logged out
+        clearInterval(this.state.fetchMetadataInterval);
+        this.setState({ fetchMetadataInterval: null });
+      }
     });
   }
 
