@@ -17,12 +17,20 @@ function SettingsPage(props) {
   const focusRef = React.useRef(null);
 
   const updateDetails = async () => {
-    if (!firstName || !lastName) {
-      toast.error("Name can't be empty!", {
-        position: 'top-left',
-      });
+    const firstNameMatch = firstName.match(/^ *$/);
+    const lastNameMatch = lastName.match(/^ *$/);
+    if (firstNameMatch !== null || lastNameMatch !== null) {
+      toast.error(
+        `${firstNameMatch !== null ? 'First name' : ''}${
+          lastNameMatch !== null ? (firstNameMatch !== null ? ' and last name' : 'Last name') : ''
+        } can't be empty!`,
+        {
+          position: 'top-left',
+        }
+      );
       return;
     }
+
     setUpdateInProgress(true);
     try {
       const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
@@ -46,29 +54,41 @@ function SettingsPage(props) {
   };
 
   const changePassword = async () => {
+    const errorMsg =
+      (currentpassword.match(/^ *$/) !== null && 'Current password') ||
+      (newPassword.match(/^ *$/) !== null && 'New password') ||
+      (confirmPassword.match(/^ *$/) !== null && 'Confirm new password');
+
+    if (errorMsg) {
+      toast.error(errorMsg + " can't be empty!", {
+        duration: 3000,
+      });
+      return;
+    }
+    if (currentpassword === newPassword) {
+      toast.error("New password can't be the same as the current one!", {
+        duration: 3000,
+      });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('New password and confirm new password should be same', {
+        duration: 3000,
+      });
+      return;
+    }
+
     setPasswordChangeInProgress(true);
-    if (currentpassword) {
-      if (newPassword === confirmPassword) {
-        try {
-          await userService.changePassword(currentpassword, newPassword);
-          toast.success('Password updated successfully', {
-            duration: 3000,
-          });
-          setCurrentPassword('');
-          setNewPassword('');
-          setConfirmPassword('');
-        } catch (error) {
-          toast.error('Please verify that you have entered the correct password', {
-            duration: 3000,
-          });
-        }
-      } else {
-        toast.error('New password and confirm password are not matching', {
-          duration: 3000,
-        });
-      }
-    } else {
-      toast.error('Please verify that you have entered the current password', {
+    try {
+      await userService.changePassword(currentpassword, newPassword);
+      toast.success('Password updated successfully', {
+        duration: 3000,
+      });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      toast.error('Please verify that you have entered the correct password', {
         duration: 3000,
       });
     }
