@@ -336,6 +336,16 @@ export const widgets = [
     exposedVariables: {
       show: false,
     },
+    actions: [
+      {
+        handle: 'open',
+        displayName: 'Open',
+      },
+      {
+        handle: 'close',
+        displayName: 'Close',
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -1662,6 +1672,18 @@ export const widgets = [
         ],
       },
     },
+    actions: [
+      {
+        handle: 'setTab',
+        displayName: 'Set current tab',
+        params: [
+          {
+            handle: 'id',
+            displayName: 'Id',
+          },
+        ],
+      },
+    ],
     exposedVariables: { currentTab: '' },
     definition: {
       others: {
