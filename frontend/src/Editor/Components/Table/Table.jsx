@@ -832,13 +832,10 @@ export function Table({
     });
     onEvent('onRowClicked', { component, data: original, rowId: rowId });
   });
-  console.log('state outside', tableData, page);
 
   registerAction('selectRowByIndex', async function (index) {
-    // setTableData(())
     const rowId = page?.[index]?.id;
     const original = page?.[index]?.original;
-    console.log('state inside', page, tableData, componentState);
 
     setcomponentState((prevState) => {
       return { ...prevState, selectedRow: original, selectedRowId: rowId };
