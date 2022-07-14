@@ -185,9 +185,9 @@ export const widgets = [
         displayName: 'Click',
       },
       {
-        handle: 'setLabel',
-        displayName: 'Set label',
-        params: [{ handle: 'label', displayName: 'Label', defaultValue: 'New label' }],
+        handle: 'setText',
+        displayName: 'Set Text',
+        params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
       },
     ],
     definition: {
@@ -1662,6 +1662,18 @@ export const widgets = [
         ],
       },
     },
+    actions: [
+      {
+        handle: 'setTab',
+        displayName: 'Set current tab',
+        params: [
+          {
+            handle: 'id',
+            displayName: 'Id',
+          },
+        ],
+      },
+    ],
     exposedVariables: { currentTab: '' },
     definition: {
       others: {
