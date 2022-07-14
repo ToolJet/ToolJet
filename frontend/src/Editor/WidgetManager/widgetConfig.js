@@ -277,14 +277,14 @@ export const widgets = [
         type: 'toggle',
         displayName: 'Visibility',
         validation: {
-          schema: { type: 'booleam' },
+          schema: { type: 'boolean' },
         },
       },
       disabledState: {
         type: 'toggle',
         displayName: 'Disable',
         validation: {
-          schema: { type: 'booleam' },
+          schema: { type: 'boolean' },
         },
       },
     },
