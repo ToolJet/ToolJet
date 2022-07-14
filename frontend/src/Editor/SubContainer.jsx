@@ -72,7 +72,11 @@ export const SubContainer = ({
   const [isResizing, setIsResizing] = useState(false);
 
   //Todo add custom resolve vars for other widgets too
-  const customResolverVariable = parentComponent?.component === 'Listview' ? 'listItem' : 'item';
+  const widgetResolvables = Object.freeze({
+    Listview: 'listItem',
+  });
+
+  const customResolverVariable = widgetResolvables[parentComponent?.component];
 
   useEffect(() => {
     setBoxes(allComponents);
@@ -102,13 +106,14 @@ export const SubContainer = ({
             ...componentData.definition.properties,
           };
 
-          properties.forEach((prop) => {
-            _.set(newComponentDefinition, prop, {
-              value: `{{${customResolverVariable}.${componentName.toLowerCase()}.${prop}}}`,
+          if (_.isArray(properties) && properties.length > 0) {
+            properties.forEach((prop) => {
+              _.set(newComponentDefinition, prop, {
+                value: `{{${customResolverVariable}.${componentName.toLowerCase()}.${prop}}}`,
+              });
             });
-          });
-
-          _.set(componentData, 'definition.properties', newComponentDefinition);
+            _.set(componentData, 'definition.properties', newComponentDefinition);
+          }
 
           _.set(childrenBoxes, componentId, {
             component: componentData,
