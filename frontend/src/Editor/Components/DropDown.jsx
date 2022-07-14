@@ -20,7 +20,7 @@ export const DropDown = function DropDown({
   const [currentValue, setCurrentValue] = useState(() => value);
   const { value: exposedValue } = exposedVariables;
 
-  registerAction('setSelect', async function (value) {
+  registerAction('selectOption', async function (value) {
     setCurrentValue(value);
     setExposedVariable('value', value);
   });

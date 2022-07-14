@@ -1004,8 +1004,8 @@ export const widgets = [
     },
     actions: [
       {
-        handle: 'setSelect',
-        displayName: 'Set Select',
+        handle: 'selectOption',
+        displayName: 'Select option',
         params: [{ handle: 'select', displayName: 'Select' }],
       },
     ],
