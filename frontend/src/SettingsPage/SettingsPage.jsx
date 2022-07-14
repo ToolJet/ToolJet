@@ -59,7 +59,7 @@ function SettingsPage(props) {
       (currentpassword.match(/^ *$/) !== null && 'Current password') ||
       (newPassword.match(/^ *$/) !== null && 'New password') ||
       (confirmPassword.match(/^ *$/) !== null && 'Confirm new password');
-     
+
     if (errorMsg) {
       toast.error(errorMsg + " can't be empty!", {
         duration: 3000,
@@ -75,13 +75,13 @@ function SettingsPage(props) {
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("New password and confirm new password should be same", {
+      toast.error('New password and confirm new password should be same', {
         duration: 3000,
       });
       setPasswordChangeInProgress(false);
       return;
     }
-    
+
     try {
       await userService.changePassword(currentpassword, newPassword);
       toast.success('Password updated successfully', {
