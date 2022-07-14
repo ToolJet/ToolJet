@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, createRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
@@ -13,6 +13,7 @@ export const Tabs = function Tabs({
   removeComponent,
   setExposedVariable,
   fireEvent,
+  registerAction,
   styles,
 }) {
   const { tabWidth } = styles;
@@ -86,6 +87,13 @@ export const Tabs = function Tabs({
 
     return id === currentTab ? 'visible' : 'hidden';
   }
+
+  registerAction('setTab', async function (id) {
+    if (id) {
+      setCurrentTab(id);
+      setExposedVariable('currentTab', id).then(() => fireEvent('onTabSwitch'));
+    }
+  });
 
   return (
     <div
