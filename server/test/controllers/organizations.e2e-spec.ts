@@ -258,6 +258,7 @@ describe('organizations controller', () => {
         expect(getResponse.body).toEqual({
           sso_configs: {
             name: 'Test Organization',
+            enable_sign_up: false,
             form: {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
               sso: 'form',
@@ -305,6 +306,7 @@ describe('organizations controller', () => {
         expect(getResponse.body).toEqual({
           sso_configs: {
             name: 'Test Organization',
+            enable_sign_up: false,
             form: {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
               sso: 'form',
@@ -342,6 +344,7 @@ describe('organizations controller', () => {
         expect(getResponse.body).toEqual({
           sso_configs: {
             name: 'Test Organization',
+            enable_sign_up: false,
             form: {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
               sso: 'form',
@@ -398,6 +401,7 @@ describe('organizations controller', () => {
         expect(getResponse.body).toEqual({
           sso_configs: {
             name: 'Test Organization',
+            enable_sign_up: false,
             form: {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
               sso: 'form',
@@ -452,6 +456,7 @@ describe('organizations controller', () => {
         expect(getResponse.body).toEqual({
           sso_configs: {
             name: 'Test Organization',
+            enable_sign_up: false,
             form: {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
               sso: 'form',
