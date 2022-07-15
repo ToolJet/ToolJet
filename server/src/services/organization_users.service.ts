@@ -93,6 +93,7 @@ export class OrganizationUsersService {
   async activate(id: string) {
     await this.organizationUsersRepository.update(id, {
       status: 'active',
+      invitationToken: null,
     });
   }
 
