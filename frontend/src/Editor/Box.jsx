@@ -128,6 +128,7 @@ export const Box = function Box({
   customResolvables,
   parentId,
   dataQueries,
+  setSelectedComponent,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -189,10 +190,20 @@ export const Box = function Box({
       overlay={(props) =>
         renderTooltip({ props, text: inCanvas ? `${resolvedGeneralProperties.tooltip}` : `${component.description}` })
       }
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setSelectedComponent(id, component, e.shiftKey);
+      }}
     >
       <div
         style={{ ...styles, backgroundColor, boxShadow: resolvedGeneralStyles?.boxShadow }}
         role={preview ? 'BoxPreview' : 'Box'}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setSelectedComponent(id, component, e.shiftKey);
+        }}
       >
         {inCanvas ? (
           <ComponentToRender

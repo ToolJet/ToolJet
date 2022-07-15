@@ -282,6 +282,9 @@ export const DraggableBox = function DraggableBox({
                   parentId={parentId}
                   allComponents={allComponents}
                   dataQueries={dataQueries}
+                  setSelectedComponent={(id, component, multiSelect) =>
+                    setSelectedComponent(id, component, multiSelect)
+                  }
                 />
               </ErrorBoundary>
             </div>
