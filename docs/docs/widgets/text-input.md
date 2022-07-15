@@ -75,6 +75,13 @@ It is to control the visibility of the widget. If `{{false}}` the widget will no
 
 This property only accepts boolean values. If set to `{{true}}`, the widget will lock and become non-functional. By default, its value is set to `{{false}}`.
 
+### Actions
+
+| Action      | Description | Properties |
+| ----------- | ----------- | ------------------ |
+| setText | Set the input text. | `text` |
+| clear | Clear the input text. |  |
+
 :::info
 The value can **programmatically configure** any property having the `Fx` button next to its field.
 :::
