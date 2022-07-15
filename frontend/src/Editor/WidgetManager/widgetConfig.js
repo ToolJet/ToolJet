@@ -1784,8 +1784,8 @@ export const widgets = [
     displayName: 'List View',
     description: 'Wrapper for multiple components',
     defaultSize: {
-      width: 8,
-      height: 200,
+      width: 20,
+      height: 300,
     },
     component: 'Listview',
     others: {

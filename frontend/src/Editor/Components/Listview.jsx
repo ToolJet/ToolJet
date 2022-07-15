@@ -67,8 +67,8 @@ export const Listview = function Listview({
     {
       componentName: 'Text',
       layout: {
-        top: 20,
-        left: 30,
+        top: 50,
+        left: 27,
         height: 30,
       },
       properties: ['text'],
@@ -77,7 +77,7 @@ export const Listview = function Listview({
       componentName: 'Button',
       layout: {
         top: 50,
-        left: 30,
+        left: 60,
         height: 30,
       },
       incrementWidth: 2,
