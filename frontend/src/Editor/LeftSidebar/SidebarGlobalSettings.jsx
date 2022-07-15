@@ -7,6 +7,7 @@ import { LeftSidebarItem } from './SidebarItem';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { resolveReferences } from '@/_helpers/utils';
+import { Popover, OverlayTrigger } from 'react-bootstrap';
 
 export const LeftSidebarGlobalSettings = ({
   globalSettings,
@@ -40,6 +41,18 @@ export const LeftSidebarGlobalSettings = ({
       globalSettingsChanged('canvasBackgroundColor', resolveReferences(backgroundFxQuery, realState));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
+
+  const maintenancePopover = (
+    <Popover id="maintenance-popover-container">
+      <p className="sidebar-popover">Let others know that your app is under maintenance.</p>
+    </Popover>
+  );
+
+  const canvasHeightPopover = (
+    <Popover id="canvas-height-popover-container">
+      <p className="sidebar-popover">Maximum canvas height is 2400px.</p>
+    </Popover>
+  );
 
   return (
     <>
@@ -76,7 +89,30 @@ export const LeftSidebarGlobalSettings = ({
               </div>
             </div>
             <div className="d-flex mb-3">
-              <span>Maintenance mode</span>
+              <div className="d-flex">
+                <span>Maintenance mode</span>
+                <OverlayTrigger trigger="click" placement="top" overlay={maintenancePopover} rootClose>
+                  <div className="info-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="icon icon-tabler icon-tabler-info-circle"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1"
+                      stroke="#9e9e9e"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                      <circle cx="12" cy="12" r="9" />
+                      <line x1="12" y1="8" x2="12.01" y2="8" />
+                      <polyline points="11 12 12 12 12 16 13 16" />
+                    </svg>
+                  </div>
+                </OverlayTrigger>
+              </div>
               <div className="ms-auto form-check form-switch position-relative">
                 <input
                   className="form-check-input"
@@ -104,7 +140,31 @@ export const LeftSidebarGlobalSettings = ({
               </div>
             </div>
             <div className="d-flex mb-3">
-              <span className="w-full m-auto">Max height of canvas</span>
+              <div className="d-flex mr-auto w-full">
+                <span>Max height of canvas</span>
+                <OverlayTrigger trigger="click" placement="top" overlay={canvasHeightPopover} rootClose>
+                  <div className="info-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="icon icon-tabler icon-tabler-info-circle"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1"
+                      stroke="#9e9e9e"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                      <circle cx="12" cy="12" r="9" />
+                      <line x1="12" y1="8" x2="12.01" y2="8" />
+                      <polyline points="11 12 12 12 12 16 13 16" />
+                    </svg>
+                  </div>
+                </OverlayTrigger>
+              </div>
+
               <div className="position-relative">
                 <div className="input-with-icon">
                   <input
