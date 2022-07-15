@@ -30,7 +30,7 @@ export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
     const conditionalOptions = [{ name: 'parseFileType', condition: parseContent }];
 
     conditionalOptions.map(({ name, condition }) => {
-      if (condition) renderOptions.push(renderCustomElement(name));
+      if (condition === '{{true}}') renderOptions.push(renderCustomElement(name));
     });
 
     accordionItems.push({
