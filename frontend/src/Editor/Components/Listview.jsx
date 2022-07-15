@@ -63,6 +63,7 @@ export const Listview = function Listview({
         height: 100,
       },
       properties: ['source'],
+      accessorKey: 'imageURL',
     },
     {
       componentName: 'Text',
@@ -72,6 +73,7 @@ export const Listview = function Listview({
         height: 30,
       },
       properties: ['text'],
+      accessorKey: 'text',
     },
     {
       componentName: 'Button',
@@ -82,6 +84,7 @@ export const Listview = function Listview({
       },
       incrementWidth: 2,
       properties: ['text'],
+      accessorKey: 'buttonText',
     },
   ];
 

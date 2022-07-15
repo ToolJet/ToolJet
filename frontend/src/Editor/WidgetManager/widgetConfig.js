@@ -1816,10 +1816,11 @@ export const widgets = [
       },
       properties: {
         data: {
-          value: `{{[{"image":{"source":"https://www.svgrepo.com/show/34217/image.svg"},"text":{"text":"Row one"},"button":{"text":"Button 1"} 
-},{"image":{"source":"https://www.svgrepo.com/show/34217/image.svg"},"text":{"text":"Row two"},"button":{"text":"Button 2"}
-},{"image":{"source":"https://www.svgrepo.com/show/34217/image.svg"},"text": {"text":"Row three"}, "button":{"text":"Button 3"}
-}]}}`,
+          value: `{{[
+  	{ imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'sample text1', buttonText: 'button1' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'sample text1', buttonText: 'button1' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'sample text1', buttonText: 'button1' },
+  ]}}`,
         },
         rowHeight: {
           value: '100',

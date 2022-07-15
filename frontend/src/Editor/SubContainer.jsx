@@ -93,7 +93,7 @@ export const SubContainer = ({
         //if no children, add a default child
         const childrenBoxes = {};
         defaultChildComponents.forEach((child) => {
-          const { componentName, layout, incrementWidth, properties } = child;
+          const { componentName, layout, incrementWidth, properties, accessorKey } = child;
 
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
@@ -109,7 +109,7 @@ export const SubContainer = ({
           if (_.isArray(properties) && properties.length > 0) {
             properties.forEach((prop) => {
               _.set(newComponentDefinition, prop, {
-                value: `{{${customResolverVariable}.${componentName.toLowerCase()}.${prop}}}`,
+                value: `{{${customResolverVariable}.${accessorKey}}}`,
               });
             });
             _.set(componentData, 'definition.properties', newComponentDefinition);
