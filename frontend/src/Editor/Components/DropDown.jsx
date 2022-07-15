@@ -42,11 +42,9 @@ export const DropDown = function DropDown({
     }, []);
     let isValueIsPresentInSelectedOptions = options.includes(value);
     if (isValueIsPresentInSelectedOptions) {
-      console.log('inside');
       setCurrentValue(value);
       setExposedVariable('value', value).then(fireEvent('onSelect'));
     } else {
-      console.log('out');
       setExposedVariable('value', undefined).then(fireEvent('onSelect'));
     }
   });
