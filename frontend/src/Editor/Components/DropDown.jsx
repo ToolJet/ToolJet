@@ -36,18 +36,17 @@ export const DropDown = function DropDown({
     console.log(err);
   }
   registerAction('selectOption', async function (value) {
-    let isValueIsPresentInSelectedOptions = selectOptions.reduce((acc, cv) => {
-      if (cv.value === value) {
-        acc = true;
-      } else {
-        acc = false;
-      }
+    let options = selectOptions.reduce((acc, cv) => {
+      acc.push(cv.value);
       return acc;
-    }, false);
+    }, []);
+    let isValueIsPresentInSelectedOptions = options.includes(value);
     if (isValueIsPresentInSelectedOptions) {
+      console.log('inside');
       setCurrentValue(value);
       setExposedVariable('value', value).then(fireEvent('onSelect'));
     } else {
+      console.log('out');
       setExposedVariable('value', undefined).then(fireEvent('onSelect'));
     }
   });
