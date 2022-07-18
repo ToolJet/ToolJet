@@ -194,11 +194,6 @@ export const Box = function Box({
       <div
         style={{ ...styles, backgroundColor, boxShadow: resolvedGeneralStyles?.boxShadow }}
         role={preview ? 'BoxPreview' : 'Box'}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setSelectedComponent(id, component, e.shiftKey);
-        }}
       >
         {inCanvas ? (
           <ComponentToRender

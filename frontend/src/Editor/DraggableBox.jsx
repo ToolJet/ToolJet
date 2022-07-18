@@ -242,6 +242,11 @@ export const DraggableBox = function DraggableBox({
               onResizeStop(id, e, direction, ref, d, position);
             }}
             bounds={parent !== undefined ? `#canvas-${parent}` : '.real-canvas'}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setSelectedComponent(id, component, e.shiftKey);
+            }}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
               {mode === 'edit' && !readOnly && (mouseOver || isSelectedComponent) && !isResizing && (
