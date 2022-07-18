@@ -598,6 +598,13 @@ export const widgets = [
       width: 5,
       height: 30,
     },
+    actions: [
+      {
+        handle: 'setChecked',
+        displayName: 'Set checked',
+        params: [{ handle: 'status', displayName: 'status' }],
+      },
+    ],
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
