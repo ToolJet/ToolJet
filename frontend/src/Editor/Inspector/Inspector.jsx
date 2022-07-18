@@ -329,7 +329,6 @@ export const Inspector = ({
     setKey(key);
     if (key == 'close-inpector' || key == 'close-inpector-light') {
       switchSidebarTab(2);
-      setSelectedComponent(null);
     }
   };
   return (
