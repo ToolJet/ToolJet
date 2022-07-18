@@ -142,6 +142,7 @@ class Table extends React.Component {
                 { name: 'Multiselect', value: 'multiselect' },
                 { name: 'Toggle switch', value: 'toggle' },
                 { name: 'Date Picker', value: 'datepicker' },
+                { name: 'Image', value: 'image' },
               ]}
               value={column.columnType}
               search={true}
