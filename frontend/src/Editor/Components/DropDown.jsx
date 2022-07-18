@@ -37,7 +37,6 @@ export const DropDown = function DropDown({
   }
 
   function selectOption(value) {
-    console.log({ value, values });
     if (values.includes(value)) {
       setCurrentValue(value);
       setExposedVariable('value', value).then(fireEvent('onSelect'));
