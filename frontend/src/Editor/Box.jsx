@@ -213,6 +213,9 @@ export const Box = function Box({
                 return onComponentOptionChanged(component, actionName, func);
               }
             }}
+            updateRegisteredAction={(actionName, func) => {
+              return onComponentOptionChanged(component, actionName, func);
+            }}
             fireEvent={fireEvent}
             validate={validate}
             parentId={parentId}
