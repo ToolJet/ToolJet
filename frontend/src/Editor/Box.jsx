@@ -55,6 +55,7 @@ import {
   resolveGeneralStyles,
 } from './component-properties-resolution';
 import { validateWidget } from '@/_helpers/utils';
+import _ from 'lodash';
 
 const AllComponents = {
   Button,
@@ -215,10 +216,14 @@ export const Box = function Box({
             exposedVariables={exposedVariables}
             styles={resolvedStyles}
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
-            registerAction={(actionName, func, paramHandles = []) => {
-              if (Object.keys(exposedVariables).includes(actionName)) return Promise.resolve();
-              else {
-                func.paramHandles = paramHandles;
+            registerAction={(actionName, func, dependencies = []) => {
+              if (!Object.keys(exposedVariables).includes(actionName)) {
+                func.dependencies = dependencies;
+                return onComponentOptionChanged(component, actionName, func);
+              } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
+                return Promise.resolve();
+              } else if (!_.isEqual(dependencies, exposedVariables[actionName]?.dependencies)) {
+                func.dependencies = dependencies;
                 return onComponentOptionChanged(component, actionName, func);
               }
             }}
