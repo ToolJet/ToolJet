@@ -32,7 +32,7 @@ export function Git({ settings, updateData }) {
       },
       () => {
         setSaving(false);
-        toast.error('Error saving sso configurations', {
+        toast.error('Error while saving SSO configurations', {
           position: 'top-center',
         });
       }
@@ -54,7 +54,7 @@ export function Git({ settings, updateData }) {
       },
       () => {
         setSaving(false);
-        toast.error('Error saving sso configurations', {
+        toast.error('Error while saving SSO configurations', {
           position: 'top-center',
         });
       }

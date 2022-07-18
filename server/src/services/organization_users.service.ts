@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { createQueryBuilder, Repository } from 'typeorm';
+import { createQueryBuilder, DeepPartial, Repository } from 'typeorm';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
@@ -21,11 +21,7 @@ export class OrganizationUsersService {
     private configService: ConfigService
   ) {}
 
-  async findOrganization(id: string): Promise<OrganizationUser> {
-    return await this.organizationUsersRepository.findOne({ where: { id } });
-  }
-
-  async create(user: User, organization: Organization, isInvite?: boolean): Promise<OrganizationUser> {
+  async create(user: User, organization: DeepPartial<Organization>, isInvite?: boolean): Promise<OrganizationUser> {
     return await this.organizationUsersRepository.save(
       this.organizationUsersRepository.create({
         user,
@@ -94,9 +90,10 @@ export class OrganizationUsersService {
     return;
   }
 
-  async activate(organizationUser: OrganizationUser) {
-    await this.organizationUsersRepository.update(organizationUser.id, {
+  async activate(id: string) {
+    await this.organizationUsersRepository.update(id, {
       status: 'active',
+      invitationToken: null,
     });
   }
 

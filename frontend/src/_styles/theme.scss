@@ -1260,6 +1260,14 @@ button {
       overflow: hidden;
     }
   }
+
+  .left-menu {
+    ul {
+      li:not(.active):hover {
+        color: $black;
+      }
+    }
+  }
 }
 
 .pagination {
@@ -5053,8 +5061,7 @@ div#driver-page-overlay {
       color: $white;
     }
     li:not(.active):hover {
-      background-color: $primary;
-      color: $white;
+      background-color: #d2daf0;
     }
   }
 }
@@ -5724,4 +5731,57 @@ input.hide-input-arrows{
 
 .btn-org-env {
   width: 36px;
+}
+
+// sso enable/disable box
+.tick-cross-info {
+  .main-box {
+    margin-right: 10px;
+    border-radius: 5px;
+  }
+
+  .icon-box {
+    padding: 7px 5px 7px 2px;
+    color: #fff;
+
+    .icon {
+      stroke-width: 4.5px;
+    }
+  }
+
+  .tick-box {
+    border: 3px solid $primary;
+
+    .icon-box {
+      background: $primary;
+    }
+  }
+
+  .cross-box {
+    border: 3px solid $disabled;
+
+    .icon-box {
+      background: $disabled;
+    }
+  }
+}
+
+.separator-bottom {
+  .separator {
+    width: 100%;
+
+    h2 {
+      width: 100%; 
+      text-align: center; 
+      border-bottom: 1px solid $primary; 
+      line-height: 0.1em;
+      margin: 10px 0 20px; 
+    } 
+    
+    h2 span { 
+      color: $primary;
+      background:#fff; 
+      padding:0 10px; 
+    }
+  }
 }
