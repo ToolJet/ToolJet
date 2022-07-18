@@ -25,6 +25,17 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
 import { OrgEnvironmentVariablesService } from '@services/org_environment_variables.service';
+import { AppsService } from '@services/apps.service';
+import { AppVersion } from 'src/entities/app_version.entity';
+import { AppUser } from 'src/entities/app_user.entity';
+import { DataSource } from 'src/entities/data_source.entity';
+import { DataQuery } from 'src/entities/data_query.entity';
+import { Folder } from 'src/entities/folder.entity';
+import { FolderApp } from 'src/entities/folder_app.entity';
+import { AppImportExportService } from '@services/app_import_export.service';
+import { DataSourcesService } from '@services/data_sources.service';
+import { CredentialsService } from '@services/credentials.service';
+import { Credential } from 'src/entities/credential.entity';
 
 @Module({
   imports: [
@@ -39,6 +50,13 @@ import { OrgEnvironmentVariablesService } from '@services/org_environment_variab
       AppGroupPermission,
       UserGroupPermission,
       OrgEnvironmentVariable,
+      AppVersion,
+      AppUser,
+      DataSource,
+      DataQuery,
+      Folder,
+      FolderApp,
+      Credential,
     ]),
     CaslModule,
     JwtModule.registerAsync({
@@ -59,10 +77,14 @@ import { OrgEnvironmentVariablesService } from '@services/org_environment_variab
     UsersService,
     EmailService,
     FilesService,
+    AppsService,
     AuthService,
     GroupPermissionsService,
     EncryptionService,
     OrgEnvironmentVariablesService,
+    AppImportExportService,
+    DataSourcesService,
+    CredentialsService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController, OrgEnvironmentVariablesController],
 })

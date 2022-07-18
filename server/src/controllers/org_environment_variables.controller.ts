@@ -29,7 +29,13 @@ export class OrgEnvironmentVariablesController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async get(@User() user) {
-    const result = await this.orgEnvironmentVariablesService.fetchVariables(user);
+    const result = await this.orgEnvironmentVariablesService.fetchVariables(user, null);
+    return decamelizeKeys({ variables: result });
+  }
+
+  @Get(':app_slug')
+  async getVariablesFromApp(@Param('app_slug') slug) {
+    const result = await this.orgEnvironmentVariablesService.fetchVariables(null, slug);
     return decamelizeKeys({ variables: result });
   }
 
