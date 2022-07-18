@@ -87,7 +87,6 @@ export const Datepicker = function Datepicker({
         style={{ height, borderRadius: `${borderRadius}px` }}
         ref={ref}
         onFocus={(e) => {
-          console.log('happy hack');
           propertiesSelector(e);
         }}
       />
