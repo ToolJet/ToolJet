@@ -6,11 +6,9 @@ title: Datepicker
 
 The Datepicker widget allows users to select a single value for date and time from a pre-determined set.
 
-<div style={{textAlign: 'center'}}>
+## How To Use Datepicker Widget
 
-![ToolJet - Widget Reference - Date range picker](/img/widgets/datepicker/datepicker.png)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/mcjYKw2VeAI" title="Datepicker Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Events
 ### Event: On select
@@ -25,7 +23,7 @@ This value acts as placeholder for the date picker widget, if any value is not p
 
 ### Disabled dates
 
-We can give disabled dates property which will make specific dates disabled and cannot be selected. The default value needs to a an array of`Strings`.
+We can give disabled dates property which will make specific dates disabled and cannot be selected. The default value needs to be an array of`Strings`.
 
 ### Format
 

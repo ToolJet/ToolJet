@@ -66,3 +66,9 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Actions
+
+| Action      | Description | Properties |
+| ----------- | ----------- | ------------------ |
+| `setLocation` | Set map's location. | Latitude and Longitude values as parameters. ex: `component.map1.setLocation(40.7128, -73.935242)` |

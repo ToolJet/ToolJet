@@ -15,14 +15,25 @@ export const Modal = function Modal({
   styles,
   exposedVariables,
   setExposedVariable,
+  registerAction,
 }) {
   const [showModal, setShowModal] = useState(false);
+  const { hideOnEsc, hideCloseButton, hideTitleBar } = properties;
   const parentRef = useRef(null);
 
   const title = properties.title ?? '';
   const size = properties.size ?? 'lg';
 
   const { disabledState } = styles;
+
+  registerAction('open', async function () {
+    setExposedVariable('show', true);
+    setShowModal(true);
+  });
+  registerAction('close', async function () {
+    setShowModal(false);
+    setExposedVariable('show', false);
+  });
 
   useEffect(() => {
     const canShowModal = exposedVariables.show ?? false;
@@ -46,19 +57,23 @@ export const Modal = function Modal({
         keyboard={true}
         enforceFocus={false}
         animation={false}
-        onEscapeKeyDown={() => hideModal()}
+        onEscapeKeyDown={() => hideOnEsc && hideModal()}
       >
         {containerProps.mode === 'edit' && (
           <ConfigHandle id={id} component={component} setSelectedComponent={containerProps.onComponentClick} />
         )}
-        <BootstrapModal.Header>
-          <BootstrapModal.Title>{title}</BootstrapModal.Title>
-          <div>
-            <Button variant={darkMode ? 'secondary' : 'light'} size="sm" onClick={hideModal}>
-              x
-            </Button>
-          </div>
-        </BootstrapModal.Header>
+        {!hideTitleBar && (
+          <BootstrapModal.Header>
+            <BootstrapModal.Title>{title}</BootstrapModal.Title>
+            {!hideCloseButton && (
+              <div>
+                <Button variant={darkMode ? 'secondary' : 'light'} size="sm" onClick={() => hideModal()}>
+                  x
+                </Button>
+              </div>
+            )}
+          </BootstrapModal.Header>
+        )}
 
         <BootstrapModal.Body style={{ height }} ref={parentRef} id={id}>
           <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
