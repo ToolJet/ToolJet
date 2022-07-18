@@ -13,6 +13,7 @@ export const Listview = function Listview({
   styles,
   fireEvent,
   setExposedVariable,
+  propertiesSelector,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -60,7 +61,10 @@ export const Listview = function Listview({
       className="jet-listview"
       id={id}
       ref={parentRef}
-      onClick={() => containerProps.onComponentClick(id, component)}
+      onClick={() => {
+        propertiesSelector();
+        containerProps.onComponentClick(id, component);
+      }}
       style={computedStyles}
     >
       <div className="rows w-100">
@@ -70,6 +74,7 @@ export const Listview = function Listview({
             style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
             key={index}
             onClick={(event) => {
+              propertiesSelector();
               event.stopPropagation();
               onRowClicked(index);
             }}

@@ -14,6 +14,7 @@ export const Map = function Map({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onEvent,
+  propertiesSelector,
   // canvasWidth,
   registerAction,
 }) {
@@ -134,6 +135,7 @@ export const Map = function Map({
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component, event);
+        propertiesSelector(event);
       }}
       className="map-widget"
     >

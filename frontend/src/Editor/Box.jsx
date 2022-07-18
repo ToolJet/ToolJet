@@ -190,11 +190,6 @@ export const Box = function Box({
       overlay={(props) =>
         renderTooltip({ props, text: inCanvas ? `${resolvedGeneralProperties.tooltip}` : `${component.description}` })
       }
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setSelectedComponent(id, component, e.shiftKey);
-      }}
     >
       <div
         style={{ ...styles, backgroundColor, boxShadow: resolvedGeneralStyles?.boxShadow }}
@@ -238,6 +233,11 @@ export const Box = function Box({
             parentId={parentId}
             customResolvables={customResolvables}
             dataQueries={dataQueries}
+            propertiesSelector={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setSelectedComponent(id, component, e.shiftKey);
+            }}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>

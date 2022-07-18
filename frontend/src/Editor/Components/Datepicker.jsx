@@ -15,6 +15,7 @@ export const Datepicker = function Datepicker({
   id,
   darkMode,
   fireEvent,
+  propertiesSelector,
 }) {
   const { format, enableTime, enableDate, defaultValue, disabledDates } = properties;
   const { visibility, disabledState, borderRadius } = styles;
@@ -85,6 +86,10 @@ export const Datepicker = function Datepicker({
         }`}
         style={{ height, borderRadius: `${borderRadius}px` }}
         ref={ref}
+        onFocus={(e) => {
+          console.log('happy hack');
+          propertiesSelector(e);
+        }}
       />
     );
   });

@@ -41,6 +41,7 @@ export function Table({
   fireEvent,
   setExposedVariable,
   registerAction,
+  propertiesSelector,
 }) {
   const color =
     component.definition.styles.textColor.value !== '#000'
@@ -869,6 +870,7 @@ export function Table({
         borderRadius: Number.parseFloat(borderRadius),
       }}
       onClick={(event) => {
+        propertiesSelector();
         event.stopPropagation();
         onComponentClick(id, component, event);
       }}
