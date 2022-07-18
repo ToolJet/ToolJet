@@ -14,7 +14,6 @@ export const DropDown = function DropDown({
   component,
   exposedVariables,
   registerAction,
-  updateRegisteredAction,
 }) {
   let { label, value, display_values, values } = properties;
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
@@ -38,29 +37,24 @@ export const DropDown = function DropDown({
   }
 
   function selectOption(value) {
-    let options = selectOptions.reduce((acc, cv) => {
-      acc.push(cv.value);
-      return acc;
-    }, []);
-    let isValueIsPresentInSelectedOptions = options.includes(value);
-    if (isValueIsPresentInSelectedOptions) {
+    console.log({ value, values });
+    if (values.includes(value)) {
       setCurrentValue(value);
       setExposedVariable('value', value).then(fireEvent('onSelect'));
     } else {
+      setCurrentValue(undefined);
       setExposedVariable('value', undefined).then(fireEvent('onSelect'));
     }
   }
 
-  registerAction('selectOption', async function (value) {
-    selectOption(value);
-  });
-
-  useEffect(() => {
-    updateRegisteredAction('selectOption', async function (value) {
+  registerAction(
+    'selectOption',
+    async function (value) {
       selectOption(value);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(values)]);
+    },
+    [JSON.stringify(values)]
+  );
+
   const validationData = validate(value);
   const { isValid, validationError } = validationData;
 
