@@ -1053,6 +1053,13 @@ export const widgets = [
       value: 2,
       searchText: '',
     },
+    actions: [
+      {
+        handle: 'selectOption',
+        displayName: 'Select option',
+        params: [{ handle: 'select', displayName: 'Select' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
