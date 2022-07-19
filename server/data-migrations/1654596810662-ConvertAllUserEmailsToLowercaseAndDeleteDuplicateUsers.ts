@@ -33,7 +33,7 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
     const users = await usersQuery.getMany();
 
     //change all email addresses to lowercase
-    await entityManager.query('update users set email = lower(email);')
+    await entityManager.query('update users set email = lower(email);');
 
     //merge or delete same users
     const deletedUsers = [];
@@ -50,7 +50,7 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
           await this.migrateUsers(originalUser, usersToDelete, entityManager);
           for (const user of usersToDelete) {
             deletedUsers.push(user.id);
-          };
+          }
         }
       }
     }
@@ -76,38 +76,38 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
     const { organizationUsers } = originalUser;
 
     for (const deletingUser of usersToDelete) {
-        const onlyInDeleteUserOrgs = this.findOrgUsersNotInSameOrg(deletingUser.organizationUsers, organizationUsers);
+      const onlyInDeleteUserOrgs = this.findOrgUsersNotInSameOrg(deletingUser.organizationUsers, organizationUsers);
 
-        if (onlyInDeleteUserOrgs.length > 0) {
-          // map other orgs to original user
-          for (const orgnizationUser of onlyInDeleteUserOrgs) {
-            await entityManager.update(OrganizationUser, orgnizationUser.id, {
-              user: originalUser,
-            });
-          }
+      if (onlyInDeleteUserOrgs.length > 0) {
+        // map other orgs to original user
+        for (const orgnizationUser of onlyInDeleteUserOrgs) {
+          await entityManager.update(OrganizationUser, orgnizationUser.id, {
+            user: originalUser,
+          });
         }
+      }
 
-        //user group permissions
-        await this.migrateUserGroupPermissions(entityManager, deletingUser, originalUser);
+      //user group permissions
+      await this.migrateUserGroupPermissions(entityManager, deletingUser, originalUser);
 
-        //apps
-        const appsOfDeletingUser = await entityManager.find(App, { select: ["id"], where: { userId: deletingUser.id } })
-        for (const app of appsOfDeletingUser) {
-          await entityManager.update(App, app.id, {
-            userId: originalUser.id,
-          })
-        }
+      //apps
+      const appsOfDeletingUser = await entityManager.find(App, { select: ['id'], where: { userId: deletingUser.id } });
+      for (const app of appsOfDeletingUser) {
+        await entityManager.update(App, app.id, {
+          userId: originalUser.id,
+        });
+      }
 
-        //threads
-        await this.migrateThreads(entityManager, deletingUser.id, originalUser);
+      //threads
+      await this.migrateThreads(entityManager, deletingUser.id, originalUser);
 
-        //comments
-        await this.migrateComments(entityManager, deletingUser.id, originalUser);
+      //comments
+      await this.migrateComments(entityManager, deletingUser.id, originalUser);
 
-        //delete duplicate user
-        // await entityManager.delete(AuditLog, { userId: deletingUser.id });
-        await entityManager.delete(AppUser, { userId: deletingUser.id });
-        await entityManager.delete(User, deletingUser.id);
+      //delete duplicate user
+      // await entityManager.delete(AuditLog, { userId: deletingUser.id });
+      await entityManager.delete(AppUser, { userId: deletingUser.id });
+      await entityManager.delete(User, deletingUser.id);
     }
   }
 
@@ -174,7 +174,7 @@ export class ConvertAllUserEmailsToLowercaseAndDeleteDuplicateUsers1654596810662
       if (permission.organizationId === organizationId && permission.group === group) {
         group_permission = permission;
       }
-    };
+    }
     return group_permission;
   }
 

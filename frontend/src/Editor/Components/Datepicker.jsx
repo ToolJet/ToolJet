@@ -17,7 +17,8 @@ export const Datepicker = function Datepicker({
   fireEvent,
   propertiesSelector,
 }) {
-  const { format, enableTime, enableDate, defaultValue, disabledDates } = properties;
+  const { enableTime, enableDate, defaultValue, disabledDates } = properties;
+  const format = typeof properties.format === 'string' ? properties.format : '';
   const { visibility, disabledState, borderRadius } = styles;
 
   const [date, setDate] = useState(null);

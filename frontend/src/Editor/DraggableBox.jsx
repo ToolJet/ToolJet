@@ -94,6 +94,7 @@ export const DraggableBox = function DraggableBox({
   parentId,
   hoveredComponent,
   onComponentHover,
+  sideBarDebugger,
   isMultipleComponentsSelected,
   dataQueries,
   widgetManagerToCanvas,
@@ -293,6 +294,7 @@ export const DraggableBox = function DraggableBox({
                   customResolvables={customResolvables}
                   parentId={parentId}
                   allComponents={allComponents}
+                  sideBarDebugger={sideBarDebugger}
                   dataQueries={dataQueries}
                   setSelectedComponent={(id, component, multiSelect) =>
                     setSelectedComponent(id, component, multiSelect)
@@ -318,6 +320,7 @@ export const DraggableBox = function DraggableBox({
               currentState={currentState}
               darkMode={darkMode}
               removeComponent={removeComponent}
+              sideBarDebugger={sideBarDebugger}
               customResolvables={customResolvables}
             />
           </ErrorBoundary>

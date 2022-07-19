@@ -36,7 +36,11 @@ FROM node:14.17.3-buster
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget
+RUN apt-get update && \
+    apt-get install -y postgresql-client freetds-dev libaio1 wget && \
+    apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes && \
+    apt-get -y autoremove && \
+    apt-get -y autoclean
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -45,9 +49,10 @@ RUN wget https://download.oracle.com/otn_software/linux/instantclient/instantcli
     cd /opt/oracle/instantclient* && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
 WORKDIR /
+# Clean up image
+RUN wget -O - https://raw.githubusercontent.com/digitalocean/marketplace-partners/master/scripts/90-cleanup.sh | bash
 
 RUN mkdir -p /app
-
 # copy npm scripts
 COPY --from=builder /app/package.json ./app/package.json
 # copy plugins dependencies
