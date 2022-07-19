@@ -438,7 +438,7 @@ export const widgets = [
     description: 'Number field for forms',
     component: 'NumberInput',
     defaultSize: {
-      width: 4,
+      width: 6,
       height: 30,
     },
     others: {
@@ -485,7 +485,7 @@ export const widgets = [
     description: 'Password input field for forms',
     component: 'PasswordInput',
     defaultSize: {
-      width: 4,
+      width: 6,
       height: 30,
     },
     others: {
