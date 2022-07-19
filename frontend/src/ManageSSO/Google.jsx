@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { copyToClipboard } from '@/_helpers/appUtils';
 
 export function Google({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -11,7 +12,10 @@ export function Google({ settings, updateData }) {
   const reset = () => {
     setClientId(settings?.configs?.client_id || '');
   };
-
+  const copyFunction = (input) => {
+    let text = document.getElementById(input).innerHTML;
+    copyToClipboard(text);
+  };
   const saveSettings = () => {
     setSaving(true);
     organizationService.editOrganizationConfigs({ type: 'google', configs: { clientId } }).then(
@@ -25,7 +29,7 @@ export function Google({ settings, updateData }) {
       },
       () => {
         setSaving(false);
-        toast.error('Error saving sso configurations', {
+        toast.error('Error while saving SSO configurations', {
           position: 'top-center',
         });
       }
@@ -47,7 +51,7 @@ export function Google({ settings, updateData }) {
       },
       () => {
         setSaving(false);
-        toast.error('Error saving sso configurations', {
+        toast.error('Error while saving SSO configurations', {
           position: 'top-center',
         });
       }
@@ -99,7 +103,19 @@ export function Google({ settings, updateData }) {
               <label className="form-label" data-cy="redirect-url-label">
                 Redirect URL
               </label>
-              <div data-cy="redirect-url">{`${window.location.protocol}//${window.location.host}/sso/google/${configId}`}</div>
+              <div className="flexer-sso-input form-control">
+                <p
+                  data-cy="redirect-url"
+                  id="redirect-url"
+                >{`${window.location.protocol}//${window.location.host}/sso/google/${configId}`}</p>
+                <img
+                  onClick={() => copyFunction('redirect-url')}
+                  src={`/assets/images/icons/copy-dark.svg`}
+                  width="22"
+                  height="22"
+                  className="sso-copy"
+                />
+              </div>
             </div>
           )}
           <div className="form-footer">

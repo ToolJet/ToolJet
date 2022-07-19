@@ -9,6 +9,9 @@ const universalProps = {
   events: {},
   styles: {},
   validate: true,
+  generalStyles: {
+    boxShadow: { type: 'boxShadow', displayName: 'Box Shadow' },
+  },
   definition: {
     others: {},
     events: [],
@@ -25,6 +28,7 @@ const combineProperties = (widget, universal, isArray = false) => {
     others: { ...universal.others, ...widget.others },
     events: isArray ? [...universal.events, ...widget.events] : { ...universal.events, ...widget.events },
     styles: { ...universal.styles, ...widget.styles },
+    generalStyles: { ...universal.generalStyles, ...widget.generalStyles },
     exposedVariables: { ...universal.exposedVariables, ...widget.exposedVariables },
   };
 };

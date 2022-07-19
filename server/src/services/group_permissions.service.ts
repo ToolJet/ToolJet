@@ -124,6 +124,7 @@ export class GroupPermissionsService {
     });
 
     const {
+      name,
       app_create,
       app_delete,
       add_apps,
@@ -139,6 +140,36 @@ export class GroupPermissionsService {
     } = body;
 
     await getManager().transaction(async (manager) => {
+      //update user group name
+      if (name) {
+        const newName = name.trim();
+        if (!newName) {
+          throw new BadRequestException('Group name should not be empty');
+        }
+
+        const reservedGroups = ['admin', 'all_users'];
+        if (reservedGroups.includes(groupPermission.group)) {
+          throw new BadRequestException('Cannot update a default group name');
+        }
+
+        if (reservedGroups.includes(newName.replace(/ /g, '_').toLowerCase())) {
+          throw new BadRequestException('Group name already exists');
+        }
+
+        const groupToFind = await this.groupPermissionsRepository.findOne({
+          where: {
+            organizationId: user.organizationId,
+            group: newName,
+          },
+        });
+
+        if (groupToFind && groupToFind.id !== groupPermission.id) {
+          throw new ConflictException('Group name already exists');
+        } else if (!groupToFind) {
+          await manager.update(GroupPermission, groupPermissionId, { group: newName });
+        }
+      }
+
       // update group permissions
       const groupPermissionUpdateParams = {
         ...(typeof app_create === 'boolean' && { appCreate: app_create }),

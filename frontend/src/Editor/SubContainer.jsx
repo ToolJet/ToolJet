@@ -9,6 +9,7 @@ import update from 'immutability-helper';
 import { componentTypes } from './WidgetManager/components';
 import { computeComponentName } from '@/_helpers/utils';
 import produce from 'immer';
+import _ from 'lodash';
 
 export const SubContainer = ({
   mode,
@@ -34,11 +35,12 @@ export const SubContainer = ({
   readOnly,
   customResolvables,
   parentComponent,
-  listViewItemOptions,
   onComponentHover,
   hoveredComponent,
   sideBarDebugger,
   selectedComponents,
+  onOptionChange,
+  exposedVariables,
 }) => {
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
@@ -360,33 +362,25 @@ export const SubContainer = ({
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
 
-  function onComponentOptionChangedForSubcontainer(component, optionName, value, extraProps) {
-    if (parentComponent?.component === 'Listview') {
-      let newData = currentState.components[parentComponent.name]?.data || [];
-      newData[listViewItemOptions.index] = {
-        ...newData[listViewItemOptions.index],
-        [component.name]: {
-          ...(newData[listViewItemOptions.index] ? newData[listViewItemOptions.index][component.name] : {}),
-          [optionName]: value,
-        },
-      };
-      return onComponentOptionChanged(parentComponent, 'data', newData);
-    } else {
-      return onComponentOptionChanged(component, optionName, value, extraProps);
+  function onComponentOptionChangedForSubcontainer(component, optionName, value) {
+    if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
+      return Promise.resolve();
     }
+    onOptionChange && onOptionChange({ component, optionName, value });
+    return onComponentOptionChanged(component, optionName, value);
   }
 
   function customRemoveComponent(component) {
-    const componentName = appDefinition.components[component.id]['component'].name;
+    // const componentName = appDefinition.components[component.id]['component'].name;
     removeComponent(component);
-    if (parentComponent.component === 'Listview') {
-      const currentData = currentState.components[parentComponent.name]?.data || [];
-      const newData = currentData.map((widget) => {
-        delete widget[componentName];
-        return widget;
-      });
-      onComponentOptionChanged(parentComponent, 'data', newData);
-    }
+    // if (parentComponent.component === 'Listview') {
+    //   const currentData = currentState.components[parentComponent.name]?.data || [];
+    //   const newData = currentData.map((widget) => {
+    //     delete widget[componentName];
+    //     return widget;
+    //   });
+    //   onComponentOptionChanged(parentComponent, 'data', newData);
+    // }
   }
 
   return (
@@ -408,7 +402,6 @@ export const SubContainer = ({
           onDragStop={onDragStop}
           paramUpdated={paramUpdated}
           id={key}
-          extraProps={{ listviewItemIndex: listViewItemOptions?.index }}
           allComponents={allComponents}
           {...childComponents[key]}
           mode={mode}
@@ -431,6 +424,7 @@ export const SubContainer = ({
           parentId={parentComponent?.name}
           sideBarDebugger={sideBarDebugger}
           isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+          exposedVariables={exposedVariables ?? {}}
           containerProps={{
             mode,
             snapToGrid,

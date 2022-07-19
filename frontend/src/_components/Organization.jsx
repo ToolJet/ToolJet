@@ -109,15 +109,15 @@ export const Organization = function Organization() {
   };
 
   const switchOrganization = (orgId) => {
-    organizationService.switchOrganization(orgId).then((response) => {
-      if (!response.ok) {
-        return (window.location.href = `/login/${orgId}`);
-      }
-      response.json().then((data) => {
+    organizationService.switchOrganization(orgId).then(
+      (data) => {
         authenticationService.updateCurrentUserDetails(data);
         window.location.href = '/';
-      });
-    });
+      },
+      () => {
+        return (window.location.href = `/login/${orgId}`);
+      }
+    );
   };
 
   const listOrganization = () => {

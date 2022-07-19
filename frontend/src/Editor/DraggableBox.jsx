@@ -66,7 +66,6 @@ export const DraggableBox = function DraggableBox({
   _top,
   parent,
   allComponents,
-  extraProps,
   component,
   index,
   inCanvas,
@@ -283,7 +282,6 @@ export const DraggableBox = function DraggableBox({
                   customResolvables={customResolvables}
                   parentId={parentId}
                   allComponents={allComponents}
-                  extraProps={extraProps}
                   sideBarDebugger={sideBarDebugger}
                   dataQueries={dataQueries}
                 />
@@ -308,6 +306,7 @@ export const DraggableBox = function DraggableBox({
               darkMode={darkMode}
               removeComponent={removeComponent}
               sideBarDebugger={sideBarDebugger}
+              customResolvables={customResolvables}
             />
           </ErrorBoundary>
         </div>

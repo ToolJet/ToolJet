@@ -1,4 +1,3 @@
-import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { EntityManager, MigrationInterface, QueryRunner, TableUnique } from 'typeorm';
 
@@ -20,32 +19,20 @@ export class AddUniqueConstraintToVersionName1655726247638 implements MigrationI
   }
 
   private async migrateVersions(entityManager: EntityManager) {
-    const apps = await entityManager.find(App, { relations: ['appVersions'] });
-
-    return (async () => {
-      for (const app of apps) {
-        const { appVersions } = app;
-        await (async () => {
-          for (const version of appVersions) {
-            const { name, id } = version;
-            const versionExists = await entityManager.findOne(AppVersion, { id, name });
-            if (versionExists) {
-              const versionsNeedToChange = appVersions.filter(
-                (appVersion) => appVersion.id !== id && appVersion.name === name
-              );
-              await (async () => {
-                for (const versionToChange of versionsNeedToChange) {
-                  await entityManager.update(
-                    AppVersion,
-                    { id: versionToChange.id },
-                    { name: `${versionToChange.name}_${Date.now()}` }
-                  );
-                }
-              })();
-            }
-          }
-        })();
+    const appVersions = await entityManager.find(AppVersion);
+    for (const version of appVersions) {
+      const { name, appId, id } = version;
+      const versionsWithSameName = await entityManager.find(AppVersion, { appId, name });
+      if (versionsWithSameName.length > 1) {
+        const versionsNeedToChange = versionsWithSameName.filter((appVersion) => appVersion.id !== id);
+        for (const versionToChange of versionsNeedToChange) {
+          await entityManager.update(
+            AppVersion,
+            { id: versionToChange.id },
+            { name: `${versionToChange.name}_${Date.now()}` }
+          );
+        }
       }
-    })();
+    }
   }
 }

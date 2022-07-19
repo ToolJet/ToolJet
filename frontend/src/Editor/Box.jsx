@@ -49,9 +49,14 @@ import { Steps } from './Components/Steps';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
-import { resolveProperties, resolveStyles, resolveGeneralProperties } from './component-properties-resolution';
 import { validateWidget, resolveReferences } from '@/_helpers/utils';
 import { componentTypes } from './WidgetManager/components';
+import {
+  resolveProperties,
+  resolveStyles,
+  resolveGeneralProperties,
+  resolveGeneralStyles,
+} from './component-properties-resolution';
 import _ from 'lodash';
 
 const AllComponents = {
@@ -126,7 +131,6 @@ export const Box = function Box({
   customResolvables,
   parentId,
   allComponents,
-  extraProps,
   sideBarDebugger,
   dataQueries,
 }) {
@@ -162,16 +166,24 @@ export const Box = function Box({
       ? validateProperties(resolvedStyles, componentMeta.styles)
       : [resolvedStyles, []];
   validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
+
   const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
   const [validatedGeneralProperties, generalPropertiesErrors] =
     mode === 'edit' && component.validate
       ? validateProperties(resolvedGeneralProperties, componentMeta.general)
       : [resolvedGeneralProperties, []];
 
+  const resolvedGeneralStyles = resolveGeneralStyles(component, currentState, null, customResolvables);
+  resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
+  const [validatedGeneralStyles, generalStylesErrors] =
+    mode === 'edit' && component.validate
+      ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
+      : [resolvedGeneralStyles, []];
+
   useEffect(() => {
     const componentName = getComponentName(currentState, id);
     const errorLog = Object.fromEntries(
-      [...propertyErrors, ...styleErrors, ...generalPropertiesErrors].map((error) => [
+      [...propertyErrors, ...styleErrors, ...generalPropertiesErrors, ...generalStylesErrors].map((error) => [
         `${componentName} - ${error.property}`,
         {
           type: 'component',
@@ -201,38 +213,19 @@ export const Box = function Box({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
 
-  let exposedVariables = {};
-  let isListView = false;
-
-  if (component.parent) {
-    const parentComponent = allComponents[component.parent];
-    isListView = parentComponent?.component?.component === 'Listview';
-
-    if (isListView) {
-      const itemsAtIndex = currentState?.components[parentId]?.data[extraProps.listviewItemIndex];
-      exposedVariables = itemsAtIndex !== undefined ? itemsAtIndex[component.name] || {} : {};
-    } else {
-      exposedVariables = currentState?.components[component.name] ?? {};
-    }
-  } else {
-    exposedVariables = currentState?.components[component.name] ?? {};
-  }
+  let exposedVariables = currentState?.components[component.name] ?? {};
 
   const fireEvent = (eventName, options) => {
     if (mode === 'edit' && eventName === 'onClick') {
       onComponentClick(id, component);
     }
-    const listItem = isListView
-      ? resolveReferences(allComponents[component.parent].component.definition.properties.data.value, currentState)[
-          extraProps.listviewItemIndex
-        ] ?? {}
-      : {};
-    onEvent(eventName, { ...options, customVariables: { listItem }, component });
+    onEvent(eventName, { ...options, customVariables: { ...customResolvables }, component });
   };
   const validate = (value) =>
     validateWidget({
       ...{ widgetValue: value },
       ...{ validationObject: component.definition.validation, currentState },
+      customResolveObjects: customResolvables,
     });
 
   return (
@@ -244,7 +237,10 @@ export const Box = function Box({
         renderTooltip({ props, text: inCanvas ? `${validatedGeneralProperties.tooltip}` : `${component.description}` })
       }
     >
-      <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
+      <div
+        style={{ ...styles, backgroundColor, boxShadow: validatedGeneralStyles?.boxShadow }}
+        role={preview ? 'BoxPreview' : 'Box'}
+      >
         {inCanvas ? (
           <ComponentToRender
             onComponentClick={onComponentClick}
@@ -265,11 +261,15 @@ export const Box = function Box({
             properties={validatedProperties}
             exposedVariables={exposedVariables}
             styles={validatedStyles}
-            setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, extraProps)}
-            registerAction={(actionName, func, paramHandles = []) => {
-              if (Object.keys(exposedVariables).includes(actionName)) return Promise.resolve();
-              else {
-                func.paramHandles = paramHandles;
+            setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
+            registerAction={(actionName, func, dependencies = []) => {
+              if (!Object.keys(exposedVariables).includes(actionName)) {
+                func.dependencies = dependencies;
+                return onComponentOptionChanged(component, actionName, func);
+              } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
+                return Promise.resolve();
+              } else if (!_.isEqual(dependencies, exposedVariables[actionName]?.dependencies)) {
+                func.dependencies = dependencies;
                 return onComponentOptionChanged(component, actionName, func);
               }
             }}
