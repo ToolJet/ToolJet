@@ -8,7 +8,7 @@ export DATABASE_URL=${DATABASE_URL%"?sslmode=require"}
 
 (
   export NODE_EXTRA_CA_CERTS="$(pwd)/ca-certificate.pem"; \
-  npm run db:migrate && \
+  npm run db:migrate:prod && \
   npm run db:seed && \
   npm run start:prod
 )
