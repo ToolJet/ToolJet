@@ -378,7 +378,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
-  if (eventName === 'onRowClicked' && options?.component?.component === 'ListView') {
+  if (eventName === 'onRowClicked' && options?.component?.component === 'Listview') {
     executeActionsForEventId(_ref, 'onRowClicked', options.component, mode, customVariables);
   }
 
