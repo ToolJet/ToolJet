@@ -18,6 +18,7 @@ import {
   addDefaultEventHandler,
   addAndVerifyTooltip,
   editAndVerifyWidgetName,
+  verifyComponentValueFromInspector,
 } from "Support/utils/commonWidget";
 
 describe("Date Picker widget", () => {
@@ -46,6 +47,8 @@ describe("Date Picker widget", () => {
 
     openAccordion(commonWidgetText.accordionProperties);
     verifyAndModifyParameter(datePickerText.labelDefaultValue, data.date);
+    verifyComponentValueFromInspector(data.widgetName, data.date);
+
     verifyDate(data.date);
     data.date = randomDateOrTime();
     selectAndVerifyDate(data.date);
@@ -53,6 +56,8 @@ describe("Date Picker widget", () => {
     openEditorSidebar(datePickerSelector.draggableDatePicker, data.widgetName);
     verifyAndModifyParameter(datePickerText.labelformat, "DD/MM/YY");
     verifyDate(data.date, "DD/MM/YY");
+    verifyComponentValueFromInspector(data.widgetName, data.date, "opened");
+    cy.get(commonSelectors.canvas).click({ force: true });
 
     openEditorSidebar(datePickerSelector.draggableDatePicker, data.widgetName);
     verifyAndModifyParameter(
@@ -141,6 +146,10 @@ describe("Date Picker widget", () => {
       datePickerText.datepicker1
     );
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+    cy.get(commonWidgetSelector.widgetDocumentationLink).should(
+      "have.text",
+      commonWidgetText.datepickerDocumentationLink
+    );
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterVisibility,

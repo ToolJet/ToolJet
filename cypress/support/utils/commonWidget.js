@@ -77,3 +77,18 @@ export const editAndVerifyWidgetName = (widgetSelector, name) => {
     .click()
     .should("have.text", name);
 };
+
+export const verifyComponentValueFromInspector = (
+  componentName,
+  value,
+  openStatus = "closed"
+) => {
+  cy.get(commonWidgetSelector.sidebarinspector).click();
+  if (openStatus == "closed") {
+    cy.log(openStatus);
+
+    cy.get(commonWidgetSelector.inspectorNodeComponents).click();
+    cy.get(commonWidgetSelector.nodeComponent(componentName)).click();
+  }
+  cy.get(commonWidgetSelector.nodeComponentValue).contains(value);
+};

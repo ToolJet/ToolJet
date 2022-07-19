@@ -63,6 +63,10 @@ export const commonWidgetSelector = {
     return `[data-cy="widget-accordion-${accordionName.toLowerCase()}"]:eq(0)`;
   },
 
+  nodeComponent: (componentName) => {
+    return `[data-cy="inspector-node-${componentName.toLowerCase()}"]> .node-key`;
+  },
+
   buttonCloseEditorSideBar: "[data-rb-event-key='close-inpector-light']",
   buttonStylesEditorSideBar: "[data-rb-event-key='styles']",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
@@ -75,4 +79,10 @@ export const commonWidgetSelector = {
   eventHandlerCard: "[data-cy='event-handler-card']",
   alertMessageInputField: "[data-cy='alert-message-input-field']",
   changeLayoutButton: "[data-cy= 'change-layout-button']",
+
+  sidebarinspector: "[data-cy='left-sidebar-inspector-button']",
+  inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
+  nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
+
+  widgetDocumentationLink: "[data-cy='widget-documentation-link']",
 };

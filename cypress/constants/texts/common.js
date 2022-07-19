@@ -41,6 +41,10 @@ export const commonWidgetText = {
   codeMirrorInputFalse: codeMirrorInputLabel("false"),
 
   addEventHandlerLink: "+ Add event handler",
+  inspectorComponentLabel: "components",
+  componentValueLabel: "Value",
+
+  datepickerDocumentationLink: "Datepicker documentation",
 };
 
 export const createBackspaceText = (text) => {
