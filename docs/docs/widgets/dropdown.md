@@ -100,7 +100,7 @@ This is to control the visibility of the widget. If `{{false}}` the widget will 
 
 ### Selected text color
 
-Change the text color of the selected option in the widget by providing the `HEX color code` or choosing the the color from color picker.
+Change the text color of the selected option in the widget by providing the `HEX color code` or choosing the color from color picker.
 
 ### Disable
 
@@ -109,4 +109,3 @@ This property only accepts boolean values. If set to `{{true}}`, the widget will
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
-

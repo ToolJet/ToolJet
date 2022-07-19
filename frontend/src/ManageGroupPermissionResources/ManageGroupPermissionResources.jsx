@@ -363,7 +363,7 @@ class ManageGroupPermissionResources extends React.Component {
                     {/* Apps Tab */}
                     <div className={`tab-pane ${currentTab === 'apps' ? 'active show' : ''}`}>
                       <div className="row">
-                        <div className="col-5">
+                        <div className="col-5" data-cy="select-search">
                           <SelectSearch
                             className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                             options={appSelectOptions}
@@ -383,6 +383,7 @@ class ManageGroupPermissionResources extends React.Component {
                               selectedAppIds.length === 0 ? 'disabled' : ''
                             }`}
                             onClick={() => this.addSelectedAppsToGroup(groupPermission.id, selectedAppIds)}
+                            data-cy="add-button"
                           >
                             Add
                           </div>

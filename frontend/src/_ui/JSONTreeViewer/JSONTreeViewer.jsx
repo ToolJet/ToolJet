@@ -59,10 +59,7 @@ export class JSONTreeViewer extends React.Component {
   }
 
   getCurrentNodeType(node) {
-    const typeofCurrentNode = Object.prototype.toString.call(node).slice(8, -1);
-    //Todo: Handle more types (Custom type or Iterable type)
-
-    return typeofCurrentNode;
+    return Object.prototype.toString.call(node).slice(8, -1);
   }
 
   getLength(type, collection) {
@@ -176,7 +173,12 @@ export class JSONTreeViewer extends React.Component {
         currentPath = prevRelPath ? `${prevRelPath}.${node}` : node;
 
         if (prevType === 'Object') {
-          abs = `${prevPath}.${node}`;
+          //use bracket notation if the node starts with a numeric digit
+          if (node.match(/^\d/)) {
+            abs = `${prevPath}["${node}"]`;
+          } else {
+            abs = `${prevPath}.${node}`;
+          }
         } else if (prevType === 'Array') {
           abs = `${prevPath}[${node}]`;
         } else {

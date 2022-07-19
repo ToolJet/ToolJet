@@ -61,7 +61,6 @@ export class RebaseWidgetWidthAndLeftOffsetForResponsiveCanvas1636372753632 impl
                   }
                 }
               }
-
             }
 
             const width = layout.width;

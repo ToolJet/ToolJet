@@ -132,6 +132,7 @@ export default function AppCard({
                         history.push(app?.current_version_id ? `/applications/${app.slug}` : '');
                       }
                     }}
+                    data-cy="launch-button"
                   >
                     {app?.is_maintenance_on ? 'Maintenance' : 'Launch'}
                   </button>

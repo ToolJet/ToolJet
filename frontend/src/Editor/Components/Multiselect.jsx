@@ -20,6 +20,7 @@ export const Multiselect = function Multiselect({
   onComponentClick,
   darkMode,
   fireEvent,
+  registerAction,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState } = styles;
@@ -70,6 +71,44 @@ export const Multiselect = function Multiselect({
       items.map((item) => item.value)
     ).then(() => fireEvent('onSelect'));
   };
+
+  registerAction(
+    'selectOption',
+    async function (value) {
+      const newSelected = [
+        ...selected,
+        ...selectOptions.filter(
+          (option) => option.value === value && !selected.map((selectedOption) => selectedOption.value).includes(value)
+        ),
+      ];
+      setSelected(newSelected);
+      setExposedVariable(
+        'values',
+        newSelected.map((item) => item.value)
+      ).then(() => fireEvent('onSelect'));
+    },
+    [selected]
+  );
+  registerAction(
+    'deselectOption',
+    async function (value) {
+      const newSelected = [
+        ...selected.filter(function (item) {
+          return item.value !== value;
+        }),
+      ];
+      setSelected(newSelected);
+      setExposedVariable(
+        'values',
+        newSelected.map((item) => item.value)
+      ).then(() => fireEvent('onSelect'));
+    },
+    [selected]
+  );
+  registerAction('clearSelections', async function () {
+    setSelected([]);
+    setExposedVariable('values', []).then(() => fireEvent('onSelect'));
+  });
 
   return (
     <div

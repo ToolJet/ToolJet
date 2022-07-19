@@ -84,4 +84,8 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 
 </div>
 
+## Actions
 
+| Action      | Description | Properties |
+| ----------- | ----------- | ------------------ |
+| selectOption | Select an option from the radio buttons. | `option` eg: `component.radiobutton1.selectOption('one')` |
