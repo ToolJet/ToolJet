@@ -23,7 +23,7 @@ This value acts as placeholder for the date picker widget, if any value is not p
 
 ### Disabled dates
 
-We can give disabled dates property which will make specific dates disabled and cannot be selected. The default value needs to a an array of`Strings`.
+We can give disabled dates property which will make specific dates disabled and cannot be selected. The default value needs to be an array of`Strings`.
 
 ### Format
 

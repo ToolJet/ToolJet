@@ -36,7 +36,7 @@ You can create a Google Sheets data source with one of either of the two permiss
 
 ## Operations
 
-Using Google sheets data source you can perfom several operations from your applications like:
+Using Google sheets data source you can perform several operations from your applications like:
 
   1. **[Read data from a sheet](/docs/data-sources/google.sheets#read-data-from-a-sheet)**
   2. **[Append data to a sheet](/docs/data-sources/google.sheets#append-data-to-a-sheet)**

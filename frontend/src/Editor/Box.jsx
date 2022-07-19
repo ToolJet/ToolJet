@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -34,7 +34,7 @@ import { Pagination } from './Components/Pagination';
 import { Tags } from './Components/Tags';
 import { Spinner } from './Components/Spinner';
 import { CircularProgressBar } from './Components/CirularProgressbar';
-import { renderTooltip } from '@/_helpers/appUtils';
+import { renderTooltip, getComponentName } from '@/_helpers/appUtils';
 import { RangeSlider } from './Components/RangeSlider';
 import { Timeline } from './Components/Timeline';
 import { SvgImage } from './Components/SvgImage';
@@ -48,8 +48,16 @@ import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import { Steps } from './Components/Steps';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
-import { resolveProperties, resolveStyles, resolveGeneralProperties } from './component-properties-resolution';
-import { validateWidget } from '@/_helpers/utils';
+import { validateProperties } from './component-properties-validation';
+import { validateWidget, resolveReferences } from '@/_helpers/utils';
+import { componentTypes } from './WidgetManager/components';
+import {
+  resolveProperties,
+  resolveStyles,
+  resolveGeneralProperties,
+  resolveGeneralStyles,
+} from './component-properties-resolution';
+import _ from 'lodash';
 
 const AllComponents = {
   Button,
@@ -122,6 +130,8 @@ export const Box = function Box({
   mode,
   customResolvables,
   parentId,
+  allComponents,
+  sideBarDebugger,
   dataQueries,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
@@ -137,14 +147,56 @@ export const Box = function Box({
     };
   }
 
+  const componentMeta = useMemo(() => {
+    return componentTypes.find((comp) => component.component === comp.component);
+  }, [component]);
+
   const ComponentToRender = AllComponents[component.component];
   const [renderCount, setRenderCount] = useState(0);
   const [renderStartTime, setRenderStartTime] = useState(new Date());
 
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
+  const [validatedProperties, propertyErrors] =
+    mode === 'edit' && component.validate
+      ? validateProperties(resolvedProperties, componentMeta.properties)
+      : [resolvedProperties, []];
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
+  const [validatedStyles, styleErrors] =
+    mode === 'edit' && component.validate
+      ? validateProperties(resolvedStyles, componentMeta.styles)
+      : [resolvedStyles, []];
+  validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
+
   const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
+  const [validatedGeneralProperties, generalPropertiesErrors] =
+    mode === 'edit' && component.validate
+      ? validateProperties(resolvedGeneralProperties, componentMeta.general)
+      : [resolvedGeneralProperties, []];
+
+  const resolvedGeneralStyles = resolveGeneralStyles(component, currentState, null, customResolvables);
   resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
+  const [validatedGeneralStyles, generalStylesErrors] =
+    mode === 'edit' && component.validate
+      ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
+      : [resolvedGeneralStyles, []];
+
+  useEffect(() => {
+    const componentName = getComponentName(currentState, id);
+    const errorLog = Object.fromEntries(
+      [...propertyErrors, ...styleErrors, ...generalPropertiesErrors, ...generalStylesErrors].map((error) => [
+        `${componentName} - ${error.property}`,
+        {
+          type: 'component',
+          kind: 'component',
+          data: { message: `${error.message}`, status: true },
+          resolvedProperties: resolvedProperties,
+          effectiveProperties: validatedProperties,
+        },
+      ])
+    );
+    sideBarDebugger?.error(errorLog);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ propertyErrors, styleErrors, generalPropertiesErrors })]);
 
   useEffect(() => {
     setRenderCount(renderCount + 1);
@@ -157,6 +209,7 @@ export const Box = function Box({
       }
       setRenderStartTime(currentTime);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
 
@@ -179,12 +232,15 @@ export const Box = function Box({
     <OverlayTrigger
       placement={inCanvas ? 'auto' : 'top'}
       delay={{ show: 500, hide: 0 }}
-      trigger={inCanvas && !resolvedGeneralProperties.tooltip?.trim() ? null : ['hover', 'focus']}
+      trigger={inCanvas && !validatedGeneralProperties.tooltip?.trim() ? null : ['hover', 'focus']}
       overlay={(props) =>
-        renderTooltip({ props, text: inCanvas ? `${resolvedGeneralProperties.tooltip}` : `${component.description}` })
+        renderTooltip({ props, text: inCanvas ? `${validatedGeneralProperties.tooltip}` : `${component.description}` })
       }
     >
-      <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
+      <div
+        style={{ ...styles, backgroundColor, boxShadow: validatedGeneralStyles?.boxShadow }}
+        role={preview ? 'BoxPreview' : 'Box'}
+      >
         {inCanvas ? (
           <ComponentToRender
             onComponentClick={onComponentClick}
@@ -202,15 +258,21 @@ export const Box = function Box({
             darkMode={darkMode}
             removeComponent={removeComponent}
             canvasWidth={canvasWidth}
-            properties={resolvedProperties}
+            properties={validatedProperties}
             exposedVariables={exposedVariables}
-            styles={resolvedStyles}
+            styles={validatedStyles}
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
-            registerAction={(actionName, func, paramHandles = []) => {
-              if (Object.keys(exposedVariables).includes(actionName)) return Promise.resolve();
-              else {
-                func.paramHandles = paramHandles;
-                return onComponentOptionChanged(component, actionName, func);
+            registerAction={(actionName, func, dependencies = []) => {
+              if (Object.keys(currentState?.components ?? {}).includes(component.name)) {
+                if (!Object.keys(exposedVariables).includes(actionName)) {
+                  func.dependencies = dependencies;
+                  return onComponentOptionChanged(component, actionName, func);
+                } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
+                  return Promise.resolve();
+                } else if (!_.isEqual(dependencies, exposedVariables[actionName]?.dependencies)) {
+                  func.dependencies = dependencies;
+                  return onComponentOptionChanged(component, actionName, func);
+                }
               }
             }}
             fireEvent={fireEvent}

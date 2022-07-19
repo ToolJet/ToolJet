@@ -42,6 +42,31 @@ export const LeftSidebarInspector = ({
     delete jsontreeData.errors;
     delete jsontreeData.client;
     delete jsontreeData.server;
+
+    //*Sorted components and queries alphabetically
+    const sortedComponents = Object.keys(jsontreeData['components'])
+      .sort((a, b) => {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      })
+      .reduce((accumulator, key) => {
+        accumulator[key] = jsontreeData['components'][key];
+
+        return accumulator;
+      }, {});
+
+    const sortedQueries = Object.keys(jsontreeData['queries'])
+      .sort((a, b) => {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      })
+      .reduce((accumulator, key) => {
+        accumulator[key] = jsontreeData['queries'][key];
+
+        return accumulator;
+      }, {});
+
+    jsontreeData['components'] = sortedComponents;
+    jsontreeData['queries'] = sortedQueries;
+
     return jsontreeData;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState]);
@@ -156,7 +181,7 @@ export const LeftSidebarInspector = ({
             actionsList={callbackActions}
             currentState={appDefinition}
             actionIdentifier="id"
-            expandWithLabels={false}
+            expandWithLabels={true}
             selectedComponent={selectedComponent}
             treeType="inspector"
             parentPopoverState={popoverPinned}

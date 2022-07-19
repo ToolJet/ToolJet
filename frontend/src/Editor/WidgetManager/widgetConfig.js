@@ -5,38 +5,211 @@ export const widgets = [
     description: 'Display paginated tabular data',
     component: 'Table',
     properties: {
-      title: { type: 'string', displayName: 'Title' },
-      data: { type: 'code', displayName: 'Table data' },
-      loadingState: { type: 'toggle', displayName: 'Loading state' },
-      columns: { type: 'array', displayName: 'Table Columns' },
+      title: {
+        type: 'string',
+        displayName: 'Title',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      data: {
+        type: 'code',
+        displayName: 'Table data',
+        validation: {
+          schema: {
+            type: 'array',
+            element: { type: 'object' },
+            optional: true,
+          },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      columns: {
+        type: 'array',
+        displayName: 'Table Columns',
+        // validation: {
+        //   schema: {
+        //     type: 'array',
+        //     element: {
+        //       type: 'union',
+        //       schemas: [
+        //         {
+        //           type: 'object',
+        //           object: {
+        //             columnType: { type: 'string' },
+        //             name: { type: 'string' },
+        //             textWrap: { type: 'string' },
+        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        //             textColor: { type: 'string' },
+        //             regex: { type: 'string' },
+        //             minLength: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        //             maxLength: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        //             customRule: { type: 'string' },
+        //           },
+        //         },
+        //         {
+        //           type: 'object',
+        //           object: {
+        //             columnType: { type: 'string' },
+        //             name: { type: 'string' },
+        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        //           },
+        //           isEditable: { type: 'boolean' },
+        //         },
+        //         {
+        //           type: 'object',
+        //           object: {
+        //             columnType: { type: 'string' },
+        //             name: { type: 'string' },
+        //             activeColor: { type: 'string' },
+        //             isEditable: { type: 'boolean' },
+        //           },
+        //         },
+        //         {
+        //           type: 'object',
+        //           object: {
+        //             columnType: { type: 'string' },
+        //             name: { type: 'string' },
+        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        //             values: {
+        //               type: 'union',
+        //               schemas: [
+        //                 { type: 'array', element: { type: 'string' } },
+        //                 { type: 'array', element: { type: 'number' } },
+        //               ],
+        //             },
+        //             labels: {
+        //               type: 'union',
+        //               schemas: [
+        //                 { type: 'array', element: { type: 'string' } },
+        //                 { type: 'array', element: { type: 'number' } },
+        //               ],
+        //             },
+        //           },
+        //           isEditable: { type: 'boolean' },
+        //         },
+        //         {
+        //           type: 'object',
+        //           object: {
+        //             columnType: { type: 'string' },
+        //             name: { type: 'string' },
+        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        //             values: {
+        //               type: 'union',
+        //               schemas: [
+        //                 { type: 'array', element: { type: 'string' } },
+        //                 { type: 'array', element: { type: 'number' } },
+        //               ],
+        //             },
+        //             labels: {
+        //               type: 'union',
+        //               schemas: [
+        //                 { type: 'array', element: { type: 'string' } },
+        //                 { type: 'array', element: { type: 'number' } },
+        //               ],
+        //             },
+        //           },
+        //           isEditable: { type: 'boolean' },
+        //         },
+        //         {
+        //           type: 'object',
+        //           object: {
+        //             columnType: { type: 'string' },
+        //             name: { type: 'string' },
+        //             key: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        //             dateFormat: { type: 'string' },
+        //             parseDateFormat: { type: 'string' },
+        //             isTimeChecked: { type: 'boolean' },
+        //             isEditable: { type: 'boolean' },
+        //           },
+        //         },
+        //       ],
+        //     },
+        //   },
+        // },
+      },
       serverSidePagination: {
         type: 'toggle',
         displayName: 'Server-side pagination',
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
       clientSidePagination: {
         type: 'toggle',
         displayName: 'Client-side pagination',
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
-      serverSideSearch: { type: 'toggle', displayName: 'Server-side search' },
+      serverSideSearch: {
+        type: 'toggle',
+        displayName: 'Server-side search',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       actionButtonBackgroundColor: {
         type: 'color',
         displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+        },
       },
-      actionButtonTextColor: { type: 'color', displayName: 'Text color' },
-      displaySearchBox: { type: 'toggle', displayName: 'Show search box' },
+      actionButtonTextColor: {
+        type: 'color',
+        displayName: 'Text color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      displaySearchBox: {
+        type: 'toggle',
+        displayName: 'Show search box',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       showDownloadButton: {
         type: 'toggle',
         displayName: 'Show download button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
-      showFilterButton: { type: 'toggle', displayName: 'Show filter button' },
+      showFilterButton: {
+        type: 'toggle',
+        displayName: 'Show filter button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       showBulkUpdateActions: {
         type: 'toggle',
         displayName: 'Show bulk update actions',
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
-      showBulkSelector: { type: 'toggle', displayName: 'Bulk selection' },
+      showBulkSelector: {
+        type: 'toggle',
+        displayName: 'Bulk selection',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       highlightSelectedRow: {
         type: 'toggle',
         displayName: 'Highlight selected row',
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
     },
     others: {
@@ -54,8 +227,20 @@ export const widgets = [
       onSearch: { displayName: 'Search' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text Color' },
-      actionButtonRadius: { type: 'code', displayName: 'Action Button Radius' },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      actionButtonRadius: {
+        type: 'code',
+        displayName: 'Action Button Radius',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
+        },
+      },
       tableType: {
         type: 'select',
         displayName: 'Table type',
@@ -66,6 +251,9 @@ export const widgets = [
           { name: 'Striped', value: 'table-striped' },
           { name: 'Striped & bordered', value: 'table-striped table-bordered' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
       cellSize: {
         type: 'select',
@@ -74,10 +262,31 @@ export const widgets = [
           { name: 'Compact', value: 'compact' },
           { name: 'Spacious', value: 'spacious' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
-      borderRadius: { type: 'code', displayName: 'Border Radius' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border Radius',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       selectedRow: {},
@@ -164,19 +373,73 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      text: { type: 'code', displayName: 'Button Text' },
-      loadingState: { type: 'toggle', displayName: 'Loading State' },
+      text: {
+        type: 'code',
+        displayName: 'Button Text',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading State',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onClick: { displayName: 'On click' },
     },
     styles: {
-      backgroundColor: { type: 'color', displayName: 'Background color' },
-      textColor: { type: 'color', displayName: 'Text color' },
-      loaderColor: { type: 'color', displayName: 'Loader color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'number', displayName: 'Border radius' },
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
+      loaderColor: {
+        type: 'color',
+        displayName: 'Loader color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
+      borderRadius: {
+        type: 'number',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'number' },
+          defaultValue: false,
+        },
+      },
     },
     exposedVariables: {},
     actions: [
@@ -225,12 +488,56 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      title: { type: 'code', displayName: 'Title' },
-      data: { type: 'json', displayName: 'Data' },
-      loadingState: { type: 'toggle', displayName: 'Loading State' },
-      markerColor: { type: 'color', displayName: 'Marker color' },
-      showAxes: { type: 'toggle', displayName: 'Show axes' },
-      showGridLines: { type: 'toggle', displayName: 'Show grid lines' },
+      title: {
+        type: 'code',
+        displayName: 'Title',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      data: {
+        type: 'json',
+        displayName: 'Data',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'array' }] },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading State',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      markerColor: {
+        type: 'color',
+        displayName: 'Marker color',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      showAxes: {
+        type: 'toggle',
+        displayName: 'Show axes',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      showGridLines: {
+        type: 'toggle',
+        displayName: 'Show grid lines',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
       type: {
         type: 'select',
         displayName: 'Chart type',
@@ -239,15 +546,62 @@ export const widgets = [
           { name: 'Bar', value: 'bar' },
           { name: 'Pie', value: 'pie' },
         ],
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'boolean' }, { type: 'number' }],
+          },
+        },
       },
-      jsonDescription: { type: 'json', displayName: 'Json Description' },
-      plotFromJson: { type: 'toggle', displayName: 'Use Plotly JSON schema' },
+      jsonDescription: {
+        type: 'json',
+        displayName: 'Json Description',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      plotFromJson: {
+        type: 'toggle',
+        displayName: 'Use Plotly JSON schema',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     events: {},
     styles: {
-      padding: { type: 'code', displayName: 'Padding' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      padding: {
+        type: 'code',
+        displayName: 'Padding',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'number' }, { type: 'string' }],
+          },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     exposedVariables: {
       show: null,
@@ -314,7 +668,13 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      title: { type: 'code', displayName: 'Title' },
+      title: {
+        type: 'code',
+        displayName: 'Title',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
       hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
       hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
@@ -327,15 +687,34 @@ export const widgets = [
           { name: 'medium', value: 'md' },
           { name: 'large', value: 'lg' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
     },
     events: {},
     styles: {
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
-      show: null,
+      show: false,
     },
+    actions: [
+      {
+        handle: 'open',
+        displayName: 'Open',
+      },
+      {
+        handle: 'close',
+        displayName: 'Close',
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -368,8 +747,22 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      value: { type: 'code', displayName: 'Default value' },
-      placeholder: { type: 'code', displayName: 'Placeholder' },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     validation: {
       regex: { type: 'code', displayName: 'Regex' },
@@ -381,13 +774,28 @@ export const widgets = [
       onChange: { displayName: 'On change' },
     },
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: { type: 'toggle', displayName: 'Visibility', validation: { schema: { type: 'boolean' } } },
+      disabledState: { type: 'toggle', displayName: 'Disable', validation: { schema: { type: 'boolean' } } },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      },
     },
     exposedVariables: {
       value: '',
     },
+    actions: [
+      {
+        handle: 'setText',
+        displayName: 'Set text',
+        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
+      },
+      {
+        handle: 'clear',
+        displayName: 'Clear',
+      },
+    ],
     definition: {
       validation: {
         regex: { value: '' },
@@ -425,16 +833,58 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      value: { type: 'code', displayName: 'Default value' },
-      minValue: { type: 'code', displayName: 'Minimum value' },
-      maxValue: { type: 'code', displayName: 'Maximum value' },
-      placeholder: { type: 'code', displayName: 'Placeholder' },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      minValue: {
+        type: 'code',
+        displayName: 'Minimum value',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      maxValue: {
+        type: 'code',
+        displayName: 'Maximum value',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
     },
     exposedVariables: {
       value: 0,
@@ -472,7 +922,13 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      placeholder: { type: 'code', displayName: 'Placeholder' },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     validation: {
       regex: { type: 'code', displayName: 'Regex' },
@@ -482,9 +938,27 @@ export const widgets = [
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
     },
     exposedVariables: {
       value: '',
@@ -528,19 +1002,67 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      defaultValue: { type: 'code', displayName: 'Default value' },
-      format: { type: 'code', displayName: 'Format' },
-      enableTime: { type: 'code', displayName: 'Enable time selection?' },
-      enableDate: { type: 'code', displayName: 'Enable date selection?' },
-      disabledDates: { type: 'code', displayName: 'Disabled dates' },
+      defaultValue: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      format: {
+        type: 'code',
+        displayName: 'Format',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      enableTime: {
+        type: 'code',
+        displayName: 'Enable time selection?',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      enableDate: {
+        type: 'code',
+        displayName: 'Enable date selection?',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledDates: {
+        type: 'code',
+        displayName: 'Disabled dates',
+        validation: {
+          schema: { type: 'array', element: { type: 'string' } },
+        },
+      },
     },
     events: {
       onSelect: { displayName: 'On select' },
     },
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
     },
     exposedVariables: {
       value: '',
@@ -577,23 +1099,66 @@ export const widgets = [
       width: 5,
       height: 30,
     },
+    actions: [
+      {
+        handle: 'setChecked',
+        displayName: 'Set checked',
+        params: [{ handle: 'status', displayName: 'status' }],
+      },
+    ],
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' },
-      defaultValue: { type: 'toggle', displayName: 'Default Status' },
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      defaultValue: {
+        type: 'toggle',
+        displayName: 'Default Status',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onCheck: { displayName: 'On check' },
       onUnCheck: { displayName: 'On uncheck' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text Color' },
-      checkboxColor: { type: 'color', displayName: 'Checkbox Color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      checkboxColor: {
+        type: 'color',
+        displayName: 'Checkbox Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       value: false,
@@ -630,20 +1195,80 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' },
-      value: { type: 'code', displayName: 'Default value' },
-      values: { type: 'code', displayName: 'Option values' },
-      display_values: { type: 'code', displayName: 'Option labels' },
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      values: {
+        type: 'code',
+        displayName: 'Option values',
+        validation: {
+          schema: { type: 'array', element: { type: 'boolean' } },
+        },
+      },
+      display_values: {
+        type: 'code',
+        displayName: 'Option labels',
+        validation: {
+          schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        },
+      },
     },
     events: {
       onSelectionChange: { displayName: 'On select' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text Color' },
-      activeColor: { type: 'color', displayName: 'Active Color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      activeColor: {
+        type: 'color',
+        displayName: 'Active Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
+    actions: [
+      {
+        handle: 'selectOption',
+        displayName: 'Select Option',
+        params: [
+          {
+            handle: 'option',
+            displayName: 'Option',
+          },
+        ],
+      },
+    ],
     exposedVariables: {},
     definition: {
       others: {
@@ -680,17 +1305,53 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' },
-      defaultValue: { type: 'toggle', displayName: 'Default Status' },
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      defaultValue: {
+        type: 'toggle',
+        displayName: 'Default Status',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onChange: { displayName: 'On change' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text Color' },
-      toggleSwitchColor: { type: 'color', displayName: 'Toggle Switch Color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      toggleSwitchColor: {
+        type: 'color',
+        displayName: 'Toggle Switch Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       value: false,
@@ -727,19 +1388,60 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      value: { type: 'code', displayName: 'Default value' },
-      placeholder: { type: 'code', displayName: 'Placeholder' },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
     },
     exposedVariables: {
       value:
         'ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀',
     },
+    actions: [
+      {
+        handle: 'setText',
+        displayName: 'Set Text',
+        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
+      },
+      {
+        handle: 'clear',
+        displayName: 'Clear',
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -774,15 +1476,64 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      defaultStartDate: { type: 'code', displayName: 'Default start date' },
-      defaultEndDate: { type: 'code', displayName: 'Default end date' },
-      format: { type: 'code', displayName: 'Format' },
+      defaultStartDate: {
+        type: 'code',
+        displayName: 'Default start date',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      defaultEndDate: {
+        type: 'code',
+        displayName: 'Default end date',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      format: {
+        type: 'code',
+        displayName: 'Format',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
     },
     events: {},
     styles: {
-      borderRadius: { type: 'code', displayName: 'Border radius' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'number' }, { type: 'string' }],
+          },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     exposedVariables: {
       endDate: {},
@@ -817,8 +1568,20 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      text: { type: 'code', displayName: 'Text' },
-      loadingState: { type: 'toggle', displayName: 'Show loading state' },
+      text: {
+        type: 'code',
+        displayName: 'Text',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Show loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     defaultSize: {
       width: 6,
@@ -826,11 +1589,42 @@ export const widgets = [
     },
     events: [],
     styles: {
-      textSize: { type: 'number', displayName: 'Text Size' },
-      textColor: { type: 'color', displayName: 'Text Color' },
-      textAlign: { type: 'alignButtons', displayName: 'Align Text' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      textSize: {
+        type: 'number',
+        displayName: 'Text Size',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      textAlign: {
+        type: 'alignButtons',
+        displayName: 'Align Text',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {},
     actions: [
@@ -875,10 +1669,34 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      source: { type: 'code', displayName: 'URL' },
-      loadingState: { type: 'toggle', displayName: 'Loading state' },
-      alternativeText: { type: 'code', displayName: 'Alternative text' },
-      zoomButtons: { type: 'toggle', displayName: 'Zoom button' },
+      source: {
+        type: 'code',
+        displayName: 'URL',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      alternativeText: {
+        type: 'code',
+        displayName: 'Alternative text',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      zoomButtons: {
+        type: 'toggle',
+        displayName: 'Zoom button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -893,11 +1711,38 @@ export const widgets = [
           { name: 'Circle', value: 'rounded-circle' },
           { name: 'Thumbnail', value: 'img-thumbnail' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
-      backgroundColor: { type: 'color', displayName: 'Background color' },
-      padding: { type: 'code', displayName: 'Padding' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      padding: {
+        type: 'code',
+        displayName: 'Padding',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       imageFit: {
         type: 'select',
         displayName: 'Image fit',
@@ -907,6 +1752,9 @@ export const widgets = [
           { name: 'cover', value: 'cover' },
           { name: 'scale-down', value: 'scale-down' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
     },
     exposedVariables: {},
@@ -948,10 +1796,37 @@ export const widgets = [
     properties: {},
     events: {},
     styles: {
-      backgroundColor: { type: 'color' },
-      borderRadius: { type: 'code', displayName: 'Border Radius' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border Radius',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
+          },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {},
     definition: {
@@ -988,27 +1863,112 @@ export const widgets = [
       customRule: { type: 'code', displayName: 'Custom validation' },
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' },
-      value: { type: 'code', displayName: 'Default value' },
-      values: { type: 'code', displayName: 'Option values' },
-      display_values: { type: 'code', displayName: 'Option labels' },
-      loadingState: { type: 'toggle', displayName: 'Options loading state' },
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
+          },
+        },
+      },
+      values: {
+        type: 'code',
+        displayName: 'Option values',
+        validation: {
+          schema: {
+            type: 'array',
+            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
+          },
+        },
+      },
+      display_values: {
+        type: 'code',
+        displayName: 'Option labels',
+        validation: {
+          schema: {
+            type: 'array',
+            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
+          },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Options loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onSelect: { displayName: 'On select' },
       onSearchTextChanged: { displayName: 'On search text changed' },
     },
     styles: {
-      borderRadius: { type: 'code', displayName: 'Border radius' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      selectedTextColor: { type: 'color', displayName: 'Selected Text Color' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      justifyContent: { type: 'alignButtons', displayName: 'Align Text' },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'number' }, { type: 'string' }],
+          },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      selectedTextColor: {
+        type: 'color',
+        displayName: 'Selected Text Color',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      justifyContent: {
+        type: 'alignButtons',
+        displayName: 'Align Text',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
     },
     exposedVariables: {
       value: 2,
       searchText: '',
     },
+    actions: [
+      {
+        handle: 'selectOption',
+        displayName: 'Select option',
+        params: [{ handle: 'select', displayName: 'Select' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -1047,23 +2007,94 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
+    actions: [
+      {
+        handle: 'selectOption',
+        displayName: 'Select Option',
+        params: [
+          {
+            handle: 'option',
+            displayName: 'Option',
+          },
+        ],
+      },
+      {
+        handle: 'deselectOption',
+        displayName: 'Deselect Option',
+        params: [
+          {
+            handle: 'option',
+            displayName: 'Option',
+          },
+        ],
+      },
+      {
+        handle: 'clearSelections',
+        displayName: 'Clear selections',
+      },
+    ],
     properties: {
-      label: { type: 'code', displayName: 'Label' },
-      value: { type: 'code', displayName: 'Default value' },
-      values: { type: 'code', displayName: 'Option values' },
-      display_values: { type: 'code', displayName: 'Option labels' },
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        },
+      },
+      values: {
+        type: 'code',
+        displayName: 'Option values',
+        validation: {
+          schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        },
+      },
+      display_values: {
+        type: 'code',
+        displayName: 'Option labels',
+        validation: {
+          schema: { type: 'array', element: { type: 'string' } },
+        },
+      },
       showAllOption: {
         type: 'toggle',
         displayName: 'Enable select All option',
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
     },
     events: {
       onSelect: { displayName: 'On select' },
     },
     styles: {
-      borderRadius: { type: 'code', displayName: 'Border radius' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       values: {},
@@ -1102,13 +2133,41 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      placeholder: { type: 'code', displayName: 'Placeholder' },
-      defaultValue: { type: 'code', displayName: 'Default Value' },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      defaultValue: {
+        type: 'code',
+        displayName: 'Default Value',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     exposedVariables: {
       value: '',
@@ -1152,6 +2211,12 @@ export const widgets = [
           theme: 'duotone-light',
           className: 'map-location-input pr-2',
         },
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'array', element: { type: 'object' } }, { type: 'object' }],
+          },
+        },
       },
       defaultMarkers: {
         type: 'code',
@@ -1161,18 +2226,66 @@ export const widgets = [
           theme: 'duotone-light',
           className: 'map-location-input pr-2',
         },
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'array', element: { type: 'object' } }, { type: 'object' }],
+          },
+        },
       },
-      addNewMarkers: { type: 'toggle', displayName: 'Add new markers' },
-      canSearch: { type: 'toggle', displayName: 'Search for places' },
+      addNewMarkers: {
+        type: 'toggle',
+        displayName: 'Add new markers',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      canSearch: {
+        type: 'toggle',
+        displayName: 'Search for places',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     events: {
       onBoundsChange: { displayName: 'On bounds change' },
       onCreateMarker: { displayName: 'On create marker' },
       onMarkerClick: { displayName: 'On marker click' },
     },
+    actions: [
+      {
+        handle: 'setLocation',
+        displayName: 'Set Location',
+        params: [
+          { handle: 'lat', displayName: 'Latitude' },
+          { handle: 'lng', displayName: 'Longitude' },
+        ],
+      },
+    ],
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     exposedVariables: {
       center: {},
@@ -1219,8 +2332,20 @@ export const widgets = [
       onDetect: { displayName: 'On detect' },
     },
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       lastDetectedValue: '',
@@ -1252,23 +2377,74 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' },
-      maxRating: { type: 'code', displayName: 'Number of stars' },
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      maxRating: {
+        type: 'code',
+        displayName: 'Number of stars',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
       defaultSelected: {
         type: 'code',
         displayName: 'Default no of selected stars',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
       },
-      allowHalfStar: { type: 'toggle', displayName: 'Enable half star' },
-      tooltips: { type: 'code', displayName: 'Tooltips' },
+      allowHalfStar: {
+        type: 'toggle',
+        displayName: 'Enable half star',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      tooltips: {
+        type: 'code',
+        displayName: 'Tooltips',
+        validation: {
+          schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        },
+      },
     },
     events: {
       onChange: { displayName: 'On Change' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Star Color' },
-      labelColor: { type: 'color', displayName: 'Label Color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      textColor: {
+        type: 'color',
+        displayName: 'Star Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      labelColor: {
+        type: 'color',
+        displayName: 'Label Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       value: 0,
@@ -1311,8 +2487,20 @@ export const widgets = [
     properties: {},
     events: {},
     styles: {
-      dividerColor: { type: 'color', displayName: 'Divider Color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      dividerColor: {
+        type: 'color',
+        displayName: 'Divider Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       value: {},
@@ -1343,16 +2531,89 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
+    actions: [
+      {
+        handle: 'clearFiles',
+        displayName: 'Clear Files',
+      },
+    ],
     properties: {
-      instructionText: { type: 'code', displayName: 'Instruction Text' },
-      enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
-      enablePicker: { type: 'code', displayName: 'Use File Picker' },
-      enableMultiple: { type: 'code', displayName: 'Pick multiple files' },
-      maxFileCount: { type: 'code', displayName: 'Max file count' },
-      fileType: { type: 'code', displayName: 'Accept file types' },
-      maxSize: { type: 'code', displayName: 'Max size limit (Bytes)' },
-      minSize: { type: 'code', displayName: 'Min size limit (Bytes)' },
-      parseContent: { type: 'toggle', displayName: 'Parse content' },
+      instructionText: {
+        type: 'code',
+        displayName: 'Instruction Text',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      enableDropzone: {
+        type: 'code',
+        displayName: 'Use Drop zone',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      enablePicker: {
+        type: 'code',
+        displayName: 'Use File Picker',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      enableMultiple: {
+        type: 'code',
+        displayName: 'Pick multiple files',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      maxFileCount: {
+        type: 'code',
+        displayName: 'Max file count',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
+          },
+        },
+      },
+      fileType: {
+        type: 'code',
+        displayName: 'Accept file types',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      maxSize: {
+        type: 'code',
+        displayName: 'Max size limit (Bytes)',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
+          },
+        },
+      },
+      minSize: {
+        type: 'code',
+        displayName: 'Min size limit (Bytes)',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
+          },
+        },
+      },
+      parseContent: {
+        type: 'toggle',
+        displayName: 'Parse content',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
       parseFileType: {
         type: 'select',
         displayName: 'File type',
@@ -1360,13 +2621,43 @@ export const widgets = [
           { name: 'Autodetect from extension', value: 'auto-detect' },
           { name: 'CSV', value: 'csv' },
         ],
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
       },
     },
     events: { onFileSelected: { displayName: 'On File Selected' } },
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
+          },
+        },
+      },
     },
     exposedVariables: {
       file: [{ name: '', content: '', dataURL: '', type: '', parsedData: '' }],
@@ -1522,12 +2813,30 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      source: { type: 'code', displayName: 'URL' },
+      source: {
+        type: 'code',
+        displayName: 'URL',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {},
     definition: {
@@ -1560,15 +2869,51 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      enableLineNumber: { type: 'code', displayName: 'Show Line Number' },
-      mode: { type: 'code', displayName: 'Mode' },
-      placeholder: { type: 'code', displayName: 'Placeholder' },
+      enableLineNumber: {
+        type: 'code',
+        displayName: 'Show Line Number',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      mode: {
+        type: 'code',
+        displayName: 'Mode',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
     },
     exposedVariables: {
       value: '',
@@ -1605,16 +2950,92 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      tabs: { type: 'code', displayName: 'Tabs' },
-      defaultTab: { type: 'code', displayName: 'Default tab' },
-      hideTabs: { type: 'toggle', displayName: 'Hide Tabs' },
+      tabs: {
+        type: 'code',
+        displayName: 'Tabs',
+        validation: {
+          schema: {
+            type: 'array',
+            element: {
+              type: 'object',
+              object: {
+                id: {
+                  type: 'union',
+                  schemas: [{ type: 'string' }, { type: 'number' }],
+                },
+              },
+            },
+          },
+        },
+      },
+      defaultTab: {
+        type: 'code',
+        displayName: 'Default tab',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
+          },
+        },
+      },
+      hideTabs: {
+        type: 'toggle',
+        displayName: 'Hide Tabs',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     events: { onTabSwitch: { displayName: 'On tab switch' } },
     styles: {
-      highlightColor: { type: 'color', displayName: 'Highlight Color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      highlightColor: {
+        type: 'color',
+        displayName: 'Highlight Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      tabWidth: {
+        type: 'select',
+        displayName: 'Tab width',
+        options: [
+          { name: 'Auto', value: 'auto' },
+          { name: 'Equally split', value: 'split' },
+        ],
+      },
     },
+    actions: [
+      {
+        handle: 'setTab',
+        displayName: 'Set current tab',
+        params: [
+          {
+            handle: 'id',
+            displayName: 'Id',
+          },
+        ],
+      },
+    ],
     exposedVariables: { currentTab: '' },
     definition: {
       others: {
@@ -1634,6 +3055,7 @@ export const widgets = [
         highlightColor: { value: '#0565FE' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        tabWidth: { value: 'auto' },
       },
     },
   },
@@ -1651,7 +3073,13 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      value: { type: 'code', displayName: 'Default value' },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       type: {
         type: 'select',
         displayName: 'Timer type',
@@ -1659,6 +3087,9 @@ export const widgets = [
           { name: 'Count Up', value: 'countUp' },
           { name: 'Count Down', value: 'countDown' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
     },
     validation: {},
@@ -1670,8 +3101,20 @@ export const widgets = [
       onReset: { displayName: 'On Reset' },
     },
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       value: '',
@@ -1723,18 +3166,54 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      data: { type: 'code', displayName: 'List data' },
-      rowHeight: { type: 'code', displayName: 'Row height' },
-      showBorder: { type: 'code', displayName: 'Show bottom border' },
+      data: {
+        type: 'code',
+        displayName: 'List data',
+        validation: {
+          schema: { type: 'array', element: { type: 'object' } },
+        },
+      },
+      rowHeight: {
+        type: 'code',
+        displayName: 'Row height',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      showBorder: {
+        type: 'code',
+        displayName: 'Show bottom border',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onRowClicked: { displayName: 'Row clicked' },
     },
     styles: {
       backgroundColor: { type: 'color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'number', displayName: 'Border radius' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      borderRadius: {
+        type: 'number',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
     },
     exposedVariables: {
       data: [{}],
@@ -1777,11 +3256,29 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      data: { type: 'code', displayName: 'Tags' },
+      data: {
+        type: 'code',
+        displayName: 'Tags',
+        validation: {
+          schema: {
+            type: 'array',
+            element: {
+              type: 'object',
+              object: { title: { type: 'string' }, color: { type: 'string' }, textColor: { type: 'string' } },
+            },
+          },
+        },
+      },
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {},
     definition: {
@@ -1815,16 +3312,40 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      numberOfPages: { type: 'code', displayName: 'Number of pages' },
-      defaultPageIndex: { type: 'code', displayName: 'Default page index' },
+      numberOfPages: {
+        type: 'code',
+        displayName: 'Number of pages',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      defaultPageIndex: {
+        type: 'code',
+        displayName: 'Default page index',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
     },
     validation: {},
     events: {
       onPageChange: { displayName: 'On Page Change' },
     },
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       totalPages: null,
@@ -1865,18 +3386,72 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      text: { type: 'code', displayName: 'Text' },
-      progress: { type: 'code', displayName: 'Progress' },
+      text: {
+        type: 'code',
+        displayName: 'Text',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      progress: {
+        type: 'code',
+        displayName: 'Progress',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
     },
     events: {},
     styles: {
-      color: { type: 'color', displayName: 'Color' },
-      textColor: { type: 'color', displayName: 'Text Color' },
-      textSize: { type: 'code', displayName: 'Text Size' },
-      strokeWidth: { type: 'code', displayName: 'Stroke Width' },
-      counterClockwise: { type: 'code', displayName: 'Counter Clockwise' },
-      circleRatio: { type: 'code', displayName: 'Circle Ratio' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      color: {
+        type: 'color',
+        displayName: 'Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      textSize: {
+        type: 'code',
+        displayName: 'Text Size',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      strokeWidth: {
+        type: 'code',
+        displayName: 'Stroke Width',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      counterClockwise: {
+        type: 'code',
+        displayName: 'Counter Clockwise',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      circleRatio: {
+        type: 'code',
+        displayName: 'Circle Ratio',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {},
     definition: {
@@ -1920,8 +3495,20 @@ export const widgets = [
     properties: {},
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      colour: { type: 'color', displayName: 'Colour' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      colour: {
+        type: 'color',
+        displayName: 'Colour',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       size: {
         type: 'select',
         displayName: 'Size',
@@ -1929,6 +3516,9 @@ export const widgets = [
           { name: 'small', value: 'sm' },
           { name: 'large', value: 'lg' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
     },
     exposedVariables: {},
@@ -1960,36 +3550,58 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      primaryValueLabel: { type: 'code', displayName: 'Primary value label' },
-      primaryValue: { type: 'code', displayName: 'Primary value' },
-      hideSecondary: { type: 'toggle', displayName: 'Hide secondary value' },
+      primaryValueLabel: {
+        type: 'code',
+        displayName: 'Primary value label',
+        validation: { schema: { type: 'string' } },
+      },
+      primaryValue: { type: 'code', displayName: 'Primary value', validation: { schema: { type: 'string' } } },
+      hideSecondary: {
+        type: 'toggle',
+        displayName: 'Hide secondary value',
+        validation: { schema: { type: 'boolean' } },
+      },
       secondaryValueLabel: {
         type: 'code',
         displayName: 'Secondary value label',
+        validation: { schema: { type: 'string' } },
       },
-      secondaryValue: { type: 'code', displayName: 'Secondary value' },
+      secondaryValue: { type: 'code', displayName: 'Secondary value', validation: { schema: { type: 'string' } } },
       secondarySignDisplay: {
         type: 'code',
         displayName: 'Secondary sign display',
+
+        validation: { schema: { type: 'string' } },
       },
-      loadingState: { type: 'toggle', displayName: 'Loading State' },
+      loadingState: { type: 'toggle', displayName: 'Loading State', validation: { schema: { type: 'boolean' } } },
     },
     events: {},
     styles: {
       primaryLabelColour: {
         type: 'color',
         displayName: 'Primary Label Colour',
+        validation: { schema: { type: 'string' } },
       },
-      primaryTextColour: { type: 'color', displayName: 'Primary Text  Colour' },
+      primaryTextColour: {
+        type: 'color',
+        displayName: 'Primary Text  Colour',
+        validation: { schema: { type: 'string' } },
+      },
       secondaryLabelColour: {
         type: 'color',
         displayName: 'Secondary Label Colour',
+        validation: { schema: { type: 'string' } },
       },
       secondaryTextColour: {
         type: 'color',
         displayName: 'Secondary Text Colour',
+        validation: { schema: { type: 'string' } },
       },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+      },
     },
     definition: {
       others: {
@@ -2028,17 +3640,65 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      min: { type: 'number', displayName: 'Min' },
-      max: { type: 'number', displayName: 'Max' },
-      value: { type: 'code', displayName: 'Value' },
-      enableTwoHandle: { type: 'toggle', displayName: 'Two handles' },
+      min: {
+        type: 'number',
+        displayName: 'Min',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      max: {
+        type: 'number',
+        displayName: 'Max',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      value: {
+        type: 'code',
+        displayName: 'Value',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      enableTwoHandle: {
+        type: 'toggle',
+        displayName: 'Two handles',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {},
     styles: {
-      lineColor: { type: 'color', displayName: 'Line color' },
-      handleColor: { type: 'color', displayName: 'Handle color' },
-      trackColor: { type: 'color', displayName: 'Track color' },
-      visibility: { type: 'code', displayName: 'Visibility' },
+      lineColor: {
+        type: 'color',
+        displayName: 'Line color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      handleColor: {
+        type: 'color',
+        displayName: 'Handle color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      trackColor: {
+        type: 'color',
+        displayName: 'Track color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'code',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       value: null,
@@ -2075,8 +3735,20 @@ export const widgets = [
     description: 'Visual representation of a sequence of events',
     component: 'Timeline',
     properties: {
-      data: { type: 'code', displayName: 'Timeline data' },
-      hideDate: { type: 'toggle', displayName: 'Hide Date' },
+      data: {
+        type: 'code',
+        displayName: 'Timeline data',
+        validation: {
+          schema: { type: 'array', element: { type: 'object' } },
+        },
+      },
+      hideDate: {
+        type: 'toggle',
+        displayName: 'Hide Date',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     defaultSize: {
       width: 20,
@@ -2088,7 +3760,11 @@ export const widgets = [
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+      },
     },
     exposedVariables: {
       value: {},
@@ -2099,12 +3775,11 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        visible: { value: '{{true}}' },
         data: {
           value:
             "{{ [ \n\t\t{ title: 'Product Launched', subTitle: 'First version of our product released to public', date: '20/10/2021', iconBackgroundColor: '#4d72fa'},\n\t\t { title: 'First Signup', subTitle: 'Congratulations! We got our first signup', date: '22/10/2021', iconBackgroundColor: '#4d72fa'}, \n\t\t { title: 'First Payment', subTitle: 'Hurray! We got our first payment', date: '01/11/2021', iconBackgroundColor: '#4d72fa'} \n] }}",
         },
-        hideDate: { value: false },
+        hideDate: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -2118,7 +3793,13 @@ export const widgets = [
     description: 'Svg image',
     component: 'SvgImage',
     properties: {
-      data: { type: 'code', displayName: 'Svg  data' },
+      data: {
+        type: 'code',
+        displayName: 'Svg  data',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     defaultSize: {
       width: 4,
@@ -2130,7 +3811,13 @@ export const widgets = [
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       value: {},
@@ -2162,7 +3849,13 @@ export const widgets = [
       height: 310,
     },
     properties: {
-      rawHtml: { type: 'code', displayName: 'Raw HTML' },
+      rawHtml: {
+        type: 'code',
+        displayName: 'Raw HTML',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -2170,7 +3863,13 @@ export const widgets = [
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {},
     definition: {
@@ -2206,8 +3905,20 @@ export const widgets = [
     properties: {},
     events: {},
     styles: {
-      dividerColor: { type: 'color', displayName: 'Divider Color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      dividerColor: {
+        type: 'color',
+        displayName: 'Divider Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       value: {},
@@ -2231,7 +3942,7 @@ export const widgets = [
     description: 'Visual representation of a sequence of events',
     component: 'CustomComponent',
     properties: {
-      data: { type: 'code', displayName: 'Data' },
+      data: { type: 'code', displayName: 'Data', validation: { schema: { type: 'object' } } },
       code: { type: 'code', displayName: 'Code' },
     },
     defaultSize: {
@@ -2244,7 +3955,11 @@ export const widgets = [
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+      },
     },
     exposedVariables: {
       data: { value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}` },
@@ -2292,13 +4007,50 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     description: 'ButtonGroup',
     component: 'ButtonGroup',
     properties: {
-      label: { type: 'code', displayName: 'label' },
-      values: { type: 'code', displayName: 'values' },
-      labels: { type: 'code', displayName: 'Labels' },
-      defaultSelected: { type: 'code', displayName: 'Default selected' },
+      label: {
+        type: 'code',
+        displayName: 'label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      values: {
+        type: 'code',
+        displayName: 'values',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } }],
+          },
+        },
+      },
+      labels: {
+        type: 'code',
+        displayName: 'Labels',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } }],
+          },
+        },
+      },
+      defaultSelected: {
+        type: 'code',
+        displayName: 'Default selected',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } }],
+          },
+        },
+      },
       multiSelection: {
         type: 'toggle',
         displayName: 'Enable mutiple selection',
+
+        validation: {
+          schema: { type: 'boolean' },
+        },
       },
     },
     defaultSize: {
@@ -2313,15 +4065,55 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       onClick: { displayName: 'On click' },
     },
     styles: {
-      backgroundColor: { type: 'color', displayName: 'Background color' },
-      textColor: { type: 'color', displayName: 'Text color' },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
-      disabledState: { type: 'toggle', displayName: 'Disable' },
-      borderRadius: { type: 'number', displayName: 'Border radius' },
-      selectedTextColor: { type: 'color', displayName: 'Selected text colour' },
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      borderRadius: {
+        type: 'number',
+        displayName: 'Border radius',
+        validation: {
+          schema: { type: 'number' },
+          defaultValue: false,
+        },
+      },
+      selectedTextColor: {
+        type: 'color',
+        displayName: 'Selected text colour',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       selectedBackgroundColor: {
         type: 'color',
         displayName: 'Selected background color',
+        validation: {
+          schema: { type: 'string' },
+        },
       },
     },
     exposedVariables: {
@@ -2357,9 +4149,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     description: 'Embed PDF file',
     component: 'PDF',
     properties: {
-      url: { type: 'code', displayName: 'File URL' },
-      scale: { type: 'toggle', displayName: 'Scale page to width' },
-      pageControls: { type: 'toggle', displayName: 'Show page controls' },
+      url: { type: 'code', displayName: 'File URL', validation: { schema: { type: 'string' } } },
+      scale: { type: 'toggle', displayName: 'Scale page to width', validation: { schema: { type: 'boolean' } } },
+      pageControls: { type: 'toggle', displayName: 'Show page controls', validation: { schema: { type: 'boolean' } } },
     },
     defaultSize: {
       width: 20,
@@ -2371,7 +4163,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     events: {},
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+      },
     },
     exposedVariables: {},
     definition: {
@@ -2404,9 +4200,30 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     description: 'Steps',
     component: 'Steps',
     properties: {
-      steps: { type: 'code', displayName: 'Steps' },
-      currentStep: { type: 'code', displayName: 'Current step' },
-      stepsSelectable: { type: 'toggle', displayName: 'Steps selectable' },
+      steps: {
+        type: 'code',
+        displayName: 'Steps',
+        validation: {
+          schema: {
+            type: 'array',
+            element: { type: 'object', object: { id: { type: 'number' } } },
+          },
+        },
+      },
+      currentStep: {
+        type: 'code',
+        displayName: 'Current step',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      stepsSelectable: {
+        type: 'toggle',
+        displayName: 'Steps selectable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     defaultSize: {
       width: 22,
@@ -2423,10 +4240,16 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       color: {
         type: 'color',
         displayName: 'Color',
+        validation: {
+          schema: { type: 'string' },
+        },
       },
       textColor: {
         type: 'color',
         displayName: 'Text color',
+        validation: {
+          schema: { type: 'string' },
+        },
       },
       theme: {
         type: 'select',
@@ -2436,8 +4259,17 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           { name: 'numbers', value: 'numbers' },
           { name: 'plain', value: 'plain' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
       },
-      visibility: { type: 'toggle', displayName: 'Visibility' },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {
       currentStepId: '3',
@@ -2541,6 +4373,13 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       width: 9,
       height: 40,
     },
+    actions: [
+      {
+        displayName: 'Set Color',
+        handle: 'setColor',
+        params: [{ handle: 'color', displayName: 'color', defaultValue: '#ffffff', type: 'color' }],
+      },
+    ],
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },

@@ -14,7 +14,7 @@ export function Form({ settings, updateData }) {
         toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} Password login`, { position: 'top-center' });
       },
       () => {
-        toast.error('Error saving SSO configurations', {
+        toast.error('Error while saving SSO configurations', {
           position: 'top-center',
         });
       }
