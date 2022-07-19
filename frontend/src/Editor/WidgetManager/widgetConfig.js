@@ -1952,7 +1952,7 @@ export const widgets = [
     description: 'Show the progress using circular progressbar',
     component: 'CircularProgressBar',
     defaultSize: {
-      width: 7,
+      width: 8,
       height: 50,
     },
     others: {
@@ -2291,7 +2291,7 @@ export const widgets = [
     description: 'Vertical Separator between components',
     component: 'VerticalDivider',
     defaultSize: {
-      width: 2,
+      width: 6,
       height: 100,
     },
     others: {
