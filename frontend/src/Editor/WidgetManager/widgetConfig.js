@@ -1060,7 +1060,7 @@ export const widgets = [
       },
       {
         handle: 'deselectOption',
-        displayName: 'Select Option',
+        displayName: 'Deselect Option',
         params: [
           {
             handle: 'option',

@@ -72,13 +72,18 @@ export const Multiselect = function Multiselect({
     ).then(() => fireEvent('onSelect'));
   };
 
-  registerAction('selectOption', async function (value) {
-    setSelected((prevSelected) => [...prevSelected, ...selectOptions.filter((option) => option.value === value)]);
-    setExposedVariable(
-      'values',
-      selected.map((item) => item.value)
-    ).then(() => fireEvent('onSelect'));
-  });
+  registerAction(
+    'selectOption',
+    async function (value) {
+      const newSelected = [...selected, ...selectOptions.filter((option) => option.value === value)];
+      setSelected(newSelected);
+      setExposedVariable(
+        'values',
+        newSelected.map((item) => item.value)
+      ).then(() => fireEvent('onSelect'));
+    },
+    [selected]
+  );
   registerAction('deselectOption', async function (value) {
     setSelected((prevSelected) => [
       ...prevSelected.filter(function (item) {
