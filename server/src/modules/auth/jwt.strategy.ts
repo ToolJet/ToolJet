@@ -22,6 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     user.organizationId = payload.organizationId;
     user.isPasswordLogin = payload.isPasswordLogin;
+    user.isSSOLogin = payload.isSSOLogin;
 
     return user;
   }

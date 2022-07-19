@@ -1,5 +1,5 @@
 import config from 'config';
-import { authHeader, handleResponse } from '@/_helpers';
+import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
 
 export const organizationService = {
   getUsers,
@@ -33,7 +33,7 @@ function getOrganizations() {
 
 function switchOrganization(organizationId) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/switch/${organizationId}`, requestOptions);
+  return fetch(`${config.apiUrl}/switch/${organizationId}`, requestOptions).then(handleResponseWithoutValidation);
 }
 
 function getSSODetails() {
