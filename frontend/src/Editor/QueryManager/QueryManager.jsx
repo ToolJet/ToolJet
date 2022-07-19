@@ -102,6 +102,7 @@ let QueryManager = class QueryManager extends React.Component {
           props.mode === 'edit'
             ? this.buttonConfig?.editMode?.shouldRunQuery ?? true
             : this.buttonConfig?.createMode?.shouldRunQuery ?? true,
+        showQueryConfirmation: props.showQueryConfirmation,
       },
       () => {
         if (this.props.mode === 'edit') {
@@ -259,7 +260,7 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   createOrUpdateDataQuery = () => {
-    const { appId, options, selectedDataSource, mode, queryName, shouldRunQuery } = this.state;
+    const { appId, options, selectedDataSource, mode, queryName, shouldRunQuery, showQueryConfirmation } = this.state;
     const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
@@ -276,7 +277,7 @@ let QueryManager = class QueryManager extends React.Component {
         .update(this.state.selectedQuery.id, queryName, options)
         .then((data) => {
           this.setState({
-            isUpdating: shouldRunQuery ? true : false,
+            isUpdating: shouldRunQuery ? showQueryConfirmation : false,
             isFieldsChanged: false,
             restArrayValuesChanged: false,
             updatedQuery: shouldRunQuery ? { ...data, updateQuery: true } : {},
@@ -296,7 +297,7 @@ let QueryManager = class QueryManager extends React.Component {
         .then((data) => {
           toast.success('Query Added');
           this.setState({
-            isCreating: shouldRunQuery ? true : false,
+            isCreating: shouldRunQuery ? showQueryConfirmation : false,
             isFieldsChanged: false,
             restArrayValuesChanged: false,
             updatedQuery: shouldRunQuery ? { ...data, updateQuery: false } : {},
@@ -398,6 +399,7 @@ let QueryManager = class QueryManager extends React.Component {
       previewLoading,
       queryPreviewData,
       dataSourceMeta,
+      showQueryConfirmation,
     } = this.state;
 
     let ElementToRender = '';
@@ -492,7 +494,7 @@ let QueryManager = class QueryManager extends React.Component {
             {selectedDataSource && (addingQuery || editingQuery) && (
               <Dropdown as={ButtonGroup} className={'m-1 float-right'} style={{ display: 'initial', height: '28px' }}>
                 <Button
-                  className={`btn btn-primary ${isUpdating || isCreating ? 'btn-loading' : ''} ${
+                  className={`btn btn-primary ${showQueryConfirmation ? 'btn-loading' : ''} ${
                     this.state.selectedDataSource ? '' : 'disabled'
                   }`}
                   style={{ height: '28px', zIndex: 10 }}
