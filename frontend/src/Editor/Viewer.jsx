@@ -85,7 +85,7 @@ class Viewer extends React.Component {
       };
     });
 
-    const variables = await this.fetchOrgEnvironmentVariables(data.slug);
+    const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
 
     this.setState(
       {
@@ -127,14 +127,14 @@ class Viewer extends React.Component {
     });
   };
 
-  fetchOrgEnvironmentVariables = async (slug) => {
+  fetchOrgEnvironmentVariables = async (slug, isPublic) => {
     const variables = {
       client: {},
       server: {},
     };
 
     let variablesResult;
-    if (this.state.currentUser) {
+    if (!isPublic) {
       variablesResult = await orgEnvironmentVariableService.getVariables();
     } else {
       variablesResult = await orgEnvironmentVariableService.getVariablesFromPublicApp(slug);
