@@ -75,7 +75,12 @@ export const Multiselect = function Multiselect({
   registerAction(
     'selectOption',
     async function (value) {
-      const newSelected = [...selected, ...selectOptions.filter((option) => option.value === value)];
+      const newSelected = [
+        ...selected,
+        ...selectOptions.filter(
+          (option) => option.value === value && !selected.map((selectedOption) => selectedOption.value).includes(value)
+        ),
+      ];
       setSelected(newSelected);
       setExposedVariable(
         'values',
@@ -84,19 +89,25 @@ export const Multiselect = function Multiselect({
     },
     [selected]
   );
-  registerAction('deselectOption', async function (value) {
-    setSelected((prevSelected) => [
-      ...prevSelected.filter(function (item) {
-        return item.value !== value;
-      }),
-    ]);
-    setExposedVariable(
-      'values',
-      selected.map((item) => item.value)
-    ).then(() => fireEvent('onSelect'));
-  });
+  registerAction(
+    'deselectOption',
+    async function (value) {
+      const newSelected = [
+        ...selected.filter(function (item) {
+          return item.value !== value;
+        }),
+      ];
+      setSelected(newSelected);
+      setExposedVariable(
+        'values',
+        newSelected.map((item) => item.value)
+      ).then(() => fireEvent('onSelect'));
+    },
+    [selected]
+  );
   registerAction('clearSelections', async function () {
     setSelected([]);
+    setExposedVariable('values', []).then(() => fireEvent('onSelect'));
   });
 
   return (
