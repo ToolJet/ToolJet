@@ -8,6 +8,7 @@ spec:
       repository: tooljet-ce
       tag: latest
     run_command: "./server/scripts/digitalocean-postbuild.sh"
+    instance_size_slug: "basic-s"
     envs:
     - key: NODE_ENV
       value: "production"
