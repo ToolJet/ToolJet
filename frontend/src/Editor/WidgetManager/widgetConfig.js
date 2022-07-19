@@ -551,8 +551,8 @@ export const widgets = [
     properties: {
       defaultValue: { type: 'code', displayName: 'Default value' },
       format: { type: 'code', displayName: 'Format' },
-      enableTime: { type: 'code', displayName: 'Enable time selection?' },
-      enableDate: { type: 'code', displayName: 'Enable date selection?' },
+      enableTime: { type: 'toggle', displayName: 'Enable time selection?' },
+      enableDate: { type: 'toggle', displayName: 'Enable date selection?' },
       disabledDates: { type: 'code', displayName: 'Disabled dates' },
     },
     events: {
