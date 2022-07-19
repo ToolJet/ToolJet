@@ -37,7 +37,7 @@ FROM node:14.17.3-buster
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && \
-    apt-get install -y postgresql-client freetds-dev libaio1 wget cloud-init && \
+    apt-get install -y postgresql-client freetds-dev libaio1 wget && \
     apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes && \
     apt-get -y autoremove && \
     apt-get -y autoclean
