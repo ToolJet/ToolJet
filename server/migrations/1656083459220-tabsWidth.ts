@@ -1,7 +1,7 @@
-import { AppVersion } from '../src/entities/app_version.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { AppVersion } from '../src/entities/app_version.entity';
 
-export class modalProperties1656061763136 implements MigrationInterface {
+export class tabsWidth1656083459220 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
     const appVersions = await entityManager.find(AppVersion);
@@ -15,10 +15,8 @@ export class modalProperties1656061763136 implements MigrationInterface {
         for (const componentId of Object.keys(components)) {
           const component = components[componentId];
 
-          if (component.component.component === 'Modal') {
-            component.component.definition.properties.hideTitleBar = { value: false };
-            component.component.definition.properties.hideCloseButton = { value: false };
-            component.component.definition.properties.hideOnEsc = { value: true };
+          if (component.component.component === 'Tabs') {
+            component.component.definition.styles.tabWidth = { value: 'auto' };
             components[componentId] = {
               ...component,
               component: {

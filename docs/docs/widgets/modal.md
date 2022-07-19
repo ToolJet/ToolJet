@@ -6,11 +6,10 @@ title: Modal
 
 Modal widget renders in front of a backdrop, and it blocks interaction with the rest of the application until the modal is closed. It can be used to add dialog boxes to your app for lightboxes, user notifications, forms, etc.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Widget Reference - Modal](/img/widgets/modal/modal1.gif)
+## How To Use Datepicker Widget
 
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/co-UZCGpfMI" title="Datepicker Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Add widgets to Modal
 
@@ -48,6 +47,13 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 ### Disable
 
 This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`.
+
+### Actions
+
+| Action      | Description | Properties |
+| ----------- | ----------- | ------------------ |
+| open | Open the modal. |  |
+| close | Close the  modal. |  |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.

@@ -1260,6 +1260,14 @@ button {
       overflow: hidden;
     }
   }
+
+  .left-menu {
+    ul {
+      li:not(.active):hover {
+        color: $black;
+      }
+    }
+  }
 }
 
 .pagination {
@@ -5053,8 +5061,7 @@ div#driver-page-overlay {
       color: $white;
     }
     li:not(.active):hover {
-      background-color: $primary;
-      color: $white;
+      background-color: #d2daf0;
     }
   }
 }
@@ -5189,6 +5196,9 @@ div#driver-page-overlay {
   }
   .json-tree-node-null {
     color: red;
+  }
+  .json-tree-node-date {
+    color: rgb(98, 107, 103);
   }
 
   .group-border {
@@ -5571,6 +5581,13 @@ div#driver-page-overlay {
 .flexer{
   display: flex;
 }
+.flexer-sso-input{
+  display: flex;
+  justify-content: space-between;
+  p{
+    margin-bottom: 0 !important;
+  }
+}
 .sso-copy{
   margin-left: 10px;
   cursor: pointer;
@@ -5693,6 +5710,78 @@ a.step-item-disabled {
   color: var(--textColor) !important;;
 }
 // steps-widget end
+
+// profile-settings css
+.confirm-input {
+  padding-right: 8px !important;
+}
+
+.user-group-actions {
+  display: flex;
+  gap: 8px;
+}
+
+input.hide-input-arrows{
+  -moz-appearance: none;
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button{
+    -webkit-appearance: none;
+  }
+}
+
 .btn-org-env {
   width: 36px;
+}
+
+// sso enable/disable box
+.tick-cross-info {
+  .main-box {
+    margin-right: 10px;
+    border-radius: 5px;
+  }
+
+  .icon-box {
+    padding: 7px 5px 7px 2px;
+    color: #fff;
+
+    .icon {
+      stroke-width: 4.5px;
+    }
+  }
+
+  .tick-box {
+    border: 3px solid $primary;
+
+    .icon-box {
+      background: $primary;
+    }
+  }
+
+  .cross-box {
+    border: 3px solid $disabled;
+
+    .icon-box {
+      background: $disabled;
+    }
+  }
+}
+
+.separator-bottom {
+  .separator {
+    width: 100%;
+
+    h2 {
+      width: 100%; 
+      text-align: center; 
+      border-bottom: 1px solid $primary; 
+      line-height: 0.1em;
+      margin: 10px 0 20px; 
+    } 
+    
+    h2 span { 
+      color: $primary;
+      background:#fff; 
+      padding:0 10px; 
+    }
+  }
 }

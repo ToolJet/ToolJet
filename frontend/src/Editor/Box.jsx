@@ -48,8 +48,14 @@ import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import { Steps } from './Components/Steps';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
-import { resolveProperties, resolveStyles, resolveGeneralProperties } from './component-properties-resolution';
+import {
+  resolveProperties,
+  resolveStyles,
+  resolveGeneralProperties,
+  resolveGeneralStyles,
+} from './component-properties-resolution';
 import { validateWidget } from '@/_helpers/utils';
+import _ from 'lodash';
 
 const AllComponents = {
   Button,
@@ -144,6 +150,7 @@ export const Box = function Box({
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
   const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
+  const resolvedGeneralStyles = resolveGeneralStyles(component, currentState, null, customResolvables);
   resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
 
   useEffect(() => {
@@ -184,7 +191,10 @@ export const Box = function Box({
         renderTooltip({ props, text: inCanvas ? `${resolvedGeneralProperties.tooltip}` : `${component.description}` })
       }
     >
-      <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
+      <div
+        style={{ ...styles, backgroundColor, boxShadow: resolvedGeneralStyles?.boxShadow }}
+        role={preview ? 'BoxPreview' : 'Box'}
+      >
         {inCanvas ? (
           <ComponentToRender
             onComponentClick={onComponentClick}
@@ -206,10 +216,14 @@ export const Box = function Box({
             exposedVariables={exposedVariables}
             styles={resolvedStyles}
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
-            registerAction={(actionName, func, paramHandles = []) => {
-              if (Object.keys(exposedVariables).includes(actionName)) return Promise.resolve();
-              else {
-                func.paramHandles = paramHandles;
+            registerAction={(actionName, func, dependencies = []) => {
+              if (!Object.keys(exposedVariables).includes(actionName)) {
+                func.dependencies = dependencies;
+                return onComponentOptionChanged(component, actionName, func);
+              } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
+                return Promise.resolve();
+              } else if (!_.isEqual(dependencies, exposedVariables[actionName]?.dependencies)) {
+                func.dependencies = dependencies;
                 return onComponentOptionChanged(component, actionName, func);
               }
             }}

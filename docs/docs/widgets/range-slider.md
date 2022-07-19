@@ -54,7 +54,7 @@ Enter the hexcode to set the color for slider's handler.
 ### Track color
 
 Enter the hexcode to set the color for slider's active portion on the track. 
-### Visiblity
+### Visibility
 
 Set the visivlity of the slider programmatically. The default value is `{{true}}`.
 

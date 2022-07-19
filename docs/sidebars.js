@@ -55,6 +55,7 @@ const sidebars = {
         'tutorial/manage-users-groups',
         'tutorial/keyboard-shortcuts',
         'tutorial/multiworkspace',
+        'tutorial/organization-environment-variables'
       ],
     },
     {
@@ -172,6 +173,7 @@ const sidebars = {
         keywords: ['how to'],
       },
       items: [
+        'how-to/run-actions-from-runjs',
         'how-to/bulk-update-multiple-rows',
         'how-to/access-cellvalue-rowdata',
         'how-to/oauth2-authorization',

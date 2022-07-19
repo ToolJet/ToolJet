@@ -185,9 +185,9 @@ export const widgets = [
         displayName: 'Click',
       },
       {
-        handle: 'setLabel',
-        displayName: 'Set label',
-        params: [{ handle: 'label', displayName: 'Label', defaultValue: 'New label' }],
+        handle: 'setText',
+        displayName: 'Set Text',
+        params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
       },
     ],
     definition: {
@@ -334,8 +334,18 @@ export const widgets = [
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
     exposedVariables: {
-      show: null,
+      show: false,
     },
+    actions: [
+      {
+        handle: 'open',
+        displayName: 'Open',
+      },
+      {
+        handle: 'close',
+        displayName: 'Close',
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -388,6 +398,17 @@ export const widgets = [
     exposedVariables: {
       value: '',
     },
+    actions: [
+      {
+        handle: 'setText',
+        displayName: 'Set text',
+        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
+      },
+      {
+        handle: 'clear',
+        displayName: 'Clear',
+      },
+    ],
     definition: {
       validation: {
         regex: { value: '' },
@@ -577,6 +598,13 @@ export const widgets = [
       width: 5,
       height: 30,
     },
+    actions: [
+      {
+        handle: 'setChecked',
+        displayName: 'Set checked',
+        params: [{ handle: 'status', displayName: 'status' }],
+      },
+    ],
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
@@ -644,6 +672,18 @@ export const widgets = [
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
+    actions: [
+      {
+        handle: 'selectOption',
+        displayName: 'Select Option',
+        params: [
+          {
+            handle: 'option',
+            displayName: 'Option',
+          },
+        ],
+      },
+    ],
     exposedVariables: {},
     definition: {
       others: {
@@ -740,6 +780,17 @@ export const widgets = [
       value:
         'ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀',
     },
+    actions: [
+      {
+        handle: 'setText',
+        displayName: 'Set Text',
+        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
+      },
+      {
+        handle: 'clear',
+        displayName: 'Clear',
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -948,7 +999,7 @@ export const widgets = [
     properties: {},
     events: {},
     styles: {
-      backgroundColor: { type: 'color' },
+      backgroundColor: { type: 'color', displayName: 'Background Color' },
       borderRadius: { type: 'code', displayName: 'Border Radius' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
@@ -1009,6 +1060,13 @@ export const widgets = [
       value: 2,
       searchText: '',
     },
+    actions: [
+      {
+        handle: 'selectOption',
+        displayName: 'Select option',
+        params: [{ handle: 'select', displayName: 'Select' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -1196,6 +1254,16 @@ export const widgets = [
       onCreateMarker: { displayName: 'On create marker' },
       onMarkerClick: { displayName: 'On marker click' },
     },
+    actions: [
+      {
+        handle: 'setLocation',
+        displayName: 'Set Location',
+        params: [
+          { handle: 'lat', displayName: 'Latitude' },
+          { handle: 'lng', displayName: 'Longitude' },
+        ],
+      },
+    ],
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
@@ -1369,6 +1437,12 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
+    actions: [
+      {
+        handle: 'clearFiles',
+        displayName: 'Clear Files',
+      },
+    ],
     properties: {
       instructionText: { type: 'code', displayName: 'Instruction Text' },
       enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
@@ -1640,7 +1714,27 @@ export const widgets = [
       highlightColor: { type: 'color', displayName: 'Highlight Color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
+      tabWidth: {
+        type: 'select',
+        displayName: 'Tab width',
+        options: [
+          { name: 'Auto', value: 'auto' },
+          { name: 'Equally split', value: 'split' },
+        ],
+      },
     },
+    actions: [
+      {
+        handle: 'setTab',
+        displayName: 'Set current tab',
+        params: [
+          {
+            handle: 'id',
+            displayName: 'Id',
+          },
+        ],
+      },
+    ],
     exposedVariables: { currentTab: '' },
     definition: {
       others: {
@@ -1660,6 +1754,7 @@ export const widgets = [
         highlightColor: { value: '#0565FE' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        tabWidth: { value: 'auto' },
       },
     },
   },
@@ -2567,6 +2662,13 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       width: 9,
       height: 40,
     },
+    actions: [
+      {
+        displayName: 'Set Color',
+        handle: 'setColor',
+        params: [{ handle: 'color', displayName: 'color', defaultValue: '#ffffff', type: 'color' }],
+      },
+    ],
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },

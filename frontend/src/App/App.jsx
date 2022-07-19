@@ -123,9 +123,10 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
-            <Route path="/login/:organisationId" exact component={LoginPage} />
+            <Route path="/login/:organizationId" exact component={LoginPage} />
             <Route path="/login" exact component={LoginPage} />
-            <Route path="/sso/:origin/:configId" component={Oauth} />
+            <Route path="/sso/:origin/:configId" exact component={Oauth} />
+            <Route path="/sso/:origin" exact component={Oauth} />
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/multiworkspace" component={RedirectSso} />
@@ -165,6 +166,7 @@ class App extends React.Component {
                     state: {
                       token: props.match.params.token,
                       organizationToken: props.match.params.organizationToken,
+                      search: props.location.search,
                     },
                   }}
                 />
