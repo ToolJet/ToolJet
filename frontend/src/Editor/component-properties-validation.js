@@ -82,10 +82,12 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
 
       const [_valid, errors] = propertyName ? validate(value, schema, defaultValue) : [true, []];
 
-      allErrors = [
-        ...allErrors,
-        ...errors.map((message) => ({ property: propertyDefinitions[propertyName]?.displayName, message })),
-      ];
+      if (!_.isUndefined(propertyName)) {
+        allErrors = [
+          ...allErrors,
+          ...errors.map((message) => ({ property: propertyDefinitions[propertyName]?.displayName, message })),
+        ];
+      }
 
       // return [propertyName, _valid ? value : defaultValue];
       // uncomment the above line and comment the below line to enable coercing to default values
