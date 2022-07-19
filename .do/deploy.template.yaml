@@ -15,7 +15,9 @@ spec:
       value: "--max-old-space-size=4096"
     - key: LOCKBOX_MASTER_KEY
       type: SECRET
+      value: "REPLACE_ME"
     - key: SECRET_KEY_BASE
+      value: "REPLACE_ME"
       type: SECRET
     - key: DISABLE_SIGNUPS
       value: "false"
