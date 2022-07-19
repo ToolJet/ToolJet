@@ -17,8 +17,8 @@ export const widgets = [
         displayName: 'Table data',
         validation: {
           schema: {
-            type: 'union',
-            schemas: [{ type: 'array', element: { type: 'object' } }],
+            type: 'array',
+            element: { type: 'object' },
             optional: true,
           },
         },
