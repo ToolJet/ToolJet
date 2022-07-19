@@ -398,6 +398,17 @@ export const widgets = [
     exposedVariables: {
       value: '',
     },
+    actions: [
+      {
+        handle: 'setText',
+        displayName: 'Set text',
+        params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
+      },
+      {
+        handle: 'clear',
+        displayName: 'Clear',
+      },
+    ],
     definition: {
       validation: {
         regex: { value: '' },
@@ -587,6 +598,13 @@ export const widgets = [
       width: 5,
       height: 30,
     },
+    actions: [
+      {
+        handle: 'setChecked',
+        displayName: 'Set checked',
+        params: [{ handle: 'status', displayName: 'status' }],
+      },
+    ],
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
@@ -1042,6 +1060,13 @@ export const widgets = [
       value: 2,
       searchText: '',
     },
+    actions: [
+      {
+        handle: 'selectOption',
+        displayName: 'Select option',
+        params: [{ handle: 'select', displayName: 'Select' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -1080,6 +1105,32 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
+    actions: [
+      {
+        handle: 'selectOption',
+        displayName: 'Select Option',
+        params: [
+          {
+            handle: 'option',
+            displayName: 'Option',
+          },
+        ],
+      },
+      {
+        handle: 'deselectOption',
+        displayName: 'Deselect Option',
+        params: [
+          {
+            handle: 'option',
+            displayName: 'Option',
+          },
+        ],
+      },
+      {
+        handle: 'clearSelections',
+        displayName: 'Clear selections',
+      },
+    ],
     properties: {
       label: { type: 'code', displayName: 'Label' },
       value: { type: 'code', displayName: 'Default value' },
