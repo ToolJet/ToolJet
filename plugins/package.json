@@ -19,7 +19,6 @@
     "test": "NODE_ENV=test jest"
   },
   "dependencies": {
-    "typescript": "^4.5.4",
     "@tooljet-plugins/airtable": "file:packages/airtable",
     "@tooljet-plugins/appwrite": "file:packages/appwrite",
     "@tooljet-plugins/athena": "file:packages/athena",
@@ -57,6 +56,9 @@
     "@tooljet-plugins/twilio": "file:packages/twilio",
     "@tooljet-plugins/typesense": "file:packages/typesense",
     "@tooljet-plugins/woocommerce": "file:packages/woocommerce"
+  },
+  "peerDependencies": {
+    "typescript": "^4.5.4"
   },
   "devDependencies": {
     "@types/jest": "^27.4.1",
