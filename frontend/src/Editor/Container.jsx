@@ -139,7 +139,6 @@ export const Container = ({
   const { draggingState } = useDragLayer((monitor) => {
     if (monitor.isDragging()) {
       if (!monitor.getItem().parent) {
-        console.log('check', monitor.getItem());
         setWidgetManagerToCanvas(monitor.getItem().component);
         return { draggingState: true };
       } else {
@@ -449,10 +448,6 @@ export const Container = ({
       ref={(el) => {
         canvasRef.current = el;
         drop(el);
-      }}
-      onClick={() => {
-        console.log('hehehhe');
-        // setcheck(true);
       }}
       style={styles}
       className={cx('real-canvas', {
