@@ -74,7 +74,7 @@ export const Listview = function Listview({
             style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
             key={index}
             onClick={(event) => {
-              propertiesSelector();
+              propertiesSelector(event);
               event.stopPropagation();
               onRowClicked(index);
             }}

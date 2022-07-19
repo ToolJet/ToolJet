@@ -96,6 +96,7 @@ export const DraggableBox = function DraggableBox({
   onComponentHover,
   isMultipleComponentsSelected,
   dataQueries,
+  widgetManagerToCanvas,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -179,6 +180,12 @@ export const DraggableBox = function DraggableBox({
     console.log(layoutData);
     setCurrentLayoutOptions(layoutData);
   }, [layoutData.height, layoutData.width, layoutData.left, layoutData.top, currentLayout]);
+
+  useEffect(() => {
+    if (widgetManagerToCanvas !== undefined) {
+      setSelectedComponent(id, component, true);
+    }
+  }, []);
 
   const gridWidth = canvasWidth / 43;
   const width = (canvasWidth * currentLayoutOptions.width) / 43;

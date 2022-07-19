@@ -937,7 +937,7 @@ export function Table({
                     }`}
                     {...row.getRowProps()}
                     onClick={(e) => {
-                      propertiesSelector();
+                      propertiesSelector(e);
                       e.stopPropagation();
                       onEvent('onRowClicked', { component, data: row.original, rowId: row.id });
                     }}
