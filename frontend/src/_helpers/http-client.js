@@ -60,6 +60,7 @@ class HttpClient {
       }
     } catch (err) {
       payload.data = [];
+      payload.error = err;
     } finally {
       // eslint-disable-next-line no-unsafe-finally
       return payload;

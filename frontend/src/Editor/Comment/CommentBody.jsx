@@ -5,6 +5,7 @@ import Spinner from '@/_ui/Spinner';
 import { isEmpty } from 'lodash';
 import moment from 'moment';
 import CommentActions from './CommentActions';
+import { hightlightMentionedUserInComment } from '@/_helpers/utils';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -31,11 +32,6 @@ const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditComment
     scrollToBottom();
   }, []);
 
-  const getComment = (comment) => {
-    var regex = /(\()([^)]+)(\))/g;
-    return comment.replace(regex, '<span class=mentioned-user>$2</span>');
-  };
-
   const getContent = () => {
     if (isEmpty(thread)) return <div className="text-center">There are no comments to display</div>;
 
@@ -59,7 +55,10 @@ const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditComment
               </div>
 
               <div className="card-subtitle comment-time">{moment(createdAt).fromNow()}</div>
-              <p className="cursor-auto comment-body " dangerouslySetInnerHTML={{ __html: getComment(comment) }} />
+              <p
+                className="cursor-auto comment-body "
+                dangerouslySetInnerHTML={{ __html: hightlightMentionedUserInComment(comment) }}
+              />
             </div>
           );
         })}

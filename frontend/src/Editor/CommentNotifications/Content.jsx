@@ -1,7 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
 import { isEmpty } from 'lodash';
-import { pluralize } from '@/_helpers/utils';
+import { pluralize, hightlightMentionedUserInComment } from '@/_helpers/utils';
 import moment from 'moment';
 import usePopover from '@/_hooks/use-popover';
 import { useSpring } from 'react-spring';
@@ -19,11 +19,6 @@ const Content = ({ notifications, loading }) => {
     if (router.query?.commentId) setSelectedCommentId(router.query?.commentId);
     else setSelectedCommentId('');
   }, [router]);
-
-  const getComment = (comment) => {
-    var regex = /(\()([^)]+)(\))/g;
-    return comment.replace(regex, '<span class=mentioned-user>$2</span>');
-  };
 
   const getContent = () => {
     if (isEmpty(notifications))
@@ -57,7 +52,7 @@ const Content = ({ notifications, loading }) => {
               </div>
               <div
                 className="comment-notification-message"
-                dangerouslySetInnerHTML={{ __html: getComment(comment.comment) }}
+                dangerouslySetInnerHTML={{ __html: hightlightMentionedUserInComment(comment.comment) }}
               />
               <div className="my-2 count">{`${count - 1} replies`}</div>
             </div>
