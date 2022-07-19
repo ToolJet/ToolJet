@@ -4,7 +4,6 @@ import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
 import { App } from 'src/entities/app.entity';
 import { Connection, createQueryBuilder, EntityManager, getManager, getRepository, In, Repository } from 'typeorm';
-import { OrganizationUser } from '../entities/organization_user.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -21,8 +20,6 @@ export class UsersService {
     private connection: Connection,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-    @InjectRepository(OrganizationUser)
-    private organizationUsersRepository: Repository<OrganizationUser>,
     @InjectRepository(App)
     private appsRepository: Repository<App>
   ) {}
@@ -31,8 +28,8 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  async findByEmail(email: string, organisationId?: string, status?: string | Array<string>): Promise<User> {
-    if (!organisationId) {
+  async findByEmail(email: string, organizationId?: string, status?: string | Array<string>): Promise<User> {
+    if (!organizationId) {
       return this.usersRepository.findOne({
         where: { email },
       });
@@ -42,8 +39,8 @@ export class UsersService {
         .innerJoinAndSelect(
           'users.organizationUsers',
           'organization_users',
-          'organization_users.organizationId = :organisationId',
-          { organisationId }
+          'organization_users.organizationId = :organizationId',
+          { organizationId }
         )
         .where('organization_users.status IN(:...statusList)', {
           statusList,
@@ -60,7 +57,7 @@ export class UsersService {
   }
 
   async create(
-    userParams: any,
+    userParams: Partial<User>,
     organizationId: string,
     groups?: string[],
     existingUser?: User,
@@ -118,7 +115,10 @@ export class UsersService {
     });
   }
 
-  async findOrCreateByEmail(userParams: any, organizationId: string): Promise<{ user: User; newUserCreated: boolean }> {
+  async findOrCreateByEmail(
+    userParams: Partial<User>,
+    organizationId: string
+  ): Promise<{ user: User; newUserCreated: boolean }> {
     let user: User;
     let newUserCreated = false;
 
@@ -130,14 +130,10 @@ export class UsersService {
     }
 
     const groups = ['all_users'];
-    user = await this.create({ ...userParams }, organizationId, groups, user);
+    user = await this.create(userParams, organizationId, groups, user);
     newUserCreated = true;
 
     return { user, newUserCreated };
-  }
-
-  async updateDefaultOrganization(user: User, organizationId: string) {
-    await this.usersRepository.update(user.id, { defaultOrganizationId: organizationId });
   }
 
   async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
@@ -175,7 +171,10 @@ export class UsersService {
     return user;
   }
 
-  async updateUser(userId, updatableParams) {
+  async updateUser(userId: string, updatableParams: Partial<User>) {
+    if (updatableParams.password) {
+      updatableParams.password = bcrypt.hashSync(updatableParams.password, 10);
+    }
     await this.usersRepository.update(userId, updatableParams);
   }
 
@@ -274,6 +273,9 @@ export class UsersService {
       case 'Folder':
         return await this.canUserPerformActionOnFolder(user, action);
 
+      case 'OrgEnvironmentVariable':
+        return await this.canUserPerformActionOnEnvironmentVariable(user, action);
+
       default:
         return false;
     }
@@ -318,6 +320,36 @@ export class UsersService {
         break;
       case 'delete':
         permissionGrant = this.canAnyGroupPerformAction('folderDelete', await this.groupPermissions(user));
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async canUserPerformActionOnEnvironmentVariable(user: User, action: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentVariableCreate',
+          await this.groupPermissions(user)
+        );
+        break;
+      case 'update':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentVariableUpdate',
+          await this.groupPermissions(user)
+        );
+        break;
+      case 'delete':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentVariableDelete',
+          await this.groupPermissions(user)
+        );
         break;
       default:
         permissionGrant = false;

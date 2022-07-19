@@ -107,7 +107,7 @@ describe('group permissions controller', () => {
   });
 
   describe('GET /group_permissions/:id', () => {
-    it('should not allow unauthenicated admin', async () => {
+    it('should not allow unauthenticated admin', async () => {
       const {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
@@ -165,7 +165,7 @@ describe('group permissions controller', () => {
   });
 
   describe('PUT /group_permissions/:id', () => {
-    it('should not allow unauthenicated admin', async () => {
+    it('should not allow unauthenticated admin', async () => {
       const {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
@@ -175,6 +175,69 @@ describe('group permissions controller', () => {
         .send({ group: 'avengers' });
 
       expect(response.statusCode).toBe(403);
+    });
+
+    it('should allow admin to update a group name', async () => {
+      const {
+        organization: { adminUser },
+      } = await setupOrganizations(nestApp);
+
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/group_permissions')
+        .set('Authorization', authHeaderForUser(adminUser))
+        .send({ group: 'avengers' });
+
+      expect(createResponse.statusCode).toBe(201);
+
+      //update a group name
+      const updateResponse = await request(nestApp.getHttpServer())
+        .put(`/api/group_permissions/${createResponse.body.id}`)
+        .set('Authorization', authHeaderForUser(adminUser))
+        .send({ name: 'titans' });
+
+      expect(updateResponse.statusCode).toBe(200);
+
+      const updatedGroup = await getManager().findOne(GroupPermission, createResponse.body.id);
+      expect(updatedGroup.group).toEqual('titans');
+    });
+
+    it('should not be able to update a group name with existing names', async () => {
+      const {
+        organization: { adminUser },
+      } = await setupOrganizations(nestApp);
+
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/group_permissions')
+        .set('Authorization', authHeaderForUser(adminUser))
+        .send({ group: 'avengers' });
+
+      expect(createResponse.statusCode).toBe(201);
+
+      //update a group name
+      const updateResponse = await request(nestApp.getHttpServer())
+        .put(`/api/group_permissions/${createResponse.body.id}`)
+        .set('Authorization', authHeaderForUser(adminUser))
+        .send({ name: 'All users' });
+
+      expect(updateResponse.statusCode).toBe(400);
+    });
+
+    it('should not be able to update a default group name', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+
+      const adminGroup = await getManager().findOne(GroupPermission, {
+        where: { group: 'admin', organizationId: organization.id },
+      });
+
+      //update a group name
+      const updateResponse = await request(nestApp.getHttpServer())
+        .put(`/api/group_permissions/${adminGroup.id}`)
+        .set('Authorization', authHeaderForUser(adminUser))
+        .send({ name: 'titans' });
+
+      expect(updateResponse.statusCode).toBe(400);
     });
 
     it('should allow admin to add and remove apps to group permission', async () => {
@@ -268,7 +331,7 @@ describe('group permissions controller', () => {
       expect(usersInGroup).toHaveLength(0);
     });
 
-    it('should not allow to remove users from admin group permission without any atleast one active admin', async () => {
+    it('should not allow to remove users from admin group permission without any at least one active admin', async () => {
       const { user, organization } = await createUser(nestApp, {
         email: 'admin@tooljet.io',
       });
@@ -314,7 +377,7 @@ describe('group permissions controller', () => {
   });
 
   describe('GET /group_permissions', () => {
-    it('should not allow unauthenicated admin', async () => {
+    it('should not allow unauthenticated admin', async () => {
       const {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
@@ -364,7 +427,7 @@ describe('group permissions controller', () => {
   });
 
   describe('GET /group_permissions/:id/apps', () => {
-    it('should not allow unauthenicated admin', async () => {
+    it('should not allow unauthenticated admin', async () => {
       const {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
@@ -413,7 +476,7 @@ describe('group permissions controller', () => {
   });
 
   describe('GET /group_permissions/:id/addable_apps', () => {
-    it('should not allow unauthenicated admin', async () => {
+    it('should not allow unauthenticated admin', async () => {
       const {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
@@ -472,7 +535,7 @@ describe('group permissions controller', () => {
   });
 
   describe('GET /group_permissions/:id/users', () => {
-    it('should not allow unauthenicated admin', async () => {
+    it('should not allow unauthenticated admin', async () => {
       const {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
@@ -513,7 +576,7 @@ describe('group permissions controller', () => {
   });
 
   describe('GET /group_permissions/:id/addable_users', () => {
-    it('should not allow unauthenicated admin', async () => {
+    it('should not allow unauthenticated admin', async () => {
       const {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
@@ -556,7 +619,7 @@ describe('group permissions controller', () => {
   });
 
   describe('PUT /group_permissions/:id/app_group_permissions/:appGroupPermisionId', () => {
-    it('should not allow unauthenicated admin', async () => {
+    it('should not allow unauthenticated admin', async () => {
       const {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);

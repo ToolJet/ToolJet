@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { authenticationService, userService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
-import config from 'config';
 import LogoIcon from '../Editor/Icons/logo.svg';
 import { Organization } from './Organization';
 
@@ -12,6 +11,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   const [pathName, setPathName] = useState(document.location.pathname);
   const [avatar, setAvatar] = useState();
   const { first_name, last_name, avatar_id, admin } = authenticationService.currentUserValue;
+  const currentVersion = localStorage.getItem('currentVersion');
 
   useEffect(() => {
     setPathName(document.location.pathname);
@@ -95,9 +95,11 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               <Link data-testid="logoutBtn" to="#" onClick={logout} className="dropdown-item" data-cy="logout-link">
                 Logout
               </Link>
-              <Link to="#" className="dropdown-item pe-none text-secondary">
-                v{config.currentVersion}
-              </Link>
+              {currentVersion && (
+                <Link to="#" className={`dropdown-item pe-none ${darkMode ? 'color-muted-darkmode' : 'color-muted'}`}>
+                  v{currentVersion}
+                </Link>
+              )}
             </div>
           </div>
         </div>

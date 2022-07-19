@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { copyToClipboard } from '@/_helpers/appUtils';
 
 export function Git({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -14,6 +15,10 @@ export function Git({ settings, updateData }) {
     setClientSecret(settings?.configs?.client_secret || '');
   };
 
+  const copyFunction = (input) => {
+    let text = document.getElementById(input).innerHTML;
+    copyToClipboard(text);
+  };
   const saveSettings = () => {
     setSaving(true);
     organizationService.editOrganizationConfigs({ type: 'git', configs: { clientId, clientSecret } }).then(
@@ -27,7 +32,7 @@ export function Git({ settings, updateData }) {
       },
       () => {
         setSaving(false);
-        toast.error('Error saving sso configurations', {
+        toast.error('Error while saving SSO configurations', {
           position: 'top-center',
         });
       }
@@ -49,7 +54,7 @@ export function Git({ settings, updateData }) {
       },
       () => {
         setSaving(false);
-        toast.error('Error saving sso configurations', {
+        toast.error('Error while saving SSO configurations', {
           position: 'top-center',
         });
       }
@@ -60,13 +65,21 @@ export function Git({ settings, updateData }) {
     <div className="card">
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
-          <div className="card-title">
+          <div className="card-title" data-cy="card-title">
             GitHub
-            <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`}>{enabled ? 'Enabled' : 'Disabled'}</span>
+            <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`} data-cy="status-label">
+              {enabled ? 'Enabled' : 'Disabled'}
+            </span>
           </div>
           <div>
             <label className="form-check form-switch">
-              <input className="form-check-input" type="checkbox" checked={enabled} onChange={changeStatus} />
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={enabled}
+                onChange={changeStatus}
+                data-cy="form-check-input"
+              />
             </label>
           </div>
         </div>
@@ -74,7 +87,9 @@ export function Git({ settings, updateData }) {
       <div className="card-body">
         <form noValidate>
           <div className="form-group mb-3">
-            <label className="form-label">Client Id</label>
+            <label className="form-label" data-cy="client-id-label">
+              Client Id
+            </label>
             <div>
               <input
                 type="text"
@@ -82,13 +97,14 @@ export function Git({ settings, updateData }) {
                 placeholder="Enter Client Id"
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
+                data-cy="client-id-input"
               />
             </div>
           </div>
           <div className="form-group mb-3">
-            <label className="form-label">
+            <label className="form-label" data-cy="client-secret-label">
               Client Secret
-              <small className="text-green mx-2">
+              <small className="text-green mx-2" data-cy="encripted-label">
                 <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
                 Encrypted
               </small>
@@ -100,17 +116,32 @@ export function Git({ settings, updateData }) {
                 placeholder="Enter Client Secret"
                 value={clientSecret}
                 onChange={(e) => setClientSecret(e.target.value)}
+                data-cy="client-secret-input"
               />
             </div>
           </div>
           {configId && (
             <div className="form-group mb-3">
-              <label className="form-label">Redirect URL</label>
-              <div>{`${window.location.protocol}//${window.location.host}/sso/git/${configId}`}</div>
+              <label className="form-label" data-cy="redirect-url-label">
+                Redirect URL
+              </label>
+              <div className="flexer-sso-input form-control">
+                <p
+                  data-cy="redirect-url"
+                  id="redirect-url"
+                >{`${window.location.protocol}//${window.location.host}/sso/git/${configId}`}</p>
+                <img
+                  onClick={() => copyFunction('redirect-url')}
+                  src={`/assets/images/icons/copy-dark.svg`}
+                  width="22"
+                  height="22"
+                  className="sso-copy"
+                />
+              </div>
             </div>
           )}
           <div className="form-footer">
-            <button type="button" className="btn btn-light mr-2" onClick={reset}>
+            <button type="button" className="btn btn-light mr-2" onClick={reset} data-cy="cancel-button">
               Cancel
             </button>
             <button
@@ -118,6 +149,7 @@ export function Git({ settings, updateData }) {
               className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}
               disabled={isSaving}
               onClick={saveSettings}
+              data-cy="save-button"
             >
               Save
             </button>

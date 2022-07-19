@@ -5,6 +5,7 @@ import {
   ConnectionTestResult,
   QueryService,
   QueryResult,
+  QueryError,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 
@@ -45,6 +46,7 @@ export default class MysqlQueryService implements QueryService {
       result = await knexInstance.raw(query);
     } catch (err) {
       console.log(err);
+      throw new QueryError('Query could not be completed', err.message, {});
     }
 
     return {
