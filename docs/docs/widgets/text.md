@@ -36,17 +36,19 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 ## Styles
 
-### Text color
+| Style      | Description |
+| ----------- | ----------- | 
+| Text Color |  You can change the background color of the text by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Align Text | You can align the text inside the widget in following ways: left, right, center, justified |
+| Font Weight | You can change the font weight of the text in following ways: normal (default), bold, lighter, bolder |
+| Text Decoration | You can change the text decoration in following ways : none(default), overline, line-through, underline, overline underline |
+| Font Style | You can change the font style in following ways: normal(default), italic, oblique |
+| Line Height | You can change the line height by providing number as input (example - 1.5) |
+| Text Indent | You can change the text indent by providing the number as input (example - 10) |
+| Letter Spacing | You can change the letter spacing by proviving the number as input  (example - 2) |
+| Word Spacing  | You can change the letter spacing by proviving the number as input  (example - 2) |
+| Font Variant | Toggle on to set font variant to true. You can programmatically change its value by clicking on the `Fx` button next to it, if set to `{{true}}`, font-variant will be set as true. By default, its value is set to `{{false}}`. |
 
-Change the color of the text by providing the `Hex color code` or choosing a color from the picker.
-
-### Align text
-
-You can align the text inside the widget in following ways:
-- Left
-- Right
-- Center
-- Justified
 
 ### Visibility
 
