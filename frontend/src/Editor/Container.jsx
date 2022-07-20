@@ -67,6 +67,7 @@ export const Container = ({
   const router = useRouter();
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
+  const [widgetManagerToCanvas, setWidgetManagerToCanvas] = useState();
 
   useHotkeys('⌘+z, control+z', () => handleUndo());
   useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
@@ -138,6 +139,7 @@ export const Container = ({
   const { draggingState } = useDragLayer((monitor) => {
     if (monitor.isDragging()) {
       if (!monitor.getItem().parent) {
+        setWidgetManagerToCanvas(monitor.getItem().component);
         return { draggingState: true };
       } else {
         return { draggingState: false };
@@ -542,6 +544,7 @@ export const Container = ({
                 sideBarDebugger,
                 dataQueries,
               }}
+              widgetManagerToCanvas={widgetManagerToCanvas}
             />
           );
         }

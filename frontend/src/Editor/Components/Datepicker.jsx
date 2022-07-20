@@ -15,6 +15,7 @@ export const Datepicker = function Datepicker({
   id,
   darkMode,
   fireEvent,
+  propertiesSelector,
 }) {
   const { enableTime, enableDate, defaultValue, disabledDates } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
@@ -86,6 +87,9 @@ export const Datepicker = function Datepicker({
         }`}
         style={{ height, borderRadius: `${borderRadius}px` }}
         ref={ref}
+        onFocus={(e) => {
+          propertiesSelector(e);
+        }}
       />
     );
   });

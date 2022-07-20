@@ -133,6 +133,7 @@ export const Box = function Box({
   allComponents,
   sideBarDebugger,
   dataQueries,
+  setSelectedComponent,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -280,6 +281,11 @@ export const Box = function Box({
             parentId={parentId}
             customResolvables={customResolvables}
             dataQueries={dataQueries}
+            propertiesSelector={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setSelectedComponent(id, component, e.shiftKey);
+            }}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>

@@ -97,6 +97,7 @@ export const DraggableBox = function DraggableBox({
   sideBarDebugger,
   isMultipleComponentsSelected,
   dataQueries,
+  widgetManagerToCanvas,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -181,6 +182,12 @@ export const DraggableBox = function DraggableBox({
     setCurrentLayoutOptions(layoutData);
   }, [layoutData.height, layoutData.width, layoutData.left, layoutData.top, currentLayout]);
 
+  useEffect(() => {
+    if (widgetManagerToCanvas !== undefined) {
+      setSelectedComponent(id, component, true);
+    }
+  }, []);
+
   const gridWidth = canvasWidth / 43;
   const width = (canvasWidth * currentLayoutOptions.width) / 43;
 
@@ -243,6 +250,11 @@ export const DraggableBox = function DraggableBox({
               onResizeStop(id, e, direction, ref, d, position);
             }}
             bounds={parent !== undefined ? `#canvas-${parent}` : '.real-canvas'}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setSelectedComponent(id, component, e.shiftKey);
+            }}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
               {mode === 'edit' && !readOnly && (mouseOver || isSelectedComponent) && !isResizing && (
@@ -284,6 +296,9 @@ export const DraggableBox = function DraggableBox({
                   allComponents={allComponents}
                   sideBarDebugger={sideBarDebugger}
                   dataQueries={dataQueries}
+                  setSelectedComponent={(id, component, multiSelect) =>
+                    setSelectedComponent(id, component, multiSelect)
+                  }
                 />
               </ErrorBoundary>
             </div>

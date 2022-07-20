@@ -41,6 +41,7 @@ export function Table({
   fireEvent,
   setExposedVariable,
   registerAction,
+  propertiesSelector,
 }) {
   const color =
     component.definition.styles.textColor.value !== '#000'
@@ -869,6 +870,7 @@ export function Table({
         borderRadius: Number.parseFloat(borderRadius),
       }}
       onClick={(event) => {
+        propertiesSelector(event);
         event.stopPropagation();
         onComponentClick(id, component, event);
       }}
@@ -935,6 +937,7 @@ export function Table({
                     }`}
                     {...row.getRowProps()}
                     onClick={(e) => {
+                      propertiesSelector(e);
                       e.stopPropagation();
                       onEvent('onRowClicked', { component, data: row.original, rowId: row.id });
                     }}

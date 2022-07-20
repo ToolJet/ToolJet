@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
-export const Button = function Button({ height, properties, styles, fireEvent, registerAction }) {
+export const Button = function Button({ height, properties, styles, fireEvent, registerAction, propertiesSelector }) {
   const { loadingState, text } = properties;
   const { backgroundColor, textColor, borderRadius, visibility, disabledState, loaderColor } = styles;
 
@@ -39,6 +39,7 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
         onClick={(event) => {
           event.stopPropagation();
           fireEvent('onClick');
+          propertiesSelector(event);
         }}
         data-cy="button-widget"
       >
