@@ -102,6 +102,7 @@ let QueryManager = class QueryManager extends React.Component {
           props.mode === 'edit'
             ? this.buttonConfig?.editMode?.shouldRunQuery ?? true
             : this.buttonConfig?.createMode?.shouldRunQuery ?? true,
+        showQueryConfirmation: props.showQueryConfirmation,
       },
       () => {
         if (this.props.mode === 'edit') {
@@ -157,6 +158,18 @@ let QueryManager = class QueryManager extends React.Component {
     //     }
     //   }
     // }
+    if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
+      if (this.state.isUpdating) {
+        this.setState({
+          isUpdating: false,
+        });
+      }
+      if (this.state.isCreating) {
+        this.setState({
+          isCreating: false,
+        });
+      }
+    }
     if (!isEmpty(this.state.updatedQuery)) {
       const query = nextProps.dataQueries.find((q) => q.id === this.state.updatedQuery.id);
       if (query) {
@@ -259,7 +272,7 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   createOrUpdateDataQuery = () => {
-    const { appId, options, selectedDataSource, mode, queryName, shouldRunQuery } = this.state;
+    const { appId, options, selectedDataSource, mode, queryName, shouldRunQuery, showQueryConfirmation } = this.state;
     const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
@@ -398,6 +411,7 @@ let QueryManager = class QueryManager extends React.Component {
       previewLoading,
       queryPreviewData,
       dataSourceMeta,
+      showQueryConfirmation,
     } = this.state;
 
     let ElementToRender = '';
