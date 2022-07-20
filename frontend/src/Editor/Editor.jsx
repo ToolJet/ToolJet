@@ -1025,6 +1025,7 @@ class Editor extends React.Component {
               currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
             })
           }
+          data-cy="change-layout-button"
         >
           <DesktopSelectedIcon />
         </span>
@@ -1037,6 +1038,7 @@ class Editor extends React.Component {
             currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
           })
         }
+        data-cy="change-layout-button"
       >
         <MobileSelectedIcon />
       </span>

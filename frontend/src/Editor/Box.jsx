@@ -286,7 +286,7 @@ export const Box = function Box({
             <div
               className="component-image-holder p-2 d-flex flex-column justify-content-center"
               style={{ height: '100%' }}
-              data-cy="widget-list"
+              data-cy={`widget-list-box-${component.displayName.toLowerCase().replace(/\s+/g, '-')}`}
             >
               <center>
                 <div
