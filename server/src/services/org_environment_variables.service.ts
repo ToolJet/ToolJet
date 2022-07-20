@@ -6,26 +6,16 @@ import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { cleanObject } from 'src/helpers/utils.helper';
 import { EncryptionService } from './encryption.service';
-import { AppsService } from './apps.service';
 
 @Injectable()
 export class OrgEnvironmentVariablesService {
   constructor(
     @InjectRepository(OrgEnvironmentVariable)
     private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>,
-    private encryptionService: EncryptionService,
-    private appsService: AppsService
+    private encryptionService: EncryptionService
   ) {}
 
-  async fetchVariables(currentUser: User, slug: string): Promise<OrgEnvironmentVariable[]> {
-    let organizationId = null;
-    if (currentUser) {
-      organizationId = currentUser.organizationId;
-    } else {
-      const app = await this.appsService.findBySlug(slug);
-      organizationId = app.organizationId;
-    }
-
+  async fetchVariables(organizationId: string): Promise<OrgEnvironmentVariable[]> {
     const variables: OrgEnvironmentVariable[] = await this.orgEnvironmentVariablesRepository.find({
       where: { organizationId: organizationId },
     });

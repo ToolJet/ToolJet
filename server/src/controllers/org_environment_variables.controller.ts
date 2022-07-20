@@ -19,25 +19,30 @@ import { OrgEnvironmentVariablesService } from '@services/org_environment_variab
 import { OrgEnvironmentVariablesAbilityFactory } from 'src/modules/casl/abilities/org-environment-variables-ability.factory';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { IsPublicGuard } from 'src/modules/org_environment_variables/is-public.guard';
+import { App } from 'src/entities/app.entity';
+import { AppsService } from '@services/apps.service';
 
 @Controller('organization-variables')
 export class OrgEnvironmentVariablesController {
   constructor(
     private orgEnvironmentVariablesService: OrgEnvironmentVariablesService,
-    private orgEnvironmentVariablesAbilityFactory: OrgEnvironmentVariablesAbilityFactory
+    private orgEnvironmentVariablesAbilityFactory: OrgEnvironmentVariablesAbilityFactory,
+    private appsService: AppsService
   ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()
   async get(@User() user) {
-    const result = await this.orgEnvironmentVariablesService.fetchVariables(user, null);
+    const result = await this.orgEnvironmentVariablesService.fetchVariables(user.organizationId);
     return decamelizeKeys({ variables: result });
   }
 
   @UseGuards(IsPublicGuard)
   @Get(':app_slug')
   async getVariablesFromApp(@Param('app_slug') slug) {
-    const result = await this.orgEnvironmentVariablesService.fetchVariables(null, slug);
+    const app: App = await this.appsService.findBySlug(slug);
+
+    const result = await this.orgEnvironmentVariablesService.fetchVariables(app.organizationId);
     return decamelizeKeys({ variables: result });
   }
 
