@@ -25,6 +25,13 @@ import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
+interface JWTPayload {
+  username: string;
+  sub: string;
+  organizationId: string;
+  isSSOLogin?: boolean;
+  isPasswordLogin: boolean;
+}
 @Injectable()
 export class AuthService {
   constructor(
@@ -100,8 +107,9 @@ export class AuthService {
         }
       } else {
         // Multi organization
-        const organizationList: Organization[] = await this.organizationsService.findOrganizationSupportsFormLogin(
-          user
+        const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
+          user,
+          'form'
         );
 
         const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
@@ -146,7 +154,7 @@ export class AuthService {
       actionType: ActionTypes.USER_LOGIN,
     });
 
-    const payload = {
+    const payload: JWTPayload = {
       username: user.id,
       sub: user.email,
       organizationId: user.organizationId,
@@ -169,7 +177,7 @@ export class AuthService {
   }
 
   async switchOrganization(newOrganizationId: string, user: User, isNewOrganization?: boolean) {
-    if (!(isNewOrganization || user.isPasswordLogin)) {
+    if (!(isNewOrganization || user.isPasswordLogin || user.isSSOLogin)) {
       throw new UnauthorizedException();
     }
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
@@ -186,19 +194,22 @@ export class AuthService {
 
     const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
 
-    if (!formConfigs?.enabled) {
+    if ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO)) {
       // no configurations in organization side or Form login disabled for the organization
-      throw new UnauthorizedException('Password login disabled for the organization');
+      throw new UnauthorizedException('Please log in to continue');
     }
 
     // Updating default organization Id
-    await this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId });
+    this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId }).catch((error) => {
+      console.error('Error while updating default organization id', error);
+    });
 
     const payload = {
       username: user.id,
       sub: user.email,
       organizationId: newUser.organizationId,
-      isPasswordLogin: true,
+      isPasswordLogin: user.isPasswordLogin,
+      isSSOLogin: user.isSSOLogin,
     };
 
     return decamelizeKeys({
@@ -303,43 +314,43 @@ export class AuthService {
     }
 
     const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
+    let organizationUser: OrganizationUser;
 
-    if (!user?.organizationUsers) {
+    if (user?.organizationUsers) {
+      organizationUser = user.organizationUsers.find((ou) => ou.organizationId === user.defaultOrganizationId);
+
+      if (!organizationUser) {
+        throw new BadRequestException('Invalid invitation link');
+      }
+
+      await this.usersRepository.save(
+        Object.assign(user, {
+          firstName,
+          lastName,
+          password,
+          role,
+          invitationToken: null,
+        })
+      );
+
+      await this.organizationUsersRepository.save(
+        Object.assign(organizationUser, {
+          invitationToken: null,
+          status: 'active',
+        })
+      );
+
+      if (organization) {
+        await this.organizationsRepository.update(user.defaultOrganizationId, {
+          name: organization,
+        });
+      }
+    } else if (!organizationToken) {
       throw new BadRequestException('Invalid invitation link');
-    }
-    const organizationUser: OrganizationUser = user.organizationUsers.find(
-      (ou) => ou.organizationId === user.defaultOrganizationId
-    );
-
-    if (!organizationUser) {
-      throw new BadRequestException('Invalid invitation link');
-    }
-
-    await this.usersRepository.save(
-      Object.assign(user, {
-        firstName,
-        lastName,
-        password,
-        role,
-        invitationToken: null,
-      })
-    );
-
-    await this.organizationUsersRepository.save(
-      Object.assign(organizationUser, {
-        invitationToken: null,
-        status: 'active',
-      })
-    );
-
-    if (organization) {
-      await this.organizationsRepository.update(user.defaultOrganizationId, {
-        name: organization,
-      });
     }
 
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && organizationToken) {
-      const organizationUser = await this.organizationUsersRepository.findOne({
+      organizationUser = await this.organizationUsersRepository.findOne({
         where: { invitationToken: organizationToken },
       });
 
@@ -350,7 +361,15 @@ export class AuthService {
             status: 'active',
           })
         );
+      } else {
+        throw new BadRequestException('Invalid workspace invitation link');
       }
+
+      this.usersService
+        .updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId })
+        .catch((error) => {
+          console.error('Error while setting default organization', error);
+        });
     }
 
     await this.auditLoggerService.perform({
@@ -387,7 +406,7 @@ export class AuthService {
           user.email,
           `${user.firstName} ${user.lastName}`,
           user.invitationToken,
-          organizationUser.invitationToken
+          `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`
         )
         .catch((err) => console.error('Error while sending welcome mail', err));
       throw new UnauthorizedException(
@@ -404,6 +423,12 @@ export class AuthService {
           passwordRetryCount: 0,
         })
       );
+    } else {
+      this.usersService
+        .updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId })
+        .catch((error) => {
+          console.error('Error while setting default organization', error);
+        });
     }
 
     await this.organizationUsersRepository.save(

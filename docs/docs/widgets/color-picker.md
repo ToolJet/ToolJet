@@ -47,6 +47,12 @@ Invalid Color : #0000, "black" , rgb(0,0,0) ,
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}`. |
 
+### Actions
+
+| Action      | Description | Properties |
+| ----------- | ----------- | ------------------ |
+| setColor | Set the  color. | `color` eg - `#ffffff` |
+
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::

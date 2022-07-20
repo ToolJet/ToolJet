@@ -12,6 +12,7 @@ export const FilePicker = ({
   onEvent,
   darkMode,
   styles,
+  registerAction,
 }) => {
   //* properties definitions
   const instructionText =
@@ -283,6 +284,10 @@ export const FilePicker = ({
     onComponentOptionChanged(component, 'file', selectedFiles);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
+
+  registerAction('clearFiles', async function () {
+    setSelectedFiles([]);
+  });
 
   return (
     <section>

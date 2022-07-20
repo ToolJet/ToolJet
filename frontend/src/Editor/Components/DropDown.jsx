@@ -13,6 +13,7 @@ export const DropDown = function DropDown({
   id,
   component,
   exposedVariables,
+  registerAction,
 }) {
   let { label, value, display_values, values } = properties;
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
@@ -34,6 +35,24 @@ export const DropDown = function DropDown({
   } catch (err) {
     console.log(err);
   }
+
+  function selectOption(value) {
+    if (values.includes(value)) {
+      setCurrentValue(value);
+      setExposedVariable('value', value).then(fireEvent('onSelect'));
+    } else {
+      setCurrentValue(undefined);
+      setExposedVariable('value', undefined).then(fireEvent('onSelect'));
+    }
+  }
+
+  registerAction(
+    'selectOption',
+    async function (value) {
+      selectOption(value);
+    },
+    [JSON.stringify(values)]
+  );
 
   const validationData = validate(value);
   const { isValid, validationError } = validationData;
