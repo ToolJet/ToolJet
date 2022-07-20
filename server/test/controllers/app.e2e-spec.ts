@@ -76,11 +76,21 @@ describe('Authentication', () => {
       expect(adminGroup.appCreate).toBeTruthy();
       expect(adminGroup.appDelete).toBeTruthy();
       expect(adminGroup.folderCreate).toBeTruthy();
+      expect(adminGroup.orgEnvironmentVariableCreate).toBeTruthy();
+      expect(adminGroup.orgEnvironmentVariableUpdate).toBeTruthy();
+      expect(adminGroup.orgEnvironmentVariableDelete).toBeTruthy();
+      expect(adminGroup.folderUpdate).toBeTruthy();
+      expect(adminGroup.folderDelete).toBeTruthy();
 
       const allUserGroup = groupPermissions.find((x) => x.group == 'all_users');
       expect(allUserGroup.appCreate).toBeFalsy();
       expect(allUserGroup.appDelete).toBeFalsy();
       expect(allUserGroup.folderCreate).toBeFalsy();
+      expect(allUserGroup.orgEnvironmentVariableCreate).toBeFalsy();
+      expect(allUserGroup.orgEnvironmentVariableUpdate).toBeFalsy();
+      expect(allUserGroup.orgEnvironmentVariableDelete).toBeFalsy();
+      expect(allUserGroup.folderUpdate).toBeFalsy();
+      expect(allUserGroup.folderDelete).toBeFalsy();
     });
     describe('Single organization operations', () => {
       beforeEach(async () => {
@@ -120,6 +130,24 @@ describe('Authentication', () => {
           email: 'admin@tooljet.io',
         });
         await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
+
+        await request(app.getHttpServer())
+          .get('/api/organizations/users')
+          .set('Authorization', authHeaderForUser(adminUser))
+          .expect(401);
+      });
+      it('throw 401 if user is invited', async () => {
+        await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'user@tooljet.io', password: 'password' })
+          .expect(401);
+
+        const adminUser = await userRepository.findOneOrFail({
+          email: 'admin@tooljet.io',
+        });
+        await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
 
         await request(app.getHttpServer())
           .get('/api/organizations/users')
@@ -202,11 +230,21 @@ describe('Authentication', () => {
         expect(adminGroup.appCreate).toBeTruthy();
         expect(adminGroup.appDelete).toBeTruthy();
         expect(adminGroup.folderCreate).toBeTruthy();
+        expect(adminGroup.orgEnvironmentVariableCreate).toBeTruthy();
+        expect(adminGroup.orgEnvironmentVariableUpdate).toBeTruthy();
+        expect(adminGroup.orgEnvironmentVariableDelete).toBeTruthy();
+        expect(adminGroup.folderUpdate).toBeTruthy();
+        expect(adminGroup.folderDelete).toBeTruthy();
 
         const allUserGroup = groupPermissions.find((x) => x.group == 'all_users');
         expect(allUserGroup.appCreate).toBeFalsy();
         expect(allUserGroup.appDelete).toBeFalsy();
         expect(allUserGroup.folderCreate).toBeFalsy();
+        expect(allUserGroup.orgEnvironmentVariableCreate).toBeFalsy();
+        expect(allUserGroup.orgEnvironmentVariableUpdate).toBeFalsy();
+        expect(allUserGroup.orgEnvironmentVariableDelete).toBeFalsy();
+        expect(allUserGroup.folderUpdate).toBeFalsy();
+        expect(allUserGroup.folderDelete).toBeFalsy();
       });
       it('authenticate if valid credentials', async () => {
         await request(app.getHttpServer())
@@ -227,10 +265,10 @@ describe('Authentication', () => {
           .expect(401);
       });
       it('throw 401 if user is archived', async () => {
-        await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
+        const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
 
         await request(app.getHttpServer())
-          .post('/api/authenticate')
+          .post(`/api/authenticate/${orgUser.organizationId}`)
           .send({ email: 'user@tooljet.io', password: 'password' })
           .expect(401);
 
@@ -244,11 +282,164 @@ describe('Authentication', () => {
           .set('Authorization', authHeaderForUser(adminUser))
           .expect(401);
       });
+      it('throw 401 if user is invited', async () => {
+        const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
+
+        const response = await request(app.getHttpServer())
+          .post(`/api/authenticate/${orgUser.organizationId}`)
+          .send({ email: 'user@tooljet.io', password: 'password' })
+          .expect(401);
+
+        const adminUser = await userRepository.findOneOrFail({
+          email: 'admin@tooljet.io',
+        });
+        await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
+
+        await request(app.getHttpServer())
+          .get('/api/organizations/users')
+          .set('Authorization', authHeaderForUser(adminUser))
+          .expect(401);
+      });
+      it('login to new organization if user is archived', async () => {
+        const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
+
+        const response = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'user@tooljet.io', password: 'password' });
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.organization_id).not.toBe(orgUser.organizationId);
+        expect(response.body.organization).toBe('Untitled workspace');
+      });
+      it('login to new organization if user is invited', async () => {
+        const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
+
+        const response = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'user@tooljet.io', password: 'password' });
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.organization_id).not.toBe(orgUser.organizationId);
+        expect(response.body.organization).toBe('Untitled workspace');
+      });
       it('throw 401 if invalid credentials', async () => {
         await request(app.getHttpServer())
           .post('/api/authenticate')
           .send({ email: 'amdin@tooljet.io', password: 'pwd' })
           .expect(401);
+      });
+      it('throw 401 if invalid credentials, maximum retry limit reached error after 5 retries', async () => {
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        const invalidCredentialResp = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+
+        expect(invalidCredentialResp.statusCode).toBe(401);
+        expect(invalidCredentialResp.body.message).toBe('Invalid credentials');
+
+        const response = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+
+        expect(response.statusCode).toBe(401);
+        expect(response.body.message).toBe(
+          'Maximum password retry limit reached, please reset your password using forget password option'
+        );
+      });
+      it('throw 401 if invalid credentials, maximum retry limit reached error will not throw if DISABLE_PASSWORD_RETRY_LIMIT is set to true', async () => {
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'DISABLE_PASSWORD_RETRY_LIMIT':
+              return 'true';
+            default:
+              return process.env[key];
+          }
+        });
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        const response = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+
+        expect(response.statusCode).toBe(401);
+        expect(response.body.message).toBe('Invalid credentials');
+      });
+      it('throw 401 if invalid credentials, maximum retry limit reached error will not throw after the count configured in PASSWORD_RETRY_LIMIT', async () => {
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'PASSWORD_RETRY_LIMIT':
+              return '3';
+            default:
+              return process.env[key];
+          }
+        });
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' })
+          .expect(401);
+
+        const invalidCredentialResp = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+
+        expect(invalidCredentialResp.statusCode).toBe(401);
+        expect(invalidCredentialResp.body.message).toBe('Invalid credentials');
+
+        const response = await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'pwd' });
+
+        expect(response.statusCode).toBe(401);
+        expect(response.body.message).toBe(
+          'Maximum password retry limit reached, please reset your password using forget password option'
+        );
       });
       it('should throw 401 if form login is disabled', async () => {
         await ssoConfigsRepository.update({ organizationId: current_organization.id }, { enabled: false });
@@ -266,7 +457,7 @@ describe('Authentication', () => {
         expect(response.body.organization_id).not.toBe(current_organization.id);
         expect(response.body.organization).toBe('Untitled workspace');
       });
-      it('should be able to switch between organizations with admin privilage', async () => {
+      it('should be able to switch between organizations with admin privilege', async () => {
         const { organization: invited_organization } = await createUser(
           app,
           { organizationName: 'New Organization' },
@@ -322,13 +513,18 @@ describe('Authentication', () => {
             'updated_at',
             'created_at',
             'folder_create',
+            'org_environment_variable_create',
+            'org_environment_variable_update',
+            'org_environment_variable_delete',
+            'folder_delete',
+            'folder_update',
           ].sort()
         );
         expect(app_group_permissions).toHaveLength(0);
         await current_user.reload();
         expect(current_user.defaultOrganizationId).toBe(invited_organization.id);
       });
-      it('should be able to switch between organizations with user privilage', async () => {
+      it('should be able to switch between organizations with user privilege', async () => {
         const { organization: invited_organization } = await createUser(
           app,
           { groups: ['all_users'], organizationName: 'New Organization' },
@@ -383,6 +579,11 @@ describe('Authentication', () => {
             'updated_at',
             'created_at',
             'folder_create',
+            'org_environment_variable_create',
+            'org_environment_variable_update',
+            'org_environment_variable_delete',
+            'folder_delete',
+            'folder_update',
           ].sort()
         );
         expect(app_group_permissions).toHaveLength(0);
@@ -392,7 +593,7 @@ describe('Authentication', () => {
     });
   });
 
-  describe('POST /api/forgot_password', () => {
+  describe('POST /api/forgot-password', () => {
     beforeEach(async () => {
       await createUser(app, {
         email: 'admin@tooljet.io',
@@ -401,7 +602,7 @@ describe('Authentication', () => {
       });
     });
     it('should return error if required params are not present', async () => {
-      const response = await request(app.getHttpServer()).post('/api/forgot_password');
+      const response = await request(app.getHttpServer()).post('/api/forgot-password');
 
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toStrictEqual(['email should not be empty', 'email must be an email']);
@@ -412,7 +613,7 @@ describe('Authentication', () => {
       emailServiceMock.mockImplementation();
 
       const response = await request(app.getHttpServer())
-        .post('/api/forgot_password')
+        .post('/api/forgot-password')
         .send({ email: 'admin@tooljet.io' });
 
       expect(response.statusCode).toBe(201);
@@ -425,7 +626,7 @@ describe('Authentication', () => {
     });
   });
 
-  describe('POST /api/reset_password', () => {
+  describe('POST /api/reset-password', () => {
     beforeEach(async () => {
       await createUser(app, {
         email: 'admin@tooljet.io',
@@ -434,7 +635,7 @@ describe('Authentication', () => {
       });
     });
     it('should return error if required params are not present', async () => {
-      const response = await request(app.getHttpServer()).post('/api/reset_password');
+      const response = await request(app.getHttpServer()).post('/api/reset-password');
 
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toStrictEqual([
@@ -453,7 +654,7 @@ describe('Authentication', () => {
       user.forgotPasswordToken = 'token';
       await user.save();
 
-      const response = await request(app.getHttpServer()).post('/api/reset_password').send({
+      const response = await request(app.getHttpServer()).post('/api/reset-password').send({
         password: 'new_password',
         token: 'token',
       });
@@ -525,7 +726,7 @@ describe('Authentication', () => {
       ]);
     });
 
-    it('should allow users to setup account for single organization only once', async () => {
+    it('should allow users to signup for single organization only once', async () => {
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
         switch (key) {
           case 'DISABLE_MULTI_WORKSPACE':
@@ -534,40 +735,14 @@ describe('Authentication', () => {
             return process.env[key];
         }
       });
-      const invitationToken = uuidv4();
-      await createUser(app, {
-        email: 'signup@tooljet.io',
-        invitationToken,
-        status: 'invited',
-      });
+      await request(app.getHttpServer()).post('/api/signup').send({ email: 'invited@tooljet.io' }).expect(201);
+      await request(app.getHttpServer()).post('/api/signup').send({ email: 'newinvited@tooljet.io' }).expect(406);
+    });
 
-      let response = await request(app.getHttpServer()).post('/api/set-password-from-token').send({
-        first_name: 'signupuser',
-        last_name: 'user',
-        organization: 'org1',
-        password: uuidv4(),
-        token: invitationToken,
-        role: 'developer',
-      });
-
-      expect(response.statusCode).toBe(201);
-
-      await createUser(app, {
-        email: 'signup2@tooljet.io',
-        invitationToken,
-        status: 'invited',
-      });
-
-      response = await request(app.getHttpServer()).post('/api/set-password-from-token').send({
-        first_name: 'signupuser2',
-        last_name: 'user2',
-        organization: 'org1',
-        password: uuidv4(),
-        token: invitationToken,
-        role: 'developer',
-      });
-
-      expect(response.statusCode).toBe(403);
+    it('should allow users to signup - Multi-Workspace', async () => {
+      await request(app.getHttpServer()).post('/api/signup').send({ email: 'invited@tooljet.io' }).expect(201);
+      await request(app.getHttpServer()).post('/api/signup').send({ email: 'newinvited@tooljet.io' }).expect(201);
+      await request(app.getHttpServer()).post('/api/signup').send({ email: 'newinvited1@tooljet.io' }).expect(201);
     });
 
     it('should not allow users to setup account for Multi-Workspace and sign up disabled', async () => {
@@ -687,7 +862,7 @@ describe('Authentication', () => {
       const updatedUser = await getManager().findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
       expect(updatedUser.firstName).toEqual('signupuser');
       expect(updatedUser.lastName).toEqual('user');
-      expect(updatedUser.defaultOrganizationId).not.toBe(org.id);
+      expect(updatedUser.defaultOrganizationId).toBe(org.id);
       const organizationUser = await getManager().findOneOrFail(OrganizationUser, {
         where: { userId: Not(adminUser.id), organizationId: org.id },
       });
@@ -757,7 +932,7 @@ describe('Authentication', () => {
   });
 
   describe('POST /api/accept-invite', () => {
-    describe('Multi-Worlspace Enabled', () => {
+    describe('Multi-Workspace Enabled', () => {
       beforeEach(() => {
         jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
           switch (key) {
@@ -806,7 +981,7 @@ describe('Authentication', () => {
       });
     });
 
-    describe('Multi-Worlspace Disabled', () => {
+    describe('Multi-Workspace Disabled', () => {
       beforeEach(() => {
         jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
           switch (key) {

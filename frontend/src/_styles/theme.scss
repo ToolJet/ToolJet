@@ -537,6 +537,14 @@ button {
       border: solid rgba(0, 0, 0, 0.125);
       border-width: 1px 0px 0px 0px;
 
+      .create-save-button-dropdown-toggle {
+        background-color: #4a6ce8;
+      }
+
+      .create-save-button-dropdown-toggle:hover {
+        background-color: #4066f0;
+      }
+
       .table-responsive {
         scrollbar-width: none;
       }
@@ -1151,7 +1159,29 @@ button {
   color: #4d72fa;
   cursor: pointer;
 }
+.fx-container-eventmanager{
+  position: relative;
+}
+.fx-container-eventmanager  * .fx-outer-wrapper{
+  position: absolute !important;
+  top: 7px !important;
+  right: -26px;
+}
+// targeting select component library class 
 
+.component-action-select *.css-1nfapid-container
+{
+  width: 184px !important;
+}
+
+.fx-container-eventmanager  *.fx-common{
+  top: 6px !important;
+  right: -34px;
+}
+.fx-container-eventmanager-code
+{
+  padding-right: 15px !important;
+}
 .unselectable {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -1228,6 +1258,14 @@ button {
       max-width: 200px;
       text-overflow: ellipsis;
       overflow: hidden;
+    }
+  }
+
+  .left-menu {
+    ul {
+      li:not(.active):hover {
+        color: $black;
+      }
     }
   }
 }
@@ -1696,7 +1734,6 @@ button {
   td {
     min-height: 40px;
     overflow-x: initial;
-    margin: auto;
 
     .text-container {
       padding: 0;
@@ -1832,8 +1869,8 @@ button {
 }
 
 .jet-data-table:hover {
-  overflow-x: overlay;
-  overflow-y: overlay;
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
 .jet-data-table {
@@ -1884,6 +1921,16 @@ th:focus,
 tr:focus {
   outline: none !important;
   box-shadow: none;
+}
+
+.show-password-field {
+  width: fit-content;
+  .form-check-input {
+    cursor: pointer;
+  }
+  .show-password-label {
+    cursor: pointer;
+  }
 }
 
 // .jet-container {
@@ -3192,6 +3239,27 @@ input:focus-visible {
     }
   }
 
+  .org-variables-page {
+    .user-email,
+    .user-status {
+      filter: brightness(0) invert(1);
+    }
+
+    .btn-org-env {
+      background: transparent;
+    }
+  }
+
+  .org-variables-page {
+    .select-search__option.is-selected {
+      background: $primary;
+      color: $white;
+    }
+    .select-search__option:not(.is-selected):hover {
+      background: rgba(66, 153, 225, 0.1);
+    }
+  }
+
   .react-json-view {
     background-color: transparent !important;
   }
@@ -3827,7 +3895,7 @@ input[type="text"] {
   position: fixed;
   position: absolute;
   left: 50%;
-  top: 40%;
+  top: 5%;
 
   .modal-body {
     width: 500px !important;
@@ -3835,7 +3903,7 @@ input[type="text"] {
     padding: 0px !important;
   }
 
-  transform: translate(-60%, -60%);
+  transform: translate(-60%, 0%);
   height: 350px;
   width: auto;
   max-height: 500px;
@@ -3929,6 +3997,28 @@ input[type="text"] {
   &.dark-mode-border {
     @include theme-border($light-theme: false, $outline: true);
   }
+}
+// close icon in inpector
+[data-rb-event-key="close-inpector"]
+{
+  position: absolute;
+  right: -80px;
+  background-color: #232e3c !important;
+  width: 10% !important;
+}
+[data-rb-event-key="close-inpector-light"]
+{
+  position: absolute;
+  right: -80px;
+  background-color: #fff !important;
+  width: 10% !important;
+}
+.inspector-close-icon-wrapper{
+  border-left: 1px solid #e7eaef;
+  svg{
+    margin-left: 10px;
+  }
+
 }
 .tabs-inspector {
   position: sticky;
@@ -4165,6 +4255,25 @@ input[type="text"] {
     color: #0565ff;
     cursor: pointer;
   }
+
+  .menu-ico {
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 13px;
+    &__open {
+      background-color: #d2ddec;
+    }
+    img {
+      padding: 0px;
+      height: 14px;
+      width: 14px;
+      vertical-align: unset;
+    }
+  }
+  
+  .menu-ico:hover {
+    background-color: #d2ddec;
+  }
 }
 
 /**
@@ -4229,6 +4338,10 @@ input[type="text"] {
     background-color: $bg-dark !important;
     color: $white !important;
     border-color: $border-grey-dark !important;
+  }
+
+  .text-muted {
+    color: $white !important;
   }
 }
 
@@ -4927,7 +5040,6 @@ div#driver-page-overlay {
 
 // Left Menu
 .left-menu {
-  background-color: #e8ebf4;
   padding: 1rem 0.5rem;
   border-radius: 5px;
   ul {
@@ -4979,6 +5091,12 @@ div#driver-page-overlay {
     border: 1px solid #e1e1e1;
   }
 }
+
+.theme-dark .help-text div {
+  background-color: $dark-background;
+  border: 1px solid $dark-background;
+}
+
 .org-invite-or {
   padding: 1rem 0rem;
   h2 {
@@ -5079,6 +5197,9 @@ div#driver-page-overlay {
   .json-tree-node-null {
     color: red;
   }
+  .json-tree-node-date {
+    color: rgb(98, 107, 103);
+  }
 
   .group-border {
     border-left: 0.5px solid #dadcde;
@@ -5130,6 +5251,8 @@ div#driver-page-overlay {
   .node-key {
     font-weight: 400 !important;
     margin-left: -0.25rem !important;
+    justify-content: start !important;
+    min-width: fit-content !important;
   }
 
   .node-key-outline {
@@ -5320,6 +5443,134 @@ div#driver-page-overlay {
     }
   }
 }
+
+.org-variables-page{
+  .btn-org-env {
+    width: 36px;
+  }
+  
+  .encryption-input {
+    width: fit-content;
+  }
+
+  .no-vars-text {    
+    display: block;
+    text-align: center;
+    margin-top: 100px;
+  }
+}
+
+//Kanban board
+.kanban-container.dark-themed {
+  background-color: $bg-dark-light !important;
+  .kanban-column {
+    .card-header {
+      background-color: #324156 !important;
+    }
+  }
+}
+
+.kanban-container {
+  background-color: #fefefe;
+  
+  .kanban-column {
+    background-color: #f4f4f4;
+    padding: 0 !important;
+    height: fit-content !important;
+    
+   .card-body {
+    &:hover {
+      overflow-y: auto !important;
+      &::-webkit-scrollbar {
+        width: 0 !important;
+        height: 0 !important;
+      }
+    }
+   }
+    
+    .card-header {
+      background-color: #fefefe;
+      
+      .badge {
+        font-size: 12px !important;
+      }
+    }
+
+    .card-body .dnd-card {
+      border-radius: 5px !important;
+    }
+    .dnd-card.card {
+      height: 52px !important;
+      padding: 5px !important;
+    }
+    .dnd-card.card.card-dark {
+      background-color: $bg-dark !important;
+    }
+  }
+
+  .kanban-board-add-group {
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.5);
+    background-color: transparent;
+    border-style: dashed;
+    border-color: rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    grid-auto-rows: max-content;
+    overflow: hidden;
+    box-sizing: border-box;
+    appearance: none;
+    outline: none;
+    margin: 10px;
+    border-radius: 5px;
+    min-width: 350px;
+    height: 200px;
+    font-size: 1em;
+  }
+  .add-card-btn {
+    font-size: 1em;
+    font-weight: 400;
+    color: #3e525b;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 5px;
+    background-color: transparent;
+    border-style: dashed;
+    border-color: rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    &:hover {
+      background-color: #e6e6e6;
+    }
+  }
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+.cursor-text {
+  cursor: text;
+}
+
+.bade-component {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    user-select: none;
+    padding: calc(0.25rem - 1px) 0.25rem;
+    height: 1.25rem;
+    border: 1px solid transparent;
+    min-width: 1.25rem;
+    font-weight: 600;
+    font-size: .625rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    vertical-align: bottom;
+    border-radius: 4px;
+}
 // sso-helper-page
 .sso-helper-container{
   width: 60vw;
@@ -5329,6 +5580,13 @@ div#driver-page-overlay {
 }
 .flexer{
   display: flex;
+}
+.flexer-sso-input{
+  display: flex;
+  justify-content: space-between;
+  p{
+    margin-bottom: 0 !important;
+  }
 }
 .sso-copy{
   margin-left: 10px;
@@ -5420,3 +5678,110 @@ word-break: break-all;
  }
 
 // sso end
+
+// steps-widget
+a.step-item-disabled {
+  text-decoration: none;
+}
+.steps{
+  overflow: hidden;
+  margin: 0rem !important;
+}
+.step-item.active ~ .step-item:after, .step-item.active ~ .step-item:before {
+  background: #f3f5f5 !important;
+}
+.step-item.active:before {
+  background: #fff !important;
+}
+.steps .step-item.active:before {
+    border-color: #b4b2b2 !important;
+}
+.steps-item{
+  color: var(--textColor) !important;
+}
+.step-item:before{
+  background: var(--bgColor) !important;
+  // remaining code
+}
+.step-item:after{
+  background: var(--bgColor) !important;
+}
+.step-item.active ~ .step-item {
+  color: var(--textColor) !important;;
+}
+// steps-widget end
+
+// profile-settings css
+.confirm-input {
+  padding-right: 8px !important;
+}
+
+.user-group-actions {
+  display: flex;
+  gap: 8px;
+}
+
+input.hide-input-arrows{
+  -moz-appearance: none;
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button{
+    -webkit-appearance: none;
+  }
+}
+
+.btn-org-env {
+  width: 36px;
+}
+
+// sso enable/disable box
+.tick-cross-info {
+  .main-box {
+    margin-right: 10px;
+    border-radius: 5px;
+  }
+
+  .icon-box {
+    padding: 7px 5px 7px 2px;
+    color: #fff;
+
+    .icon {
+      stroke-width: 4.5px;
+    }
+  }
+
+  .tick-box {
+    border: 3px solid $primary;
+
+    .icon-box {
+      background: $primary;
+    }
+  }
+
+  .cross-box {
+    border: 3px solid $disabled;
+
+    .icon-box {
+      background: $disabled;
+    }
+  }
+}
+
+.separator-bottom {
+  .separator {
+    width: 100%;
+
+    h2 {
+      width: 100%; 
+      text-align: center; 
+      border-bottom: 1px solid $primary; 
+      line-height: 0.1em;
+      margin: 10px 0 20px; 
+    } 
+    
+    h2 span { 
+      color: $primary;
+      background:#fff; 
+      padding:0 10px; 
+    }
+  }
+}

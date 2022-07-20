@@ -6,6 +6,7 @@ export * from './dataquery.service';
 export * from './organization.service';
 export * from './appVersion.service';
 export * from './organization_user.service';
+export * from './org_environment_variable.service';
 export * from './openapi.service';
 export * from './folder.service';
 export * from './tooljet.service';

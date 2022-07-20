@@ -5,10 +5,13 @@ import 'react-datetime/css/react-datetime.css';
 import '@/_styles/custom.scss';
 
 const getDate = (value, parseDateFormat, displayFormat) => {
-  const dateString = value;
-  const momentObj = moment(dateString, parseDateFormat);
-  const momentString = momentObj.format(displayFormat);
-  return momentString;
+  if (value) {
+    const dateString = value;
+    const momentObj = moment(dateString, parseDateFormat);
+    const momentString = momentObj.format(displayFormat);
+    return momentString;
+  }
+  return '';
 };
 
 export const Datepicker = function Datepicker({

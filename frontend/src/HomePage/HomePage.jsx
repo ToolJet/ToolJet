@@ -148,7 +148,7 @@ class HomePage extends React.Component {
         const appName = app.name.replace(/\s+/g, '-').toLowerCase();
         const fileName = `${appName}-export-${new Date().getTime()}`;
         // simulate link click download
-        const json = JSON.stringify(data);
+        const json = JSON.stringify(data, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
         const href = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -272,6 +272,14 @@ class HomePage extends React.Component {
 
   canCreateFolder = () => {
     return this.canAnyGroupPerformAction('folder_create', this.state.currentUser.group_permissions);
+  };
+
+  canDeleteFolder = () => {
+    return this.canAnyGroupPerformAction('folder_delete', this.state.currentUser.group_permissions);
+  };
+
+  canUpdateFolder = () => {
+    return this.canAnyGroupPerformAction('folder_update', this.state.currentUser.group_permissions);
   };
 
   cancelDeleteAppDialog = () => {
@@ -622,6 +630,8 @@ class HomePage extends React.Component {
                     folderChanged={this.folderChanged}
                     foldersChanged={this.foldersChanged}
                     canCreateFolder={this.canCreateFolder()}
+                    canDeleteFolder={this.canDeleteFolder()}
+                    canUpdateFolder={this.canUpdateFolder()}
                     darkMode={this.props.darkMode}
                   />
                 </div>

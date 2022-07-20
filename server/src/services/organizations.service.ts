@@ -5,7 +5,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
 import { cleanObject } from 'src/helpers/utils.helper';
-import { createQueryBuilder, Repository } from 'typeorm';
+import { createQueryBuilder, DeepPartial, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
@@ -93,6 +93,11 @@ export class OrganizationsService {
         appCreate: isAdmin,
         appDelete: isAdmin,
         folderCreate: isAdmin,
+        orgEnvironmentVariableCreate: isAdmin,
+        orgEnvironmentVariableUpdate: isAdmin,
+        orgEnvironmentVariableDelete: isAdmin,
+        folderUpdate: isAdmin,
+        folderDelete: isAdmin,
       });
       await this.groupPermissionsRepository.save(groupPermission);
       createdGroupPermissions.push(groupPermission);
@@ -128,40 +133,51 @@ export class OrganizationsService {
     });
   }
 
-  async fetchOrganisations(user: any): Promise<Organization[]> {
+  async fetchOrganizations(user: any): Promise<Organization[]> {
     return await createQueryBuilder(Organization, 'organization')
       .innerJoin(
         'organization.organizationUsers',
-        'organisation_users',
-        'organisation_users.status IN(:...statusList)',
+        'organization_users',
+        'organization_users.status IN(:...statusList)',
         {
           statusList: ['active'],
         }
       )
-      .andWhere('organisation_users.userId = :userId', {
+      .andWhere('organization_users.userId = :userId', {
         userId: user.id,
       })
       .orderBy('name', 'ASC')
       .getMany();
   }
 
-  async findOrganizationSupportsFormLogin(user: any): Promise<Organization[]> {
-    return await createQueryBuilder(Organization, 'organization')
-      .innerJoin('organization.ssoConfigs', 'organisation_sso', 'organisation_sso.sso = :form', {
+  async findOrganizationWithLoginSupport(user: User, loginType: string): Promise<Organization[]> {
+    const query = createQueryBuilder(Organization, 'organization')
+      .innerJoin('organization.ssoConfigs', 'organization_sso', 'organization_sso.sso = :form', {
         form: 'form',
       })
       .innerJoin(
         'organization.organizationUsers',
-        'organisation_users',
-        'organisation_users.status IN(:...statusList)',
+        'organization_users',
+        'organization_users.status IN(:...statusList)',
         {
           statusList: ['active'],
         }
-      )
-      .where('organisation_sso.enabled = :enabled', {
+      );
+
+    if (loginType === 'form') {
+      query.where('organization_sso.enabled = :enabled', {
         enabled: true,
-      })
-      .andWhere('organisation_users.userId = :userId', {
+      });
+    } else if (loginType === 'sso') {
+      query.where('organization.inheritSSO = :inheritSSO', {
+        inheritSSO: true,
+      });
+    } else {
+      return;
+    }
+
+    return await query
+      .andWhere('organization_users.userId = :userId', {
         userId: user.id,
       })
       .orderBy('name', 'ASC')
@@ -179,13 +195,14 @@ export class OrganizationsService {
       .getOne();
   }
 
-  async fetchOrganisationDetails(
+  async fetchOrganizationDetails(
     organizationId: string,
     statusList?: Array<boolean>,
-    isHideSensitiveData?: boolean
-  ): Promise<Organization> {
-    const result = await createQueryBuilder(Organization, 'organization')
-      .innerJoinAndSelect(
+    isHideSensitiveData?: boolean,
+    addInstanceLevelSSO?: boolean
+  ): Promise<DeepPartial<Organization>> {
+    const result: DeepPartial<Organization> = await createQueryBuilder(Organization, 'organization')
+      .leftJoinAndSelect(
         'organization.ssoConfigs',
         'organisation_sso',
         'organisation_sso.enabled IN (:...statusList)',
@@ -198,22 +215,59 @@ export class OrganizationsService {
       })
       .getOne();
 
-    if (!(result?.ssoConfigs?.length > 0)) {
-      return;
-    }
+    if (!result) return;
 
-    for (const sso of result?.ssoConfigs) {
-      await this.decryptSecret(sso?.configs);
+    if (
+      addInstanceLevelSSO &&
+      this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
+      result.inheritSSO
+    ) {
+      if (
+        this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID') &&
+        !result.ssoConfigs?.some((config) => config.sso === 'google')
+      ) {
+        if (!result.ssoConfigs) {
+          result.ssoConfigs = [];
+        }
+        result.ssoConfigs.push({
+          sso: 'google',
+          enabled: true,
+          configs: {
+            clientId: this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
+          },
+        });
+      }
+      if (
+        this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID') &&
+        !result.ssoConfigs?.some((config) => config.sso === 'git')
+      ) {
+        if (!result.ssoConfigs) {
+          result.ssoConfigs = [];
+        }
+        result.ssoConfigs.push({
+          sso: 'git',
+          enabled: true,
+          configs: {
+            clientId: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+          },
+        });
+      }
     }
 
     if (!isHideSensitiveData) {
+      if (!(result?.ssoConfigs?.length > 0)) {
+        return;
+      }
+      for (const sso of result?.ssoConfigs) {
+        await this.decryptSecret(sso?.configs);
+      }
       return result;
     }
-    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name);
+    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name, result?.enableSignUp);
   }
 
-  private hideSSOSensitiveData(ssoConfigs: SSOConfigs[], organizationName): any {
-    const configs = { name: organizationName };
+  private hideSSOSensitiveData(ssoConfigs: DeepPartial<SSOConfigs>[], organizationName, enableSignUp): any {
+    const configs = { name: organizationName, enableSignUp };
     if (ssoConfigs?.length > 0) {
       for (const config of ssoConfigs) {
         const configId = config['id'];
@@ -267,18 +321,19 @@ export class OrganizationsService {
   }
 
   async updateOrganization(organizationId: string, params) {
-    const { name, domain, enableSignUp } = params;
+    const { name, domain, enableSignUp, inheritSSO } = params;
 
-    const updateableParams = {
+    const updatableParams = {
       name,
       domain,
       enableSignUp,
+      inheritSSO,
     };
 
     // removing keys with undefined values
-    cleanObject(updateableParams);
+    cleanObject(updatableParams);
 
-    return await this.organizationsRepository.update(organizationId, updateableParams);
+    return await this.organizationsRepository.update(organizationId, updatableParams);
   }
 
   async updateOrganizationConfigs(organizationId: string, params: any) {
@@ -294,14 +349,14 @@ export class OrganizationsService {
     if (organization?.ssoConfigs?.length > 0) {
       const ssoConfigs: SSOConfigs = organization.ssoConfigs[0];
 
-      const updateableParams = {
+      const updatableParams = {
         configs,
         enabled,
       };
 
       // removing keys with undefined values
-      cleanObject(updateableParams);
-      return await this.ssoConfigRepository.update(ssoConfigs.id, updateableParams);
+      cleanObject(updatableParams);
+      return await this.ssoConfigRepository.update(ssoConfigs.id, updatableParams);
     } else {
       const newSSOConfigs = this.ssoConfigRepository.create({
         organization,
@@ -330,7 +385,7 @@ export class OrganizationsService {
     };
 
     let user = await this.usersService.findByEmail(userParams.email);
-    let defaultOrganisation: Organization,
+    let defaultOrganization: Organization,
       shouldSendWelcomeMail = false;
 
     if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
@@ -346,7 +401,7 @@ export class OrganizationsService {
       // User not exist
       shouldSendWelcomeMail = true;
       // Create default organization
-      defaultOrganisation = await this.create('Untitled workspace');
+      defaultOrganization = await this.create('Untitled workspace');
     }
     user = await this.usersService.create(
       userParams,
@@ -354,13 +409,13 @@ export class OrganizationsService {
       ['all_users'],
       user,
       true,
-      defaultOrganisation?.id
+      defaultOrganization?.id
     );
 
-    if (defaultOrganisation) {
+    if (defaultOrganization) {
       // Setting up default organization
-      await this.organizationUserService.create(user, defaultOrganisation, true);
-      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganisation.id, user.id);
+      await this.organizationUserService.create(user, defaultOrganization, true);
+      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id);
     }
 
     const currentOrganization: Organization = (
@@ -382,7 +437,7 @@ export class OrganizationsService {
           user.email,
           user.firstName,
           user.invitationToken,
-          organizationUser.invitationToken,
+          `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
           currentOrganization.name,
           `${currentUser.firstName} ${currentUser.lastName}`
         )

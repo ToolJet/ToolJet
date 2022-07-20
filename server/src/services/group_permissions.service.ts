@@ -123,14 +123,69 @@ export class GroupPermissionsService {
       },
     });
 
-    const { app_create, app_delete, add_apps, remove_apps, add_users, remove_users, folder_create } = body;
+    const {
+      name,
+      app_create,
+      app_delete,
+      add_apps,
+      remove_apps,
+      add_users,
+      remove_users,
+      folder_create,
+      org_environment_variable_create,
+      org_environment_variable_update,
+      org_environment_variable_delete,
+      folder_delete,
+      folder_update,
+    } = body;
 
     await getManager().transaction(async (manager) => {
+      //update user group name
+      if (name) {
+        const newName = name.trim();
+        if (!newName) {
+          throw new BadRequestException('Group name should not be empty');
+        }
+
+        const reservedGroups = ['admin', 'all_users'];
+        if (reservedGroups.includes(groupPermission.group)) {
+          throw new BadRequestException('Cannot update a default group name');
+        }
+
+        if (reservedGroups.includes(newName.replace(/ /g, '_').toLowerCase())) {
+          throw new BadRequestException('Group name already exists');
+        }
+
+        const groupToFind = await this.groupPermissionsRepository.findOne({
+          where: {
+            organizationId: user.organizationId,
+            group: newName,
+          },
+        });
+
+        if (groupToFind && groupToFind.id !== groupPermission.id) {
+          throw new ConflictException('Group name already exists');
+        } else if (!groupToFind) {
+          await manager.update(GroupPermission, groupPermissionId, { group: newName });
+        }
+      }
+
       // update group permissions
       const groupPermissionUpdateParams = {
         ...(typeof app_create === 'boolean' && { appCreate: app_create }),
         ...(typeof app_delete === 'boolean' && { appDelete: app_delete }),
         ...(typeof folder_create === 'boolean' && { folderCreate: folder_create }),
+        ...(typeof org_environment_variable_create === 'boolean' && {
+          orgEnvironmentVariableCreate: org_environment_variable_create,
+        }),
+        ...(typeof org_environment_variable_update === 'boolean' && {
+          orgEnvironmentVariableUpdate: org_environment_variable_update,
+        }),
+        ...(typeof org_environment_variable_delete === 'boolean' && {
+          orgEnvironmentVariableDelete: org_environment_variable_delete,
+        }),
+        ...(typeof folder_delete === 'boolean' && { folderDelete: folder_delete }),
+        ...(typeof folder_update === 'boolean' && { folderUpdate: folder_update }),
       };
       if (Object.keys(groupPermissionUpdateParams).length !== 0) {
         await manager.update(GroupPermission, groupPermissionId, groupPermissionUpdateParams);
@@ -199,7 +254,8 @@ export class GroupPermissionsService {
 
   async findAll(user: User): Promise<GroupPermission[]> {
     return this.groupPermissionsRepository.find({
-      organizationId: user.organizationId,
+      where: { organizationId: user.organizationId },
+      order: { createdAt: 'ASC' },
     });
   }
 

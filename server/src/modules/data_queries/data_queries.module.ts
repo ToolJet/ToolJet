@@ -25,6 +25,7 @@ import { AppImportExportService } from '@services/app_import_export.service';
 import { FilesService } from '@services/files.service';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsService } from '@services/plugins.service';
+import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { PluginsService } from '@services/plugins.service';
       File,
       AppVersion,
       AppUser,
+      OrgEnvironmentVariable,
       DataQuery,
       Credential,
       DataSource,

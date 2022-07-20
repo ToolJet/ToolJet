@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, createRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
@@ -13,7 +13,11 @@ export const Tabs = function Tabs({
   removeComponent,
   setExposedVariable,
   fireEvent,
+  registerAction,
+  styles,
 }) {
+  const { tabWidth } = styles;
+
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
   const defaultTab = component.definition.properties.defaultTab.value;
@@ -49,37 +53,76 @@ export const Tabs = function Tabs({
     console.log(err);
   }
 
-  const computedStyles = {
-    height,
-    display: parsedWidgetVisibility ? 'flex' : 'none',
-  };
-
   const parentRef = useRef(null);
   const [currentTab, setCurrentTab] = useState(parsedDefaultTab);
+  const [bgColor, setBgColor] = useState('#fff');
 
   useEffect(() => {
     setCurrentTab(parsedDefaultTab);
   }, [parsedDefaultTab]);
 
+  useEffect(() => {
+    setExposedVariable('currentTab', currentTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTab]);
+
+  useEffect(() => {
+    const currentTabData = parsedTabs.filter((tab) => tab.id === currentTab);
+    setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : 'white');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentState, currentTab]);
+
+  function computeTabVisibility(componentId, id) {
+    let tabVisibility = 'hidden';
+    if (id !== currentTab) {
+      return tabVisibility;
+    }
+
+    const tabElement = document.getElementById(`${componentId}-${id}`);
+    if (tabElement) {
+      if (window.getComputedStyle(tabElement).visibility === 'hidden') {
+        return 'hidden';
+      }
+    }
+
+    return id === currentTab ? 'visible' : 'hidden';
+  }
+
+  registerAction('setTab', async function (id) {
+    if (id) {
+      setCurrentTab(id);
+      setExposedVariable('currentTab', id).then(() => fireEvent('onTabSwitch'));
+    }
+  });
+
   return (
-    <div data-disabled={parsedDisabledState} className="jet-tabs card" style={computedStyles}>
-      <ul className="nav nav-tabs" data-bs-toggle="tabs" style={{ display: parsedHideTabs && 'none' }}>
+    <div
+      data-disabled={parsedDisabledState}
+      className="jet-tabs card"
+      style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor }}
+    >
+      <ul
+        className="nav nav-tabs"
+        data-bs-toggle="tabs"
+        style={{ display: parsedHideTabs && 'none', backgroundColor: '#fff', margin: '-1px' }}
+      >
         {parsedTabs.map((tab) => (
           <li
             className="nav-item"
+            style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
             onClick={() => {
-              setCurrentTab(tab.id);
-              setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
+              !tab?.disabled && setCurrentTab(tab.id);
+              !tab?.disabled && setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
             }}
             key={tab.id}
           >
             <a
               className={`nav-link ${currentTab == tab.id ? 'active' : ''}`}
-              style={
-                currentTab == tab.id
-                  ? { color: parsedHighlightColor, borderBottom: `1px solid ${parsedHighlightColor}` }
-                  : {}
-              }
+              style={{
+                color: currentTab == tab.id && parsedHighlightColor,
+                borderBottom: currentTab == tab.id && `1px solid ${parsedHighlightColor}`,
+                overflowWrap: 'anywhere',
+              }}
               ref={(el) => {
                 if (el && currentTab == tab.id) {
                   el.style.setProperty('color', parsedHighlightColor, 'important');
@@ -105,7 +148,7 @@ export const Tabs = function Tabs({
           <div
             className={`tab-pane active`}
             style={{
-              opacity: tab.id === currentTab ? 1 : 0,
+              visibility: computeTabVisibility(id, tab.id),
               height: parsedHideTabs ? height : height - 41,
               position: 'absolute',
               top: parsedHideTabs ? '0px' : '41px',
@@ -117,7 +160,7 @@ export const Tabs = function Tabs({
               {...containerProps}
               parentRef={parentRef}
               removeComponent={removeComponent}
-              containerCanvasWidth={width}
+              containerCanvasWidth={width - 4}
               parentComponent={component}
             />
           </div>

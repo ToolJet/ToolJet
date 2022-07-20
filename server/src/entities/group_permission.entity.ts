@@ -37,6 +37,20 @@ export class GroupPermission extends BaseEntity {
   @Column({ name: 'folder_create', default: false })
   folderCreate: boolean;
 
+  @Column({ name: 'org_environment_variable_create', default: false })
+  orgEnvironmentVariableCreate: boolean;
+
+  @Column({ name: 'org_environment_variable_update', default: false })
+  orgEnvironmentVariableUpdate: boolean;
+
+  @Column({ name: 'org_environment_variable_delete', default: false })
+  orgEnvironmentVariableDelete: boolean;
+  @Column({ name: 'folder_delete', default: false })
+  folderDelete: boolean;
+
+  @Column({ name: 'folder_update', default: false })
+  folderUpdate: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

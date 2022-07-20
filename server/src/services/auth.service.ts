@@ -23,6 +23,13 @@ import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
+interface JWTPayload {
+  username: string;
+  sub: string;
+  organizationId: string;
+  isSSOLogin?: boolean;
+  isPasswordLogin: boolean;
+}
 @Injectable()
 export class AuthService {
   constructor(
@@ -50,13 +57,29 @@ export class AuthService {
   }
 
   private async validateUser(email: string, password: string, organizationId?: string): Promise<User> {
-    const user = await this.usersService.findByEmail(email, organizationId);
+    const user = await this.usersService.findByEmail(email, organizationId, 'active');
 
-    if (!user) return null;
+    if (!user) return;
 
-    const isVerified = await bcrypt.compare(password, user.password);
+    const passwordRetryConfig = this.configService.get<string>('PASSWORD_RETRY_LIMIT');
 
-    return isVerified ? user : null;
+    const passwordRetryAllowed = passwordRetryConfig ? parseInt(passwordRetryConfig) : 5;
+
+    if (
+      this.configService.get<string>('DISABLE_PASSWORD_RETRY_LIMIT') !== 'true' &&
+      user.passwordRetryCount >= passwordRetryAllowed
+    ) {
+      throw new UnauthorizedException(
+        'Maximum password retry limit reached, please reset your password using forget password option'
+      );
+    }
+
+    if (!(await bcrypt.compare(password, user.password))) {
+      await this.usersService.updateUser(user.id, { passwordRetryCount: user.passwordRetryCount + 1 });
+      return;
+    }
+
+    return user;
   }
 
   async login(email: string, password: string, organizationId?: string) {
@@ -64,124 +87,129 @@ export class AuthService {
 
     const user = await this.validateUser(email, password, organizationId);
 
-    if (user && (await this.usersService.status(user)) !== 'archived') {
-      if (!organizationId) {
-        // Global login
-        // Determine the organization to be loaded
-        if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
-          // Single organization
-          organization = await this.organizationsService.getSingleOrganization();
-          if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
-            throw new UnauthorizedException();
-          }
-        } else {
-          const organizationList: Organization[] = await this.organizationsService.findOrganizationSupportsFormLogin(
-            user
-          );
-
-          const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
-          // Multi organization
-          if (defaultOrgDetails) {
-            // default organization form login enabled
-            organization = defaultOrgDetails;
-          } else if (organizationList?.length > 0) {
-            // default organization form login not enabled, picking first one from form enabled list
-            organization = organizationList[0];
-          } else {
-            // no form login enabled organization available for user - creating new one
-            organization = await this.organizationsService.create('Untitled workspace', user);
-          }
-        }
-        user.organizationId = organization.id;
-      } else {
-        // organization specific login
-        user.organizationId = organizationId;
-
-        organization = await this.organizationsService.get(user.organizationId);
-        const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
-
-        if (!formConfigs?.enabled) {
-          // no configurations in organization side or Form login disabled for the organization
-          throw new UnauthorizedException('Password login is disabled for the organization');
-        }
-      }
-
-      if (user.defaultOrganizationId !== user.organizationId) {
-        // Updating default organization Id
-        await this.usersService.updateDefaultOrganization(user, organization.id);
-      }
-
-      const payload = {
-        username: user.id,
-        sub: user.email,
-        organizationId: user.organizationId,
-        isPasswordLogin: true,
-      };
-
-      return decamelizeKeys({
-        id: user.id,
-        auth_token: this.jwtService.sign(payload),
-        email: user.email,
-        first_name: user.firstName,
-        last_name: user.lastName,
-        avatar_id: user.avatarId,
-        organizationId: user.organizationId,
-        organization: organization.name,
-        admin: await this.usersService.hasGroup(user, 'admin'),
-        group_permissions: await this.usersService.groupPermissions(user),
-        app_group_permissions: await this.usersService.appGroupPermissions(user),
-      });
-    } else {
+    if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
+    if (!organizationId) {
+      // Global login
+      // Determine the organization to be loaded
+      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+        // Single organization
+        if (user?.organizationUsers?.[0].status !== 'active') {
+          throw new UnauthorizedException('Your account is not active');
+        }
+        organization = await this.organizationsService.getSingleOrganization();
+        if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
+          throw new UnauthorizedException();
+        }
+      } else {
+        // Multi organization
+        const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
+          user,
+          'form'
+        );
+
+        const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
+        if (defaultOrgDetails) {
+          // default organization form login enabled
+          organization = defaultOrgDetails;
+        } else if (organizationList?.length > 0) {
+          // default organization form login not enabled, picking first one from form enabled list
+          organization = organizationList[0];
+        } else {
+          // no form login enabled organization available for user - creating new one
+          organization = await this.organizationsService.create('Untitled workspace', user);
+        }
+      }
+      user.organizationId = organization.id;
+    } else {
+      // organization specific login
+      // No need to validate user status, validateUser() already covers it
+      user.organizationId = organizationId;
+
+      organization = await this.organizationsService.get(user.organizationId);
+      const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+
+      if (!formConfigs?.enabled) {
+        // no configurations in organization side or Form login disabled for the organization
+        throw new UnauthorizedException('Password login is disabled for the organization');
+      }
+    }
+
+    await this.usersService.updateUser(user.id, {
+      ...(user.defaultOrganizationId !== user.organizationId && { defaultOrganizationId: organization.id }),
+      passwordRetryCount: 0,
+    });
+
+    const payload: JWTPayload = {
+      username: user.id,
+      sub: user.email,
+      organizationId: user.organizationId,
+      isPasswordLogin: true,
+    };
+
+    return decamelizeKeys({
+      id: user.id,
+      auth_token: this.jwtService.sign(payload),
+      email: user.email,
+      first_name: user.firstName,
+      last_name: user.lastName,
+      organizationId: user.organizationId,
+      organization: organization.name,
+      admin: await this.usersService.hasGroup(user, 'admin'),
+      group_permissions: await this.usersService.groupPermissions(user),
+      app_group_permissions: await this.usersService.appGroupPermissions(user),
+    });
   }
 
   async switchOrganization(newOrganizationId: string, user: User, isNewOrganization?: boolean) {
-    if (!(isNewOrganization || user.isPasswordLogin)) {
+    if (!(isNewOrganization || user.isPasswordLogin || user.isSSOLogin)) {
       throw new UnauthorizedException();
     }
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       throw new UnauthorizedException();
     }
-    const newUser = await this.usersService.findByEmail(user.email, newOrganizationId);
+    const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, 'active');
 
-    if (newUser && (await this.usersService.status(newUser)) !== 'archived') {
-      newUser.organizationId = newOrganizationId;
-
-      const organization: Organization = await this.organizationsService.get(newUser.organizationId);
-
-      const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
-
-      if (!formConfigs?.enabled) {
-        // no configurations in organization side or Form login disabled for the organization
-        throw new UnauthorizedException('Password login disabled for the organization');
-      }
-
-      // Updating default organization Id
-      await this.usersService.updateDefaultOrganization(newUser, newUser.organizationId);
-
-      const payload = {
-        username: user.id,
-        sub: user.email,
-        organizationId: newUser.organizationId,
-        isPasswordLogin: true,
-      };
-
-      return decamelizeKeys({
-        id: newUser.id,
-        auth_token: this.jwtService.sign(payload),
-        email: newUser.email,
-        first_name: newUser.firstName,
-        last_name: newUser.lastName,
-        organizationId: newUser.organizationId,
-        organization: organization.name,
-        admin: await this.usersService.hasGroup(newUser, 'admin'),
-        group_permissions: await this.usersService.groupPermissions(newUser),
-        app_group_permissions: await this.usersService.appGroupPermissions(newUser),
-      });
-    } else {
+    if (!newUser) {
       throw new UnauthorizedException('Invalid credentials');
     }
+    newUser.organizationId = newOrganizationId;
+
+    const organization: Organization = await this.organizationsService.get(newUser.organizationId);
+
+    const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+
+    if ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO)) {
+      // no configurations in organization side or Form login disabled for the organization
+      throw new UnauthorizedException('Please log in to continue');
+    }
+
+    // Updating default organization Id
+    this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId }).catch((error) => {
+      console.error('Error while updating default organization id', error);
+    });
+
+    const payload = {
+      username: user.id,
+      sub: user.email,
+      organizationId: newUser.organizationId,
+      isPasswordLogin: user.isPasswordLogin,
+      isSSOLogin: user.isSSOLogin,
+    };
+
+    return decamelizeKeys({
+      id: newUser.id,
+      auth_token: this.jwtService.sign(payload),
+      email: newUser.email,
+      first_name: newUser.firstName,
+      last_name: newUser.lastName,
+      organizationId: newUser.organizationId,
+      organization: organization.name,
+      admin: await this.usersService.hasGroup(newUser, 'admin'),
+      group_permissions: await this.usersService.groupPermissions(newUser),
+      app_group_permissions: await this.usersService.appGroupPermissions(newUser),
+    });
   }
 
   async signup(email: string) {
@@ -225,19 +253,23 @@ export class AuthService {
 
   async forgotPassword(email: string) {
     const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException('Email address not found');
+    }
     const forgotPasswordToken = uuid.v4();
-    await this.usersService.update(user.id, { forgotPasswordToken });
+    await this.usersService.updateUser(user.id, { forgotPasswordToken });
     await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken);
   }
 
   async resetPassword(token: string, password: string) {
     const user = await this.usersService.findByPasswordResetToken(token);
     if (!user) {
-      throw new NotFoundException('Invalid token');
+      throw new NotFoundException('Invalid URL');
     } else {
-      await this.usersService.update(user.id, {
+      await this.usersService.updateUser(user.id, {
         password,
         forgotPasswordToken: null,
+        passwordRetryCount: 0,
       });
     }
   }
@@ -259,38 +291,39 @@ export class AuthService {
 
     const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
 
-    if (!user?.organizationUsers) {
+    if (user?.organizationUsers) {
+      const organizationUser: OrganizationUser = user.organizationUsers.find(
+        (ou) => ou.organizationId === user.defaultOrganizationId
+      );
+
+      if (!organizationUser) {
+        throw new BadRequestException('Invalid invitation link');
+      }
+
+      await this.usersRepository.save(
+        Object.assign(user, {
+          firstName,
+          lastName,
+          password,
+          role,
+          invitationToken: null,
+        })
+      );
+
+      await this.organizationUsersRepository.save(
+        Object.assign(organizationUser, {
+          invitationToken: null,
+          status: 'active',
+        })
+      );
+
+      if (organization) {
+        await this.organizationsRepository.update(user.defaultOrganizationId, {
+          name: organization,
+        });
+      }
+    } else if (!organizationToken) {
       throw new BadRequestException('Invalid invitation link');
-    }
-    const organizationUser: OrganizationUser = user.organizationUsers.find(
-      (ou) => ou.organizationId === user.defaultOrganizationId
-    );
-
-    if (!organizationUser) {
-      throw new BadRequestException('Invalid invitation link');
-    }
-
-    await this.usersRepository.save(
-      Object.assign(user, {
-        firstName,
-        lastName,
-        password,
-        role,
-        invitationToken: null,
-      })
-    );
-
-    await this.organizationUsersRepository.save(
-      Object.assign(organizationUser, {
-        invitationToken: null,
-        status: 'active',
-      })
-    );
-
-    if (organization) {
-      await this.organizationsRepository.update(user.defaultOrganizationId, {
-        name: organization,
-      });
     }
 
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && organizationToken) {
@@ -305,7 +338,15 @@ export class AuthService {
             status: 'active',
           })
         );
+      } else {
+        throw new BadRequestException('Invalid workspace invitation link');
       }
+
+      this.usersService
+        .updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId })
+        .catch((error) => {
+          console.error('Error while setting default organization', error);
+        });
     }
   }
 
@@ -332,7 +373,7 @@ export class AuthService {
           user.email,
           `${user.firstName} ${user.lastName}`,
           user.invitationToken,
-          organizationUser.invitationToken
+          `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`
         )
         .catch((err) => console.error('Error while sending welcome mail', err));
       throw new UnauthorizedException(
@@ -346,8 +387,15 @@ export class AuthService {
         Object.assign(user, {
           ...(password ? { password } : {}),
           invitationToken: null,
+          passwordRetryCount: 0,
         })
       );
+    } else {
+      this.usersService
+        .updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId })
+        .catch((error) => {
+          console.error('Error while setting default organization', error);
+        });
     }
 
     await this.organizationUsersRepository.save(

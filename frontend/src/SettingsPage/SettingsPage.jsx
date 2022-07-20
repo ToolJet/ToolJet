@@ -10,17 +10,27 @@ function SettingsPage(props) {
   const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
   const [currentpassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
   const [updateInProgress, setUpdateInProgress] = React.useState(false);
   const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState(null);
+  const focusRef = React.useRef(null);
 
   const updateDetails = async () => {
-    if (!firstName || !lastName) {
-      toast.error("Name can't be empty!", {
-        position: 'top-left',
-      });
+    const firstNameMatch = firstName.match(/^ *$/);
+    const lastNameMatch = lastName.match(/^ *$/);
+    if (firstNameMatch !== null || lastNameMatch !== null) {
+      toast.error(
+        `${firstNameMatch !== null ? 'First name' : ''}${
+          lastNameMatch !== null ? (firstNameMatch !== null ? ' and last name' : 'Last name') : ''
+        } can't be empty!`,
+        {
+          position: 'top-left',
+        }
+      );
       return;
     }
+
     setUpdateInProgress(true);
     try {
       const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
@@ -44,6 +54,30 @@ function SettingsPage(props) {
   };
 
   const changePassword = async () => {
+    const errorMsg =
+      (currentpassword.match(/^ *$/) !== null && 'Current password') ||
+      (newPassword.match(/^ *$/) !== null && 'New password') ||
+      (confirmPassword.match(/^ *$/) !== null && 'Confirm new password');
+
+    if (errorMsg) {
+      toast.error(errorMsg + " can't be empty!", {
+        duration: 3000,
+      });
+      return;
+    }
+    if (currentpassword === newPassword) {
+      toast.error("New password can't be the same as the current one!", {
+        duration: 3000,
+      });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('New password and confirm new password should be same', {
+        duration: 3000,
+      });
+      return;
+    }
+
     setPasswordChangeInProgress(true);
     try {
       await userService.changePassword(currentpassword, newPassword);
@@ -52,6 +86,7 @@ function SettingsPage(props) {
       });
       setCurrentPassword('');
       setNewPassword('');
+      setConfirmPassword('');
     } catch (error) {
       toast.error('Please verify that you have entered the correct password', {
         duration: 3000,
@@ -61,6 +96,12 @@ function SettingsPage(props) {
   };
 
   const newPasswordKeyPressHandler = async (event) => {
+    if (event.key === 'Enter') {
+      await focusRef.current.focus();
+    }
+  };
+
+  const confirmPasswordKeyPressHandler = async (event) => {
     if (event.key === 'Enter') {
       await changePassword();
     }
@@ -218,6 +259,24 @@ function SettingsPage(props) {
                         data-cy="new-password-input"
                       />
                     </div>
+                  </div>
+                </div>
+                <div className="w-50 confirm-input">
+                  <div className="mb-3">
+                    <label className="form-label" data-cy="new-password-label">
+                      Confirm new password
+                    </label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      name="last-name"
+                      placeholder="Confirm new password"
+                      value={confirmPassword}
+                      ref={focusRef}
+                      onChange={(event) => setConfirmPassword(event.target.value)}
+                      onKeyPress={confirmPasswordKeyPressHandler}
+                      data-cy="new-password-input"
+                    />
                   </div>
                 </div>
                 <a

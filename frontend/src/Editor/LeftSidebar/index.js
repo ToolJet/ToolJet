@@ -1,5 +1,5 @@
 import '@/_styles/left-sidebar.scss';
-import React, { useState } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 
 import { LeftSidebarItem } from './SidebarItem';
 import { LeftSidebarInspector } from './SidebarInspector';
@@ -12,33 +12,42 @@ import { LeftSidebarGlobalSettings } from './SidebarGlobalSettings';
 import { ConfirmDialog } from '@/_components';
 import config from 'config';
 
-export const LeftSidebar = ({
-  appId,
-  switchDarkMode,
-  darkMode = false,
-  components,
-  toggleComments,
-  dataSources = [],
-  dataSourcesChanged,
-  dataQueriesChanged,
-  errorLogs,
-  appVersionsId,
-  globalSettingsChanged,
-  globalSettings,
-  currentState,
-  appDefinition,
-  setSelectedComponent,
-  removeComponent,
-  runQuery,
-  toggleAppMaintenance,
-  is_maintenance_on,
-  isSaving,
-  isUnsavedQueriesAvailable,
-}) => {
+export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
+  const {
+    appId,
+    switchDarkMode,
+    darkMode = false,
+    components,
+    toggleComments,
+    dataSources = [],
+    dataSourcesChanged,
+    dataQueriesChanged,
+    errorLogs,
+    appVersionsId,
+    globalSettingsChanged,
+    globalSettings,
+    debuggerActions,
+    currentState,
+    appDefinition,
+    setSelectedComponent,
+    removeComponent,
+    runQuery,
+    toggleAppMaintenance,
+    is_maintenance_on,
+    isSaving,
+    isUnsavedQueriesAvailable,
+  } = props;
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    dataSourceModalToggleStateHandler() {
+      toggleDataSourceManagerModal(true);
+    },
+  }));
   return (
-    <div className="left-sidebar">
+    <div className="left-sidebar" data-cy="left-sidebar-inspector">
       <LeftSidebarInspector
         darkMode={darkMode}
         currentState={currentState}
@@ -54,8 +63,15 @@ export const LeftSidebar = ({
         dataSources={dataSources}
         dataSourcesChanged={dataSourcesChanged}
         dataQueriesChanged={dataQueriesChanged}
+        toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+        showDataSourceManagerModal={showDataSourceManagerModal}
       />
-      <LeftSidebarDebugger darkMode={darkMode} components={components} errors={errorLogs} />
+      <LeftSidebarDebugger
+        darkMode={darkMode}
+        components={components}
+        errors={errorLogs}
+        debuggerActions={debuggerActions}
+      />
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
       )}
@@ -79,6 +95,7 @@ export const LeftSidebar = ({
         icon="back"
         className="left-sidebar-item no-border left-sidebar-layout"
         text={'Back'}
+        data-cy="back-button"
       />
       <ConfirmDialog
         show={showLeaveDialog}
@@ -95,4 +112,4 @@ export const LeftSidebar = ({
       </div>
     </div>
   );
-};
+});

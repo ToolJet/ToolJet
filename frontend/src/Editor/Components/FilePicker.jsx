@@ -12,8 +12,11 @@ export const FilePicker = ({
   onEvent,
   darkMode,
   styles,
+  registerAction,
 }) => {
   //* properties definitions
+  const instructionText =
+    component.definition.properties.instructionText?.value ?? 'Drag and Drop some files here, or click to select files';
   const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
@@ -282,6 +285,10 @@ export const FilePicker = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
 
+  registerAction('clearFiles', async function () {
+    setSelectedFiles([]);
+  });
+
   return (
     <section>
       <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
@@ -316,7 +323,7 @@ export const FilePicker = ({
         ) : (
           <FilePicker.Signifiers
             signifier={!isDragAccept && !accepted & !isDragReject}
-            feedback={'Drag & drop some files here, or click to select files'}
+            feedback={instructionText}
             cls={`${darkMode ? 'text-secondary' : 'text-dark'} mt-3`}
           />
         )}

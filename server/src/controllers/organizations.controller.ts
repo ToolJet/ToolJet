@@ -40,7 +40,7 @@ export class OrganizationsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async get(@User() user) {
-    const result = await this.organizationsService.fetchOrganisations(user);
+    const result = await this.organizationsService.fetchOrganizations(user);
     return decamelizeKeys({ organizations: result });
   }
 
@@ -68,7 +68,7 @@ export class OrganizationsController {
       throw new NotFoundException();
     }
 
-    const result = await this.organizationsService.fetchOrganisationDetails(organizationId, [true], true);
+    const result = await this.organizationsService.fetchOrganizationDetails(organizationId, [true], true, true);
     return decamelizeKeys({ ssoConfigs: result });
   }
 
@@ -76,7 +76,7 @@ export class OrganizationsController {
   @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
   @Get('/configs')
   async getConfigs(@User() user) {
-    const result = await this.organizationsService.fetchOrganisationDetails(user.organizationId);
+    const result = await this.organizationsService.fetchOrganizationDetails(user.organizationId);
     return decamelizeKeys({ organizationDetails: result });
   }
 
