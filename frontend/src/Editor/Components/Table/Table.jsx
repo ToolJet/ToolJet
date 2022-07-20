@@ -870,7 +870,7 @@ export function Table({
         borderRadius: Number.parseFloat(borderRadius),
       }}
       onClick={(event) => {
-        propertiesSelector();
+        propertiesSelector(event);
         event.stopPropagation();
         onComponentClick(id, component, event);
       }}

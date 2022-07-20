@@ -61,8 +61,8 @@ export const Listview = function Listview({
       className="jet-listview"
       id={id}
       ref={parentRef}
-      onClick={() => {
-        propertiesSelector();
+      onClick={(e) => {
+        propertiesSelector(e);
         containerProps.onComponentClick(id, component);
       }}
       style={computedStyles}
