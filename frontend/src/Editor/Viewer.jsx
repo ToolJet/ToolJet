@@ -85,7 +85,7 @@ class Viewer extends React.Component {
       };
     });
 
-    const variables = await this.fetchOrgEnvironmentVariables();
+    const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
 
     this.setState(
       {
@@ -127,16 +127,22 @@ class Viewer extends React.Component {
     });
   };
 
-  fetchOrgEnvironmentVariables = async () => {
+  fetchOrgEnvironmentVariables = async (slug, isPublic) => {
     const variables = {
       client: {},
       server: {},
     };
-    await orgEnvironmentVariableService.getVariables().then((data) => {
-      data.variables.map((variable) => {
-        variables[variable.variable_type][variable.variable_name] =
-          variable.variable_type === 'server' ? 'HiddenEnvironmentVariable' : variable.value;
-      });
+
+    let variablesResult;
+    if (!isPublic) {
+      variablesResult = await orgEnvironmentVariableService.getVariables();
+    } else {
+      variablesResult = await orgEnvironmentVariableService.getVariablesFromPublicApp(slug);
+    }
+
+    variablesResult.variables.map((variable) => {
+      variables[variable.variable_type][variable.variable_name] =
+        variable.variable_type === 'server' ? 'HiddenEnvironmentVariable' : variable.value;
     });
     return variables;
   };
