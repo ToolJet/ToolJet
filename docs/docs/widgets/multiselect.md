@@ -62,6 +62,15 @@ Toggle on or off to control the visibility of the widget. You can programmatical
 
 This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`.
 
+## Actions
+
+| Action      | Description | Properties |
+| ----------- | ----------- | ------------------ |
+| `selectOption` | Select options. | pass options as parameter. ex: `components.multiselect1.selectOption(1)` |
+| `deselectOption` | Deselect options.| pass options as parameter. ex: `components.multiselect1.deselectOption(1)` |
+| `clearSelections` | Clear all selection. |  ex: `components.multiselect1.clearSelections()` |
+
+
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::

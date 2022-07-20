@@ -258,12 +258,13 @@ export function CodeHinter({
 
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
+  let cyLabel = paramLabel ? paramLabel.toLowerCase().replace(/\s+/g, '-') : '';
 
   return (
     <div ref={wrapperRef}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
-          <div className={`mb-2 field ${options.className}`} data-cy="accordion-components">
+          <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip label={paramLabel} meta={fieldMeta} />
           </div>
         )}
@@ -275,6 +276,7 @@ export function CodeHinter({
                 setForceCodeBox(false);
                 onFxPress(false);
               }}
+              dataCy={cyLabel}
             />
           </div>
         </div>
@@ -295,7 +297,7 @@ export function CodeHinter({
                 overflow: 'auto',
                 fontSize: ' .875rem',
               }}
-              data-cy="accordion-input"
+              data-cy={`${cyLabel}-input-field`}
             >
               {usePortalEditor && (
                 <CodeHinter.PopupIcon
@@ -352,6 +354,7 @@ export function CodeHinter({
               onFxPress(true);
             }}
             meta={fieldMeta}
+            cyLabel={cyLabel}
           />
         </div>
       )}

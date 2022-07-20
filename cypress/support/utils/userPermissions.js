@@ -52,3 +52,26 @@ export const reset = () =>{
    }
   });
 }
+
+export const addNewUserMW = (firstName,lastName,email,companyName) =>{
+  common.navigateToManageUsers();
+  cy.get(usersSelector.inviteUserButton).click();
+
+  users.addNewUser(firstName,lastName,email);
+  cy.clearAndType(usersSelector.firstNameField, firstName);
+  cy.clearAndType(usersSelector.lastNameField, lastName);
+  cy.clearAndType(usersSelector.workspaceField, companyName);
+  cy.get(usersSelector.roleOptions).select("Developer");
+  cy.clearAndType(usersSelector.passwordInput, usersText.password);
+  cy.clearAndType(usersSelector.confirmPasswordInput, usersText.password);
+  cy.get(usersSelector.finishSetup).click();
+  cy.verifyToastMessage(commonSelectors.toastMessage, usersText.passwordSuccessToast);
+  cy.url().should("include",path.loginPath);
+
+  cy.login(email,usersText.password);
+  cy.get(usersSelector.dropdownText).should('be.visible').and('have.text', companyName);
+  cy.get(usersSelector.dropdown).invoke("show");
+  cy.get(usersSelector.arrowIcon).click();
+  cy.contains("My workspace").should('be.visible').click();
+  cy.get(usersSelector.dropdownText, { timeout: 9000 }).should('be.visible').and('have.text', "My workspace");
+}
