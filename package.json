@@ -65,8 +65,6 @@
     "db:drop": "npm --prefix server run db:drop",
     "deploy": "cp -a frontend/build/. public/",
     "heroku-postbuild": "./heroku-postbuild.sh",
-    "cy:run": "cypress run --browser=chrome 103, --headless",
-    "cy:open": "cypress open --browser=chrome 103, --e2e",
     "prepare": "husky install"
   }
 }

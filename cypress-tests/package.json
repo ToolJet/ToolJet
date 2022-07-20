@@ -1,13 +1,12 @@
 {
   "name": "cypress-tests",
   "version": "1.0.0",
-  "description": "\"\"",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "cy:run": "cypress run --browser=chrome 103, --headless",
+    "cy:open": "cypress open --browser=chrome 103, --e2e"
   },
-  "author": "",
-  "license": "ISC",
+
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^5.12.0",
     "cypress": "^10.3.1"
