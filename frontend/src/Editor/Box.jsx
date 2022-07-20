@@ -46,6 +46,7 @@ import { PDF } from './Components/PDF';
 import { ColorPicker } from './Components/ColorPicker';
 import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import { Steps } from './Components/Steps';
+import { TreeSelect } from './Components/TreeSelect';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
@@ -106,6 +107,7 @@ const AllComponents = {
   ColorPicker,
   KanbanBoard,
   Steps,
+  TreeSelect,
 };
 
 export const Box = function Box({

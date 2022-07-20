@@ -144,6 +144,7 @@ const sidebars = {
         'widgets/timeline',
         'widgets/timer',
         'widgets/toggle-switch',
+        'widgets/tree-select',
         'widgets/vertical-divider'
       ],
     },
