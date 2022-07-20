@@ -10,6 +10,7 @@ import { AppImportExportService } from '@services/app_import_export.service';
 import { User } from 'src/decorators/user.decorator';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
+import { UsersService } from '@services/users.service';
 
 @Controller('apps')
 export class AppsController {
@@ -17,7 +18,8 @@ export class AppsController {
     private appsService: AppsService,
     private appImportExportService: AppImportExportService,
     private foldersService: FoldersService,
-    private appsAbilityFactory: AppsAbilityFactory
+    private appsAbilityFactory: AppsAbilityFactory,
+    private userService: UsersService
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -197,8 +199,8 @@ export class AppsController {
     } else {
       apps = await this.appsService.all(user, page, searchKey);
     }
-    //remove password from user info
-    apps.forEach((app) => (app.user.password = undefined));
+    //remove user sensitive data
+    apps.forEach((app) => this.userService.removeSensitiveData(app.user));
 
     const totalCount = await this.appsService.count(user, searchKey);
 

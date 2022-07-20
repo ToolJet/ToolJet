@@ -6,7 +6,7 @@ import {
   createGroupPermission,
   setupOrganization,
 } from '../test.helper';
-import { UsersService } from '../../src/services/users.service';
+import { UsersService } from '@services/users.service';
 import { INestApplication } from '@nestjs/common';
 import { getManager, In } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -278,6 +278,20 @@ describe('UsersService', () => {
         expect(await service.userCan(defaultUser, 'update', 'App', app.id)).toEqual(true);
         expect(await service.userCan(defaultUser, 'delete', 'App', app.id)).toEqual(true);
       });
+    });
+  });
+
+  describe('.removeSensitiveData', () => {
+    it('removes the sensitive data from a user', async () => {
+      const { defaultUser } = await setupOrganization(nestApp);
+      const clearedUser = service.removeSensitiveData(defaultUser);
+      expect(clearedUser.password).toBeUndefined();
+      expect(clearedUser.invitationToken).toBeUndefined();
+      expect(clearedUser.forgotPasswordToken).toBeUndefined();
+      expect(clearedUser.email).toBeUndefined();
+      expect(clearedUser.role).toBeUndefined();
+      expect(clearedUser.createdAt).toBeUndefined();
+      expect(clearedUser.updatedAt).toBeUndefined();
     });
   });
 

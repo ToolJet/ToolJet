@@ -192,6 +192,7 @@ describe('apps controller', () => {
 
         let { meta, apps } = response.body;
         let appNames = apps.map((app) => app.name);
+        const users = apps.map((app) => app.user);
 
         expect(new Set(appNames)).toEqual(
           new Set([publicApp.name, ownedApp.name, appNotInFolder.name, appInFolder.name])
@@ -202,6 +203,7 @@ describe('apps controller', () => {
           folder_count: 0,
           current_page: 1,
         });
+        expect(users[0].email).toBeUndefined();
 
         response = await request(app.getHttpServer())
           .get(`/api/apps?searchKey=public`)
