@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, createRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
@@ -13,7 +13,11 @@ export const Tabs = function Tabs({
   removeComponent,
   setExposedVariable,
   fireEvent,
+  registerAction,
+  styles,
 }) {
+  const { tabWidth } = styles;
+
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
   const defaultTab = component.definition.properties.defaultTab.value;
@@ -84,6 +88,13 @@ export const Tabs = function Tabs({
     return id === currentTab ? 'visible' : 'hidden';
   }
 
+  registerAction('setTab', async function (id) {
+    if (id) {
+      setCurrentTab(id);
+      setExposedVariable('currentTab', id).then(() => fireEvent('onTabSwitch'));
+    }
+  });
+
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -98,9 +109,10 @@ export const Tabs = function Tabs({
         {parsedTabs.map((tab) => (
           <li
             className="nav-item"
+            style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
             onClick={() => {
-              setCurrentTab(tab.id);
-              setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
+              !tab?.disabled && setCurrentTab(tab.id);
+              !tab?.disabled && setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
             }}
             key={tab.id}
           >
@@ -109,6 +121,7 @@ export const Tabs = function Tabs({
               style={{
                 color: currentTab == tab.id && parsedHighlightColor,
                 borderBottom: currentTab == tab.id && `1px solid ${parsedHighlightColor}`,
+                overflowWrap: 'anywhere',
               }}
               ref={(el) => {
                 if (el && currentTab == tab.id) {

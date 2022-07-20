@@ -104,4 +104,5 @@ export class User extends BaseEntity {
 
   organizationId: string;
   isPasswordLogin: boolean;
+  isSSOLogin: boolean;
 }

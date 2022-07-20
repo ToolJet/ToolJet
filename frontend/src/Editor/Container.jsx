@@ -16,6 +16,7 @@ import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 import produce from 'immer';
+import { addComponents } from '@/_helpers/appUtils';
 
 export const Container = ({
   canvasWidth,
@@ -44,6 +45,7 @@ export const Container = ({
   handleRedo,
   onComponentHover,
   hoveredComponent,
+  sideBarDebugger,
   dataQueries,
 }) => {
   const styles = {
@@ -61,10 +63,48 @@ export const Container = ({
   const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
+  const [isContainerFocused, setContainerFocus] = useState(false);
   const router = useRouter();
+  const canvasRef = useRef(null);
+  const focusedParentIdRef = useRef(undefined);
 
   useHotkeys('⌘+z, control+z', () => handleUndo());
   useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
+
+  useHotkeys(
+    '⌘+v, control+v',
+    () => {
+      if (isContainerFocused) {
+        navigator.clipboard
+          .readText()
+          .then((cliptext) =>
+            addComponents(appDefinition, appDefinitionChanged, focusedParentIdRef.current, JSON.parse(cliptext))
+          );
+      }
+    },
+    [isContainerFocused, appDefinition, focusedParentIdRef]
+  );
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (canvasRef.current.contains(e.target)) {
+        const elem = e.target.closest('.real-canvas').getAttribute('id');
+        if (elem === 'real-canvas') {
+          focusedParentIdRef.current = undefined;
+        } else {
+          const parentId = elem.split('canvas-')[1];
+          focusedParentIdRef.current = parentId;
+        }
+        if (!isContainerFocused) {
+          setContainerFocus(true);
+        }
+      } else if (isContainerFocused) {
+        setContainerFocus(false);
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [isContainerFocused, canvasRef]);
 
   useEffect(() => {
     setBoxes(components);
@@ -403,7 +443,10 @@ export const Container = ({
   return (
     <div
       {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
-      ref={drop}
+      ref={(el) => {
+        canvasRef.current = el;
+        drop(el);
+      }}
       style={styles}
       className={cx('real-canvas', {
         'show-grid': isDragging || isResizing,
@@ -473,6 +516,7 @@ export const Container = ({
               darkMode={darkMode}
               onComponentHover={onComponentHover}
               hoveredComponent={hoveredComponent}
+              sideBarDebugger={sideBarDebugger}
               isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
               dataQueries={dataQueries}
               containerProps={{
@@ -495,6 +539,7 @@ export const Container = ({
                 darkMode,
                 onComponentHover,
                 hoveredComponent,
+                sideBarDebugger,
                 dataQueries,
               }}
             />

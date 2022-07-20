@@ -1,6 +1,7 @@
-import { Body, Controller, Param, Post, Get, Res, Req } from '@nestjs/common';
+import { Body, Controller, Param, Post, Get, UseGuards, Req, Res } from '@nestjs/common';
 import { OauthService } from '../services/oauth/oauth.service';
 import { OidcOAuthService } from '../services/oauth/oidc_auth.service';
+import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 import { Response, Request } from 'express';
 
 @Controller('oauth')
@@ -22,5 +23,12 @@ export class OauthController {
       sameSite: 'strict',
     });
     return { authorizationUrl };
+  }
+
+  @UseGuards(MultiOrganizationGuard)
+  @Post('sign-in/common/:ssoType')
+  async commonSignIn(@Param('ssoType') ssoType, @Body() body) {
+    const result = await this.oauthService.signIn(body, null, ssoType);
+    return result;
   }
 }

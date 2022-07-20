@@ -101,7 +101,7 @@ describe('organizations controller', () => {
           .post('/api/organizations')
           .send({ name: 'My workspace' })
           .set('Authorization', authHeaderForUser(user))
-          .expect(401);
+          .expect(403);
       });
 
       it('should create new organization if Multi-Workspace supported and user logged in via SSO', async () => {
@@ -244,13 +244,13 @@ describe('organizations controller', () => {
           .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
           .set('Authorization', authHeaderForUser(user));
 
+        expect(response.statusCode).toBe(200);
+
         const authGetResponse = await request(app.getHttpServer())
           .get('/api/organizations/configs')
           .set('Authorization', authHeaderForUser(user));
 
         expect(authGetResponse.statusCode).toBe(200);
-
-        expect(response.statusCode).toBe(200);
 
         const getResponse = await request(app.getHttpServer()).get('/api/organizations/public-configs');
 
@@ -258,6 +258,7 @@ describe('organizations controller', () => {
         expect(getResponse.body).toEqual({
           sso_configs: {
             name: 'Test Organization',
+            enable_sign_up: false,
             form: {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
               sso: 'form',
@@ -268,6 +269,48 @@ describe('organizations controller', () => {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'git').id,
               sso: 'git',
               configs: { client_id: 'client-id', client_secret: '' },
+              enabled: true,
+            },
+          },
+        });
+      });
+
+      it('should get organization details and should not consider instance level SSO for all users for single organization', async () => {
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'DISABLE_MULTI_WORKSPACE':
+              return 'true';
+            case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
+              return 'google-client-id';
+            case 'SSO_GIT_OAUTH2_CLIENT_ID':
+              return 'git-client-id';
+            case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
+              return 'git-secret';
+            default:
+              return process.env[key];
+          }
+        });
+        const { user } = await createUser(app, {
+          email: 'admin@tooljet.io',
+        });
+
+        const authGetResponse = await request(app.getHttpServer())
+          .get('/api/organizations/configs')
+          .set('Authorization', authHeaderForUser(user));
+
+        expect(authGetResponse.statusCode).toBe(200);
+
+        const getResponse = await request(app.getHttpServer()).get('/api/organizations/public-configs');
+
+        expect(getResponse.statusCode).toBe(200);
+        expect(getResponse.body).toEqual({
+          sso_configs: {
+            name: 'Test Organization',
+            enable_sign_up: false,
+            form: {
+              config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
+              sso: 'form',
+              configs: {},
               enabled: true,
             },
           },
@@ -301,6 +344,7 @@ describe('organizations controller', () => {
         expect(getResponse.body).toEqual({
           sso_configs: {
             name: 'Test Organization',
+            enable_sign_up: false,
             form: {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
               sso: 'form',
@@ -311,6 +355,122 @@ describe('organizations controller', () => {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'git').id,
               sso: 'git',
               configs: { client_id: 'client-id', client_secret: '' },
+              enabled: true,
+            },
+          },
+        });
+      });
+
+      it('should get organization specific details with instance level sso and override it with organization sso configs for all users for multiple organization deployment', async () => {
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
+              return 'google-client-id';
+            case 'SSO_GIT_OAUTH2_CLIENT_ID':
+              return 'git-client-id';
+            case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
+              return 'git-secret';
+            default:
+              return process.env[key];
+          }
+        });
+        const { user, organization } = await createUser(app, {
+          email: 'admin@tooljet.io',
+        });
+
+        const response = await request(app.getHttpServer())
+          .patch('/api/organizations/configs')
+          .send({ type: 'git', configs: { clientId: 'org-client-id', clientSecret: 'client-secret' }, enabled: true })
+          .set('Authorization', authHeaderForUser(user));
+
+        expect(response.statusCode).toBe(200);
+
+        const getResponse = await request(app.getHttpServer()).get(
+          `/api/organizations/${organization.id}/public-configs`
+        );
+
+        expect(getResponse.statusCode).toBe(200);
+
+        const authGetResponse = await request(app.getHttpServer())
+          .get('/api/organizations/configs')
+          .set('Authorization', authHeaderForUser(user));
+
+        expect(authGetResponse.statusCode).toBe(200);
+
+        expect(getResponse.statusCode).toBe(200);
+        expect(getResponse.body).toEqual({
+          sso_configs: {
+            name: 'Test Organization',
+            enable_sign_up: false,
+            form: {
+              config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
+              sso: 'form',
+              configs: {},
+              enabled: true,
+            },
+            git: {
+              config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'git').id,
+              sso: 'git',
+              configs: { client_id: 'org-client-id', client_secret: '' },
+              enabled: true,
+            },
+            google: {
+              sso: 'google',
+              configs: { client_id: 'google-client-id', client_secret: '' },
+              enabled: true,
+            },
+          },
+        });
+      });
+
+      it('should get organization specific details with instance level sso for all users for multiple organization deployment', async () => {
+        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+          switch (key) {
+            case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
+              return 'google-client-id';
+            case 'SSO_GIT_OAUTH2_CLIENT_ID':
+              return 'git-client-id';
+            case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
+              return 'git-secret';
+            default:
+              return process.env[key];
+          }
+        });
+        const { user, organization } = await createUser(app, {
+          email: 'admin@tooljet.io',
+        });
+
+        const getResponse = await request(app.getHttpServer()).get(
+          `/api/organizations/${organization.id}/public-configs`
+        );
+
+        expect(getResponse.statusCode).toBe(200);
+
+        const authGetResponse = await request(app.getHttpServer())
+          .get('/api/organizations/configs')
+          .set('Authorization', authHeaderForUser(user));
+
+        expect(authGetResponse.statusCode).toBe(200);
+
+        expect(getResponse.statusCode).toBe(200);
+        expect(getResponse.body).toEqual({
+          sso_configs: {
+            name: 'Test Organization',
+            enable_sign_up: false,
+            form: {
+              config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
+              sso: 'form',
+              configs: {},
+              enabled: true,
+            },
+            git: {
+              sso: 'git',
+              configs: { client_id: 'git-client-id', client_secret: '' },
+              enabled: true,
+            },
+            google: {
+              sso: 'google',
+              configs: { client_id: 'google-client-id', client_secret: '' },
               enabled: true,
             },
           },
