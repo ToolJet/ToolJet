@@ -54,22 +54,24 @@ export const baseComponentProperties = (
   darkMode
 ) => {
   let items = [];
-  items.push({
-    title: 'Properties',
-    children: properties.map((property) =>
-      renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        property,
-        'properties',
-        currentState,
-        allComponents,
-        darkMode
-      )
-    ),
-  });
+  if (properties.length > 0) {
+    items.push({
+      title: 'Properties',
+      children: properties.map((property) =>
+        renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          property,
+          'properties',
+          currentState,
+          allComponents,
+          darkMode
+        )
+      ),
+    });
+  }
 
   if (events.length > 0) {
     items.push({
