@@ -158,6 +158,18 @@ let QueryManager = class QueryManager extends React.Component {
     //     }
     //   }
     // }
+    if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
+      if (this.state.isUpdating) {
+        this.setState({
+          isUpdating: false,
+        });
+      }
+      if (this.state.isCreating) {
+        this.setState({
+          isCreating: false,
+        });
+      }
+    }
     if (!isEmpty(this.state.updatedQuery)) {
       const query = nextProps.dataQueries.find((q) => q.id === this.state.updatedQuery.id);
       if (query) {
@@ -277,7 +289,7 @@ let QueryManager = class QueryManager extends React.Component {
         .update(this.state.selectedQuery.id, queryName, options)
         .then((data) => {
           this.setState({
-            isUpdating: shouldRunQuery ? showQueryConfirmation : false,
+            isUpdating: shouldRunQuery ? true : false,
             isFieldsChanged: false,
             restArrayValuesChanged: false,
             updatedQuery: shouldRunQuery ? { ...data, updateQuery: true } : {},
@@ -297,7 +309,7 @@ let QueryManager = class QueryManager extends React.Component {
         .then((data) => {
           toast.success('Query Added');
           this.setState({
-            isCreating: shouldRunQuery ? showQueryConfirmation : false,
+            isCreating: shouldRunQuery ? true : false,
             isFieldsChanged: false,
             restArrayValuesChanged: false,
             updatedQuery: shouldRunQuery ? { ...data, updateQuery: false } : {},
@@ -494,7 +506,7 @@ let QueryManager = class QueryManager extends React.Component {
             {selectedDataSource && (addingQuery || editingQuery) && (
               <Dropdown as={ButtonGroup} className={'m-1 float-right'} style={{ display: 'initial', height: '28px' }}>
                 <Button
-                  className={`btn btn-primary ${showQueryConfirmation ? 'btn-loading' : ''} ${
+                  className={`btn btn-primary ${isUpdating || isCreating ? 'btn-loading' : ''} ${
                     this.state.selectedDataSource ? '' : 'disabled'
                   }`}
                   style={{ height: '28px', zIndex: 10 }}
