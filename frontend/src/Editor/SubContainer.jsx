@@ -10,6 +10,7 @@ import { componentTypes } from './WidgetManager/components';
 import { computeComponentName } from '@/_helpers/utils';
 import produce from 'immer';
 import _ from 'lodash';
+import { useMounted } from '@/_hooks/use-mounted';
 
 export const SubContainer = ({
   mode,
@@ -41,7 +42,9 @@ export const SubContainer = ({
   selectedComponents,
   onOptionChange,
   exposedVariables,
+  defaultChildComponents = [],
 }) => {
+  const mounted = useMounted();
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
     if (parentRef.current) {
@@ -68,9 +71,71 @@ export const SubContainer = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 
+  //Todo add custom resolve vars for other widgets too
+  const widgetResolvables = Object.freeze({
+    Listview: 'listItem',
+  });
+
+  const customResolverVariable = widgetResolvables[parentComponent?.component];
+
   useEffect(() => {
     setBoxes(allComponents);
   }, [allComponents]);
+
+  useEffect(() => {
+    if (mounted) {
+      //find children with parent prop
+      const children = Object.keys(allComponents).filter((key) => {
+        return allComponents[key].parent === parent;
+      });
+
+      if (children.length === 0) {
+        //if no children, add a default child
+        const childrenBoxes = {};
+        defaultChildComponents.forEach((child) => {
+          const { componentName, layout, incrementWidth, properties, accessorKey } = child;
+
+          const componentMeta = componentTypes.find((component) => component.component === componentName);
+          const componentData = JSON.parse(JSON.stringify(componentMeta));
+          const componentId = uuidv4();
+          componentData.name = computeComponentName(componentData.component, boxes);
+
+          const width = (componentMeta.defaultSize.width * 100) / 43;
+          const height = componentMeta.defaultSize.height;
+          const newComponentDefinition = {
+            ...componentData.definition.properties,
+          };
+
+          if (_.isArray(properties) && properties.length > 0) {
+            properties.forEach((prop) => {
+              _.set(newComponentDefinition, prop, {
+                value: `{{${customResolverVariable}.${accessorKey}}}`,
+              });
+            });
+            _.set(componentData, 'definition.properties', newComponentDefinition);
+          }
+
+          _.set(childrenBoxes, componentId, {
+            component: componentData,
+            parent: parentRef.current.id,
+            layouts: {
+              [currentLayout]: {
+                ...layout,
+                width: incrementWidth ? width * incrementWidth : width,
+                height: height,
+              },
+            },
+          });
+        });
+
+        setBoxes({
+          ...allComponents,
+          ...childrenBoxes,
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted]);
 
   const moveBox = useCallback(
     (id, left, top) => {
@@ -155,6 +220,7 @@ export const SubContainer = ({
         // Component already exists and this is just a reposition event
         if (id) {
           const delta = monitor.getDifferenceFromInitialOffset();
+
           componentData = item.component;
           left = Math.round(convertXFromPercentage(currentLayoutOptions.left, canvasBoundingRect.width) + delta.x);
           top = Math.round(currentLayoutOptions.top + delta.y);

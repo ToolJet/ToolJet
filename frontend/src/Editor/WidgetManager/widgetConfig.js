@@ -3157,8 +3157,8 @@ export const widgets = [
     displayName: 'List View',
     description: 'Wrapper for multiple components',
     defaultSize: {
-      width: 5,
-      height: 200,
+      width: 20,
+      height: 300,
     },
     component: 'Listview',
     others: {
@@ -3225,7 +3225,11 @@ export const widgets = [
       },
       properties: {
         data: {
-          value: "{{ [ { image: 'https://reqres.in/img/faces/8-image.jpg' }] }}",
+          value: `{{[
+  	{ imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'sample text1', buttonText: 'button1' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'sample text1', buttonText: 'button1' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'sample text1', buttonText: 'button1' },
+  ]}}`,
         },
         rowHeight: {
           value: '100',
