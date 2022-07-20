@@ -231,11 +231,13 @@ export function Table({
   }
 
   function handleChangesSaved() {
+    let tableDataCopy = tableData;
     Object.keys(changeSet).forEach((key) => {
-      tableData[key] = {
-        ..._.merge(tableData[key], changeSet[key]),
+      tableDataCopy[key] = {
+        ..._.merge(tableDataCopy[key], changeSet[key]),
       };
     });
+    setTableData(tableDataCopy);
 
     onComponentOptionChanged(component, 'changeSet', {});
     onComponentOptionChanged(component, 'dataUpdates', []);
@@ -594,14 +596,14 @@ export function Table({
     };
   });
 
-  let tableData = [];
-  if (currentState) {
-    tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
-    if (!Array.isArray(tableData)) tableData = [];
-    console.log('resolved param', tableData);
-  }
-
-  tableData = tableData || [];
+  const [tableData, setTableData] = useState([]);
+  useEffect(() => {
+    if (currentState) {
+      setTableData(resolveReferences(component.definition.properties.data.value, currentState, []));
+      if (!Array.isArray(tableData)) setTableData([]);
+      console.log('resolved param', tableData);
+    }
+  }, [component.definition.properties.data.value]);
 
   const leftActions = () => actions.value.filter((action) => action.position === 'left');
   const rightActions = () => actions.value.filter((action) => [undefined, 'right'].includes(action.position));
@@ -804,7 +806,7 @@ export function Table({
         ]);
     }
   );
-
+  const [pageCopy, setPageCopy] = useState(page);
   registerAction(
     'setPage',
     async function (targetPageIndex) {
@@ -814,6 +816,41 @@ export function Table({
     },
     ['targetPageIndex']
   );
+
+  // registerAction('selectRowByKeyAndValue', async (key, value) => {
+  //   const item = currentState.components[component.name]['currentData'].filter((item) => item[key] == value);
+  //   let rowId = '';
+  //   let original = '';
+
+  //   page.map((item, index) => {
+  //     if (item.original[key] == value) {
+  //       rowId = item.id;
+  //       original = item.original;
+  //     }
+  //   });
+  //   setcomponentState((prevState) => {
+  //     return { ...prevState, selectedRow: item[0], selectedRowId: rowId };
+  //   });
+  //   onEvent('onRowClicked', { component, data: original, rowId: rowId });
+  // });
+
+  // registerAction('selectRowByIndex', async function (index) {
+  //   const rowId = page?.[index]?.id;
+  //   const original = page?.[index]?.original;
+
+  //   setcomponentState((prevState) => {
+  //     return { ...prevState, selectedRow: original, selectedRowId: rowId };
+  //   });
+  //   onEvent('onRowClicked', { component, data: original, rowId: rowId });
+  // });
+
+  registerAction('clear', async function () {
+    setTableData([]);
+  });
+
+  registerAction('setData', async function (data) {
+    setTableData(data);
+  });
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
