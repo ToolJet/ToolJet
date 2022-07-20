@@ -212,6 +212,8 @@ class Table extends React.Component {
                   placeholder={'Text color of the cell'}
                   onChange={(value) => this.onColumnItemChange(index, 'textColor', value)}
                   componentName={this.getPopoverFieldSource(column.columnType, 'textColor')}
+                  fieldMeta={column}
+                  component={this.state.component}
                 />
               </div>
               {column.isEditable && (

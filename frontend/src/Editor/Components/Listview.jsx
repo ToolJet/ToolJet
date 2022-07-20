@@ -1,6 +1,7 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useContext } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
+import { ResolveContext } from '../ResolvableContext';
 
 export const Listview = function Listview({
   id,
@@ -19,6 +20,8 @@ export const Listview = function Listview({
 
   const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
   const { backgroundColor, visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
+
+  const { customResolves, setCustomResolves } = useContext(ResolveContext);
 
   const computedStyles = {
     backgroundColor,
@@ -64,43 +67,50 @@ export const Listview = function Listview({
       style={computedStyles}
     >
       <div className="rows w-100">
-        {(_.isArray(data) ? data : []).map((listItem, index) => (
-          <div
-            className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
-            style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
-            key={index}
-            onClick={(event) => {
-              event.stopPropagation();
-              onRowClicked(index);
-            }}
-          >
-            <SubContainer
-              parentComponent={component}
-              containerCanvasWidth={width}
-              parent={`${id}`}
-              parentName={component.name}
-              {...containerProps}
-              readOnly={index !== 0}
-              customResolvables={{ listItem }}
-              parentRef={parentRef}
-              removeComponent={removeComponent}
-              listViewItemOptions={{ index }}
-              exposedVariables={childrenData[index]}
-              onOptionChange={function ({ component, optionName, value }) {
-                setChildrenData((prevData) => {
-                  const changedData = { [component.name]: { [optionName]: value } };
-                  const existingDataAtIndex = prevData[index] ?? {};
-                  const newDataAtIndex = {
-                    ...prevData[index],
-                    [component.name]: { ...existingDataAtIndex[component.name], ...changedData[component.name] },
-                  };
-                  const newChildrenData = { ...prevData, [index]: newDataAtIndex };
-                  return { ...prevData, ...newChildrenData };
-                });
+        {(_.isArray(data) ? data : []).map((listItem, index) => {
+          if (index === 0 && !_.isEqual(customResolves[id]?.listItem, listItem)) {
+            const customResolvables = {};
+            customResolvables[id] = { listItem };
+            setCustomResolves({ ...customResolves, ...customResolvables });
+          }
+          return (
+            <div
+              className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
+              style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
+              key={index}
+              onClick={(event) => {
+                event.stopPropagation();
+                onRowClicked(index);
               }}
-            />
-          </div>
-        ))}
+            >
+              <SubContainer
+                parentComponent={component}
+                containerCanvasWidth={width}
+                parent={`${id}`}
+                parentName={component.name}
+                {...containerProps}
+                readOnly={index !== 0}
+                customResolvables={{ listItem }}
+                parentRef={parentRef}
+                removeComponent={removeComponent}
+                listViewItemOptions={{ index }}
+                exposedVariables={childrenData[index]}
+                onOptionChange={function ({ component, optionName, value }) {
+                  setChildrenData((prevData) => {
+                    const changedData = { [component.name]: { [optionName]: value } };
+                    const existingDataAtIndex = prevData[index] ?? {};
+                    const newDataAtIndex = {
+                      ...prevData[index],
+                      [component.name]: { ...existingDataAtIndex[component.name], ...changedData[component.name] },
+                    };
+                    const newChildrenData = { ...prevData, [index]: newDataAtIndex };
+                    return { ...prevData, ...newChildrenData };
+                  });
+                }}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
