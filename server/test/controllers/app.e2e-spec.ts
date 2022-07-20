@@ -726,7 +726,7 @@ describe('Authentication', () => {
       ]);
     });
 
-    it('should allow users to setup account for single organization only once', async () => {
+    it('should allow users to signup for single organization only once', async () => {
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
         switch (key) {
           case 'DISABLE_MULTI_WORKSPACE':
@@ -735,40 +735,14 @@ describe('Authentication', () => {
             return process.env[key];
         }
       });
-      const invitationToken = uuidv4();
-      await createUser(app, {
-        email: 'signup@tooljet.io',
-        invitationToken,
-        status: 'invited',
-      });
+      await request(app.getHttpServer()).post('/api/signup').send({ email: 'invited@tooljet.io' }).expect(201);
+      await request(app.getHttpServer()).post('/api/signup').send({ email: 'newinvited@tooljet.io' }).expect(406);
+    });
 
-      let response = await request(app.getHttpServer()).post('/api/set-password-from-token').send({
-        first_name: 'signupuser',
-        last_name: 'user',
-        organization: 'org1',
-        password: uuidv4(),
-        token: invitationToken,
-        role: 'developer',
-      });
-
-      expect(response.statusCode).toBe(201);
-
-      await createUser(app, {
-        email: 'signup2@tooljet.io',
-        invitationToken,
-        status: 'invited',
-      });
-
-      response = await request(app.getHttpServer()).post('/api/set-password-from-token').send({
-        first_name: 'signupuser2',
-        last_name: 'user2',
-        organization: 'org1',
-        password: uuidv4(),
-        token: invitationToken,
-        role: 'developer',
-      });
-
-      expect(response.statusCode).toBe(403);
+    it('should allow users to signup - Multi-Workspace', async () => {
+      await request(app.getHttpServer()).post('/api/signup').send({ email: 'invited@tooljet.io' }).expect(201);
+      await request(app.getHttpServer()).post('/api/signup').send({ email: 'newinvited@tooljet.io' }).expect(201);
+      await request(app.getHttpServer()).post('/api/signup').send({ email: 'newinvited1@tooljet.io' }).expect(201);
     });
 
     it('should not allow users to setup account for Multi-Workspace and sign up disabled', async () => {
@@ -888,7 +862,7 @@ describe('Authentication', () => {
       const updatedUser = await getManager().findOneOrFail(User, { where: { email: 'invited@tooljet.io' } });
       expect(updatedUser.firstName).toEqual('signupuser');
       expect(updatedUser.lastName).toEqual('user');
-      expect(updatedUser.defaultOrganizationId).not.toBe(org.id);
+      expect(updatedUser.defaultOrganizationId).toBe(org.id);
       const organizationUser = await getManager().findOneOrFail(OrganizationUser, {
         where: { userId: Not(adminUser.id), organizationId: org.id },
       });

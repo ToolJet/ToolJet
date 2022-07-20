@@ -34,6 +34,7 @@ import {
   setStateAsync,
   computeComponentState,
   getSvgIcon,
+  debuggerActions,
   cloneComponents,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
@@ -1093,6 +1094,15 @@ class Editor extends React.Component {
     });
   };
 
+  sideBarDebugger = {
+    error: (data) => {
+      debuggerActions.error(this, data);
+    },
+    flush: () => {
+      debuggerActions.flush(this);
+    },
+  };
+
   changeDarkMode = (newMode) => {
     this.setState({
       currentState: {
@@ -1287,6 +1297,7 @@ class Editor extends React.Component {
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
+              debuggerActions={this.sideBarDebugger}
               appDefinition={{
                 components: appDefinition.components,
                 queries: dataQueries,
@@ -1353,6 +1364,7 @@ class Editor extends React.Component {
                         onComponentClick={this.handleComponentClick}
                         onComponentHover={this.handleComponentHover}
                         hoveredComponent={hoveredComponent}
+                        sideBarDebugger={this.sideBarDebugger}
                         dataQueries={dataQueries}
                       />
                       <CustomDragLayer
