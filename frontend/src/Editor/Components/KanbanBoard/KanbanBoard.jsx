@@ -1,22 +1,23 @@
 import _ from 'lodash';
 import React from 'react';
 import Board from './Board';
-import { isCardColoumnIdUpdated, updateCardData, updateColumnData, getData, isArray, isValidCardData } from './utils';
+import { cardDiff, getData } from './utils';
 
 export const BoardContext = React.createContext({});
 
 export const KanbanBoard = ({
   id,
+  component,
+  containerProps,
   height,
   properties,
   styles,
   currentState,
   setExposedVariable,
-  containerProps,
   removeComponent,
   fireEvent,
 }) => {
-  const { columns, cardData, enableAddCard } = properties;
+  const { columns, cardData, enableAddCard, enableDeleteCard } = properties;
 
   const { visibility, disabledState, width, minWidth, accentColor } = styles;
 
@@ -31,67 +32,24 @@ export const KanbanBoard = ({
   }, [state]);
 
   React.useEffect(() => {
-    if (isArray(rawColumnData) || isArray(rawCardData)) {
-      const colData = JSON.parse(JSON.stringify(columns));
-      const _cardData = JSON.parse(JSON.stringify(cardData));
+    const isEqualCol = _.isEqual(rawColumnData, columns);
+    const isEqualCard = _.isEqual(rawCardData, cardData);
+    const notEmpty = !_.isEmpty(columns) && !_.isEmpty(cardData);
+    if (notEmpty && (!isEqualCol || !isEqualCard)) {
+      const colData = _.cloneDeep(columns);
+      const _cardData = _.cloneDeep(cardData);
+
       setRawColumnData(colData);
       setRawCardData(_cardData);
       const data = getData(colData, _cardData);
+      const [diffSize, diff, { type }] = cardDiff(state, data);
+      if (diffSize === 1 && type === 'ADD') {
+        setExposedVariable('lastAddedCard', diff).then(() => fireEvent('onCardAdded'));
+      }
       setState(data);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  React.useEffect(() => {
-    if (JSON.stringify(columns) !== JSON.stringify(rawColumnData) && isArray(columns)) {
-      const newData = updateColumnData(state, rawColumnData, columns);
-
-      if (newData && isArray(newData)) {
-        setState(newData);
-      }
-
-      if (!newData && columns.length !== rawColumnData.length) {
-        setState(() => getData(columns, rawCardData));
-      }
-      setRawColumnData(columns);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columns]);
-
-  React.useEffect(() => {
-    if (isValidCardData(cardData)) {
-      if (cardData.length !== rawCardData.length) {
-        setState(() => getData(columns, cardData));
-      } else if (JSON.stringify(cardData) !== JSON.stringify(rawCardData) && isArray(cardData)) {
-        if (cardData.length === 0) {
-          return;
-        }
-
-        const isColumnIdUpdated = isCardColoumnIdUpdated(rawCardData, cardData);
-
-        if (isColumnIdUpdated) {
-          const newData = getData(columns, cardData);
-          if (newData && isArray(newData)) {
-            setState(newData);
-          }
-        }
-
-        if (!isColumnIdUpdated) {
-          const newData = updateCardData(state, rawCardData, cardData);
-
-          if (newData && isArray(newData)) {
-            setState(newData);
-          }
-          if (newData === null) {
-            return setState(() => getData(columns, cardData));
-          }
-        }
-      }
-
-      setRawCardData(cardData);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cardData]);
+  }, [columns, cardData]);
 
   const colStyles = {
     width: !width ? '100%' : width,
@@ -106,9 +64,20 @@ export const KanbanBoard = ({
     );
   }
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  console.log('prop =>', enableDeleteCard);
   return (
     <BoardContext.Provider
-      value={{ id, currentState, enableAddCard, accentColor, containerProps, removeComponent, darkMode }}
+      value={{
+        id,
+        currentState,
+        enableAddCard,
+        enableDeleteCard,
+        accentColor,
+        containerProps,
+        removeComponent,
+        component,
+        darkMode,
+      }}
     >
       <div
         id={id}

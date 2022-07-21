@@ -1,14 +1,30 @@
+import _ from 'lodash';
 import React from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
-import { v4 as uuidv4 } from 'uuid';
+import { defineObjectProperty } from '@/_helpers/utils';
 import Column from './Column';
 import { reorderCards, moveCards } from './utils';
 
 const grid = 8;
 
-const getItemStyle = (isDragging, draggableStyle) => {
+const getItemStyle = (isDragging, draggableStyle, windowWidth) => {
+  const leftDisplacement =
+    windowWidth > 1800 && windowWidth < 2160
+      ? 150
+      : windowWidth == 2160
+      ? 300
+      : windowWidth > 2160 && windowWidth <= 2560
+      ? 400
+      : windowWidth > 2560
+      ? 700
+      : 100;
+
   const _draggableStyle = isDragging
-    ? { ...draggableStyle, left: draggableStyle.left - 100, top: draggableStyle.top - 100 }
+    ? {
+        ...draggableStyle,
+        left: draggableStyle.left - leftDisplacement,
+        top: draggableStyle.top - 100,
+      }
     : draggableStyle;
 
   return {
@@ -22,16 +38,7 @@ const getItemStyle = (isDragging, draggableStyle) => {
 
 function Board({ height, state, colStyles, setState, fireEvent, setExposedVariable }) {
   const addNewItem = (state, keyIndex) => {
-    const newItem = {
-      id: uuidv4(),
-      title: 'New card',
-      columnId: state[keyIndex].id,
-    };
-    const newState = [...state];
-    if (!newState[keyIndex]['cards']) [(newState[keyIndex]['cards'] = [])];
-    newState[keyIndex]['cards'].push(newItem);
-    setState(newState);
-    setExposedVariable('lastAddedCard', newItem).then(() => fireEvent('onCardAdded'));
+    setExposedVariable('selectedColumn', _.omit(state[keyIndex], 'cards')).then(() => fireEvent('onCardAddRequested'));
   };
 
   function onDragEnd(result) {
@@ -43,10 +50,13 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
       const dInd = +destination.droppableId;
       const originColumnId = state[sInd].id;
       const destinationColumnId = state[dInd].id;
+      const originalCardIndex = source.index;
+      const destinationCardIndex = destination.index;
 
       const card = state[sInd]['cards'][source.index];
       const cardDetails = {
         title: card.title,
+        id: card.id,
       };
 
       if (sInd === dInd) {
@@ -67,8 +77,8 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
       const movementDetails = {
         originColumnId,
         destinationColumnId,
-        originCardIndex: sInd,
-        destinationCardIndex: dInd,
+        originalCardIndex,
+        destinationCardIndex,
         cardDetails,
       };
       setExposedVariable('lastCardMovement', movementDetails).then(() => fireEvent('onCardMoved'));
@@ -83,12 +93,18 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
 
   const updateCardProperty = (columnIndex, cardIndex, property, newValue) => {
     const columnOfCardToBeUpdated = state[columnIndex];
-    const cardSetOfTheCardToBeUpdated = columnOfCardToBeUpdated.cards;
+    const cardSetOfTheCardToBeUpdated = columnOfCardToBeUpdated['cards'];
     const cardToBeUpdated = cardSetOfTheCardToBeUpdated[cardIndex];
     const updatedCard = { ...cardToBeUpdated, [property]: newValue };
+
+    if (!cardToBeUpdated.hasOwnProperty('data')) {
+      defineObjectProperty(cardToBeUpdated, 'data', {});
+    }
+
     const updatedCardSet = cardSetOfTheCardToBeUpdated.map((card, index) => (index === cardIndex ? updatedCard : card));
     const updatedColumn = { ...columnOfCardToBeUpdated, cards: updatedCardSet };
     const newState = state.map((column, index) => (index === columnIndex ? updatedColumn : column));
+
     setState(newState);
 
     setExposedVariable('lastUpdatedCard', updatedCard).then(() => fireEvent('onCardUpdated'));

@@ -501,3 +501,12 @@ export function hasCircularDependency(obj) {
   }
   return false;
 }
+
+export const defineObjectProperty = (obj, key, value) =>
+  Object.defineProperties(obj, {
+    [key]: {
+      value: value,
+      writable: true,
+      enumerable: true,
+    },
+  });

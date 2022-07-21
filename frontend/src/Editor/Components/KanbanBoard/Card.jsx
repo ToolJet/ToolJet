@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { CardEventPopover } from './CardPopover';
 import { ReactPortal } from '@/_components/Portal/ReactPortal';
 import _ from 'lodash';
+import { useWindowWidth } from '@/_hooks/use-window-width';
 
 export const Card = ({
   item,
@@ -28,12 +29,12 @@ export const Card = ({
     });
   }
 
-  const { id, darkMode } = React.useContext(BoardContext);
+  const { id, darkMode, containerProps, removeComponent, component, enableDeleteCard } = React.useContext(BoardContext);
 
   const removeCardHandler = (colIndex, cardIndex) => {
-    const newState = [...state];
+    const newState = _.cloneDeep(state);
     const removedCard = newState[colIndex]['cards'].splice(cardIndex, 1)[0];
-    updateCb(newState);
+    // updateCb(newState);
     setExposedVariable('lastRemovedCard', removedCard).then(() => fireEvent('onCardRemoved'));
   };
 
@@ -59,6 +60,9 @@ export const Card = ({
 
   const target = React.useRef(null);
   const el = document.getElementById(id);
+  const windowSize = useWindowWidth();
+
+  console.log('windowSize', windowSize);
 
   return (
     <Draggable
@@ -74,13 +78,13 @@ export const Card = ({
           ref={dndProps.innerRef}
           {...dndProps.draggableProps}
           {...dndProps.dragHandleProps}
-          style={{ ...getItemStyle(dndState.isDragging, dndProps.draggableProps.style) }}
+          style={{ ...getItemStyle(dndState.isDragging, dndProps.draggableProps.style, windowSize) }}
         >
           <div className="card-body d-flex">
             <span ref={target} onClick={handleCardClick} className="text-muted flex-grow-1 cursor-pointer fw-bold">
               {item.title}
             </span>
-            {isHovered && !item.isEditing && (
+            {enableDeleteCard && isHovered && !item.isEditing && (
               <span
                 className="cursor-pointer"
                 type="btn btn-sm btn-danger"
@@ -100,6 +104,10 @@ export const Card = ({
                   updateCardProperty={updateCardProperty}
                   index={index}
                   keyIndex={keyIndex}
+                  containerProps={containerProps}
+                  removeComponent={removeComponent}
+                  component={component}
+                  id={id}
                 />
               </ReactPortal>
             )}
