@@ -1,12 +1,15 @@
 import React, { useMemo } from 'react';
-import usePinnedPopover from '@/_hooks/usePinnedPopover';
-import { LeftSidebarItem } from './SidebarItem';
-import { SidebarPinnedButton } from './SidebarPinnedButton';
-import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
+import cx from 'classnames';
+import { LeftSidebarItem } from './SidebarItem';
+import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import { allSvgs } from '@tooljet/plugins/client';
 import RunjsIcon from '../Icons/runjs.svg';
 import { toast } from 'react-hot-toast';
+import { Rnd } from 'react-rnd';
+import { ReactPortal } from '@/_components/Portal/ReactPortal';
+import usePopover from '@/_hooks/use-popover';
+import { SidebarCloseButton } from './SidebarCloseButton';
 
 export const LeftSidebarInspector = ({
   darkMode,
@@ -16,7 +19,8 @@ export const LeftSidebarInspector = ({
   removeComponent,
   runQuery,
 }) => {
-  const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
+  // eslint-disable-next-line no-unused-vars
+  const [open, trigger, content, setOpen] = usePopover(false);
 
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const queryDefinitions = appDefinition['queries'];
@@ -113,12 +117,6 @@ export const LeftSidebarInspector = ({
     return toast.success('Copied to the clipboard', { position: 'top-center' });
   };
 
-  const updatePinnedParentState = () => {
-    if (!popoverPinned) {
-      updatePopoverPinnedState();
-    }
-  };
-
   const callbackActions = [
     {
       for: 'queries',
@@ -150,6 +148,28 @@ export const LeftSidebarInspector = ({
     },
   ];
 
+  const clsName = open ? 'show' : 'hide';
+
+  const removePortal = () => {
+    setOpen(false);
+    const portal = document.getElementsByClassName('portal-container inspector')[0];
+    portal.remove();
+    setVisible(false);
+  };
+
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    if (open) {
+      setVisible(true);
+      document.querySelector('#app').setAttribute('inert', 'true');
+    }
+
+    return () => {
+      setVisible(false);
+      document.querySelector('#app').removeAttribute('inert');
+    };
+  }, [open]);
+
   return (
     <>
       <LeftSidebarItem
@@ -159,36 +179,44 @@ export const LeftSidebarInspector = ({
         className={`left-sidebar-item left-sidebar-layout ${open && 'active'} left-sidebar-inspector`}
         text={'Inspector'}
       />
-      <div
-        {...content}
-        className={`card popover ${open || popoverPinned ? 'show' : 'hide'}`}
-        style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}
-      >
-        <SidebarPinnedButton
-          darkMode={darkMode}
-          component={'Inspector'}
-          state={popoverPinned}
-          updateState={updatePopoverPinnedState}
-        />
-        <div style={{ marginTop: '1rem' }} className="card-body">
-          <JSONTreeViewer
-            data={memoizedJSONData}
-            useIcons={true}
-            iconsList={iconsList}
-            useIndentedBlock={true}
-            enableCopyToClipboard={true}
-            useActions={true}
-            actionsList={callbackActions}
-            currentState={appDefinition}
-            actionIdentifier="id"
-            expandWithLabels={true}
-            selectedComponent={selectedComponent}
-            treeType="inspector"
-            parentPopoverState={popoverPinned}
-            updateParentState={updatePinnedParentState}
-          />
-        </div>
-      </div>
+      {visible && (
+        <ReactPortal>
+          <Rnd
+            default={{
+              x: 40,
+              y: 25,
+            }}
+            style={{
+              resize: 'horizontal',
+              maxWidth: '60%',
+              minWidth: '312px',
+              display: `${clsName === 'show' ? 'block' : 'none'}`,
+            }}
+            bounds="body"
+            minWidth={'500px'}
+            className={cx('card popover inspector', { 'theme-dark': darkMode })}
+          >
+            <SidebarCloseButton darkMode={darkMode} component={'Inspector'} state={open} updateState={removePortal} />
+            <div style={{ marginTop: '1rem' }} className="card-body">
+              <JSONTreeViewer
+                data={memoizedJSONData}
+                useIcons={true}
+                iconsList={iconsList}
+                useIndentedBlock={true}
+                enableCopyToClipboard={true}
+                useActions={true}
+                actionsList={callbackActions}
+                currentState={appDefinition}
+                actionIdentifier="id"
+                expandWithLabels={true}
+                selectedComponent={selectedComponent}
+                treeType="inspector"
+                darktheme={darkMode}
+              />
+            </div>
+          </Rnd>
+        </ReactPortal>
+      )}
     </>
   );
 };

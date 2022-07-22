@@ -16,7 +16,7 @@ const usePinnedPopover = (defaultOption = false) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [popoverPinned]);
 
-  return [open, trigger, content, popoverPinned, updatePopoverPinnedState];
+  return [open, trigger, content, popoverPinned, updatePopoverPinnedState, setOpen];
 };
 
 export default usePinnedPopover;
