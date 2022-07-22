@@ -24,9 +24,9 @@ export const FilePicker = ({
   const fileType = component.definition.properties.fileType?.value ?? 'image/*';
   const maxSize = component.definition.properties.maxSize?.value ?? 1048576;
   const minSize = component.definition.properties.minSize?.value ?? 0;
-  const parseContent = component.definition.properties.parseContent?.value ?? false;
+  let parseContent = component.definition.properties.parseContent?.value ?? false;
+  parseContent = typeof parseContent !== 'boolean' ? resolveWidgetFieldValue(parseContent, currentState) : false;
   const fileTypeFromExtension = component.definition.properties.parseFileType?.value ?? 'auto-detect';
-
   const parsedEnableDropzone =
     typeof enableDropzone !== 'boolean' ? resolveWidgetFieldValue(enableDropzone, currentState) : true;
   const parsedEnablePicker =
