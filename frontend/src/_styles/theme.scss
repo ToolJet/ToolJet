@@ -4935,10 +4935,15 @@ div#driver-page-overlay {
   }
 }
 
+
 .organization-list {
   margin-top: 5px;
   .btn {
     border: 0px;
+  }
+  a {
+    padding: 10px 10px 10px 10px;
+    margin-bottom: 5px;
   }
   .dropdown-toggle div {
     max-width: 200px;
