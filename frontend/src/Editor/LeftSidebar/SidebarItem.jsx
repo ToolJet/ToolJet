@@ -28,15 +28,17 @@ export const LeftSidebarItem = ({
           data-cy={`left-sidebar-${text.toLowerCase()}-button`}
         >
           {icon && (
-            <img
-              className="svg-icon"
-              src={`/assets/images/icons/editor/left-sidebar/${icon}.svg`}
-              width="20"
-              height="20"
-            />
+            <div className="position-relative">
+              <img
+                className="svg-icon"
+                src={`/assets/images/icons/editor/left-sidebar/${icon}.svg`}
+                width="20"
+                height="20"
+              />
+              {commentBadge && <LeftSidebarItem.CommentBadge />}
+            </div>
           )}
           {badge && <LeftSidebarItem.Badge count={count} />}
-          {commentBadge && <LeftSidebarItem.CommentBadge />}
           <p>{text && text}</p>
         </div>
       </div>

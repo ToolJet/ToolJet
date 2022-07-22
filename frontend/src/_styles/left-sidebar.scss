@@ -113,8 +113,10 @@
   }
   .comment-badge {
     position: absolute;
-    bottom: 13px;
-    right: 6px;
+    top: 0;
+    right: 0;
+    transform: translate(50%,-50%);
+    transform-origin: 100% 0%;
   }
 }
 
