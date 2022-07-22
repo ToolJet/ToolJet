@@ -58,9 +58,19 @@ export const Organization = function Organization() {
     setShowCreateOrg(true);
   };
 
+  const duplicateOrganizationCheck = () => organizationList.some((org) => org.name === newOrgName.trim());
+
   const createOrganization = () => {
+    const organizationNameExists = duplicateOrganizationCheck();
+
     if (!(newOrgName && newOrgName.trim())) {
       toast.error('Workspace name can not be empty.', {
+        position: 'top-center',
+      });
+      return;
+    }
+    if (organizationNameExists) {
+      toast.error(`${newOrgName} already exists.`, {
         position: 'top-center',
       });
       return;
@@ -82,8 +92,16 @@ export const Organization = function Organization() {
   };
 
   const editOrganization = () => {
+    const organizationNameExists = duplicateOrganizationCheck();
+
     if (!(newOrgName && newOrgName.trim())) {
       toast.error('Workspace name can not be empty.', {
+        position: 'top-center',
+      });
+      return;
+    }
+    if (organizationNameExists) {
+      toast.error(`${newOrgName} already exists.`, {
         position: 'top-center',
       });
       return;
