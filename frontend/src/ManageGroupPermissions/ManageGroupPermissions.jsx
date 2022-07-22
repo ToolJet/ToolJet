@@ -57,25 +57,36 @@ class ManageGroupPermissions extends React.Component {
 
   createGroup = () => {
     this.setState({ creatingGroup: true });
-    groupPermissionService
-      .create(this.state.newGroupName)
-      .then(() => {
-        this.setState({
-          creatingGroup: false,
-          showNewGroupForm: false,
-        });
-        toast.success('Group has been created', {
-          position: 'top-center',
-        });
-        this.fetchGroups();
-      })
-      .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
-        this.setState({
-          creatingGroup: false,
-          showNewGroupForm: true,
-        });
+    if (!this.state.newGroupName.match(/(?!^ +$)^.+$/)) {
+      toast.error('Group failed to be created with current group name!', {
+        position: 'top-center',
       });
+      this.setState({
+        creatingGroup: false,
+        showNewGroupForm: true,
+      });
+    } else {
+      this.setState({ creatingGroup: true });
+      groupPermissionService
+        .create(this.state.newGroupName)
+        .then(() => {
+          this.setState({
+            creatingGroup: false,
+            showNewGroupForm: false,
+          });
+          toast.success('Group has been created', {
+            position: 'top-center',
+          });
+          this.fetchGroups();
+        })
+        .catch(({ error }) => {
+          toast.error(error, { position: 'top-center' });
+          this.setState({
+            creatingGroup: false,
+            showNewGroupForm: true,
+          });
+        });
+    }
   };
 
   deleteGroup = (groupPermissionId) => {
