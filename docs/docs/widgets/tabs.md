@@ -23,6 +23,10 @@ This property lets you add and remove containers from the tabs widget. Each cont
 
 This property selects the container in the tab which matches the corresponding `id`. By default, the value is set to `0`.
 
+### Hide tab
+
+It allows you to hide all the tab titles defined in the Tabs property above. It accepts boolean values which can also be set using the toggle option or programmatically by clicking on the FX button.
+
 ## Layout
 
 ### Show on desktop
