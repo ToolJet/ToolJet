@@ -46,6 +46,7 @@ describe('organizations controller', () => {
 
       expect(response.body.users[0]).toStrictEqual({
         email: user.email,
+        user_id: user.id,
         first_name: user.firstName,
         id: orgUser.id,
         last_name: user.lastName,
