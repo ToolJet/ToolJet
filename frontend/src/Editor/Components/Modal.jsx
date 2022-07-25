@@ -15,6 +15,7 @@ export const Modal = function Modal({
   styles,
   exposedVariables,
   setExposedVariable,
+  registerAction,
 }) {
   const [showModal, setShowModal] = useState(false);
   const { hideOnEsc, hideCloseButton, hideTitleBar } = properties;
@@ -24,6 +25,15 @@ export const Modal = function Modal({
   const size = properties.size ?? 'lg';
 
   const { disabledState } = styles;
+
+  registerAction('open', async function () {
+    setExposedVariable('show', true);
+    setShowModal(true);
+  });
+  registerAction('close', async function () {
+    setShowModal(false);
+    setExposedVariable('show', false);
+  });
 
   useEffect(() => {
     const canShowModal = exposedVariables.show ?? false;

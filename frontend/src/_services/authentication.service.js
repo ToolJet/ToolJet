@@ -1,5 +1,12 @@
 import { BehaviorSubject } from 'rxjs';
-import { history, handleResponse } from '@/_helpers';
+import {
+  history,
+  handleResponse,
+  setCookie,
+  getCookie,
+  eraseCookie,
+  handleResponseWithoutValidation,
+} from '@/_helpers';
 import config from 'config';
 
 const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('currentUser')));
@@ -17,6 +24,9 @@ export const authenticationService = {
   },
   signInViaOAuth,
   resetPassword,
+  saveLoginOrganizationId,
+  getLoginOrganizationId,
+  deleteLoginOrganizationId,
   forgotPassword,
 };
 
@@ -28,12 +38,24 @@ function login(email, password, organizationId) {
   };
 
   return fetch(`${config.apiUrl}/authenticate${organizationId ? `/${organizationId}` : ''}`, requestOptions)
-    .then(handleResponse)
+    .then(handleResponseWithoutValidation)
     .then((user) => {
       // store user details and jwt token in local storage to keep user logged in between page refreshes
       updateUser(user);
       return user;
     });
+}
+
+function saveLoginOrganizationId(organizationId) {
+  organizationId && setCookie('login-workspace', organizationId);
+}
+
+function getLoginOrganizationId() {
+  return getCookie('login-workspace');
+}
+
+function deleteLoginOrganizationId() {
+  eraseCookie('login-workspace');
 }
 
 function getOrganizationConfigs(organizationId) {
@@ -103,24 +125,18 @@ function clearUser() {
   currentUserSubject.next(null);
 }
 
-function signInViaOAuth(configId, ssoResponse) {
+function signInViaOAuth(configId, ssoType, ssoResponse) {
+  const organizationId = getLoginOrganizationId();
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(ssoResponse),
+    body: JSON.stringify({ ...ssoResponse, organizationId }),
   };
 
-  return fetch(`${config.apiUrl}/oauth/sign-in/${configId}`, requestOptions)
-    .then((response) => {
-      return response.text().then((text) => {
-        const data = text && JSON.parse(text);
-        if (!response.ok) {
-          const error = (data && data.message) || response.statusText;
-          return Promise.reject({ error, data });
-        }
-        return data;
-      });
-    })
+  const url = configId ? configId : `common/${ssoType}`;
+
+  return fetch(`${config.apiUrl}/oauth/sign-in/${url}`, requestOptions)
+    .then(handleResponseWithoutValidation)
     .then((user) => {
       updateUser(user);
       return user;
