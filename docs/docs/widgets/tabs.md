@@ -54,3 +54,9 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+### Actions
+
+| Action      | Description | Properties |
+| ----------- | ----------- | ------------------ |
+| setTab | Set current tab. | `id` |

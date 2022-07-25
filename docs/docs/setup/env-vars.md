@@ -179,6 +179,25 @@ Tooljet needs to be configured for custom CA certificate to be able to trust and
 
 Pings our server to update the total user count every 24 hours. You can disable this by setting the value of `DISABLE_TOOLJET_TELEMETRY` environment variable to `true`. This feature is enabled by default.
 
+#### Password Retry Limit (Optional)
+The maximum retry limit of login password for a user is by default set to 5, account will be locked after 5 unsuccessful login attempts. Use the variables mentioned below to control this behavior:
+
+| variable                              | description                                                   |
+| ------------------------------------- | -----------------------------------------------------------   |
+| DISABLE_PASSWORD_RETRY_LIMIT          | (true/false) To disable the password retry check, if value is `true` then no limits for password retry |
+| PASSWORD_RETRY_LIMIT                  | To change the default password retry limit (5) |
+
+#### SSO Configurations (Optional)
+Configurations for instance level SSO. Valid only if `DISABLE_MULTI_WORKSPACE` is not `true`.
+
+| variable                              | description                                                   |
+| ------------------------------------- | -----------------------------------------------------------   |
+| SSO_GOOGLE_OAUTH2_CLIENT_ID           | Google OAuth client id |
+| SSO_GIT_OAUTH2_CLIENT_ID              | GitHub OAuth client id |
+| SSO_GIT_OAUTH2_CLIENT_SECRET          | GitHub OAuth client secret |
+| SSO_ACCEPTED_DOMAINS                  | comma separated email domains that supports SSO authentication |
+| SSO_DISABLE_SIGNUPS                   | Disable user sign up if authenticated user does not exist |
+
 ## ToolJet client
 
 #### Server URL ( optionally required )
@@ -207,12 +226,3 @@ This can be an absolute path, or relative to main HTML file.
 | variable           | description                                                   |
 | ------------------ | -----------------------------------------------------------   |
 | ASSET_PATH         | the asset path for the website ( eg: https://app.tooljet.com/) |
-
-
-#### Password Retry Limit (Optional)
-The maximum retry limit of login password for a user is by default set to 5, account will be locked after 5 unsuccessful login attempts. Use the variables mentioned below to control this behavior:
-
-| variable                              | description                                                   |
-| ------------------------------------- | -----------------------------------------------------------   |
-| DISABLE_PASSWORD_RETRY_LIMIT          | (true/false) To disable the password retry check, if value is `true` then no limits for password retry |
-| PASSWORD_RETRY_LIMIT                  | To change the default password retry limit (5) |

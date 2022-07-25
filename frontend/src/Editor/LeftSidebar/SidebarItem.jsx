@@ -21,7 +21,12 @@ export const LeftSidebarItem = ({
       overlay={<Tooltip id="button-tooltip">{tip}</Tooltip>}
     >
       <div>
-        <div {...rest} className={className} onClick={onClick && onClick}>
+        <div
+          {...rest}
+          className={className}
+          onClick={onClick && onClick}
+          data-cy={`left-sidebar-${text.toLowerCase()}-button`}
+        >
           {icon && (
             <div className="position-relative">
               <img

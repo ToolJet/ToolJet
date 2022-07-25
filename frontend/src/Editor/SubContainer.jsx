@@ -37,12 +37,12 @@ export const SubContainer = ({
   parentComponent,
   onComponentHover,
   hoveredComponent,
+  sideBarDebugger,
   selectedComponents,
   onOptionChange,
   exposedVariables,
 }) => {
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
-
   useEffect(() => {
     if (parentRef.current) {
       const canvasWidth = getContainerCanvasWidth();
@@ -422,6 +422,7 @@ export const SubContainer = ({
           onComponentHover={onComponentHover}
           hoveredComponent={hoveredComponent}
           parentId={parentComponent?.name}
+          sideBarDebugger={sideBarDebugger}
           isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
           exposedVariables={exposedVariables ?? {}}
           containerProps={{
@@ -445,6 +446,7 @@ export const SubContainer = ({
             readOnly,
             onComponentHover,
             hoveredComponent,
+            sideBarDebugger,
           }}
         />
       ))}

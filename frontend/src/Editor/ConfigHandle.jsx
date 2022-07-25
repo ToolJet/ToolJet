@@ -28,6 +28,7 @@ export const ConfigHandle = function ConfigHandle({
             setSelectedComponent(id, component, e.shiftKey);
           }}
           role="button"
+          data-cy={`${component.name.toLowerCase()}-config-handle`}
         >
           <img
             style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
@@ -48,6 +49,7 @@ export const ConfigHandle = function ConfigHandle({
               height="12"
               draggable="false"
               onClick={() => removeComponent({ id })}
+              data-cy={`${component.name.toLowerCase()}-delete-button`}
             />
           </div>
         )}
