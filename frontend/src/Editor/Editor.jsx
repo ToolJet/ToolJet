@@ -1221,7 +1221,7 @@ class Editor extends React.Component {
               )}
               <span
                 className={cx('autosave-indicator', {
-                  'autosave-indicator-saving': this.state.isSaving,
+                  'autosave-indicator-saving': this.state.versionSaving,
                   'text-danger': this.state.saveError,
                   'd-none': this.isVersionReleased(),
                 })}
