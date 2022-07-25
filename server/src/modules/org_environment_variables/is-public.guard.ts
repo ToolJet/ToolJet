@@ -6,8 +6,12 @@ export class IsPublicGuard implements CanActivate {
   constructor(private appsService: AppsService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const { params } = context.switchToHttp().getRequest();
-    const app = await this.appsService.findBySlug(params['app_slug']);
-    return app.isPublic;
+    const request = context.switchToHttp().getRequest();
+    if (!request?.params?.app_slug) {
+      return false;
+    }
+    const app = await this.appsService.findBySlug(request.params.app_slug);
+    request.app = app;
+    return !!app?.isPublic;
   }
 }

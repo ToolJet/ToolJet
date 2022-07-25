@@ -17,7 +17,7 @@ export class OrgEnvironmentVariablesService {
 
   async fetchVariables(organizationId: string): Promise<OrgEnvironmentVariable[]> {
     const variables: OrgEnvironmentVariable[] = await this.orgEnvironmentVariablesRepository.find({
-      where: { organizationId: organizationId },
+      where: { organizationId },
     });
 
     await Promise.all(
