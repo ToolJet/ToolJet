@@ -327,7 +327,7 @@ export const JSONNode = ({ data, ...restProps }) => {
         >
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {$NODEType}
-          {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
+          {!toExpandNode && !toRenderSelector ? $VALUE : null}
           <div className="action-icons-group">{showHiddenOptionsForNode && renderHiddenOptionsForNode()}</div>
         </div>
         {toRenderSelector && (toExpandNode && !expandable ? null : $VALUE)}
