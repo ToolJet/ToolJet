@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useContext } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
-import { ResolveContext } from '../ResolvableContext';
+import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 
 export const Listview = function Listview({
   id,
@@ -21,7 +21,7 @@ export const Listview = function Listview({
   const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
   const { backgroundColor, visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
 
-  const { customResolves, setCustomResolves } = useContext(ResolveContext);
+  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext);
 
   const computedStyles = {
     backgroundColor,
@@ -68,10 +68,10 @@ export const Listview = function Listview({
     >
       <div className="rows w-100">
         {(_.isArray(data) ? data : []).map((listItem, index) => {
-          if (index === 0 && !_.isEqual(customResolves[id]?.listItem, listItem)) {
+          if (index === 0 && !_.isEqual(variablesExposedForPreview[id]?.listItem, listItem)) {
             const customResolvables = {};
             customResolvables[id] = { listItem };
-            setCustomResolves({ ...customResolves, ...customResolvables });
+            exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
           }
           return (
             <div

@@ -28,7 +28,7 @@ import { BoxShadow } from './Elements/BoxShadow';
 import FxButton from './Elements/FxButton';
 import { ToolTip } from '../Inspector/Elements/Components/ToolTip';
 import { toast } from 'react-hot-toast';
-import { ResolveContext } from '../ResolvableContext';
+import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 
 const AllElements = {
   Color,
@@ -94,7 +94,7 @@ export function CodeHinter({
     },
   });
 
-  const { customResolves } = useContext(ResolveContext);
+  const { variablesExposedForPreview } = useContext(EditorContext);
 
   const prevCountRef = useRef(false);
 
@@ -151,16 +151,16 @@ export function CodeHinter({
   };
 
   const getCustomResolvables = () => {
-    if (customResolves.hasOwnProperty(component?.id)) {
+    if (variablesExposedForPreview.hasOwnProperty(component?.id)) {
       if (component?.component?.component === 'Table' && fieldMeta?.name) {
         return {
-          cellValue: customResolves[component?.id]?.rowData[fieldMeta?.name],
-          rowData: { ...customResolves[component?.id] },
+          cellValue: variablesExposedForPreview[component?.id]?.rowData[fieldMeta?.name],
+          rowData: { ...variablesExposedForPreview[component?.id]?.rowData },
         };
       }
-      return customResolves[component.id];
-    } else if (component?.parent && customResolves.hasOwnProperty(component?.parent)) {
-      return customResolves[component.parent];
+      return variablesExposedForPreview[component.id];
+    } else if (component?.parent && variablesExposedForPreview.hasOwnProperty(component?.parent)) {
+      return variablesExposedForPreview[component.parent];
     }
     return {};
   };

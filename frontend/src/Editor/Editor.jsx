@@ -60,7 +60,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import RealtimeAvatars from './RealtimeAvatars';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
-import { ResolvableContext } from './ResolvableContext';
+import { EditorContextWrapper } from './Context/EditorContextWrapper';
 
 setAutoFreeze(false);
 enablePatches();
@@ -1284,7 +1284,7 @@ class Editor extends React.Component {
           </header>
         </div>
         <DndProvider backend={HTML5Backend}>
-          <ResolvableContext>
+          <EditorContextWrapper>
             <div className="sub-section">
               <LeftSidebar
                 appVersionsId={this.state?.editingVersion?.id}
@@ -1660,7 +1660,7 @@ class Editor extends React.Component {
                 />
               )}
             </div>
-          </ResolvableContext>
+          </EditorContextWrapper>
         </DndProvider>
       </div>
     );

@@ -25,7 +25,7 @@ import { Toggle } from './Toggle';
 import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
-import { ResolveContext } from '@/Editor/ResolvableContext';
+import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 
 export function Table({
   id,
@@ -102,7 +102,7 @@ export function Table({
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
   let parsedWidgetVisibility = widgetVisibility;
 
-  const { customResolves, setCustomResolves } = useContext(ResolveContext);
+  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext);
 
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
@@ -360,10 +360,10 @@ export function Table({
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
         const rowData = tableData[cell.row.index];
 
-        if (cell.row.index === 0 && !_.isEqual(customResolves[id]?.rowData, rowData)) {
+        if (cell.row.index === 0 && !_.isEqual(variablesExposedForPreview[id]?.rowData, rowData)) {
           const customResolvables = {};
           customResolvables[id] = { rowData };
-          setCustomResolves({ ...customResolves, ...customResolvables });
+          exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
 
         switch (columnType) {
@@ -739,7 +739,7 @@ export function Table({
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
-      JSON.stringify(customResolves[id]),
+      JSON.stringify(variablesExposedForPreview[id]),
     ] // Hack: need to fix
   );
 
