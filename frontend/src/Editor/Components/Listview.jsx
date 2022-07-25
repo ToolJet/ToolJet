@@ -13,6 +13,7 @@ export const Listview = function Listview({
   styles,
   fireEvent,
   setExposedVariable,
+  exposedVariables,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -46,13 +47,28 @@ export const Listview = function Listview({
   }, []);
 
   useEffect(() => {
+    // console.log('onChildRemoved', childrenData);
     setExposedVariable('data', childrenData);
+
     if (selectedRowIndex != undefined) {
       setExposedVariable('selectedRowId', selectedRowIndex);
       setExposedVariable('selectedRow', childrenData[selectedRowIndex]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenData]);
+
+  const onChildRemoved = (child) => {
+    const newChildrenData = _.cloneDeep(childrenData);
+    const indexes = _.map(newChildrenData, (value, key) => {
+      return key;
+    });
+    indexes.forEach((index) => {
+      if (_.has(newChildrenData[index], child)) {
+        delete newChildrenData[index][child];
+      }
+    });
+    setChildrenData(newChildrenData);
+  };
 
   return (
     <div
@@ -98,6 +114,7 @@ export const Listview = function Listview({
                   return { ...prevData, ...newChildrenData };
                 });
               }}
+              onChildRemoved={onChildRemoved}
             />
           </div>
         ))}

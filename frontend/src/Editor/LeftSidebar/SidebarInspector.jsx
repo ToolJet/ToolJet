@@ -16,6 +16,8 @@ export const LeftSidebarInspector = ({
   removeComponent,
   runQuery,
 }) => {
+  console.log('LeftSidebarInspector', currentState);
+
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
 
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
