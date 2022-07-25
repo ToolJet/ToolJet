@@ -412,6 +412,9 @@ class Editor extends React.Component {
             this.runQueries(data.data_queries);
           });
           this.setWindowTitle(data.name);
+          this.setState({
+            showComments: !!queryString.parse(this.props.location.search).threadId,
+          });
         }
       );
 
