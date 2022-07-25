@@ -54,3 +54,10 @@ div[data-disabled='true'] {
   background: transparent;
   height: 1000vh;
 }
+
+.react-datepicker--time-only {
+  .react-datepicker__input-time-container {
+    margin: 10px 15px 10px 15px;
+    width: 143px;
+  }
+}
