@@ -542,6 +542,7 @@ export const Container = ({
                 hoveredComponent,
                 sideBarDebugger,
                 dataQueries,
+                setDraggingOrResizing,
               }}
               setDraggingOrResizing={setDraggingOrResizing}
             />

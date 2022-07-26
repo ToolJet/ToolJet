@@ -100,8 +100,8 @@ class Editor extends React.Component {
     };
 
     this.dataSourceModalRef = React.createRef();
-    this.scrollerRef = React.createRef();
-    this.selectoRef = React.createRef();
+    this.canvasContainerRef = React.createRef();
+    this.selectionRef = React.createRef();
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
@@ -171,7 +171,7 @@ class Editor extends React.Component {
       currentSidebarTab: 2,
       selectedComponents: [],
       scrollOptions: {
-        container: this.scrollerRef.current,
+        container: this.canvasContainerRef.current,
         throttleTime: 30,
         threshold: 0,
       },
@@ -1328,14 +1328,14 @@ class Editor extends React.Component {
               isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
             />
             <Selecto
-              // rootContainer={'.canvas-container'}
               dragContainer={'.canvas-container'}
               selectableTargets={['.react-draggable']}
               hitRate={0}
-              dragCondition={(e) => !isDraggingOrResizing}
+              dragCondition={() => !isDraggingOrResizing}
               selectByClick={true}
-              selectFromInside={true}
-              ratio={0}
+              toggleContinueSelect={['shift']}
+              ref={this.selectionRef}
+              scrollOptions={this.state.scrollOptions}
               onSelectStart={(e) => {
                 const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 1;
                 this.setState((prevState) => {
@@ -1364,7 +1364,9 @@ class Editor extends React.Component {
                 e.added.forEach((el) => {
                   el.classList.add('resizer-active');
                 });
-                e.removed.forEach((el) => {});
+                e.removed.forEach((el) => {
+                  el.classList.remove('resizer-active');
+                });
               }}
               onDrag={(e) => {
                 if (isDraggingOrResizing) {
@@ -1372,12 +1374,9 @@ class Editor extends React.Component {
                   e.stop();
                 }
               }}
-              toggleContinueSelect={['shift']}
               onScroll={(e) => {
-                this.scrollerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
+                this.canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
               }}
-              ref={this.selectoRef}
-              scrollOptions={this.state.scrollOptions}
             ></Selecto>
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
@@ -1388,9 +1387,9 @@ class Editor extends React.Component {
                     this.setState({ selectedComponents: [], currentSidebarTab: 2, hoveredComponent: false });
                   }
                 }}
-                ref={this.scrollerRef}
+                ref={this.canvasContainerRef}
                 onScroll={() => {
-                  this.selectoRef.current.checkScroll();
+                  this.selectionRef.current.checkScroll();
                 }}
               >
                 <div
