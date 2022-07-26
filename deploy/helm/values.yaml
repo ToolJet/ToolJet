@@ -1,3 +1,7 @@
+image:
+  repository: tooljet/tooljet-ce
+  pullPolicy: IfNotPresent
+
 apps:
   tooljet:
     service:
@@ -6,11 +10,11 @@ apps:
     deployment:
       resources:
         requests:
-          memory: 1024Mi
-          cpu: 1
+          memory: "1000Mi"
+          cpu: "1000m"
         limits:
-          memory: 2048Mi
-          cpu: 2
+          memory: "2000Mi"
+          cpu: "2000m"
     hpa:
       min: 1
       max: 1
@@ -33,7 +37,7 @@ postgresql:
   replication:
     enabled: false
   auth:
-    # postgresPassword: "postgres"
+    postgresPassword: "postgres"
     username: "postgresql"
     password: "postgresql"
   primary:

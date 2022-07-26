@@ -13,8 +13,8 @@ spec:
     spec:
       containers:
         - name: tooljet
-          image: "tooljet/tooljet-ce:{{ .Chart.AppVersion }}"
-          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          imagePullPolicy: "{{ .Values.image.pullPolicy }}"
           args: ["npm", "run", "start:prod"]
           ports:
             - containerPort: 3000
