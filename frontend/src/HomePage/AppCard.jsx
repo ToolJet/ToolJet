@@ -59,7 +59,11 @@ export default function AppCard({
           <div className="pt-2">
             <div className="app-icon-main p-1">
               <div className="app-icon p-1 d-flex">
-                <img src={`/assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`} alt="Application Icon" />
+                <img
+                  src={`/assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`}
+                  alt="Application Icon"
+                  data-cy={`app-card-${app.icon || defaultIcon}-icon`}
+                />
               </div>
             </div>
           </div>
@@ -84,14 +88,16 @@ export default function AppCard({
       </div>
       <div>
         <ToolTip message={app.name}>
-          <div className="app-title">{app.name}</div>
+          <div className="app-title" data-cy="app-title">
+            {app.name}
+          </div>
         </ToolTip>
       </div>
       <div className="py-1">
-        <div className="app-creator py-1">{`${app.user?.first_name ? app.user.first_name : ''} ${
+        <div className="app-creator py-1" data-cy="app-creator">{`${app.user?.first_name ? app.user.first_name : ''} ${
           app.user?.last_name ? app.user.last_name : ''
         }`}</div>
-        <div className="app-creation-time">
+        <div className="app-creation-time" data-cy="app-creation-time">
           <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
             <span>{updated === 'just now' ? updated : `${updated} ago`}</span>
           </ToolTip>

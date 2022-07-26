@@ -26,6 +26,7 @@ export function ConfirmDialog({ show, message, onConfirm, onCancel, confirmButto
         size="sm"
         centered={true}
         contentClassName={darkMode ? 'theme-dark' : ''}
+        data-cy="modal-component"
       >
         <div className="modal-status bg-danger"></div>
         <Modal.Body data-cy="modal-message">{message}</Modal.Body>

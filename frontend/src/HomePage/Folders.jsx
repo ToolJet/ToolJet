@@ -141,8 +141,7 @@ export const Folders = function Folders({
     <div className="w-100 px-3 pe-lg-4 folder-list">
       <ConfirmDialog
         show={showDeleteConfirmation}
-        message={`Are you sure you want to delete the folder? 
-        Apps within the folder will not be deleted.`}
+        message={`Are you sure you want to delete the folder? Apps within the folder will not be deleted.`}
         confirmButtonLoading={isDeleting}
         onConfirm={() => executeDeletion()}
         onCancel={() => cancelDeleteDialog()}
@@ -158,12 +157,15 @@ export const Folders = function Folders({
             !activeFolder.id ? 'active' : ''
           }`}
           onClick={() => handleFolderChange({})}
+          data-cy="all-applications-link"
         >
           All applications
         </a>
         <hr></hr>
         <div className="d-flex justify-content-between mb-3">
-          <div className="folder-info">Folders</div>
+          <div className="folder-info" data-cy="folder-info">
+            Folders
+          </div>
           {canCreateFolder && (
             <div
               className="folder-create-btn"
@@ -200,7 +202,11 @@ export const Folders = function Folders({
                   activeFolder.id === folder.id ? 'active' : ''
                 } ${darkMode && 'dark'} ${focused ? ' highlight' : ''}`}
               >
-                <div onClick={() => handleFolderChange(folder)} className="flex-grow-1">
+                <div
+                  onClick={() => handleFolderChange(folder)}
+                  className="flex-grow-1"
+                  data-cy={`folder-name-${folder.name.toLowerCase().replace(/\s+/g, '-')}`}
+                >
                   <span className="me-2">
                     <img src="/assets/images/icons/folder.svg" alt="" width="14" height="14" className="folder-ico" />
                   </span>
@@ -221,7 +227,9 @@ export const Folders = function Folders({
               </a>
             ))
           : !isLoading && (
-              <div className="folder-info">You haven&apos;t created any folders. Use folders to organize your apps</div>
+              <div className="folder-info" data-cy="folder-info-text">
+                You haven&apos;t created any folders. Use folders to organize your apps
+              </div>
             )}
 
         <Modal

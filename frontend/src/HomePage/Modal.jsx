@@ -15,10 +15,18 @@ export default function Modal({ title, show, closeModal, customClassName, childr
       animation={false}
       onEscapeKeyDown={() => closeModal()}
       centered
+      data-cy={'modal-component'}
     >
       <BootstrapModal.Header>
-        <BootstrapModal.Title>{title}</BootstrapModal.Title>
-        <button className="btn-close" aria-label="Close" onClick={() => closeModal()}></button>
+        <BootstrapModal.Title data-cy={`${title.toLowerCase().replace(/\s+/g, '-')}-title`}>
+          {title}
+        </BootstrapModal.Title>
+        <button
+          className="btn-close"
+          aria-label="Close"
+          onClick={() => closeModal()}
+          data-cy="modal-close-button"
+        ></button>
       </BootstrapModal.Header>
       <BootstrapModal.Body>{children}</BootstrapModal.Body>
     </BootstrapModal>
