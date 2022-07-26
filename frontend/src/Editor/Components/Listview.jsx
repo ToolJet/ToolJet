@@ -67,7 +67,7 @@ export const Listview = function Listview({
         {(_.isArray(data) ? data : []).map((listItem, index) => (
           <div
             className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
-            style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
+            style={{ height: `${rowHeight}px`, width: '100%' }}
             key={index}
             onClick={(event) => {
               event.stopPropagation();
