@@ -82,7 +82,8 @@ export const JSONNode = ({ data, ...restProps }) => {
   const typeofCurrentNode = getCurrentNodeType(data);
   const currentNodePath = getCurrentPath(path, currentNode);
   const toExpandNode = (data instanceof Array || data instanceof Object) && !_.isEmpty(data);
-  const toShowNodeIndicator = (data instanceof Array || data instanceof Object) && typeofCurrentNode !== 'Function';
+  const toShowNodeIndicator =
+    (typeofCurrentNode === 'Array' || typeofCurrentNode === 'Object') && typeofCurrentNode !== 'Function';
   const numberOfEntries = getLength(typeofCurrentNode, data);
   const toRenderSelector = (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array') && numberOfEntries > 0;
 
@@ -322,10 +323,11 @@ export const JSONNode = ({ data, ...restProps }) => {
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
           })}
           onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
+          data-cy={`inspector-node-${currentNode.toLowerCase()}`}
         >
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {$NODEType}
-          {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
+          {!toExpandNode && !toRenderSelector ? $VALUE : null}
           <div className="action-icons-group">{showHiddenOptionsForNode && renderHiddenOptionsForNode()}</div>
         </div>
         {toRenderSelector && (toExpandNode && !expandable ? null : $VALUE)}

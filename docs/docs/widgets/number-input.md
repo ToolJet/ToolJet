@@ -6,11 +6,9 @@ title: Number Input
 
 Number Input widget lets users enter and change numbers.
 
-<div style={{textAlign: 'center'}}>
+## How To Use Number Input Widget
 
-![ToolJet - Widget Reference - Number Input](/img/widgets/number-input/number.png)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/Xf9Sx2fNzng" title="Number InputWidget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 :::tip
 Numbers can be changed by using the arrow keys.

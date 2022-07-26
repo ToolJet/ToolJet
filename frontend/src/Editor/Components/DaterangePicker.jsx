@@ -8,7 +8,7 @@ import moment from 'moment';
 export const DaterangePicker = function DaterangePicker({ height, properties, styles, setExposedVariable, width }) {
   const { borderRadius, visibility, disabledState } = styles;
   const { defaultStartDate, defaultEndDate } = properties;
-  const formatProp = properties.format;
+  const formatProp = typeof properties.format === 'string' ? properties.format : '';
 
   const [focusedInput, setFocusedInput] = useState(null);
   const [startDate, setStartDate] = useState(moment(defaultStartDate, formatProp));

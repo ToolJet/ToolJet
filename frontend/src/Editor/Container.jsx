@@ -45,6 +45,7 @@ export const Container = ({
   handleRedo,
   onComponentHover,
   hoveredComponent,
+  sideBarDebugger,
   dataQueries,
 }) => {
   const styles = {
@@ -515,6 +516,7 @@ export const Container = ({
               darkMode={darkMode}
               onComponentHover={onComponentHover}
               hoveredComponent={hoveredComponent}
+              sideBarDebugger={sideBarDebugger}
               isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
               dataQueries={dataQueries}
               containerProps={{
@@ -537,6 +539,7 @@ export const Container = ({
                 darkMode,
                 onComponentHover,
                 hoveredComponent,
+                sideBarDebugger,
                 dataQueries,
               }}
             />
