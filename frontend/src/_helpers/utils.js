@@ -501,3 +501,8 @@ export function hasCircularDependency(obj) {
   }
   return false;
 }
+
+export const hightlightMentionedUserInComment = (comment) => {
+  var regex = /(\()([^)]+)(\))/g;
+  return comment.replace(regex, '<span class=mentioned-user>$2</span>');
+};

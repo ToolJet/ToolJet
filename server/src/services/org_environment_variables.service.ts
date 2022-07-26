@@ -15,9 +15,9 @@ export class OrgEnvironmentVariablesService {
     private encryptionService: EncryptionService
   ) {}
 
-  async fetchVariables(currentUser: User): Promise<OrgEnvironmentVariable[]> {
+  async fetchVariables(organizationId: string): Promise<OrgEnvironmentVariable[]> {
     const variables: OrgEnvironmentVariable[] = await this.orgEnvironmentVariablesRepository.find({
-      where: { organizationId: currentUser.organizationId },
+      where: { organizationId },
     });
 
     await Promise.all(
@@ -25,8 +25,7 @@ export class OrgEnvironmentVariablesService {
         if (variable.variableType === 'server') {
           delete variable.value;
         } else {
-          if (variable.encrypted)
-            variable['value'] = await this.decryptSecret(currentUser.organizationId, variable.value);
+          if (variable.encrypted) variable['value'] = await this.decryptSecret(organizationId, variable.value);
         }
       })
     );

@@ -18,12 +18,10 @@
     ]
   },
   "devDependencies": {
-    "@4tw/cypress-drag-drop": "^1.8.0",
     "@babel/core": "^7.4.3",
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/preset-env": "^7.4.3",
     "@babel/preset-react": "^7.0.0",
-    "@cypress/webpack-preprocessor": "^5.11.1",
     "@tooljet/cli": "^0.0.12",
     "babel-loader": "^8.0.5",
     "eslint": "^7.25.0",
@@ -38,8 +36,6 @@
   "dependencies": {
     "@nestjs/cli": "^8.1.0",
     "@nestjs/mapped-types": "*",
-    "cypress": "^8.3.1",
-    "moment": "^2.29.4",
     "ts-node": "^10.1.0"
   },
   "scripts": {
@@ -69,8 +65,6 @@
     "db:drop": "npm --prefix server run db:drop",
     "deploy": "cp -a frontend/build/. public/",
     "heroku-postbuild": "./heroku-postbuild.sh",
-    "cy:run": "cypress run --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
-    "cy:open": "cypress open --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
     "prepare": "husky install"
   }
 }
