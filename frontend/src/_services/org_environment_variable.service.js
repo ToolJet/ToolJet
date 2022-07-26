@@ -3,6 +3,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 
 export const orgEnvironmentVariableService = {
   getVariables,
+  getVariablesFromPublicApp,
   create,
   update,
   deleteVariable,
@@ -11,6 +12,11 @@ export const orgEnvironmentVariableService = {
 function getVariables() {
   const requestOptions = { method: 'GET', headers: authHeader() };
   return fetch(`${config.apiUrl}/organization-variables`, requestOptions).then(handleResponse);
+}
+
+function getVariablesFromPublicApp(slug) {
+  const requestOptions = { method: 'GET' };
+  return fetch(`${config.apiUrl}/organization-variables/${slug}`, requestOptions).then(handleResponse);
 }
 
 function create(variable_name, value, variable_type, encrypted) {
