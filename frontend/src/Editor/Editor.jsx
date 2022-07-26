@@ -60,6 +60,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import RealtimeAvatars from './RealtimeAvatars';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
+import Selecto from 'react-selecto';
 
 setAutoFreeze(false);
 enablePatches();
@@ -99,6 +100,8 @@ class Editor extends React.Component {
     };
 
     this.dataSourceModalRef = React.createRef();
+    this.scrollerRef = React.createRef();
+    this.selectoRef = React.createRef();
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
@@ -143,6 +146,10 @@ class Editor extends React.Component {
       isSourceSelected: false,
       isSaving: false,
       isUnsavedQueriesAvailable: false,
+      isDragSelection: false,
+      isDraggingOrResizing: false,
+      selectionInProgress: false,
+      scrollOptions: {},
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -163,6 +170,11 @@ class Editor extends React.Component {
     this.setState({
       currentSidebarTab: 2,
       selectedComponents: [],
+      scrollOptions: {
+        container: this.scrollerRef.current,
+        throttleTime: 30,
+        threshold: 0,
+      },
     });
   }
 
@@ -1089,6 +1101,7 @@ class Editor extends React.Component {
   };
 
   handleComponentHover = (id) => {
+    if (this.state.selectionInProgress) return;
     this.setState({
       hoveredComponent: id,
     });
@@ -1164,6 +1177,8 @@ class Editor extends React.Component {
       editingVersion,
       showCreateVersionModalPrompt,
       hoveredComponent,
+      isDragSelection,
+      isDraggingOrResizing,
     } = this.state;
 
     const appVersionPreviewLink = editingVersion ? `/applications/${app.id}/versions/${editingVersion.id}` : '';
@@ -1312,14 +1327,70 @@ class Editor extends React.Component {
               isSaving={this.state.isSaving}
               isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
             />
+            <Selecto
+              // rootContainer={'.canvas-container'}
+              dragContainer={'.canvas-container'}
+              selectableTargets={['.react-draggable']}
+              hitRate={0}
+              dragCondition={(e) => !isDraggingOrResizing}
+              selectByClick={true}
+              selectFromInside={true}
+              ratio={0}
+              onSelectStart={(e) => {
+                const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 1;
+                this.setState((prevState) => {
+                  return {
+                    selectionInProgress: true,
+                    selectedComponents: [...(isMultiSelect ? prevState.selectedComponents : [])],
+                  };
+                });
+              }}
+              onSelectEnd={(e) => {
+                this.setState({ isDragSelection: false, selectionInProgress: false });
+                e.selected.forEach((el, index) => {
+                  const id = el.getAttribute('widgetid');
+                  const component = this.state.appDefinition.components[id].component;
+                  const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
+                  this.setSelectedComponent(id, component, isMultiSelect);
+                });
+              }}
+              onSelect={(e) => {
+                if (isDraggingOrResizing) {
+                  return;
+                }
+                if (e.added.length > 0) {
+                  this.setState({ isDragSelection: true });
+                }
+                e.added.forEach((el) => {
+                  el.classList.add('resizer-active');
+                });
+                e.removed.forEach((el) => {});
+              }}
+              onDrag={(e) => {
+                if (isDraggingOrResizing) {
+                  this.setState({ isDragSelection: false, selectionInProgress: false });
+                  e.stop();
+                }
+              }}
+              toggleContinueSelect={['shift']}
+              onScroll={(e) => {
+                this.scrollerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
+              }}
+              ref={this.selectoRef}
+              scrollOptions={this.state.scrollOptions}
+            ></Selecto>
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
                 className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                 style={{ transform: `scale(${zoomLevel})` }}
-                onClick={(e) => {
-                  if (['real-canvas', 'modal'].includes(e.target.className)) {
-                    this.setState({ selectedComponents: [], currentSidebarTab: 2 });
+                onMouseUp={(e) => {
+                  if (['real-canvas', 'modal'].includes(e.target.className) && !isDragSelection) {
+                    this.setState({ selectedComponents: [], currentSidebarTab: 2, hoveredComponent: false });
                   }
+                }}
+                ref={this.scrollerRef}
+                onScroll={() => {
+                  this.selectoRef.current.checkScroll();
                 }}
               >
                 <div
@@ -1366,6 +1437,9 @@ class Editor extends React.Component {
                         hoveredComponent={hoveredComponent}
                         sideBarDebugger={this.sideBarDebugger}
                         dataQueries={dataQueries}
+                        setDraggingOrResizing={(value) => {
+                          this.setState({ isDraggingOrResizing: value });
+                        }}
                       />
                       <CustomDragLayer
                         snapToGrid={true}

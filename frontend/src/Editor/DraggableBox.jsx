@@ -97,6 +97,7 @@ export const DraggableBox = function DraggableBox({
   sideBarDebugger,
   isMultipleComponentsSelected,
   dataQueries,
+  setDraggingOrResizing = () => {},
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -136,6 +137,10 @@ export const DraggableBox = function DraggableBox({
       resizingStatusChanged(isResizing);
     }
   }, [isResizing]);
+
+  useEffect(() => {
+    setDraggingOrResizing(isDragging2 || isResizing);
+  }, [isDragging2, isResizing]);
 
   useEffect(() => {
     if (draggingStatusChanged) {
@@ -243,6 +248,7 @@ export const DraggableBox = function DraggableBox({
               onResizeStop(id, e, direction, ref, d, position);
             }}
             bounds={parent !== undefined ? `#canvas-${parent}` : '.real-canvas'}
+            widgetId={id}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
               {mode === 'edit' && !readOnly && (mouseOver || isSelectedComponent) && !isResizing && (

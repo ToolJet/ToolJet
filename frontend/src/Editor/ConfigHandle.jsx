@@ -25,7 +25,7 @@ export const ConfigHandle = function ConfigHandle({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            setSelectedComponent(id, component, e.shiftKey);
+            // setSelectedComponent(id, component, e.shiftKey);
           }}
           role="button"
         >
