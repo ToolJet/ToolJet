@@ -500,6 +500,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onSelect',
       'onClick',
       'onFileSelected',
+      'onFileLoaded',
       'onStart',
       'onResume',
       'onReset',
