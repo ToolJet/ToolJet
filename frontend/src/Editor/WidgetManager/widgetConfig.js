@@ -2631,6 +2631,7 @@ export const widgets = [
     events: {
       onFileSelected: { displayName: 'On File Selected' },
       onFileLoaded: { displayName: 'On File Loaded' },
+      onFileDeselected: { displayName: 'On File Deselected' },
     },
     styles: {
       visibility: {
