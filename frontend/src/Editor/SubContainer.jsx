@@ -42,6 +42,7 @@ export const SubContainer = ({
   onOptionChange,
   exposedVariables,
   defaultChildComponents = [],
+  shouldAddChildComponents,
 }) => {
   const mounted = useMounted();
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
@@ -89,7 +90,7 @@ export const SubContainer = ({
         return allComponents[key].parent === parent;
       });
 
-      if (children.length === 0) {
+      if (children.length === 0 && shouldAddChildComponents === true) {
         //if no children, add a default child
         const childrenBoxes = {};
         defaultChildComponents.forEach((child) => {

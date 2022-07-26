@@ -13,6 +13,7 @@ export const Listview = function Listview({
   styles,
   fireEvent,
   setExposedVariable,
+  exposedVariables,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -26,6 +27,8 @@ export const Listview = function Listview({
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
   };
+
+  const shouldAddChildren = React.useRef(true);
 
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
   function onRowClicked(index) {
@@ -41,6 +44,9 @@ export const Listview = function Listview({
   const [childrenData, setChildrenData] = useState({});
 
   useEffect(() => {
+    if (!_.isEmpty(exposedVariables)) {
+      shouldAddChildren.current = false;
+    }
     setExposedVariable('data', {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -110,6 +116,7 @@ export const Listview = function Listview({
           >
             <SubContainer
               parentComponent={component}
+              shouldAddChildComponents={shouldAddChildren.current}
               defaultChildComponents={childWidgets}
               containerCanvasWidth={width}
               parent={`${id}`}
