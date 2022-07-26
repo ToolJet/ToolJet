@@ -1868,9 +1868,9 @@ export const widgets = [
       properties: {
         data: {
           value: `{{[
-  	{ imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'sample text1', buttonText: 'button1' },
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'sample text1', buttonText: 'button1' },
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'sample text1', buttonText: 'button1' },
+  { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 1' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 2' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 3' },
   ]}}`,
         },
         rowHeight: {
