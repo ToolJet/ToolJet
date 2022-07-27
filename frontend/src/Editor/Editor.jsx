@@ -1079,6 +1079,16 @@ class Editor extends React.Component {
   };
 
   handleOnComponentOptionChanged = (component, optionName, value) => {
+    const parentComponentId = component['parent'] ?? false;
+
+    if (parentComponentId) {
+      const parentExists = this.state.appDefinition.components[parentComponentId];
+      //! Hack to avoid adding listview children to the component level
+      if (parentExists && parentExists.component.component === 'Listview') {
+        return;
+      }
+    }
+
     return onComponentOptionChanged(this, component, optionName, value);
   };
 

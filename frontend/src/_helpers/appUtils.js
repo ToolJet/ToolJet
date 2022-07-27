@@ -27,8 +27,7 @@ export function setCurrentStateAsync(_ref, changes) {
   return new Promise((resolve) => {
     _ref.setState((prevState) => {
       return {
-        currentState: prevState.currentState,
-        ...changes,
+        currentState: { ...prevState.currentState, ...changes },
       };
     }, resolve);
   });
