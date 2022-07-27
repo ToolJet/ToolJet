@@ -72,6 +72,7 @@ class LoginPage extends React.Component {
             enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
             configs: {
               client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
+              host_name: window.public_config?.SSO_GIT_OAUTH2_HOST,
             },
           },
           form: {
