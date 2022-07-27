@@ -1,28 +1,34 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
+import { pluginsService } from '@/_services';
 import Spinner from '@/_ui/Spinner';
 
 export const MarketplacePlugins = ({ isActive, darkMode }) => {
   const [packages, setPackages] = React.useState([]);
   const [fetching, setFetching] = React.useState(false);
   React.useEffect(() => {
-    fetch('https://raw.githubusercontent.com/logseq/marketplace/master/plugins.json')
+    fetch('https://raw.githubusercontent.com/ToolJet/ToolJet/add-extension-module/marketplace/plugins.json')
       .then((response) => response.json())
       .then(({ packages }) => setPackages(packages))
       .catch((error) => {
         toast.error(error?.message || 'something went wrong');
       });
   }, [isActive]);
+
+  const installPlugin = (body) => {
+    pluginsService.installPlugin(body);
+  };
+
   return (
     <div className="col-9">
       <div className="row row-cards">
-        {packages?.map((pkg) => {
+        {packages?.map(({ id, name, repo, description }) => {
           return (
-            <div key={pkg.id} className="col-sm-6 col-lg-4">
+            <div key={id} className="col-sm-6 col-lg-4">
               <div className="card card-sm card-borderless">
                 <div className="card-header" style={{ borderBottom: 0 }}>
                   <div className="card-actions btn-actions">
-                    <a href={`https://github.com/${pkg.repo}`} target="_blank" className="btn-action" rel="noreferrer">
+                    <a href={`https://github.com/${repo}`} target="_blank" className="btn-action" rel="noreferrer">
                       {darkMode ? (
                         <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path
@@ -52,13 +58,13 @@ export const MarketplacePlugins = ({ isActive, darkMode }) => {
                         <img
                           height="40"
                           width="40"
-                          src={`https://raw.githubusercontent.com/${pkg.repo}/main/${pkg.icon?.replace('./', '')}`}
+                          src={`https://raw.githubusercontent.com/${repo}/main/lib/icon.svg`}
                         />
                       </span>
                     </div>
                     <div className="col">
-                      <div className="font-weight-medium text-capitalize">{pkg.title}</div>
-                      <div className="text-muted">{pkg.description}</div>
+                      <div className="font-weight-medium text-capitalize">{name}</div>
+                      <div className="text-muted">{description}</div>
                     </div>
                   </div>
                   <div className="mt-4">
@@ -68,7 +74,16 @@ export const MarketplacePlugins = ({ isActive, darkMode }) => {
                           <span className="avatar avatar-xs avatar-rounded"></span>
                         </div>
                       </div>
-                      <div className="col-auto">
+                      <div
+                        className="col-auto"
+                        onClick={() =>
+                          installPlugin({
+                            name,
+                            repo,
+                            description,
+                          })
+                        }
+                      >
                         <a href="#">Install</a>
                       </div>
                     </div>

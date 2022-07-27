@@ -2,7 +2,7 @@ import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
-import { allSources } from './QueryEditors';
+import { allSources, source } from './QueryEditors';
 import { Transformation } from './Transformation';
 import { previewQuery } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
@@ -409,7 +409,7 @@ let QueryManager = class QueryManager extends React.Component {
 
     if (selectedDataSource) {
       const sourcecomponentName = selectedDataSource.kind.charAt(0).toUpperCase() + selectedDataSource.kind.slice(1);
-      ElementToRender = allSources[sourcecomponentName];
+      ElementToRender = allSources[sourcecomponentName] || source;
     }
 
     let dropDownButtonText = mode === 'edit' ? 'Save' : 'Create';
@@ -612,6 +612,7 @@ let QueryManager = class QueryManager extends React.Component {
                 {selectedDataSource && (
                   <div>
                     <ElementToRender
+                      pluginSchema={this.state.selectedDataSource?.plugin?.operations_file?.data}
                       selectedDataSource={selectedDataSource}
                       options={this.state.options}
                       optionsChanged={this.optionsChanged}

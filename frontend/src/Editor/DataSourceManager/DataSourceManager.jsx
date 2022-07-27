@@ -8,6 +8,7 @@ import {
   DataBaseSources,
   ApiSources,
   DataSourceTypes,
+  SourceComponent,
   SourceComponents,
   CloudStorageSources,
 } from './SourceComponents';
@@ -57,7 +58,7 @@ class DataSourceManager extends React.Component {
     });
 
     pluginsService
-      .getPlugins()
+      .findAll()
       .then(({ data = [] }) => this.setState({ plugins: data }))
       .catch((error) => {
         toast.error(error?.message || 'failed to fetch plugins');
@@ -89,9 +90,11 @@ class DataSourceManager extends React.Component {
   };
 
   selectPluginDataSource = (source) => {
+    console.log(source);
     source.manifestFile.data.source.pluginId = source.id;
     source.manifestFile.data.source.icon = source.iconFile.data;
     this.setState({
+      dataSourceSchema: source.manifestFile.data,
       dataSourceMeta: source.manifestFile.data.source,
       selectedDataSource: source.manifestFile.data.source,
       name: source.manifestFile.data.source.kind,
@@ -208,9 +211,11 @@ class DataSourceManager extends React.Component {
     const { options, isSaving } = this.state;
 
     const sourceComponentName = kind.charAt(0).toUpperCase() + kind.slice(1);
-    const ComponentToRender = SourceComponents[sourceComponentName];
+    const ComponentToRender = SourceComponents[sourceComponentName] || SourceComponent;
+    console.log(this.state.dataSourceSchema);
     return (
       <ComponentToRender
+        pluginSchema={this.state.dataSourceSchema}
         optionsChanged={(options = {}) => this.setState({ options })}
         optionchanged={this.optionchanged}
         createDataSource={this.createDataSource}

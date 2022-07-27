@@ -1,7 +1,7 @@
 {
   "packages": [
     {
-      "title": "Cassandra plugin",
+      "name": "Cassandra plugin",
       "description": "Datasource plugin for Cassandra",
       "author": "Gandharv garg",
       "repo": "gondar00/tooljet-plugin-cassandra",

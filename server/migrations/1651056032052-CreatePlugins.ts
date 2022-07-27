@@ -18,8 +18,20 @@ export class CreatePlugins1651056032052 implements MigrationInterface {
             type: 'varchar',
           },
           {
+            name: 'repo',
+            type: 'varchar',
+          },
+          {
+            name: 'description',
+            type: 'varchar',
+          },
+          {
             name: 'version',
             type: 'varchar',
+          },
+          {
+            name: 'index_file_id',
+            type: 'uuid',
           },
           {
             name: 'operations_file_id',
@@ -47,6 +59,11 @@ export class CreatePlugins1651056032052 implements MigrationInterface {
           },
         ],
         foreignKeys: [
+          {
+            referencedTableName: 'files',
+            referencedColumnNames: ['id'],
+            columnNames: ['index_file_id'],
+          },
           {
             referencedTableName: 'files',
             referencedColumnNames: ['id'],

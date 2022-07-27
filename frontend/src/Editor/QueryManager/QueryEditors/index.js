@@ -19,3 +19,5 @@ export const allSources = {
   Stripe,
   Openapi,
 };
+
+export const source = (props) => <DynamicForm schema={props.pluginSchema} {...props} />;

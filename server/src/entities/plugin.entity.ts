@@ -20,6 +20,15 @@ export class Plugin {
   @Column({ name: 'version' })
   version: string;
 
+  @Column({ name: 'repo' })
+  repo: string;
+
+  @Column({ name: 'description' })
+  description: string;
+
+  @Column({ name: 'index_file_id' })
+  indexFileId: string;
+
   @Column({ name: 'operations_file_id' })
   operationsFileId: string;
 
@@ -34,6 +43,10 @@ export class Plugin {
 
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
+
+  @OneToOne(() => File, (file) => file.id)
+  @JoinColumn({ name: 'index_file_id' })
+  indexFile?: File;
 
   @OneToOne(() => File, (file) => file.id)
   @JoinColumn({ name: 'operations_file_id' })

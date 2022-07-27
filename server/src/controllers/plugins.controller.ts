@@ -36,7 +36,12 @@ export class PluginsController {
     @UploadedFiles()
     files: { operations: Express.Multer.File[]; icon: Express.Multer.File[]; manifest: Express.Multer.File[] }
   ) {
-    return this.pluginsService.create(createPluginDto, files);
+    // return this.pluginsService.create(createPluginDto, files);
+  }
+
+  @Post('install')
+  install(@Body() installPluginDto: any) {
+    return this.pluginsService.install(installPluginDto);
   }
 
   @Get()

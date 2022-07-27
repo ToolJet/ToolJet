@@ -101,7 +101,7 @@ export class DataQueriesService {
         decoded = plugins[dataQuery.pluginId];
       } else {
         const plugin = await this.pluginsService.findOne(dataQuery.pluginId);
-        decoded = decode(plugin.operationsFile.data.toString());
+        decoded = decode(plugin.indexFile.data.toString());
         plugins[dataQuery.pluginId] = decoded;
       }
       const code = requireFromString(decoded, { globals: { process, Buffer, Promise, setTimeout, clearTimeout } });

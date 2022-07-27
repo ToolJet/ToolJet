@@ -124,7 +124,7 @@ export class DataSourcesService {
         decoded = decode(plugins[pluginId]);
       } else {
         const plugin = await this.pluginsService.findOne(pluginId);
-        decoded = decode(plugin.operationsFile.data.toString());
+        decoded = decode(plugin.indexFile.data.toString());
         plugins[pluginId] = decoded;
       }
       const code = requireFromString(decoded, { globals: { process, Buffer, Promise, setTimeout, clearTimeout } });
