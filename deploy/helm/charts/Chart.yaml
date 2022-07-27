@@ -3,14 +3,14 @@ name: tooljet
 type: application
 description: ToolJet is an open-source low-code framework to build and deploy internal tools quickly without much effort from the engineering teams.
 maintainers:
-  - name: akshay-sasidharan
-    email: akshay@tooljet.io
+- name: akshay-sasidharan
+  email: akshay@tooljet.io
 
 dependencies:
-  - condition: postgresql.enabled
-    name: postgresql
-    version: "11.6.19"
-    repository: "https://charts.bitnami.com/bitnami"
+- condition: postgresql.enabled
+  name: postgresql
+  version: "11.6.19"
+  repository: "https://charts.bitnami.com/bitnami"
 
 version: 1.21.3
 appVersion: "v1.21.3"
