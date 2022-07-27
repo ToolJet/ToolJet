@@ -4239,6 +4239,9 @@ input[type="text"] {
         brightness(98%) contrast(111%);
     }
   }
+  .folder-ico.dark {
+    filter: invert(1);
+  }
   .list-group-item {
     padding: 0.5rem 0.75rem;
     overflow: hidden;
