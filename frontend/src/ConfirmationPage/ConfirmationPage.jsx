@@ -1,6 +1,9 @@
 import React from 'react';
-import { appService } from '@/_services';
+import { appService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
+import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import { ShowLoading } from '@/_components';
 
 class ConfirmationPage extends React.Component {
   constructor(props) {
@@ -8,8 +11,51 @@ class ConfirmationPage extends React.Component {
 
     this.state = {
       isLoading: false,
+      isGettingConfigs: true,
+      configs: {},
     };
     this.formRef = React.createRef(null);
+    this.organizationId = new URLSearchParams(props.location.state.search).get('oid');
+    this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
+  }
+
+  componentDidMount() {
+    if (this.single_organization) {
+      return;
+    }
+    authenticationService.deleteLoginOrganizationId();
+
+    if (this.organizationId) {
+      // Workspace invite
+      authenticationService.saveLoginOrganizationId(this.organizationId);
+      authenticationService.getOrganizationConfigs(this.organizationId).then(
+        (configs) => {
+          this.setState({ isGettingConfigs: false, configs });
+        },
+        () => {
+          this.setState({ isGettingConfigs: false });
+        }
+      );
+    } else {
+      // Sign up
+      this.setState({
+        isGettingConfigs: false,
+        configs: {
+          google: {
+            enabled: !!window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
+            configs: {
+              client_id: window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
+            },
+          },
+          git: {
+            enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
+            configs: {
+              client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
+            },
+          },
+        },
+      });
+    }
   }
 
   handleChange = (event) => {
@@ -98,122 +144,145 @@ class ConfirmationPage extends React.Component {
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off" data-cy="confirm-invite-container">
-            <div className="card-body">
-              <h2 className="card-title text-center mb-4" data-cy="card-title">
-                Set up your account
-              </h2>
-              <div className="mb-3">
-                <label className="form-label" data-cy="first-name-label">
-                  First name
-                </label>
-                <div className="input-group input-group-flat">
-                  <input
+            {this.state.isGettingConfigs ? (
+              <ShowLoading />
+            ) : (
+              <div className="card-body">
+                <h2 className="card-title text-center mb-4" data-cy="card-title">
+                  Set up your account
+                </h2>
+                {this.state.configs?.enable_sign_up && (
+                  <div className="d-flex flex-column align-items-center separator-bottom">
+                    {this.state.configs?.google?.enabled && (
+                      <GoogleSSOLoginButton
+                        text="Sign up with Google"
+                        configs={this.state.configs?.google?.configs}
+                        configId={this.state.configs?.google?.config_id}
+                      />
+                    )}
+                    {this.state.configs?.git?.enabled && (
+                      <GitSSOLoginButton text="Sign up with GitHub" configs={this.state.configs?.git?.configs} />
+                    )}
+                    <div className="mt-2 separator">
+                      <h2>
+                        <span>OR</span>
+                      </h2>
+                    </div>
+                  </div>
+                )}
+                <div className="mb-3">
+                  <label className="form-label" data-cy="first-name-label">
+                    First name
+                  </label>
+                  <div className="input-group input-group-flat">
+                    <input
+                      onChange={this.handleChange}
+                      name="firstName"
+                      type="text"
+                      className="form-control"
+                      autoComplete="off"
+                      data-cy="first-name-input"
+                    />
+                    <span className="input-group-text"></span>
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label" data-cy="last-name-label">
+                    Last name
+                  </label>
+                  <div className="input-group input-group-flat">
+                    <input
+                      onChange={this.handleChange}
+                      name="lastName"
+                      type="text"
+                      className="form-control"
+                      autoComplete="off"
+                      data-cy="last-name-input"
+                    />
+                    <span className="input-group-text"></span>
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label" data-cy="company-label">
+                    Company
+                  </label>
+                  <div className="input-group input-group-flat">
+                    <input
+                      onChange={this.handleChange}
+                      name="organization"
+                      type="text"
+                      className="form-control"
+                      autoComplete="off"
+                      data-cy="workspace-input"
+                    />
+                    <span className="input-group-text"></span>
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <div className="form-label" data-cy="role-label">
+                    Role
+                  </div>
+                  <select
+                    className="form-select"
+                    name="role"
+                    defaultValue=""
                     onChange={this.handleChange}
-                    name="firstName"
-                    type="text"
-                    className="form-control"
-                    autoComplete="off"
-                    data-cy="first-name-input"
-                  />
-                  <span className="input-group-text"></span>
+                    data-cy="role-options"
+                  >
+                    <option value="" disabled>
+                      Please select
+                    </option>
+                    {roleOptions}
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label" data-cy="password-label">
+                    Password
+                  </label>
+                  <div className="input-group input-group-flat">
+                    <input
+                      onChange={this.handleChange}
+                      name="password"
+                      type="password"
+                      className="form-control"
+                      autoComplete="off"
+                      data-cy="password-input"
+                    />
+                    <span className="input-group-text"></span>
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label" data-cy="confirm-password-label">
+                    Confirm Password
+                  </label>
+                  <div className="input-group input-group-flat">
+                    <input
+                      onChange={this.handleChange}
+                      name="password_confirmation"
+                      type="password"
+                      className="form-control"
+                      autoComplete="off"
+                      data-cy="confirm-password-input"
+                    />
+                    <span className="input-group-text"></span>
+                  </div>
+                </div>
+                <div className="form-footer">
+                  <p data-cy="terms-and-condition-info">
+                    By clicking the button below, you agree to our{' '}
+                    <a href="https://tooljet.io/terms">Terms and Conditions</a>.
+                  </p>
+                  <button
+                    className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}
+                    onClick={this.setPassword}
+                    disabled={isLoading}
+                    data-cy="finish-setup-button"
+                  >
+                    Finish account setup
+                  </button>
                 </div>
               </div>
-              <div className="mb-3">
-                <label className="form-label" data-cy="last-name-label">
-                  Last name
-                </label>
-                <div className="input-group input-group-flat">
-                  <input
-                    onChange={this.handleChange}
-                    name="lastName"
-                    type="text"
-                    className="form-control"
-                    autoComplete="off"
-                    data-cy="last-name-input"
-                  />
-                  <span className="input-group-text"></span>
-                </div>
-              </div>
-              <div className="mb-3">
-                <label className="form-label" data-cy="company-label">
-                  Company
-                </label>
-                <div className="input-group input-group-flat">
-                  <input
-                    onChange={this.handleChange}
-                    name="organization"
-                    type="text"
-                    className="form-control"
-                    autoComplete="off"
-                    data-cy="workspace-input"
-                  />
-                  <span className="input-group-text"></span>
-                </div>
-              </div>
-              <div className="mb-3">
-                <div className="form-label" data-cy="role-label">
-                  Role
-                </div>
-                <select
-                  className="form-select"
-                  name="role"
-                  defaultValue=""
-                  onChange={this.handleChange}
-                  data-cy="role-options"
-                >
-                  <option value="" disabled>
-                    Please select
-                  </option>
-                  {roleOptions}
-                </select>
-              </div>
-              <div className="mb-3">
-                <label className="form-label" data-cy="password-label">
-                  Password
-                </label>
-                <div className="input-group input-group-flat">
-                  <input
-                    onChange={this.handleChange}
-                    name="password"
-                    type="password"
-                    className="form-control"
-                    autoComplete="off"
-                    data-cy="password-input"
-                  />
-                  <span className="input-group-text"></span>
-                </div>
-              </div>
-              <div className="mb-3">
-                <label className="form-label" data-cy="confirm-password-label">
-                  Confirm Password
-                </label>
-                <div className="input-group input-group-flat">
-                  <input
-                    onChange={this.handleChange}
-                    name="password_confirmation"
-                    type="password"
-                    className="form-control"
-                    autoComplete="off"
-                    data-cy="confirm-password-input"
-                  />
-                  <span className="input-group-text"></span>
-                </div>
-              </div>
-              <div className="form-footer">
-                <p data-cy="terms-and-condition-info">
-                  By clicking the button below, you agree to our{' '}
-                  <a href="https://tooljet.io/terms">Terms and Conditions</a>.
-                </p>
-                <button
-                  className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}
-                  onClick={this.setPassword}
-                  disabled={isLoading}
-                  data-cy="finish-setup-button"
-                >
-                  Finish account setup
-                </button>
-              </div>
-            </div>
+            )}
           </form>
         </div>
       </div>

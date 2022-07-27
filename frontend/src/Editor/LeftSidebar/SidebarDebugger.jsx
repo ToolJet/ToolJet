@@ -6,7 +6,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
 
-export const LeftSidebarDebugger = ({ darkMode, errors }) => {
+export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
   const [currrentTab, setCurrentTab] = React.useState(1);
   const [errorLogs, setErrorLogs] = React.useState([]);
@@ -31,7 +31,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
       const newError = _.flow([
         Object.entries,
         // eslint-disable-next-line no-unused-vars
-        (arr) => arr.filter(([key, value]) => value.data.status),
+        (arr) => arr.filter(([key, value]) => value.data?.status),
         Object.fromEntries,
       ])(errors);
 
@@ -41,6 +41,8 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
           options: '',
           response: '',
           request: '',
+          resolvedProperties: '',
+          effectiveProperties: '',
         };
 
         switch (value.type) {
@@ -55,6 +57,12 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
           case 'transformations':
             variableNames.response = 'data';
             break;
+
+          case 'component':
+            variableNames.resolvedProperties = 'resolvedProperties';
+            variableNames.effectiveProperties = 'propertiesAfterUsingDefaults';
+            break;
+
           default:
             'options';
         }
@@ -65,11 +73,13 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
           message: value.data.message,
           description: value.data.description,
           options: { name: variableNames.options, data: value.options },
+          resolvedProperties: value.resolvedProperties,
+          effectiveProperties: value.effectiveProperties,
           response: {
             name: variableNames.response,
             data: value.kind === 'restapi' ? value.data.data.responseObject : value.data.data,
           },
-          request: { name: variableNames.request, data: value.data.data.requestObject },
+          request: { name: variableNames.request, data: value.data?.data?.requestObject ?? {} },
           timestamp: moment(),
         });
       });
@@ -77,7 +87,8 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
       const newData = [...errorData, ...copy];
       return newData;
     });
-  }, [errors]);
+    debuggerActions.flush();
+  }, [JSON.stringify(errors)]);
 
   React.useEffect(() => {
     if (open === false && errorLogs.length !== unReadErrorCount.read) {
@@ -183,7 +194,11 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
           height="16"
         />
         [{_.capitalize(errorProps.type)} {errorProps.key}] &nbsp;
-        <span className="text-red">{`${_.startCase(errorProps.type)} Failed: ${errorProps.message}`} .</span>
+        {errorProps.type != 'component' ? (
+          <span className="text-red">{`${_.startCase(errorProps.type)} failed: ${errorProps.message}`} .</span>
+        ) : (
+          <span className="text-red">{`Invalid property detected: ${errorProps.message}`} .</span>
+        )}
         <br />
         <small className="text-muted px-1">{moment(errorProps.timestamp).fromNow()}</small>
       </p>
@@ -205,20 +220,22 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
             />
           </span>
         )}
-        <span>
-          <ReactJson
-            src={errorProps.response.data}
-            theme={darkMode ? 'shapeshifter' : 'rjv-default'}
-            name={errorProps.response.name}
-            style={{ fontSize: '0.7rem', paddingLeft: '0.17rem' }}
-            enableClipboard={false}
-            displayDataTypes={false}
-            collapsed={true}
-            displayObjectSize={false}
-            quotesOnKeys={false}
-            sortKeys={false}
-          />
-        </span>
+        {errorProps.type != 'component' && (
+          <span>
+            <ReactJson
+              src={errorProps.response.data}
+              theme={darkMode ? 'shapeshifter' : 'rjv-default'}
+              name={errorProps.response.name}
+              style={{ fontSize: '0.7rem', paddingLeft: '0.17rem' }}
+              enableClipboard={false}
+              displayDataTypes={false}
+              collapsed={true}
+              displayObjectSize={false}
+              quotesOnKeys={false}
+              sortKeys={false}
+            />
+          </span>
+        )}
         {errorProps.kind === 'restapi' && (
           <span>
             <ReactJson
@@ -236,7 +253,23 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
             />
           </span>
         )}
-
+        {errorProps.kind === 'component' && (
+          <span>
+            <ReactJson
+              src={errorProps.resolvedProperties}
+              theme={darkMode ? 'shapeshifter' : 'rjv-default'}
+              name={'resolvedProperties'}
+              style={{ fontSize: '0.7rem', paddingLeft: '0.17rem' }}
+              enableClipboard={false}
+              displayDataTypes={false}
+              collapsed={true}
+              displayObjectSize={false}
+              quotesOnKeys={false}
+              sortKeys={false}
+              collapseStringsAfterLength={1000}
+            />
+          </span>
+        )}
         <hr className="border-1 border-bottom bg-grey py-0" />
       </div>
     </div>

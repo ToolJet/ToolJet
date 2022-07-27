@@ -109,15 +109,15 @@ export const Organization = function Organization() {
   };
 
   const switchOrganization = (orgId) => {
-    organizationService.switchOrganization(orgId).then((response) => {
-      if (!response.ok) {
-        return (window.location.href = `/login/${orgId}`);
-      }
-      response.json().then((data) => {
+    organizationService.switchOrganization(orgId).then(
+      (data) => {
         authenticationService.updateCurrentUserDetails(data);
         window.location.href = '/';
-      });
-    });
+      },
+      () => {
+        return (window.location.href = `/login/${orgId}`);
+      }
+    );
   };
 
   const listOrganization = () => {
@@ -267,9 +267,9 @@ export const Organization = function Organization() {
             <div onClick={showCreateModal}>Add workspace</div>
           </div>
         )}
+        <div className="dropdown-divider"></div>
         {admin && (
           <>
-            <div className="dropdown-divider"></div>
             <Link data-testid="settingsBtn" to="/users" className="dropdown-item" data-cy="manage-users">
               Manage Users
             </Link>
@@ -281,6 +281,9 @@ export const Organization = function Organization() {
             </Link>
           </>
         )}
+        <Link data-tesid="settingsBtn" to="/manage-environment-vars" className="dropdown-item">
+          {admin ? 'Manage Environment Variables' : 'Environment Variables'}
+        </Link>
       </div>
     );
   };

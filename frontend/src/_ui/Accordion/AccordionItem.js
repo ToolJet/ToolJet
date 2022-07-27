@@ -12,7 +12,7 @@ const AccordionItem = ({ open = true, index, title, children }) => {
           data-bs-toggle="collapse"
           data-bs-target={`collapse-${index}`}
           aria-expanded="false"
-          data-cy="widget-accordion"
+          data-cy={`widget-accordion-${title.toLowerCase()}`}
         >
           {title}
         </button>

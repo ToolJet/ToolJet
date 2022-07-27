@@ -1,6 +1,13 @@
 import React, { useEffect } from 'react';
 
-export const Checkbox = function Checkbox({ height, properties, styles, fireEvent, setExposedVariable }) {
+export const Checkbox = function Checkbox({
+  height,
+  properties,
+  styles,
+  fireEvent,
+  setExposedVariable,
+  registerAction,
+}) {
   const defaultValueFromProperties = properties.defaultValue ?? false;
   const [defaultValue, setDefaultvalue] = React.useState(defaultValueFromProperties);
   const [checked, setChecked] = React.useState(defaultValueFromProperties);
@@ -23,6 +30,11 @@ export const Checkbox = function Checkbox({ height, properties, styles, fireEven
     setChecked(defaultValueFromProperties);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValueFromProperties]);
+
+  registerAction('setChecked', async function (status) {
+    setExposedVariable('value', status).then(() => (status ? fireEvent('onCheck') : fireEvent('onUnCheck')));
+    setChecked(status);
+  });
 
   return (
     <div data-disabled={disabledState} className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>

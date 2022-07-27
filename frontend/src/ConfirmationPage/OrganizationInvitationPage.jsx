@@ -1,6 +1,9 @@
 import React from 'react';
-import { appService } from '@/_services';
+import { appService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
+import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import { ShowLoading } from '@/_components';
 
 class OrganizationInvitationPage extends React.Component {
   constructor(props) {
@@ -8,9 +11,27 @@ class OrganizationInvitationPage extends React.Component {
 
     this.state = {
       isLoading: false,
+      configs: {},
+      isGettingConfigs: true,
     };
     this.formRef = React.createRef(null);
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
+  }
+
+  componentDidMount() {
+    if (!this.single_organization) {
+      this.setState({ isGettingConfigs: false });
+      return;
+    }
+
+    authenticationService.getOrganizationConfigs().then(
+      (configs) => {
+        this.setState({ isGettingConfigs: false, configs });
+      },
+      () => {
+        this.setState({ isGettingConfigs: false });
+      }
+    );
   }
 
   handleChange = (event) => {
@@ -62,7 +83,7 @@ class OrganizationInvitationPage extends React.Component {
   };
 
   render() {
-    const { isLoading } = this.state;
+    const { isLoading, isGettingConfigs } = this.state;
 
     return (
       <div className="page page-center" ref={this.formRef}>
@@ -73,77 +94,100 @@ class OrganizationInvitationPage extends React.Component {
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
-            <div className="card-body">
-              {!this.single_organization ? (
-                <>
-                  <h2 className="card-title text-center mb-2" data-cy="card-title">
-                    Already have an account?
-                  </h2>
-                  <div className="mb-3">
-                    <button
-                      className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}
-                      onClick={(e) => this.acceptInvite(e)}
-                      disabled={isLoading}
-                      data-cy="accept-invite-button"
-                    >
-                      Accept invite
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h2 className="card-title text-center mb-4" data-cy="card-title">
-                    Set up your account
-                  </h2>
-                  <div className="mb-3">
-                    <label className="form-label" data-cy="password-label">
-                      Password
-                    </label>
-                    <div className="input-group input-group-flat">
-                      <input
-                        onChange={this.handleChange}
-                        name="password"
-                        type="password"
-                        className="form-control"
-                        autoComplete="off"
-                        data-cy="password-input"
-                      />
-                      <span className="input-group-text"></span>
+            {isGettingConfigs ? (
+              <ShowLoading />
+            ) : (
+              <div className="card-body">
+                {!this.single_organization ? (
+                  <>
+                    <h2 className="card-title text-center mb-2" data-cy="card-title">
+                      Already have an account?
+                    </h2>
+                    <div className="mb-3">
+                      <button
+                        className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}
+                        onClick={(e) => this.acceptInvite(e)}
+                        disabled={isLoading}
+                        data-cy="accept-invite-button"
+                      >
+                        Accept invite
+                      </button>
                     </div>
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label" data-cy="confirm-password-label">
-                      Confirm Password
-                    </label>
-                    <div className="input-group input-group-flat">
-                      <input
-                        onChange={this.handleChange}
-                        name="password_confirmation"
-                        type="password"
-                        className="form-control"
-                        autoComplete="off"
-                        data-cy="confirm-password-input"
-                      />
-                      <span className="input-group-text"></span>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="card-title text-center mb-4" data-cy="card-title">
+                      Set up your account
+                    </h2>
+                    {this.state.configs?.enable_sign_up && (
+                      <div className="d-flex flex-column align-items-center separator-bottom">
+                        {this.state.configs?.google?.enabled && (
+                          <GoogleSSOLoginButton
+                            text="Sign up with Google"
+                            configs={this.state.configs?.google?.configs}
+                            configId={this.state.configs?.google?.config_id}
+                          />
+                        )}
+                        {this.state.configs?.git?.enabled && (
+                          <GitSSOLoginButton text="Sign up with GitHub" configs={this.state.configs?.git?.configs} />
+                        )}
+                        <div className="mt-2 separator">
+                          <h2>
+                            <span>OR</span>
+                          </h2>
+                        </div>
+                      </div>
+                    )}
+                    <div className="mb-3">
+                      <label className="form-label" data-cy="password-label">
+                        Password
+                      </label>
+                      <div className="input-group input-group-flat">
+                        <input
+                          onChange={this.handleChange}
+                          name="password"
+                          type="password"
+                          className="form-control"
+                          autoComplete="off"
+                          data-cy="password-input"
+                        />
+                        <span className="input-group-text"></span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="form-footer">
-                    <p data-cy="terms-and-condition-info">
-                      By clicking the button below, you agree to our{' '}
-                      <a href="https://tooljet.io/terms">Terms and Conditions</a>.
-                    </p>
-                    <button
-                      className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}
-                      onClick={(e) => this.acceptInvite(e, true)}
-                      disabled={isLoading}
-                      data-cy="finish-setup-button"
-                    >
-                      Finish account setup and accept invite
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+                    <div className="mb-3">
+                      <label className="form-label" data-cy="confirm-password-label">
+                        Confirm Password
+                      </label>
+                      <div className="input-group input-group-flat">
+                        <input
+                          onChange={this.handleChange}
+                          name="password_confirmation"
+                          type="password"
+                          className="form-control"
+                          autoComplete="off"
+                          data-cy="confirm-password-input"
+                        />
+                        <span className="input-group-text"></span>
+                      </div>
+                    </div>
+                    <div className="form-footer">
+                      <p data-cy="terms-and-condition-info">
+                        By clicking the button below, you agree to our{' '}
+                        <a href="https://tooljet.io/terms">Terms and Conditions</a>.
+                      </p>
+                      <button
+                        className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}
+                        onClick={(e) => this.acceptInvite(e, true)}
+                        disabled={isLoading}
+                        data-cy="finish-setup-button"
+                      >
+                        Finish account setup and accept invite
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </form>
         </div>
       </div>

@@ -1,16 +1,18 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/entities/user.entity';
 import { OrganizationsService } from '@services/organizations.service';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { UsersService } from '@services/users.service';
-import { GoogleOAuthService } from './google_oauth.service';
 import { decamelizeKeys } from 'humps';
-import { GitOAuthService } from './git_oauth.service';
-import UserResponse from './models/user_response';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
+import { User } from 'src/entities/user.entity';
+import { DeepPartial } from 'typeorm';
+import { GitOAuthService } from './git_oauth.service';
+import { GoogleOAuthService } from './google_oauth.service';
+import UserResponse from './models/user_response';
 
 @Injectable()
 export class OauthService {
@@ -20,7 +22,8 @@ export class OauthService {
     private readonly jwtService: JwtService,
     private readonly organizationUsersService: OrganizationUsersService,
     private readonly googleOAuthService: GoogleOAuthService,
-    private readonly gitOAuthService: GitOAuthService
+    private readonly gitOAuthService: GitOAuthService,
+    private configService: ConfigService
   ) {}
 
   #isValidDomain(email: string, restrictedDomain: string): boolean {
@@ -47,7 +50,10 @@ export class OauthService {
     return true;
   }
 
-  async #findOrCreateUser({ firstName, lastName, email }: UserResponse, organization: Organization): Promise<User> {
+  async #findOrCreateUser(
+    { firstName, lastName, email }: UserResponse,
+    organization: DeepPartial<Organization>
+  ): Promise<User> {
     const existingUser = await this.usersService.findByEmail(email, organization.id, ['active', 'invited']);
     const organizationUser = existingUser?.organizationUsers?.[0];
 
@@ -59,12 +65,11 @@ export class OauthService {
       );
 
       if (newUserCreated) {
-        const organizationUser = await this.organizationUsersService.create(user, organization);
-        await this.organizationUsersService.activate(organizationUser);
+        await this.organizationUsersService.create(user, organization);
       }
       return user;
     } else {
-      if (organizationUser.status !== 'active') await this.organizationUsersService.activate(organizationUser);
+      if (organizationUser.status !== 'active') await this.organizationUsersService.activate(organizationUser.id);
       return existingUser;
     }
   }
@@ -79,12 +84,21 @@ export class OauthService {
     if (!organizationUser) {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
-    if (organizationUser.status !== 'active') await this.organizationUsersService.activate(organizationUser);
+    if (organizationUser.status !== 'active') await this.organizationUsersService.activate(organizationUser.id);
     return user;
   }
 
-  async #generateLoginResultPayload(user: User, organization: Organization): Promise<any> {
-    const JWTPayload: JWTPayload = { username: user.id, sub: user.email, organizationId: organization.id };
+  async #generateLoginResultPayload(
+    user: User,
+    organization: DeepPartial<Organization>,
+    isInstanceSSO: boolean
+  ): Promise<any> {
+    const JWTPayload: JWTPayload = {
+      username: user.id,
+      sub: user.email,
+      organizationId: organization.id,
+      isSSOLogin: isInstanceSSO,
+    };
     user.organizationId = organization.id;
 
     return decamelizeKeys({
@@ -101,15 +115,64 @@ export class OauthService {
     });
   }
 
-  async signIn(ssoResponse: SSOResponse, configId: string): Promise<any> {
-    const ssoConfigs: SSOConfigs = await this.organizationService.getConfigs(configId);
+  #getSSOConfigs(ssoType: 'google' | 'git'): Partial<SSOConfigs> {
+    switch (ssoType) {
+      case 'google':
+        return {
+          enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
+          configs: { clientId: this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID') },
+        };
+      case 'git':
+        return {
+          enabled: !!this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+          configs: {
+            clientId: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+            clientSecret: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET'),
+          },
+        };
+      default:
+        return;
+    }
+  }
 
-    if (!(ssoConfigs && ssoConfigs?.organization)) {
+  #getInstanceSSOConfigs(ssoType: 'google' | 'git'): DeepPartial<SSOConfigs> {
+    return {
+      organization: {
+        enableSignUp: this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
+        domain: this.configService.get<string>('SSO_ACCEPTED_DOMAINS'),
+      },
+      sso: ssoType,
+      ...this.#getSSOConfigs(ssoType),
+    };
+  }
+
+  async signIn(ssoResponse: SSOResponse, configId?: string, ssoType?: 'google' | 'git'): Promise<any> {
+    const { organizationId } = ssoResponse;
+    let ssoConfigs: DeepPartial<SSOConfigs>;
+    let organization: DeepPartial<Organization>;
+    const isSingleOrganization = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
+
+    if (configId) {
+      // SSO under an organization
+      ssoConfigs = await this.organizationService.getConfigs(configId);
+      organization = ssoConfigs?.organization;
+    } else if (!isSingleOrganization && ssoType && organizationId) {
+      // Instance SSO login from organization login page
+      organization = await this.organizationService.fetchOrganizationDetails(organizationId, [true], false, true);
+      ssoConfigs = organization?.ssoConfigs?.find((conf) => conf.sso === ssoType);
+    } else if (!isSingleOrganization && ssoType) {
+      // Instance SSO login from common login page
+      ssoConfigs = this.#getInstanceSSOConfigs(ssoType);
+      organization = ssoConfigs?.organization;
+    } else {
       throw new UnauthorizedException();
     }
-    const organization = ssoConfigs.organization;
 
-    const { enableSignUp, domain } = ssoConfigs.organization;
+    if (!organization || !ssoConfigs) {
+      // Should obtain organization configs
+      throw new UnauthorizedException();
+    }
+    const { enableSignUp, domain } = organization;
     const { sso, configs } = ssoConfigs;
     const { token } = ssoResponse;
 
@@ -134,29 +197,92 @@ export class OauthService {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
     }
 
-    // If firstName not found
     if (!userResponse.firstName) {
+      // If firstName not found
       userResponse.firstName = userResponse.email?.split('@')?.[0];
     }
-    const user: User = await (!enableSignUp
-      ? this.#findAndActivateUser(userResponse.email, organization.id)
-      : this.#findOrCreateUser(userResponse, organization));
 
-    if (!user) {
-      throw new UnauthorizedException(`Email id ${userResponse.email} is not registered`);
+    let userDetails: User;
+    let organizationDetails: DeepPartial<Organization>;
+    const isInstanceSSOLogin = !!(!configId && ssoType);
+
+    if (isInstanceSSOLogin && !organizationId) {
+      // Login from main login page
+      userDetails = await this.usersService.findByEmail(userResponse.email);
+
+      if (!userDetails && enableSignUp) {
+        // Create new user
+        let defaultOrganization: DeepPartial<Organization> = organization;
+
+        // Not logging in to specific organization, creating new
+        defaultOrganization = await this.organizationService.create('Untitled workspace');
+
+        const groups = ['all_users', 'admin'];
+        userDetails = await this.usersService.create(
+          {
+            firstName: userResponse.firstName,
+            lastName: userResponse.lastName,
+            email: userResponse.email,
+          },
+          defaultOrganization.id,
+          groups
+        );
+
+        await this.organizationUsersService.create(userDetails, defaultOrganization);
+        organizationDetails = defaultOrganization;
+      } else if (!userDetails) {
+        throw new UnauthorizedException('User does not exist in the workspace');
+      } else if (userDetails.invitationToken) {
+        // User account setup not done, activating default organization
+        await this.usersService.updateUser(userDetails.id, { invitationToken: null });
+        await this.organizationUsersService.activate(userDetails.defaultOrganizationId);
+      }
+
+      if (!organizationDetails) {
+        // Finding organization to be loaded
+        const organizationList: Organization[] = await this.organizationService.findOrganizationWithLoginSupport(
+          userDetails,
+          'sso'
+        );
+
+        const defaultOrgDetails: Organization = organizationList?.find(
+          (og) => og.id === userDetails.defaultOrganizationId
+        );
+        if (defaultOrgDetails) {
+          // default organization SSO login enabled
+          organizationDetails = defaultOrgDetails;
+        } else if (organizationList?.length > 0) {
+          // default organization SSO login not enabled, picking first one from SSO enabled list
+          organizationDetails = organizationList[0];
+        } else {
+          // no SSO login enabled organization available for user - creating new one
+          organizationDetails = await this.organizationService.create('Untitled workspace', userDetails);
+        }
+      }
+    } else {
+      userDetails = await (!enableSignUp
+        ? this.#findAndActivateUser(userResponse.email, organization.id)
+        : this.#findOrCreateUser(userResponse, organization));
+
+      if (!userDetails) {
+        throw new UnauthorizedException(`Email id ${userResponse.email} is not registered`);
+      }
+
+      organizationDetails = organization;
     }
-
-    return await this.#generateLoginResultPayload(user, organization);
+    return await this.#generateLoginResultPayload(userDetails, organizationDetails, isInstanceSSOLogin);
   }
 }
 
 interface SSOResponse {
   token: string;
   state?: string;
+  organizationId?: string;
 }
 
 interface JWTPayload {
   username: string;
   sub: string;
   organizationId: string;
+  isSSOLogin: boolean;
 }

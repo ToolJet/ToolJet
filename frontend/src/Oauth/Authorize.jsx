@@ -9,8 +9,10 @@ export function Authorize() {
   const [success, setSuccess] = useState(false);
   const router = useRouter();
 
+  const organizationId = authenticationService.getLoginOrganizationId();
+
   useEffect(() => {
-    authenticationService.clearUser();
+    !organizationId && authenticationService.clearUser();
     const errorMessage = router.query.error_description || router.query.error;
 
     if (errorMessage) {
@@ -22,7 +24,7 @@ export function Authorize() {
     }
 
     const configs = Configs[router.query.origin];
-    let authParams = {};
+    const authParams = {};
 
     if (configs.responseType === 'hash') {
       if (!window.location.hash) {
@@ -39,9 +41,9 @@ export function Authorize() {
     }
 
     authenticationService
-      .signInViaOAuth(router.query.configId, authParams)
+      .signInViaOAuth(router.query.configId, router.query.origin, authParams)
       .then(() => setSuccess(true))
-      .catch((err) => setError(`${configs.name} login failed - ${err?.error ? err?.error : ''}`));
+      .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));
     // Disabled for useEffect not being called for updation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -88,7 +90,7 @@ export function Authorize() {
       {(success || error) && (
         <Redirect
           to={{
-            pathname: '/login',
+            pathname: `/login${error && organizationId ? `/${organizationId}` : ''}`,
             state: { errorMessage: error && error },
           }}
         />

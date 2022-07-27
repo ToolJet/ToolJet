@@ -66,7 +66,6 @@ export const DraggableBox = function DraggableBox({
   _top,
   parent,
   allComponents,
-  extraProps,
   component,
   index,
   inCanvas,
@@ -95,6 +94,7 @@ export const DraggableBox = function DraggableBox({
   parentId,
   hoveredComponent,
   onComponentHover,
+  sideBarDebugger,
   isMultipleComponentsSelected,
   dataQueries,
 }) {
@@ -197,11 +197,11 @@ export const DraggableBox = function DraggableBox({
           })}
           onMouseEnter={(e) => {
             if (e.currentTarget.className.includes(`widget-${id}`)) {
-              onComponentHover(id);
+              onComponentHover?.(id);
               e.stopPropagation();
             }
           }}
-          onMouseLeave={() => onComponentHover(false)}
+          onMouseLeave={() => onComponentHover?.(false)}
           style={getStyles(isDragging, isSelectedComponent)}
         >
           <Rnd
@@ -282,7 +282,7 @@ export const DraggableBox = function DraggableBox({
                   customResolvables={customResolvables}
                   parentId={parentId}
                   allComponents={allComponents}
-                  extraProps={extraProps}
+                  sideBarDebugger={sideBarDebugger}
                   dataQueries={dataQueries}
                 />
               </ErrorBoundary>
@@ -305,6 +305,8 @@ export const DraggableBox = function DraggableBox({
               currentState={currentState}
               darkMode={darkMode}
               removeComponent={removeComponent}
+              sideBarDebugger={sideBarDebugger}
+              customResolvables={customResolvables}
             />
           </ErrorBoundary>
         </div>
