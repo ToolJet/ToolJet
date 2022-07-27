@@ -871,6 +871,174 @@ describe('oauth controller', () => {
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
         });
+        it('Common login - should return login info when the user exist and hostname exist in configs', async () => {
+          jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+            switch (key) {
+              case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
+                return 'google-client-id';
+              case 'SSO_GIT_OAUTH2_CLIENT_ID':
+                return 'git-client-id';
+              case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
+                return 'git-secret';
+              case 'SSO_GIT_OAUTH2_HOST':
+                return 'https://github.host.com';
+              default:
+                return process.env[key];
+            }
+          });
+
+          const { orgUser } = await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'userExist',
+            email: 'anotherUser1@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+          });
+
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO userExist',
+                  email: 'anotherUser1@tooljet.io',
+                };
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+
+          const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
+
+          expect(response.statusCode).toBe(201);
+
+          expect(gitAuthResponse).toBeCalledWith('https://github.host.com/login/oauth/access_token', expect.anything());
+          expect(gitGetUserResponse).toBeCalledWith('https://github.host.com/api/v3/user', expect.anything());
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+
+          const {
+            email,
+            first_name,
+            last_name,
+            admin,
+            group_permissions,
+            app_group_permissions,
+            organization_id,
+            organization,
+          } = response.body;
+
+          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(first_name).toEqual('SSO');
+          expect(last_name).toEqual('userExist');
+          expect(admin).toBeFalsy();
+          expect(organization_id).toBe(current_organization.id);
+          expect(organization).toBe(current_organization.name);
+          expect(group_permissions).toHaveLength(1);
+          expect(group_permissions[0].group).toEqual('all_users');
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
+          expect(app_group_permissions).toHaveLength(0);
+          await orgUser.reload();
+          expect(orgUser.status).toEqual('active');
+        });
+        it('Workspace login - should return login info when the user exist and hostname exist in configs', async () => {
+          jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+            switch (key) {
+              case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
+                return 'google-client-id';
+              case 'SSO_GIT_OAUTH2_CLIENT_ID':
+                return 'git-client-id';
+              case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
+                return 'git-secret';
+              case 'SSO_GIT_OAUTH2_HOST':
+                return 'https://github.host.com';
+              default:
+                return process.env[key];
+            }
+          });
+
+          const { orgUser } = await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'userExist',
+            email: 'anotherUser1@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+          });
+
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO userExist',
+                  email: 'anotherUser1@tooljet.io',
+                };
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+
+          const response = await request(app.getHttpServer())
+            .post('/api/oauth/sign-in/common/git')
+            .send({ token, organizationId: current_organization.id });
+
+          expect(response.statusCode).toBe(201);
+
+          expect(gitAuthResponse).toBeCalledWith('https://github.host.com/login/oauth/access_token', expect.anything());
+          expect(gitGetUserResponse).toBeCalledWith('https://github.host.com/api/v3/user', expect.anything());
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+
+          const {
+            email,
+            first_name,
+            last_name,
+            admin,
+            group_permissions,
+            app_group_permissions,
+            organization_id,
+            organization,
+          } = response.body;
+
+          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(first_name).toEqual('SSO');
+          expect(last_name).toEqual('userExist');
+          expect(admin).toBeFalsy();
+          expect(organization_id).toBe(current_organization.id);
+          expect(organization).toBe(current_organization.name);
+          expect(group_permissions).toHaveLength(1);
+          expect(group_permissions[0].group).toEqual('all_users');
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
+          expect(app_group_permissions).toHaveLength(0);
+          await orgUser.reload();
+          expect(orgUser.status).toEqual('active');
+        });
       });
     });
 
