@@ -375,14 +375,7 @@ export const SubContainer = ({
     const componentName = appDefinition.components[component.id]['component'].name;
     removeComponent(component);
     if (parentComponent.component === 'Listview') {
-      // const currentData = currentState.components[parentComponent.name]?.data || [];
-
       onChildRemoved(componentName);
-      // const newData = currentData.map((widget) => {
-      //   delete widget[componentName];
-      //   return widget;
-      // });
-      // onComponentOptionChanged(parentComponent, 'data', newData);
     }
   }
 

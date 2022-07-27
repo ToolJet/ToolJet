@@ -13,7 +13,6 @@ export const Listview = function Listview({
   styles,
   fireEvent,
   setExposedVariable,
-  exposedVariables,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -47,7 +46,6 @@ export const Listview = function Listview({
   }, []);
 
   useEffect(() => {
-    // console.log('onChildRemoved', childrenData);
     setExposedVariable('data', childrenData);
 
     if (selectedRowIndex != undefined) {
