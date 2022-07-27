@@ -1226,7 +1226,7 @@ class Editor extends React.Component {
                 data-cy="autosave-indicator"
               >
                 {this.state.isSaving
-                  ? 'Saving . . .'
+                  ? 'Saving...'
                   : this.state.saveError
                   ? 'Could not save changes'
                   : 'All changes are saved'}
