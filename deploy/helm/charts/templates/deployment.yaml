@@ -13,8 +13,8 @@ spec:
     spec:
       containers:
         - name: tooljet
-          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
-          imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+          image: "{{ .Values.apps.tooljet.deployment.image.repository }}:{{ .Chart.AppVersion }}"
+          imagePullPolicy: "{{ .Values.apps.tooljet.deployment.image.pullPolicy }}"
           args: ["npm", "run", "start:prod"]
           ports:
             - containerPort: 3000
@@ -38,30 +38,15 @@ spec:
               value: "{{ .Values.apps.tooljet.service.host }}"
             - name: PG_HOST
               value: "{{ .Release.Name }}-postgresql"
-            - name: PG_USER
+            {{- if .Values.postgresql.existingSecret }}
+            - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Values.apps.tooljet.secret.name }}"
-                  key: pg_user
-            - name: PG_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.apps.tooljet.secret.name }}"
-                  key: pg_password
-            - name: PG_DB
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.apps.tooljet.secret.name }}"
-                  key: pg_db
-            - name: LOCKBOX_MASTER_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.apps.tooljet.secret.name }}"
-                  key: lockbox_key
-            - name: SECRET_KEY_BASE
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.apps.tooljet.secret.name }}"
-                  key: secret_key_base
+                  name: {{ .Values.postgresql.existingSecret }}
+                  key: {{ default "password" .Values.postgresql.existingSecretKey }}
+            {{- end }}
             - name: DEPLOYMENT_PLATFORM
               value: "k8s:helm"
+          envFrom:
+            - secretRef:
+              name: {{ .Values.apps.tooljet.secret.name }}
