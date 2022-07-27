@@ -143,7 +143,6 @@ class Editor extends React.Component {
       isSourceSelected: false,
       isSaving: false,
       isUnsavedQueriesAvailable: false,
-      versionSaving: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -572,6 +571,7 @@ class Editor extends React.Component {
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
       this.props.ymap?.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
     }
+
     produce(
       this.state.appDefinition,
       (draft) => {
@@ -1049,13 +1049,11 @@ class Editor extends React.Component {
     if (this.isVersionReleased()) {
       this.setState({ isSaving: false, showCreateVersionModalPrompt: true });
     } else if (!isEmpty(this.state.editingVersion)) {
-      this.setState({ versionSaving: true });
       appVersionService
         .save(this.state.appId, this.state.editingVersion.id, { definition: this.state.appDefinition })
         .then(() => {
           this.setState(
             {
-              versionSaving: false,
               saveError: false,
               editingVersion: {
                 ...this.state.editingVersion,
@@ -1221,21 +1219,17 @@ class Editor extends React.Component {
               )}
               <span
                 className={cx('autosave-indicator', {
-                  'autosave-indicator-saving': this.state.versionSaving,
+                  'autosave-indicator-saving': this.state.isSaving,
                   'text-danger': this.state.saveError,
                   'd-none': this.isVersionReleased(),
                 })}
                 data-cy="autosave-indicator"
               >
-                {this.state.versionSaving ? (
-                  <Spinner size="small" />
-                ) : this.state.isSaving ? (
-                  'Unsaved changes'
-                ) : this.state.saveError ? (
-                  'Could not save changes'
-                ) : (
-                  'All changes are saved'
-                )}
+                {this.state.isSaving
+                  ? 'Saving . . .'
+                  : this.state.saveError
+                  ? 'Could not save changes'
+                  : 'All changes are saved'}
               </span>
               {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
               {editingVersion && (
