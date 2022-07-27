@@ -259,9 +259,6 @@ export const DraggableBox = function DraggableBox({
                   position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
                   widgetTop={currentLayoutOptions.top}
                   widgetHeight={currentLayoutOptions.height}
-                  setSelectedComponent={(id, component, multiSelect) =>
-                    setSelectedComponent(id, component, multiSelect)
-                  }
                   isMultipleComponentsSelected={isMultipleComponentsSelected}
                 />
               )}

@@ -1144,6 +1144,50 @@ class Editor extends React.Component {
     this.dataSourceModalRef.current.dataSourceModalToggleStateHandler();
   };
 
+  onAreaSelectionStart = (e) => {
+    const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 1;
+    this.setState((prevState) => {
+      return {
+        selectionInProgress: true,
+        selectedComponents: [...(isMultiSelect ? prevState.selectedComponents : [])],
+      };
+    });
+  };
+
+  onAreaSelection = (e) => {
+    if (this.state.isDraggingOrResizing) {
+      return;
+    }
+    if (e.added.length > 0) {
+      this.setState({ isDragSelection: true });
+    }
+    e.added.forEach((el) => {
+      el.classList.add('resizer-select');
+    });
+    if (this.state.selectionInProgress && this.state.isDragSelection) {
+      e.removed.forEach((el) => {
+        el.classList.remove('resizer-select');
+      });
+    }
+  };
+
+  onAreaSelectionEnd = (e) => {
+    this.setState({ isDragSelection: false, selectionInProgress: false });
+    e.selected.forEach((el, index) => {
+      const id = el.getAttribute('widgetid');
+      const component = this.state.appDefinition.components[id].component;
+      const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
+      this.setSelectedComponent(id, component, isMultiSelect);
+    });
+  };
+
+  onAreaSelectionDrag = (e) => {
+    if (this.state.isDraggingOrResizing) {
+      this.setState({ isDragSelection: false, selectionInProgress: false });
+      e.stop();
+    }
+  };
+
   render() {
     const {
       currentSidebarTab,
@@ -1336,44 +1380,10 @@ class Editor extends React.Component {
               toggleContinueSelect={['shift']}
               ref={this.selectionRef}
               scrollOptions={this.state.scrollOptions}
-              onSelectStart={(e) => {
-                const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 1;
-                this.setState((prevState) => {
-                  return {
-                    selectionInProgress: true,
-                    selectedComponents: [...(isMultiSelect ? prevState.selectedComponents : [])],
-                  };
-                });
-              }}
-              onSelectEnd={(e) => {
-                this.setState({ isDragSelection: false, selectionInProgress: false });
-                e.selected.forEach((el, index) => {
-                  const id = el.getAttribute('widgetid');
-                  const component = this.state.appDefinition.components[id].component;
-                  const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
-                  this.setSelectedComponent(id, component, isMultiSelect);
-                });
-              }}
-              onSelect={(e) => {
-                if (isDraggingOrResizing) {
-                  return;
-                }
-                if (e.added.length > 0) {
-                  this.setState({ isDragSelection: true });
-                }
-                e.added.forEach((el) => {
-                  el.classList.add('resizer-active');
-                });
-                e.removed.forEach((el) => {
-                  el.classList.remove('resizer-active');
-                });
-              }}
-              onDrag={(e) => {
-                if (isDraggingOrResizing) {
-                  this.setState({ isDragSelection: false, selectionInProgress: false });
-                  e.stop();
-                }
-              }}
+              onSelectStart={this.onAreaSelectionStart}
+              onSelectEnd={this.onAreaSelectionEnd}
+              onSelect={this.onAreaSelection}
+              onDrag={this.onAreaSelectionDrag}
               onScroll={(e) => {
                 this.canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
               }}
