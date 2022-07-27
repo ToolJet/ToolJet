@@ -1,7 +1,14 @@
 import React from 'react';
 import { MentionsInput, Mention } from 'react-mentions';
+import { uniqBy } from 'lodash';
 
-const Mentions = ({ users, value, setValue, placeholder, darkMode }) => {
+const Mentions = ({ users, value = '', setValue, setMentionedUsers, placeholder, darkMode }) => {
+  const [mentionsInputValue, setMentionsInputValue] = React.useState(value);
+
+  React.useEffect(() => {
+    if (value === '') setMentionsInputValue('');
+  }, [value]);
+
   return (
     <MentionsInput
       style={{
@@ -45,19 +52,20 @@ const Mentions = ({ users, value, setValue, placeholder, darkMode }) => {
           },
         },
       }}
-      value={value}
-      onChange={(e, newValue) => setValue(newValue)}
+      value={mentionsInputValue}
+      onChange={(e, newValue, newPlainTextValue, mentions) => {
+        const unique = uniqBy(mentions, 'id');
+        setMentionedUsers(unique.map((item) => item.id));
+        setMentionsInputValue(newValue);
+        setValue(newPlainTextValue);
+      }}
       placeholder={placeholder}
     >
       <Mention
         trigger="@"
-        regex={/@(\S+)/}
-        displayTransform={(display) => `@${display}`}
-        markup="(@__display__)"
+        displayTransform={(_, display) => `(@${display})`}
+        markup="(@__display__){__id__}"
         data={users}
-        // style={{
-        //   backgroundColor: '#218DE3',
-        // }}
         appendSpaceOnAdd
         renderSuggestion={(suggestion) => (
           <div

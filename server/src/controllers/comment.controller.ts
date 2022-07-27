@@ -34,7 +34,7 @@ export class CommentController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const comment = await this.commentService.createComment(createCommentDto, user.id, user.organizationId);
+    const comment = await this.commentService.createComment(createCommentDto, user);
     return comment;
   }
 
