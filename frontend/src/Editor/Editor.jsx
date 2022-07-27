@@ -424,6 +424,9 @@ class Editor extends React.Component {
             this.runQueries(data.data_queries);
           });
           this.setWindowTitle(data.name);
+          this.setState({
+            showComments: !!queryString.parse(this.props.location.search).threadId,
+          });
         }
       );
 
@@ -1037,6 +1040,7 @@ class Editor extends React.Component {
               currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
             })
           }
+          data-cy="change-layout-button"
         >
           <DesktopSelectedIcon />
         </span>
@@ -1049,6 +1053,7 @@ class Editor extends React.Component {
             currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
           })
         }
+        data-cy="change-layout-button"
       >
         <MobileSelectedIcon />
       </span>

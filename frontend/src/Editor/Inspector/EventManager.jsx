@@ -244,6 +244,7 @@ export const EventManager = ({
                       initialValue={event.message}
                       onChange={(value) => handlerChanged(index, 'message', value)}
                       usePortalEditor={false}
+                      paramLabel="alert-message"
                     />
                   </div>
                 </div>

@@ -194,6 +194,7 @@ export const DropDown = function DropDown({
             isLoading={properties.loadingState}
             onInputChange={onSearchTextChange}
             onFocus={(event) => onComponentClick(event, component, id)}
+            menuPortalTarget={document.body}
           />
         </div>
       </div>
