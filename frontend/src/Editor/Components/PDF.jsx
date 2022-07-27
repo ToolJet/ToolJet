@@ -1,8 +1,10 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
+import { ToolTip } from '@/_components/ToolTip';
 
-export const PDF = React.memo(({ styles, properties, width, height }) => {
+export const PDF = React.memo(({ styles, properties, width, height, component }) => {
+  const pdfName = component.name;
   const { visibility } = styles;
   const { url, scale, pageControls } = properties;
   const [numPages, setNumPages] = useState(null);
@@ -47,6 +49,23 @@ export const PDF = React.memo(({ styles, properties, width, height }) => {
     [pageNumber]
   );
 
+  // styles for download icon
+  const download_icon_outer_wrapper_styles = {
+    left: '87%',
+    bottom: '1rem',
+    width: '10%',
+  };
+  const download_icon_inner_wrapper = {
+    padding: '0.5rem',
+    background: '#ebedeb',
+    cursor: 'pointer',
+    borderRadius: '50%',
+  };
+  const download_icon_img_style = {
+    width: '25px',
+    height: '25px',
+  };
+
   const renderPDF = () => (
     <Document file={url} onLoadSuccess={onDocumentLoadSuccess} className="pdf-document">
       {Array.from(new Array(numPages), (el, index) => (
@@ -78,8 +97,39 @@ export const PDF = React.memo(({ styles, properties, width, height }) => {
           </div>
         </>
       )}
+      <div
+        className="download_icon_outer_wrapper position-fixed fixed-bottom d-flex  justify-content-end"
+        style={download_icon_outer_wrapper_styles}
+      >
+        <ToolTip
+          message="Download the pdf from here. To name the pdf while downloading, change the label of the widget"
+          placement="top"
+        >
+          <span className="download_icon_outer_wrapper " style={download_icon_inner_wrapper}>
+            <img
+              src="../../../assets/images/icons/download.svg"
+              alt="download logo"
+              style={download_icon_img_style}
+              onClick={() => download_file(url, pdfName)}
+            />
+          </span>
+        </ToolTip>
+      </div>
     </Document>
   );
+
+  async function download_file(url, pdfName) {
+    const pdf = await fetch(url);
+    const pdfBlog = await pdf.blob();
+    const pdfURL = URL.createObjectURL(pdfBlog);
+    const anchor = document.createElement('a');
+    anchor.href = pdfURL;
+    anchor.download = pdfName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(pdfURL);
+  }
 
   return (
     <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height }}>
