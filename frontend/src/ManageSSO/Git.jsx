@@ -106,7 +106,7 @@ export function Git({ settings, updateData }) {
               />
             </div>
             <div className="help-text mt-2">
-              <div data-cy="general-settings-help-text">Required if self hosted</div>
+              <div data-cy="general-settings-help-text">Required if GitHub is self hosted</div>
             </div>
           </div>
           <div className="form-group mb-3">
