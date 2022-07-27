@@ -824,6 +824,7 @@ export function setTablePageIndex(_ref, tableId, index) {
 }
 
 export function renderTooltip({ props, text }) {
+  if (text === '') return <></>;
   return (
     <Tooltip id="button-tooltip" {...props}>
       {text}
