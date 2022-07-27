@@ -1,6 +1,8 @@
 name: Release Charts
 
 on:
+  push:
+    branches: [helm-charts]
   release:
     types: [published]
 
@@ -21,6 +23,6 @@ jobs:
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.1.0
         with:
-          charts_dir: deploy/helm
+          charts_dir: deploy/helm/
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
