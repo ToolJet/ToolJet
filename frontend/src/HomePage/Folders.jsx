@@ -209,7 +209,13 @@ export const Folders = function Folders({
                   data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}
                 >
                   <span className="me-2">
-                    <img src="/assets/images/icons/folder.svg" alt="" width="14" height="14" className="folder-ico" />
+                    <img
+                      src="/assets/images/icons/folder.svg"
+                      alt=""
+                      width="14"
+                      height="14"
+                      className={`folder-ico ${darkMode && 'dark'}`}
+                    />
                   </span>
                   {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
                 </div>
