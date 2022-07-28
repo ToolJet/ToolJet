@@ -50,18 +50,18 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
   );
 
   // styles for download icon
-  const download_icon_outer_wrapper_styles = {
+  const downloadIconOuterWrapperStyles = {
     left: '87%',
     bottom: '1.2rem',
     width: '10%',
   };
-  const download_icon_inner_wrapper = {
+  const downloadIconInnerWrapper = {
     padding: '0.5rem',
     background: '#ebedeb',
     cursor: 'pointer',
     borderRadius: '50%',
   };
-  const download_icon_img_style = {
+  const downloadIconImgStyle = {
     width: '15px',
     height: '15px',
   };
@@ -100,7 +100,7 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
       {showDownloadOption && (
         <div
           className="download_icon_outer_wrapper position-fixed fixed-bottom d-flex  justify-content-end"
-          style={download_icon_outer_wrapper_styles}
+          style={downloadIconOuterWrapperStyles}
         >
           <ToolTip
             message="Download the pdf from here. To name the pdf while downloading, change the label of the widget"
@@ -108,14 +108,10 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
           >
             <span
               className="download_icon_outer_wrapper "
-              style={download_icon_inner_wrapper}
+              style={downloadIconInnerWrapper}
               onClick={() => download_file(url, pdfName)}
             >
-              <img
-                src="../../../assets/images/icons/download.svg"
-                alt="download logo"
-                style={download_icon_img_style}
-              />
+              <img src="../../../assets/images/icons/download.svg" alt="download logo" style={downloadIconImgStyle} />
             </span>
           </ToolTip>
         </div>
