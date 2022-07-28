@@ -6,7 +6,7 @@ import { ToolTip } from '@/_components/ToolTip';
 export const PDF = React.memo(({ styles, properties, width, height, component }) => {
   const pdfName = component.name;
   const { visibility } = styles;
-  const { url, scale, pageControls } = properties;
+  const { url, scale, pageControls, showDownloadOption } = properties;
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(null);
   const pageRef = useRef([]);
@@ -52,7 +52,7 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
   // styles for download icon
   const download_icon_outer_wrapper_styles = {
     left: '87%',
-    bottom: '1rem',
+    bottom: '1.2rem',
     width: '10%',
   };
   const download_icon_inner_wrapper = {
@@ -62,8 +62,8 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
     borderRadius: '50%',
   };
   const download_icon_img_style = {
-    width: '25px',
-    height: '25px',
+    width: '15px',
+    height: '15px',
   };
 
   const renderPDF = () => (
@@ -97,24 +97,29 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
           </div>
         </>
       )}
-      <div
-        className="download_icon_outer_wrapper position-fixed fixed-bottom d-flex  justify-content-end"
-        style={download_icon_outer_wrapper_styles}
-      >
-        <ToolTip
-          message="Download the pdf from here. To name the pdf while downloading, change the label of the widget"
-          placement="top"
+      {showDownloadOption && (
+        <div
+          className="download_icon_outer_wrapper position-fixed fixed-bottom d-flex  justify-content-end"
+          style={download_icon_outer_wrapper_styles}
         >
-          <span className="download_icon_outer_wrapper " style={download_icon_inner_wrapper}>
-            <img
-              src="../../../assets/images/icons/download.svg"
-              alt="download logo"
-              style={download_icon_img_style}
+          <ToolTip
+            message="Download the pdf from here. To name the pdf while downloading, change the label of the widget"
+            placement="top"
+          >
+            <span
+              className="download_icon_outer_wrapper "
+              style={download_icon_inner_wrapper}
               onClick={() => download_file(url, pdfName)}
-            />
-          </span>
-        </ToolTip>
-      </div>
+            >
+              <img
+                src="../../../assets/images/icons/download.svg"
+                alt="download logo"
+                style={download_icon_img_style}
+              />
+            </span>
+          </ToolTip>
+        </div>
+      )}
     </Document>
   );
 

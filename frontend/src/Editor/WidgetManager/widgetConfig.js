@@ -4152,6 +4152,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       url: { type: 'code', displayName: 'File URL', validation: { schema: { type: 'string' } } },
       scale: { type: 'toggle', displayName: 'Scale page to width', validation: { schema: { type: 'boolean' } } },
       pageControls: { type: 'toggle', displayName: 'Show page controls', validation: { schema: { type: 'boolean' } } },
+      showDownloadOption: {
+        type: 'toggle',
+        displayName: 'Show the Download',
+        validation: { schema: { type: 'boolean' } },
+      },
     },
     defaultSize: {
       width: 20,
@@ -4184,6 +4189,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           value: '{{true}}',
         },
         pageControls: {
+          value: `{{true}}`,
+        },
+        showDownloadOption: {
           value: `{{true}}`,
         },
       },
