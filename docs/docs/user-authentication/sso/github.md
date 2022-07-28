@@ -69,3 +69,5 @@ If you have enabled Multi-Workspace you can configure GitHub SSO as mentioned ab
 | SSO_GIT_OAUTH2_CLIENT_ID              | GitHub OAuth client id |
 | SSO_GIT_OAUTH2_CLIENT_SECRET          | GitHub OAuth client secret |
 | SSO_GIT_OAUTH2_HOST                   | GitHub OAuth host name if GitHub is self hosted |
+
+Redirect URL should be `<host>/sso/git`

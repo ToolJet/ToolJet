@@ -90,3 +90,5 @@ If you have enabled Multi-Workspace you can configure Google SSO as mentioned ab
 | variable                              | description                                                   |
 | ------------------------------------- | -----------------------------------------------------------   |
 | SSO_GOOGLE_OAUTH2_CLIENT_ID           | Google OAuth client id |
+
+Redirect URL should be `<host>/sso/google`
