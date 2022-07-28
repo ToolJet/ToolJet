@@ -254,7 +254,7 @@ export const FilePicker = ({
             }, 600);
           });
         })
-        .then(() => onEvent('onFileLoaded ', { component }));
+        .then(() => onEvent('onFileLoaded', { component }));
     }
 
     if (fileRejections.length > 0) {
