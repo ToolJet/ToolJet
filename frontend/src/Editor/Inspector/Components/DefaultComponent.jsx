@@ -53,23 +53,33 @@ export const baseComponentProperties = (
   validations,
   darkMode
 ) => {
+  // Add widget title to section key to filter that property section from specified widgets' settings
+  const accordionFilters = {
+    Properties: [],
+    Events: [],
+    Validation: [],
+    General: ['Modal'],
+    Layout: [],
+  };
   let items = [];
-  items.push({
-    title: 'Properties',
-    children: properties.map((property) =>
-      renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        property,
-        'properties',
-        currentState,
-        allComponents,
-        darkMode
-      )
-    ),
-  });
+  if (properties.length > 0) {
+    items.push({
+      title: 'Properties',
+      children: properties.map((property) =>
+        renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          property,
+          'properties',
+          currentState,
+          allComponents,
+          darkMode
+        )
+      ),
+    });
+  }
 
   if (events.length > 0) {
     items.push({
@@ -157,5 +167,7 @@ export const baseComponentProperties = (
     ),
   });
 
-  return items;
+  return items.filter(
+    (item) => !(item.title in accordionFilters && accordionFilters[item.title].includes(componentMeta.component))
+  );
 };

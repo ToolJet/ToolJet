@@ -323,10 +323,11 @@ export const JSONNode = ({ data, ...restProps }) => {
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
           })}
           onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
+          data-cy={`inspector-node-${currentNode.toLowerCase()}`}
         >
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {$NODEType}
-          {!toExpandNode && !expandable && !toRenderSelector ? $VALUE : null}
+          {!toExpandNode && !toRenderSelector ? $VALUE : null}
           <div className="action-icons-group">{showHiddenOptionsForNode && renderHiddenOptionsForNode()}</div>
         </div>
         {toRenderSelector && (toExpandNode && !expandable ? null : $VALUE)}
