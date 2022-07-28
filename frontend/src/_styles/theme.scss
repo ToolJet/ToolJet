@@ -4367,6 +4367,10 @@ input[type="text"] {
       filter: invert(29%) sepia(84%) saturate(4047%) hue-rotate(215deg) brightness(98%) contrast(111%);
     }
   }
+  
+  .folder-ico.dark {
+    filter: invert(1);
+  }
 
   .list-group-item {
     padding: 0.5rem 0.75rem;
