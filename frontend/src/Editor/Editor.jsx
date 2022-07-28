@@ -34,6 +34,7 @@ import {
   setStateAsync,
   computeComponentState,
   getSvgIcon,
+  debuggerActions,
   cloneComponents,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
@@ -411,6 +412,9 @@ class Editor extends React.Component {
             this.runQueries(data.data_queries);
           });
           this.setWindowTitle(data.name);
+          this.setState({
+            showComments: !!queryString.parse(this.props.location.search).threadId,
+          });
         }
       );
 
@@ -1024,6 +1028,7 @@ class Editor extends React.Component {
               currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
             })
           }
+          data-cy="change-layout-button"
         >
           <DesktopSelectedIcon />
         </span>
@@ -1036,6 +1041,7 @@ class Editor extends React.Component {
             currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
           })
         }
+        data-cy="change-layout-button"
       >
         <MobileSelectedIcon />
       </span>
@@ -1091,6 +1097,15 @@ class Editor extends React.Component {
     this.setState({
       hoveredComponent: id,
     });
+  };
+
+  sideBarDebugger = {
+    error: (data) => {
+      debuggerActions.error(this, data);
+    },
+    flush: () => {
+      debuggerActions.flush(this);
+    },
   };
 
   changeDarkMode = (newMode) => {
@@ -1287,6 +1302,7 @@ class Editor extends React.Component {
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
               currentState={currentState}
+              debuggerActions={this.sideBarDebugger}
               appDefinition={{
                 components: appDefinition.components,
                 queries: dataQueries,
@@ -1353,6 +1369,7 @@ class Editor extends React.Component {
                         onComponentClick={this.handleComponentClick}
                         onComponentHover={this.handleComponentHover}
                         hoveredComponent={hoveredComponent}
+                        sideBarDebugger={this.sideBarDebugger}
                         dataQueries={dataQueries}
                       />
                       <CustomDragLayer

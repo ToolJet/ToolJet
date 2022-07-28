@@ -377,7 +377,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
-  if (eventName === 'onRowClicked' && options?.component?.component === 'ListView') {
+  if (eventName === 'onRowClicked' && options?.component?.component === 'Listview') {
     executeActionsForEventId(_ref, 'onRowClicked', options.component, mode, customVariables);
   }
 
@@ -824,6 +824,7 @@ export function setTablePageIndex(_ref, tableId, index) {
 }
 
 export function renderTooltip({ props, text }) {
+  if (text === '') return <></>;
   return (
     <Tooltip id="button-tooltip" {...props}>
       {text}
@@ -873,6 +874,40 @@ export const getSvgIcon = (key, height = 50, width = 50) => {
   const Icon = allSvgs[key];
 
   return <Icon style={{ height, width }} />;
+};
+
+export const debuggerActions = {
+  error: (_self, errors) => {
+    _self.setState((prevState) => ({
+      ...prevState,
+      currentState: {
+        ...prevState.currentState,
+        errors: {
+          ...prevState.currentState.errors,
+          ...errors,
+        },
+      },
+    }));
+  },
+
+  flush: (_self) => {
+    _self.setState((prevState) => ({
+      ...prevState,
+      currentState: {
+        ...prevState.currentState,
+        errors: {},
+      },
+    }));
+  },
+};
+
+export const getComponentName = (currentState, id) => {
+  try {
+    const name = Object.entries(currentState?.components).filter(([_, component]) => component.id === id)[0][0];
+    return name;
+  } catch {
+    return '';
+  }
 };
 
 const updateNewComponents = (appDefinition, newComponents, updateAppDefinition) => {

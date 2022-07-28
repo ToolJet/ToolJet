@@ -27,6 +27,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     appVersionsId,
     globalSettingsChanged,
     globalSettings,
+    debuggerActions,
     currentState,
     appDefinition,
     setSelectedComponent,
@@ -46,7 +47,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     },
   }));
   return (
-    <div className="left-sidebar">
+    <div className="left-sidebar" data-cy="left-sidebar-inspector">
       <LeftSidebarInspector
         darkMode={darkMode}
         currentState={currentState}
@@ -65,7 +66,12 @@ export const LeftSidebar = forwardRef((props, ref) => {
         toggleDataSourceManagerModal={toggleDataSourceManagerModal}
         showDataSourceManagerModal={showDataSourceManagerModal}
       />
-      <LeftSidebarDebugger darkMode={darkMode} components={components} errors={errorLogs} />
+      <LeftSidebarDebugger
+        darkMode={darkMode}
+        components={components}
+        errors={errorLogs}
+        debuggerActions={debuggerActions}
+      />
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
       )}

@@ -94,6 +94,7 @@ export const DraggableBox = function DraggableBox({
   parentId,
   hoveredComponent,
   onComponentHover,
+  sideBarDebugger,
   isMultipleComponentsSelected,
   dataQueries,
 }) {
@@ -281,6 +282,7 @@ export const DraggableBox = function DraggableBox({
                   customResolvables={customResolvables}
                   parentId={parentId}
                   allComponents={allComponents}
+                  sideBarDebugger={sideBarDebugger}
                   dataQueries={dataQueries}
                 />
               </ErrorBoundary>
@@ -303,6 +305,7 @@ export const DraggableBox = function DraggableBox({
               currentState={currentState}
               darkMode={darkMode}
               removeComponent={removeComponent}
+              sideBarDebugger={sideBarDebugger}
               customResolvables={customResolvables}
             />
           </ErrorBoundary>
