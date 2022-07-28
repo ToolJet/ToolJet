@@ -4,15 +4,12 @@ export const cyParamName = (paramName) => {
 
 export const commonSelectors = {
   toastMessage: ".go318386747",
-  appCard: "[data-cy=app-card]",
   editButton: "[data-cy=edit-button]",
   searchField: "[data-cy=widget-search-box]",
   firstWidget: "[data-cy=widget-list]:eq(0)",
   canvas: "[data-cy=real-canvas]",
-  appCardOptions: "[data-cy=app-card-menu-icon]",
+  appCardOptionsButton: "[data-cy=app-card-menu-icon]",
   folderCardOptions: "[data-cy=folder-card-menu-icon]",
-  deleteApp: "[data-cy=card-options] :nth-child(5)>span",
-  confirmButton: "[data-cy=confirm-yes-button]",
   autoSave: "[data-cy=autosave-indicator]",
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
@@ -31,20 +28,11 @@ export const commonSelectors = {
   folderNameInput: "[data-cy=folder-name-input]",
   deleteFolderOption: "[data-cy=delete-folder-card-option]",
   editFolderOption: "[data-cy=edit-folder-card-option]",
-  changeIconOption: "[data-cy=change-icon-card-option]",
-  addToFolderOption: "[data-cy=add-to-folder-card-option]",
-  removeFromFolderOption: "[data-cy=remove-from-folder-card-option]",
-  cloneAppOption: "[data-cy=clone-app-card-option]",
-  exportAppOption: "[data-cy=export-app-card-option]",
   deleteAppOption: "[data-cy=delete-app-card-option]",
-  modalCloseButton: "[data-cy=modal-close-button]",
   cancelButton: "[data-cy=cancel-button]",
   modalComponent: "[data-cy=modal-component]",
   modalMessage: "[data-cy=modal-message]",
-  modalCancelButton: "[data-cy=confirm-cancel-button]",
-  modalYesButton: "[data-cy=confirm-yes-button]",
   createNewFolderButton: "[data-cy=create-new-folder-button]",
-  createFolderTitle: "[data-cy=create-folder-title]",
   folderNameInput: "[data-cy=folder-name-input]",
   createFolderButton: "[data-cy=create-folder-button]",
   folderList: "[data-index]",
@@ -54,12 +42,33 @@ export const commonSelectors = {
   folderInfo: "[data-cy=folder-info]",
   folderInfoText: "[data-cy=folder-info-text]",
   folderCard: "[data-cy=folder-card]",
-  updateFolderTitle: "[data-cy=update-folder-title]",
-  updateFolderButton: "[data-cy=update-folder-button]",
   folderPageTitle: "[data-cy=folder-page-title]",
-  appTitle: "[data-cy=app-title]",
   appCreatorName: "[data-cy=app-creator]",
   appCreatedTime: "[data-cy=app-creation-time]",
+  homePageSearchBar: "[data-cy=home-page-search-bar]",
+
+  folderListcard: (folderName) => {
+    return `[data-cy="${cyParamName(folderName)}-list-card"]`;
+  },
+
+  appCard: (appName) => {
+    return `[data-cy="${cyParamName(appName)}-card"]`;
+  },
+
+  appTitle: (appName) => {
+    return `[data-cy="${cyParamName(appName)}-title"]`;
+  },
+
+  appCardOptions: (options) => {
+    return `[data-cy="${cyParamName(options)}-card-option"]`;
+  },
+
+  modalTitle: (title) => {
+    return `[data-cy="${cyParamName(title)}-title"]`;
+  },
+  buttonSelector: (buttonText) => {
+    return `[data-cy="${cyParamName(buttonText)}-button"]`;
+  },
 };
 
 export const commonWidgetSelector = {

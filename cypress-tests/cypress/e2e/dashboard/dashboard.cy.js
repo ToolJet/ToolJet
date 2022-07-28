@@ -3,14 +3,18 @@ import { dashboardSelector } from "Selectors/dashboard";
 import { dashboardText } from "Texts/dashboard";
 import { fake } from "Fixtures/fake";
 import {
-  logout,
   createFolder,
-  deleteApp,
   deleteFolder,
   deleteDownloadsFolder,
+  navigateToAppEditor,
+  viewAppCardOptions,
+  verifyModal,
+  verifyConfirmationModal,
+  viewFolderCardOptions,
+  closeModal,
+  cancelModal,
 } from "Support/utils/common";
 import { commonText } from "Texts/common";
-
 import {
   modifyAndVerifyAppCardIcon,
   login,
@@ -18,13 +22,13 @@ import {
 } from "Support/utils/dashboard";
 
 describe("dashboard", () => {
-  const appName = `${fake.companyName}-App`;
-  const folderName = `${fake.companyName}-Folder`;
-  const cloneAppName = `${fake.companyName}-Clone-App`;
-  const updatedFolderName = `New-${folderName}`;
+  const data = {};
+  data.appName = `${fake.companyName}-App`;
+  data.folderName = `${fake.companyName}-Folder`;
+  data.cloneAppName = `${data.appName}-Clone`;
+  data.updatedFolderName = `New-${data.folderName}`;
 
   beforeEach(() => {
-    cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
     cy.intercept("GET", "/api/apps").as("appEditor");
     cy.intercept("GET", "/api/library_apps/").as("appLibrary");
@@ -44,8 +48,6 @@ describe("dashboard", () => {
     cy.get("body").then(($el) => {
       if ($el.text().includes("Skip")) {
         cy.get(commonSelectors.skipInstallationModal).click();
-      } else {
-        cy.log("Installation is finished");
       }
     });
 
@@ -105,102 +107,92 @@ describe("dashboard", () => {
       "have.text",
       dashboardText.logoutLink
     );
-    logout();
   });
 
   it("Should verify app card elements and app card operations", () => {
     cy.appUILogin();
-    cy.createApp(appName);
+    cy.createApp(data.appName);
 
-    cy.contains(commonSelectors.appCard, appName)
+    cy.get(commonSelectors.appCard(data.appName))
       .parent()
       .within(() => {
-        cy.get(commonSelectors.appCard).should("be.visible");
+        cy.get(commonSelectors.appCard(data.appName)).should("be.visible");
         cy.get(dashboardSelector.appCardDefaultIcon).should("be.visible");
-        cy.get(commonSelectors.appCardOptions).should("be.visible");
-        cy.get(commonSelectors.appTitle)
+        cy.get(commonSelectors.appCardOptionsButton).should("be.visible");
+        cy.get(commonSelectors.appTitle(data.appName))
           .should("be.visible")
-          .and("have.text", appName);
+          .and("have.text", data.appName);
         cy.get(commonSelectors.appCreatorName)
           .should("be.visible")
           .and("have.text", "The Developer");
         cy.get(commonSelectors.appCreatedTime).should("be.visible");
       });
 
-    cy.get(commonSelectors.appCardOptions).first().click();
-    cy.get(commonSelectors.changeIconOption)
+    viewAppCardOptions(data.appName);
+    cy.get(commonSelectors.appCardOptions(commonText.changeIconOption))
       .should("be.visible")
       .and("have.text", commonText.changeIconOption);
-    cy.get(commonSelectors.addToFolderOption)
+    cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption))
       .should("be.visible")
       .and("have.text", commonText.addToFolderOption);
-    cy.get(commonSelectors.cloneAppOption)
+    cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption))
       .should("be.visible")
       .and("have.text", commonText.cloneAppOption);
-    cy.get(commonSelectors.exportAppOption)
+    cy.get(commonSelectors.appCardOptions(commonText.exportAppOption))
       .should("be.visible")
       .and("have.text", commonText.exportAppOption);
-    cy.get(commonSelectors.deleteAppOption)
+    cy.get(commonSelectors.appCardOptions(commonText.deleteAppOption))
       .should("be.visible")
       .and("have.text", commonText.deleteAppOption);
 
-    modifyAndVerifyAppCardIcon();
+    modifyAndVerifyAppCardIcon(data.appName);
 
-    createFolder(folderName);
+    createFolder(data.folderName);
 
-    cy.get(commonSelectors.appCardOptions).first().click();
-    cy.get(commonSelectors.addToFolderOption).click();
-    cy.get(dashboardSelector.addToFolderTitle)
-      .should("be.visible")
-      .and("have.text", dashboardText.addToFolderTitle);
-    cy.get(commonSelectors.modalCloseButton).should("be.visible");
+    viewAppCardOptions(data.appName);
+    cy.get(
+      commonSelectors.appCardOptions(commonText.addToFolderOption)
+    ).click();
+    verifyModal(
+      dashboardText.addToFolderTitle,
+      dashboardText.addToFolderButton,
+      dashboardSelector.selectFolder
+    );
     cy.get(dashboardSelector.moveAppText)
       .should("be.visible")
-      .and("have.text", dashboardText.moveAppText(appName));
-    cy.get(dashboardSelector.selectFolder).should("be.visible");
-    cy.get(commonSelectors.cancelButton)
-      .should("be.visible")
-      .and("have.text", commonText.cancelButton);
-    cy.get(dashboardSelector.addToFolderButton)
-      .should("be.visible")
-      .and("have.text", dashboardText.addToFolderButton);
+      .and("have.text", dashboardText.moveAppText(data.appName));
 
     cy.get(dashboardSelector.selectFolder).click();
-    cy.get(commonSelectors.folderList).contains(folderName).click();
+    cy.get(commonSelectors.folderList).contains(data.folderName).click();
     cy.get(dashboardSelector.addToFolderButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       commonText.AddedToFolderToast
     );
-    cy.get(dashboardSelector.folderName(folderName))
+
+    cy.get(dashboardSelector.folderName(data.folderName))
       .should("be.visible")
-      .and("have.text", dashboardText.folderName(`${folderName} (1)`));
+      .and("have.text", dashboardText.folderName(`${data.folderName} (1)`));
 
-    cy.get(dashboardSelector.folderName(folderName)).click();
-    cy.get(commonSelectors.appCard).contains(appName).should("be.visible");
-    cy.get(commonSelectors.appCardOptions).click();
+    cy.get(dashboardSelector.folderName(data.folderName)).click();
+    cy.get(commonSelectors.appCard(data.appName))
+      .contains(data.appName)
+      .should("be.visible");
+    viewAppCardOptions(data.appName);
 
-    cy.get(commonSelectors.removeFromFolderOption)
+    cy.get(commonSelectors.appCardOptions(commonText.removeFromFolderOption))
       .should("be.visible")
       .and("have.text", commonText.removeFromFolderOption)
       .click();
-    cy.get(commonSelectors.modalComponent).should("be.visible");
-    cy.get(commonSelectors.modalMessage)
-      .should("be.visible")
-      .and("have.text", commonText.appRemovedFromFolderMessage);
-    cy.get(commonSelectors.modalCancelButton)
-      .should("be.visible")
-      .and("have.text", commonText.cancelButton);
-    cy.get(commonSelectors.modalYesButton)
-      .should("be.visible")
-      .and("have.text", commonText.modalYesButton);
+    verifyConfirmationModal(commonText.appRemovedFromFolderMessage);
 
-    cy.get(commonSelectors.modalCancelButton).click();
-    cy.get(commonSelectors.modalComponent).should("not.exist");
+    cancelModal(commonText.cancelButton);
 
-    cy.get(commonSelectors.appCardOptions).click();
-    cy.get(commonSelectors.removeFromFolderOption).click();
-    cy.get(commonSelectors.modalYesButton).click();
+    cy.get(commonSelectors.appCardOptionsButton).click();
+    cy.get(
+      commonSelectors.appCardOptions(commonText.removeFromFolderOption)
+    ).click();
+    cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       commonText.appRemovedFromFolderTaost
@@ -212,83 +204,86 @@ describe("dashboard", () => {
       .and("have.text", commonText.emptyFolderText);
     cy.get(commonSelectors.allApplicationsLink).click();
 
-    cy.get(commonSelectors.appCardOptions).first().click();
-    cy.get(commonSelectors.cloneAppOption).click();
+    viewAppCardOptions(data.appName);
+    cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       dashboardText.appClonedToast
     );
     cy.wait("@appEditor");
-    cy.clearAndType(commonSelectors.appNameInput, cloneAppName);
+    cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
     cy.get(commonSelectors.backButton).click();
     cy.wait("@appLibrary");
 
-    cy.get(commonSelectors.appCard).contains(cloneAppName).should("be.visible");
+    cy.get(commonSelectors.appCard(data.cloneAppName)).should("be.visible");
 
-    cy.get(commonSelectors.appCardOptions).first().click();
-    cy.get(commonSelectors.exportAppOption).click();
+    viewAppCardOptions(data.cloneAppName);
+    cy.get(commonSelectors.appCardOptions(commonText.exportAppOption)).click();
 
     cy.exec("ls ./cypress/downloads/").then((result) => {
       const downloadedAppExportFileName = result.stdout.split("\n")[0];
       expect(downloadedAppExportFileName).to.have.string(
-        cloneAppName.toLowerCase()
+        data.cloneAppName.toLowerCase()
       );
     });
 
-    cy.get(commonSelectors.appCardOptions).first().click();
+    viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.deleteAppOption).click();
     cy.get(commonSelectors.modalMessage)
       .should("be.visible")
       .and("have.text", commonText.deleteAppModalMessage);
-    cy.get(commonSelectors.modalCancelButton)
+    cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
       .should("be.visible")
       .and("have.text", commonText.cancelButton);
-    cy.get(commonSelectors.modalYesButton)
+    cy.get(commonSelectors.buttonSelector(commonText.modalYesButton))
       .should("be.visible")
       .and("have.text", commonText.modalYesButton);
-    cy.get(commonSelectors.modalCancelButton).click();
-    cy.get(commonSelectors.modalComponent).should("not.exist");
+    cancelModal(commonText.cancelButton);
 
-    cy.get(commonSelectors.appCardOptions).first().click();
+    viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.deleteAppOption).click();
-    cy.get(commonSelectors.modalYesButton).click();
+    cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      commonText.appDeletedToast
+    );
+    verifyAppDelete(data.cloneAppName);
 
-    cy.get(commonSelectors.appCard).contains(cloneAppName).should("not.exist");
-    cy.wait(1000);
+    deleteFolder(data.folderName);
 
-    deleteFolder(folderName);
-
-    deleteApp(appName);
-    verifyAppDelete(appName);
-
-    logout();
+    cy.deleteApp(data.appName);
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      commonText.appDeletedToast
+    );
+    verifyAppDelete(data.appName);
   });
 
   it("Should verify the app CRUD operation", () => {
     cy.appUILogin();
-    cy.createApp(appName);
-    cy.get(commonSelectors.appCard).should("contain.text", appName);
+    cy.createApp(data.appName);
+    cy.get(commonSelectors.appCard(data.appName)).should(
+      "contain.text",
+      data.appName
+    );
 
-    cy.contains(commonSelectors.appCard, appName)
-      .parent()
-      .within(() => {
-        cy.get(commonSelectors.appTitle).click();
-      });
-    cy.get(commonSelectors.editButton).first().click();
-    cy.wait("@appEditor");
-
+    navigateToAppEditor(data.appName);
     cy.dragAndDropWidget("Button");
     cy.get(commonSelectors.canvas).should("contain", "Button");
     cy.get(commonSelectors.backButton).click();
     cy.wait("@appLibrary");
 
-    deleteApp(appName);
-    verifyAppDelete(appName);
+    cy.deleteApp(data.appName);
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      commonText.appDeletedToast
+    );
+    verifyAppDelete(data.appName);
   });
 
   it("Should verify the folder CRUD operation", () => {
     cy.appUILogin();
-    cy.createApp(appName);
+    cy.createApp(data.appName);
 
     cy.get(commonSelectors.allApplicationsLink)
       .should("be.visible")
@@ -310,49 +305,38 @@ describe("dashboard", () => {
     });
 
     cy.get(commonSelectors.createNewFolderButton).click();
-    cy.get(commonSelectors.modalComponent).should("be.visible");
-    cy.get(commonSelectors.createFolderTitle)
-      .should("be.visible")
-      .and("have.text", commonText.createFolder);
-    cy.get(commonSelectors.modalCloseButton).should("be.visible");
-    cy.get(commonSelectors.folderNameInput).should("be.visible");
-    cy.get(commonSelectors.cancelButton)
-      .should("be.visible")
-      .and("have.text", commonText.cancelButton);
-    cy.get(commonSelectors.createFolderButton)
-      .should("be.visible")
-      .and("have.text", commonText.createFolderButton);
-    cy.get(commonSelectors.modalCloseButton).click();
-    cy.get(dashboardText.modalComponent).should("not.exist");
+    verifyModal(
+      commonText.createFolder,
+      commonText.createFolderButton,
+      commonSelectors.folderNameInput
+    );
+    closeModal(commonText.closeButton);
 
     cy.get(commonSelectors.createNewFolderButton).click();
-    cy.clearAndType(commonSelectors.folderNameInput, folderName);
-    cy.get(commonSelectors.cancelButton).click();
-    cy.get(dashboardText.modalComponent).should("not.exist");
-    cy.contains(folderName).should("not.exist");
+    cy.clearAndType(commonSelectors.folderNameInput, data.folderName);
+    cancelModal(commonText.cancelButton);
+    cy.contains(data.folderName).should("not.exist");
 
     cy.get(commonSelectors.createNewFolderButton).click();
-    cy.clearAndType(commonSelectors.folderNameInput, folderName);
-    cy.get(commonSelectors.createFolderButton).click();
-    cy.get(dashboardText.modalComponent).should("not.exist");
-    cy.get(dashboardSelector.folderName(folderName))
+    cy.clearAndType(commonSelectors.folderNameInput, data.folderName);
+    cy.get(
+      commonSelectors.buttonSelector(commonText.createFolderButton)
+    ).click();
+    cy.get(commonSelectors.modalComponent).should("not.exist");
+    cy.get(dashboardSelector.folderName(data.folderName))
       .should("be.visible")
-      .and("have.text", dashboardText.folderName(folderName));
+      .and("have.text", dashboardText.folderName(data.folderName));
 
-    cy.get(dashboardSelector.folderName(folderName)).click();
+    cy.get(dashboardSelector.folderName(data.folderName)).click();
     cy.get(commonSelectors.folderPageTitle)
       .should("be.visible")
-      .and("have.text", dashboardText.folderName(folderName));
+      .and("have.text", dashboardText.folderName(data.folderName));
     cy.get(commonSelectors.empytyFolderImage).should("be.visible");
     cy.get(commonSelectors.emptyFolderText)
       .should("be.visible")
       .and("have.text", commonText.emptyFolderText);
 
-    cy.contains("div", folderName)
-      .parent()
-      .within(() => {
-        cy.get(commonSelectors.folderCardOptions).click();
-      });
+    viewFolderCardOptions(data.folderName);
     cy.get(commonSelectors.folderCard).should("be.visible");
     cy.get(commonSelectors.editFolderOption)
       .should("be.visible")
@@ -362,76 +346,58 @@ describe("dashboard", () => {
       .and("have.text", commonText.deleteFolderOption);
 
     cy.get(commonSelectors.editFolderOption).click();
-    cy.get(commonSelectors.modalComponent).should("be.visible");
-    cy.get(commonSelectors.updateFolderTitle)
-      .should("be.visible")
-      .and("have.text", commonText.updateFolderTitle);
-    cy.get(commonSelectors.modalCloseButton).should("be.visible");
-    cy.get(commonSelectors.folderNameInput).should("be.visible");
-    cy.get(commonSelectors.cancelButton)
-      .should("be.visible")
-      .and("have.text", commonText.cancelButton);
-    cy.get(commonSelectors.updateFolderButton)
-      .should("be.visible")
-      .and("have.text", commonText.updateFolderButton);
+    verifyModal(
+      commonText.updateFolderTitle,
+      commonText.updateFolderButton,
+      commonSelectors.folderNameInput
+    );
 
-    cy.clearAndType(commonSelectors.folderNameInput, updatedFolderName);
-    cy.get(commonSelectors.modalCloseButton).click();
-    cy.get(commonSelectors.modalComponent).should("not.exist");
-    cy.get(dashboardSelector.folderName(updatedFolderName)).should("not.exist");
+    cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
+    closeModal(commonText.closeButton);
+    cy.get(dashboardSelector.folderName(data.updatedFolderName)).should(
+      "not.exist"
+    );
 
-    cy.contains("div", folderName)
-      .parent()
-      .within(() => {
-        cy.get(commonSelectors.folderCardOptions).click();
-      });
+    viewFolderCardOptions(data.folderName);
     cy.get(commonSelectors.editFolderOption).click();
-    cy.clearAndType(commonSelectors.folderNameInput, updatedFolderName);
-    cy.get(commonSelectors.cancelButton).click();
-    cy.get(commonSelectors.modalComponent).should("not.exist");
-    cy.get(dashboardSelector.folderName(updatedFolderName)).should("not.exist");
+    cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
 
-    cy.contains("div", folderName)
-      .parent()
-      .within(() => {
-        cy.get(commonSelectors.folderCardOptions).click();
-      });
+    cancelModal(commonText.cancelButton);
+    cy.get(dashboardSelector.folderName(data.updatedFolderName)).should(
+      "not.exist"
+    );
+
+    viewFolderCardOptions(data.folderName);
     cy.get(commonSelectors.editFolderOption).click();
-    cy.clearAndType(commonSelectors.folderNameInput, updatedFolderName);
-    cy.get(commonSelectors.updateFolderButton).click();
+    cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
+    cy.get(
+      commonSelectors.buttonSelector(commonText.updateFolderButton)
+    ).click();
     cy.get(commonSelectors.modalComponent).should("not.exist");
-    cy.get(dashboardSelector.folderName(updatedFolderName))
+    cy.get(dashboardSelector.folderName(data.updatedFolderName))
       .should("exist")
       .and("be.visible");
 
-    cy.contains("div", folderName)
-      .parent()
-      .within(() => {
-        cy.get(commonSelectors.folderCardOptions).click();
-      });
+    viewFolderCardOptions(data.updatedFolderName);
     cy.get(commonSelectors.deleteFolderOption).click();
-    cy.get(commonSelectors.modalComponent).should("be.visible");
-    cy.get(commonSelectors.modalMessage)
-      .should("be.visible")
-      .and("have.text", `${commonText.folderDeleteModalMessage}`);
-    cy.get(commonSelectors.modalCancelButton)
-      .should("be.visible")
-      .and("have.text", commonText.cancelButton);
-    cy.get(commonSelectors.modalYesButton)
-      .should("be.visible")
-      .and("have.text", commonText.modalYesButton);
+    verifyConfirmationModal(commonText.folderDeleteModalMessage);
 
-    cy.get(commonSelectors.modalCancelButton).click();
-    cy.get(commonSelectors.modalComponent).should("not.exist");
-    cy.get(dashboardSelector.folderName(updatedFolderName))
+    cancelModal(commonText.cancelButton);
+    cy.get(dashboardSelector.folderName(data.updatedFolderName))
       .should("exist")
       .and("be.visible");
 
-    deleteFolder(updatedFolderName);
-    cy.get(dashboardSelector.folderName(updatedFolderName)).should("not.exist");
+    deleteFolder(data.updatedFolderName);
+    cy.get(dashboardSelector.folderName(data.updatedFolderName)).should(
+      "not.exist"
+    );
 
     cy.get(commonSelectors.allApplicationsLink).click();
-    deleteApp(appName);
-    verifyAppDelete(appName);
+    cy.deleteApp(data.appName);
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      commonText.appDeletedToast
+    );
+    verifyAppDelete(data.appName);
   });
 });

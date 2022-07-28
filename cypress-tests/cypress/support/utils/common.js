@@ -44,27 +44,10 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   return moment(startDate).format(format);
 };
 
-export const deleteApp = (appName) => {
-  cy.contains("div", appName)
-    .parent()
-    .within(() => {
-      cy.get("div, button").click();
-    });
-
-  cy.get(commonSelectors.appCardOptions).first().click();
-  cy.get(commonSelectors.deleteApp).click();
-  cy.get(commonSelectors.confirmButton).click();
-  cy.wait("@appDeleted");
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    commonText.appDeletedToast
-  );
-};
-
 export const createFolder = (folderName) => {
   cy.get(commonSelectors.createNewFolderButton).click();
   cy.clearAndType(commonSelectors.folderNameInput, folderName);
-  cy.get(commonSelectors.createFolderButton).click();
+  cy.get(commonSelectors.buttonSelector(commonText.createFolderButton)).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     commonText.folderCreatedToast
@@ -72,13 +55,9 @@ export const createFolder = (folderName) => {
 };
 
 export const deleteFolder = (folderName) => {
-  cy.contains("div", folderName)
-    .parent()
-    .within(() => {
-      cy.get(commonSelectors.folderCardOptions).click();
-    });
+  viewFolderCardOptions(folderName);
   cy.get(commonSelectors.deleteFolderOption).click();
-  cy.get(commonSelectors.confirmButton).click();
+  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
   cy.wait("@folderDeleted");
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
@@ -89,4 +68,68 @@ export const deleteFolder = (folderName) => {
 export const deleteDownloadsFolder = () => {
   const downloadsFolder = Cypress.config("downloadsFolder");
   cy.task("deleteFolder", downloadsFolder);
+};
+
+export const navigateToAppEditor = (appName) => {
+  cy.get(commonSelectors.appCard(appName))
+    .trigger("mousehover")
+    .trigger("mouseenter")
+    .find(commonSelectors.editButton)
+    .click();
+  cy.wait("@appEditor");
+};
+
+export const viewAppCardOptions = (appName) => {
+  cy.get(commonSelectors.appCard(appName))
+    .find(commonSelectors.appCardOptionsButton)
+    .click();
+};
+
+export const viewFolderCardOptions = (folderName) => {
+  cy.get(commonSelectors.folderListcard(folderName))
+    .find(commonSelectors.folderCardOptions)
+    .click();
+};
+
+export const verifyModal = (title, buttonText, inputFiledSelector) => {
+  cy.get(commonSelectors.modalComponent).should("be.visible");
+  cy.get(commonSelectors.modalTitle(title))
+    .should("be.visible")
+    .and("have.text", title);
+  cy.get(commonSelectors.buttonSelector(commonText.closeButton)).should(
+    "be.visible"
+  );
+  cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
+    .should("be.visible")
+    .and("have.text", commonText.cancelButton);
+  cy.get(commonSelectors.buttonSelector(buttonText))
+    .should("be.visible")
+    .and("have.text", buttonText);
+
+  if (inputFiledSelector) {
+    cy.get(inputFiledSelector).should("be.visible");
+  }
+};
+
+export const verifyConfirmationModal = (messagse) => {
+  cy.get(commonSelectors.modalComponent).should("be.visible");
+  cy.get(commonSelectors.modalMessage)
+    .should("be.visible")
+    .and("have.text", messagse);
+  cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
+    .should("be.visible")
+    .and("have.text", commonText.cancelButton);
+  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton))
+    .should("be.visible")
+    .and("have.text", commonText.modalYesButton);
+};
+
+export const closeModal = (buttonText) => {
+  cy.get(commonSelectors.buttonSelector(buttonText)).click();
+  cy.get(commonSelectors.modalComponent).should("not.exist");
+};
+
+export const cancelModal = (buttonText) => {
+  cy.get(commonSelectors.buttonSelector(buttonText)).click();
+  cy.get(commonSelectors.modalComponent).should("not.exist");
 };

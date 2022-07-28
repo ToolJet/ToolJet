@@ -1,6 +1,4 @@
-export const cyParamName = (paramName) => {
-  return paramName.toLowerCase().replace(/\s+/g, "-");
-};
+import { cyParamName } from "./common";
 
 export const dashboardSelector = {
   emptyPageImage: "[data-cy=empty-img]",
@@ -33,6 +31,6 @@ export const dashboardSelector = {
     return `[data-cy="${cyParamName(iconName)}-icon"]`;
   },
   folderName: (folderName) => {
-    return `[data-cy="folder-name-${cyParamName(folderName)}"]`;
+    return `[data-cy="${cyParamName(folderName)}-name"]`;
   },
 };
