@@ -201,11 +201,12 @@ export const Folders = function Folders({
                 className={`list-group-item list-group-item-action d-flex align-items-center ${
                   activeFolder.id === folder.id ? 'active' : ''
                 } ${darkMode && 'dark'} ${focused ? ' highlight' : ''}`}
+                data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
               >
                 <div
                   onClick={() => handleFolderChange(folder)}
                   className="flex-grow-1"
-                  data-cy={`folder-name-${folder.name.toLowerCase().replace(/\s+/g, '-')}`}
+                  data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}
                 >
                   <span className="me-2">
                     <img src="/assets/images/icons/folder.svg" alt="" width="14" height="14" className="folder-ico" />

@@ -52,7 +52,7 @@ export default function AppCard({
       className={`app-card mb-3 p-3 pt-2${focused ? ' highlight' : ''}`}
       key={app.id}
       ref={hoverRef}
-      data-cy="app-card"
+      data-cy={`${app.name.toLowerCase()}-card`}
     >
       <div className="row mb-3">
         <div className="col-12 d-flex justify-content-between">
@@ -88,7 +88,7 @@ export default function AppCard({
       </div>
       <div>
         <ToolTip message={app.name}>
-          <div className="app-title" data-cy="app-title">
+          <div className="app-title" data-cy={`${app.name.toLowerCase()}-title`}>
             {app.name}
           </div>
         </ToolTip>
