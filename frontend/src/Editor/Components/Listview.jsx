@@ -57,15 +57,6 @@ export const Listview = function Listview({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenData]);
 
-  useEffect(() => {
-    if (!_.isArray(data) && !_.isEqual(variablesExposedForPreview[id]?.listItem, data)) {
-      const customResolvables = {};
-      customResolvables[id] = { listItem: data };
-      exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(data)]);
-
   return (
     <div
       data-disabled={disabledState}

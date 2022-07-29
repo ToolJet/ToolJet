@@ -157,8 +157,16 @@ export function CodeHinter({
           cellValue: variablesExposedForPreview[component?.id]?.rowData[fieldMeta?.name],
           rowData: { ...variablesExposedForPreview[component?.id]?.rowData },
         };
+      } else if (
+        component?.component?.component === 'Listview' &&
+        component?.parent &&
+        variablesExposedForPreview.hasOwnProperty(component?.parent)
+      ) {
+        return variablesExposedForPreview[component.parent];
+      } else if (component?.component?.component !== 'Listview') {
+        return variablesExposedForPreview[component.id];
       }
-      return variablesExposedForPreview[component.id];
+      return {};
     } else if (component?.parent && variablesExposedForPreview.hasOwnProperty(component?.parent)) {
       return variablesExposedForPreview[component.parent];
     }
