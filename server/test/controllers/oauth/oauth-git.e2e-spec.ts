@@ -583,26 +583,163 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_delete',
-              'folder_update',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
+        });
+        it('should return login info when the user exist and hostname exist in configs', async () => {
+          await ssoConfigsRepository.update(sso_configs.id, {
+            configs: { clientId: 'some-client-id', hostName: 'https://github.host.com' },
+          });
+
+          const { orgUser } = await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'userExist',
+            email: 'anotherUser1@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+          });
+
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO userExist',
+                  email: 'anotherUser1@tooljet.io',
+                };
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+
+          const response = await request(app.getHttpServer())
+            .post('/api/oauth/sign-in/' + sso_configs.id)
+            .send({ token });
+
+          expect(response.statusCode).toBe(201);
+
+          expect(gitAuthResponse).toBeCalledWith('https://github.host.com/login/oauth/access_token', expect.anything());
+          expect(gitGetUserResponse).toBeCalledWith('https://github.host.com/api/v3/user', expect.anything());
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+
+          const {
+            email,
+            first_name,
+            last_name,
+            admin,
+            group_permissions,
+            app_group_permissions,
+            organization_id,
+            organization,
+          } = response.body;
+
+          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(first_name).toEqual('SSO');
+          expect(last_name).toEqual('userExist');
+          expect(admin).toBeFalsy();
+          expect(organization_id).toBe(current_organization.id);
+          expect(organization).toBe(current_organization.name);
+          expect(group_permissions).toHaveLength(1);
+          expect(group_permissions[0].group).toEqual('all_users');
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
+          expect(app_group_permissions).toHaveLength(0);
+          await orgUser.reload();
+          expect(orgUser.status).toEqual('active');
+        });
+        it('should return login info when the user does not exist and email id not available and sign up is enabled, host name configured', async () => {
+          await ssoConfigsRepository.update(sso_configs.id, {
+            configs: { clientId: 'some-client-id', hostName: 'https://github.host.com' },
+          });
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: '',
+                  email: '',
+                };
+              },
+            };
+          });
+          const gitGetUserEmailResponse = jest.fn();
+          gitGetUserEmailResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return [
+                  {
+                    email: 'ssoUserGit@tooljet.io',
+                    primary: true,
+                    verified: true,
+                  },
+                  {
+                    email: 'ssoUserGit2@tooljet.io',
+                    primary: false,
+                    verified: true,
+                  },
+                ];
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(gitGetUserEmailResponse);
+
+          const response = await request(app.getHttpServer())
+            .post('/api/oauth/sign-in/' + sso_configs.id)
+            .send({ token });
+
+          expect(response.statusCode).toBe(201);
+
+          expect(gitAuthResponse).toBeCalledWith('https://github.host.com/login/oauth/access_token', expect.anything());
+          expect(gitGetUserResponse).toBeCalledWith('https://github.host.com/api/v3/user', expect.anything());
+          expect(gitGetUserEmailResponse).toBeCalledWith(
+            'https://github.host.com/api/v3/user/emails',
+            expect.anything()
+          );
+
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+
+          const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
+            response.body;
+
+          expect(email).toEqual('ssoUserGit@tooljet.io');
+          expect(first_name).toEqual('ssoUserGit');
+          expect(admin).toBeFalsy();
+          expect(organization_id).toBe(current_organization.id);
+          expect(organization).toBe(current_organization.name);
+          expect(group_permissions).toHaveLength(1);
+          expect(group_permissions[0].group).toEqual('all_users');
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
+          expect(app_group_permissions).toHaveLength(0);
         });
       });
     });
@@ -1122,26 +1259,163 @@ describe('oauth controller', () => {
           expect(organization).toBe(current_organization.name);
           expect(group_permissions).toHaveLength(1);
           expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(
-            [
-              'id',
-              'organization_id',
-              'group',
-              'app_create',
-              'app_delete',
-              'updated_at',
-              'created_at',
-              'folder_create',
-              'org_environment_variable_create',
-              'org_environment_variable_update',
-              'org_environment_variable_delete',
-              'folder_delete',
-              'folder_update',
-            ].sort()
-          );
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
           expect(app_group_permissions).toHaveLength(0);
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
+        });
+        it('should return login info when the user exist and hostname exist in configs', async () => {
+          await ssoConfigsRepository.update(sso_configs.id, {
+            configs: { clientId: 'some-client-id', hostName: 'https://github.host.com' },
+          });
+
+          const { orgUser } = await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'userExist',
+            email: 'anotherUser1@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+          });
+
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: 'SSO userExist',
+                  email: 'anotherUser1@tooljet.io',
+                };
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+
+          const response = await request(app.getHttpServer())
+            .post('/api/oauth/sign-in/' + sso_configs.id)
+            .send({ token });
+
+          expect(response.statusCode).toBe(201);
+
+          expect(gitAuthResponse).toBeCalledWith('https://github.host.com/login/oauth/access_token', expect.anything());
+          expect(gitGetUserResponse).toBeCalledWith('https://github.host.com/api/v3/user', expect.anything());
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+
+          const {
+            email,
+            first_name,
+            last_name,
+            admin,
+            group_permissions,
+            app_group_permissions,
+            organization_id,
+            organization,
+          } = response.body;
+
+          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(first_name).toEqual('SSO');
+          expect(last_name).toEqual('userExist');
+          expect(admin).toBeFalsy();
+          expect(organization_id).toBe(current_organization.id);
+          expect(organization).toBe(current_organization.name);
+          expect(group_permissions).toHaveLength(1);
+          expect(group_permissions[0].group).toEqual('all_users');
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
+          expect(app_group_permissions).toHaveLength(0);
+          await orgUser.reload();
+          expect(orgUser.status).toEqual('active');
+        });
+        it('should return login info when the user does not exist and email id not available and sign up is enabled, host name configured', async () => {
+          await ssoConfigsRepository.update(sso_configs.id, {
+            configs: { clientId: 'some-client-id', hostName: 'https://github.host.com' },
+          });
+          const gitAuthResponse = jest.fn();
+          gitAuthResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  access_token: 'some-access-token',
+                  scope: 'scope',
+                  token_type: 'bearer',
+                };
+              },
+            };
+          });
+          const gitGetUserResponse = jest.fn();
+          gitGetUserResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return {
+                  name: '',
+                  email: '',
+                };
+              },
+            };
+          });
+          const gitGetUserEmailResponse = jest.fn();
+          gitGetUserEmailResponse.mockImplementation(() => {
+            return {
+              json: () => {
+                return [
+                  {
+                    email: 'ssoUserGit@tooljet.io',
+                    primary: true,
+                    verified: true,
+                  },
+                  {
+                    email: 'ssoUserGit2@tooljet.io',
+                    primary: false,
+                    verified: true,
+                  },
+                ];
+              },
+            };
+          });
+
+          mockedGot.mockImplementationOnce(gitAuthResponse);
+          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(gitGetUserEmailResponse);
+
+          const response = await request(app.getHttpServer())
+            .post('/api/oauth/sign-in/' + sso_configs.id)
+            .send({ token });
+
+          expect(response.statusCode).toBe(201);
+
+          expect(gitAuthResponse).toBeCalledWith('https://github.host.com/login/oauth/access_token', expect.anything());
+          expect(gitGetUserResponse).toBeCalledWith('https://github.host.com/api/v3/user', expect.anything());
+          expect(gitGetUserEmailResponse).toBeCalledWith(
+            'https://github.host.com/api/v3/user/emails',
+            expect.anything()
+          );
+
+          expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
+
+          const { email, first_name, admin, group_permissions, app_group_permissions, organization_id, organization } =
+            response.body;
+
+          expect(email).toEqual('ssoUserGit@tooljet.io');
+          expect(first_name).toEqual('ssoUserGit');
+          expect(admin).toBeFalsy();
+          expect(organization_id).toBe(current_organization.id);
+          expect(organization).toBe(current_organization.name);
+          expect(group_permissions).toHaveLength(1);
+          expect(group_permissions[0].group).toEqual('all_users');
+          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
+          expect(app_group_permissions).toHaveLength(0);
         });
       });
     });

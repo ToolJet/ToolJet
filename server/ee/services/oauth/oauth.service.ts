@@ -128,6 +128,7 @@ export class OauthService {
           configs: {
             clientId: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
             clientSecret: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET'),
+            hostName: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
           },
         };
       default:
