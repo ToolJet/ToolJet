@@ -446,6 +446,7 @@ class Editor extends React.Component {
       isSaving: false,
     });
 
+    this.saveEditingVersion();
     this.fetchDataSources();
     this.fetchDataQueries();
     this.initComponentVersioning();
