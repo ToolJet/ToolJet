@@ -64,45 +64,43 @@ export const Listview = function Listview({
       style={computedStyles}
     >
       <div className="rows w-100">
-        {(_.isArray(data) ? data : []).map((listItem, index) => {
-          return (
-            <div
-              className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
-              style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
-              key={index}
-              onClick={(event) => {
-                event.stopPropagation();
-                onRowClicked(index);
+        {(_.isArray(data) ? data : []).map((listItem, index) => (
+          <div
+            className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
+            style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
+            key={index}
+            onClick={(event) => {
+              event.stopPropagation();
+              onRowClicked(index);
+            }}
+          >
+            <SubContainer
+              parentComponent={component}
+              containerCanvasWidth={width}
+              parent={`${id}`}
+              parentName={component.name}
+              {...containerProps}
+              readOnly={index !== 0}
+              customResolvables={{ listItem }}
+              parentRef={parentRef}
+              removeComponent={removeComponent}
+              listViewItemOptions={{ index }}
+              exposedVariables={childrenData[index]}
+              onOptionChange={function ({ component, optionName, value }) {
+                setChildrenData((prevData) => {
+                  const changedData = { [component.name]: { [optionName]: value } };
+                  const existingDataAtIndex = prevData[index] ?? {};
+                  const newDataAtIndex = {
+                    ...prevData[index],
+                    [component.name]: { ...existingDataAtIndex[component.name], ...changedData[component.name] },
+                  };
+                  const newChildrenData = { ...prevData, [index]: newDataAtIndex };
+                  return { ...prevData, ...newChildrenData };
+                });
               }}
-            >
-              <SubContainer
-                parentComponent={component}
-                containerCanvasWidth={width}
-                parent={`${id}`}
-                parentName={component.name}
-                {...containerProps}
-                readOnly={index !== 0}
-                customResolvables={{ listItem }}
-                parentRef={parentRef}
-                removeComponent={removeComponent}
-                listViewItemOptions={{ index }}
-                exposedVariables={childrenData[index]}
-                onOptionChange={function ({ component, optionName, value }) {
-                  setChildrenData((prevData) => {
-                    const changedData = { [component.name]: { [optionName]: value } };
-                    const existingDataAtIndex = prevData[index] ?? {};
-                    const newDataAtIndex = {
-                      ...prevData[index],
-                      [component.name]: { ...existingDataAtIndex[component.name], ...changedData[component.name] },
-                    };
-                    const newChildrenData = { ...prevData, [index]: newDataAtIndex };
-                    return { ...prevData, ...newChildrenData };
-                  });
-                }}
-              />
-            </div>
-          );
-        })}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
