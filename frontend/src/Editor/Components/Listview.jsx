@@ -49,6 +49,15 @@ export const Listview = function Listview({
   }, []);
 
   useEffect(() => {
+    if (_.isArray(data) && !_.isEqual(variablesExposedForPreview[id]?.listItem, data[0])) {
+      const customResolvables = {};
+      customResolvables[id] = { listItem: data[0] };
+      exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, JSON.stringify(data));
+
+  useEffect(() => {
     setExposedVariable('data', childrenData);
     if (selectedRowIndex != undefined) {
       setExposedVariable('selectedRowId', selectedRowIndex);
@@ -68,11 +77,6 @@ export const Listview = function Listview({
     >
       <div className="rows w-100">
         {(_.isArray(data) ? data : []).map((listItem, index) => {
-          if (index === 0 && !_.isEqual(variablesExposedForPreview[id]?.listItem, listItem)) {
-            const customResolvables = {};
-            customResolvables[id] = { listItem };
-            exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
-          }
           return (
             <div
               className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
