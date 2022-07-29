@@ -362,7 +362,7 @@ export function Table({
 
         if (cell.row.index === 0 && !_.isEqual(variablesExposedForPreview[id]?.rowData, rowData)) {
           const customResolvables = {};
-          customResolvables[id] = { rowData };
+          customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
 

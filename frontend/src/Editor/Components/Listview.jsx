@@ -1,7 +1,6 @@
-import React, { useRef, useState, useEffect, useContext } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
-import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 
 export const Listview = function Listview({
   id,
@@ -20,8 +19,6 @@ export const Listview = function Listview({
 
   const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
   const { backgroundColor, visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
-
-  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext);
 
   const computedStyles = {
     backgroundColor,
@@ -47,15 +44,6 @@ export const Listview = function Listview({
     setExposedVariable('data', {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (_.isArray(data) && !_.isEqual(variablesExposedForPreview[id]?.listItem, data[0])) {
-      const customResolvables = {};
-      customResolvables[id] = { listItem: data[0] };
-      exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, JSON.stringify(data));
 
   useEffect(() => {
     setExposedVariable('data', childrenData);

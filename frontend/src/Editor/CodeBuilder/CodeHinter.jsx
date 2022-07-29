@@ -63,7 +63,6 @@ export function CodeHinter({
   fieldMeta,
   onFxPress,
   fxActive,
-  // hideSuggestion = false,
   component,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -154,21 +153,12 @@ export function CodeHinter({
     if (variablesExposedForPreview.hasOwnProperty(component?.id)) {
       if (component?.component?.component === 'Table' && fieldMeta?.name) {
         return {
+          ...variablesExposedForPreview[component?.id],
           cellValue: variablesExposedForPreview[component?.id]?.rowData[fieldMeta?.name],
           rowData: { ...variablesExposedForPreview[component?.id]?.rowData },
         };
-      } else if (
-        component?.component?.component === 'Listview' &&
-        component?.parent &&
-        variablesExposedForPreview.hasOwnProperty(component?.parent)
-      ) {
-        return variablesExposedForPreview[component.parent];
-      } else if (component?.component?.component !== 'Listview') {
-        return variablesExposedForPreview[component.id];
       }
-      return {};
-    } else if (component?.parent && variablesExposedForPreview.hasOwnProperty(component?.parent)) {
-      return variablesExposedForPreview[component.parent];
+      return variablesExposedForPreview[component.id];
     }
     return {};
   };
