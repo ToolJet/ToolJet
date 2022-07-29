@@ -250,6 +250,12 @@ export class OrganizationsService {
           enabled: true,
           configs: {
             clientId: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+            clientSecret: await this.encryptionService.encryptColumnValue(
+              'ssoConfigs',
+              'clientSecret',
+              this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET')
+            ),
+            hostName: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
           },
         });
       }
