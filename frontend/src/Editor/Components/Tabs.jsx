@@ -104,7 +104,7 @@ export const Tabs = function Tabs({
       <ul
         className="nav nav-tabs"
         data-bs-toggle="tabs"
-        style={{ display: parsedHideTabs && 'none', backgroundColor: '#fff', margin: '-1px' }}
+        style={{ zIndex: 1, display: parsedHideTabs && 'none', backgroundColor: '#fff', margin: '-1px' }}
       >
         {parsedTabs.map((tab) => (
           <li
