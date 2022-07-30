@@ -19,7 +19,7 @@ On select event is triggered when an date is selected.
 
 ### Default value
 
-This value acts as placeholder for the date picker widget, if any value is not provided then the default value will be used from the picker. The default value needs to a `String` with respect to the `format` field. Ex: If format is set to `MM/YYYY` then provide default value as `04/2022`.
+This value acts as placeholder for the date picker widget, if any value is not provided then the default value will be used from the picker. The default value needs to be a `String` with respect to the `format` field. Ex: If format is set to `MM/YYYY` then provide default value as `04/2022`.
 
 ### Disabled dates
 
