@@ -46,28 +46,3 @@ Click on the 'run' button to run the query. NOTE: Query should be saved before r
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
 :::
 
-## Including variables in GraphQL queries
-
-You can inject parameters directly into the query using Javascript. 
-
-**Example:**
-
-```javascript
-query Query {
-  characters(page: {{components.textinput1.value}}, filter: {name: "Morty"}) {
-    info {
-      count
-    }
-    results {
-      name
-    }
-  }
-  location(id: 1) {
-    id
-  }
-  episodesByIds(ids: [1, 2]) {
-    id
-  }
-}
-```
-
