@@ -26,7 +26,7 @@ export class DataSourcesService {
 
     return await this.dataSourcesRepository.find({
       where: whereClause,
-      relations: ['plugin', 'plugin.iconFile', 'plugin.manifestFile'],
+      relations: ['plugin', 'plugin.iconFile', 'plugin.manifestFile', 'plugin.operationsFile'],
     });
   }
 

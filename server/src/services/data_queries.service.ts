@@ -104,7 +104,7 @@ export class DataQueriesService {
         decoded = decode(plugin.indexFile.data.toString());
         plugins[dataQuery.pluginId] = decoded;
       }
-      const code = requireFromString(decoded, { globals: { process, Buffer, Promise, setTimeout, clearTimeout } });
+      const code = requireFromString(decoded, { useCurrentGlobal: true });
       try {
         service = new code.default();
       } catch (error) {

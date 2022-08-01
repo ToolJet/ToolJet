@@ -52,6 +52,9 @@ export class DataSourcesController {
         dataSource.plugin.iconFile.data = `data:image/svg+xml;base64,${dataSource.plugin.iconFile.data.toString(
           'utf8'
         )}`;
+        dataSource.plugin.operationsFile.data = JSON.parse(
+          decode(dataSource.plugin.operationsFile.data.toString('utf8'))
+        );
       }
     }
     const response = decamelizeKeys({ data_sources: dataSources });

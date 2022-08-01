@@ -57,7 +57,7 @@ export class DataQuery extends BaseEntity {
   @JoinColumn({ name: 'data_source_id' })
   dataSource: DataSource;
 
-  @ManyToOne(() => Plugin, (plugin) => plugin.id)
+  @ManyToOne(() => Plugin, (plugin) => plugin.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'plugin_id' })
   plugin: Plugin;
 }

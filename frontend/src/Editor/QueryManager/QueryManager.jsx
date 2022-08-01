@@ -268,6 +268,7 @@ let QueryManager = class QueryManager extends React.Component {
     const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
+    const pluginId = selectedDataSource.plugin_id;
 
     const isQueryNameValid = this.validateQueryName();
     if (!isQueryNameValid) {
@@ -297,7 +298,7 @@ let QueryManager = class QueryManager extends React.Component {
     } else {
       this.setState({ isCreating: true });
       dataqueryService
-        .create(appId, appVersionId, queryName, kind, options, dataSourceId)
+        .create(appId, appVersionId, queryName, kind, options, dataSourceId, pluginId)
         .then((data) => {
           toast.success('Query Added');
           this.setState({
@@ -475,6 +476,7 @@ let QueryManager = class QueryManager extends React.Component {
 
                   const query = {
                     data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
+                    pluginId: selectedDataSource.plugin_id,
                     options: _options,
                     kind: selectedDataSource.kind,
                   };
