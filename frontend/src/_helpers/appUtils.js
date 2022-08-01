@@ -1061,12 +1061,15 @@ export const addNewWidgetToTheEditor = (
   currentLayout,
   currentLayoutOptions,
   shouldSnapToGrid,
-  zoomLevel
+  zoomLevel,
+  isInSubContainer = false
 ) => {
   const componentMetaData = _.cloneDeep(componentMeta);
   const componentData = _.cloneDeep(componentMetaData);
 
-  const defaultWidth = (componentMetaData.defaultSize.width * 100) / 43;
+  const defaultWidth = isInSubContainer
+    ? (componentMetaData.defaultSize.width * 100) / 43
+    : componentMetaData.defaultSize.width;
   const defaultHeight = componentMetaData.defaultSize.height;
 
   componentData.name = computeComponentName(componentData.component, currentComponents);
