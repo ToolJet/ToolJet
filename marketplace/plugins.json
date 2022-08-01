@@ -3,10 +3,8 @@
     {
       "name": "Cassandra plugin",
       "description": "Datasource plugin for Cassandra",
-      "author": "Gandharv garg",
-      "repo": "gondar00/tooljet-plugin-cassandra",
-      "id": "tooljet-plugin-cassandra",
-      "addedAt": 1634165328000
+      "author": "Tooljet",
+      "id": "cassandra"
     }
   ]
 }

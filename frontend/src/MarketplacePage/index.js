@@ -50,10 +50,10 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
                     {/* <small className="text-muted ms-auto">149</small> */}
                   </a>
                 </div>
-                <Filters />
+                {/* <Filters />
                 <div className="mt-3">
                   <a href="#">✨ Write and submit new plugin</a>
-                </div>
+                </div> */}
               </div>
               {active === 'installed' ? (
                 <InstalledPlugins isActive={active === 'installed'} darkMode={darkMode} />
