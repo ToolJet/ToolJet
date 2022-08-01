@@ -875,12 +875,13 @@ export function Table({
       ref={tableRef}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
-      {displaySearchBox && (
-        <div className="card-body border-bottom py-3 jet-data-table-header">
-          <div className="d-flex">
-            <div className="ms-auto text-muted">
+
+      <div className="card-body border-bottom py-3 ">
+        <div className="d-flex align-items-center">
+          <span>{`${preGlobalFilteredRows.length} Records`}</span>
+          <div className="ms-auto text-muted">
+            {displaySearchBox && (
               <GlobalFilter
-                preGlobalFilteredRows={preGlobalFilteredRows}
                 globalFilter={state.globalFilter}
                 useAsyncDebounce={useAsyncDebounce}
                 setGlobalFilter={setGlobalFilter}
@@ -889,10 +890,28 @@ export function Table({
                 serverSideSearch={serverSideSearch}
                 onEvent={onEvent}
               />
-            </div>
+            )}
+            {showFilterButton && (
+              <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
+                <img src="/assets/images/icons/filter.svg" width="15" height="15" />
+                {filters.length > 0 && (
+                  <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                )}
+              </span>
+            )}
+            {showDownloadButton && (
+              <span
+                data-tip="Download as CSV"
+                className="btn btn-light btn-sm p-1 mx-1"
+                onClick={() => exportData('csv', true)}
+              >
+                <img src="/assets/images/icons/download.svg" width="15" height="15" />
+              </span>
+            )}
           </div>
         </div>
-      )}
+      </div>
+
       <div className="table-responsive jet-data-table">
         <table {...getTableProps()} className={`table table-vcenter table-nowrap ${tableType}`} style={computedStyles}>
           <thead>
@@ -1006,7 +1025,7 @@ export function Table({
         Object.keys(componentState.changeSet || {}).length > 0 ||
         showFilterButton ||
         showDownloadButton) && (
-        <div className="card-footer d-flex align-items-center jet-table-footer">
+        <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
           <div className="table-footer row">
             <div className="col">
               {(clientSidePagination || serverSidePagination) && (
@@ -1025,7 +1044,7 @@ export function Table({
             </div>
 
             {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 && (
-              <div className="col">
+              <div className="col d-flex justify-content-md-center">
                 <button
                   className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
                   onClick={() =>
@@ -1041,26 +1060,6 @@ export function Table({
                 </button>
               </div>
             )}
-
-            <div className="col-auto">
-              {showFilterButton && (
-                <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
-                  <img src="/assets/images/icons/filter.svg" width="13" height="13" />
-                  {filters.length > 0 && (
-                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                  )}
-                </span>
-              )}
-              {showDownloadButton && (
-                <span
-                  data-tip="Download as CSV"
-                  className="btn btn-light btn-sm p-1"
-                  onClick={() => exportData('csv', true)}
-                >
-                  <img src="/assets/images/icons/download.svg" width="13" height="13" />
-                </span>
-              )}
-            </div>
           </div>
         </div>
       )}

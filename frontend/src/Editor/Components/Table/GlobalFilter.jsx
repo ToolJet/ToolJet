@@ -1,7 +1,6 @@
 import React from 'react';
 // Table Search
 export const GlobalFilter = ({
-  preGlobalFilteredRows,
   globalFilter,
   useAsyncDebounce,
   setGlobalFilter,
@@ -9,7 +8,6 @@ export const GlobalFilter = ({
   component,
   onEvent,
 }) => {
-  const count = preGlobalFilteredRows.length;
   const [value, setValue] = React.useState(globalFilter);
   const onChange = useAsyncDebounce((filterValue) => {
     setGlobalFilter(filterValue || undefined);
@@ -25,8 +23,12 @@ export const GlobalFilter = ({
   };
 
   return (
-    <div className="ms-2 d-inline-block">
-      Search:{' '}
+    <div className="ms-2 d-inline-block border px-2 mx-1" style={{ paddingBottom: '0.25rem' }}>
+      <img
+        src="../../../../assets/images/icons/search.svg"
+        alt=""
+        style={{ width: '15px', height: '15px', marginRight: '0.25rem' }}
+      />
       <input
         type="text"
         className="global-search-field"
@@ -40,7 +42,7 @@ export const GlobalFilter = ({
           }
         }}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={`${count} records`}
+        placeholder="Search"
         style={{
           border: '0',
         }}
