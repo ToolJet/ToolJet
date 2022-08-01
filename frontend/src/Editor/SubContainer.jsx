@@ -130,10 +130,6 @@ export const SubContainer = ({
     return (x * 100) / canvasWidth;
   }
 
-  // function convertXFromPercentage(x, canvasWidth) {
-  //   return (x * canvasWidth) / 100;
-  // }
-
   const [, drop] = useDrop(
     () => ({
       accept: ItemTypes.BOX,

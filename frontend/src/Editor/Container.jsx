@@ -149,10 +149,6 @@ export const Container = ({
     return (x * 100) / canvasWidth;
   }
 
-  // function convertXFromPercentage(x, canvasWidth) {
-  //   return (x * canvasWidth) / 100;
-  // }
-
   useEffect(() => {
     setIsDragging(draggingState);
   }, [draggingState]);
