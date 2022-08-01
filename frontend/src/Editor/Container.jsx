@@ -188,7 +188,6 @@ export const Container = ({
           boxes,
           canvasBoundingRect,
           item.currentLayout,
-          {},
           snapToGrid,
           zoomLevel
         );

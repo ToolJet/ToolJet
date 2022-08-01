@@ -136,9 +136,6 @@ export const SubContainer = ({
       drop(item, monitor) {
         const componentMeta = componentTypes.find((component) => component.component === item.component.component);
 
-        let layouts = item['layouts'];
-        const currentLayoutOptions = layouts ? layouts[item.currentLayout] : {};
-
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
         const newComponent = addNewWidgetToTheEditor(
@@ -147,9 +144,9 @@ export const SubContainer = ({
           boxes,
           canvasBoundingRect,
           item.currentLayout,
-          currentLayoutOptions,
           snapToGrid,
-          zoomLevel
+          zoomLevel,
+          true
         );
 
         setBoxes({

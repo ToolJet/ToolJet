@@ -1059,7 +1059,6 @@ export const addNewWidgetToTheEditor = (
   currentComponents,
   canvasBoundingRect,
   currentLayout,
-  currentLayoutOptions,
   shouldSnapToGrid,
   zoomLevel,
   isInSubContainer = false
