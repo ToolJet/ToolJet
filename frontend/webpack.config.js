@@ -116,6 +116,7 @@ module.exports = {
       SERVER_IP: process.env.SERVER_IP,
       COMMENT_FEATURE_ENABLE: true,
       ENABLE_MULTIPLAYER_EDITING: true,
+      MARKETPLACE_URL: process.env.MARKETPLACE_URL || 'https://marketplace.tooljet.com',
     }),
   },
 };

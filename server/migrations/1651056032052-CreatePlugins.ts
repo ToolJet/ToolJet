@@ -18,10 +18,6 @@ export class CreatePlugins1651056032052 implements MigrationInterface {
             type: 'varchar',
           },
           {
-            name: 'repo',
-            type: 'varchar',
-          },
-          {
             name: 'description',
             type: 'varchar',
           },

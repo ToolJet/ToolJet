@@ -65,7 +65,6 @@
     "humps": "^2.0.1",
     "joi": "^17.4.1",
     "js-base64": "^3.7.2",
-    "jszip": "^3.10.0",
     "module-from-string": "^3.1.4",
     "nestjs-pino": "^1.4.0",
     "nodemailer": "^6.6.3",

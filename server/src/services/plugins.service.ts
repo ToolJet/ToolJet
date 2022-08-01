@@ -8,9 +8,6 @@ import { CreateFileDto } from '../dto/create-file.dto';
 import { UpdatePluginDto } from '../dto/update-plugin.dto';
 import { FilesService } from './files.service';
 import { encode } from 'js-base64';
-import * as jszip from 'jszip';
-
-const jszipInstance = new jszip();
 
 @Injectable()
 export class PluginsService {
@@ -34,8 +31,6 @@ export class PluginsService {
       await Promise.all(
         Object.keys(files).map(async (key) => {
           const file = files[key];
-          // const file = files[key].pop();
-          // const str = file.buffer.toString('utf8');
           const fileDto = new CreateFileDto();
           fileDto.data = encode(file);
           fileDto.filename = key;
@@ -46,7 +41,6 @@ export class PluginsService {
       const plugin = new Plugin();
       plugin.name = createPluginDto.name;
       plugin.version = createPluginDto.version;
-      plugin.repo = createPluginDto.repo;
       plugin.description = createPluginDto.description;
       plugin.indexFileId = uploadedFiles.index.id;
       plugin.operationsFileId = uploadedFiles.operations.id;
@@ -74,47 +68,28 @@ export class PluginsService {
     return plugin;
   }
 
-  async fetchPluginFiles(repo: string) {
-    const releaseResponse = await fetch(`https://api.github.com/repos/${repo}/releases/latest`);
-    const latestRelease = await releaseResponse.json();
-    const [zipballResponse, indexResponse] = await Promise.all([
-      fetch(`${latestRelease.zipball_url}`),
-      fetch(`${latestRelease.assets[0].browser_download_url}`),
-    ]);
-    const zipball = await zipballResponse.arrayBuffer();
-    const index = await indexResponse.arrayBuffer();
-
-    const result = await jszipInstance.loadAsync(zipball);
-
-    let manifestFileKey: string;
-    let iconFileKey: string;
-    let operationsFileKey: string;
-
-    Object.keys(result.files).forEach(async (key) => {
-      if (key.includes('manifest.json')) {
-        manifestFileKey = key;
-      } else if (key.includes('icon.svg')) {
-        iconFileKey = key;
-      } else if (key.includes('operations.json')) {
-        operationsFileKey = key;
-      }
-    });
-
-    const [manifestFile, iconFile, operations] = await Promise.all([
-      result.files[manifestFileKey].async('arraybuffer'),
-      result.files[iconFileKey].async('arraybuffer'),
-      result.files[operationsFileKey].async('arraybuffer'),
+  async fetchPluginFiles(id: string) {
+    const [indexFileResponse, operationsFileResponse, manifestFileResponse, iconFileResponse] = await Promise.all([
+      fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/dist/index.js`),
+      fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/lib/operations.json`),
+      fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/lib/manifest.json`),
+      fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/lib/icon.svg`),
     ]);
 
-    const version = latestRelease.name.replace('v', '');
+    const [indexFile, operationsFile, iconFile, manifestFile] = await Promise.all([
+      indexFileResponse.arrayBuffer(),
+      operationsFileResponse.arrayBuffer(),
+      iconFileResponse.arrayBuffer(),
+      manifestFileResponse.arrayBuffer(),
+    ]);
 
-    return [index, operations, manifestFile, iconFile, version];
+    return [indexFile, operationsFile, iconFile, manifestFile];
   }
 
   async install(body: any) {
-    const { name, repo, description } = body;
-    const [index, operations, manifest, icon, version] = await this.fetchPluginFiles(repo);
-    await this.create({ name, version, repo, description }, { index, operations, icon, manifest });
+    const { id, name, version, description } = body;
+    const [index, operations, icon, manifest] = await this.fetchPluginFiles(id);
+    await this.create({ name, version, description }, { index, operations, icon, manifest });
   }
 
   update(id: string, updatePluginDto: UpdatePluginDto) {

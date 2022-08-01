@@ -4,6 +4,7 @@
       "name": "Cassandra plugin",
       "description": "Datasource plugin for Cassandra",
       "author": "Tooljet",
+      "version": "1.0.0",
       "id": "cassandra"
     }
   ]

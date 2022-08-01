@@ -20,9 +20,6 @@ export class Plugin {
   @Column({ name: 'version' })
   version: string;
 
-  @Column({ name: 'repo' })
-  repo: string;
-
   @Column({ name: 'description' })
   description: string;
 
