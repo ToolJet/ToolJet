@@ -1061,7 +1061,8 @@ export const addNewWidgetToTheEditor = (
   currentLayout,
   shouldSnapToGrid,
   zoomLevel,
-  isInSubContainer = false
+  isInSubContainer = false,
+  addingDefault = true
 ) => {
   const componentMetaData = _.cloneDeep(componentMeta);
   const componentData = _.cloneDeep(componentMetaData);
@@ -1075,6 +1076,23 @@ export const addNewWidgetToTheEditor = (
 
   let left = 0;
   let top = 0;
+
+  if (isInSubContainer && addingDefault) {
+    const newComponent = {
+      id: uuidv4(),
+      component: componentData,
+      layout: {
+        [currentLayout]: {
+          top: top,
+          left: left,
+          width: defaultWidth,
+          height: defaultHeight,
+        },
+      },
+    };
+
+    return newComponent;
+  }
 
   const offsetFromTopOfWindow = canvasBoundingRect.top;
   const offsetFromLeftOfWindow = canvasBoundingRect.left;

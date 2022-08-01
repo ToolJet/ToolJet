@@ -8,6 +8,16 @@ import produce from 'immer';
 import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
+import { computeComponentName } from '@/_helpers/utils';
+import { v4 as uuidv4 } from 'uuid';
+
+export const useMounted = () => {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+  return mounted;
+};
 
 export const SubContainer = ({
   mode,
@@ -39,7 +49,16 @@ export const SubContainer = ({
   selectedComponents,
   onOptionChange,
   exposedVariables,
+  addDefaultComponents = false,
 }) => {
+  //Todo add custom resolve vars for other widgets too
+  const mounted = useMounted();
+  const widgetResolvables = Object.freeze({
+    Listview: 'listItem',
+  });
+
+  const customResolverVariable = widgetResolvables[parentComponent?.component];
+
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
     if (parentRef.current) {
@@ -69,6 +88,112 @@ export const SubContainer = ({
   useEffect(() => {
     setBoxes(allComponents);
   }, [allComponents]);
+
+  useEffect(() => {
+    if (mounted) {
+      //find children with parent prop
+      const children = Object.keys(allComponents).filter((key) => {
+        return allComponents[key].parent === parent;
+      });
+
+      if (children.length === 0 && addDefaultComponents === true) {
+        const defaultChildren = _.cloneDeep(parentComponent)['defaultChildren'];
+        const childrenBoxes = {};
+        defaultChildren.forEach((child) => {
+          const { componentName, layout, incrementWidth, properties, accessorKey } = child;
+
+          const componentMeta = componentTypes.find((component) => component.component === componentName);
+          const componentData = JSON.parse(JSON.stringify(componentMeta));
+          const componentId = uuidv4();
+          componentData.name = computeComponentName(componentData.component, boxes);
+
+          const width = (componentMeta.defaultSize.width * 100) / 43;
+          const height = componentMeta.defaultSize.height;
+          const newComponentDefinition = {
+            ...componentData.definition.properties,
+          };
+
+          if (_.isArray(properties) && properties.length > 0) {
+            properties.forEach((prop) => {
+              _.set(newComponentDefinition, prop, {
+                value: `{{${customResolverVariable}.${accessorKey}}}`,
+              });
+            });
+            _.set(componentData, 'definition.properties', newComponentDefinition);
+          }
+
+          _.set(childrenBoxes, componentId, {
+            component: componentData,
+            parent: parentRef.current.id,
+            layouts: {
+              [currentLayout]: {
+                ...layout,
+                width: incrementWidth ? width * incrementWidth : width,
+                height: height,
+              },
+            },
+          });
+        });
+
+        setBoxes({
+          ...allComponents,
+          ...childrenBoxes,
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted]);
+
+  // useEffect(() => {
+  //   if (mounted && ['Listview'].includes(parentComponent.component) && addDefaultComponents) {
+  //     const defaultChildren = _.cloneDeep(parentComponent)['defaultChildren'];
+
+  //     const childrenBoxes = {};
+
+  //     defaultChildren.forEach((child) => {
+  //       const { componentName, layout, incrementWidth, properties, accessorKey } = child;
+  //       const componentMeta = componentTypes.find((component) => component.component === componentName);
+
+  //       const newComponentDefinition = {
+  //         ...componentMeta.definition.properties,
+  //       };
+
+  //       if (_.isArray(properties) && properties.length > 0) {
+  //         properties.forEach((prop) => {
+  //           _.set(newComponentDefinition, prop, {
+  //             value: `{{${customResolverVariable}.${accessorKey}}}`,
+  //           });
+  //         });
+  //         _.set(componentMeta, 'definition.properties', newComponentDefinition);
+  //       }
+
+  //       const newComponent = addNewWidgetToTheEditor(
+  //         componentMeta,
+  //         {},
+  //         boxes,
+  //         undefined,
+  //         currentLayout,
+  //         false,
+  //         undefined,
+  //         true,
+  //         true
+  //       );
+
+  //       _.set(childrenBoxes, newComponent.id, {
+  //         component: newComponent.component,
+  //         layouts: {
+  //           ...newComponent.layout,
+  //           top: layout.top,
+  //           left: layout.left,
+  //           parent: parentRef.current.id,
+  //         },
+  //       });
+  //     });
+
+  //     // avoid max call stack error
+  //     setBoxes({ ...allComponents, ...childrenBoxes });
+  //   }
+  // }, [mounted]);
 
   const moveBox = useCallback(
     (id, left, top) => {
