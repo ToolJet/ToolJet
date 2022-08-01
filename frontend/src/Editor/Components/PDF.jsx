@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
-import { ToolTip } from '@/_components/ToolTip';
 
 export const PDF = React.memo(({ styles, properties, width, height, component }) => {
   const pdfName = component.name;
@@ -16,7 +15,6 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
     setNumPages(nextNumPages);
     setPageNumber(1);
   };
-
   const options = {
     root: document.querySelector('#pdf-wrapper'),
     rootMargin: '0px',
@@ -51,75 +49,34 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
 
   // styles for download icon
   const downloadIconOuterWrapperStyles = {
-    left: '87%',
-    bottom: '1.2rem',
-    width: '10%',
-  };
-  const downloadIconInnerWrapper = {
+    backgroundColor: 'white',
+    borderRadius: '4px',
+    boxShadow: '0 30px 40px 0 rgba(16, 36, 94, 0.2)',
+    height: '36px',
     padding: '0.5rem',
-    background: '#ebedeb',
     cursor: 'pointer',
-    borderRadius: '50%',
   };
   const downloadIconImgStyle = {
     width: '15px',
     height: '15px',
   };
-
   const renderPDF = () => (
-    <Document file={url} onLoadSuccess={onDocumentLoadSuccess} className="pdf-document">
-      {Array.from(new Array(numPages), (el, index) => (
-        <Page
-          pageNumber={index + 1}
-          width={scale ? width - 12 : undefined}
-          height={scale ? undefined : height}
-          key={`page_${index + 1}`}
-          inputRef={(el) => (pageRef.current[index] = el)}
-        />
-      ))}
-      {pageControls && (
-        <>
-          <div className="pdf-page-controls">
-            <button disabled={pageNumber <= 1} onClick={() => updatePage(-1)} type="button" aria-label="Previous page">
-              ‹
-            </button>
-            <span>
-              {pageNumber} of {numPages}
-            </span>
-            <button
-              disabled={pageNumber >= numPages}
-              onClick={() => updatePage(1)}
-              type="button"
-              aria-label="Next page"
-            >
-              ›
-            </button>
-          </div>
-        </>
-      )}
-      {showDownloadOption && (
-        <div
-          className="download_icon_outer_wrapper position-fixed fixed-bottom d-flex  justify-content-end"
-          style={downloadIconOuterWrapperStyles}
-        >
-          <ToolTip
-            message="Download the pdf from here. To name the pdf while downloading, change the label of the widget"
-            placement="top"
-          >
-            <span
-              className="download_icon_outer_wrapper "
-              style={downloadIconInnerWrapper}
-              onClick={() => download_file(url, pdfName)}
-            >
-              <img src="../../../assets/images/icons/download.svg" alt="download logo" style={downloadIconImgStyle} />
-            </span>
-          </ToolTip>
-        </div>
-      )}
-    </Document>
+    <>
+      <Document file={url} onLoadSuccess={onDocumentLoadSuccess} className="pdf-document">
+        {Array.from(new Array(numPages), (el, index) => (
+          <Page
+            pageNumber={index + 1}
+            width={scale ? width - 12 : undefined}
+            height={scale ? undefined : height}
+            key={`page_${index + 1}`}
+            inputRef={(el) => (pageRef.current[index] = el)}
+          />
+        ))}
+      </Document>
+    </>
   );
 
-  async function download_file(url, pdfName) {
+  async function downloadFile(url, pdfName) {
     const pdf = await fetch(url);
     const pdfBlog = await pdf.blob();
     const pdfURL = URL.createObjectURL(pdfBlog);
@@ -134,10 +91,49 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
 
   return (
     <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height }}>
-      <div className="d-flex position-relative h-100" style={{ margin: '0 auto', overflow: 'hidden' }}>
+      <div className="d-flex position-relative h-100 flex-column" style={{ margin: '0 auto', overflow: 'hidden' }}>
         <div className="scrollable h-100 col position-relative" id="pdf-wrapper">
           {url === '' ? 'No PDF file specified' : renderPDF()}
         </div>
+        {
+          <div className="d-flex justify-content-between py-2 px-2 align-items-baseline">
+            {pageControls && (
+              <>
+                <div className="pdf-page-controls">
+                  <button
+                    disabled={pageNumber <= 1}
+                    onClick={() => updatePage(-1)}
+                    type="button"
+                    aria-label="Previous page"
+                  >
+                    ‹
+                  </button>
+                  <span>
+                    {pageNumber} of {numPages}
+                  </span>
+                  <button
+                    disabled={pageNumber >= numPages}
+                    onClick={() => updatePage(1)}
+                    type="button"
+                    aria-label="Next page"
+                  >
+                    ›
+                  </button>
+                </div>
+              </>
+            )}
+            {showDownloadOption && (
+              <div
+                className="download-icon-outer-wrapper text-dark"
+                style={downloadIconOuterWrapperStyles}
+                onClick={() => downloadFile(url, pdfName)}
+              >
+                <img src="/assets/images/icons/download.svg" alt="download logo" style={downloadIconImgStyle} />
+                Donwload PDF
+              </div>
+            )}
+          </div>
+        }
       </div>
     </div>
   );
