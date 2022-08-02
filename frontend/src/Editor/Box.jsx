@@ -182,7 +182,7 @@ export const Box = function Box({
       ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
       : [resolvedGeneralStyles, []];
 
-  const { exposeToCodeHinter } = useContext(EditorContext);
+  const { exposeToCodeHinter } = useContext(EditorContext) || {};
 
   useEffect(() => {
     const componentName = getComponentName(currentState, id);
@@ -218,7 +218,7 @@ export const Box = function Box({
   }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
 
   useEffect(() => {
-    if (customResolvables && !readOnly) {
+    if (customResolvables && !readOnly && mode === 'edit') {
       const newCustomResolvable = {};
       newCustomResolvable[id] = { ...customResolvables };
       exposeToCodeHinter((prevState) => ({ ...prevState, ...newCustomResolvable }));
