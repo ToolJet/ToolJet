@@ -55,7 +55,6 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
   const downloadIconOuterWrapperStyles = {
     backgroundColor: 'white',
     borderRadius: '4px',
-    boxShadow: '0 5px 4px 0 rgba(16, 36, 94, 0.2)',
     height: '36px',
     padding: '0.5rem',
     cursor: 'pointer',
