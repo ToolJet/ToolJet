@@ -55,7 +55,7 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
   const downloadIconOuterWrapperStyles = {
     backgroundColor: 'white',
     borderRadius: '4px',
-    boxShadow: '0 30px 40px 0 rgba(16, 36, 94, 0.2)',
+    boxShadow: '0 5px 4px 0 rgba(16, 36, 94, 0.2)',
     height: '36px',
     padding: '0.5rem',
     cursor: 'pointer',
@@ -105,7 +105,7 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
           {url === '' ? 'No PDF file specified' : renderPDF()}
         </div>
         {error || (
-          <div className="d-flex justify-content-between py-2 px-2 align-items-baseline">
+          <div className="d-flex justify-content-between py-3 px-3 align-items-baseline bg-white">
             {pageControls && (
               <>
                 <div className="pdf-page-controls">
