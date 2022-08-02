@@ -589,7 +589,7 @@ describe('group permissions controller', () => {
 
     it('should allow admin to list users not in group permission', async () => {
       const adminUser = await createUser(nestApp, { email: 'admin@tooljet.io' });
-      await createUser(nestApp, {
+      const userone = await createUser(nestApp, {
         email: 'userone@tooljet.io',
         groups: ['all_users'],
         organization: adminUser.organization,
@@ -613,7 +613,10 @@ describe('group permissions controller', () => {
       const user = users[0];
 
       expect(users).toHaveLength(1);
-      expect(user.email).toBe('userone@tooljet.io');
+      expect(user.first_name).toBe('test');
+      expect(user.last_name).toBe('test');
+      expect(user.id).toBe(userone.user.id);
+      expect(Object.keys(user).sort()).toEqual(['first_name', 'last_name', 'id'].sort());
     });
   });
 
