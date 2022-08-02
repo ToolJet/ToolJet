@@ -1346,8 +1346,8 @@ class Editor extends React.Component {
             </div>
           </header>
         </div>
-        <EditorContextWrapper>
-          <DndProvider backend={HTML5Backend}>
+        <DndProvider backend={HTML5Backend}>
+          <EditorContextWrapper>
             <div className="sub-section">
               <LeftSidebar
                 appVersionsId={this.state?.editingVersion?.id}
@@ -1747,8 +1747,8 @@ class Editor extends React.Component {
                 />
               )}
             </div>
-          </DndProvider>
-        </EditorContextWrapper>
+          </EditorContextWrapper>
+        </DndProvider>
       </div>
     );
   }
