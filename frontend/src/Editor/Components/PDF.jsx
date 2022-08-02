@@ -137,8 +137,13 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
                 style={downloadIconOuterWrapperStyles}
                 onClick={() => downloadFile(url, pdfName)}
               >
-                <img src="/assets/images/icons/download.svg" alt="download logo" style={downloadIconImgStyle} />
-                Download PDF
+                <img
+                  src="/assets/images/icons/download.svg"
+                  alt="download logo"
+                  style={downloadIconImgStyle}
+                  className="mx-1"
+                />
+                <span className="mx-1">Download PDF</span>
               </div>
             )}
           </div>
