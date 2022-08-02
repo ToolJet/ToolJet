@@ -75,7 +75,7 @@ class DataSourceManager extends React.Component {
 
   getDataSourceMeta = (dataSource) => {
     if (dataSource?.pluginId) {
-      return dataSource.manifestFile.data.source;
+      return dataSource.manifestFile?.data.source;
     }
 
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
@@ -83,20 +83,10 @@ class DataSourceManager extends React.Component {
 
   selectDataSource = (source) => {
     this.setState({
-      dataSourceMeta: source,
-      selectedDataSource: source,
-      name: source.kind,
-    });
-  };
-
-  selectPluginDataSource = (source) => {
-    source.manifestFile.data.source.pluginId = source.id;
-    source.manifestFile.data.source.icon = source.iconFile.data;
-    this.setState({
-      dataSourceSchema: source.manifestFile.data,
-      dataSourceMeta: source.manifestFile.data.source,
-      selectedDataSource: source.manifestFile.data.source,
-      name: source.manifestFile.data.source.kind,
+      dataSourceMeta: source.manifestFile?.data?.source ?? source,
+      selectedDataSource: source.manifestFile?.data?.source ?? source,
+      name: source.manifestFile?.data?.source?.kind ?? source.kind,
+      dataSourceSchema: source.manifestFile?.data,
     });
   };
 
@@ -211,10 +201,9 @@ class DataSourceManager extends React.Component {
 
     const sourceComponentName = kind.charAt(0).toUpperCase() + kind.slice(1);
     const ComponentToRender = SourceComponents[sourceComponentName] || SourceComponent;
-    console.log(this.state.dataSourceSchema);
     return (
       <ComponentToRender
-        pluginSchema={this.state.dataSourceSchema}
+        dataSourceSchema={this.state.dataSourceSchema}
         optionsChanged={(options = {}) => this.setState({ options })}
         optionchanged={this.optionchanged}
         createDataSource={this.createDataSource}
@@ -409,6 +398,14 @@ class DataSourceManager extends React.Component {
           ...datasource,
           src: datasource.kind.toLowerCase(),
           title: datasource.name,
+          manifestFile: {
+            data: {
+              source: {
+                pluginId: datasource.id,
+                icon: datasource.iconFile?.data,
+              },
+            },
+          },
         };
       });
 
@@ -422,7 +419,7 @@ class DataSourceManager extends React.Component {
                 title={item.title}
                 src={item.src}
                 handleClick={() => renderSelectedDatasource(item)}
-                usepluginIcon={true}
+                usePluginIcon={true}
                 height="35px"
                 width="35px"
               />
@@ -466,7 +463,7 @@ class DataSourceManager extends React.Component {
                   title={item.title}
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
-                  usepluginIcon={true}
+                  usePluginIcon={true}
                   height="35px"
                   width="35px"
                 />
@@ -482,7 +479,7 @@ class DataSourceManager extends React.Component {
                   title={item.title}
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
-                  usepluginIcon={true}
+                  usePluginIcon={true}
                   height="35px"
                   width="35px"
                 />
@@ -498,7 +495,7 @@ class DataSourceManager extends React.Component {
                   title={item.title}
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
-                  usepluginIcon={true}
+                  usePluginIcon={true}
                   height="35px"
                   width="35px"
                 />
@@ -509,40 +506,19 @@ class DataSourceManager extends React.Component {
       );
     }
 
-    if (type === 'Plugins') {
-      const datasources = source.map((datasource) => {
-        return {
-          ...datasource,
-          src: datasource.iconFile.data,
-          title: datasource.name,
-        };
-      });
-
-      return (
-        <>
-          <div className="row row-deck mt-4">
-            <h4 className="mb-2">{type}</h4>
-            {datasources.map((item) => (
-              <Card
-                key={item.key}
-                title={item.title}
-                src={item?.src}
-                handleClick={() => this.selectPluginDataSource(item)}
-                usepluginIcon={false}
-                height="35px"
-                width="35px"
-              />
-            ))}
-          </div>
-        </>
-      );
-    }
-
     const datasources = source.map((datasource) => {
       return {
         ...datasource,
-        src: datasource.kind?.toLowerCase() || datasource.iconFile.data,
+        src: datasource.kind?.toLowerCase(),
         title: datasource.name,
+        manifestFile: {
+          data: {
+            source: {
+              pluginId: source.id,
+              icon: source.iconFile?.data,
+            },
+          },
+        },
       };
     });
 
@@ -555,8 +531,8 @@ class DataSourceManager extends React.Component {
               key={item.key}
               title={item.title}
               src={item?.src}
-              handleClick={() => renderSelectedDatasource(item)}
-              usepluginIcon={false}
+              handleClick={() => this.renderSelectedDatasource(item)}
+              usePluginIcon={true}
               height="35px"
               width="35px"
             />

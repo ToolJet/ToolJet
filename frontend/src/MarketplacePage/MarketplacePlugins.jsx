@@ -8,7 +8,7 @@ export const MarketplacePlugins = ({ isActive }) => {
   const [packages, setPackages] = React.useState([]);
   const [fetching, setFetching] = React.useState(false);
   React.useEffect(() => {
-    fetch('https://raw.githubusercontent.com/ToolJet/ToolJet/add-extension-module/marketplace/plugins.json')
+    fetch('https://raw.githubusercontent.com/ToolJet/ToolJet/add-marketplace/marketplace/plugins.json')
       .then((response) => response.json())
       .then(({ packages }) => setPackages(packages))
       .catch((error) => {
