@@ -104,7 +104,7 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
           {url === '' ? 'No PDF file specified' : renderPDF()}
         </div>
         {error || (
-          <div className="d-flex justify-content-between py-3 px-3 align-items-baseline bg-white">
+          <div className="d-flex justify-content-between py-3 px-3 align-items-baseline bg-white border-top border-light">
             {pageControls && (
               <>
                 <div className="pdf-page-controls">
