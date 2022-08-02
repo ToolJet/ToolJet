@@ -28,7 +28,7 @@ List view widget allows to create a list of repeatable rows of data. Just like a
 
 To add an event to a button, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
 
-**Row clicked** event is triggered when the button is clicked. Just like any other event on ToolJet, you can set multiple handlers for row clicked events.
+**Row clicked** event is triggered when the button is clicked. Just like any other event on ToolJet, you can set multiple actions for a row clicked event.
 
 :::info
 Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
