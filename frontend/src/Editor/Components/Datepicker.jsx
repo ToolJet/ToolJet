@@ -38,8 +38,9 @@ export const Datepicker = function Datepicker({
   const onDateChange = (date) => {
     setDate(date);
     const dateString = computeDateString(date);
-    setExposedVariable('value', dateString);
-    fireEvent('onSelect');
+    setExposedVariable('value', dateString).then(() => {
+      fireEvent('onSelect');
+    });
   };
 
   useEffect(() => {
