@@ -49,8 +49,6 @@ RUN wget https://download.oracle.com/otn_software/linux/instantclient/instantcli
     cd /opt/oracle/instantclient* && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
 WORKDIR /
-# Clean up image
-RUN wget -O - https://raw.githubusercontent.com/digitalocean/marketplace-partners/master/scripts/90-cleanup.sh | bash
 
 RUN mkdir -p /app
 # copy npm scripts
