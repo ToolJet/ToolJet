@@ -59,9 +59,7 @@ export const Modal = function Modal({
         animation={false}
         onEscapeKeyDown={() => hideOnEsc && hideModal()}
       >
-        {containerProps.mode === 'edit' && (
-          <ConfigHandle id={id} component={component} setSelectedComponent={containerProps.onComponentClick} />
-        )}
+        {containerProps.mode === 'edit' && <ConfigHandle id={id} component={component} />}
         {!hideTitleBar && (
           <BootstrapModal.Header>
             <BootstrapModal.Title>{title}</BootstrapModal.Title>
