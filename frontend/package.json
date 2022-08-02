@@ -79,6 +79,7 @@
     "react-router-dom": "^5.0.0",
     "react-select": "^4.3.1",
     "react-select-search": "^3.0.5",
+    "react-selecto": "^1.17.0",
     "react-spring": "^9.2.4",
     "react-table": "^7.6.3",
     "react-table-plugins": "^1.3.1",
