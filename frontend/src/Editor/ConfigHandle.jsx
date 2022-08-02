@@ -3,7 +3,6 @@ import React from 'react';
 export const ConfigHandle = function ConfigHandle({
   id,
   component,
-  setSelectedComponent,
   dragRef,
   removeComponent,
   position,
@@ -25,7 +24,6 @@ export const ConfigHandle = function ConfigHandle({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            setSelectedComponent(id, component, e.shiftKey);
           }}
           role="button"
           data-cy={`${component.name.toLowerCase()}-config-handle`}

@@ -120,6 +120,7 @@ button {
     padding: 0 10px;
   }
 
+  .resizer-select,
   .resizer-active {
     border: solid 1px $primary  !important;
 
@@ -4366,6 +4367,10 @@ input[type="text"] {
     .folder-ico {
       filter: invert(29%) sepia(84%) saturate(4047%) hue-rotate(215deg) brightness(98%) contrast(111%);
     }
+  }
+  
+  .folder-ico.dark {
+    filter: invert(1);
   }
 
   .list-group-item {
