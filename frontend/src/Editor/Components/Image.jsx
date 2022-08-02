@@ -67,6 +67,8 @@ export const Image = function Image({ component, height, properties, styles, fir
                             objectFit: imageFit ? imageFit : 'contain',
                             cursor: hasOnClickEvent ? 'pointer' : 'inherit',
                             pointerEvents: 'auto',
+                            width,
+                            height,
                           }}
                           height={height}
                           onClick={() => fireEvent('onClick')}
@@ -99,6 +101,8 @@ export const Image = function Image({ component, height, properties, styles, fir
                 objectFit: imageFit ? imageFit : 'contain',
                 cursor: hasOnClickEvent ? 'pointer' : 'inherit',
                 pointerEvents: 'auto',
+                width,
+                height,
               }}
               height={height}
               onClick={() => fireEvent('onClick')}
