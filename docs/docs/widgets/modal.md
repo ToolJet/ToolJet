@@ -7,7 +7,7 @@ title: Modal
 Modal widget renders in front of a backdrop, and it blocks interaction with the rest of the application until the modal is closed. It can be used to add dialog boxes to your app for lightboxes, user notifications, forms, etc.
 
 
-## How To Use Datepicker Widget
+## How To Use Modal Widget
 
 <iframe height="500" src="https://www.youtube.com/embed/co-UZCGpfMI" title="Datepicker Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
