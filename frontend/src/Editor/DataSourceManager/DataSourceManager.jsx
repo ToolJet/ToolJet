@@ -28,11 +28,7 @@ class DataSourceManager extends React.Component {
     if (props.selectedDataSource) {
       selectedDataSource = props.selectedDataSource;
       options = selectedDataSource.options;
-      if (selectedDataSource?.pluginId) {
-        dataSourceMeta = selectedDataSource.manifestFile.data.source;
-      } else if (selectedDataSource) {
-        dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedDataSource.kind);
-      }
+      dataSourceMeta = this.getDataSourceMeta(selectedDataSource);
     }
 
     this.state = {
@@ -67,12 +63,8 @@ class DataSourceManager extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.selectedDataSource !== this.props.selectedDataSource) {
-      let dataSourceMeta;
-      if (this.props.selectedDataSource?.pluginId) {
-        dataSourceMeta = this.props.selectedDataSource.manifestFile.data.source;
-      } else {
-        dataSourceMeta = DataSourceTypes.find((source) => source.kind === this.props.selectedDataSource.kind);
-      }
+      let dataSourceMeta = this.getDataSourceMeta(this.props.selectedDataSource);
+
       this.setState({
         selectedDataSource: this.props.selectedDataSource,
         options: this.props.selectedDataSource?.options,
@@ -80,6 +72,14 @@ class DataSourceManager extends React.Component {
       });
     }
   }
+
+  getDataSourceMeta = (dataSource) => {
+    if (dataSource?.pluginId) {
+      return dataSource.manifestFile.data.source;
+    }
+
+    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
+  };
 
   selectDataSource = (source) => {
     this.setState({
@@ -90,7 +90,6 @@ class DataSourceManager extends React.Component {
   };
 
   selectPluginDataSource = (source) => {
-    console.log(source);
     source.manifestFile.data.source.pluginId = source.id;
     source.manifestFile.data.source.icon = source.iconFile.data;
     this.setState({
@@ -569,12 +568,7 @@ class DataSourceManager extends React.Component {
 
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
-    let icon;
-    if (selectedDataSource?.pluginId) {
-      icon = <img src={selectedDataSource.icon} style={{ height: 35, width: 35 }} />;
-    } else if (selectedDataSource) {
-      icon = getSvgIcon(dataSourceMeta.kind?.toLowerCase(), 35, 35);
-    }
+    const icon = getSvgIcon(dataSourceMeta.kind?.toLowerCase(), 35, 35, selectedDataSource?.icon);
 
     return (
       <div>
@@ -833,6 +827,7 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
     if (queryString === null) {
       setSearchText('');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryString]);
   React.useEffect(() => {
     if (searchText === '') {

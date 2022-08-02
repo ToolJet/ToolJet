@@ -3,7 +3,7 @@ import config from 'config';
 import { Router, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
-import { PrivateRoute } from '@/_components';
+import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
@@ -258,7 +258,7 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
-            <PrivateRoute
+            <AdminRoute
               exact
               path="/marketplace"
               component={MarketplacePage}

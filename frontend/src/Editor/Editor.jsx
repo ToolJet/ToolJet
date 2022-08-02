@@ -47,7 +47,6 @@ import queryString from 'query-string';
 import toast from 'react-hot-toast';
 import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
 import Logo from './Icons/logo.svg';
-import RunjsIcon from './Icons/runjs.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
@@ -791,16 +790,18 @@ class Editor extends React.Component {
     this.saveApp(id, { name }, notify);
   };
 
-  renderDataSource = (dataSource) => {
-    let sourceMeta;
-    let icon;
+  getSourceMetaData = (dataSource) => {
     if (dataSource.plugin_id) {
-      sourceMeta = dataSource.plugin.manifest_file.data.source;
-      icon = <img src={dataSource.plugin.icon_file.data} style={{ height: 25, width: 25 }} />;
-    } else {
-      sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
-      icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25);
+      return dataSource.plugin?.manifest_file?.data.source;
     }
+
+    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
+  };
+
+  renderDataSource = (dataSource) => {
+    const sourceMeta = this.getSourceMetaData(dataSource);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.icon_file?.data);
+
     return (
       <tr
         role="button"
@@ -850,20 +851,8 @@ class Editor extends React.Component {
   };
 
   renderDataQuery = (dataQuery) => {
-    let sourceMeta;
-    let icon;
-    if (dataQuery.plugin_id) {
-      sourceMeta = dataQuery.plugin.manifest_file.data.source;
-      icon = <img src={dataQuery.plugin.icon_file.data} style={{ height: 25, width: 25 }} />;
-    } else {
-      sourceMeta = DataSourceTypes.find((source) => source.kind === dataQuery.kind);
-      icon =
-        sourceMeta.kind === 'runjs' ? (
-          <RunjsIcon style={{ height: 25, width: 25 }} />
-        ) : (
-          getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)
-        );
-    }
+    const sourceMeta = this.getSourceMetaData(dataQuery);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataQuery?.plugin?.icon_file?.data);
 
     let isSeletedQuery = false;
     if (this.state.selectedQuery) {

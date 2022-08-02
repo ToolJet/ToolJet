@@ -53,9 +53,7 @@ export class DataQueriesController {
         decamelizedQuery['plugin'].manifest_file.data = JSON.parse(
           decode(query.plugin.manifestFile.data.toString('utf8'))
         );
-        decamelizedQuery['plugin'].icon_file.data = `data:image/svg+xml;base64,${query.plugin.iconFile.data.toString(
-          'utf8'
-        )}`;
+        decamelizedQuery['plugin'].icon_file.data = query.plugin.iconFile.data.toString('utf8');
       }
 
       seralizedQueries.push(decamelizedQuery);

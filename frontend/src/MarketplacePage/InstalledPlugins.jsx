@@ -6,14 +6,27 @@ import Spinner from '@/_ui/Spinner';
 export const InstalledPlugins = ({ isActive, darkMode }) => {
   const [plugins, setPlugins] = React.useState([]);
   const [fetching, setFetching] = React.useState(false);
-  React.useEffect(() => {
+
+  const fetchPlugins = () => {
     pluginsService
       .findAll()
       .then(({ data = [] }) => setPlugins(data))
       .catch((error) => {
         toast.error(error?.message || 'something went wrong');
       });
+  };
+  React.useEffect(() => {
+    fetchPlugins();
   }, [isActive]);
+
+  const deletePlugin = (id) => {
+    const [error] = pluginsService.deletePlugin(id);
+    if (error) {
+      toast.error(error?.message || 'unable to delete plugin');
+      return;
+    }
+    fetchPlugins();
+  };
 
   return (
     <div className="col-9">
@@ -50,7 +63,7 @@ export const InstalledPlugins = ({ isActive, darkMode }) => {
                 <div className="row align-items-center">
                   <div className="col-auto">
                     <span className="bg-blue text-white avatar">
-                      <img height="32" width="32" src={plugin.iconFile.data} />
+                      <img height="32" width="32" src={`data:image/svg+xml;base64,${plugin.iconFile.data}`} />
                     </span>
                   </div>
                   <div className="col">
@@ -64,7 +77,9 @@ export const InstalledPlugins = ({ isActive, darkMode }) => {
                       <sub>v{plugin.version}</sub>
                     </div>
                     <div className="col-auto">
-                      <a href="#">Remove</a>
+                      <a href="#" onClick={() => deletePlugin(plugin.id)}>
+                        Remove
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -72,6 +87,11 @@ export const InstalledPlugins = ({ isActive, darkMode }) => {
             </div>
           </div>
         ))}
+        {!fetching && plugins?.length === 0 && (
+          <div className="empty">
+            <p className="empty-title">No results found</p>
+          </div>
+        )}
       </div>
     </div>
   );

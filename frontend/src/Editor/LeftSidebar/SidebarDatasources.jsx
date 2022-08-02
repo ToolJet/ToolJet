@@ -55,16 +55,18 @@ export const LeftSidebarDataSources = ({
     setSelectedDataSource(null);
   };
 
-  const renderDataSource = (dataSource, idx) => {
-    let sourceMeta;
-    let icon;
+  const getSourceMetaData = (dataSource) => {
     if (dataSource.plugin_id) {
-      sourceMeta = dataSource.plugin.manifest_file.data.source;
-      icon = <img src={dataSource.plugin.icon_file.data} style={{ height: 25, width: 25 }} />;
-    } else {
-      sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
-      icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25);
+      return dataSource.plugin?.manifest_file?.data.source;
     }
+
+    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
+  };
+
+  const renderDataSource = (dataSource, idx) => {
+    const sourceMeta = getSourceMetaData(dataSource);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.icon_file?.data);
+
     return (
       <div className="row py-1" key={idx}>
         <div

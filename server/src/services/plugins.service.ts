@@ -96,7 +96,7 @@ export class PluginsService {
     return `This action updates a #${id} plugin`;
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} plugin`;
+  async remove(id: string) {
+    return await this.pluginsRepository.delete(id);
   }
 }

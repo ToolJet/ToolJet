@@ -49,9 +49,7 @@ export class DataSourcesController {
     const dataSources = await this.dataSourcesService.all(user, query);
     for (const dataSource of dataSources) {
       if (dataSource.pluginId) {
-        dataSource.plugin.iconFile.data = `data:image/svg+xml;base64,${dataSource.plugin.iconFile.data.toString(
-          'utf8'
-        )}`;
+        dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
         dataSource.plugin.operationsFile.data = JSON.parse(
           decode(dataSource.plugin.operationsFile.data.toString('utf8'))
         );

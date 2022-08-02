@@ -14,6 +14,7 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
+import RunjsIcon from '@/Editor/Icons/runjs.svg';
 import { allSvgs } from '@tooljet/plugins/client';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -869,7 +870,9 @@ export function computeComponentState(_ref, components = {}) {
   });
 }
 
-export const getSvgIcon = (key, height = 50, width = 50) => {
+export const getSvgIcon = (key, height = 50, width = 50, iconFile) => {
+  if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
+  if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   const Icon = allSvgs[key];
 
   return <Icon style={{ height, width }} />;
