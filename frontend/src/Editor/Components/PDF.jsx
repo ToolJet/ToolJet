@@ -9,11 +9,15 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(null);
   const pageRef = useRef([]);
-
+  const [error, setError] = useState(true);
   const onDocumentLoadSuccess = (document) => {
     const { numPages: nextNumPages } = document;
     setNumPages(nextNumPages);
     setPageNumber(1);
+    setError(false);
+  };
+  const onDocumentLoadError = () => {
+    setError(true);
   };
   const options = {
     root: document.querySelector('#pdf-wrapper'),
@@ -62,7 +66,12 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
   };
   const renderPDF = () => (
     <>
-      <Document file={url} onLoadSuccess={onDocumentLoadSuccess} className="pdf-document">
+      <Document
+        file={url}
+        onLoadSuccess={onDocumentLoadSuccess}
+        onLoadError={onDocumentLoadError}
+        className="pdf-document"
+      >
         {Array.from(new Array(numPages), (el, index) => (
           <Page
             pageNumber={index + 1}
@@ -95,7 +104,7 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
         <div className="scrollable h-100 col position-relative" id="pdf-wrapper">
           {url === '' ? 'No PDF file specified' : renderPDF()}
         </div>
-        {
+        {error || (
           <div className="d-flex justify-content-between py-2 px-2 align-items-baseline">
             {pageControls && (
               <>
@@ -133,7 +142,7 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
               </div>
             )}
           </div>
-        }
+        )}
       </div>
     </div>
   );
