@@ -10,11 +10,9 @@ Text Input widget lets users enter and edit text.
 The Text Input should be preferred when user input is a single line of text.
 :::
 
-<div style={{textAlign: 'center'}}>
+## How To Use Text Input Widget
 
-![ToolJet - Widget Reference - Text input](/img/widgets/text-input/textinput.png)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/ARNOeZZ84AU" title="Text Input Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Properties
 
@@ -58,10 +56,10 @@ If the condition is true, the validation passes, otherwise returns a string that
 
 ### Show on desktop
 
-Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 ### Show on mobile
 
-Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 
 ## Styles
 

@@ -1,6 +1,10 @@
-# woocommerce
+---
+id: woocommerce
+title: WooCommerce
+---
+# WooCommerce
 
-ToolJet can connect to Woocommerce databases to read and write data.
+ToolJet can connect to WooCommerce databases to read and write data.
 
 - [Connection](#connection)
 - [Getting Started](#querying-woocommerce)

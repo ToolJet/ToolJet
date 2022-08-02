@@ -37,10 +37,11 @@ export const Datepicker = function Datepicker({
   };
 
   const onDateChange = (date) => {
-    fireEvent('onSelect');
     setDate(date);
     const dateString = computeDateString(date);
-    setExposedVariable('value', dateString);
+    setExposedVariable('value', dateString).then(() => {
+      fireEvent('onSelect');
+    });
   };
 
   useEffect(() => {
@@ -98,6 +99,7 @@ export const Datepicker = function Datepicker({
     <div
       data-disabled={disabledState}
       className="datepicker-widget"
+      data-cy="dragable-widget-datepicker"
       style={{
         height,
         display: visibility ? '' : 'none',
@@ -119,7 +121,9 @@ export const Datepicker = function Datepicker({
         excludeDates={excludedDates}
       />
 
-      <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
+      <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
+        {validationError}
+      </div>
     </div>
   );
 };
