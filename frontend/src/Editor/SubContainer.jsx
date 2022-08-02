@@ -41,6 +41,7 @@ export const SubContainer = ({
   selectedComponents,
   onOptionChange,
   exposedVariables,
+  setDraggingOrResizing = () => {},
 }) => {
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
@@ -447,7 +448,9 @@ export const SubContainer = ({
             onComponentHover,
             hoveredComponent,
             sideBarDebugger,
+            setDraggingOrResizing,
           }}
+          setDraggingOrResizing={setDraggingOrResizing}
         />
       ))}
 

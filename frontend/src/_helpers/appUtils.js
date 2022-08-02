@@ -753,7 +753,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
           }
 
           if (dataQuery.options.showSuccessNotification) {
-            const notificationDuration = dataQuery.options.notificationDuration || 5000;
+            const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
             toast.success(dataQuery.options.successMessage, {
               duration: notificationDuration,
             });
@@ -825,6 +825,7 @@ export function setTablePageIndex(_ref, tableId, index) {
 }
 
 export function renderTooltip({ props, text }) {
+  if (text === '') return <></>;
   return (
     <Tooltip id="button-tooltip" {...props}>
       {text}

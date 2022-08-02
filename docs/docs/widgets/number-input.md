@@ -6,11 +6,9 @@ title: Number Input
 
 Number Input widget lets users enter and change numbers.
 
-<div style={{textAlign: 'center'}}>
+## How To Use Number Input Widget
 
-![ToolJet - Widget Reference - Number Input](/img/widgets/number-input/number.png)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/Xf9Sx2fNzng" title="Number InputWidget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 :::tip
 Numbers can be changed by using the arrow keys.
@@ -37,10 +35,10 @@ It specifies the minimum value the number input can go to. This field accepts an
 
 ### Show on desktop
 
-Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 ### Show on mobile
 
-Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 
 ## Styles
 
