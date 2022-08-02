@@ -61,6 +61,7 @@ import RealtimeAvatars from './RealtimeAvatars';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
+import Selecto from 'react-selecto';
 
 setAutoFreeze(false);
 enablePatches();
@@ -100,6 +101,8 @@ class Editor extends React.Component {
     };
 
     this.dataSourceModalRef = React.createRef();
+    this.canvasContainerRef = React.createRef();
+    this.selectionRef = React.createRef();
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
@@ -144,6 +147,10 @@ class Editor extends React.Component {
       isSourceSelected: false,
       isSaving: false,
       isUnsavedQueriesAvailable: false,
+      isDragSelection: false,
+      isDraggingOrResizing: false,
+      selectionInProgress: false,
+      scrollOptions: {},
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -164,6 +171,11 @@ class Editor extends React.Component {
     this.setState({
       currentSidebarTab: 2,
       selectedComponents: [],
+      scrollOptions: {
+        container: this.canvasContainerRef.current,
+        throttleTime: 30,
+        threshold: 0,
+      },
     });
   }
 
@@ -1096,6 +1108,7 @@ class Editor extends React.Component {
   };
 
   handleComponentHover = (id) => {
+    if (this.state.selectionInProgress) return;
     this.setState({
       hoveredComponent: id,
     });
@@ -1138,6 +1151,50 @@ class Editor extends React.Component {
     this.dataSourceModalRef.current.dataSourceModalToggleStateHandler();
   };
 
+  onAreaSelectionStart = (e) => {
+    const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 1;
+    this.setState((prevState) => {
+      return {
+        selectionInProgress: true,
+        selectedComponents: [...(isMultiSelect ? prevState.selectedComponents : [])],
+      };
+    });
+  };
+
+  onAreaSelection = (e) => {
+    if (this.state.isDraggingOrResizing) {
+      return;
+    }
+    if (e.added.length > 0) {
+      this.setState({ isDragSelection: true });
+    }
+    e.added.forEach((el) => {
+      el.classList.add('resizer-select');
+    });
+    if (this.state.selectionInProgress && this.state.isDragSelection) {
+      e.removed.forEach((el) => {
+        el.classList.remove('resizer-select');
+      });
+    }
+  };
+
+  onAreaSelectionEnd = (e) => {
+    this.setState({ isDragSelection: false, selectionInProgress: false });
+    e.selected.forEach((el, index) => {
+      const id = el.getAttribute('widgetid');
+      const component = this.state.appDefinition.components[id].component;
+      const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
+      this.setSelectedComponent(id, component, isMultiSelect);
+    });
+  };
+
+  onAreaSelectionDrag = (e) => {
+    if (this.state.isDraggingOrResizing) {
+      this.setState({ isDragSelection: false, selectionInProgress: false });
+      e.stop();
+    }
+  };
+
   render() {
     const {
       currentSidebarTab,
@@ -1171,6 +1228,8 @@ class Editor extends React.Component {
       editingVersion,
       showCreateVersionModalPrompt,
       hoveredComponent,
+      isDragSelection,
+      isDraggingOrResizing,
     } = this.state;
 
     const appVersionPreviewLink = editingVersion ? `/applications/${app.id}/versions/${editingVersion.id}` : '';
@@ -1287,8 +1346,8 @@ class Editor extends React.Component {
             </div>
           </header>
         </div>
-        <DndProvider backend={HTML5Backend}>
-          <EditorContextWrapper>
+        <EditorContextWrapper>
+          <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
               <LeftSidebar
                 appVersionsId={this.state?.editingVersion?.id}
@@ -1320,14 +1379,35 @@ class Editor extends React.Component {
                 isSaving={this.state.isSaving}
                 isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
               />
+              <Selecto
+                dragContainer={'.canvas-container'}
+                selectableTargets={['.react-draggable']}
+                hitRate={0}
+                dragCondition={() => !isDraggingOrResizing}
+                selectByClick={true}
+                toggleContinueSelect={['shift']}
+                ref={this.selectionRef}
+                scrollOptions={this.state.scrollOptions}
+                onSelectStart={this.onAreaSelectionStart}
+                onSelectEnd={this.onAreaSelectionEnd}
+                onSelect={this.onAreaSelection}
+                onDrag={this.onAreaSelectionDrag}
+                onScroll={(e) => {
+                  this.canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
+                }}
+              ></Selecto>
               <div className="main main-editor-canvas" id="main-editor-canvas">
                 <div
                   className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                   style={{ transform: `scale(${zoomLevel})` }}
-                  onClick={(e) => {
-                    if (['real-canvas', 'modal'].includes(e.target.className)) {
-                      this.setState({ selectedComponents: [], currentSidebarTab: 2 });
+                  onMouseUp={(e) => {
+                    if (['real-canvas', 'modal'].includes(e.target.className) && !isDragSelection) {
+                      this.setState({ selectedComponents: [], currentSidebarTab: 2, hoveredComponent: false });
                     }
+                  }}
+                  ref={this.canvasContainerRef}
+                  onScroll={() => {
+                    this.selectionRef.current.checkScroll();
                   }}
                 >
                   <div
@@ -1374,6 +1454,9 @@ class Editor extends React.Component {
                           hoveredComponent={hoveredComponent}
                           sideBarDebugger={this.sideBarDebugger}
                           dataQueries={dataQueries}
+                          setDraggingOrResizing={(value) => {
+                            this.setState({ isDraggingOrResizing: value });
+                          }}
                         />
                         <CustomDragLayer
                           snapToGrid={true}
@@ -1664,8 +1747,8 @@ class Editor extends React.Component {
                 />
               )}
             </div>
-          </EditorContextWrapper>
-        </DndProvider>
+          </DndProvider>
+        </EditorContextWrapper>
       </div>
     );
   }

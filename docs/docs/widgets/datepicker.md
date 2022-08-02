@@ -8,7 +8,7 @@ The Datepicker widget allows users to select a single value for date and time fr
 
 ## How To Use Datepicker Widget
 
-<iframe height="500" src="https://www.youtube.com/embed/mcjYKw2VeAI" title="Datepicker Widget" frameborder="0" allowfullscreen width="100%"></iframe>
+<iframe height="500" src="https://www.youtube.com/embed/ioJyd2WE2qI" title="Datepicker Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Events
 ### Event: On select
@@ -19,7 +19,7 @@ On select event is triggered when an date is selected.
 
 ### Default value
 
-This value acts as placeholder for the date picker widget, if any value is not provided then the default value will be used from the picker. The default value needs to a `String` with respect to the `format` field. Ex: If format is set to `MM/YYYY` then provide default value as `04/2022`.
+This value acts as placeholder for the date picker widget, if any value is not provided then the default value will be used from the picker. The default value needs to be a `String` with respect to the `format` field. Ex: If format is set to `MM/YYYY` then provide default value as `04/2022`.
 
 ### Disabled dates
 
@@ -46,10 +46,10 @@ Add a validation for the date input in the widget using the ternary operator.
 
 ### Show on desktop
 
-Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 ### Show on mobile
 
-Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 
 ## Styles
 

@@ -823,7 +823,7 @@ export function Table({
       setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
     },
-    ['targetPageIndex']
+    [serverSidePagination, clientSidePagination]
   );
 
   useEffect(() => {
