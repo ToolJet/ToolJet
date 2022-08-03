@@ -34,6 +34,10 @@ export const commonWidgetText = {
   parameterDisable: "Disable",
   parameterBorderRadius: "Border radius",
   borderRadiusInput: ["{{", "20}}"],
+  parameterOptionLabels: "Option labels",
+  parameterBoxShadow: "Box Shadow",
+  boxShadowDefaultValue: "0px 0px 0px 0px #00000040",
+  parameterOptionvalues: "Option values",
 
   codeMirrorLabelTrue: "{{true}}",
   codeMirrorLabelFalse: "{{false}}",
@@ -43,12 +47,14 @@ export const commonWidgetText = {
   addEventHandlerLink: "+ Add event handler",
   inspectorComponentLabel: "components",
   componentValueLabel: "Value",
+  labelDefaultValue: "Default value",
+  parameterLabel: "Label",
 
   datepickerDocumentationLink: "Datepicker documentation",
 };
 
 export const createBackspaceText = (text) => {
-  let backspace = "";
+  let backspace = "{end}";
   [...text].forEach((c) => (backspace += "{backspace}"));
   return backspace;
 };
