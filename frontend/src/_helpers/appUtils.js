@@ -1085,8 +1085,6 @@ export const addNewWidgetToTheEditor = (
         [currentLayout]: {
           top: top,
           left: left,
-          width: defaultWidth,
-          height: defaultHeight,
         },
       },
     };

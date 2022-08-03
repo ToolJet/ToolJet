@@ -8,16 +8,7 @@ import produce from 'immer';
 import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
-import { computeComponentName } from '@/_helpers/utils';
-import { v4 as uuidv4 } from 'uuid';
-
-export const useMounted = () => {
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-  return mounted;
-};
+import { useMounted } from '@/_hooks/use-mount';
 
 export const SubContainer = ({
   mode,
@@ -104,14 +95,16 @@ export const SubContainer = ({
 
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
-          const componentId = uuidv4();
-          componentData.name = computeComponentName(componentData.component, boxes);
 
           const width = (componentMeta.defaultSize.width * 100) / 43;
           const height = componentMeta.defaultSize.height;
           const newComponentDefinition = {
             ...componentData.definition.properties,
           };
+
+          if (incrementWidth) {
+            _.set(newComponentDefinition, 'defaultSize.width', width * incrementWidth);
+          }
 
           if (_.isArray(properties) && properties.length > 0) {
             properties.forEach((prop) => {
@@ -122,8 +115,20 @@ export const SubContainer = ({
             _.set(componentData, 'definition.properties', newComponentDefinition);
           }
 
-          _.set(childrenBoxes, componentId, {
-            component: componentData,
+          const newComponent = addNewWidgetToTheEditor(
+            componentData,
+            {},
+            boxes,
+            {},
+            currentLayout,
+            snapToGrid,
+            zoomLevel,
+            true,
+            true
+          );
+
+          _.set(childrenBoxes, newComponent.id, {
+            component: newComponent.component,
             parent: parentRef.current.id,
             layouts: {
               [currentLayout]: {
