@@ -905,7 +905,7 @@ export function Table({
             {showDownloadButton && (
               <span
                 data-tip="Download as CSV"
-                className="btn btn-light btn-sm p-1 mx-1"
+                className="btn btn-light btn-sm p-1"
                 onClick={() => exportData('csv', true)}
               >
                 <img src="/assets/images/icons/download.svg" width="15" height="15" />
@@ -1029,7 +1029,7 @@ export function Table({
         showFilterButton ||
         showDownloadButton) && (
         <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
-          <div className="table-footer row">
+          <div className="table-footer row gx-0">
             <div className="col">
               {(clientSidePagination || serverSidePagination) && (
                 <Pagination
@@ -1050,7 +1050,7 @@ export function Table({
               {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 ? (
                 <>
                   <button
-                    className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
+                    className={`btn btn-primary btn-sm mx-2 ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
                     onClick={() =>
                       onEvent('onBulkUpdate', { component }).then(() => {
                         handleChangesSaved();
@@ -1059,7 +1059,7 @@ export function Table({
                   >
                     Save Changes
                   </button>
-                  <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
+                  <button className="btn btn-light btn-sm" onClick={() => handleChangesDiscarded()}>
                     Discard changes
                   </button>
                 </>
