@@ -178,7 +178,8 @@ export class AppsService {
     const viewableAppsQb = createQueryBuilder(App, 'apps')
       .innerJoin('apps.groupPermissions', 'group_permissions')
       .innerJoinAndSelect('apps.appGroupPermissions', 'app_group_permissions')
-      .innerJoinAndSelect('apps.user', 'user')
+      .innerJoin('apps.user', 'user')
+      .addSelect(['user.firstName', 'user.lastName'])
       .innerJoin(
         UserGroupPermission,
         'user_group_permissions',

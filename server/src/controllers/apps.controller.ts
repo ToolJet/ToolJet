@@ -197,8 +197,6 @@ export class AppsController {
     } else {
       apps = await this.appsService.all(user, page, searchKey);
     }
-    //remove password from user info
-    apps.forEach((app) => (app.user.password = undefined));
 
     const totalCount = await this.appsService.count(user, searchKey);
 

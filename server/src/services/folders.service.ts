@@ -178,7 +178,8 @@ export class FoldersService {
     const viewableAppsQb = createQueryBuilder(App, 'viewable_apps')
       .innerJoin('viewable_apps.groupPermissions', 'group_permissions')
       .innerJoinAndSelect('viewable_apps.appGroupPermissions', 'app_group_permissions')
-      .innerJoinAndSelect('viewable_apps.user', 'user')
+      .innerJoin('viewable_apps.user', 'user')
+      .addSelect(['user.firstName', 'user.lastName'])
       .innerJoin(
         UserGroupPermission,
         'user_group_permissions',
@@ -242,7 +243,8 @@ export class FoldersService {
     const viewableAppsQb = createQueryBuilder(App, 'viewable_apps')
       .innerJoin('viewable_apps.groupPermissions', 'group_permissions')
       .innerJoinAndSelect('viewable_apps.appGroupPermissions', 'app_group_permissions')
-      .innerJoinAndSelect('viewable_apps.user', 'user')
+      .innerJoin('viewable_apps.user', 'user')
+      .addSelect(['user.firstName', 'user.lastName'])
       .innerJoin(
         UserGroupPermission,
         'user_group_permissions',
@@ -284,7 +286,8 @@ export class FoldersService {
         'apps_in_folder_join',
         'apps.id = apps_in_folder_join.apps_in_folder_id'
       )
-      .innerJoinAndSelect('apps.user', 'user')
+      .innerJoin('apps.user', 'user')
+      .addSelect(['user.firstName', 'user.lastName'])
       .setParameters({
         ...folderAppsQb.getParameters(),
         ...viewableAppsQb.getParameters(),
