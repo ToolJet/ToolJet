@@ -877,20 +877,23 @@ export function Table({
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
 
       <div className="card-body border-bottom py-3 ">
-        <div className="d-flex align-items-center">
-          <span>{`${preGlobalFilteredRows.length} Records`}</span>
-          <div className="ms-auto text-muted">
-            {displaySearchBox && (
-              <GlobalFilter
-                globalFilter={state.globalFilter}
-                useAsyncDebounce={useAsyncDebounce}
-                setGlobalFilter={setGlobalFilter}
-                onComponentOptionChanged={onComponentOptionChanged}
-                component={component}
-                serverSideSearch={serverSideSearch}
-                onEvent={onEvent}
-              />
-            )}
+        <div
+          className={`d-flex align-items-center ms-auto text-muted ${
+            displaySearchBox ? 'justify-content-between' : 'justify-content-end'
+          }`}
+        >
+          {displaySearchBox && (
+            <GlobalFilter
+              globalFilter={state.globalFilter}
+              useAsyncDebounce={useAsyncDebounce}
+              setGlobalFilter={setGlobalFilter}
+              onComponentOptionChanged={onComponentOptionChanged}
+              component={component}
+              serverSideSearch={serverSideSearch}
+              onEvent={onEvent}
+            />
+          )}
+          <div>
             {showFilterButton && (
               <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
                 <img src="/assets/images/icons/filter.svg" width="15" height="15" />
@@ -1043,23 +1046,27 @@ export function Table({
               )}
             </div>
 
-            {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 && (
-              <div className="col d-flex justify-content-md-center">
-                <button
-                  className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
-                  onClick={() =>
-                    onEvent('onBulkUpdate', { component }).then(() => {
-                      handleChangesSaved();
-                    })
-                  }
-                >
-                  Save Changes
-                </button>
-                <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
-                  Discard changes
-                </button>
-              </div>
-            )}
+            <div className="col d-flex justify-content-end">
+              {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 ? (
+                <>
+                  <button
+                    className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
+                    onClick={() =>
+                      onEvent('onBulkUpdate', { component }).then(() => {
+                        handleChangesSaved();
+                      })
+                    }
+                  >
+                    Save Changes
+                  </button>
+                  <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
+                    Discard changes
+                  </button>
+                </>
+              ) : (
+                <span>{`${preGlobalFilteredRows.length} Records`}</span>
+              )}
+            </div>
           </div>
         </div>
       )}
