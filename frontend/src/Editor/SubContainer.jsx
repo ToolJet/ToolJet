@@ -115,7 +115,7 @@ export const SubContainer = ({
             properties.forEach((prop) => {
               const accessor = customResolverVariable
                 ? `{{${customResolverVariable}.${accessorKey}}}`
-                : defaultValue || '';
+                : defaultValue[prop] || '';
               console.log('accessor ==>', accessor);
               _.set(newComponentDefinition, prop, {
                 value: accessor,

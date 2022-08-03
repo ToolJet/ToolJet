@@ -2954,7 +2954,9 @@ export const widgets = [
         },
         tab: 0,
         properties: ['source'],
-        defaultValue: 'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg',
+        defaultValue: {
+          source: 'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg',
+        },
       },
       {
         componentName: 'Text',
@@ -2966,7 +2968,9 @@ export const widgets = [
         },
         tab: 0,
         properties: ['text'],
-        defaultValue: 'Open-source low-code framework to build & deploy internal tools within minutes.',
+        defaultValue: {
+          text: 'Open-source low-code framework to build & deploy internal tools within minutes.',
+        },
       },
       {
         componentName: 'IFrame',
@@ -2978,7 +2982,9 @@ export const widgets = [
         },
         tab: 1,
         properties: ['source'],
-        defaultValue: 'https://www.tooljet.com/integrations',
+        defaultValue: {
+          source: 'https://www.tooljet.com/integrations',
+        },
       },
       {
         componentName: 'Text',
@@ -2990,7 +2996,9 @@ export const widgets = [
         },
         tab: 2,
         properties: ['text'],
-        defaultValue: 'Email',
+        defaultValue: {
+          text: 'Email',
+        },
       },
       {
         componentName: 'TextInput',
@@ -3001,7 +3009,9 @@ export const widgets = [
         },
         tab: 2,
         properties: ['placeholder'],
-        defaultValue: 'Enter your email',
+        defaultValue: {
+          placeholder: ' Enter your email',
+        },
       },
       {
         componentName: 'Text',
@@ -3013,7 +3023,9 @@ export const widgets = [
         },
         tab: 2,
         properties: ['text'],
-        defaultValue: 'Password',
+        defaultValue: {
+          text: 'Password',
+        },
       },
       {
         componentName: 'PasswordInput',
@@ -3024,18 +3036,23 @@ export const widgets = [
         },
         tab: 2,
         properties: ['placeholder'],
-        defaultValue: 'Enter your password',
+        defaultValue: {
+          placeholder: ' Enter your password',
+        },
       },
       {
         componentName: 'ButtonGroup',
         layout: {
           top: 160,
-          left: 20,
-          height: 30,
+          left: 3,
+          height: 90,
         },
         tab: 2,
-        properties: ['values'],
-        defaultValue: ['Login', 'Sign Up', 'Forgot Password'],
+        properties: ['values', 'label'],
+        defaultValue: {
+          values: ['Login', 'Sign Up', 'Forgot Password'],
+          label: '',
+        },
       },
     ],
     component: 'Tabs',
