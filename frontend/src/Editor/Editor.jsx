@@ -1626,6 +1626,7 @@ class Editor extends React.Component {
                             setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
                             appDefinition={appDefinition}
                             editorState={this}
+                            showQueryConfirmation={showQueryConfirmation}
                           />
                         </div>
                       </div>
