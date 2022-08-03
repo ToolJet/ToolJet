@@ -4,7 +4,7 @@ title: List view
 ---
 # List view
 
-List view widget allows to create a list of repeatable rows of data. Just like container widget, you can nest other widgets inside of it and control how many times they repeat.
+List view widget allows to create a list of repeatable rows of data. Just like a container widget, you can nest other widgets inside of it and control how many times they repeat.
 
 <div style={{textAlign: 'center'}}>
 
@@ -28,7 +28,7 @@ List view widget allows to create a list of repeatable rows of data. Just like c
 
 To add an event to a button, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
 
-**Row clicked** event is triggered when the button is clicked. Just like any other event on ToolJet, you can set multiple handlers for row clicked event.
+**Row clicked** event is triggered when the button is clicked. Just like any other event on ToolJet, you can set multiple actions for a row clicked event.
 
 :::info
 Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
@@ -44,9 +44,9 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 
 | Properties  | description | Expected value |
 | ----------- | ----------- | -------------- |
-| List data | Enter the data that you want to diplay into the widget. Data in the form of array of objects or data from a query that returns an array of objects.| `{{ [ {id: 0, name: ABC, email: abc@bla.com}, {id: 1, name: XYZ, email: xyz@bla.com} ] }}` or `{{queries.xyz.data}}` |
+| List data | Enter the data that you want to display into the widget. Data in the form of an array of objects or data from a query that returns an array of objects.| `{{ [ {id: 0, name: ABC, email: abc@bla.com}, {id: 1, name: XYZ, email: xyz@bla.com} ] }}` or `{{queries.xyz.data}}` |
 | Row height | Enter a numerical value to set the row height accordingly. | Any number between `1` to `100` |
-| Show bottom border | This property allows you to show or hide the row botton border. | By deafult its `{{true}}`, set `{{false}}` to hide the border  |
+| Show bottom border | This property allows you to show or hide the row bottom border. | By default its `{{true}}`, set `{{false}}` to hide the border  |
 
 ## Layout
 
@@ -58,8 +58,8 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 
 | Layout  | description | Expected value |
 | ----------- | ----------- | ------------ |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display mobile view. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`   |
+| Show on desktop | Toggle on or off to display the desktop view. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile | Toggle on or off to display the mobile view. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`   |
 
 ## Styles
 
@@ -71,8 +71,8 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 
 | Style      | Description |
 | ----------- | ----------- |
-| backgroundColor |  You can change the background color of the widget by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Visibility | This is to control the visibility of the widget. If `{{false}}` the widget will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
+| Background Color |  You can change the background color of the widget by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Visibility | This is to control the visibility of the widget. If `{{false}}` the widget will not be visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
 | Disable |  This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 
 :::info
@@ -89,7 +89,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 </div>
 
-- Now lets create a query and select REST API from the datasource dropdown. Chose the `GET` method and enter the API endpoint - `https://reqres.in/api/users?page=1`. Save this query and fire it. Inspect the query results from the left sidebar, you'll see that it resulted the `data` object having array of objects.
+- Now lets create a query and select the REST API from the datasource dropdown. Choose the `GET` method and enter the API endpoint - `https://reqres.in/api/users?page=1`. Save this query and fire it. Inspect the query results from the left sidebar, you'll see that it resulted in the `data` object having an array of objects.
 
 <div style={{textAlign: 'center'}}>
 
@@ -97,7 +97,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 </div>
 
-- Now lets edit the `List data` property of list view widget for displaying the query data. We will use JS to get the data from the query - `{{queries.restapi1.data.data}}`. Here the last `data` is data object that includes array of objects, the first `data` is the data resulted from the `restapi1` query. This will automatically create the rows in the widget using the data.
+- Now lets edit the `List data` property of the list view widget for displaying the query data. We will use JS to get the data from the query - `{{queries.restapi1.data.data}}`. Here the last `data` is a data object that includes an array of objects, the first `data` is the data resulted from the `restapi1` query. This will automatically create the rows in the widget using the data.
 
 <div style={{textAlign: 'center'}}>
 
