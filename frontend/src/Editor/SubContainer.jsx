@@ -40,7 +40,7 @@ export const SubContainer = ({
   selectedComponents,
   onOptionChange,
   exposedVariables,
-  containerProps,
+  addDefaultChildren = false,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -87,7 +87,7 @@ export const SubContainer = ({
         return allComponents[key].parent === parent;
       });
 
-      if (children.length === 0 && containerProps?.addDefaultChildren === true) {
+      if (children.length === 0 && addDefaultChildren === true) {
         const defaultChildren = _.cloneDeep(parentComponent)['defaultChildren'];
         const childrenBoxes = {};
         defaultChildren.forEach((child) => {

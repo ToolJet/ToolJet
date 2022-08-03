@@ -98,7 +98,6 @@ export const Listview = function Listview({
                   return { ...prevData, ...newChildrenData };
                 });
               }}
-              containerProps={containerProps}
             />
           </div>
         ))}
