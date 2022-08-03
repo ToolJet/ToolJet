@@ -6,11 +6,10 @@ title: Password Input
 
 A Password Input widget provides a way for the users to securely enter a password. The Password Input is a one-line plain text editor in which the text is obscured so that it cannot be read, by replacing each character with an asterisk ("*") symbol.
 
-<div style={{textAlign: 'center'}}>
+## How To Use Password Input Widget
 
-![ToolJet - Widget Reference - Password Input](/img/widgets/password-input/password-input.gif)
+<iframe height="500" src="https://www.youtube.com/embed/E9mfJ9cCJ0o" title="Password Input Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
-</div>
 
 ## Properties
 
