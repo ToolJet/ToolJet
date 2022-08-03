@@ -142,15 +142,15 @@ export const SubContainer = ({
 
         const _allComponents = JSON.parse(JSON.stringify(allComponents));
 
-        console.log('allComponents[parentRef.current.id]', allComponents);
+        const parentId =
+          parentComponent.component !== 'Tabs'
+            ? parentRef.current.id
+            : parentRef.current.id?.substring(0, parentRef.current.id.lastIndexOf('-'));
 
-        if (parentComponent.component === 'Listview') {
-          _allComponents[parentRef.current.id] = {
-            ...allComponents[parentRef.current.id],
-            withDefaultChildren: false,
-          };
-        }
-
+        _allComponents[parentId] = {
+          ...allComponents[parentId],
+          withDefaultChildren: false,
+        };
         setBoxes({
           ..._allComponents,
           ...childrenBoxes,
