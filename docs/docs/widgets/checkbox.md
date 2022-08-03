@@ -10,11 +10,9 @@ Checkbox widget can be used for allowing the users to make a binary choice, e.g,
 The checkbox widget consists of a single checkbox input.
 :::
 
-<div style={{textAlign: 'center'}}>
+## How To Use Checkbox Widget
 
-![ToolJet - Widget Reference - Checkbox](/img/widgets/checkbox/checkbox.gif)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/Ryu2k2bqkWw" title="Checkbox Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Properties
 
