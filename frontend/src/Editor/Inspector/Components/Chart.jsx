@@ -147,8 +147,6 @@ class Chart extends React.Component {
       });
     }
 
-    
-
     if (chartType !== 'pie') {
       if (!plotFromJson) {
         items.push({
@@ -167,47 +165,31 @@ class Chart extends React.Component {
 
       items.push({
         title: 'Options',
-        children: 
-        <>
-        {
-          renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'loadingState',
-            'properties',
-            currentState
-          )
-        }
-
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'showAxes',
-          'properties',
-          currentState
-        )},
-
-        {renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'showGridLines',
-            'properties',
-            currentState
-          )
-        }
-
-        </>
+        children: (
+          <>
+            {renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              'loadingState',
+              'properties',
+              currentState
+            )}
+            {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showAxes', 'properties', currentState)}
+            ,
+            {renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              'showGridLines',
+              'properties',
+              currentState
+            )}
+          </>
+        ),
       });
-
-      
-
-      
     }
 
     items.push({
