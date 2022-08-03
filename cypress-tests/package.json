@@ -6,13 +6,12 @@
     "cy:run": "cypress run --browser=chrome 103, --headless",
     "cy:open": "cypress open --browser=chrome 103, --e2e"
   },
-
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^5.12.0",
+    "@faker-js/faker": "^7.3.0",
     "cypress": "^10.3.1"
   },
   "dependencies": {
-    "faker": "^6.6.6",
     "moment": "^2.29.4"
   }
 }
