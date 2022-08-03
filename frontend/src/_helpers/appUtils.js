@@ -1062,7 +1062,7 @@ export const addNewWidgetToTheEditor = (
   shouldSnapToGrid,
   zoomLevel,
   isInSubContainer = false,
-  addingDefault = true
+  addingDefault = false
 ) => {
   const componentMetaData = _.cloneDeep(componentMeta);
   const componentData = _.cloneDeep(componentMetaData);
