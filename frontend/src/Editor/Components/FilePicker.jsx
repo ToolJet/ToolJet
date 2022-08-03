@@ -241,18 +241,20 @@ export const FilePicker = ({
       });
       setSelectedFiles(fileData);
       onComponentOptionChanged(component, 'file', fileData);
-      onEvent('onFileSelected', { component }).then(() => {
-        setAccepted(true);
-        // eslint-disable-next-line no-unused-vars
-        return new Promise(function (resolve, reject) {
-          setTimeout(() => {
-            setShowSelectedFiles(true);
-            setAccepted(false);
-            onComponentOptionChanged(component, 'isParsing', false);
-            resolve();
-          }, 600);
-        });
-      });
+      onEvent('onFileSelected', { component })
+        .then(() => {
+          setAccepted(true);
+          // eslint-disable-next-line no-unused-vars
+          return new Promise(function (resolve, reject) {
+            setTimeout(() => {
+              setShowSelectedFiles(true);
+              setAccepted(false);
+              onComponentOptionChanged(component, 'isParsing', false);
+              resolve();
+            }, 600);
+          });
+        })
+        .then(() => onEvent('onFileLoaded', { component }));
     }
 
     if (fileRejections.length > 0) {
@@ -275,6 +277,7 @@ export const FilePicker = ({
       copy.splice(index, 1);
       return copy;
     });
+    onEvent('onFileDeselected', { component });
   };
 
   useEffect(() => {
