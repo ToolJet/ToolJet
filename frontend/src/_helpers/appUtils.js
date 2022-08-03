@@ -17,6 +17,16 @@ import generateFile from '@/_lib/generate-file';
 import { allSvgs } from '@tooljet/plugins/client';
 import { v4 as uuidv4 } from 'uuid';
 
+// enum for types of errors
+const ERROR_TYPES = Object.freeze({
+  ReferenceError: 'ReferenceError',
+  SyntaxError: 'SyntaxError',
+  TypeError: 'TypeError',
+  URIError: 'URIError',
+  RangeError: 'RangeError',
+  EvalError: 'EvalError',
+});
+
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
     _ref.setState(state, resolve);
@@ -790,8 +800,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
         })
         .catch((err) => {
           const { error } = err;
-          console.error(err, error);
-          toast.error(error);
+          const $error = err.name;
+          const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : error || 'Unknown error';
+          toast.error($errorMessage);
           _self.setState(
             {
               currentState: {
@@ -805,7 +816,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
               },
             },
             () => {
-              resolve({ status: 'failed', message: error });
+              resolve({ status: 'failed', message: $errorMessage });
             }
           );
         });
