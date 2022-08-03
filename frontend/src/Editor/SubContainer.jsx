@@ -142,10 +142,14 @@ export const SubContainer = ({
 
         const _allComponents = JSON.parse(JSON.stringify(allComponents));
 
-        _allComponents[parentRef.current.id] = {
-          ...allComponents[parentRef.current.id],
-          withDefaultChildren: false,
-        };
+        console.log('allComponents[parentRef.current.id]', allComponents);
+
+        if (parentComponent.component === 'Listview') {
+          _allComponents[parentRef.current.id] = {
+            ...allComponents[parentRef.current.id],
+            withDefaultChildren: false,
+          };
+        }
 
         setBoxes({
           ..._allComponents,

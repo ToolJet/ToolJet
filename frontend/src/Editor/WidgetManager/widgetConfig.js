@@ -2944,6 +2944,33 @@ export const widgets = [
       width: 30,
       height: 200,
     },
+    defaultChildren: [
+      {
+        componentName: 'Image',
+        layout: {
+          top: 15,
+          left: 6.976744186046512,
+          height: 100,
+        },
+      },
+      {
+        componentName: 'Text',
+        layout: {
+          top: 50,
+          left: 27,
+          height: 30,
+        },
+      },
+      {
+        componentName: 'Button',
+        layout: {
+          top: 50,
+          left: 60,
+          height: 30,
+        },
+        incrementWidth: 2,
+      },
+    ],
     component: 'Tabs',
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
