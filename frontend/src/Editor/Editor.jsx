@@ -1288,13 +1288,11 @@ class Editor extends React.Component {
                 })}
                 data-cy="autosave-indicator"
               >
-                {this.state.isSaving ? (
-                  <Spinner size="small" />
-                ) : this.state.saveError ? (
-                  'Could not save changes'
-                ) : (
-                  'All changes are saved'
-                )}
+                {this.state.isSaving
+                  ? 'Saving...'
+                  : this.state.saveError
+                  ? 'Could not save changes'
+                  : 'All changes are saved'}
               </span>
               {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
               {editingVersion && (
