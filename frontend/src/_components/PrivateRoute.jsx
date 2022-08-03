@@ -45,7 +45,7 @@ export const AdminRoute = ({ component: Component, switchDarkMode, darkMode, ...
         );
       }
 
-      if (!currentUser.admin) {
+      if (!currentUser.isAdmin) {
         return (
           <Redirect
             to={{

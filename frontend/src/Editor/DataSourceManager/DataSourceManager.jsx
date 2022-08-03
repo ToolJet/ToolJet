@@ -82,6 +82,7 @@ class DataSourceManager extends React.Component {
   };
 
   selectDataSource = (source) => {
+    console.log(source.manifestFile?.data?.source);
     this.setState({
       dataSourceMeta: source.manifestFile?.data?.source ?? source,
       selectedDataSource: source.manifestFile?.data?.source ?? source,
@@ -511,14 +512,6 @@ class DataSourceManager extends React.Component {
         ...datasource,
         src: datasource.kind?.toLowerCase(),
         title: datasource.name,
-        manifestFile: {
-          data: {
-            source: {
-              pluginId: source.id,
-              icon: source.iconFile?.data,
-            },
-          },
-        },
       };
     });
 
@@ -531,8 +524,9 @@ class DataSourceManager extends React.Component {
               key={item.key}
               title={item.title}
               src={item?.src}
-              handleClick={() => this.renderSelectedDatasource(item)}
+              handleClick={() => renderSelectedDatasource(item)}
               usePluginIcon={true}
+              iconFile={item.iconFile?.data}
               height="35px"
               width="35px"
             />
