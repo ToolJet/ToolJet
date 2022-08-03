@@ -788,7 +788,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
             }
           );
         })
-        .catch(({ error }) => {
+        .catch((err) => {
+          const { error } = err;
+          console.error(err, error);
           toast.error(error);
           _self.setState(
             {
