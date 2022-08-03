@@ -1128,6 +1128,7 @@ export const addNewWidgetToTheEditor = (
         height: defaultHeight,
       },
     },
+    withDefaultChildren: componentData.component === 'Listview' ? true : false,
   };
 
   return newComponent;

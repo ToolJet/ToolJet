@@ -49,7 +49,7 @@ export const SubContainer = ({
   selectedComponents,
   onOptionChange,
   exposedVariables,
-  addDefaultComponents = false,
+  containerProps,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -95,8 +95,8 @@ export const SubContainer = ({
       const children = Object.keys(allComponents).filter((key) => {
         return allComponents[key].parent === parent;
       });
-
-      if (children.length === 0 && addDefaultComponents === true) {
+      console.log('withDefaultChildren', containerProps.addDefaultChildren);
+      if (children.length === 0 && containerProps.addDefaultChildren === true) {
         const defaultChildren = _.cloneDeep(parentComponent)['defaultChildren'];
         const childrenBoxes = {};
         defaultChildren.forEach((child) => {
@@ -135,65 +135,21 @@ export const SubContainer = ({
           });
         });
 
+        const _allComponents = JSON.parse(JSON.stringify(allComponents));
+
+        _allComponents[parentRef.current.id] = {
+          ...allComponents[parentRef.current.id],
+          withDefaultChildren: false,
+        };
+
         setBoxes({
-          ...allComponents,
+          ..._allComponents,
           ...childrenBoxes,
         });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
-
-  // useEffect(() => {
-  //   if (mounted && ['Listview'].includes(parentComponent.component) && addDefaultComponents) {
-  //     const defaultChildren = _.cloneDeep(parentComponent)['defaultChildren'];
-
-  //     const childrenBoxes = {};
-
-  //     defaultChildren.forEach((child) => {
-  //       const { componentName, layout, incrementWidth, properties, accessorKey } = child;
-  //       const componentMeta = componentTypes.find((component) => component.component === componentName);
-
-  //       const newComponentDefinition = {
-  //         ...componentMeta.definition.properties,
-  //       };
-
-  //       if (_.isArray(properties) && properties.length > 0) {
-  //         properties.forEach((prop) => {
-  //           _.set(newComponentDefinition, prop, {
-  //             value: `{{${customResolverVariable}.${accessorKey}}}`,
-  //           });
-  //         });
-  //         _.set(componentMeta, 'definition.properties', newComponentDefinition);
-  //       }
-
-  //       const newComponent = addNewWidgetToTheEditor(
-  //         componentMeta,
-  //         {},
-  //         boxes,
-  //         undefined,
-  //         currentLayout,
-  //         false,
-  //         undefined,
-  //         true,
-  //         true
-  //       );
-
-  //       _.set(childrenBoxes, newComponent.id, {
-  //         component: newComponent.component,
-  //         layouts: {
-  //           ...newComponent.layout,
-  //           top: layout.top,
-  //           left: layout.left,
-  //           parent: parentRef.current.id,
-  //         },
-  //       });
-  //     });
-
-  //     // avoid max call stack error
-  //     setBoxes({ ...allComponents, ...childrenBoxes });
-  //   }
-  // }, [mounted]);
 
   const moveBox = useCallback(
     (id, left, top) => {
