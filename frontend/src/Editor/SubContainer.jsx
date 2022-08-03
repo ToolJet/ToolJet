@@ -87,7 +87,7 @@ export const SubContainer = ({
         return allComponents[key].parent === parent;
       });
 
-      if (children.length === 0 && containerProps.addDefaultChildren === true) {
+      if (children.length === 0 && containerProps?.addDefaultChildren === true) {
         const defaultChildren = _.cloneDeep(parentComponent)['defaultChildren'];
         const childrenBoxes = {};
         defaultChildren.forEach((child) => {
