@@ -1,24 +1,24 @@
 ---
-id: organization-environment-variables
-title: Organization Environment Variables
+id: Workspace-environment-variables
+title: Workspace Environment Variables
 ---
 
-Organization environment variables are the variables with some value(usually tokens/secret keys/API keys) that can be used in different apps across the same organization.
+Workspace environment variables are the variables with some value(usually tokens/secret keys/API keys) that can be used in different apps across the same Workspace.
 
-## How can we add these variables to an organization?
+## How can we add these variables to an Workspace?
 
-Suppose there is an `API key` or a value that you want to use in the queries or widgets in the multiple apps of the same organization then the organization admin or the user with permissions can add an environment variable.
+Suppose there is an `API key` or a value that you want to use in the queries or widgets in the multiple apps of the same Workspace then the Workspace admin or the user with permissions can add an environment variable.
 
 #### Adding the environment variable
 - Go to the ToolJet Dashboard, and click on the dropdown on the navigation bar to show `Workspace` options
 - Select `Manage Environment Variables`
 - Click on `Add New Variable` button
 - Give a `Name` to the variable, set the value, choose `Type`, toggle `Encryption`, and click **Add Variable** button
-- Now this variable can be used inside any application of this organization
+- Now this variable can be used inside any application of this Workspace
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Organization environment variables](/img/tutorial/use-env-org-vars/add-variable.gif)
+![ToolJet - Workspace environment variables](/img/tutorial/use-env-org-vars/add-variable.gif)
 
 </div>
 
@@ -34,7 +34,7 @@ Variable Type cannot be changed once it has beed created.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Organization environment variables](/img/tutorial/use-env-org-vars/variable-type.png)
+![ToolJet - Workspace environment variables](/img/tutorial/use-env-org-vars/variable-type.png)
 
 </div>
 
@@ -44,7 +44,7 @@ This feature enables us to add a client variable with and without `encryption`. 
 
 ### Using variable in an app
 
-Let's use the variable that we created [here](organization-environment-variables#adding-the-environment-variable). If you have used ToolJet before, then you know that for getting the values from any variable we use JS notation i.e. `{{}}` but for using the organization variables we have different opening and closing notation `%% %%`. The environment variables will not work inside js code `{{}}`.
+Let's use the variable that we created [here](Workspace-environment-variables#adding-the-environment-variable). If you have used ToolJet before, then you know that for getting the values from any variable we use JS notation i.e. `{{}}` but for using the Workspace variables we have different opening and closing notation `%% %%`. The environment variables will not work inside js code `{{}}`.
 
 So, the syntax for using the variable that we created before will be `%%client.pi%%`
 
@@ -52,7 +52,7 @@ So, the syntax for using the variable that we created before will be `%%client.p
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Organization environment variables](/img/tutorial/use-env-org-vars/variable-usage.png)
+![ToolJet - Workspace environment variables](/img/tutorial/use-env-org-vars/variable-usage.png)
 
 </div>
 
@@ -60,6 +60,6 @@ So, the syntax for using the variable that we created before will be `%%client.p
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Organization environment variables](/img/tutorial/use-env-org-vars/server-variable-usage.png)
+![ToolJet - Workspace environment variables](/img/tutorial/use-env-org-vars/server-variable-usage.png)
 
 </div>
