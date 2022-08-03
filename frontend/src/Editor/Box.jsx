@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useContext } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -58,6 +58,7 @@ import {
   resolveGeneralStyles,
 } from './component-properties-resolution';
 import _ from 'lodash';
+import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 
 const AllComponents = {
   Button,
@@ -133,6 +134,7 @@ export const Box = function Box({
   allComponents,
   sideBarDebugger,
   dataQueries,
+  readOnly,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -180,6 +182,8 @@ export const Box = function Box({
       ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
       : [resolvedGeneralStyles, []];
 
+  const { exposeToCodeHinter } = useContext(EditorContext) || {};
+
   useEffect(() => {
     const componentName = getComponentName(currentState, id);
     const errorLog = Object.fromEntries(
@@ -212,6 +216,15 @@ export const Box = function Box({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
+
+  useEffect(() => {
+    if (customResolvables && !readOnly && mode === 'edit') {
+      const newCustomResolvable = {};
+      newCustomResolvable[id] = { ...customResolvables };
+      exposeToCodeHinter((prevState) => ({ ...prevState, ...newCustomResolvable }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(customResolvables), readOnly]);
 
   let exposedVariables = currentState?.components[component.name] ?? {};
 
