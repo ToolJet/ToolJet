@@ -2966,93 +2966,21 @@ export const widgets = [
           height: 50,
           width: 34,
         },
-        tab: 0,
+        tab: 1,
         properties: ['text'],
         defaultValue: {
           text: 'Open-source low-code framework to build & deploy internal tools within minutes.',
         },
       },
       {
-        componentName: 'IFrame',
+        componentName: 'Table',
         layout: {
           top: 0,
-          left: 5,
-          height: 240,
-          width: 40,
-        },
-        tab: 1,
-        properties: ['source'],
-        defaultValue: {
-          source: 'https://www.tooljet.com/integrations',
-        },
-      },
-      {
-        componentName: 'Text',
-        layout: {
-          top: 15,
-          left: 4,
-          height: 30,
-          width: 6,
+          left: 1,
+          width: 42,
+          height: 250,
         },
         tab: 2,
-        properties: ['text'],
-        defaultValue: {
-          text: 'Email',
-        },
-      },
-      {
-        componentName: 'TextInput',
-        layout: {
-          top: 15,
-          left: 20,
-          height: 30,
-        },
-        tab: 2,
-        properties: ['placeholder'],
-        defaultValue: {
-          placeholder: ' Enter your email',
-        },
-      },
-      {
-        componentName: 'Text',
-        layout: {
-          top: 60,
-          left: 4,
-          height: 30,
-          width: 6,
-        },
-        tab: 2,
-        properties: ['text'],
-        defaultValue: {
-          text: 'Password',
-        },
-      },
-      {
-        componentName: 'PasswordInput',
-        layout: {
-          top: 60,
-          left: 20,
-          height: 30,
-        },
-        tab: 2,
-        properties: ['placeholder'],
-        defaultValue: {
-          placeholder: ' Enter your password',
-        },
-      },
-      {
-        componentName: 'ButtonGroup',
-        layout: {
-          top: 160,
-          left: 3,
-          height: 90,
-        },
-        tab: 2,
-        properties: ['values', 'label'],
-        defaultValue: {
-          values: ['Login', 'Sign Up', 'Forgot Password'],
-          label: '',
-        },
       },
     ],
     component: 'Tabs',
