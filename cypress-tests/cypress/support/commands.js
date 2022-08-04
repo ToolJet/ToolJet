@@ -171,7 +171,7 @@ Cypress.Commands.add("deleteApp", (appName) => {
 });
 
 Cypress.Commands.add(
-  "verifyElement",
+  "verifyVisibleElement",
   {
     prevSubject: "element",
   },

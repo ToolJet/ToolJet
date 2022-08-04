@@ -84,8 +84,3 @@ export const createBackspaceText = (text) => {
   [...text].forEach((c) => (backspace += "{backspace}"));
   return backspace;
 };
-
-export const assertions = {
-  text: "have.text",
-  attribute: "have.attr",
-};
