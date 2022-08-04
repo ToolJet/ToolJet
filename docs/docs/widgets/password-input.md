@@ -6,11 +6,10 @@ title: Password Input
 
 A Password Input widget provides a way for the users to securely enter a password. The Password Input is a one-line plain text editor in which the text is obscured so that it cannot be read, by replacing each character with an asterisk ("*") symbol.
 
-<div style={{textAlign: 'center'}}>
+## How To Use Password Input Widget
 
-![ToolJet - Widget Reference - Password Input](/img/widgets/password-input/password-input.gif)
+<iframe height="500" src="https://www.youtube.com/embed/E9mfJ9cCJ0o" title="Password Input Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
-</div>
 
 ## Properties
 
@@ -39,10 +38,10 @@ If the condition is true, the validation passes, otherwise return a string that 
 
 ### Show on desktop
 
-Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 ### Show on mobile
 
-Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 
 ## Styles
 

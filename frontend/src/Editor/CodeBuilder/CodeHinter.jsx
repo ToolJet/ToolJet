@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -28,6 +28,7 @@ import { BoxShadow } from './Elements/BoxShadow';
 import FxButton from './Elements/FxButton';
 import { ToolTip } from '../Inspector/Elements/Components/ToolTip';
 import { toast } from 'react-hot-toast';
+import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 
 const AllElements = {
   Color,
@@ -62,7 +63,7 @@ export function CodeHinter({
   fieldMeta,
   onFxPress,
   fxActive,
-  // hideSuggestion = false,
+  component,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -91,6 +92,8 @@ export function CodeHinter({
       height: isFocused ? currentHeight : 0,
     },
   });
+
+  const { variablesExposedForPreview } = useContext(EditorContext);
 
   const prevCountRef = useRef(false);
 
@@ -146,9 +149,24 @@ export function CodeHinter({
     toast.success('Copied to clipboard');
   };
 
+  const getCustomResolvables = () => {
+    if (variablesExposedForPreview.hasOwnProperty(component?.id)) {
+      if (component?.component?.component === 'Table' && fieldMeta?.name) {
+        return {
+          ...variablesExposedForPreview[component?.id],
+          cellValue: variablesExposedForPreview[component?.id]?.rowData[fieldMeta?.name],
+          rowData: { ...variablesExposedForPreview[component?.id]?.rowData },
+        };
+      }
+      return variablesExposedForPreview[component.id];
+    }
+    return {};
+  };
+
   const getPreview = () => {
     if (!enablePreview) return;
-    const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
+    const customResolvables = getCustomResolvables();
+    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true);
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
 
     if (error) {
