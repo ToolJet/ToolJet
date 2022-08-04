@@ -103,50 +103,51 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
         <div className="scrollable h-100 col position-relative" id="pdf-wrapper">
           {url === '' ? 'No PDF file specified' : renderPDF()}
         </div>
-        {error || (
-          <div className="d-flex justify-content-between py-3 px-3 align-items-baseline bg-white border-top border-light">
-            {pageControls && (
-              <>
-                <div className="pdf-page-controls">
-                  <button
-                    disabled={pageNumber <= 1}
-                    onClick={() => updatePage(-1)}
-                    type="button"
-                    aria-label="Previous page"
-                  >
-                    ‹
-                  </button>
-                  <span>
-                    {pageNumber} of {numPages}
-                  </span>
-                  <button
-                    disabled={pageNumber >= numPages}
-                    onClick={() => updatePage(1)}
-                    type="button"
-                    aria-label="Next page"
-                  >
-                    ›
-                  </button>
+        {error ||
+          ((showDownloadOption || pageControls) && (
+            <div className="d-flex justify-content-between py-3 px-3 align-items-baseline bg-white border-top border-light">
+              {pageControls && (
+                <>
+                  <div className="pdf-page-controls">
+                    <button
+                      disabled={pageNumber <= 1}
+                      onClick={() => updatePage(-1)}
+                      type="button"
+                      aria-label="Previous page"
+                    >
+                      ‹
+                    </button>
+                    <span>
+                      {pageNumber} of {numPages}
+                    </span>
+                    <button
+                      disabled={pageNumber >= numPages}
+                      onClick={() => updatePage(1)}
+                      type="button"
+                      aria-label="Next page"
+                    >
+                      ›
+                    </button>
+                  </div>
+                </>
+              )}
+              {showDownloadOption && (
+                <div
+                  className="download-icon-outer-wrapper text-dark"
+                  style={downloadIconOuterWrapperStyles}
+                  onClick={() => downloadFile(url, pdfName)}
+                >
+                  <img
+                    src="/assets/images/icons/download.svg"
+                    alt="download logo"
+                    style={downloadIconImgStyle}
+                    className="mx-1"
+                  />
+                  <span className="mx-1">Download PDF</span>
                 </div>
-              </>
-            )}
-            {showDownloadOption && (
-              <div
-                className="download-icon-outer-wrapper text-dark"
-                style={downloadIconOuterWrapperStyles}
-                onClick={() => downloadFile(url, pdfName)}
-              >
-                <img
-                  src="/assets/images/icons/download.svg"
-                  alt="download logo"
-                  style={downloadIconImgStyle}
-                  className="mx-1"
-                />
-                <span className="mx-1">Download PDF</span>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          ))}
       </div>
     </div>
   );
