@@ -2948,8 +2948,8 @@ export const widgets = [
       {
         componentName: 'Image',
         layout: {
-          top: 15,
-          left: 6.976744186046512,
+          top: 60,
+          left: 37,
           height: 100,
         },
         tab: 0,
@@ -2962,7 +2962,7 @@ export const widgets = [
         componentName: 'Text',
         layout: {
           top: 100,
-          left: 6.976744186046512,
+          left: 17,
           height: 50,
           width: 34,
         },
