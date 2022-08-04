@@ -1,6 +1,7 @@
-export const emptyDashboardText={
+export const dashboardText = {
   emptyPageHeader: "Welcome to ToolJet!",
-  emptyPageDescription: "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
+  emptyPageDescription:
+    "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
   createAppButton: "Create new application",
   importAppButton: "Import an application",
   chooseFromTemplate: "Choose from template",
@@ -13,4 +14,32 @@ export const emptyDashboardText={
   manageSSO: "Manage SSO",
   profileLink: "Profile",
   logoutLink: "Logout",
-}
+  changeIconTitle: "Change Icon",
+  changeButton: "Change",
+  iconUpdatedToast: "Icon updated.",
+  iconText: {
+    appsIcon: "apps",
+    businessIcon: "business",
+    calenderIcon: "calender",
+    chartBarIcon: "Chart bar",
+    codeIcon: "Code",
+    cpuIcon: "cpu",
+    databaseIcon: "database",
+    fileAnalyticsIcon: "file analytics",
+    flameIcon: "flame",
+    presentationIcon: "presentation",
+    reportSearchIcon: "report-search",
+    settingsIcon: "settings",
+    userIcon: "users",
+    worldIcon: "world",
+  },
+  addToFolderTitle: "Add to folder",
+  moveAppText: (appName) => {
+    return `Move "${appName}" to`;
+  },
+  addToFolderButton: "Add to folder",
+  folderName: (folderName) => {
+    return folderName;
+  },
+  appClonedToast: "App cloned successfully.",
+};

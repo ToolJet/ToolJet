@@ -163,3 +163,26 @@ Cypress.Commands.add(
     }
   }
 );
+
+Cypress.Commands.add("deleteApp", (appName) => {
+  cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
+  cy.get(commonSelectors.appCard(appName))
+    .find(commonSelectors.appCardOptionsButton)
+    .click();
+  cy.get(commonSelectors.deleteAppOption).click();
+  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+  cy.wait("@appDeleted");
+});
+
+Cypress.Commands.add(
+  "verifyVisibleElement",
+  {
+    prevSubject: "element",
+  },
+  (subject, assertion, value, ...arg) => {
+    return cy
+      .wrap(subject)
+      .should("be.visible")
+      .and(assertion, value, ...arg);
+  }
+);
