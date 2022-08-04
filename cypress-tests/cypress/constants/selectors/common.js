@@ -39,6 +39,10 @@ export const commonWidgetSelector = {
     return `[data-cy=widget-list-box-${cyParamName(widgetName)}]`;
   },
 
+  draggableWidget: (widgetName) => {
+    return `[data-cy=draggable-widget-${cyParamName(widgetName)}]`;
+  },
+
   parameterLabel: (paramName) => {
     return `[data-cy="${cyParamName(paramName)}-widget-parameter-label"]`;
   },
@@ -59,12 +63,18 @@ export const commonWidgetSelector = {
     return `[data-cy="${cyParamName(widgetName)}-config-handle"]`;
   },
 
-  accordion: (accordionName) => {
-    return `[data-cy="widget-accordion-${accordionName.toLowerCase()}"]:eq(0)`;
+  accordion: (accordionName, index = 0) => {
+    return `[data-cy="widget-accordion-${accordionName.toLowerCase()}"]:eq(${index})`;
   },
 
   nodeComponent: (componentName) => {
     return `[data-cy="inspector-node-${componentName.toLowerCase()}"]> .node-key`;
+  },
+  boxShadowParamInput: (label) => {
+    return `[data-cy="box-shadow-${label}-input-field"]`;
+  },
+  colourPickerInput: (index) => {
+    return `[id*="rc-editable-input-"]:eq(${index})`;
   },
 
   buttonCloseEditorSideBar: "[data-rb-event-key='close-inpector-light']",
@@ -83,6 +93,9 @@ export const commonWidgetSelector = {
   sidebarinspector: "[data-cy='left-sidebar-inspector-button']",
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
+  nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",
 
   widgetDocumentationLink: "[data-cy='widget-documentation-link']",
+
+  boxShadowDefaultParam: ["x", "y", "blur", "spread"],
 };

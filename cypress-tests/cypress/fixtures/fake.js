@@ -1,4 +1,4 @@
-import faker from "faker";
+import { faker } from "@faker-js/faker";
 export let fake = {};
 
 function email() {
@@ -23,6 +23,39 @@ function randomSentence() {
   return faker.lorem.sentence();
 }
 
+function randomRgba() {
+  let rgba = faker.color.rgb({ format: "decimal", includeAlpha: true });
+  rgba[rgba.length - 1] = rgba[rgba.length - 1].toPrecision(2) * 100;
+  return rgba;
+}
+
+function randomRgb() {
+  return faker.color.rgb({ format: "decimal" });
+}
+
+function boxShadowParam() {
+  const paramArray = [
+    faker.datatype.number({
+      min: -20,
+      max: 20,
+    }),
+    faker.datatype.number({
+      min: -20,
+      max: 20,
+    }),
+    faker.datatype.number({
+      min: 0,
+      max: 20,
+    }),
+    faker.datatype.number({
+      min: 0,
+      max: 20,
+    }),
+  ];
+
+  return paramArray;
+}
+
 Object.defineProperty(fake, "email", { get: email });
 Object.defineProperty(fake, "password", { get: password });
 Object.defineProperty(fake, "firstName", { get: firstName });
@@ -30,3 +63,6 @@ Object.defineProperty(fake, "lastName", { get: lastName });
 Object.defineProperty(fake, "companyName", { get: companyName });
 Object.defineProperty(fake, "widgetName", { get: widgetName });
 Object.defineProperty(fake, "randomSentence", { get: randomSentence });
+Object.defineProperty(fake, "randomRgba", { get: randomRgba });
+Object.defineProperty(fake, "randomRgb", { get: randomRgb });
+Object.defineProperty(fake, "boxShadowParam", { get: boxShadowParam });
