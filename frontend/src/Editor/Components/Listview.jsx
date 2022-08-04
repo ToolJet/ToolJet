@@ -54,6 +54,29 @@ export const Listview = function Listview({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenData]);
 
+  const onChildRemoved = (child) => {
+    const newChildrenData = _.cloneDeep(childrenData);
+
+    // const children = _.omitBy(newChildrenData, (value, key) => key === toDelte);
+
+    const indexes = _.map(newChildrenData, (value, key) => {
+      return key;
+    });
+    indexes.forEach((index) => {
+      const rowChildren = _.omitBy(newChildrenData[index], (value, key) => key === child);
+      // update the row with new children
+      newChildrenData[index] = rowChildren;
+
+      // if the row is empty, remove it
+      if (_.isEmpty(newChildrenData[index])) {
+        delete newChildrenData[index];
+      }
+    });
+
+    setSelectedRowIndex(undefined);
+    setChildrenData(newChildrenData);
+  };
+
   return (
     <div
       data-disabled={disabledState}
@@ -98,6 +121,7 @@ export const Listview = function Listview({
                   return { ...prevData, ...newChildrenData };
                 });
               }}
+              onRemoveComponent={onChildRemoved}
             />
           </div>
         ))}

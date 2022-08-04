@@ -42,6 +42,7 @@ export const SubContainer = ({
   onOptionChange,
   exposedVariables,
   setDraggingOrResizing = () => {},
+  onRemoveComponent,
 }) => {
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
@@ -372,16 +373,11 @@ export const SubContainer = ({
   }
 
   function customRemoveComponent(component) {
-    // const componentName = appDefinition.components[component.id]['component'].name;
+    const componentName = appDefinition.components[component.id]['component'].name;
     removeComponent(component);
-    // if (parentComponent.component === 'Listview') {
-    //   const currentData = currentState.components[parentComponent.name]?.data || [];
-    //   const newData = currentData.map((widget) => {
-    //     delete widget[componentName];
-    //     return widget;
-    //   });
-    //   onComponentOptionChanged(parentComponent, 'data', newData);
-    // }
+    if (parentComponent.component === 'Listview') {
+      onRemoveComponent(componentName);
+    }
   }
 
   return (
