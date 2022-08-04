@@ -169,3 +169,16 @@ Cypress.Commands.add("deleteApp", (appName) => {
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
   cy.wait("@appDeleted");
 });
+
+Cypress.Commands.add(
+  "verifyElement",
+  {
+    prevSubject: "element",
+  },
+  (subject, assertion, value, ...arg) => {
+    return cy
+      .wrap(subject)
+      .should("be.visible")
+      .and(assertion, value, ...arg);
+  }
+);

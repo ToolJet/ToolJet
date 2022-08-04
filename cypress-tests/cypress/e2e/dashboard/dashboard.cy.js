@@ -14,7 +14,7 @@ import {
   closeModal,
   cancelModal,
 } from "Support/utils/common";
-import { commonText } from "Texts/common";
+import { commonText, assertions } from "Texts/common";
 import {
   modifyAndVerifyAppCardIcon,
   login,
@@ -53,58 +53,64 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.homePageLogo).should("be.visible");
     cy.get(dashboardSelector.emptyPageImage).should("be.visible");
-    cy.get(dashboardSelector.emptyPageHeader)
-      .should("be.visible")
-      .and("have.text", dashboardText.emptyPageHeader);
-    cy.get(dashboardSelector.emptyPageDescription)
-      .should("be.visible")
-      .and("have.text", dashboardText.emptyPageDescription);
-    cy.get(dashboardSelector.createAppButton)
-      .should("be.visible")
-      .and("have.text", dashboardText.createAppButton);
-    cy.get(dashboardSelector.importAppButton)
-      .should("be.visible")
-      .and("have.text", dashboardText.importAppButton);
-    cy.get(dashboardSelector.chooseFromTemplate)
-      .should("be.visible")
-      .and("have.text", dashboardText.chooseFromTemplate);
+    cy.get(dashboardSelector.emptyPageHeader).verifyElement(
+      assertions.text,
+      dashboardText.emptyPageHeader
+    );
+    cy.get(dashboardSelector.emptyPageDescription).verifyElement(
+      assertions.text,
+      dashboardText.emptyPageDescription
+    );
+    cy.get(dashboardSelector.createAppButton).verifyElement(
+      assertions.text,
+      dashboardText.createAppButton
+    );
+    cy.get(dashboardSelector.importAppButton).verifyElement(
+      assertions.text,
+      dashboardText.importAppButton
+    );
+    cy.get(dashboardSelector.chooseFromTemplate).verifyElement(
+      assertions.text,
+      dashboardText.chooseFromTemplate
+    );
     cy.get(dashboardSelector.modeToggle)
       .should("be.visible")
-      .and("have.attr", "color", dashboardText.darkMode)
+      .verifyElement(assertions.attribute, "color", dashboardText.darkMode)
       .click();
     cy.get(dashboardSelector.modeToggle)
       .should("be.visible")
-      .and("have.attr", "color", dashboardText.lightMode)
+      .verifyElement(assertions.attribute, "color", dashboardText.lightMode)
       .click();
-    cy.get(dashboardSelector.dropdownText)
-      .should("be.visible")
-      .and("have.text", dashboardText.dropdownText);
+    cy.get(dashboardSelector.dropdownText).verifyElement(
+      assertions.text,
+      dashboardText.dropdownText
+    );
     cy.get(dashboardSelector.dropdown).trigger("mouseover");
     cy.get(dashboardSelector.editButton).should(
-      "have.text",
+      assertions.text,
       dashboardText.editButton
     );
     cy.get(dashboardSelector.manageUsers).should(
-      "have.text",
+      assertions.text,
       dashboardText.manageUsers
     );
     cy.get(dashboardSelector.manageGroups).should(
-      "have.text",
+      assertions.text,
       dashboardText.manageGroups
     );
     cy.get(dashboardSelector.ManageSSO).should(
-      "have.text",
+      assertions.text,
       dashboardText.manageSSO
     );
 
     cy.get(dashboardSelector.userMenu).should("be.visible");
     cy.get(dashboardSelector.userMenu).trigger("mouseover");
     cy.get(dashboardSelector.profileLink).should(
-      "have.text",
+      assertions.text,
       dashboardText.profileLink
     );
     cy.get(dashboardSelector.logoutLink).should(
-      "have.text",
+      assertions.text,
       dashboardText.logoutLink
     );
   });
@@ -119,31 +125,33 @@ describe("dashboard", () => {
         cy.get(commonSelectors.appCard(data.appName)).should("be.visible");
         cy.get(dashboardSelector.appCardDefaultIcon).should("be.visible");
         cy.get(commonSelectors.appCardOptionsButton).should("be.visible");
-        cy.get(commonSelectors.appTitle(data.appName))
-          .should("be.visible")
-          .and("have.text", data.appName);
-        cy.get(commonSelectors.appCreatorName)
-          .should("be.visible")
-          .and("have.text", "The Developer");
+        cy.get(commonSelectors.appTitle(data.appName)).verifyElement(
+          assertions.text,
+          data.appName
+        );
+        cy.get(commonSelectors.appCreatorName).verifyElement(
+          assertions.text,
+          "The Developer"
+        );
         cy.get(commonSelectors.appCreatedTime).should("be.visible");
       });
 
     viewAppCardOptions(data.appName);
-    cy.get(commonSelectors.appCardOptions(commonText.changeIconOption))
-      .should("be.visible")
-      .and("have.text", commonText.changeIconOption);
-    cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption))
-      .should("be.visible")
-      .and("have.text", commonText.addToFolderOption);
-    cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption))
-      .should("be.visible")
-      .and("have.text", commonText.cloneAppOption);
-    cy.get(commonSelectors.appCardOptions(commonText.exportAppOption))
-      .should("be.visible")
-      .and("have.text", commonText.exportAppOption);
-    cy.get(commonSelectors.appCardOptions(commonText.deleteAppOption))
-      .should("be.visible")
-      .and("have.text", commonText.deleteAppOption);
+    cy.get(
+      commonSelectors.appCardOptions(commonText.changeIconOption)
+    ).verifyElement(assertions.text, commonText.changeIconOption);
+    cy.get(
+      commonSelectors.appCardOptions(commonText.addToFolderOption)
+    ).verifyElement(assertions.text, commonText.addToFolderOption);
+    cy.get(
+      commonSelectors.appCardOptions(commonText.cloneAppOption)
+    ).verifyElement(assertions.text, commonText.cloneAppOption);
+    cy.get(
+      commonSelectors.appCardOptions(commonText.exportAppOption)
+    ).verifyElement(assertions.text, commonText.exportAppOption);
+    cy.get(
+      commonSelectors.appCardOptions(commonText.deleteAppOption)
+    ).verifyElement(assertions.text, commonText.deleteAppOption);
 
     modifyAndVerifyAppCardIcon(data.appName);
 
@@ -158,9 +166,10 @@ describe("dashboard", () => {
       dashboardText.addToFolderButton,
       dashboardSelector.selectFolder
     );
-    cy.get(dashboardSelector.moveAppText)
-      .should("be.visible")
-      .and("have.text", dashboardText.moveAppText(data.appName));
+    cy.get(dashboardSelector.moveAppText).verifyElement(
+      assertions.text,
+      dashboardText.moveAppText(data.appName)
+    );
 
     cy.get(dashboardSelector.selectFolder).click();
     cy.get(commonSelectors.folderList).contains(data.folderName).click();
@@ -170,9 +179,10 @@ describe("dashboard", () => {
       commonText.AddedToFolderToast
     );
 
-    cy.get(dashboardSelector.folderName(data.folderName))
-      .should("be.visible")
-      .and("have.text", dashboardText.folderName(`${data.folderName} (1)`));
+    cy.get(dashboardSelector.folderName(data.folderName)).verifyElement(
+      assertions.text,
+      dashboardText.folderName(`${data.folderName} (1)`)
+    );
 
     cy.get(dashboardSelector.folderName(data.folderName)).click();
     cy.get(commonSelectors.appCard(data.appName))
@@ -181,8 +191,7 @@ describe("dashboard", () => {
     viewAppCardOptions(data.appName);
 
     cy.get(commonSelectors.appCardOptions(commonText.removeFromFolderOption))
-      .should("be.visible")
-      .and("have.text", commonText.removeFromFolderOption)
+      .verifyElement(assertions.text, commonText.removeFromFolderOption)
       .click();
     verifyConfirmationModal(commonText.appRemovedFromFolderMessage);
 
@@ -199,9 +208,10 @@ describe("dashboard", () => {
     );
     cy.get(commonSelectors.modalComponent).should("not.exist");
     cy.get(commonSelectors.empytyFolderImage).should("be.visible");
-    cy.get(commonSelectors.emptyFolderText)
-      .should("be.visible")
-      .and("have.text", commonText.emptyFolderText);
+    cy.get(commonSelectors.emptyFolderText).verifyElement(
+      assertions.text,
+      commonText.emptyFolderText
+    );
     cy.get(commonSelectors.allApplicationsLink).click();
 
     viewAppCardOptions(data.appName);
@@ -229,15 +239,16 @@ describe("dashboard", () => {
 
     viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.deleteAppOption).click();
-    cy.get(commonSelectors.modalMessage)
-      .should("be.visible")
-      .and("have.text", commonText.deleteAppModalMessage);
-    cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
-      .should("be.visible")
-      .and("have.text", commonText.cancelButton);
-    cy.get(commonSelectors.buttonSelector(commonText.modalYesButton))
-      .should("be.visible")
-      .and("have.text", commonText.modalYesButton);
+    cy.get(commonSelectors.modalMessage).verifyElement(
+      assertions.text,
+      commonText.deleteAppModalMessage
+    );
+    cy.get(
+      commonSelectors.buttonSelector(commonText.cancelButton)
+    ).verifyElement(assertions.text, commonText.cancelButton);
+    cy.get(
+      commonSelectors.buttonSelector(commonText.modalYesButton)
+    ).verifyElement(assertions.text, commonText.modalYesButton);
     cancelModal(commonText.cancelButton);
 
     viewAppCardOptions(data.cloneAppName);
@@ -285,22 +296,24 @@ describe("dashboard", () => {
     cy.appUILogin();
     cy.createApp(data.appName);
 
-    cy.get(commonSelectors.allApplicationsLink)
-      .should("be.visible")
-      .and("have.text", commonText.allApplicationsLink);
+    cy.get(commonSelectors.allApplicationsLink).verifyElement(
+      assertions.text,
+      commonText.allApplicationsLink
+    );
 
     cy.get(commonSelectors.folderInfo)
       .should("not.be.visible")
-      .and("have.text", commonText.folderInfo);
-    cy.get(commonSelectors.createNewFolderButton)
-      .should("be.visible")
-      .and("have.text", commonText.createNewFolderButton);
+      .and(assertions.text, commonText.folderInfo);
+    cy.get(commonSelectors.createNewFolderButton).verifyElement(
+      assertions.text,
+      commonText.createNewFolderButton
+    );
 
     cy.get("body").then(($title) => {
       if ($title.text().includes(commonText.folderInfoText)) {
         cy.get(commonSelectors.folderInfoText)
           .should("not.be.visible")
-          .and("have.text", commonText.folderInfoText);
+          .and(assertions.text, commonText.folderInfoText);
       }
     });
 
@@ -323,27 +336,32 @@ describe("dashboard", () => {
       commonSelectors.buttonSelector(commonText.createFolderButton)
     ).click();
     cy.get(commonSelectors.modalComponent).should("not.exist");
-    cy.get(dashboardSelector.folderName(data.folderName))
-      .should("be.visible")
-      .and("have.text", dashboardText.folderName(data.folderName));
+    cy.get(dashboardSelector.folderName(data.folderName)).verifyElement(
+      assertions.text,
+      dashboardText.folderName(data.folderName)
+    );
 
     cy.get(dashboardSelector.folderName(data.folderName)).click();
-    cy.get(commonSelectors.folderPageTitle)
-      .should("be.visible")
-      .and("have.text", dashboardText.folderName(data.folderName));
+    cy.get(commonSelectors.folderPageTitle).verifyElement(
+      assertions.text,
+      dashboardText.folderName(data.folderName)
+    );
     cy.get(commonSelectors.empytyFolderImage).should("be.visible");
-    cy.get(commonSelectors.emptyFolderText)
-      .should("be.visible")
-      .and("have.text", commonText.emptyFolderText);
+    cy.get(commonSelectors.emptyFolderText).verifyElement(
+      assertions.text,
+      commonText.emptyFolderText
+    );
 
     viewFolderCardOptions(data.folderName);
     cy.get(commonSelectors.folderCard).should("be.visible");
-    cy.get(commonSelectors.editFolderOption)
-      .should("be.visible")
-      .and("have.text", commonText.editFolderOption);
-    cy.get(commonSelectors.deleteFolderOption)
-      .should("be.visible")
-      .and("have.text", commonText.deleteFolderOption);
+    cy.get(commonSelectors.editFolderOption).verifyElement(
+      assertions.text,
+      commonText.editFolderOption
+    );
+    cy.get(commonSelectors.deleteFolderOption).verifyElement(
+      assertions.text,
+      commonText.deleteFolderOption
+    );
 
     cy.get(commonSelectors.editFolderOption).click();
     verifyModal(
