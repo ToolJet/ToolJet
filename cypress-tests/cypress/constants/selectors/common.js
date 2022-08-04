@@ -4,15 +4,12 @@ export const cyParamName = (paramName) => {
 
 export const commonSelectors = {
   toastMessage: ".go318386747",
-  appCard: "[data-cy=app-card]",
   editButton: "[data-cy=edit-button]",
   searchField: "[data-cy=widget-search-box]",
   firstWidget: "[data-cy=widget-list]:eq(0)",
   canvas: "[data-cy=real-canvas]",
-  appCardOptions: "[data-cy=app-card-menu-icon]",
-  folderItemOptions: "[data-cy=folder-item-menu-icon]",
-  deleteApp: "[data-cy=card-options] :nth-child(5)>span",
-  confirmButton: "[data-cy=confirm-yes-button]",
+  appCardOptionsButton: "[data-cy=app-card-menu-icon]",
+  folderCardOptions: "[data-cy=folder-card-menu-icon]",
   autoSave: "[data-cy=autosave-indicator]",
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
@@ -21,17 +18,57 @@ export const commonSelectors = {
   passwordField: "[data-cy=password-text-field]",
   signInButton: "[data-cy=login-button]",
   dropdown: "[data-cy=workspace-dropdown]",
-  backButton: "[data-cy=back-button]",
+  backButton: "[data-cy=left-sidebar-back-button]",
   emptyAppCreateButton: "[data-cy=create-new-application]",
   appCreateButton: "[data-cy=create-new-app-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
   dropdown: "[data-cy=workspace-dropdown]",
   launchButton: "[data-cy=launch-button]",
-  createFolderButton: "[data-cy=create-new-folder-button]",
   folderNameInput: "[data-cy=folder-name-input]",
-  folderCreateButton: "[data-cy=create-folder-button]",
-  deleteFolder: "[data-cy=card-options]> :eq(1)",
+  deleteFolderOption: "[data-cy=delete-folder-card-option]",
+  editFolderOption: "[data-cy=edit-folder-card-option]",
+  deleteAppOption: "[data-cy=delete-app-card-option]",
+  cancelButton: "[data-cy=cancel-button]",
+  modalComponent: "[data-cy=modal-component]",
+  modalMessage: "[data-cy=modal-message]",
+  createNewFolderButton: "[data-cy=create-new-folder-button]",
+  folderNameInput: "[data-cy=folder-name-input]",
+  createFolderButton: "[data-cy=create-folder-button]",
+  folderList: "[data-index]",
+  empytyFolderImage: "[data-cy=empty-folder-image]",
+  emptyFolderText: "[data-cy=empty-folder-text]",
+  allApplicationsLink: "[data-cy=all-applications-link]",
+  folderInfo: "[data-cy=folder-info]",
+  folderInfoText: "[data-cy=folder-info-text]",
+  folderCard: "[data-cy=folder-card]",
+  folderPageTitle: "[data-cy=folder-page-title]",
+  appCreatorName: "[data-cy=app-creator]",
+  appCreatedTime: "[data-cy=app-creation-time]",
+  homePageSearchBar: "[data-cy=home-page-search-bar]",
+
+  folderListcard: (folderName) => {
+    return `[data-cy="${cyParamName(folderName)}-list-card"]`;
+  },
+
+  appCard: (appName) => {
+    return `[data-cy="${cyParamName(appName)}-card"]`;
+  },
+
+  appTitle: (appName) => {
+    return `[data-cy="${cyParamName(appName)}-title"]`;
+  },
+
+  appCardOptions: (options) => {
+    return `[data-cy="${cyParamName(options)}-card-option"]`;
+  },
+
+  modalTitle: (title) => {
+    return `[data-cy="${cyParamName(title)}-title"]`;
+  },
+  buttonSelector: (buttonText) => {
+    return `[data-cy="${cyParamName(buttonText)}-button"]`;
+  },
 };
 
 export const commonWidgetSelector = {

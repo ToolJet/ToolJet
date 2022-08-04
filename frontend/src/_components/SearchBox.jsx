@@ -51,6 +51,7 @@ export function SearchBox({ width = '200px', onSubmit, debounceDelay = 300 }) {
           placeholder="Search"
           onFocus={() => setFocussed(true)}
           onBlur={() => setFocussed(false)}
+          data-cy="home-page-search-bar"
         />
         {isFocused && searchText && (
           <span className="input-icon-addon end">

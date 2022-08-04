@@ -14,7 +14,8 @@ function lastName() {
   return faker.name.lastName();
 }
 function companyName() {
-  return faker.company.companyName();
+  const str = faker.company.companyName();
+  return str.substring(0, str.indexOf(" ")).replace(/[^a-zA-Z ]/g, "");
 }
 function widgetName() {
   return faker.name.firstName();
