@@ -78,7 +78,6 @@ describe("Date Picker widget", () => {
     );
 
     verifyMultiselectHeader(data.widgetName, "one, two");
-    verifyMultiselectStatus, data.widgetName;
     verifyMultiselectStatus(data.widgetName);
     verifyMultiselectOptions(data.widgetName);
 
@@ -138,6 +137,8 @@ describe("Date Picker widget", () => {
       multiselectText.noEventsMessage
     );
     addDefaultEventHandler(data.alertMessage);
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+
     selectFromMultiSelect(data.widgetName, ["", "", "true"]);
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
 

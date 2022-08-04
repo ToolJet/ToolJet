@@ -67,7 +67,7 @@ export const addAndVerifyTooltip = (widgetSelector, message) => {
   cy.get(commonWidgetSelector.tooltipInputField).clearAndTypeOnCodeMirror(
     message
   );
-  cy.get(commonSelectors.canvas).click({ force: true });
+  cy.forceClickOnCanvas();
   cy.get(widgetSelector)
     .trigger("mouseover")
     .then(() => {
@@ -114,7 +114,7 @@ export const verifyMultipleComponentValuesFromInspector = (
       .get(`[data-cy="inspector-node-${i}"] > .mx-2`)
       .should("have.text", `${value}`)
   );
-  cy.get(commonSelectors.canvas).click({ force: true });
+  cy.forceClickOnCanvas();
 };
 
 export const selectColourFromColourPicker = (parentElement, colour) => {
@@ -160,7 +160,7 @@ export const fillBoxShadowParams = (paramLabels, values) => {
 };
 
 export const verifyBoxShadowCss = (widgetName, color, shadowParam) => {
-  cy.get(commonSelectors.canvas).click({ force: true });
+  cy.forceClickOnCanvas();
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .parent()
     .should(

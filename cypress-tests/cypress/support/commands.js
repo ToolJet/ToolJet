@@ -15,6 +15,10 @@ Cypress.Commands.add("clearAndType", (selector, text) => {
   cy.get(selector).clear().type(text);
 });
 
+Cypress.Commands.add("forceClickOnCanvas", () => {
+  cy.get(commonSelectors.canvas).click({ force: true });
+});
+
 Cypress.Commands.add("verifyToastMessage", (selector, message) => {
   cy.get(selector).should("be.visible").should("have.text", message);
 });
@@ -157,16 +161,5 @@ Cypress.Commands.add(
         })
         .type(`{home}${value[0]}`, { delay: 0 });
     }
-  }
-);
-
-Cypress.Commands.add(
-  "shouldVisibleAnd",
-  {
-    prevSubject: "element",
-  },
-  (subject) => {
-    cy.wrap(subject).should("be.visible");
-    return subject;
   }
 );

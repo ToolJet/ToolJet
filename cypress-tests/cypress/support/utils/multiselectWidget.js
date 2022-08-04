@@ -11,7 +11,7 @@ export const verifyMultiselectOptions = (
   cy.get(multiselectSelector.dropdownAllItems).each(($option, i) => {
     cy.wrap($option).should("have.text", label[i].replaceAll('"', ""));
   });
-  cy.get(commonSelectors.canvas).click({ force: true });
+  cy.forceClickOnCanvas();
 };
 
 export const verifyMultiselectStatus = (
@@ -26,7 +26,7 @@ export const verifyMultiselectStatus = (
       .find(multiselectSelector.dropdownCheckbox)
       .should(`${status[i]}to.be.checked`);
   });
-  cy.get(commonSelectors.canvas).click({ force: true });
+  cy.forceClickOnCanvas();
 };
 
 export const selectFromMultiSelect = (widgetName, options) => {
@@ -37,7 +37,7 @@ export const selectFromMultiSelect = (widgetName, options) => {
     if (options[i] == "true")
       cy.wrap($option).find(multiselectSelector.dropdownCheckbox).click();
   });
-  cy.get(commonSelectors.canvas).click({ force: true });
+  cy.forceClickOnCanvas();
 };
 
 export const verifyMultiselectHeader = (widgetName, text) => {
