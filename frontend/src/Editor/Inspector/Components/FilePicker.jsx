@@ -2,6 +2,7 @@ import React from 'react';
 import Accordion from '@/_ui/Accordion';
 import { renderElement } from '../Utils';
 import { baseComponentProperties } from './DefaultComponent';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -19,7 +20,10 @@ export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
     return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
   };
   const conditionalAccordionItems = (component) => {
-    const parseContent = component.component.definition.properties.parseContent?.value ?? false;
+    const parseContent = resolveReferences(
+      component.component.definition.properties.parseContent?.value ?? false,
+      currentState
+    );
     const accordionItems = [];
     const options = ['parseContent'];
 
@@ -27,7 +31,7 @@ export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
 
     options.map((option) => renderOptions.push(renderCustomElement(option)));
 
-    const conditionalOptions = [{ name: 'parseFileType', condition: parseContent === '{{true}}' }];
+    const conditionalOptions = [{ name: 'parseFileType', condition: parseContent }];
 
     conditionalOptions.map(({ name, condition }) => {
       if (condition) renderOptions.push(renderCustomElement(name));
