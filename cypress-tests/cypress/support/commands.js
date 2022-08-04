@@ -126,36 +126,47 @@ Cypress.Commands.add("appUILogin", () => {
       cy.log("Installation is Finished");
     }
   });
+});
 
-  Cypress.Commands.add(
-    "clearAndTypeOnCodeMirror",
-    {
-      prevSubject: "element",
-    },
-    (subject, value) => {
+Cypress.Commands.add(
+  "clearAndTypeOnCodeMirror",
+  {
+    prevSubject: "element",
+  },
+  (subject, value) => {
+    cy.wrap(subject)
+      .click()
+      .find("pre.CodeMirror-line")
+      .invoke("text")
+      .then((text) => {
+        cy.wrap(subject).type(createBackspaceText(text)),
+          {
+            delay: 0,
+          };
+      });
+    if (!Array.isArray(value)) {
+      cy.wrap(subject).type(value, {
+        parseSpecialCharSequences: false,
+        delay: 0,
+      });
+    } else {
       cy.wrap(subject)
-        .click()
-        .find("pre.CodeMirror-line")
-        .invoke("text")
-        .then((text) => {
-          cy.wrap(subject).type(createBackspaceText(text)),
-            {
-              delay: 0,
-            };
-        });
-      if (!Array.isArray(value)) {
-        cy.wrap(subject).type(value, {
+        .type(value[1], {
           parseSpecialCharSequences: false,
           delay: 0,
-        });
-      } else {
-        cy.wrap(subject)
-          .type(value[1], {
-            parseSpecialCharSequences: false,
-            delay: 0,
-          })
-          .type(`{home}${value[0]}`, { delay: 0 });
-      }
+        })
+        .type(`{home}${value[0]}`, { delay: 0 });
     }
-  );
-});
+  }
+);
+
+Cypress.Commands.add(
+  "shouldVisibleAnd",
+  {
+    prevSubject: "element",
+  },
+  (subject) => {
+    cy.wrap(subject).should("be.visible");
+    return subject;
+  }
+);
