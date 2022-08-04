@@ -105,7 +105,11 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
         </div>
         {error ||
           ((showDownloadOption || pageControls) && (
-            <div className="d-flex justify-content-between py-3 px-3 align-items-baseline bg-white border-top border-light">
+            <div
+              className={`d-flex ${
+                pageControls ? 'justify-content-between' : 'justify-content-end'
+              } py-3 px-3 align-items-baseline bg-white border-top border-light`}
+            >
               {pageControls && (
                 <>
                   <div className="pdf-page-controls">
