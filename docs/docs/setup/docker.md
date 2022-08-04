@@ -59,7 +59,7 @@ If you rather want to try out ToolJet locally with docker, you can follow the st
 
   :::info
   We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
-  And incase you want to modify the the config, you can modify the the [template](https://github.com/ToolJet/ToolJet/blob/develop/frontend/config/nginx.conf.template) and mount the volume at `/etc/openresty/nginx.conf.template` for the client container.
+  And incase you want to modify the config, you can use this [template](https://github.com/ToolJet/ToolJet/blob/develop/frontend/config/nginx.conf.template) and then mount the volume at `/etc/openresty/nginx.conf.template` on the client container.
   :::
 
   Examples:
