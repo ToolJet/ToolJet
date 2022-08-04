@@ -104,10 +104,15 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
               <div className="row" key={item}>
                 <div className="col">
                   <div className="input-icon input-group mb-3">
-                    <small className="input-icon-addon" style={popoverLabelstyle}>
+                    <small
+                      className="input-icon-addon"
+                      style={popoverLabelstyle}
+                      data-cy={`box-shadow-patam-${item.toLowerCase()}-label`}
+                    >
                       {item}
                     </small>
                     <input
+                      data-cy={`box-shadow-${item.toLowerCase()}-input-field`}
                       type="number"
                       value={boxShadow[item]}
                       className="form-control hide-input-arrows"
@@ -127,7 +132,11 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
               hideFx
               pickerStyle={colorPickerStyle}
             />
-            <button className="btn btn-sm btn-outline-danger mt-2 col" onClick={clearBoxShadow}>
+            <button
+              data-cy={'box-shadow-clear-button'}
+              className="btn btn-sm btn-outline-danger mt-2 col"
+              onClick={clearBoxShadow}
+            >
               Clear
             </button>
           </>
@@ -141,7 +150,7 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
       <div className="col">
         <div className="field mb-2">
           <OverlayTrigger trigger="click" placement={'left'} rootClose={true} overlay={eventPopover()}>
-            <div className="row mx-0 form-control color-picker-input">
+            <div className="row mx-0 form-control color-picker-input" data-cy="input-box-shadow">
               <div
                 className="col-auto"
                 style={{
@@ -158,7 +167,7 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
         </div>
       </div>
       <div className="col-auto pt-0 style-fx fx-common">
-        <FxButton active={false} onPress={forceCodeBox} />
+        <FxButton active={false} onPress={forceCodeBox} dataCy={'box-shadow'} />
       </div>
     </div>
   );
