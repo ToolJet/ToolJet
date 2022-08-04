@@ -4,20 +4,22 @@ import moment from 'moment-timezone';
 import 'react-datetime/css/react-datetime.css';
 import '@/_styles/custom.scss';
 
-const getDate = (value, parseDateFormat, displayFormat,timeZoneValue,timeZoneDisplay) => {
-    if (value) {
-        const dateString = value;
-        if(timeZoneValue && timeZoneDisplay){
-            let momentString =moment.tz(dateString, parseDateFormat,timeZoneValue).tz(timeZoneDisplay).format(displayFormat);
-            return momentString;
-
-        }else{
-            const momentObj = moment(dateString, parseDateFormat);
-            const momentString = momentObj.format(displayFormat);
-            return momentString;
-        }
+const getDate = (value, parseDateFormat, displayFormat, timeZoneValue, timeZoneDisplay) => {
+  if (value) {
+    const dateString = value;
+    if (timeZoneValue && timeZoneDisplay) {
+      let momentString = moment
+        .tz(dateString, parseDateFormat, timeZoneValue)
+        .tz(timeZoneDisplay)
+        .format(displayFormat);
+      return momentString;
+    } else {
+      const momentObj = moment(dateString, parseDateFormat);
+      const momentString = momentObj.format(displayFormat);
+      return momentString;
     }
-    return '';
+  }
+  return '';
 };
 
 export const Datepicker = function Datepicker({
@@ -28,8 +30,12 @@ export const Datepicker = function Datepicker({
   tableRef,
   dateDisplayFormat, //?Display date format
   parseDateFormat, //?Parse date format
+  timeZoneValue,
+  timeZoneDisplay,
 }) {
-  const [date, setDate] = React.useState(() => getDate(value, parseDateFormat, dateDisplayFormat,timeZoneValue,timeZoneDisplay));
+  const [date, setDate] = React.useState(() =>
+    getDate(value, parseDateFormat, dateDisplayFormat, timeZoneValue, timeZoneDisplay)
+  );
   const pickerRef = React.useRef();
 
   const dateChange = (event) => {
@@ -41,7 +47,7 @@ export const Datepicker = function Datepicker({
 
   React.useEffect(() => {
     let selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} LT` : dateDisplayFormat;
-    const dateString = getDate(value, parseDateFormat, selectedDateFormat,timeZoneValue,timeZoneDisplay);
+    const dateString = getDate(value, parseDateFormat, selectedDateFormat, timeZoneValue, timeZoneDisplay);
     setDate(() => dateString);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimeChecked, readOnly, dateDisplayFormat]);
