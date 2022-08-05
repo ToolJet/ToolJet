@@ -136,7 +136,7 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
       <OverlayTrigger
         placement={tooltipPlacement}
         delay={{ show: 250, hide: 400 }}
-        overlay={<Tooltip id="button-tooltip">{'Select language'}</Tooltip>}
+        overlay={<Tooltip id="button-tooltip">{'Change language'}</Tooltip>}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
