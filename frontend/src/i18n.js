@@ -13,9 +13,8 @@ i18n
     load: 'languageOnly',
     fallbackLng: 'en',
     backend: {
-      loadPath: `/assets/translations/{{ns}}/{{lng}}.json`,
+      loadPath: `/assets/translations/{{lng}}.json`,
     },
-    ns: ['editor', 'dashboard'],
   });
 
 export default i18n;

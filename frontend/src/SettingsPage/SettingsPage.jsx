@@ -16,7 +16,7 @@ function SettingsPage(props) {
   const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState(null);
   const focusRef = React.useRef(null);
-  const { t } = useTranslation(['dashboard']);
+  const { t } = useTranslation();
 
   const updateDetails = async () => {
     const firstNameMatch = firstName.match(/^ *$/);

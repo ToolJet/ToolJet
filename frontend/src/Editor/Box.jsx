@@ -139,7 +139,7 @@ export const Box = function Box({
   dataQueries,
   readOnly,
 }) {
-  const { t } = useTranslation(['editor']);
+  const { t } = useTranslation();
   const backgroundColor = yellow ? 'yellow' : '';
 
   let styles = {

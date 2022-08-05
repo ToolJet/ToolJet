@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -8,23 +8,21 @@ import { ListGroup } from 'react-bootstrap';
 import i18n from 'i18next';
 import { isEqual } from 'lodash';
 
-const languageList = [
-  { lang: 'English', code: 'en', nativeLang: 'English' },
-  { lang: 'French', code: 'fr', nativeLang: 'Français' },
-  { lang: 'Spanish', code: 'es', nativeLang: 'Español' },
-  { lang: 'Arabic', code: 'ar', nativeLang: 'العربية' },
-  { lang: 'Chinese', code: 'zh', nativeLang: '繁體中文' },
-];
-
 export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom' }) => {
   const [showModal, setShow] = useState(false);
   const [selectedLang, setLanguage] = useState({});
-  const [filteredLang, setFilteredLang] = useState(languageList);
+  const [filteredLang, setFilteredLang] = useState([]);
+  const languageRef = useRef(null);
 
   useEffect(() => {
     const lang = i18n.language || 'en';
-    setLanguage(languageList.find((ln) => ln.code === lang));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    (async () => {
+      languageRef.current = await fetch('/assets/translations/languages.json')
+        .then((response) => response.json())
+        .then((data) => data.languageList);
+      setLanguage(languageRef.current.find((ln) => ln.code === lang));
+      setFilteredLang(languageRef.current);
+    })();
   }, []);
 
   const handleClose = () => {
@@ -43,7 +41,7 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
 
   const searchLanguage = (searchText) => {
     const lowerCaseSearchText = searchText.toLowerCase();
-    const filteredLanguages = languageList.filter(
+    const filteredLanguages = languageRef.current.filter(
       (ln) =>
         ln.lang.toLowerCase().startsWith(lowerCaseSearchText) ||
         ln.nativeLang.toLowerCase().startsWith(lowerCaseSearchText) ||

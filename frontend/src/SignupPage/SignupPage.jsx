@@ -14,6 +14,8 @@ class SignupPage extends React.Component {
       isLoading: false,
     };
 
+    console.log('window.public_config?.SSO_DISABLE_SIGNUPS--- ', window.public_config?.SSO_DISABLE_SIGNUPS != true);
+
     this.ssoConfigs = {
       enableSignUp:
         window.public_config?.DISABLE_MULTI_WORKSPACE !== 'true' &&

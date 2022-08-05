@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, currentLayout, darkMode }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
   const [searchQuery, setSearchQuery] = useState('');
-  const { t } = useTranslation(['editor']);
+  const { t } = useTranslation();
 
   function handleSearchQueryChange(e) {
     const { value } = e.target;
@@ -71,7 +71,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
         </div>
       );
     }
-    const commonSection = { title: t('editor.commonly_used'), items: [] };
+    const commonSection = { title: t('widget_manager.commonly_used', 'commonly used'), items: [] };
     const layoutsSection = { title: 'layouts', items: [] };
     const formSection = { title: 'forms', items: [] };
     const integrationSection = { title: 'integrations', items: [] };

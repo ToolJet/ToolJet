@@ -1,7 +1,12 @@
 {
+    "profile": {
+      "profile_settings": "Profile Settings"
+    },
     "editor": {
-        "commonly_used": "commonly used",
         "preview": "Preview"
+    },
+    "widget_manager": {
+        "commonly_used": "commonly used"
     },
     "widget":{
         "Table": {
