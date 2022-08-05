@@ -10,7 +10,7 @@ export class OauthController {
 
   @Post('sign-in/:configId')
   async create(@Req() req: Request, @Param('configId') configId, @Body() body) {
-    const result = await this.oauthService.signIn(body, configId, req.cookies);
+    const result = await this.oauthService.signIn(body, configId, null, req.cookies);
     return result;
   }
 
