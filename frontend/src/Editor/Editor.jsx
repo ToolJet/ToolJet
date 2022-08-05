@@ -11,7 +11,6 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { computeComponentName } from '@/_helpers/utils';
 import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
@@ -51,7 +50,6 @@ import RunjsIcon from './Icons/runjs.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
-import Spinner from '@/_ui/Spinner';
 import { AppVersionsManager } from './AppVersionsManager';
 import { SearchBoxComponent } from '@/_ui/Search';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
