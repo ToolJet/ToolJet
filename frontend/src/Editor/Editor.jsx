@@ -62,11 +62,12 @@ import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
 import Selecto from 'react-selecto';
+import { withTranslation } from 'react-i18next';
 
 setAutoFreeze(false);
 enablePatches();
 
-class Editor extends React.Component {
+class EditorComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -1314,7 +1315,7 @@ class Editor extends React.Component {
                     className="btn btn-sm font-500 color-primary border-0"
                     rel="noreferrer"
                   >
-                    Preview
+                    {this.props.t('editor.preview', 'Preview')}
                   </a>
                 </div>
                 <div className="nav-item dropdown d-none d-md-flex me-2">
@@ -1753,4 +1754,4 @@ class Editor extends React.Component {
   }
 }
 
-export { Editor };
+export const Editor = withTranslation(['editor'])(EditorComponent);

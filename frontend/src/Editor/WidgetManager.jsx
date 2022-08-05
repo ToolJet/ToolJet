@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { DraggableBox } from './DraggableBox';
 import Fuse from 'fuse.js';
 import { isEmpty } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
 export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, currentLayout, darkMode }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
   const [searchQuery, setSearchQuery] = useState('');
+  const { t } = useTranslation(['editor']);
 
   function handleSearchQueryChange(e) {
     const { value } = e.target;
@@ -69,7 +71,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
         </div>
       );
     }
-    const commonSection = { title: 'commonly used', items: [] };
+    const commonSection = { title: t('editor.commonly_used'), items: [] };
     const layoutsSection = { title: 'layouts', items: [] };
     const formSection = { title: 'forms', items: [] };
     const integrationSection = { title: 'integrations', items: [] };

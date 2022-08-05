@@ -7,6 +7,7 @@ import { DarkModeToggle } from './DarkModeToggle';
 import LogoIcon from '../Editor/Icons/logo.svg';
 import { Organization } from './Organization';
 import { NotificationCenter } from './NotificationCenter';
+import { LanguageSelection } from './LanguageSelection';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
   // eslint-disable-next-line no-unused-vars
@@ -56,6 +57,9 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
         <div className="navbar-nav flex-row order-md-last">
           <div className="p-1 m-1 d-flex align-items-center" data-cy="mode-toggle">
             <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />
+          </div>
+          <div className="p-1 m-1 d-flex align-items-center">
+            <LanguageSelection darkMode={darkMode} />
           </div>
           {config.COMMENT_FEATURE_ENABLE && (
             <div className="p-1 d-flex align-items-center" data-cy="notification-center">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import config from 'config';
 import { Router, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
@@ -85,7 +85,7 @@ class App extends React.Component {
     }
 
     return (
-      <>
+      <Suspense fallback={null}>
         <Router history={history}>
           <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
             {updateAvailable && (
@@ -260,7 +260,7 @@ class App extends React.Component {
           </div>
         </Router>
         <Toaster toastOptions={toastOptions} />
-      </>
+      </Suspense>
     );
   }
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import { authenticationService, userService } from '@/_services';
 import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 function SettingsPage(props) {
   const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
@@ -15,6 +16,7 @@ function SettingsPage(props) {
   const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState(null);
   const focusRef = React.useRef(null);
+  const { t } = useTranslation(['dashboard']);
 
   const updateDetails = async () => {
     const firstNameMatch = firstName.match(/^ *$/);
@@ -118,7 +120,7 @@ function SettingsPage(props) {
               <div className="col">
                 <div className="page-pretitle"></div>
                 <h2 className="page-title" data-cy="page-title">
-                  Profile Settings
+                  {t('profile.profile_settings')}
                 </h2>
               </div>
             </div>

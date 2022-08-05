@@ -1,0 +1,12 @@
+{
+    "editor": {
+        "commonly_used": "commonly used",
+        "preview": "Preview"
+    },
+    "widget":{
+        "Table": {
+            "display_name": "Table",
+            "description": "Display paginated tabular data"
+        }
+    }
+}
