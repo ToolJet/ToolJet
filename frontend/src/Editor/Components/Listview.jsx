@@ -13,6 +13,7 @@ export const Listview = function Listview({
   styles,
   fireEvent,
   setExposedVariable,
+  exposedVariables,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -44,6 +45,12 @@ export const Listview = function Listview({
     setExposedVariable('data', {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!_.isEqual(exposedVariables.data, childrenData)) {
+      setExposedVariable('data', childrenData);
+    }
+  }, [exposedVariables]);
 
   useEffect(() => {
     setExposedVariable('data', childrenData);

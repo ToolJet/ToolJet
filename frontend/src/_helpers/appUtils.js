@@ -855,10 +855,6 @@ export function computeComponentState(_ref, components = {}) {
 
       if (!isListView) {
         componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
-      } else {
-        const listviewComponent = parentComponent.component.name;
-
-        componentState[listviewComponent] = { ...currentComponents[listviewComponent] };
       }
     } else {
       componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
