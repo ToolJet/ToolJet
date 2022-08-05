@@ -36,51 +36,45 @@ describe("Date Picker widget", () => {
     data.customMessage = fake.randomSentence;
     data.randomTime = randomDateOrTime("hh:mm");
 
-    openEditorSidebar(
-      datePickerSelector.draggableDatePicker,
-      datePickerText.datepicker1
-    );
-    editAndVerifyWidgetName(
-      datePickerSelector.draggableDatePicker,
-      data.widgetName
-    );
+    openEditorSidebar(datePickerText.datepicker1);
+    editAndVerifyWidgetName(data.widgetName);
 
     openAccordion(commonWidgetText.accordionProperties);
     verifyAndModifyParameter(datePickerText.labelDefaultValue, data.date);
     verifyComponentValueFromInspector(data.widgetName, data.date);
 
-    verifyDate(data.date);
+    verifyDate(data.widgetName, data.date);
     data.date = randomDateOrTime();
-    selectAndVerifyDate(data.date);
+    selectAndVerifyDate(data.widgetName, data.date);
 
-    openEditorSidebar(datePickerSelector.draggableDatePicker, data.widgetName);
+    openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(datePickerText.labelformat, "DD/MM/YY");
-    verifyDate(data.date, "DD/MM/YY");
+    verifyDate(data.widgetName, data.date, "DD/MM/YY");
     verifyComponentValueFromInspector(data.widgetName, data.date, "opened");
     cy.get(commonSelectors.canvas).click({ force: true });
 
-    openEditorSidebar(datePickerSelector.draggableDatePicker, data.widgetName);
+    openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(
       datePickerText.labelEnableDateSection,
       commonWidgetText.codeMirrorInputFalse
     );
-    verifyDate("");
+    verifyDate(data.widgetName, "");
 
-    openEditorSidebar(datePickerSelector.draggableDatePicker, data.widgetName);
+    openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(
       datePickerText.labelEnableTimeSection,
       commonWidgetText.codeMirrorInputTrue
     );
-    verifyDate(datePickerText.defaultTime, "hh:mm A");
-    selectAndVerifyTime(data.randomTime);
+    verifyDate(data.widgetName, datePickerText.defaultTime, "hh:mm A");
+    selectAndVerifyTime(data.widgetName, data.randomTime);
 
-    openEditorSidebar(datePickerSelector.draggableDatePicker, data.widgetName);
+    openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(datePickerText.labelDisabledDates, [
       "{{",
       "[05-01]}}",
     ]); //WIP
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
-    openEditorSidebar(datePickerSelector.draggableDatePicker, data.widgetName);
+    openEditorSidebar(data.widgetName);
 
     openAccordion(commonWidgetText.accordionEvents);
     cy.get(
@@ -101,50 +95,51 @@ describe("Date Picker widget", () => {
     addDefaultEventHandler(data.alertMessage);
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     data.date = randomDateOrTime();
-    selectAndVerifyDate(data.date, "DD/MM/YY");
+    selectAndVerifyDate(data.widgetName, data.date, "DD/MM/YY");
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
 
-    openEditorSidebar(datePickerSelector.draggableDatePicker, data.widgetName);
+    openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionGenaral);
     addAndVerifyTooltip(
-      datePickerSelector.draggableDatePicker,
+      commonWidgetSelector.draggableWidget(data.widgetName),
       fake.randomSentence
     );
 
-    openEditorSidebar(datePickerSelector.draggableDatePicker, data.widgetName);
+    openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionValidation);
     verifyAndModifyParameter(
       commonWidgetText.parameterCustomValidation,
       datePickerText.customValidation(data.widgetName, data.customMessage)
     );
     data.date = randomDateOrTime();
-    selectAndVerifyDate(data.date, "DD/MM/YY");
+    selectAndVerifyDate(data.widgetName, data.date, "DD/MM/YY");
     cy.get(datePickerSelector.validationFeedbackMessage).should(
       "have.text",
       data.customMessage
     );
 
-    openEditorSidebar(datePickerSelector.draggableDatePicker, data.widgetName);
+    openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionLayout);
     verifyAndModifyToggleFx(
       commonWidgetText.parameterShowOnDesktop,
       commonWidgetText.codeMirrorLabelTrue
     );
-    cy.get(datePickerSelector.draggableDatePicker).should("not.exist");
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+      "not.exist"
+    );
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterShowOnMobile,
       commonWidgetText.codeMirrorLabelFalse
     );
     cy.get(commonWidgetSelector.changeLayoutButton).click();
-    cy.get(datePickerSelector.draggableDatePicker).should("exist");
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+      "exist"
+    );
   });
 
   it("should verify the styles of the date picker widget", () => {
-    openEditorSidebar(
-      datePickerSelector.draggableDatePicker,
-      datePickerText.datepicker1
-    );
+    openEditorSidebar(datePickerText.datepicker1);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     cy.get(commonWidgetSelector.widgetDocumentationLink).should(
       "have.text",
@@ -155,7 +150,9 @@ describe("Date Picker widget", () => {
       commonWidgetText.parameterVisibility,
       commonWidgetText.codeMirrorLabelTrue
     );
-    cy.get(datePickerSelector.draggableDatePicker).should("not.be.visible");
+    cy.get(
+      commonWidgetSelector.draggableWidget(datePickerText.datepicker1)
+    ).should("not.be.visible");
     cy.get(commonWidgetSelector.parameterTogglebutton("Visibility")).click();
 
     verifyAndModifyToggleFx(
@@ -166,7 +163,7 @@ describe("Date Picker widget", () => {
       "have.text",
       commonText.autoSave
     );
-    cy.get(datePickerSelector.draggableDatePicker)
+    cy.get(commonWidgetSelector.draggableWidget(datePickerText.datepicker1))
       .find("input")
       .should("have.css", "pointer-events", "none");
 
@@ -175,7 +172,7 @@ describe("Date Picker widget", () => {
       commonWidgetText.borderRadiusInput
     );
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
-    cy.get(datePickerSelector.draggableDatePicker)
+    cy.get(commonWidgetSelector.draggableWidget(datePickerText.datepicker1))
       .find("input")
       .should("have.css", "border-radius", "20px");
   });
