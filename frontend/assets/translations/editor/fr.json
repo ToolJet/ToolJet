@@ -1,11 +1,11 @@
 {
     "editor": {
         "commonly_used": "Fréquemment utilisé",
-        "preview": "Preview123"
+        "preview": "Preview"
     },
     "widget":{
         "Table": {
-            "display_name": "Table123",
+            "display_name": "Table",
             "description": "Afficher les données tabulaires paginées"
         }
     }

@@ -11,7 +11,7 @@ i18n
   .use(initReactI18next)
   .init({
     load: 'languageOnly',
-    fallbackLng: 'fr',
+    fallbackLng: 'en',
     backend: {
       loadPath: `/assets/translations/{{ns}}/{{lng}}.json`,
     },

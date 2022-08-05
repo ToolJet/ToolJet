@@ -38,6 +38,7 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
   const onLanguageSelection = (lang) => {
     setLanguage(lang);
     i18n.changeLanguage(lang.code);
+    handleClose();
   };
 
   const searchLanguage = (searchText) => {
