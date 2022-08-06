@@ -55,6 +55,7 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
     }
     checkedPath(data, []);
     return nodePath;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(data)]);
 
   const onCheck = (checked, updatedNode) => {
