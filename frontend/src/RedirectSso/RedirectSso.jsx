@@ -19,6 +19,7 @@ export const RedirectSso = function RedirectSso() {
         setOrganization(data);
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

@@ -45,6 +45,7 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
       setBoxShadow(newValue);
       setDebouncedShadow(newValue);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
