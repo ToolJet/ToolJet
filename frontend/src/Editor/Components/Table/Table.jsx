@@ -585,6 +585,8 @@ export function Table({
             return (
               <div>
                 <Datepicker
+                  timeZoneValue={column.timeZoneValue}
+                  timeZoneDisplay={column.timeZoneDisplay}
                   dateDisplayFormat={column.dateFormat}
                   isTimeChecked={column.isTimeChecked}
                   value={cellValue}
