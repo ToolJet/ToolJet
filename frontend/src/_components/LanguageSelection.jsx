@@ -20,7 +20,12 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
       languageRef.current = await fetch('/assets/translations/languages.json')
         .then((response) => response.json())
         .then((data) => data.languageList);
-      setLanguage(languageRef.current.find((ln) => ln.code === lang));
+      const filteredLanguage = languageRef.current.find((ln) => ln.code === lang);
+      if (filteredLanguage === undefined) {
+        setLanguage(languageRef.current.find((ln) => ln.code === 'en'));
+      } else {
+        setLanguage(filteredLanguage);
+      }
       setFilteredLang(languageRef.current);
     })();
   }, []);
