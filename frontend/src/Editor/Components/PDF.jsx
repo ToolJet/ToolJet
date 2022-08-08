@@ -10,15 +10,21 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
   const [pageNumber, setPageNumber] = useState(null);
   const pageRef = useRef([]);
   const [error, setError] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const onDocumentLoadSuccess = (document) => {
     const { numPages: nextNumPages } = document;
     setNumPages(nextNumPages);
     setPageNumber(1);
     setError(false);
+    setPageLoading(false);
   };
   const onDocumentLoadError = () => {
     setError(true);
   };
+  useEffect(() => {
+    console.log('inside load progress');
+    setPageLoading(true);
+  }, [url]);
   const options = {
     root: document.querySelector('#pdf-wrapper'),
     rootMargin: '0px',
@@ -94,62 +100,60 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
     document.body.removeChild(anchor);
     URL.revokeObjectURL(pdfURL);
   }
-
   return (
     <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height }}>
       <div className="d-flex position-relative h-100 flex-column" style={{ margin: '0 auto', overflow: 'hidden' }}>
         <div className="scrollable h-100 col position-relative" id="pdf-wrapper">
           {url === '' ? 'No PDF file specified' : renderPDF()}
         </div>
-        {error ||
-          ((showDownloadOption || pageControls) && (
-            <div
-              className={`d-flex ${
-                pageControls ? 'justify-content-between' : 'justify-content-end'
-              } py-3 px-3 align-items-baseline bg-white border-top border-light`}
-            >
-              {pageControls && (
-                <>
-                  <div className="pdf-page-controls">
-                    <button
-                      disabled={pageNumber <= 1}
-                      onClick={() => updatePage(-1)}
-                      type="button"
-                      aria-label="Previous page"
-                    >
-                      ‹
-                    </button>
-                    <span>
-                      {pageNumber} of {numPages}
-                    </span>
-                    <button
-                      disabled={pageNumber >= numPages}
-                      onClick={() => updatePage(1)}
-                      type="button"
-                      aria-label="Next page"
-                    >
-                      ›
-                    </button>
-                  </div>
-                </>
-              )}
-              {showDownloadOption && (
-                <div
-                  className="download-icon-outer-wrapper text-dark"
-                  style={downloadIconOuterWrapperStyles}
-                  onClick={() => downloadFile(url, pdfName)}
-                >
-                  <img
-                    src="/assets/images/icons/download.svg"
-                    alt="download logo"
-                    style={downloadIconImgStyle}
-                    className="mx-1"
-                  />
-                  <span className="mx-1">Download PDF</span>
+        {!error && !pageLoading && (showDownloadOption || pageControls) && (
+          <div
+            className={`d-flex ${
+              pageControls ? 'justify-content-between' : 'justify-content-end'
+            } py-3 px-3 align-items-baseline bg-white border-top border-light`}
+          >
+            {pageControls && (
+              <>
+                <div className="pdf-page-controls">
+                  <button
+                    disabled={pageNumber <= 1}
+                    onClick={() => updatePage(-1)}
+                    type="button"
+                    aria-label="Previous page"
+                  >
+                    ‹
+                  </button>
+                  <span>
+                    {pageNumber} of {numPages}
+                  </span>
+                  <button
+                    disabled={pageNumber >= numPages}
+                    onClick={() => updatePage(1)}
+                    type="button"
+                    aria-label="Next page"
+                  >
+                    ›
+                  </button>
                 </div>
-              )}
-            </div>
-          ))}
+              </>
+            )}
+            {showDownloadOption && (
+              <div
+                className="download-icon-outer-wrapper text-dark"
+                style={downloadIconOuterWrapperStyles}
+                onClick={() => downloadFile(url, pdfName)}
+              >
+                <img
+                  src="/assets/images/icons/download.svg"
+                  alt="download logo"
+                  style={downloadIconImgStyle}
+                  className="mx-1"
+                />
+                <span className="mx-1">Download PDF</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
