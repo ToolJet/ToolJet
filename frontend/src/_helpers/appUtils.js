@@ -75,15 +75,17 @@ export function getDataFromLocalStorage(key) {
 
 export function runTransformation(_ref, rawData, transformation, query) {
   const data = rawData;
-  const evalFunction = Function(
-    ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
-    transformation
-  );
+
   let result = [];
 
   const currentState = _ref.state.currentState || {};
 
   try {
+    const evalFunction = Function(
+      ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+      transformation
+    );
+
     result = evalFunction(
       data,
       moment,
