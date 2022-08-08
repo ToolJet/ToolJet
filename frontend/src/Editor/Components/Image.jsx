@@ -29,7 +29,9 @@ export const Image = function Image({ component, height, properties, styles, fir
     }
     return 0;
   }
-  forceCheck();
+  useEffect(() => {
+    forceCheck();
+  }, [visibility]);
   return (
     <div
       data-disabled={disabledState}
