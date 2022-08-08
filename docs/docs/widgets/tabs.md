@@ -27,6 +27,8 @@ This property lets you add and remove containers from the tabs widget. Each cont
 
 #### Adding background color to Tabs
 
+You can specify the different color for each tab using the `backgroundColor` property and use hex color code or color name as the value.
+
 ```js
 {{[ 
 		{ title: 'Home', id: '0', backgroundColor: '#81D4FA' }, 
