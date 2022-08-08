@@ -716,6 +716,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
               () => {
                 resolve(data);
                 onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
+                toast.error(data.message);
               }
             );
           }
@@ -789,6 +790,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
             () => {
               resolve({ status: 'ok', data: finalData });
               onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
+              toast(`Query (${queryName}) completed.`, {
+                icon: '🚀',
+              });
             }
           );
         })
