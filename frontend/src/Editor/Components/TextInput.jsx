@@ -36,12 +36,13 @@ export const TextInput = function TextInput({
       <input
         disabled={styles.disabledState}
         onKeyUp={(e) => {
-          if(e.key=='Enter'){
+          if (e.key == 'Enter') {
             setValue(e.target.value);
-            setExposedVariable('value', e.target.value);
-            fireEvent('onEnterPressed');
+            setExposedVariable('value', e.target.value).then(() => {
+              fireEvent('onEnterPressed');
+            });
           }
-      }}
+        }}
         onChange={(e) => {
           setValue(e.target.value);
           setExposedVariable('value', e.target.value);
