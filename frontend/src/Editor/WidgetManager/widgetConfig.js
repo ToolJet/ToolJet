@@ -1978,7 +1978,7 @@ export const widgets = [
     description: 'Show the progress using circular progressbar',
     component: 'CircularProgressBar',
     defaultSize: {
-      width: 8,
+      width: 7,
       height: 50,
     },
     others: {
@@ -2071,7 +2071,7 @@ export const widgets = [
     name: 'Statistics',
     displayName: 'Statistics',
     description: 'Statistics can be used to display different statistical information',
-    component: 'Statistics',
+    component: 'Statistics', 
     defaultSize: {
       width: 9.2,
       height: 152,
