@@ -22,7 +22,6 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
     setError(true);
   };
   useEffect(() => {
-    console.log('inside load progress');
     setPageLoading(true);
   }, [url]);
   const options = {
