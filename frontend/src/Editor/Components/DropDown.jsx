@@ -13,6 +13,7 @@ export const DropDown = function DropDown({
   id,
   component,
   exposedVariables,
+  registerAction,
 }) {
   let { label, value, display_values, values } = properties;
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
@@ -35,6 +36,24 @@ export const DropDown = function DropDown({
     console.log(err);
   }
 
+  function selectOption(value) {
+    if (values.includes(value)) {
+      setCurrentValue(value);
+      setExposedVariable('value', value).then(fireEvent('onSelect'));
+    } else {
+      setCurrentValue(undefined);
+      setExposedVariable('value', undefined).then(fireEvent('onSelect'));
+    }
+  }
+
+  registerAction(
+    'selectOption',
+    async function (value) {
+      selectOption(value);
+    },
+    [JSON.stringify(values)]
+  );
+
   const validationData = validate(value);
   const { isValid, validationError } = validationData;
 
@@ -48,7 +67,7 @@ export const DropDown = function DropDown({
     if (values?.includes(value)) {
       newValue = value;
     }
-    setExposedVariable('value', value);
+    setExposedVariable('value', newValue);
     setCurrentValue(newValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
@@ -175,6 +194,7 @@ export const DropDown = function DropDown({
             isLoading={properties.loadingState}
             onInputChange={onSearchTextChange}
             onFocus={(event) => onComponentClick(event, component, id)}
+            menuPortalTarget={document.body}
           />
         </div>
       </div>

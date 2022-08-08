@@ -5,6 +5,7 @@ import {
   resolveReferences,
   executeMultilineJS,
   serializeNestedObjectToQueryParams,
+  computeComponentName,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
@@ -13,6 +14,8 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
+import { v4 as uuidv4 } from 'uuid';
+// eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 
 export function setStateAsync(_ref, state) {
@@ -124,7 +127,7 @@ export function onQueryCancel(_ref) {
   });
 }
 
-async function copyToClipboard(text) {
+export async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard!');
@@ -141,7 +144,6 @@ function showModal(_ref, modal, show) {
   }
 
   const modalMeta = _ref.state.appDefinition.components[modalId];
-
   const newState = {
     currentState: {
       ..._ref.state.currentState,
@@ -154,7 +156,6 @@ function showModal(_ref, modal, show) {
       },
     },
   };
-
   _ref.setState(newState);
 
   return Promise.resolve();
@@ -273,7 +274,6 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           resolveReferences(event.fileName, _ref.state.currentState, undefined, customVariables) ?? 'data.txt';
         const fileType =
           resolveReferences(event.fileType, _ref.state.currentState, undefined, customVariables) ?? 'csv';
-
         const fileData = {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
@@ -378,7 +378,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
-  if (eventName === 'onRowClicked' && options?.component?.component === 'ListView') {
+  if (eventName === 'onRowClicked' && options?.component?.component === 'Listview') {
     executeActionsForEventId(_ref, 'onRowClicked', options.component, mode, customVariables);
   }
 
@@ -501,6 +501,8 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onSelect',
       'onClick',
       'onFileSelected',
+      'onFileLoaded',
+      'onFileDeselected',
       'onStart',
       'onResume',
       'onReset',
@@ -565,7 +567,7 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, calledFromQuery = false) {
+export function previewQuery(_ref, query, editorState, calledFromQuery = false) {
   const options = getQueryVariables(query.options, _ref.props.currentState);
 
   _ref.setState({ previewLoading: true });
@@ -573,7 +575,7 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, true);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, true);
     } else {
       queryExecutionPromise = dataqueryService.preview(query, options);
     }
@@ -665,8 +667,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
-        console.log('here');
-        queryExecutionPromise = executeMultilineJS(_self, query.options.code, false, confirmed, mode);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, false, confirmed, mode);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }
@@ -754,7 +755,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
           }
 
           if (dataQuery.options.showSuccessNotification) {
-            const notificationDuration = dataQuery.options.notificationDuration || 5000;
+            const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
             toast.success(dataQuery.options.successMessage, {
               duration: notificationDuration,
             });
@@ -826,6 +827,7 @@ export function setTablePageIndex(_ref, tableId, index) {
 }
 
 export function renderTooltip({ props, text }) {
+  if (text === '') return <></>;
   return (
     <Tooltip id="button-tooltip" {...props}>
       {text}
@@ -875,4 +877,181 @@ export const getSvgIcon = (key, height = 50, width = 50) => {
   const Icon = allSvgs[key];
 
   return <Icon style={{ height, width }} />;
+};
+
+export const debuggerActions = {
+  error: (_self, errors) => {
+    _self.setState((prevState) => ({
+      ...prevState,
+      currentState: {
+        ...prevState.currentState,
+        errors: {
+          ...prevState.currentState.errors,
+          ...errors,
+        },
+      },
+    }));
+  },
+
+  flush: (_self) => {
+    _self.setState((prevState) => ({
+      ...prevState,
+      currentState: {
+        ...prevState.currentState,
+        errors: {},
+      },
+    }));
+  },
+};
+
+export const getComponentName = (currentState, id) => {
+  try {
+    const name = Object.entries(currentState?.components).filter(([_, component]) => component.id === id)[0][0];
+    return name;
+  } catch {
+    return '';
+  }
+};
+
+const updateNewComponents = (appDefinition, newComponents, updateAppDefinition) => {
+  const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+  newComponents.forEach((newComponent) => {
+    newComponent.component.name = computeComponentName(newComponent.component.component, newAppDefinition.components);
+    newAppDefinition.components[newComponent.id] = newComponent;
+  });
+  updateAppDefinition(newAppDefinition);
+};
+
+export const cloneComponents = (_ref, updateAppDefinition, isCloning = true) => {
+  const { selectedComponents, appDefinition } = _ref.state;
+  const { components: allComponents } = appDefinition;
+  let newComponents = [];
+  for (let selectedComponent of selectedComponents) {
+    const component = {
+      id: selectedComponent.id,
+      component: allComponents[selectedComponent.id]?.component,
+      layouts: allComponents[selectedComponent.id]?.layouts,
+      parent: allComponents[selectedComponent.id]?.parent,
+    };
+    let clonedComponent = JSON.parse(JSON.stringify(component));
+    clonedComponent.parent = undefined;
+    clonedComponent.children = [];
+    clonedComponent.children = [...getChildComponents(allComponents, component, clonedComponent)];
+    newComponents = [...newComponents, clonedComponent];
+  }
+  if (isCloning) {
+    addComponents(appDefinition, updateAppDefinition, undefined, newComponents, true);
+    toast.success('Component cloned succesfully');
+  } else {
+    navigator.clipboard.writeText(JSON.stringify(newComponents));
+    toast.success('Component copied succesfully');
+  }
+  _ref.setState({ currentSidebarTab: 2 });
+};
+
+const getChildComponents = (allComponents, component, parentComponent) => {
+  let childComponents = [],
+    selectedChildComponents = [];
+
+  if (component.component.component === 'Tabs' || component.component.component === 'Calendar') {
+    childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent?.startsWith(component.id));
+  } else {
+    childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
+  }
+
+  childComponents.forEach((componentId) => {
+    let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
+    childComponent.id = componentId;
+    const newComponent = JSON.parse(
+      JSON.stringify({
+        id: componentId,
+        component: allComponents[componentId]?.component,
+        layouts: allComponents[componentId]?.layouts,
+        parent: allComponents[componentId]?.parent,
+      })
+    );
+
+    if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
+      const childTabId = childComponent.parent.split('-').at(-1);
+      childComponent.parent = `${parentComponent.id}-${childTabId}`;
+    } else {
+      childComponent.parent = parentComponent.id;
+    }
+    parentComponent.children = [...(parentComponent.children || []), childComponent];
+    childComponent.children = [...getChildComponents(allComponents, newComponent, childComponent)];
+    selectedChildComponents.push(childComponent);
+  });
+
+  return selectedChildComponents;
+};
+
+const updateComponentLayout = (components, parentId) => {
+  let prevComponent;
+  components.forEach((component, index) => {
+    Object.keys(component.layouts).map((layout) => {
+      if (parentId !== undefined) {
+        if (index > 0) {
+          component.layouts[layout].top = prevComponent.layouts[layout].top + prevComponent.layouts[layout].height;
+          component.layouts[layout].left = 0;
+        } else {
+          component.layouts[layout].top = 0;
+          component.layouts[layout].left = 0;
+        }
+        prevComponent = component;
+      } else {
+        component.layouts[layout].top = component.layouts[layout].top + component.layouts[layout].height;
+      }
+    });
+  });
+};
+
+export const addComponents = (
+  appDefinition,
+  appDefinitionChanged,
+  parentId = undefined,
+  pastedComponent = [],
+  isCloning = false
+) => {
+  const finalComponents = [];
+  let parentComponent = undefined;
+
+  if (parentId) {
+    const id = Object.keys(appDefinition.components).filter((key) => parentId.startsWith(key));
+    parentComponent = JSON.parse(JSON.stringify(appDefinition.components[id[0]]));
+    parentComponent.id = parentId;
+  }
+
+  !isCloning && updateComponentLayout(pastedComponent, parentId);
+
+  const buildComponents = (components, parentComponent = undefined, skipTabCalendarCheck = false) => {
+    if (Array.isArray(components) && components.length > 0) {
+      components.forEach((component) => {
+        const newComponent = {
+          id: uuidv4(),
+          component: component?.component,
+          layouts: component?.layouts,
+        };
+        if (parentComponent) {
+          if (
+            !skipTabCalendarCheck &&
+            (parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar')
+          ) {
+            const childTabId = component.parent.split('-').at(-1);
+            newComponent.parent = `${parentComponent.id}-${childTabId}`;
+          } else {
+            newComponent.parent = parentComponent.id;
+          }
+        }
+        finalComponents.push(newComponent);
+        if (component.children.length > 0) {
+          buildComponents(component.children, newComponent);
+        }
+      });
+    }
+  };
+
+  buildComponents(pastedComponent, parentComponent, true);
+
+  updateNewComponents(appDefinition, finalComponents, appDefinitionChanged);
+  !isCloning && toast.success('Component pasted succesfully');
 };

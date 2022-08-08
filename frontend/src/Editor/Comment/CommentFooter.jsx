@@ -7,7 +7,7 @@ import Button from '@/_ui/Button';
 import usePopover from '@/_hooks/use-popover';
 import { useHotkeys } from 'react-hotkeys-hook';
 
-function CommentFooter({ users, editComment = '', editCommentId, setEditCommentId, handleSubmit }) {
+function CommentFooter({ users, editComment = '', setMentionedUsers, editCommentId, setEditCommentId, handleSubmit }) {
   const [comment, setComment] = React.useState(editComment);
   const [loading, setLoading] = React.useState(false);
   const [open, trigger, content, setOpen] = usePopover(false);
@@ -41,6 +41,7 @@ function CommentFooter({ users, editComment = '', editCommentId, setEditCommentI
           <div className="col-8">
             <TextareaMentions
               users={users}
+              setMentionedUsers={setMentionedUsers}
               value={comment}
               setValue={setComment}
               placeholder="Type your comment here"

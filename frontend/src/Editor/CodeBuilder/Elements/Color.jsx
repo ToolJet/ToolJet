@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
 import FxButton from './FxButton';
 
-export const Color = ({ value, onChange, forceCodeBox }) => {
+export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerStyle = {} }) => {
   const [showPicker, setShowPicker] = useState(false);
 
   const coverStyles = {
@@ -23,13 +23,20 @@ export const Color = ({ value, onChange, forceCodeBox }) => {
   };
 
   return (
-    <div className="row fx-container">
+    <div className="row fx-container" data-cy="color-picker-parent">
       <div className="col">
         <div className="field mb-2">
           {showPicker && (
             <div>
               <div style={coverStyles} onClick={() => setShowPicker(false)} />
-              <SketchPicker onFocus={() => setShowPicker(true)} color={value} onChangeComplete={handleColorChange} />
+              <div style={pickerStyle}>
+                <SketchPicker
+                  onFocus={() => setShowPicker(true)}
+                  color={value}
+                  onChangeComplete={handleColorChange}
+                  style={{ bottom: 0 }}
+                />
+              </div>
             </div>
           )}
 
@@ -52,9 +59,11 @@ export const Color = ({ value, onChange, forceCodeBox }) => {
           </div>
         </div>
       </div>
-      <div className="col-auto pt-0 style-fx fx-common">
-        <FxButton active={false} onPress={forceCodeBox} />
-      </div>
+      {!hideFx && (
+        <div className="col-auto pt-0 style-fx fx-common">
+          <FxButton active={false} onPress={forceCodeBox} />
+        </div>
+      )}
     </div>
   );
 };
