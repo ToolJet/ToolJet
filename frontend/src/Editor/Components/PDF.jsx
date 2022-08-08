@@ -64,24 +64,22 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
     height: '15px',
   };
   const renderPDF = () => (
-    <>
-      <Document
-        file={url}
-        onLoadSuccess={onDocumentLoadSuccess}
-        onLoadError={onDocumentLoadError}
-        className="pdf-document"
-      >
-        {Array.from(new Array(numPages), (el, index) => (
-          <Page
-            pageNumber={index + 1}
-            width={scale ? width - 12 : undefined}
-            height={scale ? undefined : height}
-            key={`page_${index + 1}`}
-            inputRef={(el) => (pageRef.current[index] = el)}
-          />
-        ))}
-      </Document>
-    </>
+    <Document
+      file={url}
+      onLoadSuccess={onDocumentLoadSuccess}
+      onLoadError={onDocumentLoadError}
+      className="pdf-document"
+    >
+      {Array.from(new Array(numPages), (el, index) => (
+        <Page
+          pageNumber={index + 1}
+          width={scale ? width - 12 : undefined}
+          height={scale ? undefined : height}
+          key={`page_${index + 1}`}
+          inputRef={(el) => (pageRef.current[index] = el)}
+        />
+      ))}
+    </Document>
   );
 
   async function downloadFile(url, pdfName) {
