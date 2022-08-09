@@ -14,7 +14,7 @@ The Toggle switch widget should be used if we want to make a binary choice, such
 
 </div>
 
-## Property
+## Properties
 
 ### Label
 
@@ -28,6 +28,21 @@ This event is triggered whenever the toggle switch is clicked.
 :::info
 Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
 :::
+
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
 
 ## Layout
 
