@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useContext } from 'react';
 import {
   useTable,
   useFilters,
@@ -25,6 +25,8 @@ import { Toggle } from './Toggle';
 import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
+import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
+
 export function Table({
   id,
   width,
@@ -99,6 +101,8 @@ export function Table({
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
   let parsedWidgetVisibility = widgetVisibility;
+
+  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext);
 
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
@@ -348,12 +352,19 @@ export function Table({
       filter: customFilter,
       width: width,
       columnOptions,
+      cellBackgroundColor: column.cellBackgroundColor,
       columnType,
       isEditable: column.isEditable,
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
         const rowData = tableData[cell.row.index];
+
+        if (cell.row.index === 0 && !_.isEqual(variablesExposedForPreview[id]?.rowData, rowData)) {
+          const customResolvables = {};
+          customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
+          exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
+        }
 
         switch (columnType) {
           case 'string':
@@ -574,6 +585,8 @@ export function Table({
             return (
               <div>
                 <Datepicker
+                  timeZoneValue={column.timeZoneValue}
+                  timeZoneDisplay={column.timeZoneDisplay}
                   dateDisplayFormat={column.dateFormat}
                   isTimeChecked={column.isTimeChecked}
                   value={cellValue}
@@ -728,6 +741,7 @@ export function Table({
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
+      JSON.stringify(variablesExposedForPreview[id]),
     ] // Hack: need to fix
   );
 
@@ -804,16 +818,15 @@ export function Table({
     }
   );
 
-  const registerSetPageAction = () => {
-    registerAction('setPage', (targetPageIndex) => {
+  registerAction(
+    'setPage',
+    async function (targetPageIndex) {
       setPaginationInternalPageIndex(targetPageIndex);
       setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
-    });
-  };
-
-  useEffect(registerSetPageAction, []);
-  useEffect(registerSetPageAction, [serverSidePagination, clientSidePagination]);
+    },
+    [serverSidePagination, clientSidePagination]
+  );
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
@@ -955,6 +968,18 @@ export function Table({
                         }
                       }
                       const wrapAction = textWrapActions(cell.column.id);
+                      const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
+                      const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
+                      const rowData = tableData[cell.row.index];
+                      const cellBackgroundColor = resolveReferences(
+                        cell.column?.cellBackgroundColor,
+                        currentState,
+                        '',
+                        {
+                          cellValue,
+                          rowData,
+                        }
+                      );
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
@@ -969,6 +994,7 @@ export function Table({
                             [cellSizeType]: true,
                           })}
                           {...cellProps}
+                          style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                         >
                           <div className="td-container">{cell.render('Cell')}</div>
                         </td>

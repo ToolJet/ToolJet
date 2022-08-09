@@ -1,14 +1,12 @@
 /* eslint-disable import/no-named-as-default */
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import cx from 'classnames';
-import { v4 as uuidv4 } from 'uuid';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
-import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './WidgetManager/components';
-import { computeComponentName, resolveReferences } from '@/_helpers/utils';
+import { resolveReferences } from '@/_helpers/utils';
 import useRouter from '@/_hooks/use-router';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
@@ -16,6 +14,7 @@ import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 import produce from 'immer';
+import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 
 export const Container = ({
   canvasWidth,
@@ -44,7 +43,9 @@ export const Container = ({
   handleRedo,
   onComponentHover,
   hoveredComponent,
+  sideBarDebugger,
   dataQueries,
+  setDraggingOrResizing = () => {},
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -61,10 +62,48 @@ export const Container = ({
   const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
+  const [isContainerFocused, setContainerFocus] = useState(false);
   const router = useRouter();
+  const canvasRef = useRef(null);
+  const focusedParentIdRef = useRef(undefined);
 
   useHotkeys('⌘+z, control+z', () => handleUndo());
   useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
+
+  useHotkeys(
+    '⌘+v, control+v',
+    () => {
+      if (isContainerFocused) {
+        navigator.clipboard
+          .readText()
+          .then((cliptext) =>
+            addComponents(appDefinition, appDefinitionChanged, focusedParentIdRef.current, JSON.parse(cliptext))
+          );
+      }
+    },
+    [isContainerFocused, appDefinition, focusedParentIdRef]
+  );
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (canvasRef.current.contains(e.target)) {
+        const elem = e.target.closest('.real-canvas').getAttribute('id');
+        if (elem === 'real-canvas') {
+          focusedParentIdRef.current = undefined;
+        } else {
+          const parentId = elem.split('canvas-')[1];
+          focusedParentIdRef.current = parentId;
+        }
+        if (!isContainerFocused) {
+          setContainerFocus(true);
+        }
+      } else if (isContainerFocused) {
+        setContainerFocus(false);
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [isContainerFocused, canvasRef]);
 
   useEffect(() => {
     setBoxes(components);
@@ -111,10 +150,6 @@ export const Container = ({
     return (x * 100) / canvasWidth;
   }
 
-  // function convertXFromPercentage(x, canvasWidth) {
-  //   return (x * canvasWidth) / 100;
-  // }
-
   useEffect(() => {
     setIsDragging(draggingState);
   }, [draggingState]);
@@ -144,67 +179,30 @@ export const Container = ({
           return undefined;
         }
 
-        // let layouts = item['layouts'];
-        // const currentLayoutOptions = layouts ? layouts[item.currentLayout] : {};
-
-        let componentData = {};
-        let componentMeta = {};
-        let id = item.id;
-
-        let left = 0;
-        let top = 0;
-
         const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-
-        //  This is a new component
-        componentMeta = componentTypes.find((component) => component.component === item.component.component);
+        const componentMeta = componentTypes.find((component) => component.component === item.component.component);
         console.log('adding new component');
-        componentData = JSON.parse(JSON.stringify(componentMeta));
-        componentData.name = computeComponentName(componentData.component, boxes);
 
-        const offsetFromTopOfWindow = canvasBoundingRect.top;
-        const offsetFromLeftOfWindow = canvasBoundingRect.left;
-        const currentOffset = monitor.getSourceClientOffset();
-        const initialClientOffset = monitor.getInitialClientOffset();
-        const delta = monitor.getDifferenceFromInitialOffset();
-
-        left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
-        top = Math.round(
-          initialClientOffset.y - 10 + delta.y + initialClientOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow
+        const newComponent = addNewWidgetToTheEditor(
+          componentMeta,
+          monitor,
+          boxes,
+          canvasBoundingRect,
+          item.currentLayout,
+          snapToGrid,
+          zoomLevel
         );
-
-        id = uuidv4();
-
-        const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-        const canvasWidth = bundingRect?.width;
-
-        if (snapToGrid) {
-          [left, top] = doSnapToGrid(canvasWidth, left, top);
-        }
-
-        left = (left * 100) / canvasWidth;
-
-        if (item.currentLayout === 'mobile') {
-          componentData.definition.others.showOnDesktop.value = false;
-          componentData.definition.others.showOnMobile.value = true;
-        }
-
-        const width = componentMeta.defaultSize.width;
 
         setBoxes({
           ...boxes,
-          [id]: {
-            component: componentData,
+          [newComponent.id]: {
+            component: newComponent.component,
             layouts: {
-              [item.currentLayout]: {
-                top,
-                left,
-                width,
-                height: componentMeta.defaultSize.height,
-              },
+              ...newComponent.layout,
             },
           },
         });
+
         return undefined;
       },
     }),
@@ -405,7 +403,10 @@ export const Container = ({
   return (
     <div
       {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
-      ref={drop}
+      ref={(el) => {
+        canvasRef.current = el;
+        drop(el);
+      }}
       style={styles}
       className={cx('real-canvas', {
         'show-grid': isDragging || isResizing,
@@ -475,6 +476,7 @@ export const Container = ({
               darkMode={darkMode}
               onComponentHover={onComponentHover}
               hoveredComponent={hoveredComponent}
+              sideBarDebugger={sideBarDebugger}
               isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
               dataQueries={dataQueries}
               containerProps={{
@@ -497,8 +499,11 @@ export const Container = ({
                 darkMode,
                 onComponentHover,
                 hoveredComponent,
+                sideBarDebugger,
                 dataQueries,
+                setDraggingOrResizing,
               }}
+              setDraggingOrResizing={setDraggingOrResizing}
             />
           );
         }

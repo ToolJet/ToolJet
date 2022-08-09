@@ -56,3 +56,18 @@ Go to [GitHub Developer settings](https://github.com/settings/developers) and na
 Lastly, enter `Client Id` and `Client Secret` in GitHub manage SSO page and save.
 
 The GitHub sign-in button will now be available in your ToolJet login screen if you have not enabled Multi-Workspace.
+
+:::info
+Should configure `Host Name` if you are using GitHub Enterprise self hosted. Host name should be a URL and should not ends with `/`, example: `https://github.tooljet.com`
+:::
+
+## Multi-Workspace
+If you have enabled Multi-Workspace you can configure GitHub SSO as mentioned above, for setting default SSO for the instance use environment variable.
+
+| variable                              | description                                                   |
+| ------------------------------------- | -----------------------------------------------------------   |
+| SSO_GIT_OAUTH2_CLIENT_ID              | GitHub OAuth client id |
+| SSO_GIT_OAUTH2_CLIENT_SECRET          | GitHub OAuth client secret |
+| SSO_GIT_OAUTH2_HOST                   | GitHub OAuth host name if GitHub is self hosted |
+
+Redirect URL should be `<host>/sso/git`

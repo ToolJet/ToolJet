@@ -7,11 +7,13 @@ export const RadioButton = function RadioButton({
   properties,
   styles,
   fireEvent,
-  exposedVariables,
   setExposedVariable,
+  registerAction,
 }) {
   const { label, value, values, display_values } = properties;
   const { visibility, disabledState, textColor, activeColor } = styles;
+  const [checkedValue, set] = React.useState(value);
+
   let selectOptions = [];
 
   try {
@@ -25,6 +27,7 @@ export const RadioButton = function RadioButton({
   }
 
   function onSelect(selection) {
+    set(selection);
     setExposedVariable('value', selection).then(() => fireEvent('onSelectionChange'));
   }
 
@@ -32,6 +35,10 @@ export const RadioButton = function RadioButton({
     setExposedVariable('value', value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+
+  registerAction('selectOption', async function (option) {
+    onSelect(option);
+  });
 
   return (
     <div data-disabled={disabledState} className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>
@@ -44,10 +51,10 @@ export const RadioButton = function RadioButton({
             <input
               style={{
                 marginTop: '1px',
-                backgroundColor: exposedVariables?.value === option.value ? `${activeColor}` : 'white',
+                backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
               }}
               className="form-check-input"
-              checked={exposedVariables?.value === option.value}
+              checked={checkedValue === option.value}
               type="radio"
               value={option.value}
               name={`${id}-${uuidv4()}`}

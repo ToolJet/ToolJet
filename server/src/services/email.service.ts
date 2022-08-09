@@ -1,6 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import handlebars from 'handlebars';
+const path = require('path');
+const fs = require('fs');
 const nodemailer = require('nodemailer');
 const previewEmail = require('preview-email');
+
+handlebars.registerHelper('capitalize', function (value) {
+  return value.charAt(0);
+});
+
+handlebars.registerHelper('highlightMentionedUser', function (comment) {
+  const regex = /(\()([^)]+)(\))/g;
+  return comment.replace(regex, '<span style="color: #218DE3">$2</span>');
+});
 
 @Injectable()
 export class EmailService {
@@ -135,9 +147,40 @@ export class EmailService {
 
   async sendPasswordResetEmail(to: string, token: string) {
     const subject = 'password reset instructions';
+    const url = `${this.TOOLJET_HOST}/reset-password/${token}`;
     const html = `
-      Please use this code to reset your password: ${token}
+      Please use this link to reset your password: <a href="${url}">${url}</a>
     `;
+    await this.sendEmail(to, subject, html);
+  }
+
+  async sendCommentMentionEmail(
+    to: string,
+    from: string,
+    appName: string,
+    appLink: string,
+    commentLink: string,
+    timestamp: string,
+    comment: string,
+    fromAvatar: string
+  ) {
+    const filePath = path.join(__dirname, '../assets/email-templates/comment-mention.html');
+    const source = fs.readFileSync(filePath, 'utf-8').toString();
+    const template = handlebars.compile(source);
+    const replacements = {
+      to,
+      from,
+      appName,
+      appLink,
+      timestamp,
+      commentLink,
+      comment,
+      fromAvatar,
+    };
+    const htmlToSend = template(replacements);
+    const subject = `You were mentioned on ${appName}`;
+    const html = htmlToSend;
+
     await this.sendEmail(to, subject, html);
   }
 }

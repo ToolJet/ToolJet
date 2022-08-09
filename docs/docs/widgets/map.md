@@ -48,10 +48,10 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 
 ### Show on desktop
 
-Toggle on or off to display the widget in desktop view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 ### Show on mobile
 
-Toggle on or off to display the widget in mobile view. You can programmatically determing the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
 
 ## Styles
 
@@ -66,3 +66,9 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Actions
+
+| Action      | Description | Properties |
+| ----------- | ----------- | ------------------ |
+| `setLocation` | Set map's location. | Latitude and Longitude values as parameters. ex: `component.map1.setLocation(40.7128, -73.935242)` |

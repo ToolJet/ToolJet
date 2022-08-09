@@ -6,6 +6,10 @@ title: Chart
 
 Chart widget takes the chart type, data and styles to draw charts using Plotly.js.
 
+## How To Use Chart Widget
+
+<iframe height="500" src="https://www.youtube.com/embed/F3OALU_B5PE" title="Chart Widget" frameborder="0" allowfullscreen width="100%"></iframe>
+
 ## Chart types
 ### Line charts
 
@@ -131,6 +135,21 @@ Enable or disable the `x` and `y` axes on the chart through this property. You c
 ### Show grid lines
 
 Toggle `on` or `off` to show or hide the grid lines on the chart. You can also programmatically define it's value by clicking on `Fx`, acceptable values are - `{{true}}` and `{{false}}`.
+
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
 
 ## Layout
 

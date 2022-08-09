@@ -16,7 +16,7 @@ const sidebars = {
       label: 'Setup',
       link: {type: 'doc', id: 'setup/index'},
       items: [
-        'setup/docker-local',
+        'setup/try-tooljet',
         'setup/docker',
         'setup/heroku',
         'setup/ec2',
@@ -26,6 +26,7 @@ const sidebars = {
         'setup/google-cloud-run',
         'setup/client',
         'setup/env-vars',
+        'setup/http-proxy',
       ],
     },
     'security',
@@ -54,6 +55,7 @@ const sidebars = {
         'tutorial/manage-users-groups',
         'tutorial/keyboard-shortcuts',
         'tutorial/multiworkspace',
+        'tutorial/organization-environment-variables'
       ],
     },
     {
@@ -63,6 +65,7 @@ const sidebars = {
         'data-sources/airtable',
         'data-sources/s3',
         'data-sources/appwrite',
+        'data-sources/athena',
         'data-sources/baserow',
         'data-sources/bigquery',
         'data-sources/firestore',
@@ -86,12 +89,13 @@ const sidebars = {
         'data-sources/postgresql',
         'data-sources/redis',
         'data-sources/restapi',
+        'data-sources/rethinkdb',
         'data-sources/saphana',
         'data-sources/sendgrid',
         'data-sources/smtp',
         'data-sources/snowflake',
-        'data-sources/rethinkdb',
         'data-sources/typesense',
+        'data-sources/woocommerce',
       ],
     },
     {
@@ -105,6 +109,7 @@ const sidebars = {
         'widgets/checkbox',
         'widgets/circular-progress-bar',
         'widgets/code-editor',
+        'widgets/color-picker',
         'widgets/container',
         'widgets/custom-component',
         'widgets/date-range-picker',
@@ -112,6 +117,7 @@ const sidebars = {
         'widgets/divider',
         'widgets/dropdown',
         'widgets/file-picker',
+        'widgets/html',
         'widgets/iframe',
         'widgets/image',
         'widgets/kanban',
@@ -139,6 +145,8 @@ const sidebars = {
         'widgets/timeline',
         'widgets/timer',
         'widgets/toggle-switch',
+        'widgets/tree-select',
+        'widgets/vertical-divider'
       ],
     },
     {
@@ -167,7 +175,9 @@ const sidebars = {
         keywords: ['how to'],
       },
       items: [
+        'how-to/run-actions-from-runjs',
         'how-to/bulk-update-multiple-rows',
+        'how-to/access-cellvalue-rowdata',
         'how-to/oauth2-authorization',
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
@@ -212,9 +222,10 @@ const sidebars = {
           },
           collapsed: false,
           items: [
-            'user-authentication/sso/setup',
-            'user-authentication/sso/okta',
-            'user-authentication/sso/azuread',
+            'user-authentication/sso/openid/setup',
+            'user-authentication/sso/openid/azuread',
+            'user-authentication/sso/openid/okta',
+            'user-authentication/sso/openid/google-openid',
           ],
         }
           ],
@@ -233,6 +244,7 @@ const sidebars = {
       },
       collapsed: false,
       items: [
+        'contributing-guide/setup/architecture',
         {
           type: 'category',
           label: 'Setup',
@@ -248,6 +260,13 @@ const sidebars = {
           items: [
             'contributing-guide/tutorials/creating-widget',
             'contributing-guide/tutorials/creating-a-plugin',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Troubleshooting',
+          items: [
+            'contributing-guide/troubleshooting/eslint',
           ],
         },
         'contributing-guide/code-of-conduct',

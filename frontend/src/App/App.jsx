@@ -19,6 +19,7 @@ import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { ManageSSO } from '@/ManageSSO';
+import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
 import { Toaster } from 'react-hot-toast';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
@@ -43,8 +44,8 @@ class App extends React.Component {
   fetchMetadata = () => {
     if (this.state.currentUser) {
       tooljetService.fetchMetaData().then((data) => {
+        localStorage.setItem('currentVersion', data.installed_version);
         this.setState({ onboarded: data.onboarded });
-        config.currentVersion = data.installed_version;
         if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
@@ -122,13 +123,27 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
-            <Route path="/login/:organisationId" exact component={LoginPage} />
+            <Route path="/login/:organizationId" exact component={LoginPage} />
             <Route path="/login" exact component={LoginPage} />
-            <Route path="/sso/:origin/:configId" component={Oauth} />
+            <Route path="/sso/:origin/:configId" exact component={Oauth} />
+            <Route path="/sso/:origin" exact component={Oauth} />
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
-            <Route path="/reset-password" component={ResetPassword} />
             <Route path="/multiworkspace" component={RedirectSso} />
+            <Route
+              path="/reset-password/:token"
+              render={(props) => (
+                <Redirect
+                  to={{
+                    pathname: '/reset-password',
+                    state: {
+                      token: props.match.params.token,
+                    },
+                  }}
+                />
+              )}
+            />
+            <Route path="/reset-password" component={ResetPassword} />
             <Route
               path="/invitations/:token"
               render={(props) => (
@@ -151,6 +166,7 @@ class App extends React.Component {
                     state: {
                       token: props.match.params.token,
                       organizationToken: props.match.params.organizationToken,
+                      search: props.location.search,
                     },
                   }}
                 />
@@ -210,6 +226,13 @@ class App extends React.Component {
               exact
               path="/manage-sso"
               component={ManageSSO}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/manage-environment-vars"
+              component={ManageOrgVars}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />

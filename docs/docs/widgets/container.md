@@ -12,6 +12,21 @@ Containers are used to group widgets together. You can move the desired number o
 
 </div>
 
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
+
 ## Layout
 
 <div style={{textAlign: 'center'}}>
@@ -35,7 +50,7 @@ Containers are used to group widgets together. You can move the desired number o
 
 | Style      | Description |
 | ----------- | ----------- |
-| backgroundColor |  You can change the background color of the Container by entering the `Hex color code` or choosing a color of your choice from the color picker. |
+| Background Color |  You can change the background color of the Container by entering the `Hex color code` or choosing a color of your choice from the color picker. |
 | Border radius | Use this property to modify the border radius of the container. The field expects only numerical value from `1` to `100`, default is `0`. |
 | Visibility | This is to control the visibility of the widget. If `{{false}}` the widget will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
 | Disable |  This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |

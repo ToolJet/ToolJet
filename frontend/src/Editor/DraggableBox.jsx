@@ -66,7 +66,6 @@ export const DraggableBox = function DraggableBox({
   _top,
   parent,
   allComponents,
-  extraProps,
   component,
   index,
   inCanvas,
@@ -95,8 +94,10 @@ export const DraggableBox = function DraggableBox({
   parentId,
   hoveredComponent,
   onComponentHover,
+  sideBarDebugger,
   isMultipleComponentsSelected,
   dataQueries,
+  setDraggingOrResizing = () => {},
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -136,6 +137,10 @@ export const DraggableBox = function DraggableBox({
       resizingStatusChanged(isResizing);
     }
   }, [isResizing]);
+
+  useEffect(() => {
+    setDraggingOrResizing(isDragging2 || isResizing);
+  }, [isDragging2, isResizing]);
 
   useEffect(() => {
     if (draggingStatusChanged) {
@@ -197,11 +202,11 @@ export const DraggableBox = function DraggableBox({
           })}
           onMouseEnter={(e) => {
             if (e.currentTarget.className.includes(`widget-${id}`)) {
-              onComponentHover(id);
+              onComponentHover?.(id);
               e.stopPropagation();
             }
           }}
-          onMouseLeave={() => onComponentHover(false)}
+          onMouseLeave={() => onComponentHover?.(false)}
           style={getStyles(isDragging, isSelectedComponent)}
         >
           <Rnd
@@ -221,7 +226,7 @@ export const DraggableBox = function DraggableBox({
               mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
             } `}
             onResize={() => setResizing(true)}
-            onDrag={(e, direction) => {
+            onDrag={(e) => {
               e.preventDefault();
               e.stopImmediatePropagation();
               if (!isDragging2) {
@@ -243,6 +248,7 @@ export const DraggableBox = function DraggableBox({
               onResizeStop(id, e, direction, ref, d, position);
             }}
             bounds={parent !== undefined ? `#canvas-${parent}` : '.real-canvas'}
+            widgetId={id}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
               {mode === 'edit' && !readOnly && (mouseOver || isSelectedComponent) && !isResizing && (
@@ -253,9 +259,6 @@ export const DraggableBox = function DraggableBox({
                   position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
                   widgetTop={currentLayoutOptions.top}
                   widgetHeight={currentLayoutOptions.height}
-                  setSelectedComponent={(id, component, multiSelect) =>
-                    setSelectedComponent(id, component, multiSelect)
-                  }
                   isMultipleComponentsSelected={isMultipleComponentsSelected}
                 />
               )}
@@ -282,7 +285,7 @@ export const DraggableBox = function DraggableBox({
                   customResolvables={customResolvables}
                   parentId={parentId}
                   allComponents={allComponents}
-                  extraProps={extraProps}
+                  sideBarDebugger={sideBarDebugger}
                   dataQueries={dataQueries}
                 />
               </ErrorBoundary>
@@ -305,6 +308,8 @@ export const DraggableBox = function DraggableBox({
               currentState={currentState}
               darkMode={darkMode}
               removeComponent={removeComponent}
+              sideBarDebugger={sideBarDebugger}
+              customResolvables={customResolvables}
             />
           </ErrorBoundary>
         </div>
