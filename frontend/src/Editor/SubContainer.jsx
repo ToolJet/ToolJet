@@ -1,15 +1,13 @@
 /* eslint-disable import/no-named-as-default */
 import React, { useCallback, useState, useEffect } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
-import { v4 as uuidv4 } from 'uuid';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
-import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
-import { componentTypes } from './WidgetManager/components';
-import { computeComponentName } from '@/_helpers/utils';
 import produce from 'immer';
 import _ from 'lodash';
+import { componentTypes } from './WidgetManager/components';
+import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 
 export const SubContainer = ({
   mode,
@@ -133,102 +131,32 @@ export const SubContainer = ({
     return (x * 100) / canvasWidth;
   }
 
-  function convertXFromPercentage(x, canvasWidth) {
-    return (x * canvasWidth) / 100;
-  }
-
   const [, drop] = useDrop(
     () => ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
-        let componentData = {};
-        let componentMeta = {};
-        let id = item.id;
-
-        let left = 0;
-        let top = 0;
-
-        let layouts = item['layouts'];
-        const currentLayoutOptions = layouts ? layouts[item.currentLayout] : {};
+        const componentMeta = componentTypes.find((component) => component.component === item.component.component);
 
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
-        // Component already exists and this is just a reposition event
-        if (id) {
-          const delta = monitor.getDifferenceFromInitialOffset();
-          componentData = item.component;
-          left = Math.round(convertXFromPercentage(currentLayoutOptions.left, canvasBoundingRect.width) + delta.x);
-          top = Math.round(currentLayoutOptions.top + delta.y);
-
-          if (snapToGrid) {
-            [left, top] = doSnapToGrid(canvasBoundingRect.width, left, top);
-          }
-
-          left = convertXToPercentage(left, canvasBoundingRect.width);
-
-          let newBoxes = {
-            ...boxes,
-            [id]: {
-              ...boxes[id],
-              parent: parent,
-              layouts: {
-                ...boxes[id]['layouts'],
-                [item.currentLayout]: {
-                  ...boxes[id]['layouts'][item.currentLayout],
-                  top: top,
-                  left: left,
-                },
-              },
-            },
-          };
-
-          setBoxes(newBoxes);
-        } else {
-          //  This is a new component
-          componentMeta = componentTypes.find((component) => component.component === item.component.component);
-          componentData = JSON.parse(JSON.stringify(componentMeta));
-          componentData.name = computeComponentName(componentData.component, boxes);
-
-          const offsetFromTopOfWindow = canvasBoundingRect.top;
-          const offsetFromLeftOfWindow = canvasBoundingRect.left;
-          const currentOffset = monitor.getSourceClientOffset();
-          const initialClientOffset = monitor.getInitialClientOffset();
-          const delta = monitor.getDifferenceFromInitialOffset();
-
-          left = Math.round(currentOffset?.x + currentOffset?.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
-          top = Math.round(
-            initialClientOffset?.y - 10 + delta.y + initialClientOffset?.y * (1 - zoomLevel) - offsetFromTopOfWindow
-          );
-
-          id = uuidv4();
-        }
-        const subContainerWidth = canvasBoundingRect.width;
-        if (snapToGrid) {
-          [left, top] = doSnapToGrid(subContainerWidth, left, top);
-        }
-
-        if (item.currentLayout === 'mobile') {
-          componentData.definition.others.showOnDesktop.value = false;
-          componentData.definition.others.showOnMobile.value = true;
-        }
-
-        // convert the left offset to percentage
-        left = (left * 100) / subContainerWidth;
-
-        const width = (componentMeta.defaultSize.width * 100) / 43;
+        const newComponent = addNewWidgetToTheEditor(
+          componentMeta,
+          monitor,
+          boxes,
+          canvasBoundingRect,
+          item.currentLayout,
+          snapToGrid,
+          zoomLevel,
+          true
+        );
 
         setBoxes({
           ...boxes,
-          [id]: {
-            component: componentData,
+          [newComponent.id]: {
+            component: newComponent.component,
             parent: parentRef.current.id,
             layouts: {
-              [item.currentLayout]: {
-                top: top,
-                left: left,
-                width: width,
-                height: componentMeta.defaultSize.height,
-              },
+              ...newComponent.layout,
             },
           },
         });
