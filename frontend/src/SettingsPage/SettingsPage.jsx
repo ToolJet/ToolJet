@@ -120,7 +120,7 @@ function SettingsPage(props) {
               <div className="col">
                 <div className="page-pretitle"></div>
                 <h2 className="page-title" data-cy="page-title">
-                  {t('profile.profile_settings')}
+                  {t('profile.profileSettings')}
                 </h2>
               </div>
             </div>

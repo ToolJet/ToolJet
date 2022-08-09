@@ -1,17 +1,205 @@
 {
     "profile": {
-      "profile_settings": "Profile Settings"
+      "profileSettings": "Profile Settings"
     },
     "editor": {
         "preview": "Preview"
     },
-    "widget_manager": {
-        "commonly_used": "commonly used"
+    "widgetManager": {
+        "commonlyUsed": "commonly used",
+        "layouts" : "layouts",
+        "forms" : "forms",
+        "intregrations" : "integrations",
+        "others":"others"
     },
     "widget":{
         "Table": {
-            "display_name": "Table",
+            "displayName": "Table",
             "description": "Display paginated tabular data"
+        },
+        "Button": {
+            "displayName": "Button",
+            "description": "Trigger actions: queries, alerts etc"
+        },
+        "Chart": {
+            "displayName": "Chart",
+            "description": "Display charts"
+        },
+        "Modal" : {
+            "displayName": "Modal",
+            "description": "Modal triggered by events"
+        },
+        "TextInput" : {
+            "displayName": "Text Input",
+            "description": "Text field for forms"
+        },
+        "NumberInput" :{
+            "displayName": "Number Input",
+            "description": "Number field for forms"
+        },
+        "PasswordInput":{
+            "displayName": "Password Input",
+            "description": "Password input field for forms"
+        },
+        "Datepicker" :{
+            "displayName": "Date Picker",
+            "description": "Select a date and time"
+        },
+        "Checkbox":{
+            "displayName": "Checkbox",
+            "description": "A single checkbox"
+        },
+        "Radio-button":{
+            "displayName": "Radio Button",
+            "description": "Radio buttons"
+        },
+        "ToggleSwitch":{
+            "displayName": "Toggle Switch",
+            "description": "Toggle Switch"
+        },
+        "Textarea":{
+            "displayName": "Textarea",
+            "description": "Text area form field"
+        },
+        "DateRangePicker":{
+            "displayName": "Range Picker",
+            "description": "Select a date range"
+        },
+        "Text":{
+            "displayName": "Text",
+            "description": "Display markdown or HTML"
+        },
+        "Image":{
+            "displayName": "Image",
+            "description": "Display an Image"
+        },
+        "Container":{
+            "displayName": "Container",
+            "description": "Wrapper for multiple components"
+        },
+        "Dropdown":{
+            "displayName": "Dropdown",
+            "description": "Select one value from options"
+        },
+        "Multiselect":{
+            "displayName": "Multiselect",
+            "description": "Select multiple values from options"
+        },
+        "RichTextEditor":{
+            "displayName": "Text Editor",
+            "description": "Rich text editor"
+        },
+        "Map":{
+            "displayName": "Map",
+            "description": "Display Google Maps"
+        },
+        "QrScanner":{
+            "displayName": "QR Scanner",
+            "description": "Scan QR codes and hold its data"
+        },
+        "StarRating":{
+            "displayName": "Rating",
+            "description": "Star rating"
+        },
+        "Divider":{
+            "displayName": "Divider",
+            "description": "Separator between components"
+        },
+        "FilePicker":{
+            "displayName": "File Picker",
+            "description": "File Picker"
+        },
+        "Calendar":{
+            "displayName": "Calendar",
+            "description": "Calendar"
+        },
+        "Iframe":{
+            "displayName": "Iframe",
+            "description": "Display an Iframe"
+        },
+        "CodeEditor":{
+            "displayName": "Code Editor",
+            "description": "Code Editor"
+        },
+        "Tabs":{
+            "displayName": "Tabs",
+            "description": "Tabs component"
+        },
+        "Timer":{
+            "displayName": "Timer",
+            "description": "timer"
+        },
+        "Listview":{
+            "displayName": "List View",
+            "description": "Wrapper for multiple components"
+        },
+        "Tags":{
+            "displayName": "Tags",
+            "description": "Content can be shown as tags"
+        },
+        "Pagination":{
+            "displayName": "Pagination",
+            "description": "Pagination "
+        },
+        "CircularProgressbar":{
+            "displayName": "Circular Progressbar",
+            "description": "Show the progress using circular progressbar"
+        },
+        "Spinner":{
+            "displayName": "Spinner",
+            "description": "Spinner can be used to display loading status"
+        },
+        "Statistics":{
+            "displayName": "Statistics",
+            "description": "Statistics can be used to display different statistical information"
+        },
+        "RangeSlider":{
+            "displayName": "Range Slider",
+            "description": "Can be used to show slider with a range"
+        },
+        "Timeline":{
+            "displayName": "Timeline",
+            "description": "Visual representation of a sequence of events"
+        },
+        "SvgImage":{
+            "displayName": "Svg Image",
+            "description": "Svg image"
+        },
+        "Html":{
+            "displayName": "HTML Viewer",
+            "description": "HTML Viewer"
+        },
+        "VerticalDivider":{
+            "displayName": "Vertical Divider",
+            "description": "Vertical Separator between components"
+        },
+        "CustomComponent":{
+            "displayName": "Custom Component",
+            "description": "Visual representation of a sequence of events"
+        },
+        "ButtonGroup":{
+            "displayName": "Button Group",
+            "description": "ButtonGroup"
+        },
+        "PDF":{
+            "displayName": "PDF",
+            "description": "Embed PDF file"
+        },
+        "Steps":{
+            "displayName": "Steps",
+            "description": "Steps"
+        },
+        "KanbanBoard":{
+            "displayName": "Kanban Board",
+            "description": "Kanban Board"
+        },
+        "ColorPicker":{
+            "displayName": "Color Picker",
+            "description": "Color Picker Pallete"
+        },
+        "TreeSelect":{
+            "displayName": "Tree Select",
+            "description": "Select values from a tree view"
         }
     }
 }

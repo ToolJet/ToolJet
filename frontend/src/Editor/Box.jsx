@@ -322,7 +322,7 @@ export const Box = function Box({
                 ></div>
               </center>
               <span className="component-title">
-                {t(`widget.${component.name}.display_name`, component.displayName)}
+                {t(`widget.${component.name}.displayName`, component.displayName)}
               </span>
             </div>
           </div>

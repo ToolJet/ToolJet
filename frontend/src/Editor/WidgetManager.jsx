@@ -71,11 +71,11 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
         </div>
       );
     }
-    const commonSection = { title: t('widget_manager.commonly_used', 'commonly used'), items: [] };
-    const layoutsSection = { title: 'layouts', items: [] };
-    const formSection = { title: 'forms', items: [] };
-    const integrationSection = { title: 'integrations', items: [] };
-    const otherSection = { title: 'others', items: [] };
+    const commonSection = { title: t('widgetManager.commonlyUsed', 'commonly used'), items: [] };
+    const layoutsSection = { title: t('widgetManager.layouts', 'layouts'), items: [] };
+    const formSection = { title: t('widgetManager.forms', 'forms'), items: [] };
+    const integrationSection = { title: t('widgetManager.integrations', 'integrations'), items: [] };
+    const otherSection = { title: t('widgetManager.others', 'others'), items: [] };
     const allWidgets = [];
 
     const commonItems = ['Table', 'Chart', 'Button', 'Text', 'Datepicker'];
