@@ -1,7 +1,13 @@
 const urrl = require('url');
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
-import { QueryError, QueryResult, QueryService, cleanSensitiveData } from '@tooljet-plugins/common';
+import {
+  QueryError,
+  ForbiddenRequestError,
+  QueryResult,
+  QueryService,
+  cleanSensitiveData,
+} from '@tooljet-plugins/common';
 const JSON5 = require('json5');
 import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
 
@@ -42,6 +48,15 @@ export default class RestapiQueryService implements QueryService {
     Object.keys(headers).forEach((key) => (headers[key] === '' ? delete headers[key] : {}));
 
     return headers;
+  }
+
+  // NOTE: Hardcoding link local address of aws metadata service
+  // to prevent SSRF attacks
+  async makeRequest(url, requestOptions) {
+    if (url.indexOf('169.254.169.254') != -1) {
+      throw new ForbiddenRequestError('Forbidden', {}, {});
+    }
+    return await got(url, requestOptions);
   }
 
   /* Body params of the source will be overridden by body params of the query */
@@ -152,7 +167,7 @@ export default class RestapiQueryService implements QueryService {
     }
 
     try {
-      const response = await got(url, requestOptions);
+      const response = await this.makeRequest(url, requestOptions);
       result = this.isJson(response.body) ? JSON.parse(response.body) : response.body;
       requestObject = {
         requestUrl: response.request.requestUrl,
@@ -205,7 +220,7 @@ export default class RestapiQueryService implements QueryService {
 
     const customParams = sanitizeCustomParams(sourceOptions['custom_auth_params']);
 
-    const response = await got(accessTokenUrl, {
+    const response = await this.makeRequest(accessTokenUrl, {
       method: 'post',
       json: {
         code,
@@ -259,7 +274,7 @@ export default class RestapiQueryService implements QueryService {
     const accessTokenDetails = {};
 
     try {
-      const response = await got(accessTokenUrl, {
+      const response = await this.makeRequest(accessTokenUrl, {
         method: 'post',
         headers: {
           'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
