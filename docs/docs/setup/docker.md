@@ -58,8 +58,8 @@ If you rather want to try out ToolJet locally with docker, you can follow the st
   `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use.
 
   :::info
-  We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
-  And incase you want to modify the config, you can use this [template](https://github.com/ToolJet/ToolJet/blob/develop/frontend/config/nginx.conf.template) and then mount the volume at `/etc/openresty/nginx.conf.template` on the client container.
+  We use the [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
+  And in case you want to modify the nginx config, you can use this [template](https://github.com/ToolJet/ToolJet/blob/develop/frontend/config/nginx.conf.template) and then mount the volume at `/etc/openresty/nginx.conf.template` on the client container.
   :::
 
   Examples:
