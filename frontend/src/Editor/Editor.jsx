@@ -682,28 +682,30 @@ class Editor extends React.Component {
   componentDefinitionChanged = (componentDefinition) => {
     let _self = this;
 
-    const newDefinition = {
-      appDefinition: produce(this.state.appDefinition, (draft) => {
-        draft.components[componentDefinition.id].component = componentDefinition.component;
-      }),
-    };
+    if (this.state.appDefinition?.components[componentDefinition.id]) {
+      const newDefinition = {
+        appDefinition: produce(this.state.appDefinition, (draft) => {
+          draft.components[componentDefinition.id].component = componentDefinition.component;
+        }),
+      };
 
-    produce(
-      this.state.appDefinition,
-      (draft) => {
-        draft.components[componentDefinition.id].component = componentDefinition.component;
-      },
-      this.handleAddPatch
-    );
-    setStateAsync(_self, newDefinition).then(() => {
-      computeComponentState(_self, _self.state.appDefinition.components);
-      this.setState({ isSaving: true });
-      this.autoSave();
-      this.props.ymap?.set('appDef', {
-        newDefinition: newDefinition.appDefinition,
-        editingVersionId: this.state.editingVersion?.id,
+      produce(
+        this.state.appDefinition,
+        (draft) => {
+          draft.components[componentDefinition.id].component = componentDefinition.component;
+        },
+        this.handleAddPatch
+      );
+      setStateAsync(_self, newDefinition).then(() => {
+        computeComponentState(_self, _self.state.appDefinition.components);
+        this.setState({ isSaving: true });
+        this.autoSave();
+        this.props.ymap?.set('appDef', {
+          newDefinition: newDefinition.appDefinition,
+          editingVersionId: this.state.editingVersion?.id,
+        });
       });
-    });
+    }
   };
 
   handleEditorEscapeKeyPress = () => {
