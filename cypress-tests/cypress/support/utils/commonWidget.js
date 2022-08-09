@@ -58,9 +58,9 @@ export const addDefaultEventHandler = (message) => {
     .should("have.text", commonWidgetText.addEventHandlerLink)
     .click();
   cy.get(commonWidgetSelector.eventHandlerCard).click();
-  cy.get(commonWidgetSelector.alertMessageInputField).clearAndTypeOnCodeMirror(
-    message
-  );
+  cy.get(commonWidgetSelector.alertMessageInputField)
+    .find('[data-cy*="-input-field"]')
+    .clearAndTypeOnCodeMirror(message);
 };
 
 export const addAndVerifyTooltip = (widgetSelector, message) => {
