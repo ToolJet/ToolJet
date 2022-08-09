@@ -35,9 +35,9 @@ Now you can create multiple clones of any widget without having to drag and drop
 
 Now you can delete a selected widget by using the following shortcut keys:
 
-**On Mac:** `backspace`
+**On Mac:** `delete`
 
-**On Linux/Windows:** `delete`
+**On Linux/Windows:** `backspace`
 
 ## Unselect the selected widget
 

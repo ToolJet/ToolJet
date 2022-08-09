@@ -27,6 +27,7 @@ export const AppMenu = function AppMenu({
             closeMenu();
             onClick();
           }}
+          data-cy={`${text.toLowerCase().replace(/\s+/g, '-')}-card-option`}
         >
           {text}
         </span>

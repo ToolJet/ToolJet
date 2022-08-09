@@ -772,6 +772,7 @@ export const widgets = [
     },
     events: {
       onChange: { displayName: 'On change' },
+      onEnterPressed: { displayName: 'On Enter Pressed' },
     },
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility', validation: { schema: { type: 'boolean' } } },

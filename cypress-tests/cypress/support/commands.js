@@ -15,6 +15,10 @@ Cypress.Commands.add("clearAndType", (selector, text) => {
   cy.get(selector).clear().type(text);
 });
 
+Cypress.Commands.add("forceClickOnCanvas", () => {
+  cy.get(commonSelectors.canvas).click({ force: true });
+});
+
 Cypress.Commands.add("verifyToastMessage", (selector, message) => {
   cy.get(selector).should("be.visible").should("have.text", message);
 });
@@ -126,36 +130,59 @@ Cypress.Commands.add("appUILogin", () => {
       cy.log("Installation is Finished");
     }
   });
+});
 
-  Cypress.Commands.add(
-    "clearAndTypeOnCodeMirror",
-    {
-      prevSubject: "element",
-    },
-    (subject, value) => {
+Cypress.Commands.add(
+  "clearAndTypeOnCodeMirror",
+  {
+    prevSubject: "element",
+  },
+  (subject, value) => {
+    cy.wrap(subject)
+      .click()
+      .find("pre.CodeMirror-line")
+      .invoke("text")
+      .then((text) => {
+        cy.wrap(subject).type(createBackspaceText(text)),
+          {
+            delay: 0,
+          };
+      });
+    if (!Array.isArray(value)) {
+      cy.wrap(subject).type(value, {
+        parseSpecialCharSequences: false,
+        delay: 0,
+      });
+    } else {
       cy.wrap(subject)
-        .click()
-        .find("pre.CodeMirror-line")
-        .invoke("text")
-        .then((text) => {
-          cy.wrap(subject).type(createBackspaceText(text)),
-            {
-              delay: 0,
-            };
-        });
-      if (!Array.isArray(value)) {
-        cy.wrap(subject).type(value, {
+        .type(value[1], {
           parseSpecialCharSequences: false,
           delay: 0,
-        });
-      } else {
-        cy.wrap(subject)
-          .type(value[1], {
-            parseSpecialCharSequences: false,
-            delay: 0,
-          })
-          .type(`{home}${value[0]}`, { delay: 0 });
-      }
+        })
+        .type(`{home}${value[0]}`, { delay: 0 });
     }
-  );
+  }
+);
+
+Cypress.Commands.add("deleteApp", (appName) => {
+  cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
+  cy.get(commonSelectors.appCard(appName))
+    .find(commonSelectors.appCardOptionsButton)
+    .click();
+  cy.get(commonSelectors.deleteAppOption).click();
+  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+  cy.wait("@appDeleted");
 });
+
+Cypress.Commands.add(
+  "verifyVisibleElement",
+  {
+    prevSubject: "element",
+  },
+  (subject, assertion, value, ...arg) => {
+    return cy
+      .wrap(subject)
+      .should("be.visible")
+      .and(assertion, value, ...arg);
+  }
+);

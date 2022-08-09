@@ -37,6 +37,21 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 | Default  selected | Initial selected values can be set using this. | Array of **strings**  |
 | Enable multiple selection | Toggle this to allow multiple button selection. | Toggle to true/false |
 
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
+
 ### Layout
 
 | Layout  | description | Expected value |
