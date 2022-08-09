@@ -25,11 +25,12 @@ This value acts as placeholder for the date picker widget, if any value is not p
 
 We can give disabled dates property which will make specific dates disabled and cannot be selected. The default value needs to be an array of`Strings`.
 
-Code:
-```
+Example for disabling the 9th of January:
+```js
 {{['09-01']}}
 ```
-Now User wont be able to select the following selected date. Since it will be disabled.
+
+Now user won't be able to select the mentioned date since it will be disabled. 
 
 ### Format
 
@@ -48,8 +49,9 @@ Allows to select date if enabled. Date selection is enabled by default. This fie
 ### Custom Validation
 
 Add a validation for the date input in the widget using the ternary operator.
-Code:
-```
+
+Example of validation for selecting dates that are after the current date:
+```js
 {{moment(components.datepicker1.value, 'DD/MM/YYYY').isAfter(moment()) ? true : 'Date should be after today'}}
 ```
 
