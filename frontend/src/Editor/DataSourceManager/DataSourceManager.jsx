@@ -82,10 +82,10 @@ class DataSourceManager extends React.Component {
   };
 
   selectDataSource = (source) => {
-    console.log(source.manifestFile?.data?.source);
     this.setState({
       dataSourceMeta: source.manifestFile?.data?.source ?? source,
       selectedDataSource: source.manifestFile?.data?.source ?? source,
+      selectedDataSourceIcon: source.iconFile?.data,
       name: source.manifestFile?.data?.source?.kind ?? source.kind,
       dataSourceSchema: source.manifestFile?.data,
     });
@@ -399,14 +399,6 @@ class DataSourceManager extends React.Component {
           ...datasource,
           src: datasource.kind.toLowerCase(),
           title: datasource.name,
-          manifestFile: {
-            data: {
-              source: {
-                pluginId: datasource.id,
-                icon: datasource.iconFile?.data,
-              },
-            },
-          },
         };
       });
 
@@ -508,9 +500,13 @@ class DataSourceManager extends React.Component {
     }
 
     const datasources = source.map((datasource) => {
+      const src = datasource.iconFile?.data
+        ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
+        : datasource.kind.toLowerCase();
+
       return {
         ...datasource,
-        src: datasource.kind?.toLowerCase(),
+        src,
         title: datasource.name,
       };
     });
@@ -525,8 +521,7 @@ class DataSourceManager extends React.Component {
               title={item.title}
               src={item?.src}
               handleClick={() => renderSelectedDatasource(item)}
-              usePluginIcon={true}
-              iconFile={item.iconFile?.data}
+              usePluginIcon={isEmpty(item.iconFile?.data)}
               height="35px"
               width="35px"
             />
@@ -537,9 +532,15 @@ class DataSourceManager extends React.Component {
   };
 
   render() {
-    const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
-    const icon = getSvgIcon(dataSourceMeta.kind?.toLowerCase(), 35, 35, selectedDataSource?.icon);
-
+    const {
+      dataSourceMeta,
+      selectedDataSource,
+      selectedDataSourceIcon,
+      options,
+      isSaving,
+      connectionTestError,
+      isCopied,
+    } = this.state;
     return (
       <div>
         <Modal
@@ -555,7 +556,7 @@ class DataSourceManager extends React.Component {
             <Modal.Title>
               {selectedDataSource && (
                 <div className="row">
-                  {icon}
+                  {getSvgIcon(dataSourceMeta.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
                   <div className="input-icon" style={{ width: '160px' }}>
                     <input
                       type="text"

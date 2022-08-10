@@ -69,19 +69,19 @@ export class PluginsService {
   }
 
   async fetchPluginFiles(id: string) {
-    const [indexFileResponse, operationsFileResponse, manifestFileResponse, iconFileResponse] = await Promise.all([
+    const promises = await Promise.all([
       fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/dist/index.js`),
       fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/lib/operations.json`),
       fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/lib/manifest.json`),
       fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/lib/icon.svg`),
     ]);
 
-    const [indexFile, operationsFile, iconFile, manifestFile] = await Promise.all([
-      indexFileResponse.arrayBuffer(),
-      operationsFileResponse.arrayBuffer(),
-      iconFileResponse.arrayBuffer(),
-      manifestFileResponse.arrayBuffer(),
-    ]);
+    const files = promises.map((promise) => {
+      if (!promise.ok) throw new InternalServerErrorException();
+      return promise.arrayBuffer();
+    });
+
+    const [indexFile, operationsFile, iconFile, manifestFile] = await Promise.all(files);
 
     return [indexFile, operationsFile, iconFile, manifestFile];
   }
@@ -89,7 +89,7 @@ export class PluginsService {
   async install(body: any) {
     const { id, name, version, description } = body;
     const [index, operations, icon, manifest] = await this.fetchPluginFiles(id);
-    await this.create({ name, version, description }, { index, operations, icon, manifest });
+    return await this.create({ name, version, description }, { index, operations, icon, manifest });
   }
 
   update(id: string, updatePluginDto: UpdatePluginDto) {

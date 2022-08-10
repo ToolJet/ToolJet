@@ -1,12 +1,8 @@
 import React from 'react';
 import { allSvgs } from '@tooljet/plugins/client';
 
-const Card = ({ title, src, handleClick, height = 50, width = 50, usePluginIcon = false, iconFile }) => {
+const Card = ({ title, src, handleClick, height = 50, width = 50, usePluginIcon = false }) => {
   const displayIcon = (src) => {
-    if (iconFile) {
-      return <img src={`data:image/svg+xml;base64,${iconFile}`} width={width} height={height} alt={title} />;
-    }
-
     if (usePluginIcon) {
       const Icon = allSvgs[src];
       return <Icon style={{ height, width }} />;

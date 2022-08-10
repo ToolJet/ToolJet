@@ -20,7 +20,7 @@ export const InstalledPlugins = ({ isActive, darkMode }) => {
   }, [isActive]);
 
   const deletePlugin = (id) => {
-    const [error] = pluginsService.deletePlugin(id);
+    const { error } = pluginsService.deletePlugin(id);
     if (error) {
       toast.error(error?.message || 'unable to delete plugin');
       return;

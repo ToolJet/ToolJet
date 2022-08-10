@@ -33,7 +33,6 @@ export const AdminRoute = ({ component: Component, switchDarkMode, darkMode, ...
     render={(props) => {
       const currentUser = authenticationService.currentUserValue;
       if (!currentUser && !props.location.pathname.startsWith('/applications/')) {
-        // not logged in so redirect to login page with the return url
         return (
           <Redirect
             to={{
@@ -45,7 +44,7 @@ export const AdminRoute = ({ component: Component, switchDarkMode, darkMode, ...
         );
       }
 
-      if (!currentUser.isAdmin) {
+      if (!currentUser?.admin) {
         return (
           <Redirect
             to={{
@@ -57,7 +56,6 @@ export const AdminRoute = ({ component: Component, switchDarkMode, darkMode, ...
         );
       }
 
-      // authorised so return component
       return <Component {...props} switchDarkMode={switchDarkMode} darkMode={darkMode} />;
     }}
   />
