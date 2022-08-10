@@ -790,9 +790,12 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
             () => {
               resolve({ status: 'ok', data: finalData });
               onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
-              toast(`Query (${queryName}) completed.`, {
-                icon: '🚀',
-              });
+              console.log('Editor Mode => ', mode);
+              if (mode !== 'view') {
+                toast(`Query (${queryName}) completed.`, {
+                  icon: '🚀',
+                });
+              }
             }
           );
         })
