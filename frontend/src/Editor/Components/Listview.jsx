@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
-import { useRenderLimit } from '../../_hooks/use-render-limit';
+import { useRenderLimit } from '@/_hooks/use-render-limit';
 
 export const Listview = function Listview({
   id,

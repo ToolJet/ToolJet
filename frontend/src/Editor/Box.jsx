@@ -50,7 +50,7 @@ import { TreeSelect } from './Components/TreeSelect';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
-import { validateWidget, resolveReferences } from '@/_helpers/utils';
+import { validateWidget } from '@/_helpers/utils';
 import { componentTypes } from './WidgetManager/components';
 import {
   resolveProperties,
