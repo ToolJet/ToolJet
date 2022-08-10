@@ -23,7 +23,7 @@ export const GlobalFilter = ({
   };
 
   return (
-    <div className="ms-2 d-inline-block border px-2 mx-1 btn-light" style={{ paddingBottom: '0.25rem' }}>
+    <div className="ms-2 d-flex border px-2 mx-1 btn-light align-items-center" style={{ padding: '0.25rem 0' }}>
       <img
         src="/assets/images/icons/search.svg"
         alt="search icon"
@@ -31,7 +31,7 @@ export const GlobalFilter = ({
       />
       <input
         type="text"
-        className="global-search-field btn-light"
+        className="global-search-field btn-light align-self-center"
         defaultValue={value || ''}
         onBlur={(e) => {
           handleSearchTextChange(e.target.value);
