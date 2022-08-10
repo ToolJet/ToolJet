@@ -71,7 +71,6 @@ class SignupPage extends React.Component {
       }
     );
   };
-
   render() {
     const { isLoading, signupSuccess } = this.state;
 
@@ -99,11 +98,13 @@ class SignupPage extends React.Component {
                     {this.ssoConfigs.configs?.git?.enabled && (
                       <GitSSOLoginButton text="Sign up with GitHub" configs={this.ssoConfigs.configs?.git?.configs} />
                     )}
-                    <div className="mt-2 separator">
-                      <h2>
-                        <span>OR</span>
-                      </h2>
-                    </div>
+                    {(this.ssoConfigs.configs?.git?.enabled || this.ssoConfigs.configs?.google?.enabled) && (
+                      <div className="mt-2 separator">
+                        <h2>
+                          <span>OR</span>
+                        </h2>
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="mb-3">

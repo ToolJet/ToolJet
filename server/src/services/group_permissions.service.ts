@@ -335,6 +335,7 @@ export class GroupPermissionsService {
     const adminUserIds = adminUsers.map((u) => u.userId);
 
     return await createQueryBuilder(User, 'user')
+      .select(['user.id', 'user.firstName', 'user.lastName'])
       .innerJoin(
         'user.organizationUsers',
         'organization_users',

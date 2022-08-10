@@ -51,6 +51,7 @@ export function renderElement(
       onFxPress={(active) => {
         paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);
       }}
+      component={component}
     />
   );
 }
