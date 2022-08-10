@@ -113,6 +113,18 @@ export const commonWidgetSelector = {
   colourPickerInput: (index) => {
     return `[id*="rc-editable-input-"]:eq(${index})`;
   },
+  dataPicker: (paramName) => {
+    return `[data-cy="${cyParamName(paramName)}-picker"]`;
+  },
+  dataPickerValueIcon: (paramName) => {
+    return `[data-cy="${cyParamName(paramName)}-picker-icon"]`;
+  },
+  dataPickerValue: (paramName) => {
+    return `[data-cy="${cyParamName(paramName)}-value"]`;
+  },
+  dataPickerFxInput: (paramName) => {
+    return `[data-cy="${cyParamName(paramName)}-input-field"]`;
+  },
 
   buttonCloseEditorSideBar: "[data-rb-event-key='close-inpector-light']",
   buttonStylesEditorSideBar: "[data-rb-event-key='styles']",
@@ -135,4 +147,8 @@ export const commonWidgetSelector = {
   widgetDocumentationLink: "[data-cy='widget-documentation-link']",
 
   boxShadowDefaultParam: ["x", "y", "blur", "spread"],
+  colourPickerParent: "[data-cy='color-picker-parent']",
+  inputBoxShadow: "[data-cy= 'input-box-shadow']",
+  boxShadowColorPicker: "[data-cy='box-shadow-color-picker']",
+  buttonWidget: "[data-cy=button-widget]",
 };
