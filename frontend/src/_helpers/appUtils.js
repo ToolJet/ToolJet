@@ -14,8 +14,9 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
-import { allSvgs } from '@tooljet/plugins/client';
 import { v4 as uuidv4 } from 'uuid';
+// eslint-disable-next-line import/no-unresolved
+import { allSvgs } from '@tooljet/plugins/client';
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -496,10 +497,13 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onPageChanged',
       'onSearch',
       'onChange',
+      'onEnterPressed',
       'onSelectionChange',
       'onSelect',
       'onClick',
       'onFileSelected',
+      'onFileLoaded',
+      'onFileDeselected',
       'onStart',
       'onResume',
       'onReset',
@@ -1126,6 +1130,7 @@ export const addNewWidgetToTheEditor = (
         height: defaultHeight,
       },
     },
+
     withDefaultChildren: componentData.component === 'Listview' ? true : false,
   };
 

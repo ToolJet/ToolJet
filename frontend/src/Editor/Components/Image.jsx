@@ -1,6 +1,6 @@
 /* eslint-disable import/no-unresolved */
 import React, { useRef, useEffect, useState } from 'react';
-import LazyLoad from 'react-lazyload';
+import LazyLoad, { forceCheck } from 'react-lazyload';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 export const Image = function Image({ component, height, properties, styles, fireEvent, width }) {
@@ -29,7 +29,9 @@ export const Image = function Image({ component, height, properties, styles, fir
     }
     return 0;
   }
-
+  useEffect(() => {
+    forceCheck();
+  }, [visibility]);
   return (
     <div
       data-disabled={disabledState}
@@ -67,6 +69,8 @@ export const Image = function Image({ component, height, properties, styles, fir
                             objectFit: imageFit ? imageFit : 'contain',
                             cursor: hasOnClickEvent ? 'pointer' : 'inherit',
                             pointerEvents: 'auto',
+                            width,
+                            height,
                           }}
                           height={height}
                           onClick={() => fireEvent('onClick')}
@@ -99,6 +103,8 @@ export const Image = function Image({ component, height, properties, styles, fir
                 objectFit: imageFit ? imageFit : 'contain',
                 cursor: hasOnClickEvent ? 'pointer' : 'inherit',
                 pointerEvents: 'auto',
+                width,
+                height,
               }}
               height={height}
               onClick={() => fireEvent('onClick')}

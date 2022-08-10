@@ -16,7 +16,9 @@ export default function Header({
   return (
     <div className="row">
       <div className="col-4">
-        <h2 className="page-title pe-2">{folderName}</h2>
+        <h2 className="page-title pe-2" data-cy="folder-page-title">
+          {folderName}
+        </h2>
       </div>
       <div className="col-8 ms-auto d-print-none d-flex flex-row justify-content-end">
         <SearchBox onSubmit={onSearchSubmit} />

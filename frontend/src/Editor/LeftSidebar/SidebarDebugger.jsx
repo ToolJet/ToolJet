@@ -88,6 +88,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
       return newData;
     });
     debuggerActions.flush();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(errors)]);
 
   React.useEffect(() => {

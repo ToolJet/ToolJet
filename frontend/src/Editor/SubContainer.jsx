@@ -8,6 +8,7 @@ import produce from 'immer';
 import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
+
 import { useMounted } from '@/_hooks/use-mount';
 
 export const SubContainer = ({
@@ -41,6 +42,7 @@ export const SubContainer = ({
   onOptionChange,
   exposedVariables,
   addDefaultChildren = false,
+  setDraggingOrResizing = () => {},
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -466,8 +468,10 @@ export const SubContainer = ({
               onComponentHover,
               hoveredComponent,
               sideBarDebugger,
+              setDraggingOrResizing,
               addDefaultChildren,
             }}
+            setDraggingOrResizing={setDraggingOrResizing}
           />
         );
       })}

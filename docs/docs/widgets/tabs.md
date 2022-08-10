@@ -5,7 +5,7 @@ title: Tabs
 
 # Tabs
 
-A Tabs widget contains a number of defined containers that can be navigated through the tabs. Each tab acts as a <a href="https://docs.tooljet.com/docs/widgets/tabs/" target="_blank">container</a> that can have different widgets placed inside it.
+A Tabs widget contains a number of defined containers that can be navigated through the tabs. Each tab acts as a [container](/docs/widgets/container/) that can have different widgets placed inside it.
 
 ## How To Use Tabs Widget
 
@@ -17,7 +17,31 @@ A Tabs widget contains a number of defined containers that can be navigated thro
 
 This property lets you add and remove containers from the tabs widget. Each container in the tab has its unique `id` , `title` and `disabled` for disabling individual tabs . This field expects an array of objects.
 
-`{{[ { title: 'Home', id: '0' }, { title: 'Profile', id: '1',disabled:'true' }, { title: 'Settings', id: '2' } ]}}`
+```js
+{{[
+    { title: 'Home', id: '0' },
+    { title: 'Profile', id: '1',disabled:'true' },
+    { title: 'Settings', id: '2' }
+]}}
+```
+
+#### Adding background color to Tabs
+
+You can specify the different color for each tab using the `backgroundColor` property and use hex color code or color name as the value.
+
+```js
+{{[ 
+		{ title: 'Home', id: '0', backgroundColor: '#81D4FA' }, 
+		{ title: 'Profile', id: '1', backgroundColor: 'blue' }, 
+		{ title: 'Settings', id: '2', backgroundColor: '#ecf0f1'} 
+ ]}}
+```
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - Tabs Widget](/img/widgets/tabs/tabsbg.png)
+
+</div>
 
 ### Default tab
 
