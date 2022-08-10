@@ -24,7 +24,7 @@ export class addingCssPropsToTextWidget1656924847186 implements MigrationInterfa
               textIndent: 0,
               letterSpacing: 0,
               wordSpacing: 0,
-              fontVariant: false,
+              fontVariant: 'normal',
             };
             for (const style in stylesProps) {
               component.component.definition.styles[style] = {
