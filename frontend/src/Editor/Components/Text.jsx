@@ -50,7 +50,7 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     textDecoration: decoration ?? 'none',
     textTransform: transformation ?? 'none',
     fontStyle: fontStyle ?? 'none',
-    fontVariant: fontVariant === true ? ['small-caps'] : null,
+    fontVariant: fontVariant ?? 'normal',
     textIndent: `${textIndent}px` ?? '0px',
     letterSpacing: `${letterSpacing}px` ?? '0px',
     wordSpacing: `${wordSpacing}px` ?? '0px',

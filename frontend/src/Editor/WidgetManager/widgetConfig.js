@@ -1633,7 +1633,16 @@ export const widgets = [
       textIndent: { type: 'number', displayName: 'Text Indent' },
       letterSpacing: { type: 'number', displayName: 'Letter Spacing' },
       wordSpacing: { type: 'number', displayName: 'Word Spacing' },
-      fontVariant: { type: 'toggle', displayName: 'Font Variant' },
+      fontVariant: {
+        type: 'select',
+        displayName: 'Font Variant',
+        options: [
+          { name: 'normal', value: 'normal' },
+          { name: 'small-caps', value: 'small-caps' },
+          { name: 'initial', value: 'initial' },
+          { name: 'inherit', value: 'inherit' },
+        ],
+      },
       textSize: {
         type: 'number',
         displayName: 'Text Size',
@@ -1704,7 +1713,7 @@ export const widgets = [
         textIndent: { value: 0 },
         letterSpacing: { value: 0 },
         wordSpacing: { value: 0 },
-        fontVariant: { value: '{{false}}' },
+        fontVariant: { value: 'normal' },
       },
     },
   },
