@@ -1,6 +1,7 @@
 import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
+import { useTranslation } from 'react-i18next';
 
 export const LeftSidebarItem = ({
   tip = '',
@@ -13,6 +14,7 @@ export const LeftSidebarItem = ({
   count,
   ...rest
 }) => {
+  const { t } = useTranslation();
   return (
     <OverlayTrigger
       trigger={['click', 'hover', 'focus']}
@@ -39,7 +41,7 @@ export const LeftSidebarItem = ({
             </div>
           )}
           {badge && <LeftSidebarItem.Badge count={count} />}
-          <p>{text && text}</p>
+          <p>{text && t(`leftSideBar.${text}.text`, text)}</p>
         </div>
       </div>
     </OverlayTrigger>

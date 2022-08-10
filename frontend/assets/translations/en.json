@@ -201,5 +201,33 @@
             "displayName": "Tree Select",
             "description": "Select values from a tree view"
         }
+    },
+    "leftSideBar":{
+        
+        "Inspector":{
+            "text":"Inspector",
+            "tip" : "Inspector"
+        },
+        "Sources" :{
+            "text":"Sources",
+            "tip" : "Add or edit datasources"
+        },
+        "Debugger":{
+            "text":"Debugger",
+            "tip" : "Debugger"
+        },
+        "Comments":{
+            "text":"Comments",
+            "tip" : "toggle comments"
+        },
+        "Settings":{
+            "text":"Settings",
+            "tip" : "Global Settings"
+        },
+        "Back":{
+            "text":"Back",
+            "tip" : "Back to Home"
+        }
+
     }
 }
