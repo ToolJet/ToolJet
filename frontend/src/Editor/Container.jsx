@@ -74,11 +74,13 @@ export const Container = ({
     '⌘+v, control+v',
     () => {
       if (isContainerFocused) {
-        navigator.clipboard
-          .readText()
-          .then((cliptext) =>
-            addComponents(appDefinition, appDefinitionChanged, focusedParentIdRef.current, JSON.parse(cliptext))
-          );
+        navigator.clipboard.readText().then((cliptext) => {
+          try {
+            addComponents(appDefinition, appDefinitionChanged, focusedParentIdRef.current, JSON.parse(cliptext));
+          } catch (err) {
+            console.log(err);
+          }
+        });
       }
     },
     [isContainerFocused, appDefinition, focusedParentIdRef]

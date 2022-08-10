@@ -923,10 +923,13 @@ const updateNewComponents = (appDefinition, newComponents, updateAppDefinition) 
   updateAppDefinition(newAppDefinition);
 };
 
-export const cloneComponents = (_ref, updateAppDefinition, isCloning = true) => {
+export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isCutting = false) => {
   const { selectedComponents, appDefinition } = _ref.state;
+  if (selectedComponents.length < 1) return getSelectedText();
   const { components: allComponents } = appDefinition;
-  let newComponents = [];
+  let newDefinition = _.cloneDeep(appDefinition);
+  let newComponents = [],
+    newComponentObj = {};
   for (let selectedComponent of selectedComponents) {
     const component = {
       id: selectedComponent.id,
@@ -939,12 +942,21 @@ export const cloneComponents = (_ref, updateAppDefinition, isCloning = true) => 
     clonedComponent.children = [];
     clonedComponent.children = [...getChildComponents(allComponents, component, clonedComponent)];
     newComponents = [...newComponents, clonedComponent];
+    newComponentObj = {
+      newComponents,
+      isCloning,
+      isCutting,
+    };
   }
   if (isCloning) {
-    addComponents(appDefinition, updateAppDefinition, undefined, newComponents, true);
+    addComponents(appDefinition, updateAppDefinition, undefined, newComponentObj);
     toast.success('Component cloned succesfully');
+  } else if (isCutting) {
+    navigator.clipboard.writeText(JSON.stringify(newComponentObj));
+    removeSelectedComponent(newDefinition, selectedComponents);
+    updateAppDefinition(newDefinition);
   } else {
-    navigator.clipboard.writeText(JSON.stringify(newComponents));
+    navigator.clipboard.writeText(JSON.stringify(newComponentObj));
     toast.success('Component copied succesfully');
   }
   _ref.setState({ currentSidebarTab: 2 });
@@ -1006,15 +1018,10 @@ const updateComponentLayout = (components, parentId) => {
   });
 };
 
-export const addComponents = (
-  appDefinition,
-  appDefinitionChanged,
-  parentId = undefined,
-  pastedComponent = [],
-  isCloning = false
-) => {
+export const addComponents = (appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
   const finalComponents = [];
   let parentComponent = undefined;
+  const { isCloning, isCutting, newComponents: pastedComponent = [] } = newComponentObj;
 
   if (parentId) {
     const id = Object.keys(appDefinition.components).filter((key) => parentId.startsWith(key));
@@ -1022,7 +1029,7 @@ export const addComponents = (
     parentComponent.id = parentId;
   }
 
-  !isCloning && updateComponentLayout(pastedComponent, parentId);
+  !isCloning && !isCutting && updateComponentLayout(pastedComponent, parentId);
 
   const buildComponents = (components, parentComponent = undefined, skipTabCalendarCheck = false) => {
     if (Array.isArray(components) && components.length > 0) {
@@ -1126,3 +1133,36 @@ export function snapToGrid(canvasWidth, x, y) {
   const snappedY = Math.round(y / 10) * 10;
   return [snappedX, snappedY];
 }
+export const removeSelectedComponent = (newDefinition, selectedComponents) => {
+  selectedComponents.forEach((component) => {
+    let childComponents = [];
+
+    if (newDefinition.components[component.id].component.component === 'Tabs') {
+      childComponents = Object.keys(newDefinition.components).filter((key) =>
+        newDefinition.components[key].parent?.startsWith(component.id)
+      );
+    } else {
+      childComponents = Object.keys(newDefinition.components).filter(
+        (key) => newDefinition.components[key].parent === component.id
+      );
+    }
+
+    childComponents.forEach((componentId) => {
+      delete newDefinition.components[componentId];
+    });
+
+    delete newDefinition.components[component.id];
+  });
+};
+
+const getSelectedText = () => {
+  if (window.getSelection) {
+    navigator.clipboard.writeText(window.getSelection());
+  }
+  if (window.document.getSelection) {
+    navigator.clipboard.writeText(window.document.getSelection());
+  }
+  if (window.document.selection) {
+    navigator.clipboard.writeText(window.document.selection.createRange().text);
+  }
+};
