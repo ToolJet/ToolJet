@@ -98,6 +98,7 @@ export const DraggableBox = function DraggableBox({
   isMultipleComponentsSelected,
   dataQueries,
   setDraggingOrResizing = () => {},
+  widgetManagerToCanvas,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -107,6 +108,12 @@ export const DraggableBox = function DraggableBox({
   useEffect(() => {
     setMouseOver(hoveredComponent === id);
   }, [hoveredComponent]);
+
+  useEffect(() => {
+    if (widgetManagerToCanvas !== undefined) {
+      setSelectedComponent(id, component);
+    }
+  }, []);
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({

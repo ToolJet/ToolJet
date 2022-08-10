@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
@@ -15,38 +15,39 @@ import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 import produce from 'immer';
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
+export const Container = forwardRef((props, ref) => {
+  const {
+    canvasWidth,
+    canvasHeight,
+    mode,
+    snapToGrid,
+    onComponentClick,
+    onEvent,
+    appDefinition,
+    appDefinitionChanged,
+    currentState,
+    onComponentOptionChanged,
+    onComponentOptionsChanged,
+    appLoading,
+    setSelectedComponent,
+    zoomLevel,
+    currentLayout,
+    removeComponent,
+    deviceWindowWidth,
+    selectedComponents,
+    darkMode,
+    showComments,
+    appVersionsId,
+    socket,
+    handleUndo,
+    handleRedo,
+    onComponentHover,
+    hoveredComponent,
+    sideBarDebugger,
+    dataQueries,
+    setDraggingOrResizing = () => {},
+  } = props;
 
-export const Container = ({
-  canvasWidth,
-  canvasHeight,
-  mode,
-  snapToGrid,
-  onComponentClick,
-  onEvent,
-  appDefinition,
-  appDefinitionChanged,
-  currentState,
-  onComponentOptionChanged,
-  onComponentOptionsChanged,
-  appLoading,
-  setSelectedComponent,
-  zoomLevel,
-  currentLayout,
-  removeComponent,
-  deviceWindowWidth,
-  selectedComponents,
-  darkMode,
-  showComments,
-  appVersionsId,
-  socket,
-  handleUndo,
-  handleRedo,
-  onComponentHover,
-  hoveredComponent,
-  sideBarDebugger,
-  dataQueries,
-  setDraggingOrResizing = () => {},
-}) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
     maxWidth: `${canvasWidth}px`,
@@ -66,6 +67,7 @@ export const Container = ({
   const router = useRouter();
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
+  const [widgetManagerToCanvas, setWidgetManagerToCanvas] = useState();
 
   useHotkeys('⌘+z, control+z', () => handleUndo());
   useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
@@ -83,6 +85,26 @@ export const Container = ({
     },
     [isContainerFocused, appDefinition, focusedParentIdRef]
   );
+
+  useImperativeHandle(ref, () => ({
+    handleClick(e) {
+      alert('checked');
+      if (canvasRef.current.contains(e.target)) {
+        const elem = e.target.closest('.real-canvas').getAttribute('id');
+        if (elem === 'real-canvas') {
+          focusedParentIdRef.current = undefined;
+        } else {
+          const parentId = elem.split('canvas-')[1];
+          focusedParentIdRef.current = parentId;
+        }
+        if (!isContainerFocused) {
+          setContainerFocus(true);
+        }
+      } else if (isContainerFocused) {
+        setContainerFocus(false);
+      }
+    },
+  }));
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -137,6 +159,7 @@ export const Container = ({
   const { draggingState } = useDragLayer((monitor) => {
     if (monitor.isDragging()) {
       if (!monitor.getItem().parent) {
+        setWidgetManagerToCanvas(monitor.getItem().component);
         return { draggingState: true };
       } else {
         return { draggingState: false };
@@ -504,6 +527,7 @@ export const Container = ({
                 setDraggingOrResizing,
               }}
               setDraggingOrResizing={setDraggingOrResizing}
+              widgetManagerToCanvas={widgetManagerToCanvas}
             />
           );
         }
@@ -529,4 +553,4 @@ export const Container = ({
       )}
     </div>
   );
-};
+});
