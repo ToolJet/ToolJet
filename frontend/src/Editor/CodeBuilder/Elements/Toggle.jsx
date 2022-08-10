@@ -1,8 +1,7 @@
 import React from 'react';
-// import { ToolTip } from './Components/ToolTip';
 import FxButton from './FxButton';
 
-export const Toggle = ({ value, onChange, forceCodeBox, paramLabel, cyLabel }) => {
+export const Toggle = ({ value, onChange, forceCodeBox, cyLabel }) => {
   return (
     <div className="row fx-container">
       <div className="col">

@@ -10,11 +10,9 @@ Checkbox widget can be used for allowing the users to make a binary choice, e.g,
 The checkbox widget consists of a single checkbox input.
 :::
 
-<div style={{textAlign: 'center'}}>
+## How To Use Checkbox Widget
 
-![ToolJet - Widget Reference - Checkbox](/img/widgets/checkbox/checkbox.gif)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/Ryu2k2bqkWw" title="Checkbox Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Properties
 
@@ -39,6 +37,21 @@ On check event is triggered when checkbox input is checked.
 #### On uncheck
 
 On uncheck event is triggered when checkbox input is unchecked.
+
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
 
 ### Layout
 

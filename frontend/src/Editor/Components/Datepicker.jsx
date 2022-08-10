@@ -36,10 +36,11 @@ export const Datepicker = function Datepicker({
   };
 
   const onDateChange = (date) => {
-    fireEvent('onSelect');
     setDate(date);
     const dateString = computeDateString(date);
-    setExposedVariable('value', dateString);
+    setExposedVariable('value', dateString).then(() => {
+      fireEvent('onSelect');
+    });
   };
 
   useEffect(() => {
