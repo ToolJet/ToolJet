@@ -44,10 +44,12 @@ export function Table({
   setExposedVariable,
   registerAction,
   styles,
+  properties,
 }) {
   const color = styles.textColor !== '#000' ? styles.textColor : darkMode && '#fff';
 
-  const actions = component.definition.properties.actions || { value: [] };
+  const actions = properties.actions || [];
+  console.log({ actions, dhadh: properties });
   const serverSidePaginationProperty = component.definition.properties.serverSidePagination;
   let serverSidePagination = serverSidePaginationProperty
     ? resolveWidgetFieldValue(serverSidePaginationProperty.value, currentState)
@@ -613,8 +615,8 @@ export function Table({
 
   tableData = tableData || [];
 
-  const leftActions = () => actions.value.filter((action) => action.position === 'left');
-  const rightActions = () => actions.value.filter((action) => [undefined, 'right'].includes(action.position));
+  const leftActions = () => actions.filter((action) => action.position === 'left');
+  const rightActions = () => actions.filter((action) => [undefined, 'right'].includes(action.position));
 
   const textWrapActions = (id) => {
     let wrapOption = columnProperties?.find((item) => {
