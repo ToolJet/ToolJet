@@ -105,10 +105,6 @@ export const SubContainer = ({
             ...componentData.definition.properties,
           };
 
-          if (incrementWidth) {
-            _.set(newComponentDefinition, 'defaultSize.width', width * incrementWidth);
-          }
-
           if (_.isArray(properties) && properties.length > 0) {
             properties.forEach((prop) => {
               _.set(newComponentDefinition, prop, {
