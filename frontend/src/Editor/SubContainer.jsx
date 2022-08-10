@@ -84,6 +84,7 @@ export const SubContainer = ({
     if (mounted) {
       //find children with parent prop
       const children = Object.keys(allComponents).filter((key) => {
+        if (key === parent) return false;
         return allComponents[key].parent === parent;
       });
 
@@ -243,6 +244,7 @@ export const SubContainer = ({
             layouts: {
               ...newComponent.layout,
             },
+            withDefaultChildren: newComponent.withDefaultChildren,
           },
         });
 
@@ -404,66 +406,71 @@ export const SubContainer = ({
       id={`canvas-${parent}`}
       className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
     >
-      {Object.keys(childComponents).map((key) => (
-        <DraggableBox
-          onComponentClick={onComponentClick}
-          onEvent={onEvent}
-          onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
-          onComponentOptionsChanged={onComponentOptionsChanged}
-          key={key}
-          currentState={currentState}
-          onResizeStop={onResizeStop}
-          onDragStop={onDragStop}
-          paramUpdated={paramUpdated}
-          id={key}
-          allComponents={allComponents}
-          {...childComponents[key]}
-          mode={mode}
-          resizingStatusChanged={(status) => setIsResizing(status)}
-          draggingStatusChanged={(status) => setIsDragging(status)}
-          inCanvas={true}
-          zoomLevel={zoomLevel}
-          setSelectedComponent={setSelectedComponent}
-          currentLayout={currentLayout}
-          selectedComponent={selectedComponent}
-          deviceWindowWidth={deviceWindowWidth}
-          isSelectedComponent={mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false}
-          removeComponent={customRemoveComponent}
-          canvasWidth={_containerCanvasWidth}
-          readOnly={readOnly}
-          darkMode={darkMode}
-          customResolvables={customResolvables}
-          onComponentHover={onComponentHover}
-          hoveredComponent={hoveredComponent}
-          parentId={parentComponent?.name}
-          sideBarDebugger={sideBarDebugger}
-          isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
-          exposedVariables={exposedVariables ?? {}}
-          containerProps={{
-            mode,
-            snapToGrid,
-            onComponentClick,
-            onEvent,
-            appDefinition,
-            appDefinitionChanged,
-            currentState,
-            onComponentOptionChanged,
-            onComponentOptionsChanged,
-            appLoading,
-            zoomLevel,
-            setSelectedComponent,
-            removeComponent,
-            currentLayout,
-            deviceWindowWidth,
-            selectedComponents,
-            darkMode,
-            readOnly,
-            onComponentHover,
-            hoveredComponent,
-            sideBarDebugger,
-          }}
-        />
-      ))}
+      {Object.keys(childComponents).map((key) => {
+        const addDefaultChildren = childComponents[key]['withDefaultChildren'] || false;
+
+        return (
+          <DraggableBox
+            onComponentClick={onComponentClick}
+            onEvent={onEvent}
+            onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
+            onComponentOptionsChanged={onComponentOptionsChanged}
+            key={key}
+            currentState={currentState}
+            onResizeStop={onResizeStop}
+            onDragStop={onDragStop}
+            paramUpdated={paramUpdated}
+            id={key}
+            allComponents={allComponents}
+            {...childComponents[key]}
+            mode={mode}
+            resizingStatusChanged={(status) => setIsResizing(status)}
+            draggingStatusChanged={(status) => setIsDragging(status)}
+            inCanvas={true}
+            zoomLevel={zoomLevel}
+            setSelectedComponent={setSelectedComponent}
+            currentLayout={currentLayout}
+            selectedComponent={selectedComponent}
+            deviceWindowWidth={deviceWindowWidth}
+            isSelectedComponent={mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false}
+            removeComponent={customRemoveComponent}
+            canvasWidth={_containerCanvasWidth}
+            readOnly={readOnly}
+            darkMode={darkMode}
+            customResolvables={customResolvables}
+            onComponentHover={onComponentHover}
+            hoveredComponent={hoveredComponent}
+            parentId={parentComponent?.name}
+            sideBarDebugger={sideBarDebugger}
+            isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+            exposedVariables={exposedVariables ?? {}}
+            containerProps={{
+              mode,
+              snapToGrid,
+              onComponentClick,
+              onEvent,
+              appDefinition,
+              appDefinitionChanged,
+              currentState,
+              onComponentOptionChanged,
+              onComponentOptionsChanged,
+              appLoading,
+              zoomLevel,
+              setSelectedComponent,
+              removeComponent,
+              currentLayout,
+              deviceWindowWidth,
+              selectedComponents,
+              darkMode,
+              readOnly,
+              onComponentHover,
+              hoveredComponent,
+              sideBarDebugger,
+              addDefaultChildren,
+            }}
+          />
+        );
+      })}
 
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box">
