@@ -26,6 +26,7 @@ import {
   selectColourFromColourPicker,
   fillBoxShadowParams,
   verifyBoxShadowCss,
+  verifyAndModifyDataPickerFx,
 } from "Support/utils/commonWidget";
 
 describe("Date Picker widget", () => {
@@ -218,23 +219,26 @@ describe("Date Picker widget", () => {
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     openAccordion(commonWidgetText.accordionGenaral, "1");
 
-    verifyAndModifyToggleFx(
+    verifyAndModifyDataPickerFx(
       commonWidgetText.parameterBoxShadow,
       commonWidgetText.boxShadowDefaultValue,
-      false
+      commonWidgetText.boxShadowFxValue
     );
-    cy.get(multiselectSelector.inputBoxShadow).click();
+    cy.get(
+      commonWidgetSelector.parameterFxButton(
+        commonWidgetText.parameterBoxShadow
+      )
+    ).click();
+
+    cy.get(
+      commonWidgetSelector.dataPicker(commonWidgetText.parameterBoxShadow)
+    ).click();
     fillBoxShadowParams(
       commonWidgetSelector.boxShadowDefaultParam,
       data.boxShadowParam
     );
-    cy.get(multiselectSelector.boxShadowPopover)
-      .find(multiselectSelector.colourPickerInput)
-      .click();
-    selectColourFromColourPicker(
-      multiselectSelector.colourPickerParent,
-      data.colour
-    );
+
+    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
     verifyBoxShadowCss(
       multiselectText.defaultWidgetName,
       data.colour,
