@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import FxButton from './FxButton';
 
-export const Number = ({ value, onChange, forceCodeBox }) => {
+export const Number = ({ value, onChange, forceCodeBox, cyLabel }) => {
   const [number, setNumber] = useState(value ? value : 0);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -14,7 +14,7 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
     <>
       <div className="row fx-container">
         <div className="col">
-          <div className="field form-control" style={{ padding: '0.225rem 0.35rem' }} data-cy="border-radius-input">
+          <div className="field form-control" style={{ padding: '0.225rem 0.35rem' }}>
             <input
               style={numberTheme}
               type="text"
@@ -23,11 +23,12 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
                 onChange(`{{${e.target.value}}}`);
               }}
               value={number}
+              data-cy={`${cyLabel}-input-field`}
             />
           </div>
         </div>
         <div className="col-auto pt-0 style-fx fx-common">
-          <FxButton active={false} onPress={forceCodeBox} />
+          <FxButton active={false} onPress={forceCodeBox} dataCy={cyLabel} />
         </div>
       </div>
     </>

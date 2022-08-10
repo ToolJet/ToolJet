@@ -29,7 +29,7 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
   });
 
   return (
-    <div className="widget-button">
+    <div className="widget-button" data-cy="button-widget">
       <button
         disabled={disabledState}
         className={cx('jet-button btn btn-primary p-1 overflow-hidden', {
@@ -40,7 +40,7 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
           event.stopPropagation();
           fireEvent('onClick');
         }}
-        data-cy="button-widget"
+        data-cy={`draggable-widget-${text.toLowerCase()}`}
       >
         {label}
       </button>
