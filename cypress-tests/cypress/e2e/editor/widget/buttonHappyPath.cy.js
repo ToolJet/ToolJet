@@ -1,100 +1,239 @@
-import { buttonSelector } from "Selectors/button";
-import {commonSelectors} from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { buttonText } from "Texts/button";
-import * as button from "Support/utils/button"; 
 import { fake } from "Fixtures/fake";
+import { commonText, commonWidgetText } from "Texts/common";
 
-describe("Editor- Test Button widget",()=>{
-  const appName = (`${fake.companyName} App`);
-  beforeEach(()=>{
-   cy.appUILogin();
-   cy.createApp(appName);
-   button.navigateToEditor(appName);
-   cy.dragAndDropWidget(buttonText.widgetName);
+import {
+  verifyButtonBoxShadowCss,
+  openButtonStylesEditorSideBar,
+} from "Support/utils/button";
+
+import {
+  openAccordion,
+  verifyAndModifyParameter,
+  openEditorSidebar,
+  verifyAndModifyToggleFx,
+  addDefaultEventHandler,
+  addAndVerifyTooltip,
+  verifyComponentFromInspector,
+  verifyAndModifyDataPickerFx,
+  verifyWidgetCss,
+  selectColourFromColourPicker,
+  verifyLoaderColor,
+  fillBoxShadowParams,
+} from "Support/utils/commonWidget";
+
+describe("Editor- Test Button widget", () => {
+  const data = {};
+  data.alertMessage = fake.randomSentence;
+  data.widgetName = fake.widgetName;
+  data.appName = fake.companyName;
+  data.customMessage = fake.randomSentence;
+
+  beforeEach(() => {
+    cy.appUILogin();
+    cy.createApp();
+    cy.dragAndDropWidget(buttonText.widgetName);
   });
 
-  it("should verify the properties of the button widget",()=>{
-   button.propertiesElements();
+  it("should verify the properties of the button widget", () => {
+    cy.get(commonWidgetSelector.draggableWidget(buttonText.widgetName)).trigger(
+      "mouseover"
+    );
+    cy.get(
+      commonWidgetSelector.widgetConfigHandle(buttonText.defaultWidgetName)
+    ).click();
 
-   cy.get(buttonSelector.buttonInputField).first().click().type(`{selectall}${buttonText.buttonText}`);
-   cy.get(buttonSelector.buttonProperties).click();
-   cy.get(buttonSelector.buttonWidget).should("have.text",buttonText.buttonText);
-  
-   cy.get(buttonSelector.buttonName).should("be.visible");
-   cy.get(buttonSelector.buttonProperties).click();
-   cy.get(buttonSelector.buttonName).clear().type(` ${buttonText.invalidButtonName}{enter}`);
-   cy.verifyToastMessage(commonSelectors.toastMessage,buttonText.buttonNameErrToast);
-   cy.get(buttonSelector.buttonName).clear().type(`{selectall}${buttonText.validButtonName}{enter}`);
+    cy.clearAndType(commonWidgetSelector.WidgetNameInputField, data.widgetName);
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
 
-   cy.get(buttonSelector.loadingStateFx).click();
-   cy.get(buttonSelector.fxLoadingState).should("have.text", buttonText.falseText);
-   cy.get(buttonSelector.loadingStateInputFx).click();
-   cy.get(buttonSelector.loadingStateToggle).check();
-   cy.get(buttonSelector.loadingStateFx).click();
-   cy.get(buttonSelector.fxLoadingState).should("have.text", buttonText.trueText);
-   cy.get(buttonSelector.loadingStateInputFx).click();
-   cy.get(buttonSelector.loadingStateToggle).uncheck();
-   cy.get(buttonSelector.propertiesElements.propertiesAccordion).click();
+    cy.get(commonWidgetSelector.draggableWidget(buttonText.widgetName)).trigger(
+      "mouseover"
+    );
+    cy.get(commonWidgetSelector.widgetConfigHandle(data.widgetName))
+      .click()
+      .should("have.text", data.widgetName)
+      .click();
+    openAccordion(commonWidgetText.accordionProperties);
+    verifyAndModifyParameter(buttonText.buttonTextLabel, data.widgetName);
 
-   cy.get(buttonSelector.propertiesElements.addEventListner).click();
-   cy.get(buttonSelector.eventHandler).click();
-   cy.get(buttonSelector.popoverCard).should("be.visible");
-   button.eventListnerCard();
-   cy.get(buttonSelector.messageText).click().type(buttonText.newMessage);
-   cy.get(buttonSelector.buttonWidget).click({force:true});
+    verifyComponentFromInspector(data.widgetName);
+    verifyAndModifyToggleFx(
+      buttonText.loadingState,
+      commonWidgetText.codeMirrorLabelFalse
+    );
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+      "have.class",
+      "btn-loading"
+    );
+    cy.get(
+      commonWidgetSelector.parameterTogglebutton(buttonText.loadingState)
+    ).click();
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+      "not.have.class",
+      "btn-loading"
+    );
 
-   cy.get(buttonSelector.desktopFx).click();
-   cy.get(buttonSelector.fxDesktop).should("have.text", buttonText.trueText);
-   cy.get(buttonSelector.desktopInputFx).click();
-   cy.get(buttonSelector.desktopToggle).uncheck();
-   cy.get(buttonSelector.desktopFx).click();
-   cy.get(buttonSelector.fxDesktop).should("have.text", buttonText.falseText);
-   cy.get(buttonSelector.desktopInputFx).click();
-   cy.get(buttonSelector.desktopToggle).check();
+    openEditorSidebar(data.widgetName);
+    openAccordion(buttonText.eventsAccordion);
+    addDefaultEventHandler(data.alertMessage);
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
 
-  cy.get(buttonSelector.mobileFx).click();
-  cy.get(buttonSelector.fxMobile).should("have.text", buttonText.falseText);
-  cy.get(buttonSelector.mobileInputFx).click();
-  cy.get(buttonSelector.mobileToggle).check();
-  cy.get(buttonSelector.mobileFx).click();
-  cy.get(buttonSelector.fxMobile).should("have.text", buttonText.trueText);
-  cy.get(buttonSelector.mobileInputFx).click();
-  cy.get(buttonSelector.mobileToggle).uncheck();
+    openEditorSidebar(data.widgetName);
+    openAccordion(commonWidgetText.accordionGenaral);
+    addAndVerifyTooltip(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      fake.randomSentence
+    );
+    openEditorSidebar(data.widgetName);
+    openAccordion(commonWidgetText.accordionLayout);
+    verifyAndModifyToggleFx(
+      commonWidgetText.parameterShowOnDesktop,
+      commonWidgetText.codeMirrorLabelTrue
+    );
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+      "not.exist"
+    );
 
-  button.deleteApp();
+    verifyAndModifyToggleFx(
+      commonWidgetText.parameterShowOnMobile,
+      commonWidgetText.codeMirrorLabelFalse
+    );
+    cy.get(commonWidgetSelector.changeLayoutButton).click();
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+      "exist"
+    );
 
+    cy.get(commonWidgetSelector.changeLayoutButton).click();
+
+    cy.get(commonWidgetSelector.widgetDocumentationLink).should(
+      "have.text",
+      buttonText.buttonDocumentationLink
+    );
   });
+  it("should verify the styles of the button widget", () => {
+    data.colourHex = fake.randomRgbaHex;
+    data.colour = fake.randomRgba;
+    data.boxShadowParam = fake.boxShadowParam;
 
-  it("should verify the styles of the button widget",()=>{
-   button.stylesElements();
-   button.colorPickerCard();
-   cy.get(buttonSelector.stylesFx.visibility).click();
-   cy.get(buttonSelector.fxVisibility).should("have.text",buttonText.trueText);
-   cy.get(buttonSelector.visibilityCloseFx).click();
-   cy.get(buttonSelector.visibilityToggle).uncheck();
-   cy.get(buttonSelector.stylesFx.visibility).click();
-   cy.get(buttonSelector.fxVisibility).should("have.text",buttonText.falseText);
-   cy.get(buttonSelector.visibilityCloseFx).click();
-   cy.get(buttonSelector.buttonWidget).should("not.be.visible");
-   cy.get(buttonSelector.visibilityToggle).check();
+    openButtonStylesEditorSideBar();
 
-   cy.get(buttonSelector.stylesFx.disable).click();
-   cy.get(buttonSelector.fxDisable).should("have.text",buttonText.falseText);
-   cy.get(buttonSelector.disableCloseFx).click();
-   cy.get(buttonSelector.disableToggle).check();
-   cy.get(buttonSelector.stylesFx.disable).click();
-   cy.get(buttonSelector.fxDisable).should("have.text",buttonText.trueText);
-   cy.get(buttonSelector.disableCloseFx).click();
-   cy.get(buttonSelector.buttonWidget).should("be.disabled");
-   cy.get(buttonSelector.disableToggle).uncheck();
-   cy.get(buttonSelector.buttonWidget).should("be.enabled");
+    verifyAndModifyDataPickerFx(
+      buttonText.backgroundColor,
+      buttonText.defaultBackgroundColor,
+      data.colourHex
+    );
 
-   cy.get(buttonSelector.stylesInput.borderRadiusInputField).clear().type("15");
-   cy.get(buttonSelector.stylesFx.borderRadius).click();
-   cy.get(buttonSelector.fxBorderRadius).should("have.text", buttonText.borderRadiusInput)
+    cy.get(
+      commonWidgetSelector.parameterFxButton(buttonText.backgroundColor)
+    ).click();
 
-   button.deleteApp();
+    selectColourFromColourPicker(buttonText.backgroundColor, data.colour);
 
+    verifyWidgetCss(buttonText.widgetName, "background-color", data.colour);
+
+    openButtonStylesEditorSideBar();
+
+    verifyAndModifyDataPickerFx(
+      buttonText.textColor,
+      buttonText.defaultTextColor,
+      data.colourHex
+    );
+
+    cy.get(
+      commonWidgetSelector.parameterFxButton(buttonText.textColor)
+    ).click();
+
+    selectColourFromColourPicker(buttonText.textColor, data.colour);
+
+    verifyWidgetCss(buttonText.widgetName, "color", data.colour);
+
+    openButtonStylesEditorSideBar();
+
+    verifyAndModifyDataPickerFx(
+      buttonText.loaderColor,
+      buttonText.defaultLoaderColor,
+      data.colourHex
+    );
+
+    cy.get(
+      commonWidgetSelector.parameterFxButton(buttonText.loaderColor)
+    ).click();
+    selectColourFromColourPicker(buttonText.loaderColor, data.colour);
+
+    verifyLoaderColor(buttonText.widgetName, data.colour);
+
+    openButtonStylesEditorSideBar();
+    verifyAndModifyToggleFx(
+      commonWidgetText.parameterVisibility,
+      commonWidgetText.codeMirrorLabelTrue
+    );
+    cy.get(commonWidgetSelector.draggableWidget(buttonText.widgetName)).should(
+      "not.be.visible"
+    );
+    cy.get(commonWidgetSelector.parameterTogglebutton("Visibility")).click();
+
+    verifyAndModifyToggleFx(
+      commonWidgetText.parameterDisable,
+      commonWidgetText.codeMirrorLabelFalse
+    );
+    cy.get(commonSelectors.autoSave, { timeout: 9000 }).should(
+      "have.text",
+      commonText.autoSave
+    );
+    cy.get(commonWidgetSelector.draggableWidget(buttonText.widgetName)).should(
+      "have.attr",
+      "disabled"
+    );
+
+    cy.get(commonWidgetSelector.parameterTogglebutton("Disable")).click();
+
+    cy.get(
+      commonWidgetSelector.parameterFxButton(
+        commonWidgetText.parameterBorderRadius
+      )
+    )
+      .last()
+      .click();
+
+    verifyAndModifyParameter(
+      commonWidgetText.parameterBorderRadius,
+      buttonText.borderRadiusInput
+    );
+
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(commonWidgetSelector.draggableWidget(buttonText.widgetName)).should(
+      "have.css",
+      "border-radius",
+      "20px"
+    );
+
+    openButtonStylesEditorSideBar();
+
+    openAccordion(commonWidgetText.accordionGenaral, "1");
+    verifyAndModifyDataPickerFx(
+      commonWidgetText.parameterBoxShadow,
+      commonWidgetText.boxShadowDefaultValue,
+      commonWidgetText.boxShadowFxValue
+    );
+    cy.get(
+      commonWidgetSelector.parameterFxButton(
+        commonWidgetText.parameterBoxShadow
+      )
+    ).click();
+
+    cy.get(
+      commonWidgetSelector.dataPicker(commonWidgetText.parameterBoxShadow)
+    ).click();
+
+    fillBoxShadowParams(
+      commonWidgetSelector.boxShadowDefaultParam,
+      data.boxShadowParam
+    );
+
+    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
+
+    verifyButtonBoxShadowCss(data.colour, data.boxShadowParam);
   });
-  
 });
