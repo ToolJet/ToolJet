@@ -209,7 +209,9 @@
         },
         "Sources" :{
             "text":"Sources",
-            "tip" : "Add or edit datasources"
+            "tip" : "Add or edit datasources",
+            "dataSources":"Data sources",
+            "addDataSource":"+ add data source"
         },
         "Debugger":{
             "text":"Debugger",
