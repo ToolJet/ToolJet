@@ -1,4 +1,4 @@
-import React, { useState, useRef, useLayoutEffect } from 'react';
+import React, { useState, useRef, useLayoutEffect, useEffect } from 'react';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
 import { componentTypes } from '../WidgetManager/components';
@@ -38,6 +38,7 @@ export const Inspector = ({
   // eslint-disable-next-line no-unused-vars
   const [tabHeight, setTabHeight] = React.useState(0); //?
   const tabsRef = useRef(null);
+  const componentNameRef = useRef(null);
   const [newComponentName, setNewComponentName] = useState(component.component.name);
   const [inputRef, setInputFocus] = useFocus();
 
@@ -52,6 +53,17 @@ export const Inspector = ({
     }
   }, []);
 
+  useEffect(() => {
+    componentNameRef.current = newComponentName;
+  }, [newComponentName]);
+
+  useEffect(() => {
+    return () => {
+      handleComponentNameChange(componentNameRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const validateComponentName = (name) => {
     const isValid = !Object.values(allComponents)
       .map((component) => component.component.name)
@@ -64,6 +76,7 @@ export const Inspector = ({
   };
 
   function handleComponentNameChange(newName) {
+    if (component.component.name === newName) return;
     if (newName.length === 0) {
       toast.error('Widget name cannot be empty');
       return setInputFocus();

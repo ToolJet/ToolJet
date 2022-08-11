@@ -18,6 +18,15 @@ import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 
+const ERROR_TYPES = Object.freeze({
+  ReferenceError: 'ReferenceError',
+  SyntaxError: 'SyntaxError',
+  TypeError: 'TypeError',
+  URIError: 'URIError',
+  RangeError: 'RangeError',
+  EvalError: 'EvalError',
+});
+
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
     _ref.setState(state, resolve);
@@ -75,15 +84,17 @@ export function getDataFromLocalStorage(key) {
 
 export function runTransformation(_ref, rawData, transformation, query) {
   const data = rawData;
-  const evalFunction = Function(
-    ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
-    transformation
-  );
+
   let result = [];
 
   const currentState = _ref.state.currentState || {};
 
   try {
+    const evalFunction = Function(
+      ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+      transformation
+    );
+
     result = evalFunction(
       data,
       moment,
@@ -95,6 +106,9 @@ export function runTransformation(_ref, rawData, transformation, query) {
     );
   } catch (err) {
     console.log('Transformation failed for query: ', query.name, err);
+    const $error = err.name;
+    const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
+    toast.error($errorMessage);
     result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
   }
 
@@ -1063,3 +1077,91 @@ export const addComponents = (
   updateNewComponents(appDefinition, finalComponents, appDefinitionChanged);
   !isCloning && toast.success('Component pasted succesfully');
 };
+
+export const addNewWidgetToTheEditor = (
+  componentMeta,
+  eventMonitorObject,
+  currentComponents,
+  canvasBoundingRect,
+  currentLayout,
+  shouldSnapToGrid,
+  zoomLevel,
+  isInSubContainer = false,
+  addingDefault = false
+) => {
+  const componentMetaData = _.cloneDeep(componentMeta);
+  const componentData = _.cloneDeep(componentMetaData);
+
+  const defaultWidth = isInSubContainer
+    ? (componentMetaData.defaultSize.width * 100) / 43
+    : componentMetaData.defaultSize.width;
+  const defaultHeight = componentMetaData.defaultSize.height;
+
+  componentData.name = computeComponentName(componentData.component, currentComponents);
+
+  let left = 0;
+  let top = 0;
+
+  if (isInSubContainer && addingDefault) {
+    const newComponent = {
+      id: uuidv4(),
+      component: componentData,
+      layout: {
+        [currentLayout]: {
+          top: top,
+          left: left,
+        },
+      },
+    };
+
+    return newComponent;
+  }
+
+  const offsetFromTopOfWindow = canvasBoundingRect.top;
+  const offsetFromLeftOfWindow = canvasBoundingRect.left;
+  const currentOffset = eventMonitorObject.getSourceClientOffset();
+  const initialClientOffset = eventMonitorObject.getInitialClientOffset();
+  const delta = eventMonitorObject.getDifferenceFromInitialOffset();
+  const subContainerWidth = canvasBoundingRect.width;
+
+  left = Math.round(currentOffset?.x + currentOffset?.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+  top = Math.round(
+    initialClientOffset?.y - 10 + delta.y + initialClientOffset?.y * (1 - zoomLevel) - offsetFromTopOfWindow
+  );
+
+  if (shouldSnapToGrid) {
+    [left, top] = snapToGrid(subContainerWidth, left, top);
+  }
+
+  left = (left * 100) / subContainerWidth;
+
+  if (currentLayout === 'mobile') {
+    componentData.definition.others.showOnDesktop.value = false;
+    componentData.definition.others.showOnMobile.value = true;
+  }
+
+  const newComponent = {
+    id: uuidv4(),
+    component: componentData,
+    layout: {
+      [currentLayout]: {
+        top: top,
+        left: left,
+        width: defaultWidth,
+        height: defaultHeight,
+      },
+    },
+
+    withDefaultChildren: componentData.component === 'Listview' ? true : false,
+  };
+
+  return newComponent;
+};
+
+export function snapToGrid(canvasWidth, x, y) {
+  const gridX = canvasWidth / 43;
+
+  const snappedX = Math.round(x / gridX) * gridX;
+  const snappedY = Math.round(y / 10) * 10;
+  return [snappedX, snappedY];
+}
