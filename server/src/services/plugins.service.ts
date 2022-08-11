@@ -4,7 +4,7 @@ import { File } from 'src/entities/file.entity';
 import { Plugin } from 'src/entities/plugin.entity';
 import { Repository, Connection } from 'typeorm';
 import { CreateFileDto } from '../dto/create-file.dto';
-// import { CreatePluginDto } from '../dto/create-plugin.dto';
+import { CreatePluginDto } from '../dto/create-plugin.dto';
 import { UpdatePluginDto } from '../dto/update-plugin.dto';
 import { FilesService } from './files.service';
 import { encode } from 'js-base64';
@@ -18,7 +18,7 @@ export class PluginsService {
     private pluginsRepository: Repository<Plugin>
   ) {}
   async create(
-    createPluginDto: any,
+    createPluginDto: CreatePluginDto,
     files: { index: ArrayBuffer; operations: ArrayBuffer; icon: ArrayBuffer; manifest: ArrayBuffer }
   ) {
     const queryRunner = this.connection.createQueryRunner();
@@ -39,6 +39,7 @@ export class PluginsService {
       );
 
       const plugin = new Plugin();
+      plugin.pluginId = createPluginDto.id;
       plugin.name = createPluginDto.name;
       plugin.version = createPluginDto.version;
       plugin.description = createPluginDto.description;
@@ -72,8 +73,8 @@ export class PluginsService {
     const promises = await Promise.all([
       fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/dist/index.js`),
       fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/lib/operations.json`),
-      fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/lib/manifest.json`),
       fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/lib/icon.svg`),
+      fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/lib/manifest.json`),
     ]);
 
     const files = promises.map((promise) => {
@@ -86,10 +87,10 @@ export class PluginsService {
     return [indexFile, operationsFile, iconFile, manifestFile];
   }
 
-  async install(body: any) {
-    const { id, name, version, description } = body;
+  async install(body: CreatePluginDto) {
+    const { id } = body;
     const [index, operations, icon, manifest] = await this.fetchPluginFiles(id);
-    return await this.create({ name, version, description }, { index, operations, icon, manifest });
+    return await this.create(body, { index, operations, icon, manifest });
   }
 
   update(id: string, updatePluginDto: UpdatePluginDto) {

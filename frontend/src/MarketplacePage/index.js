@@ -1,8 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { pluralize } from '@/_helpers/utils';
 import { Header } from '@/_components';
-import { Filters } from './Filters';
 import { InstalledPlugins } from './InstalledPlugins';
 import { MarketplacePlugins } from './MarketplacePlugins';
 
@@ -18,7 +16,6 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
             <div className="row g-2 align-items-center">
               <div className="col">
                 <h2 className="page-title">Marketplace</h2>
-                {/* <div className="text-muted mt-1">{pluralize(0, 'result')}</div> */}
               </div>
             </div>
           </div>
@@ -37,7 +34,6 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
                     href="#"
                   >
                     Installed
-                    {/* <small className="text-muted ms-auto">24</small> */}
                   </a>
                   <a
                     className={cx('list-group-item list-group-item-action d-flex align-items-center', {
@@ -47,13 +43,8 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
                     href="#"
                   >
                     Marketplace
-                    {/* <small className="text-muted ms-auto">149</small> */}
                   </a>
                 </div>
-                {/* <Filters />
-                <div className="mt-3">
-                  <a href="#">✨ Write and submit new plugin</a>
-                </div> */}
               </div>
               {active === 'installed' ? (
                 <InstalledPlugins isActive={active === 'installed'} darkMode={darkMode} />

@@ -8,6 +8,10 @@ export const MarketplaceCard = ({ id, name, description, version, isInstalled = 
   const [installed, setInstalled] = React.useState(isInstalled);
   const [installing, setInstalling] = React.useState(false);
 
+  React.useEffect(() => {
+    setInstalled(isInstalled);
+  }, [isInstalled]);
+
   const installPlugin = async () => {
     const body = {
       id,
@@ -30,9 +34,6 @@ export const MarketplaceCard = ({ id, name, description, version, isInstalled = 
   return (
     <div className="col-sm-6 col-lg-4">
       <div className="card card-sm card-borderless">
-        <div className="card-header" style={{ borderBottom: 0 }}>
-          <div className="card-actions btn-actions">v{version}</div>
-        </div>
         <div className="card-body">
           <div className="row align-items-center">
             <div className="col-auto">
@@ -48,9 +49,7 @@ export const MarketplaceCard = ({ id, name, description, version, isInstalled = 
           <div className="mt-4">
             <div className="row">
               <div className="col">
-                <div className="avatar-list avatar-list-stacked">
-                  <span className="avatar avatar-xs avatar-rounded"></span>
-                </div>
+                <sub>v{version}</sub>
               </div>
               <div className={cx('col-auto', { disabled: installing || installed })} onClick={installPlugin}>
                 <a href="#">Install{installed && 'ed'}</a>

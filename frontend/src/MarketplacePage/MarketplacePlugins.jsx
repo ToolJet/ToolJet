@@ -5,9 +5,9 @@ import { pluginsService } from '@/_services';
 
 export const MarketplacePlugins = ({ isActive }) => {
   const [plugins, setPlugins] = React.useState([]);
-  const [installedPlguins, setInstalledPlugins] = React.useState({});
+  const [installedPlugins, setInstalledPlugins] = React.useState({});
   React.useEffect(() => {
-    fetch('https://raw.githubusercontent.com/ToolJet/ToolJet/add-marketplace/marketplace/plugins.json')
+    fetch('https://raw.githubusercontent.com/ToolJet/ToolJet/add-extension-module/marketplace/plugins.json')
       .then((response) => response.json())
       .then((plugins) => setPlugins(plugins))
       .catch((error) => {
@@ -19,11 +19,11 @@ export const MarketplacePlugins = ({ isActive }) => {
     pluginsService
       .findAll()
       .then(({ data = [] }) => {
-        const installedPlguins = data.reduce((acc, { id }) => {
-          acc[id] = true;
+        const installedPlugins = data.reduce((acc, { pluginId }) => {
+          acc[pluginId] = true;
           return acc;
         }, {});
-        setInstalledPlugins(installedPlguins);
+        setInstalledPlugins(installedPlugins);
       })
       .catch((error) => {
         toast.error(error?.message || 'something went wrong');
@@ -38,7 +38,7 @@ export const MarketplacePlugins = ({ isActive }) => {
             <MarketplaceCard
               key={id}
               id={id}
-              installed={installedPlguins[id]}
+              isInstalled={installedPlugins[id]}
               name={name}
               version={version}
               description={description}

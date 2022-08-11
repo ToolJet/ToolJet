@@ -14,6 +14,10 @@ export class CreatePlugins1651056032052 implements MigrationInterface {
             isPrimary: true,
           },
           {
+            name: 'plugin_id',
+            type: 'varchar',
+          },
+          {
             name: 'name',
             type: 'varchar',
           },

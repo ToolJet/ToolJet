@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PluginsService } from '../services/plugins.service';
+import { CreatePluginDto } from '../dto/create-plugin.dto';
 import { UpdatePluginDto } from '../dto/update-plugin.dto';
 import { Connection } from 'typeorm';
 import { decode } from 'js-base64';
@@ -23,8 +24,8 @@ export class PluginsController {
 
   @Post('install')
   @UseGuards(JwtAuthGuard)
-  install(@Body() installPluginDto: any) {
-    return this.pluginsService.install(installPluginDto);
+  install(@Body() createPluginDto: CreatePluginDto) {
+    return this.pluginsService.install(createPluginDto);
   }
 
   @Get()

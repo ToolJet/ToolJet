@@ -7,6 +7,14 @@ export class CreatePluginDto {
 
   @IsString()
   @IsNotEmpty()
+  description: string;
+
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @IsString()
+  @IsNotEmpty()
   @IsSemVer()
   version: string;
 

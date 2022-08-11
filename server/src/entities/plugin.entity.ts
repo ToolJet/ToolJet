@@ -14,6 +14,9 @@ export class Plugin {
   @PrimaryGeneratedColumn()
   public id: string;
 
+  @Column({ name: 'plugin_id' })
+  pluginId: string;
+
   @Column({ name: 'name' })
   name: string;
 
