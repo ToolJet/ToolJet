@@ -5623,16 +5623,8 @@ div#driver-page-overlay {
 }
 
 .pdf-page-controls {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
   background: white;
-  opacity: 0;
-  transform: translateX(-50%);
-  transition: opacity ease-in-out 0.2s;
   border-radius: 4px;
-  box-shadow: 0 30px 40px 0 rgba(16, 36, 94, 0.2);
-
   button {
     width: 36px;
     height: 36px;
@@ -5663,7 +5655,10 @@ div#driver-page-overlay {
     color: #000;
   }
 }
-
+//download button in pdf widget
+.download-icon-outer-wrapper:hover{
+  background-color: #e6e6e6 !important
+}
 .pdf-document {
   canvas {
     margin: 0px auto;
