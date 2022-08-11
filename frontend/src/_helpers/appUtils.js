@@ -1133,6 +1133,8 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.others.showOnMobile.value = true;
   }
 
+  const widgetsWithDefaultComponents = ['Listview', 'Tabs'];
+
   const newComponent = {
     id: uuidv4(),
     component: componentData,
@@ -1145,7 +1147,7 @@ export const addNewWidgetToTheEditor = (
       },
     },
 
-    withDefaultChildren: componentData.component === 'Listview' ? true : false,
+    withDefaultChildren: widgetsWithDefaultComponents.includes(componentData.component),
   };
 
   return newComponent;
