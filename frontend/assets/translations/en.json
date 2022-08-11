@@ -213,7 +213,10 @@
         },
         "Debugger":{
             "text":"Debugger",
-            "tip" : "Debugger"
+            "tip" : "Debugger",
+            "errors":"Errors",
+            "noErrors":"No errors found",
+            "clear":"clear"
         },
         "Comments":{
             "text":"Comments",
