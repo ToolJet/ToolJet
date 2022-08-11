@@ -46,7 +46,6 @@ import config from 'config';
 import queryString from 'query-string';
 import toast from 'react-hot-toast';
 import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
-import Logo from './Icons/logo.svg';
 import RunjsIcon from './Icons/runjs.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
@@ -60,6 +59,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import RealtimeAvatars from './RealtimeAvatars';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
+import AppLogo from '../_components/AppLogo';
 
 setAutoFreeze(false);
 enablePatches();
@@ -1196,7 +1196,7 @@ class Editor extends React.Component {
               </button>
               <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
                 <Link to={'/'}>
-                  <Logo />
+                  <AppLogo />
                 </Link>
               </h1>
               {this.state.app && (
