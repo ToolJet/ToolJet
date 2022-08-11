@@ -1,6 +1,7 @@
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
+const CompressionPlugin = require("compression-webpack-plugin");
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -100,7 +101,11 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.html',
-      favicon: './assets/images/logo.svg',
+      favicon: './assets/images/logo.svg'
+    }),
+    new CompressionPlugin({
+      test: /\.js(\?.*)?$/i,
+      algorithm: "gzip",
     }),
     new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
     new webpack.DefinePlugin({
@@ -116,7 +121,7 @@ module.exports = {
   },
   output: {
     publicPath: ASSET_PATH,
-    path: path.resolve(__dirname, 'build'),
+    path: path.resolve(__dirname, 'build')
   },
   externals: {
     // global app config object
