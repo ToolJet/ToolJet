@@ -224,7 +224,13 @@
         },
         "Settings":{
             "text":"Settings",
-            "tip" : "Global Settings"
+            "tip" : "Global Settings",
+            "hideHeader": "Hide header for launched apps",
+            "maintenanceMode":"Maintenance mode",
+            "maxWidthOfCanvas":"Max width of canvas",
+            "maxHeightOfCanvas" :"Min height of canvas",
+            "backgroundColorOfCanvas":"Background color of canvas"
+
         },
         "Back":{
             "text":"Back",
