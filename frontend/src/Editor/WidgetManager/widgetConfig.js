@@ -3162,9 +3162,42 @@ export const widgets = [
     displayName: 'List View',
     description: 'Wrapper for multiple components',
     defaultSize: {
-      width: 5,
-      height: 200,
+      width: 20,
+      height: 300,
     },
+    defaultChildren: [
+      {
+        componentName: 'Image',
+        layout: {
+          top: 15,
+          left: 6.976744186046512,
+          height: 100,
+        },
+        properties: ['source'],
+        accessorKey: 'imageURL',
+      },
+      {
+        componentName: 'Text',
+        layout: {
+          top: 50,
+          left: 27,
+          height: 30,
+        },
+        properties: ['text'],
+        accessorKey: 'text',
+      },
+      {
+        componentName: 'Button',
+        layout: {
+          top: 50,
+          left: 60,
+          height: 30,
+        },
+        incrementWidth: 2,
+        properties: ['text'],
+        accessorKey: 'buttonText',
+      },
+    ],
     component: 'Listview',
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -3230,7 +3263,11 @@ export const widgets = [
       },
       properties: {
         data: {
-          value: "{{ [ { image: 'https://reqres.in/img/faces/8-image.jpg' }] }}",
+          value: `{{[
+  { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 1' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 2' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 3' },
+  ]}}`,
         },
         rowHeight: {
           value: '100',

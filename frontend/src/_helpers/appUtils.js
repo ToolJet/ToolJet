@@ -1065,7 +1065,8 @@ export const addNewWidgetToTheEditor = (
   currentLayout,
   shouldSnapToGrid,
   zoomLevel,
-  isInSubContainer = false
+  isInSubContainer = false,
+  addingDefault = false
 ) => {
   const componentMetaData = _.cloneDeep(componentMeta);
   const componentData = _.cloneDeep(componentMetaData);
@@ -1079,6 +1080,21 @@ export const addNewWidgetToTheEditor = (
 
   let left = 0;
   let top = 0;
+
+  if (isInSubContainer && addingDefault) {
+    const newComponent = {
+      id: uuidv4(),
+      component: componentData,
+      layout: {
+        [currentLayout]: {
+          top: top,
+          left: left,
+        },
+      },
+    };
+
+    return newComponent;
+  }
 
   const offsetFromTopOfWindow = canvasBoundingRect.top;
   const offsetFromLeftOfWindow = canvasBoundingRect.left;
@@ -1114,6 +1130,8 @@ export const addNewWidgetToTheEditor = (
         height: defaultHeight,
       },
     },
+
+    withDefaultChildren: componentData.component === 'Listview' ? true : false,
   };
 
   return newComponent;
