@@ -163,7 +163,7 @@ export const fillBoxShadowParams = (paramLabels, values) => {
 export const verifyBoxShadowCss = (widgetName, color, shadowParam) => {
   cy.forceClickOnCanvas();
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
-    .parent()
+    .parents('[role = "Box"]')
     .should(
       "have.css",
       "box-shadow",

@@ -3,10 +3,7 @@ import { buttonText } from "Texts/button";
 import { fake } from "Fixtures/fake";
 import { commonText, commonWidgetText } from "Texts/common";
 
-import {
-  verifyButtonBoxShadowCss,
-  openButtonStylesEditorSideBar,
-} from "Support/utils/button";
+import { openButtonStylesEditorSideBar } from "Support/utils/button";
 
 import {
   openAccordion,
@@ -21,6 +18,7 @@ import {
   selectColourFromColourPicker,
   verifyLoaderColor,
   fillBoxShadowParams,
+  verifyBoxShadowCss,
 } from "Support/utils/commonWidget";
 
 describe("Editor- Test Button widget", () => {
@@ -234,6 +232,6 @@ describe("Editor- Test Button widget", () => {
 
     selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
 
-    verifyButtonBoxShadowCss(data.colour, data.boxShadowParam);
+    verifyBoxShadowCss(buttonText.widgetName, data.colour, data.boxShadowParam);
   });
 });
