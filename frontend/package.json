@@ -98,10 +98,10 @@
     "webpack-cli": "^4.8.0",
     "y-websocket": "^1.4.0",
     "yjs": "^13.5.28",
-    "yup": "^0.27.0"
+    "yup": "^0.27.0",
+    "compression-webpack-plugin": "^10.0.0"
   },
   "devDependencies": {
-    "compression-webpack-plugin": "^10.0.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-import-resolver-webpack": "^0.13.1",
