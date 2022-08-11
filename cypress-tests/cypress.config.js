@@ -1,4 +1,5 @@
 const { defineConfig } = require("cypress");
+const { rmdir } = require("fs");
 
 module.exports = defineConfig({
   execTimeout: 1800000,
@@ -9,10 +10,23 @@ module.exports = defineConfig({
   viewportWidth: 1200,
   viewportHeight: 960,
   chromeWebSecurity: true,
+  trashAssetsBeforeRuns: true,
   e2e: {
-    // We've imported your old cypress plugins here.
-    // You may want to clean this up later by importing these.
     setupNodeEvents(on, config) {
+      on("task", {
+        deleteFolder(folderName) {
+          return new Promise((resolve, reject) => {
+            rmdir(folderName, { maxRetries: 10, recursive: true }, (err) => {
+              if (err) {
+                console.error(err);
+                return reject(err);
+              }
+              resolve(null);
+            });
+          });
+        },
+      });
+
       return require("./cypress/plugins/index.js")(on, config);
     },
     baseUrl: "http://localhost:8082",

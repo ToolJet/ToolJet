@@ -7,7 +7,7 @@ title: Modal
 Modal widget renders in front of a backdrop, and it blocks interaction with the rest of the application until the modal is closed. It can be used to add dialog boxes to your app for lightboxes, user notifications, forms, etc.
 
 
-## How To Use Datepicker Widget
+## How To Use Modal Widget
 
 <iframe height="500" src="https://www.youtube.com/embed/co-UZCGpfMI" title="Datepicker Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
@@ -32,6 +32,21 @@ To hide modal close button , default is false.
 
 ### Hide on escape
 To disable modal hide on pressing escape key  , default is true.
+
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
 
 ## Layout
 

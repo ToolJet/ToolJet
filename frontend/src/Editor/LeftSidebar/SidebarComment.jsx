@@ -15,6 +15,7 @@ export const LeftSidebarComment = ({ toggleComments, appVersionsId }) => {
         setNotifications(data);
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appVersionsId]);
 
   return (

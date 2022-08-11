@@ -60,8 +60,16 @@ const AppList = (props) => {
       )}
       {!props.isLoading && props.currentFolder.count === 0 && (
         <div>
-          <img className="mx-auto d-block" src="assets/images/icons/empty-folder-svgrepo-com.svg" height="120px" />
-          <span className={`d-block text-center text-body ${props.darkMode && 'text-white-50'}`}>
+          <img
+            className="mx-auto d-block"
+            src="assets/images/icons/empty-folder-svgrepo-com.svg"
+            height="120px"
+            data-cy="empty-folder-image"
+          />
+          <span
+            className={`d-block text-center text-body ${props.darkMode && 'text-white-50'}`}
+            data-cy="empty-folder-text"
+          >
             This folder is empty
           </span>
         </div>

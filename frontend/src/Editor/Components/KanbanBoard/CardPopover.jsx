@@ -22,7 +22,6 @@ export const CardEventPopover = function ({
   const [titleEditMode, setTitleEditMode] = useState(false);
   const [descriptionEditMode, setDescriptionEditMode] = useState(false);
 
-  const minHeight = 400;
   let kanbanBounds;
 
   const kanbanElement = document.getElementById(kanbanCardWidgetId);

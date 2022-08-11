@@ -1,10 +1,9 @@
 import React from 'react';
-
 import DynamicForm from '@/_components/DynamicForm';
-
-import { allManifests } from '@tooljet/plugins/client';
-
 import RunjsSchema from './Runjs.schema.json';
+
+// eslint-disable-next-line import/no-unresolved
+import { allManifests } from '@tooljet/plugins/client';
 
 export const DataBaseSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
   if (allManifests[currentValue].type === 'database') accumulator.push(allManifests[currentValue].source);
