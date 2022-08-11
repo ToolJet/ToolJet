@@ -15,6 +15,15 @@ module.exports = {
   mode: environment,
   optimization: {
     usedExports: true,
+    splitChunks: {
+      cacheGroups: {
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendor',
+          chunks: 'all',
+        },
+      },
+    },
   },
   target: 'web',
   resolve: {
