@@ -115,7 +115,7 @@ export const SubContainer = ({
               const accessor = customResolverVariable
                 ? `{{${customResolverVariable}.${accessorKey}}}`
                 : defaultValue[prop] || '';
-              console.log('accessor ==>', accessor);
+
               _.set(newComponentDefinition, prop, {
                 value: accessor,
               });
@@ -241,8 +241,6 @@ export const SubContainer = ({
           zoomLevel,
           true
         );
-
-        console.log('Tab container', boxes);
 
         setBoxes({
           ...boxes,
