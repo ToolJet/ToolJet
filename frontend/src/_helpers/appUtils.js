@@ -18,6 +18,15 @@ import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 
+const ERROR_TYPES = Object.freeze({
+  ReferenceError: 'ReferenceError',
+  SyntaxError: 'SyntaxError',
+  TypeError: 'TypeError',
+  URIError: 'URIError',
+  RangeError: 'RangeError',
+  EvalError: 'EvalError',
+});
+
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
     _ref.setState(state, resolve);
@@ -75,15 +84,17 @@ export function getDataFromLocalStorage(key) {
 
 export function runTransformation(_ref, rawData, transformation, query) {
   const data = rawData;
-  const evalFunction = Function(
-    ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
-    transformation
-  );
+
   let result = [];
 
   const currentState = _ref.state.currentState || {};
 
   try {
+    const evalFunction = Function(
+      ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+      transformation
+    );
+
     result = evalFunction(
       data,
       moment,
@@ -95,6 +106,9 @@ export function runTransformation(_ref, rawData, transformation, query) {
     );
   } catch (err) {
     console.log('Transformation failed for query: ', query.name, err);
+    const $error = err.name;
+    const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
+    toast.error($errorMessage);
     result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
   }
 
