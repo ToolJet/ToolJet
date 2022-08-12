@@ -862,45 +862,46 @@ export function Table({
       ref={tableRef}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
-
-      <div className="card-body border-bottom py-3 ">
-        <div
-          className={`d-flex align-items-center ms-auto text-muted ${
-            displaySearchBox ? 'justify-content-between' : 'justify-content-end'
-          }`}
-        >
-          {displaySearchBox && (
-            <GlobalFilter
-              globalFilter={state.globalFilter}
-              useAsyncDebounce={useAsyncDebounce}
-              setGlobalFilter={setGlobalFilter}
-              onComponentOptionChanged={onComponentOptionChanged}
-              component={component}
-              serverSideSearch={serverSideSearch}
-              onEvent={onEvent}
-            />
-          )}
-          <div>
-            {showFilterButton && (
-              <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
-                <img src="/assets/images/icons/filter.svg" width="15" height="15" />
-                {filters.length > 0 && (
-                  <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                )}
-              </span>
+      {(displaySearchBox || showDownloadButton || showFilterButton) && (
+        <div className="card-body border-bottom py-3 ">
+          <div
+            className={`d-flex align-items-center ms-auto text-muted ${
+              displaySearchBox ? 'justify-content-between' : 'justify-content-end'
+            }`}
+          >
+            {displaySearchBox && (
+              <GlobalFilter
+                globalFilter={state.globalFilter}
+                useAsyncDebounce={useAsyncDebounce}
+                setGlobalFilter={setGlobalFilter}
+                onComponentOptionChanged={onComponentOptionChanged}
+                component={component}
+                serverSideSearch={serverSideSearch}
+                onEvent={onEvent}
+              />
             )}
-            {showDownloadButton && (
-              <span
-                data-tip="Download as CSV"
-                className="btn btn-light btn-sm p-1"
-                onClick={() => exportData('csv', true)}
-              >
-                <img src="/assets/images/icons/download.svg" width="15" height="15" />
-              </span>
-            )}
+            <div>
+              {showFilterButton && (
+                <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
+                  <img src="/assets/images/icons/filter.svg" width="15" height="15" />
+                  {filters.length > 0 && (
+                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                  )}
+                </span>
+              )}
+              {showDownloadButton && (
+                <span
+                  data-tip="Download as CSV"
+                  className="btn btn-light btn-sm p-1"
+                  onClick={() => exportData('csv', true)}
+                >
+                  <img src="/assets/images/icons/download.svg" width="15" height="15" />
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="table-responsive jet-data-table">
         <table {...getTableProps()} className={`table table-vcenter table-nowrap ${tableType}`} style={computedStyles}>
