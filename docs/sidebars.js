@@ -173,7 +173,7 @@ const sidebars = {
         'actions/set-table-page',
         'actions/set-variable',
         'actions/unset-variable',
-//        'actions/control-component',
+        'actions/control-component',
       ],
     },
     {
