@@ -48,66 +48,41 @@ export function Table({
 }) {
   const color = styles.textColor !== '#000' ? styles.textColor : darkMode && '#fff';
 
-  const actions = component.definition.properties.actions || { value: [] };
-  const serverSidePaginationProperty = component.definition.properties.serverSidePagination;
-  let serverSidePagination = serverSidePaginationProperty
-    ? resolveWidgetFieldValue(serverSidePaginationProperty.value, currentState)
-    : false;
-
+  let serverSidePagination = properties.serverSidePagination ?? false;
   if (typeof serverSidePagination !== 'boolean') serverSidePagination = false;
 
-  const serverSideSearchProperty = component.definition.properties.serverSideSearch;
-  const serverSideSearch = serverSideSearchProperty
-    ? resolveWidgetFieldValue(serverSideSearchProperty.value, currentState)
-    : false;
+  const serverSideSearch = properties.serverSideSearch ?? false;
 
-  const displaySearchBoxProperty = component.definition.properties.displaySearchBox;
-  const displaySearchBox = displaySearchBoxProperty
-    ? resolveWidgetFieldValue(displaySearchBoxProperty.value, currentState)
-    : true;
+  const actions = component.definition.properties.actions || { value: [] };
 
-  const showDownloadButtonProperty = component.definition.properties.showDownloadButton?.value;
-  const showDownloadButton = resolveWidgetFieldValue(showDownloadButtonProperty, currentState) ?? true; // default is true for backward compatibility
+  const displaySearchBox = properties.displaySearchBox ?? true;
 
-  const showFilterButtonProperty = component.definition.properties.showFilterButton?.value;
-  const showFilterButton = resolveWidgetFieldValue(showFilterButtonProperty, currentState) ?? true; // default is true for backward compatibility
+  const showDownloadButton = properties.showDownloadButton ?? true;
 
-  const showBulkUpdateActionsProperty = component.definition.properties.showBulkUpdateActions?.value;
-  const showBulkUpdateActions = resolveWidgetFieldValue(showBulkUpdateActionsProperty, currentState) ?? true; // default is true for backward compatibility
+  const showFilterButton = properties.showFilterButton ?? true;
 
-  const showBulkSelectorProperty = component.definition.properties.showBulkSelector?.value;
-  const showBulkSelector = resolveWidgetFieldValue(showBulkSelectorProperty, currentState) ?? false; // default is false for backward compatibility
+  const showBulkUpdateActions = properties.showBulkUpdateActions ?? true;
 
-  const highlightSelectedRowProperty = component.definition.properties.highlightSelectedRow?.value;
-  const highlightSelectedRow = resolveWidgetFieldValue(highlightSelectedRowProperty, currentState) ?? false; // default is false for backward compatibility
+  const showBulkSelector = properties.showBulkSelector ?? false;
 
-  const clientSidePaginationProperty = component.definition.properties.clientSidePagination?.value;
-  let clientSidePagination =
-    resolveWidgetFieldValue(clientSidePaginationProperty, currentState) ?? !serverSidePagination; // default is true for backward compatibility
+  const highlightSelectedRow = properties.highlightSelectedRow ?? false;
 
+  let clientSidePagination = properties.clientSidePagination ?? !serverSidePagination;
   if (typeof clientSidePagination !== 'boolean') clientSidePagination = true;
 
-  const tableTypeProperty = component.definition.styles.tableType;
-  let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
-  tableType = tableType === '' ? 'table-bordered' : tableType;
+  const tableType = styles.tableType ?? 'table-bordered';
 
-  const cellSizeType = component.definition.styles.cellSize?.value;
-  const borderRadius = component.definition.styles.borderRadius?.value;
+  const cellSizeType = styles?.cellSizeType;
 
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
+  const borderRadius = styles.borderRadius?.value;
 
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-  let parsedWidgetVisibility = widgetVisibility;
+  const widgetVisibility = styles?.visibility?.value ?? true;
+  const parsedWidgetVisibility = widgetVisibility;
+
+  const disabledState = styles?.disabledState?.value ?? false;
+  const parsedDisabledState = disabledState;
 
   const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext);
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
 
   const [loadingState, setLoadingState] = useState(false);
   const [columnProperties, setColumnProperties] = useState();
