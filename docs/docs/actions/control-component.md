@@ -94,12 +94,3 @@ await components.textinput1.clear()
 
 - Finally, hit the **save and run** query button to fire up the query, and you'll see that the field value of the text input widget has been cleared.
 
-
-
-
-
-
-
-
-
-
