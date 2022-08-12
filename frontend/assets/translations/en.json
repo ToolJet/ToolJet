@@ -3,7 +3,15 @@
       "profileSettings": "Profile Settings"
     },
     "editor": {
-        "preview": "Preview"
+        "preview": "Preview",
+        "share":"Share",
+        "shareModal": {
+            "makeApplicationPublic":"Make application public ?",
+            "getShareableLinkForThisApplication":"Get shareable link for this application",
+            "copy":"copy",
+            "getEmbeddableLinkForThisApplication":"Get embeddable link for this application",
+            "manageUsers":"Manage Users"
+        }
     },
     "widgetManager": {
         "commonlyUsed": "commonly used",
