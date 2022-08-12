@@ -8,11 +8,9 @@ The toggle switch widget allows the user to change a setting between two states.
 
 The Toggle switch widget should be used if we want to make a binary choice, such as turning something **on or off** or **enable or disable**.
 
-<div style={{textAlign: 'center'}}>
+## How To Use Toggle Switch Widget
 
-![ToolJet - Widget Reference - Timer](/img/widgets/toggle-switch/toggleswitch.png)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/NtP_9YC0hXs" title="Toggle Switch Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Property
 
