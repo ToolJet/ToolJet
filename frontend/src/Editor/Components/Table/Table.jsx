@@ -102,7 +102,7 @@ export function Table({
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
   let parsedWidgetVisibility = widgetVisibility;
 
-  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext);
+  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
@@ -360,7 +360,11 @@ export function Table({
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
         const rowData = tableData[cell.row.index];
 
-        if (cell.row.index === 0 && !_.isEqual(variablesExposedForPreview[id]?.rowData, rowData)) {
+        if (
+          cell.row.index === 0 &&
+          variablesExposedForPreview &&
+          !_.isEqual(variablesExposedForPreview[id]?.rowData, rowData)
+        ) {
           const customResolvables = {};
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
@@ -741,7 +745,7 @@ export function Table({
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
-      JSON.stringify(variablesExposedForPreview[id]),
+      JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
     ] // Hack: need to fix
   );
 
