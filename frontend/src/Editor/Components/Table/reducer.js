@@ -3,12 +3,12 @@ export const initialState = () => ({
   columnProperties: {},
 });
 
-export const reducerActions = {
-  setColumnProperties: (columnProperties) => ({
-    type: 'MERGE',
-    payload: { columnProperties },
-  }),
-};
+const mergeToState = (columnProperties) => ({
+  type: 'MERGE',
+  payload: { columnProperties },
+});
+
+export const reducerActions = { setColumnProperties: mergeToState };
 
 export const reducer = (state = initialState(), action) => {
   switch (action.type) {
