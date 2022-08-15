@@ -187,7 +187,7 @@ export const Box = function Box({
       ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
       : [resolvedGeneralStyles, []];
 
-  const { exposeToCodeHinter } = useContext(EditorContext) || {};
+  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
   useEffect(() => {
     const componentName = getComponentName(currentState, id);
@@ -298,6 +298,8 @@ export const Box = function Box({
             parentId={parentId}
             customResolvables={customResolvables}
             dataQueries={dataQueries}
+            variablesExposedForPreview={variablesExposedForPreview}
+            exposeToCodeHinter={exposeToCodeHinter}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>

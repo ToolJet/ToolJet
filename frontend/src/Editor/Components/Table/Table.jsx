@@ -46,6 +46,8 @@ export function Table({
   registerAction,
   styles,
   properties,
+  variablesExposedForPreview,
+  exposeToCodeHinter,
 }) {
   const {
     color,
@@ -65,7 +67,6 @@ export function Table({
     parsedDisabledState,
     actions,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
-  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
   const [loadingState, setLoadingState] = useState(false);
   const [columnProperties, setColumnProperties] = useState();
