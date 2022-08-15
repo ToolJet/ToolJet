@@ -1,10 +1,24 @@
-const initialState = {
+export const initialState = () => ({
   loadingState: false,
+  columnProperties: {},
+});
+
+export const reducerActions = {
+  setColumnProperties: (columnProperties) => ({
+    type: 'MERGE',
+    payload: { columnProperties },
+  }),
 };
 
-export default function reducer(state, action) {
+export const reducer = (state = initialState(), action) => {
   switch (action.type) {
+    case 'MERGE':
+      return {
+        ...state,
+        ...action.payload,
+      };
+
     default:
-      return initialState;
+      return initialState();
   }
-}
+};

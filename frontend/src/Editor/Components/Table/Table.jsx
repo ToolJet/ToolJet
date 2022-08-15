@@ -26,7 +26,7 @@ import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
 import loadPropertiesAndStyles from './load-properties-and-styles';
-import reducer from './reducer';
+import { reducer, reducerActions, initialState } from './reducer';
 
 export function Table({
   id,
@@ -69,12 +69,10 @@ export function Table({
     actions,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
-  const [tableDetails, dispatch] = useReducer(reducer);
-
-  const [columnProperties, setColumnProperties] = useState();
+  const [tableDetails, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    setColumnProperties(component?.definition?.properties?.columns?.value);
+    dispatch(reducerActions.setColumnProperties(component?.definition?.properties?.columns?.value));
   }, [component?.definition?.properties]);
 
   const [componentState, setcomponentState] = useState(currentState.components[component.component] || {});
@@ -575,7 +573,7 @@ export function Table({
   const rightActions = () => actions.value.filter((action) => [undefined, 'right'].includes(action.position));
 
   const textWrapActions = (id) => {
-    let wrapOption = columnProperties?.find((item) => {
+    let wrapOption = tableDetails.columnProperties?.find((item) => {
       return item?.id == id;
     });
     return wrapOption?.textWrap;
