@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useMemo, useState, useEffect, useCallback, useContext } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useContext, useReducer } from 'react';
 import {
   useTable,
   useFilters,
@@ -25,8 +25,8 @@ import { Toggle } from './Toggle';
 import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
-import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import loadPropertiesAndStyles from './load-properties-and-styles';
+import reducer from './reducer';
 
 export function Table({
   id,
@@ -60,6 +60,7 @@ export function Table({
     showBulkUpdateActions,
     showBulkSelector,
     highlightSelectedRow,
+    loadingState,
     tableType,
     cellSizeType,
     borderRadius,
@@ -68,20 +69,13 @@ export function Table({
     actions,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
-  const [loadingState, setLoadingState] = useState(false);
+  const [tableDetails, dispatch] = useReducer(reducer);
+
   const [columnProperties, setColumnProperties] = useState();
 
   useEffect(() => {
     setColumnProperties(component?.definition?.properties?.columns?.value);
   }, [component?.definition?.properties]);
-
-  useEffect(() => {
-    const loadingStateProperty = component.definition.properties.loadingState;
-    if (loadingStateProperty && currentState) {
-      const newState = resolveReferences(loadingStateProperty.value, currentState, false);
-      setLoadingState(newState);
-    }
-  }, [currentState]);
 
   const [componentState, setcomponentState] = useState(currentState.components[component.component] || {});
 

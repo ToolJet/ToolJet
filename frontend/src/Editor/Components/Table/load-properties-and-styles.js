@@ -21,6 +21,8 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   let clientSidePagination = properties.clientSidePagination ?? !serverSidePagination;
   if (typeof clientSidePagination !== 'boolean') clientSidePagination = true;
 
+  const loadingState = properties.loadingState ?? false;
+
   const tableType = styles.tableType ?? 'table-bordered';
 
   const cellSizeType = styles?.cellSizeType;
@@ -51,6 +53,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     borderRadius,
     parsedWidgetVisibility,
     parsedDisabledState,
+    loadingState,
     actions,
   };
 }
