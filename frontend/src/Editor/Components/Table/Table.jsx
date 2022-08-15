@@ -67,7 +67,7 @@ export function Table({
 
   const actions = component.definition.properties.actions || { value: [] };
 
-  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext);
+  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
   const [loadingState, setLoadingState] = useState(false);
   const [columnProperties, setColumnProperties] = useState();
@@ -319,7 +319,11 @@ export function Table({
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
         const rowData = tableData[cell.row.index];
 
-        if (cell.row.index === 0 && !_.isEqual(variablesExposedForPreview[id]?.rowData, rowData)) {
+        if (
+          cell.row.index === 0 &&
+          variablesExposedForPreview &&
+          !_.isEqual(variablesExposedForPreview[id]?.rowData, rowData)
+        ) {
           const customResolvables = {};
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
@@ -700,7 +704,7 @@ export function Table({
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
-      JSON.stringify(variablesExposedForPreview[id]),
+      JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
     ] // Hack: need to fix
   );
 
