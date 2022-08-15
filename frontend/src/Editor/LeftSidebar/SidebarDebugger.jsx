@@ -5,6 +5,7 @@ import ReactJson from 'react-json-view';
 import _ from 'lodash';
 import moment from 'moment';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
+import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 
 export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
@@ -24,72 +25,158 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
     setErrorLogs(() => []);
   };
 
-  React.useEffect(() => {
-    setErrorLogs((prev) => {
-      let copy = JSON.parse(JSON.stringify(prev));
-      copy = copy.filter((val) => Object.keys(val).length !== 0);
-      const newError = _.flow([
-        Object.entries,
-        // eslint-disable-next-line no-unused-vars
-        (arr) => arr.filter(([key, value]) => value.data?.status),
-        Object.fromEntries,
-      ])(errors);
+  const createErrorLogs = (errors) => {
+    const errorsArr = [];
+    Object.entries(errors).forEach(([key, value]) => {
+      const error = {};
+      const generalProps = {
+        timestamp: moment(),
+      };
 
-      const errorData = [];
-      Object.entries(newError).forEach(([key, value]) => {
-        const variableNames = {
-          options: '',
-          response: '',
-          request: '',
-          resolvedProperties: '',
-          effectiveProperties: '',
-        };
+      const $type =
+        value.type === 'query' && (value.kind === 'restapi' || value.kind === 'runjs') ? value.kind : value.type;
 
-        switch (value.type) {
-          case 'query':
-            variableNames.options = 'substitutedVariables';
-            variableNames.response = 'response';
-            if (value.kind === 'restapi') {
-              variableNames.request = 'request';
-            }
-            break;
+      // console.log('createErrorLogs [[type]]', $type);
 
-          case 'transformations':
-            variableNames.response = 'data';
-            break;
+      switch ($type) {
+        case 'restapi':
+          generalProps.kind = value.kind;
+          generalProps.message = value.data.message;
+          generalProps.description = value.data.description;
+          error.substitutedVariables = value.options;
+          error.request = value.data.data.requestObject;
+          error.response = value.data.data.responseObject;
 
-          case 'component':
-            variableNames.resolvedProperties = 'resolvedProperties';
-            variableNames.effectiveProperties = 'propertiesAfterUsingDefaults';
-            break;
+          break;
 
-          default:
-            'options';
-        }
-        errorData.push({
-          type: value.type,
-          key: key,
-          kind: value.kind,
-          message: value.data.message,
-          description: value.data.description,
-          options: { name: variableNames.options, data: value.options },
-          resolvedProperties: value.resolvedProperties,
-          effectiveProperties: value.effectiveProperties,
-          response: {
-            name: variableNames.response,
-            data: value.kind === 'restapi' ? value.data.data.responseObject : value.data.data,
-          },
-          request: { name: variableNames.request, data: value.data?.data?.requestObject ?? {} },
-          timestamp: moment(),
-        });
+        case 'runjs':
+          generalProps.kind = value.kind;
+          error.message = value.data.data.message;
+          error.description = value.data.data.description;
+
+          break;
+
+        case 'query':
+          generalProps.kind = value.kind;
+          error.message = value.data.message;
+          error.description = value.data.description;
+          error.substitutedVariables = value.options;
+          break;
+
+        case 'transformations':
+          generalProps.message = value.data.message;
+          error.data = value.data.data;
+          break;
+
+        case 'component':
+          generalProps.message = value.data.message;
+          generalProps.property = key.split('- ')[1];
+          error.resolvedProperties = value.resolvedProperties;
+          error.effectiveProperties = value.effectiveProperties;
+          break;
+
+        default:
+          break;
+      }
+      errorsArr.push({
+        key,
+        type: value.type,
+        error,
+        ...generalProps,
       });
-
-      const newData = [...errorData, ...copy];
-      return newData;
     });
+    return errorsArr;
+  };
+
+  React.useEffect(() => {
+    const newError = _.flow([
+      Object.entries,
+      // eslint-disable-next-line no-unused-vars
+      (arr) => arr.filter(([key, value]) => value.data?.status),
+      Object.fromEntries,
+    ])(errors);
+
+    const err = createErrorLogs(newError);
+
+    if (err) {
+      setErrorLogs((prevErrors) => {
+        const copy = JSON.parse(JSON.stringify(prevErrors));
+
+        return [...err, ...copy];
+      });
+    }
     debuggerActions.flush();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(errors)]);
+
+  // React.useEffect(() => {
+  //   setErrorLogs((prev) => {
+  //     let copy = JSON.parse(JSON.stringify(prev));
+  //     copy = copy.filter((val) => Object.keys(val).length !== 0);
+
+  //     const newError = _.flow([
+  //       Object.entries,
+  //       // eslint-disable-next-line no-unused-vars
+  //       (arr) => arr.filter(([key, value]) => value.data?.status),
+  //       Object.fromEntries,
+  //     ])(errors);
+
+  //     const errorData = [];
+  //     Object.entries(newError).forEach(([key, value]) => {
+  //       const variableNames = {
+  //         options: '',
+  //         response: '',
+  //         request: '',
+  //         resolvedProperties: '',
+  //         effectiveProperties: '',
+  //       };
+
+  //       switch (value.type) {
+  //         case 'query':
+  //           variableNames.options = 'substitutedVariables';
+  //           variableNames.response = 'response';
+  //           if (value.kind === 'restapi') {
+  //             variableNames.request = 'request';
+  //           }
+  //           break;
+
+  //         case 'transformations':
+  //           variableNames.response = 'data';
+  //           break;
+
+  //         case 'component':
+  //           variableNames.resolvedProperties = 'resolvedProperties';
+  //           variableNames.effectiveProperties = 'propertiesAfterUsingDefaults';
+  //           break;
+
+  //         default:
+  //           'options';
+  //       }
+  //       errorData.push({
+  //         type: value.type,
+  //         key: key,
+  //         kind: value.kind,
+  //         message: value.data.message,
+  //         description: value.data.description,
+  //         options: { name: variableNames.options, data: value.options },
+  //         resolvedProperties: value.resolvedProperties,
+  //         effectiveProperties: value.effectiveProperties,
+  //         response: {
+  //           name: variableNames.response,
+  //           data: value.kind === 'restapi' ? value.data.data.responseObject : value.data.data,
+  //         },
+  //         request: { name: variableNames.request, data: value.data?.data?.requestObject ?? {} },
+  //         timestamp: moment(),
+  //       });
+  //     });
+
+  //     console.log('Debugger', errorData);
+
+  //     const newData = [...errorData, ...copy];
+  //     return newData;
+  //   });
+  //   debuggerActions.flush();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [JSON.stringify(errors)]);
 
   React.useEffect(() => {
     if (open === false && errorLogs.length !== unReadErrorCount.read) {
@@ -135,7 +222,8 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
       <div
         {...content}
         className={`card popover debugger-popover ${open || popoverPinned ? 'show' : 'hide'}`}
-        style={{ minWidth: '350px', minHeight: '108px', resize: 'horizontal', maxWidth: '50%' }}
+        // style={{ minWidth: '350px', minHeight: '108px', resize: 'horizontal', maxWidth: '50%' }}
+        style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}
       >
         <div className="row-header">
           <div className="nav-header">
@@ -185,94 +273,66 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
 
 function ErrorLogsComponent({ errorProps, idx, darkMode }) {
   const [open, setOpen] = React.useState(false);
+
+  const errorTitle = ` [${_.capitalize(errorProps.type)} ${errorProps.key}]`;
+  const errorDescription = errorProps.description;
+  const errorMessage =
+    errorProps.type === 'component'
+      ? `Invalid property detected: ${errorProps.message}.`
+      : `${_.startCase(errorProps.type)} failed: ${errorProps.message ?? ''}`;
+
+  console.log('finalError', errorProps.timestamp);
+  const defaultStyles = {
+    transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
+    transition: '0.2s all',
+    display: 'inline-block',
+    cursor: 'pointer',
+  };
+
   return (
-    <div className="tab-content" key={`${errorProps.key}-${idx}`}>
-      <p className="text-azure" onClick={() => setOpen((prev) => !prev)}>
-        <img
-          className={`svg-icon ${open ? 'iopen' : ''}`}
-          src={`/assets/images/icons/caret-right.svg`}
-          width="16"
-          height="16"
-        />
-        [{_.capitalize(errorProps.type)} {errorProps.key}] &nbsp;
-        {errorProps.type != 'component' ? (
-          <span className="text-red">{`${_.startCase(errorProps.type)} failed: ${errorProps.message}`} .</span>
-        ) : (
-          <span className="text-red">{`Invalid property detected: ${errorProps.message}`} .</span>
-        )}
-        <br />
+    <div className="tab-content debugger-content mb-1" key={`${errorProps.key}-${idx}`}>
+      <p className="text-azure m-0 " onClick={() => setOpen((prev) => !prev)}>
+        <span className="json-tree-node-icon" style={defaultStyles}>
+          <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M1.02063 1L5.01032 5.01028L1.00003 8.99997"
+              stroke={darkMode ? '#fff' : '#61656F'}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+
+        <span>{errorTitle}</span>
+        <span className="text-red mx-1">{errorMessage}</span>
         <small className="text-muted px-1">{moment(errorProps.timestamp).fromNow()}</small>
       </p>
 
-      <div className={` queryData ${open ? 'open' : 'close'} py-0`}>
-        {errorProps.type === 'query' && (
-          <span>
-            <ReactJson
-              src={errorProps.options.data}
-              theme={darkMode ? 'shapeshifter' : 'rjv-default'}
-              name={errorProps.options.name}
-              style={{ fontSize: '0.7rem', paddingLeft: '0.17rem' }}
-              enableClipboard={false}
-              displayDataTypes={false}
-              collapsed={true}
-              displayObjectSize={false}
-              quotesOnKeys={false}
-              sortKeys={false}
-            />
-          </span>
-        )}
-        {errorProps.type != 'component' && (
-          <span>
-            <ReactJson
-              src={errorProps.response.data}
-              theme={darkMode ? 'shapeshifter' : 'rjv-default'}
-              name={errorProps.response.name}
-              style={{ fontSize: '0.7rem', paddingLeft: '0.17rem' }}
-              enableClipboard={false}
-              displayDataTypes={false}
-              collapsed={true}
-              displayObjectSize={false}
-              quotesOnKeys={false}
-              sortKeys={false}
-            />
-          </span>
-        )}
-        {errorProps.kind === 'restapi' && (
-          <span>
-            <ReactJson
-              src={errorProps.request.data}
-              theme={darkMode ? 'shapeshifter' : 'rjv-default'}
-              name={errorProps.request.name}
-              style={{ fontSize: '0.7rem', paddingLeft: '0.17rem' }}
-              enableClipboard={false}
-              displayDataTypes={false}
-              collapsed={true}
-              displayObjectSize={false}
-              quotesOnKeys={false}
-              sortKeys={false}
-              collapseStringsAfterLength={1000}
-            />
-          </span>
-        )}
-        {errorProps.kind === 'component' && (
-          <span>
-            <ReactJson
-              src={errorProps.resolvedProperties}
-              theme={darkMode ? 'shapeshifter' : 'rjv-default'}
-              name={'resolvedProperties'}
-              style={{ fontSize: '0.7rem', paddingLeft: '0.17rem' }}
-              enableClipboard={false}
-              displayDataTypes={false}
-              collapsed={true}
-              displayObjectSize={false}
-              quotesOnKeys={false}
-              sortKeys={false}
-              collapseStringsAfterLength={1000}
-            />
-          </span>
-        )}
-        <hr className="border-1 border-bottom bg-grey py-0" />
-      </div>
+      {/* <ReactJson
+        src={finalError}
+        theme={darkMode ? 'shapeshifter' : 'rjv-default'}
+        name={errorTitle}
+        style={{ fontSize: '0.7rem', paddingLeft: '0.17rem' }}
+        enableClipboard={false}
+        displayDataTypes={false}
+        collapsed={1}
+        displayObjectSize={false}
+        quotesOnKeys={false}
+        sortKeys={false}
+      /> */}
+      {open && (
+        <JSONTreeViewer
+          data={errorProps.error}
+          useIcons={false}
+          useIndentedBlock={true}
+          enableCopyToClipboard={false}
+          useActions={false}
+          actionIdentifier="id"
+          expandWithLabels={true}
+          fontSize={'10px'}
+        />
+      )}
+      <hr className="border-1 border-bottom bg-grey" />
     </div>
   );
 }
