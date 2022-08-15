@@ -1,4 +1,4 @@
-export default function loadPropertiesAndStyles(properties, styles, darkMode) {
+export default function loadPropertiesAndStyles(properties, styles, darkMode, component) {
   const color = styles.textColor !== '#000' ? styles.textColor : darkMode && '#fff';
 
   let serverSidePagination = properties.serverSidePagination ?? false;
@@ -33,6 +33,8 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode) {
   const disabledState = styles?.disabledState?.value ?? false;
   const parsedDisabledState = disabledState;
 
+  const actions = component.definition.properties.actions || { value: [] };
+
   return {
     color,
     serverSidePagination,
@@ -49,5 +51,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode) {
     borderRadius,
     parsedWidgetVisibility,
     parsedDisabledState,
+    actions,
   };
 }

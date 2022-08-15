@@ -63,10 +63,8 @@ export function Table({
     borderRadius,
     parsedWidgetVisibility,
     parsedDisabledState,
-  } = loadPropertiesAndStyles(properties, styles, darkMode);
-
-  const actions = component.definition.properties.actions || { value: [] };
-
+    actions,
+  } = loadPropertiesAndStyles(properties, styles, darkMode, component);
   const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
   const [loadingState, setLoadingState] = useState(false);
