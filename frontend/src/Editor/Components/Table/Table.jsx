@@ -26,6 +26,7 @@ import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
+import loadPropertiesAndStyles from './load-properties-and-styles';
 
 export function Table({
   id,
@@ -46,41 +47,25 @@ export function Table({
   styles,
   properties,
 }) {
-  const color = styles.textColor !== '#000' ? styles.textColor : darkMode && '#fff';
-
-  let serverSidePagination = properties.serverSidePagination ?? false;
-  if (typeof serverSidePagination !== 'boolean') serverSidePagination = false;
-
-  const serverSideSearch = properties.serverSideSearch ?? false;
+  const {
+    color,
+    serverSidePagination,
+    clientSidePagination,
+    serverSideSearch,
+    displaySearchBox,
+    showDownloadButton,
+    showFilterButton,
+    showBulkUpdateActions,
+    showBulkSelector,
+    highlightSelectedRow,
+    tableType,
+    cellSizeType,
+    borderRadius,
+    parsedWidgetVisibility,
+    parsedDisabledState,
+  } = loadPropertiesAndStyles(properties, styles, darkMode);
 
   const actions = component.definition.properties.actions || { value: [] };
-
-  const displaySearchBox = properties.displaySearchBox ?? true;
-
-  const showDownloadButton = properties.showDownloadButton ?? true;
-
-  const showFilterButton = properties.showFilterButton ?? true;
-
-  const showBulkUpdateActions = properties.showBulkUpdateActions ?? true;
-
-  const showBulkSelector = properties.showBulkSelector ?? false;
-
-  const highlightSelectedRow = properties.highlightSelectedRow ?? false;
-
-  let clientSidePagination = properties.clientSidePagination ?? !serverSidePagination;
-  if (typeof clientSidePagination !== 'boolean') clientSidePagination = true;
-
-  const tableType = styles.tableType ?? 'table-bordered';
-
-  const cellSizeType = styles?.cellSizeType;
-
-  const borderRadius = styles.borderRadius?.value;
-
-  const widgetVisibility = styles?.visibility?.value ?? true;
-  const parsedWidgetVisibility = widgetVisibility;
-
-  const disabledState = styles?.disabledState?.value ?? false;
-  const parsedDisabledState = disabledState;
 
   const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext);
 
