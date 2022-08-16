@@ -33,6 +33,7 @@
     "draft-js-export-html": "^1.4.1",
     "driver.js": "^0.9.8",
     "emoji-mart": "^3.0.1",
+    "esbuild": "^0.15.3",
     "fuse.js": "^6.4.6",
     "history": "^4.9.0",
     "html-loader": "^3.1.0",
@@ -92,13 +93,15 @@
     "semver": "^5.7.1",
     "style-loader": "^3.3.1",
     "superstruct": "^0.15.4",
+    "terser-webpack-plugin": "^5.3.4",
     "tinycolor2": "^1.4.2",
     "uuid": "8.3.2",
     "webpack": "^5.55.1",
     "webpack-cli": "^4.8.0",
     "y-websocket": "^1.4.0",
     "yjs": "^13.5.28",
-    "yup": "^0.27.0"
+    "yup": "^0.27.0",
+    "compression-webpack-plugin": "^10.0.0"
   },
   "devDependencies": {
     "eslint": "^7.32.0",
@@ -116,7 +119,7 @@
   },
   "scripts": {
     "start": "webpack serve --port 8082 --host 0.0.0.0",
-    "build": "webpack --mode production && cp -a ./assets/. ./build/assets/",
+    "build": "webpack --mode=production && cp -a ./assets/. ./build/assets/",
     "lint": "eslint . '**/*.{js,jsx}'",
     "format": "eslint . --fix '**/*.{js,jsx}'",
     "test": "jest"

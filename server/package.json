@@ -56,6 +56,7 @@
     "bson": "^4.6.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.1",
+    "compression": "^1.7.4",
     "dotenv": "^10.0.0",
     "futoin-hkdf": "^1.4.2",
     "global-agent": "^3.0.0",
