@@ -28,8 +28,6 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
     setLabel(text);
   });
 
-  console.log('label ==>', label);
-
   return (
     <div className="widget-button">
       <button
