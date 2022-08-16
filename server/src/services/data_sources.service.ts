@@ -127,15 +127,16 @@ export class DataSourcesService {
         decoded = decode(plugin.indexFile.data.toString());
         plugins[pluginId] = decoded;
       }
-      const code = requireFromString(decoded, { globals: { process, Buffer, Promise, setTimeout, clearTimeout } });
+      const code = requireFromString(decoded, { useCurrentGlobal: true });
       try {
         service = new code.default();
       } catch (error) {
-        console.log('error', error);
+        console.error('error', error);
       }
     } else {
       service = new allPlugins[kind]();
     }
+
     return service;
   }
 

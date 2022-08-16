@@ -108,7 +108,7 @@ export class DataQueriesService {
       try {
         service = new code.default();
       } catch (error) {
-        console.log('error', error);
+        console.error('error', error);
       }
     } else {
       service = new allPlugins[kind]();
