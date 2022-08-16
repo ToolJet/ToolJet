@@ -1,6 +1,8 @@
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
+const CompressionPlugin = require('compression-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -14,7 +16,27 @@ const ASSET_PATH = process.env.ASSET_PATH || '/';
 module.exports = {
   mode: environment,
   optimization: {
+    minimize: environment === 'production',
     usedExports: true,
+    runtimeChunk: 'single',
+    minimizer: [
+      new TerserPlugin({
+        minify: TerserPlugin.esbuildMinify,
+        terserOptions: {
+          ...(environment === 'production' && { drop: ['debugger'] }),
+        },
+        parallel: environment === 'production',
+      }),
+    ],
+    splitChunks: {
+      cacheGroups: {
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendor',
+          chunks: 'all',
+        },
+      },
+    },
   },
   target: 'web',
   resolve: {
@@ -92,6 +114,10 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/index.html',
       favicon: './assets/images/logo.svg',
+    }),
+    new CompressionPlugin({
+      test: /\.js(\?.*)?$/i,
+      algorithm: 'gzip',
     }),
     new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
     new webpack.DefinePlugin({
