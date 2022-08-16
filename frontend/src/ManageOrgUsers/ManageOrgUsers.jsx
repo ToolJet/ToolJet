@@ -4,8 +4,9 @@ import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ReactTooltip from 'react-tooltip';
+import { withTranslation } from 'react-i18next';
 
-class ManageOrgUsers extends React.Component {
+class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -185,7 +186,7 @@ class ManageOrgUsers extends React.Component {
                 <div className="col">
                   <div className="page-pretitle"></div>
                   <h2 className="page-title" data-cy="users-page-title">
-                    Users & Permissions
+                    {this.props.t('manageOrgUsers.usersAndPermission', 'Users & Permissions')}
                   </h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
@@ -195,7 +196,7 @@ class ManageOrgUsers extends React.Component {
                       onClick={() => this.setState({ showNewUserForm: true })}
                       data-cy="invite-new-user"
                     >
-                      Invite new user
+                      {this.props.t('manageOrgUsers.inviteNewUser', 'Invite new user')}
                     </div>
                   )}
                 </div>
@@ -209,7 +210,7 @@ class ManageOrgUsers extends React.Component {
                 <div className="card">
                   <div className="card-header">
                     <h3 className="card-title" data-cy="add-new-user">
-                      Add new user
+                      {this.props.t('manageOrgUsers.addNewUser', 'Add new user')}
                     </h3>
                   </div>
                   <div className="card-body">
@@ -220,7 +221,7 @@ class ManageOrgUsers extends React.Component {
                             <input
                               type="text"
                               className="form-control"
-                              placeholder="Enter First Name"
+                              placeholder={this.props.t('manageOrgUsers.enterFirstName', 'Enter First Name')}
                               name="firstName"
                               onChange={this.changeNewUserOption.bind(this, 'firstName')}
                               value={this.state.fields['firstName']}
@@ -234,7 +235,7 @@ class ManageOrgUsers extends React.Component {
                             <input
                               type="text"
                               className="form-control"
-                              placeholder="Enter Last Name"
+                              placeholder={this.props.t('manageOrgUsers.enterLastName', 'Enter Last Name')}
                               name="lastName"
                               onChange={this.changeNewUserOption.bind(this, 'lastName')}
                               value={this.state.fields['lastName']}
@@ -248,14 +249,14 @@ class ManageOrgUsers extends React.Component {
                       </div>
                       <div className="form-group mb-3 ">
                         <label className="form-label" data-cy="email-label">
-                          Email address
+                          {this.props.t('manageOrgUsers.emailAddress', 'Email Address')}
                         </label>
                         <div>
                           <input
                             type="text"
                             className="form-control"
                             aria-describedby="emailHelp"
-                            placeholder="Enter email"
+                            placeholder={this.props.t('manageOrgUsers.enterEmail', 'Enter Email')}
                             name="email"
                             onChange={this.changeNewUserOption.bind(this, 'email')}
                             value={this.state.fields['email']}
@@ -278,7 +279,7 @@ class ManageOrgUsers extends React.Component {
                           }
                           data-cy="cancel-button"
                         >
-                          Cancel
+                          {this.props.t('manageOrgUsers.cancel', 'Cancel')}
                         </button>
                         <button
                           type="submit"
@@ -286,7 +287,7 @@ class ManageOrgUsers extends React.Component {
                           disabled={creatingUser}
                           data-cy="create-user-button"
                         >
-                          Create User
+                          {this.props.t('manageOrgUsers.createUser', 'Create User')}
                         </button>
                       </div>
                     </form>
@@ -308,9 +309,9 @@ class ManageOrgUsers extends React.Component {
                     <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
                       <thead>
                         <tr>
-                          <th data-cy="name-title">Name</th>
-                          <th data-cy="email-title">Email</th>
-                          <th data-cy="status-title">Status</th>
+                          <th data-cy="name-title">{this.props.t('manageOrgUsers.name', 'Name')}</th>
+                          <th data-cy="email-title">{this.props.t('manageOrgUsers.email', 'Email')}</th>
+                          <th data-cy="status-title">{this.props.t('manageOrgUsers.status', 'Status')}</th>
                           <th className="w-1"></th>
                         </tr>
                       </thead>
@@ -417,7 +418,9 @@ class ManageOrgUsers extends React.Component {
                                   }}
                                   data-cy="user-state"
                                 >
-                                  {user.status === 'archived' ? 'Unarchive' : 'Archive'}
+                                  {user.status === 'archived'
+                                    ? this.props.t('manageOrgUsers.unarchive', 'Unarchive')
+                                    : this.props.t('manageOrgUsers.archive', 'Archive')}
                                 </button>
                               </td>
                             </tr>
@@ -436,4 +439,4 @@ class ManageOrgUsers extends React.Component {
   }
 }
 
-export { ManageOrgUsers };
+export const ManageOrgUsers = withTranslation()(ManageOrgUsersComponent);

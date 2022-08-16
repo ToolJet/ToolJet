@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { appService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export const ReleaseVersionButton = function DeployVersionButton({
   appId,
@@ -12,7 +13,7 @@ export const ReleaseVersionButton = function DeployVersionButton({
   saveEditingVersion,
 }) {
   const [isReleasing, setIsReleasing] = useState(false);
-
+  const { t } = useTranslation();
   const releaseVersion = (editingVersion) => {
     setIsReleasing(true);
     saveEditingVersion();
@@ -41,7 +42,7 @@ export const ReleaseVersionButton = function DeployVersionButton({
         className={`btn btn-primary btn-sm ${isVersionReleased ? 'disabled' : ''} ${isReleasing ? 'btn-loading' : ''}`}
         onClick={() => releaseVersion(editingVersion)}
       >
-        Release
+        {t('editor.release', 'Release')}
       </button>
     </div>
   );
