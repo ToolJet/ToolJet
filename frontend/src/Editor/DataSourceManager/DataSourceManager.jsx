@@ -88,6 +88,7 @@ class DataSourceManager extends React.Component {
       selectedDataSourceIcon: source.iconFile?.data,
       name: source.manifestFile?.data?.source?.kind ?? source.kind,
       dataSourceSchema: source.manifestFile?.data,
+      selectedDataSourcePluginId: source.id,
     });
   };
 
@@ -134,10 +135,10 @@ class DataSourceManager extends React.Component {
   };
 
   createDataSource = () => {
-    const { appId, options, selectedDataSource } = this.state;
+    const { appId, options, selectedDataSource, selectedDataSourcePluginId } = this.state;
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
-    const pluginId = selectedDataSource.pluginId;
+    const pluginId = selectedDataSourcePluginId;
     const appVersionId = this.props.editingVersionId;
 
     const parsedOptions = Object.keys(options).map((key) => {

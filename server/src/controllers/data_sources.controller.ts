@@ -50,6 +50,9 @@ export class DataSourcesController {
     for (const dataSource of dataSources) {
       if (dataSource.pluginId) {
         dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
+        dataSource.plugin.manifestFile.data = JSON.parse(
+          decode(dataSource.plugin.manifestFile.data.toString('utf8'))
+        );
         dataSource.plugin.operationsFile.data = JSON.parse(
           decode(dataSource.plugin.operationsFile.data.toString('utf8'))
         );
