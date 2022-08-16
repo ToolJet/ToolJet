@@ -108,7 +108,7 @@ export function runTransformation(_ref, rawData, transformation, query, mode = '
     console.log('Transformation failed for query: ', query.name, err);
     const $error = err.name;
     const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
-    if (mode !== 'edit') toast.error($errorMessage);
+    if (mode === 'edit') toast.error($errorMessage);
     result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
   }
 
