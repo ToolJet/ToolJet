@@ -29,9 +29,23 @@ function getResult(suggestionList, query) {
   return suggestions;
 }
 
-export function getSuggestionKeys(refState) {
+export function getSuggestionKeys(refState, refSource) {
   const state = _.cloneDeep(refState);
   const queries = state['queries'];
+
+  const actions = [
+    'runQuery',
+    'setVariable',
+    'unSetVariable',
+    'showAlert',
+    'logout',
+    'showModal',
+    'closeModal',
+    'setLocalStorage',
+    'copyToClipboard',
+    'goToApp',
+    'generateFile',
+  ];
 
   // eslint-disable-next-line no-unused-vars
   _.forIn(queries, (query, key) => {
@@ -80,6 +94,12 @@ export function getSuggestionKeys(refState) {
     }
     return suggestionList.push(key);
   });
+
+  if (refSource === 'Runjs') {
+    actions.forEach((action) => {
+      suggestionList.push(`actions.${action}()`);
+    });
+  }
 
   return suggestionList;
 }
@@ -179,8 +199,8 @@ export function canShowHint(editor, ignoreBraces = false) {
   return value.slice(ch, ch + 2) === '}}' || value.slice(ch, ch + 2) === '%%';
 }
 
-export function handleChange(editor, onChange, ignoreBraces = false, currentState) {
-  const suggestions = getSuggestionKeys(currentState);
+export function handleChange(editor, onChange, ignoreBraces = false, currentState, editorSource = undefined) {
+  const suggestions = getSuggestionKeys(currentState, editorSource);
   let state = editor.state.matchHighlighter;
   editor.addOverlay((state.overlay = makeOverlay(state.options.style)));
 
