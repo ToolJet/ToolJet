@@ -126,7 +126,6 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
   const [open, setOpen] = React.useState(false);
 
   const errorTitle = ` [${_.capitalize(errorProps.type)} ${errorProps.key}]`;
-  const errorDescription = errorProps.description;
   const errorMessage =
     errorProps.type === 'component'
       ? `Invalid property detected: ${errorProps.message}.`

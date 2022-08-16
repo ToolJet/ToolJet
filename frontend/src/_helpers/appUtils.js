@@ -960,7 +960,7 @@ export const debuggerActions = {
           generalProps.message = value.data.message;
           generalProps.property = key.split('- ')[1];
           error.resolvedProperties = value.resolvedProperties;
-          error.effectiveProperties = value.effectiveProperties;
+          // error.effectiveProperties = value.effectiveProperties;
           break;
 
         default:
