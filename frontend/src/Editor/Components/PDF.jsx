@@ -12,7 +12,7 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
   const [pageNumber, setPageNumber] = useState(null);
   const pageRef = useRef([]);
   const documentRef = useRef(null);
-  const isScrollRef = useRef(false);
+  const hasScrollRef = useRef(false);
   const [error, setError] = useState(true);
   const [pageLoading, setPageLoading] = useState(true);
   const [hasButtonClicked, setButtonClick] = useState(false);
@@ -42,7 +42,7 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
   const trackIntersection = (entries) => {
     let isCaptured = false;
     entries.forEach((entry) => {
-      if (entry.isIntersecting && !isCaptured && isScrollRef.current) {
+      if (entry.isIntersecting && !isCaptured && hasScrollRef.current) {
         isCaptured = true;
         const currentPage = parseInt(entry.target.getAttribute('data-page-number'));
         if (pageNumber !== currentPage) setPageNumber(currentPage);
@@ -115,9 +115,9 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
 
   const handleScroll = () => {
     if (hasButtonClicked) return setButtonClick(false);
-    if (!isScrollRef.current) isScrollRef.current = true;
+    if (!hasScrollRef.current) hasScrollRef.current = true;
     debounce(() => {
-      if (isScrollRef.current) isScrollRef.current = false;
+      if (hasScrollRef.current) hasScrollRef.current = false;
     }, 150);
   };
 
