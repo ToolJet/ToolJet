@@ -41,32 +41,26 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
   }, [JSON.stringify(errors)]);
 
   React.useEffect(() => {
-    if (open === false && errorLogs.length !== unReadErrorCount.read) {
-      const unReadErrors = errorLogs.length - unReadErrorCount.read;
-      setUnReadErrorCount((prev) => {
-        let copy = JSON.parse(JSON.stringify(prev));
-        copy.unread = unReadErrors;
-        return copy;
-      });
-
-      if (popoverPinned) {
-        setTimeout(() => {
-          setUnReadErrorCount((prev) => {
-            let copy = JSON.parse(JSON.stringify(prev));
-            copy.read = errorLogs.length;
-            copy.unread = 0;
-            return copy;
-          });
-        }, 900);
+    const unReadErrors = open ? 0 : errorLogs.length - unReadErrorCount.read;
+    setUnReadErrorCount((prev) => {
+      if (open) {
+        return { read: errorLogs.length, unread: 0 };
       }
-    } else {
-      setUnReadErrorCount((prev) => {
-        let copy = JSON.parse(JSON.stringify(prev));
-        copy.read = errorLogs.length;
-        copy.unread = 0;
-        return copy;
-      });
+      return { ...prev, unread: unReadErrors };
+    });
+
+    if (popoverPinned) {
+      setTimeout(() => {
+        setUnReadErrorCount((prev) => {
+          let copy = JSON.parse(JSON.stringify(prev));
+          copy.read = errorLogs.length;
+          copy.unread = 0;
+
+          return copy;
+        });
+      }, 900);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [errorLogs.length, open]);
 
@@ -138,7 +132,6 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
       ? `Invalid property detected: ${errorProps.message}.`
       : `${_.startCase(errorProps.type)} failed: ${errorProps.message ?? ''}`;
 
-  console.log('finalError', errorProps.timestamp);
   const defaultStyles = {
     transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
     transition: '0.2s all',
