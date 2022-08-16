@@ -26,6 +26,7 @@ Check out the **[live demo](https://youtu.be/JIhSH3YeM3E)** of Component specifi
 | Radio button | Select option |
 | Tabs   | Set tab |
 | Color picker   | Set color |
+| File picker    | Clear files |
 
 :::info
 Currently, Component specific actions are supported only by the above listed widgets. We are working on bringing component specific actions for the remaining widgets.
