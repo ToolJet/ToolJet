@@ -924,11 +924,7 @@ class Editor extends React.Component {
               style={{ marginTop: '3px' }}
               className="btn badge bg-light-1"
               onClick={() => {
-                runQuery(this, dataQuery.id, dataQuery.name).then(() => {
-                  toast(`Query (${dataQuery.name}) completed.`, {
-                    icon: '🚀',
-                  });
-                });
+                runQuery(this, dataQuery.id, dataQuery.name);
               }}
             >
               <div className={`query-icon ${this.props.darkMode && 'dark'}`}>
