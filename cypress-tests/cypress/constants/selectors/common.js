@@ -13,7 +13,7 @@ export const commonSelectors = {
   autoSave: "[data-cy=autosave-indicator]",
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
-  homePageLogo: "[data-cy=home-page-logo]:eq(1)",
+  homePageLogo: "[data-cy=home-page-logo]",
   emailField: "[data-cy=email-text-field]",
   passwordField: "[data-cy=password-text-field]",
   signInButton: "[data-cy=login-button]",
@@ -46,6 +46,8 @@ export const commonSelectors = {
   appCreatorName: "[data-cy=app-creator]",
   appCreatedTime: "[data-cy=app-creation-time]",
   homePageSearchBar: "[data-cy=home-page-search-bar]",
+  editorPageLogo: '[data-cy="editor-page-logo"]',
+  viewerPageLogo: '[data-cy="viewer-page-logo"]',
 
   folderListcard: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-list-card"]`;
@@ -113,16 +115,16 @@ export const commonWidgetSelector = {
   colourPickerInput: (index) => {
     return `[id*="rc-editable-input-"]:eq(${index})`;
   },
-  dataPicker: (paramName) => {
+  stylePicker: (paramName) => {
     return `[data-cy="${cyParamName(paramName)}-picker"]`;
   },
-  dataPickerValueIcon: (paramName) => {
+  stylePickerValueIcon: (paramName) => {
     return `[data-cy="${cyParamName(paramName)}-picker-icon"]`;
   },
-  dataPickerValue: (paramName) => {
+  stylePickerValue: (paramName) => {
     return `[data-cy="${cyParamName(paramName)}-value"]`;
   },
-  dataPickerFxInput: (paramName) => {
+  stylePickerFxInput: (paramName) => {
     return `[data-cy="${cyParamName(paramName)}-input-field"]`;
   },
 
@@ -135,8 +137,13 @@ export const commonWidgetSelector = {
 
   noEventHandlerMessage: "[data-cy='no-event-handler-message']",
   addEventHandlerLink: "[data-cy='add-event-handler']",
+  addMoreEventHandlerLink: '[data-cy="add-more-event-handler"]',
   eventHandlerCard: "[data-cy='event-handler-card']",
   alertMessageInputField: "[data-cy='alert-message-input-field']",
+  actionSelection: '[data-cy="action-selection"]',
+  eventComponentSelection: '[data-cy="component-selection"]',
+  eventComponentActionSelection: '[data-cy="component-action-selection"]',
+  componentTextInput: '[data-cy="component-text-input',
   changeLayoutButton: "[data-cy= 'change-layout-button']",
 
   sidebarinspector: "[data-cy='left-sidebar-inspector-button']",
@@ -151,4 +158,6 @@ export const commonWidgetSelector = {
   inputBoxShadow: "[data-cy= 'input-box-shadow']",
   boxShadowColorPicker: "[data-cy='box-shadow-color-picker']",
   buttonWidget: "[data-cy=button-widget]",
+  textInputWidget: '[data-cy="draggable-widget-text-input"]',
+  previewButton: '[data-cy="preview-button"]',
 };
