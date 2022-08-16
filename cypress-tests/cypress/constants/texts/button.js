@@ -1,5 +1,5 @@
 export const buttonText = {
-  widgetName: "Button",
+  defaultWidgetText: "Button",
   buttonProperties: "Properties",
   buttonStyles: "Styles",
   defaultWidgetName: "button1",
