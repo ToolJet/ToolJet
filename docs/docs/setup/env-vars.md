@@ -195,6 +195,7 @@ Configurations for instance level SSO. Valid only if `DISABLE_MULTI_WORKSPACE` i
 | SSO_GOOGLE_OAUTH2_CLIENT_ID           | Google OAuth client id |
 | SSO_GIT_OAUTH2_CLIENT_ID              | GitHub OAuth client id |
 | SSO_GIT_OAUTH2_CLIENT_SECRET          | GitHub OAuth client secret |
+| SSO_GIT_OAUTH2_HOST                   | GitHub OAuth host name if GitHub is self hosted |
 | SSO_ACCEPTED_DOMAINS                  | comma separated email domains that supports SSO authentication |
 | SSO_DISABLE_SIGNUPS                   | Disable user sign up if authenticated user does not exist |
 

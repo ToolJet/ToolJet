@@ -89,12 +89,13 @@ const sidebars = {
         'data-sources/postgresql',
         'data-sources/redis',
         'data-sources/restapi',
+        'data-sources/rethinkdb',
         'data-sources/saphana',
         'data-sources/sendgrid',
         'data-sources/smtp',
         'data-sources/snowflake',
-        'data-sources/rethinkdb',
         'data-sources/typesense',
+        'data-sources/woocommerce',
       ],
     },
     {
@@ -144,6 +145,7 @@ const sidebars = {
         'widgets/timeline',
         'widgets/timer',
         'widgets/toggle-switch',
+        'widgets/tree-select',
         'widgets/vertical-divider'
       ],
     },

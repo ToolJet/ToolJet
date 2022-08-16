@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useContext } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -46,10 +46,11 @@ import { PDF } from './Components/PDF';
 import { ColorPicker } from './Components/ColorPicker';
 import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
 import { Steps } from './Components/Steps';
+import { TreeSelect } from './Components/TreeSelect';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
-import { validateWidget, resolveReferences } from '@/_helpers/utils';
+import { validateWidget } from '@/_helpers/utils';
 import { componentTypes } from './WidgetManager/components';
 import {
   resolveProperties,
@@ -58,6 +59,7 @@ import {
   resolveGeneralStyles,
 } from './component-properties-resolution';
 import _ from 'lodash';
+import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 
 const AllComponents = {
   Button,
@@ -106,6 +108,7 @@ const AllComponents = {
   ColorPicker,
   KanbanBoard,
   Steps,
+  TreeSelect,
 };
 
 export const Box = function Box({
@@ -130,9 +133,9 @@ export const Box = function Box({
   mode,
   customResolvables,
   parentId,
-  allComponents,
   sideBarDebugger,
   dataQueries,
+  readOnly,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -160,6 +163,10 @@ export const Box = function Box({
     mode === 'edit' && component.validate
       ? validateProperties(resolvedProperties, componentMeta.properties)
       : [resolvedProperties, []];
+
+  if (componentMeta.component === 'Button') {
+    // console.log('validated properties', validatedProperties, 'resolvedProperties', resolvedProperties);
+  }
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
   const [validatedStyles, styleErrors] =
     mode === 'edit' && component.validate
@@ -179,6 +186,8 @@ export const Box = function Box({
     mode === 'edit' && component.validate
       ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
       : [resolvedGeneralStyles, []];
+
+  const { exposeToCodeHinter } = useContext(EditorContext) || {};
 
   useEffect(() => {
     const componentName = getComponentName(currentState, id);
@@ -212,6 +221,15 @@ export const Box = function Box({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
+
+  useEffect(() => {
+    if (customResolvables && !readOnly && mode === 'edit') {
+      const newCustomResolvable = {};
+      newCustomResolvable[id] = { ...customResolvables };
+      exposeToCodeHinter((prevState) => ({ ...prevState, ...newCustomResolvable }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(customResolvables), readOnly]);
 
   let exposedVariables = currentState?.components[component.name] ?? {};
 

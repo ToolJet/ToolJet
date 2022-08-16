@@ -433,7 +433,7 @@ class HomePage extends React.Component {
         onClick={() => this.setState({ appOperations: { ...appOperations, selectedIcon: icon } })}
         key={index}
       >
-        <img src={`/assets/images/icons/app-icons/${icon}.svg`} />
+        <img src={`/assets/images/icons/app-icons/${icon}.svg`} data-cy={`${icon}-icon`} />
       </li>
     ));
   };
@@ -533,12 +533,12 @@ class HomePage extends React.Component {
         >
           <div className="row">
             <div className="col modal-main">
-              <div className="mb-3">
+              <div className="mb-3" data-cy="move-selected-app-to-text">
                 <span>Move</span>
                 <strong>{` "${appOperations?.selectedApp?.name}" `}</strong>
                 <span>to</span>
               </div>
-              <div>
+              <div data-cy="select-folder">
                 <SelectSearch
                   className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                   options={this.state.folders.map((folder) => {
@@ -562,12 +562,14 @@ class HomePage extends React.Component {
               <button
                 className="btn btn-light"
                 onClick={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
+                data-cy="cancel-button"
               >
                 Cancel
               </button>
               <button
                 className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
                 onClick={this.addAppToFolder}
+                data-cy="add-to-folder-button"
               >
                 Add to folder
               </button>
@@ -590,12 +592,14 @@ class HomePage extends React.Component {
               <button
                 className="btn btn-light"
                 onClick={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
+                data-cy="cancel-button"
               >
                 Cancel
               </button>
               <button
                 className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
                 onClick={this.changeIcon}
+                data-cy="change-button"
               >
                 Change
               </button>

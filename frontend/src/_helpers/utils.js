@@ -295,7 +295,9 @@ export function validateEmail(email) {
   return emailRegex.test(email);
 }
 
+// eslint-disable-next-line no-unused-vars
 export async function executeMultilineJS(_ref, code, editorState, isPreview, confirmed = undefined, mode = '') {
+  //:: confrimed arg is unused
   const { currentState } = _ref.state;
   let result = {},
     error = null;
