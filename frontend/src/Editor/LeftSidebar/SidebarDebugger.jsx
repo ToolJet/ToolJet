@@ -1,7 +1,6 @@
 import React from 'react';
 import usePinnedPopover from '@/_hooks/usePinnedPopover';
 import { LeftSidebarItem } from './SidebarItem';
-import ReactJson from 'react-json-view';
 import _ from 'lodash';
 import moment from 'moment';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
@@ -35,8 +34,6 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
 
       const $type =
         value.type === 'query' && (value.kind === 'restapi' || value.kind === 'runjs') ? value.kind : value.type;
-
-      // console.log('createErrorLogs [[type]]', $type);
 
       switch ($type) {
         case 'restapi':
@@ -108,76 +105,6 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
     debuggerActions.flush();
   }, [JSON.stringify(errors)]);
 
-  // React.useEffect(() => {
-  //   setErrorLogs((prev) => {
-  //     let copy = JSON.parse(JSON.stringify(prev));
-  //     copy = copy.filter((val) => Object.keys(val).length !== 0);
-
-  //     const newError = _.flow([
-  //       Object.entries,
-  //       // eslint-disable-next-line no-unused-vars
-  //       (arr) => arr.filter(([key, value]) => value.data?.status),
-  //       Object.fromEntries,
-  //     ])(errors);
-
-  //     const errorData = [];
-  //     Object.entries(newError).forEach(([key, value]) => {
-  //       const variableNames = {
-  //         options: '',
-  //         response: '',
-  //         request: '',
-  //         resolvedProperties: '',
-  //         effectiveProperties: '',
-  //       };
-
-  //       switch (value.type) {
-  //         case 'query':
-  //           variableNames.options = 'substitutedVariables';
-  //           variableNames.response = 'response';
-  //           if (value.kind === 'restapi') {
-  //             variableNames.request = 'request';
-  //           }
-  //           break;
-
-  //         case 'transformations':
-  //           variableNames.response = 'data';
-  //           break;
-
-  //         case 'component':
-  //           variableNames.resolvedProperties = 'resolvedProperties';
-  //           variableNames.effectiveProperties = 'propertiesAfterUsingDefaults';
-  //           break;
-
-  //         default:
-  //           'options';
-  //       }
-  //       errorData.push({
-  //         type: value.type,
-  //         key: key,
-  //         kind: value.kind,
-  //         message: value.data.message,
-  //         description: value.data.description,
-  //         options: { name: variableNames.options, data: value.options },
-  //         resolvedProperties: value.resolvedProperties,
-  //         effectiveProperties: value.effectiveProperties,
-  //         response: {
-  //           name: variableNames.response,
-  //           data: value.kind === 'restapi' ? value.data.data.responseObject : value.data.data,
-  //         },
-  //         request: { name: variableNames.request, data: value.data?.data?.requestObject ?? {} },
-  //         timestamp: moment(),
-  //       });
-  //     });
-
-  //     console.log('Debugger', errorData);
-
-  //     const newData = [...errorData, ...copy];
-  //     return newData;
-  //   });
-  //   debuggerActions.flush();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [JSON.stringify(errors)]);
-
   React.useEffect(() => {
     if (open === false && errorLogs.length !== unReadErrorCount.read) {
       const unReadErrors = errorLogs.length - unReadErrorCount.read;
@@ -222,7 +149,6 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
       <div
         {...content}
         className={`card popover debugger-popover ${open || popoverPinned ? 'show' : 'hide'}`}
-        // style={{ minWidth: '350px', minHeight: '108px', resize: 'horizontal', maxWidth: '50%' }}
         style={{ resize: 'horizontal', maxWidth: '60%', minWidth: '422px' }}
       >
         <div className="row-header">
@@ -308,18 +234,6 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
         <small className="text-muted px-1">{moment(errorProps.timestamp).fromNow()}</small>
       </p>
 
-      {/* <ReactJson
-        src={finalError}
-        theme={darkMode ? 'shapeshifter' : 'rjv-default'}
-        name={errorTitle}
-        style={{ fontSize: '0.7rem', paddingLeft: '0.17rem' }}
-        enableClipboard={false}
-        displayDataTypes={false}
-        collapsed={1}
-        displayObjectSize={false}
-        quotesOnKeys={false}
-        sortKeys={false}
-      /> */}
       {open && (
         <JSONTreeViewer
           data={errorProps.error}
