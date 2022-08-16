@@ -67,6 +67,10 @@ export const addAndVerifyTooltip = (widgetSelector, message) => {
   cy.get(commonWidgetSelector.tooltipInputField).clearAndTypeOnCodeMirror(
     message
   );
+  verifyTooltip(widgetSelector, message);
+};
+
+export const verifyTooltip = (widgetSelector, message) => {
   cy.forceClickOnCanvas();
   cy.get(widgetSelector)
     .trigger("mouseover")
@@ -118,7 +122,7 @@ export const verifyMultipleComponentValuesFromInspector = (
 };
 
 export const selectColourFromColourPicker = (paramName, colour) => {
-  cy.get(commonWidgetSelector.dataPicker(paramName)).click();
+  cy.get(commonWidgetSelector.stylePicker(paramName)).click();
   cy.get(commonWidgetSelector.colourPickerParent).within(() => {
     colour.forEach((value, i) =>
       cy
@@ -136,10 +140,7 @@ export const selectColourFromColourPicker = (paramName, colour) => {
         })
     );
   });
-  cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
-    "have.text",
-    commonText.autoSave
-  );
+  cy.save();
 };
 
 export const fillBoxShadowParams = (paramLabels, values) => {
@@ -186,17 +187,21 @@ export const verifyComponentFromInspector = (
   }
 };
 
-export const verifyAndModifyDataPickerFx = (paramName, defaultValue, value) => {
+export const verifyAndModifyStylePickerFx = (
+  paramName,
+  defaultValue,
+  value
+) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName)).should(
     "have.text",
     paramName
   );
-  cy.get(commonWidgetSelector.dataPicker(paramName)).should("be.visible");
-  cy.get(commonWidgetSelector.dataPickerValueIcon(paramName)).should(
+  cy.get(commonWidgetSelector.stylePicker(paramName)).should("be.visible");
+  cy.get(commonWidgetSelector.stylePickerValueIcon(paramName)).should(
     "be.visible"
   );
 
-  cy.get(commonWidgetSelector.dataPickerValue(paramName))
+  cy.get(commonWidgetSelector.stylePickerValue(paramName))
     .should("be.visible")
     .verifyVisibleElement("have.text", defaultValue);
   cy.get(
@@ -208,17 +213,17 @@ export const verifyAndModifyDataPickerFx = (paramName, defaultValue, value) => {
     .should("have.text", "Fx")
     .click();
 
-  cy.get(commonWidgetSelector.dataPickerFxInput(paramName)).within(() => {
+  cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
     cy.get(".CodeMirror-line")
       .should("be.visible")
       .and("have.text", defaultValue);
   });
 
   cy.get(
-    commonWidgetSelector.dataPickerFxInput(paramName)
+    commonWidgetSelector.stylePickerFxInput(paramName)
   ).clearAndTypeOnCodeMirror(value);
 
-  cy.get(commonWidgetSelector.dataPickerFxInput(paramName)).within(() => {
+  cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
     cy.get(".CodeMirror-line").should("be.visible").and("have.text", value);
   });
 };
@@ -242,4 +247,19 @@ export const verifyLoaderColor = (widgetName, color) => {
         color[3] / 100
       })`
     );
+};
+
+export const verifyLayout = (widgetName) => {
+  verifyAndModifyToggleFx(
+    commonWidgetText.parameterShowOnDesktop,
+    commonWidgetText.codeMirrorLabelTrue
+  );
+  cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("not.exist");
+
+  verifyAndModifyToggleFx(
+    commonWidgetText.parameterShowOnMobile,
+    commonWidgetText.codeMirrorLabelFalse
+  );
+  cy.get(commonWidgetSelector.changeLayoutButton).click();
+  cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("exist");
 };
