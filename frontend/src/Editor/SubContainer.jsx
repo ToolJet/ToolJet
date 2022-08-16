@@ -9,6 +9,8 @@ import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 
+import { useMounted } from '@/_hooks/use-mount';
+
 export const SubContainer = ({
   mode,
   snapToGrid,
@@ -39,8 +41,17 @@ export const SubContainer = ({
   selectedComponents,
   onOptionChange,
   exposedVariables,
+  addDefaultChildren = false,
   setDraggingOrResizing = () => {},
 }) => {
+  //Todo add custom resolve vars for other widgets too
+  const mounted = useMounted();
+  const widgetResolvables = Object.freeze({
+    Listview: 'listItem',
+  });
+
+  const customResolverVariable = widgetResolvables[parentComponent?.component];
+
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
     if (parentRef.current) {
@@ -70,6 +81,79 @@ export const SubContainer = ({
   useEffect(() => {
     setBoxes(allComponents);
   }, [allComponents]);
+
+  useEffect(() => {
+    if (mounted) {
+      //find children with parent prop
+      const children = Object.keys(allComponents).filter((key) => {
+        if (key === parent) return false;
+        return allComponents[key].parent === parent;
+      });
+
+      if (children.length === 0 && addDefaultChildren === true) {
+        const defaultChildren = _.cloneDeep(parentComponent)['defaultChildren'];
+        const childrenBoxes = {};
+        defaultChildren.forEach((child) => {
+          const { componentName, layout, incrementWidth, properties, accessorKey } = child;
+
+          const componentMeta = componentTypes.find((component) => component.component === componentName);
+          const componentData = JSON.parse(JSON.stringify(componentMeta));
+
+          const width = (componentMeta.defaultSize.width * 100) / 43;
+          const height = componentMeta.defaultSize.height;
+          const newComponentDefinition = {
+            ...componentData.definition.properties,
+          };
+
+          if (_.isArray(properties) && properties.length > 0) {
+            properties.forEach((prop) => {
+              _.set(newComponentDefinition, prop, {
+                value: `{{${customResolverVariable}.${accessorKey}}}`,
+              });
+            });
+            _.set(componentData, 'definition.properties', newComponentDefinition);
+          }
+
+          const newComponent = addNewWidgetToTheEditor(
+            componentData,
+            {},
+            boxes,
+            {},
+            currentLayout,
+            snapToGrid,
+            zoomLevel,
+            true,
+            true
+          );
+
+          _.set(childrenBoxes, newComponent.id, {
+            component: newComponent.component,
+            parent: parentRef.current.id,
+            layouts: {
+              [currentLayout]: {
+                ...layout,
+                width: incrementWidth ? width * incrementWidth : width,
+                height: height,
+              },
+            },
+          });
+        });
+
+        const _allComponents = JSON.parse(JSON.stringify(allComponents));
+
+        _allComponents[parentRef.current.id] = {
+          ...allComponents[parentRef.current.id],
+          withDefaultChildren: false,
+        };
+
+        setBoxes({
+          ..._allComponents,
+          ...childrenBoxes,
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted]);
 
   const moveBox = useCallback(
     (id, left, top) => {
@@ -158,6 +242,7 @@ export const SubContainer = ({
             layouts: {
               ...newComponent.layout,
             },
+            withDefaultChildren: newComponent.withDefaultChildren,
           },
         });
 
@@ -319,68 +404,73 @@ export const SubContainer = ({
       id={`canvas-${parent}`}
       className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
     >
-      {Object.keys(childComponents).map((key) => (
-        <DraggableBox
-          onComponentClick={onComponentClick}
-          onEvent={onEvent}
-          onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
-          onComponentOptionsChanged={onComponentOptionsChanged}
-          key={key}
-          currentState={currentState}
-          onResizeStop={onResizeStop}
-          onDragStop={onDragStop}
-          paramUpdated={paramUpdated}
-          id={key}
-          allComponents={allComponents}
-          {...childComponents[key]}
-          mode={mode}
-          resizingStatusChanged={(status) => setIsResizing(status)}
-          draggingStatusChanged={(status) => setIsDragging(status)}
-          inCanvas={true}
-          zoomLevel={zoomLevel}
-          setSelectedComponent={setSelectedComponent}
-          currentLayout={currentLayout}
-          selectedComponent={selectedComponent}
-          deviceWindowWidth={deviceWindowWidth}
-          isSelectedComponent={mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false}
-          removeComponent={customRemoveComponent}
-          canvasWidth={_containerCanvasWidth}
-          readOnly={readOnly}
-          darkMode={darkMode}
-          customResolvables={customResolvables}
-          onComponentHover={onComponentHover}
-          hoveredComponent={hoveredComponent}
-          parentId={parentComponent?.name}
-          sideBarDebugger={sideBarDebugger}
-          isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
-          exposedVariables={exposedVariables ?? {}}
-          containerProps={{
-            mode,
-            snapToGrid,
-            onComponentClick,
-            onEvent,
-            appDefinition,
-            appDefinitionChanged,
-            currentState,
-            onComponentOptionChanged,
-            onComponentOptionsChanged,
-            appLoading,
-            zoomLevel,
-            setSelectedComponent,
-            removeComponent,
-            currentLayout,
-            deviceWindowWidth,
-            selectedComponents,
-            darkMode,
-            readOnly,
-            onComponentHover,
-            hoveredComponent,
-            sideBarDebugger,
-            setDraggingOrResizing,
-          }}
-          setDraggingOrResizing={setDraggingOrResizing}
-        />
-      ))}
+      {Object.keys(childComponents).map((key) => {
+        const addDefaultChildren = childComponents[key]['withDefaultChildren'] || false;
+
+        return (
+          <DraggableBox
+            onComponentClick={onComponentClick}
+            onEvent={onEvent}
+            onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
+            onComponentOptionsChanged={onComponentOptionsChanged}
+            key={key}
+            currentState={currentState}
+            onResizeStop={onResizeStop}
+            onDragStop={onDragStop}
+            paramUpdated={paramUpdated}
+            id={key}
+            allComponents={allComponents}
+            {...childComponents[key]}
+            mode={mode}
+            resizingStatusChanged={(status) => setIsResizing(status)}
+            draggingStatusChanged={(status) => setIsDragging(status)}
+            inCanvas={true}
+            zoomLevel={zoomLevel}
+            setSelectedComponent={setSelectedComponent}
+            currentLayout={currentLayout}
+            selectedComponent={selectedComponent}
+            deviceWindowWidth={deviceWindowWidth}
+            isSelectedComponent={mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false}
+            removeComponent={customRemoveComponent}
+            canvasWidth={_containerCanvasWidth}
+            readOnly={readOnly}
+            darkMode={darkMode}
+            customResolvables={customResolvables}
+            onComponentHover={onComponentHover}
+            hoveredComponent={hoveredComponent}
+            parentId={parentComponent?.name}
+            sideBarDebugger={sideBarDebugger}
+            isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+            exposedVariables={exposedVariables ?? {}}
+            containerProps={{
+              mode,
+              snapToGrid,
+              onComponentClick,
+              onEvent,
+              appDefinition,
+              appDefinitionChanged,
+              currentState,
+              onComponentOptionChanged,
+              onComponentOptionsChanged,
+              appLoading,
+              zoomLevel,
+              setSelectedComponent,
+              removeComponent,
+              currentLayout,
+              deviceWindowWidth,
+              selectedComponents,
+              darkMode,
+              readOnly,
+              onComponentHover,
+              hoveredComponent,
+              sideBarDebugger,
+              setDraggingOrResizing,
+              addDefaultChildren,
+            }}
+            setDraggingOrResizing={setDraggingOrResizing}
+          />
+        );
+      })}
 
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box">
