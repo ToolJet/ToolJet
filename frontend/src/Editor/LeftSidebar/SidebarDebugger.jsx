@@ -218,7 +218,7 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
   return (
     <div className="tab-content debugger-content mb-1" key={`${errorProps.key}-${idx}`}>
       <p className="text-azure m-0 " onClick={() => setOpen((prev) => !prev)}>
-        <span className="json-tree-node-icon" style={defaultStyles}>
+        <span className="mx-1" style={defaultStyles}>
           <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M1.02063 1L5.01032 5.01028L1.00003 8.99997"
