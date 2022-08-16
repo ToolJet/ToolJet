@@ -8,13 +8,8 @@ import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 
 export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
-  const [currrentTab, setCurrentTab] = React.useState(1);
   const [errorLogs, setErrorLogs] = React.useState([]);
   const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
-
-  const switchCurrentTab = (tab) => {
-    setCurrentTab(tab);
-  };
 
   const clearErrorLogs = () => {
     setUnReadErrorCount(() => {
@@ -22,67 +17,6 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
     });
 
     setErrorLogs(() => []);
-  };
-
-  const createErrorLogs = (errors) => {
-    const errorsArr = [];
-    Object.entries(errors).forEach(([key, value]) => {
-      const error = {};
-      const generalProps = {
-        timestamp: moment(),
-      };
-
-      const $type =
-        value.type === 'query' && (value.kind === 'restapi' || value.kind === 'runjs') ? value.kind : value.type;
-
-      switch ($type) {
-        case 'restapi':
-          generalProps.kind = value.kind;
-          generalProps.message = value.data.message;
-          generalProps.description = value.data.description;
-          error.substitutedVariables = value.options;
-          error.request = value.data.data.requestObject;
-          error.response = value.data.data.responseObject;
-
-          break;
-
-        case 'runjs':
-          generalProps.kind = value.kind;
-          error.message = value.data.data.message;
-          error.description = value.data.data.description;
-
-          break;
-
-        case 'query':
-          generalProps.kind = value.kind;
-          error.message = value.data.message;
-          error.description = value.data.description;
-          error.substitutedVariables = value.options;
-          break;
-
-        case 'transformations':
-          generalProps.message = value.data.message;
-          error.data = value.data.data;
-          break;
-
-        case 'component':
-          generalProps.message = value.data.message;
-          generalProps.property = key.split('- ')[1];
-          error.resolvedProperties = value.resolvedProperties;
-          error.effectiveProperties = value.effectiveProperties;
-          break;
-
-        default:
-          break;
-      }
-      errorsArr.push({
-        key,
-        type: value.type,
-        error,
-        ...generalProps,
-      });
-    });
-    return errorsArr;
   };
 
   React.useEffect(() => {
@@ -93,16 +27,17 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
       Object.fromEntries,
     ])(errors);
 
-    const err = createErrorLogs(newError);
+    const newErrorLogs = debuggerActions.generateErrorLogs(newError);
 
-    if (err) {
+    if (newErrorLogs) {
       setErrorLogs((prevErrors) => {
         const copy = JSON.parse(JSON.stringify(prevErrors));
 
-        return [...err, ...copy];
+        return [...newErrorLogs, ...copy];
       });
     }
     debuggerActions.flush();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(errors)]);
 
   React.useEffect(() => {
@@ -155,9 +90,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
           <div className="nav-header">
             <ul className="nav nav-tabs d-flex justify-content-between" data-bs-toggle="tabs">
               <li className="nav-item">
-                <a onClick={() => switchCurrentTab(1)} className={currrentTab === 1 ? 'nav-link active' : 'nav-link'}>
-                  Errors
-                </a>
+                <a className="nav-link active">Errors</a>
               </li>
               <li className="btn-group">
                 {errorLogs.length > 0 && (
@@ -181,17 +114,15 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
           </div>
         </div>
 
-        {currrentTab === 1 && (
-          <div className="card-body">
-            {errorLogs.length === 0 && <center className="p-2 text-muted">No errors found.</center>}
+        <div className="card-body">
+          {errorLogs.length === 0 && <center className="p-2 text-muted">No errors found.</center>}
 
-            <div className="tab-content">
-              {errorLogs.map((error, index) => (
-                <LeftSidebarDebugger.ErrorLogs key={index} errorProps={error} idx={index} darkMode={darkMode} />
-              ))}
-            </div>
+          <div className="tab-content">
+            {errorLogs.map((error, index) => (
+              <LeftSidebarDebugger.ErrorLogs key={index} errorProps={error} idx={index} darkMode={darkMode} />
+            ))}
           </div>
-        )}
+        </div>
       </div>
     </>
   );
