@@ -3,16 +3,32 @@ export const initialState = () => ({
   columnProperties: {},
 });
 
-const mergeToState = (columnProperties) => ({
+const mergeToState = (payload) => ({
   type: 'MERGE',
-  payload: { columnProperties },
+  payload,
 });
 
-export const reducerActions = { setColumnProperties: mergeToState };
+const set = (payload) => ({
+  type: 'SET',
+  payload,
+});
 
-export const reducer = (state = initialState(), action) => {
+export const reducerActions = {
+  setColumnProperties: (columnProperties) => mergeToState({ columnProperties }),
+  setSelectedRowId: (selectedRowId) => mergeToState({ selectedRowId }),
+  setSelectedRowData: (selectedRowData) => mergeToState({ selectedRowData }),
+  set,
+};
+
+export const reducer = (state, action) => {
   switch (action.type) {
     case 'MERGE':
+      return {
+        ...state,
+        ...action.payload,
+      };
+
+    case 'SET':
       return {
         ...state,
         ...action.payload,

@@ -43,6 +43,7 @@ export function Table({
   darkMode,
   fireEvent,
   setExposedVariable,
+  setExposedVariables,
   registerAction,
   styles,
   properties,
@@ -74,12 +75,6 @@ export function Table({
   useEffect(() => {
     dispatch(reducerActions.setColumnProperties(component?.definition?.properties?.columns?.value));
   }, [component?.definition?.properties]);
-
-  const [componentState, setcomponentState] = useState(currentState.components[component.component] || {});
-
-  useEffect(() => {
-    setcomponentState(currentState.components[component.name] || {});
-  }, [currentState.components[component.name]]);
 
   const [isFiltersVisible, setFiltersVisibility] = useState(false);
   const [filters, setFilters] = useState([]);
@@ -146,8 +141,8 @@ export function Table({
   const columnSizes = component.definition.properties.columnSizes || {};
 
   function handleCellValueChange(index, key, value, rowData) {
-    const changeSet = componentState.changeSet;
-    const dataUpdates = componentState.dataUpdates || [];
+    const changeSet = tableDetails.changeSet;
+    const dataUpdates = tableDetails.dataUpdates || [];
 
     let obj = changeSet ? changeSet[index] || {} : {};
     obj = _.set(obj, key, value);
@@ -165,11 +160,9 @@ export function Table({
       ...dataUpdates,
       [index]: { ...obj },
     };
-
-    return onComponentOptionsChanged(component, [
-      ['dataUpdates', newDataUpdates],
-      ['changeSet', newChangeset],
-    ]);
+    const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
+    dispatch(reducerActions.set(changesToBeSavedAndExposed));
+    return setExposedVariables(changesToBeSavedAndExposed);
   }
 
   function getExportFileBlob({ columns, data }) {
@@ -191,13 +184,17 @@ export function Table({
       };
     });
 
-    onComponentOptionChanged(component, 'changeSet', {});
-    onComponentOptionChanged(component, 'dataUpdates', []);
+    setExposedVariables({
+      changeSet: {},
+      dataUpdates: [],
+    });
   }
 
   function handleChangesDiscarded() {
-    onComponentOptionChanged(component, 'changeSet', {});
-    onComponentOptionChanged(component, 'dataUpdates', []);
+    setExposedVariables({
+      changeSet: {},
+      dataUpdates: [],
+    });
   }
 
   function customFilter(rows, columnIds, filterValue) {
@@ -255,7 +252,7 @@ export function Table({
     }
   }
 
-  const changeSet = componentState ? componentState.changeSet : {};
+  const changeSet = tableDetails?.changeSet ?? {};
 
   const computeFontColor = useCallback(() => {
     if (color !== undefined) {
@@ -691,7 +688,7 @@ export function Table({
       JSON.stringify(actions),
       leftActionsCellData.length,
       rightActionsCellData.length,
-      componentState.changeSet,
+      tableDetails.changeSet,
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
@@ -701,7 +698,7 @@ export function Table({
 
   const data = useMemo(
     () => tableData,
-    [tableData.length, componentState.changeSet, component.definition.properties.data.value]
+    [tableData.length, tableDetails.changeSet, component.definition.properties.data.value]
   );
 
   const computedStyles = {
@@ -805,7 +802,7 @@ export function Table({
       ['selectedRow', []],
       ['selectedRowId', null],
     ]);
-  }, [tableData.length, componentState.changeSet]);
+  }, [tableData.length, tableDetails.changeSet]);
 
   useEffect(() => {
     if (!state.columnResizing.isResizingColumn) {
@@ -921,24 +918,28 @@ export function Table({
                   <tr
                     key={index}
                     className={`table-row ${
-                      highlightSelectedRow && row.id === componentState.selectedRowId ? 'selected' : ''
+                      highlightSelectedRow && row.id === tableDetails.selectedRowId ? 'selected' : ''
                     }`}
                     {...row.getRowProps()}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onEvent('onRowClicked', { component, data: row.original, rowId: row.id });
+                      dispatch(reducerActions.setSelectedRowId(row.id));
+                      dispatch(reducerActions.setSelectedRowData(row.original));
+                      setExposedVariables({ selectedRowId: row.id, selectedRow: row.original }).then(() => {
+                        fireEvent('onRowClicked');
+                      });
                     }}
                   >
                     {row.cells.map((cell, index) => {
                       let cellProps = cell.getCellProps();
-                      if (componentState.changeSet) {
-                        if (componentState.changeSet[cell.row.index]) {
+                      if (tableDetails.changeSet) {
+                        if (tableDetails.changeSet[cell.row.index]) {
                           const currentColumn = columnData.find((column) => column.id === cell.column.id);
                           if (
-                            _.get(componentState.changeSet[cell.row.index], currentColumn?.accessor, undefined) !==
+                            _.get(tableDetails.changeSet[cell.row.index], currentColumn?.accessor, undefined) !==
                             undefined
                           ) {
-                            console.log('componentState.changeSet', componentState.changeSet);
+                            console.log('tableDetails.changeSet', tableDetails.changeSet);
                             cellProps.style.backgroundColor = darkMode ? '#1c252f' : '#ffffde';
                             cellProps.style['--tblr-table-accent-bg'] = darkMode ? '#1c252f' : '#ffffde';
                           }
@@ -993,7 +994,7 @@ export function Table({
       </div>
       {(clientSidePagination ||
         serverSidePagination ||
-        Object.keys(componentState.changeSet || {}).length > 0 ||
+        Object.keys(tableDetails.changeSet || {}).length > 0 ||
         showFilterButton ||
         showDownloadButton) && (
         <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
@@ -1015,10 +1016,10 @@ export function Table({
             </div>
 
             <div className="col d-flex justify-content-end">
-              {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 ? (
+              {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
                 <>
                   <button
-                    className={`btn btn-primary btn-sm mx-2 ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
+                    className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
                     onClick={() =>
                       onEvent('onBulkUpdate', { component }).then(() => {
                         handleChangesSaved();

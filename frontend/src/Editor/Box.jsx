@@ -280,6 +280,7 @@ export const Box = function Box({
             exposedVariables={exposedVariables}
             styles={validatedStyles}
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
+            setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
             registerAction={(actionName, func, dependencies = []) => {
               if (Object.keys(currentState?.components ?? {}).includes(component.name)) {
                 if (!Object.keys(exposedVariables).includes(actionName)) {
