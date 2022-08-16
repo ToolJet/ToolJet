@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { appService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import posthog from 'posthog-js';
 
 export const ReleaseVersionButton = function DeployVersionButton({
   appId,
@@ -16,6 +17,7 @@ export const ReleaseVersionButton = function DeployVersionButton({
   const releaseVersion = (editingVersion) => {
     setIsReleasing(true);
     saveEditingVersion();
+    posthog.capture('click_release'); //posthog event
     appService
       .saveApp(appId, {
         name: appName,

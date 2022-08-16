@@ -10,6 +10,7 @@ import _ from 'lodash';
 import { componentTypes } from '../WidgetManager/components';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
+import posthog from 'posthog-js';
 
 export const EventManager = ({
   component,
@@ -180,6 +181,7 @@ export const EventManager = ({
       alertType: 'info',
     });
     eventsChanged(newEvents);
+    posthog.capture('click_add_event_handler', { widget: component.component.component });
   }
   function eventPopover(event, index) {
     return (

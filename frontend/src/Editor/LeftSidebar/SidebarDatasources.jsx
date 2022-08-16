@@ -10,6 +10,7 @@ import { getSvgIcon } from '@/_helpers/appUtils';
 import { datasourceService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
+import posthog from 'posthog-js';
 
 export const LeftSidebarDataSources = ({
   appId,
@@ -138,7 +139,13 @@ const LeftSidebarDataSourcesContainer = ({ renderDataSource, dataSources = [], t
               delay={{ show: 800, hide: 100 }}
               overlay={<Tooltip id="button-tooltip">{'Add datasource'}</Tooltip>}
             >
-              <button onClick={() => toggleDataSourceManagerModal(true)} className="btn btn-sm add-btn">
+              <button
+                onClick={() => {
+                  toggleDataSourceManagerModal(true);
+                  posthog.capture('click_add_dataource_button_plus');
+                }}
+                className="btn btn-sm add-btn"
+              >
                 <img className="" src="/assets/images/icons/plus.svg" width="12" height="12" />
               </button>
             </OverlayTrigger>
@@ -146,7 +153,13 @@ const LeftSidebarDataSourcesContainer = ({ renderDataSource, dataSources = [], t
         </div>
         <div className="d-flex w-100">
           {dataSources.length === 0 ? (
-            <center onClick={() => toggleDataSourceManagerModal(true)} className="p-2 color-primary cursor-pointer">
+            <center
+              onClick={() => {
+                toggleDataSourceManagerModal(true);
+                posthog.capture('click_add_source_button_text');
+              }}
+              className="p-2 color-primary cursor-pointer"
+            >
               + add data source
             </center>
           ) : (

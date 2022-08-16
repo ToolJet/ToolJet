@@ -7,6 +7,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Skeleton from 'react-loading-skeleton';
 import { debounce } from 'lodash';
 import Textarea from '@/_ui/Textarea';
+import posthog from 'posthog-js';
 
 class ManageAppUsers extends React.Component {
   constructor(props) {
@@ -132,7 +133,13 @@ class ManageAppUsers extends React.Component {
 
     return (
       <div>
-        <button className="btn font-500 color-primary btn-sm" onClick={() => this.setState({ showModal: true })}>
+        <button
+          className="btn font-500 color-primary btn-sm"
+          onClick={() => {
+            posthog.capture('click_share'); //posthog event
+            this.setState({ showModal: true });
+          }}
+        >
           Share
         </button>
 

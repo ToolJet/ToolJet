@@ -15,6 +15,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 import { isEmpty } from 'lodash';
 import { Card } from '@/_ui/card';
+import posthog from 'posthog-js';
 
 class DataSourceManager extends React.Component {
   constructor(props) {
@@ -62,7 +63,8 @@ class DataSourceManager extends React.Component {
     }
   }
 
-  selectDataSource = (source) => {
+  selectDataSource = (source, type) => {
+    posthog.capture('choose_datasource', { dataSource: source.kind, category: type });
     this.setState({
       dataSourceMeta: source,
       selectedDataSource: source,
@@ -117,6 +119,8 @@ class DataSourceManager extends React.Component {
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
     const appVersionId = this.props.editingVersionId;
+
+    posthog.capture('save_connection_datasource', { dataSource: kind }); //posthog event
 
     const parsedOptions = Object.keys(options).map((key) => {
       const keyMeta = selectedDataSource.options[key];
@@ -361,7 +365,7 @@ class DataSourceManager extends React.Component {
   };
 
   renderCardGroup = (source, type) => {
-    const renderSelectedDatasource = (dataSource) => this.selectDataSource(dataSource);
+    const renderSelectedDatasource = (dataSource, type) => this.selectDataSource(dataSource, type);
 
     if (this.state.queryString && this.state.queryString.length > 0) {
       const filteredDatasources = this.state.filteredDatasources.map((datasource) => {
@@ -394,7 +398,7 @@ class DataSourceManager extends React.Component {
                 key={item.key}
                 title={item.title}
                 src={item.src}
-                handleClick={() => renderSelectedDatasource(item)}
+                handleClick={() => renderSelectedDatasource(item, type)}
                 usepluginIcon={true}
                 height="35px"
                 width="35px"
@@ -438,7 +442,7 @@ class DataSourceManager extends React.Component {
                   key={item.key}
                   title={item.title}
                   src={item.src}
-                  handleClick={() => renderSelectedDatasource(item)}
+                  handleClick={() => renderSelectedDatasource(item, 'databases')}
                   usepluginIcon={true}
                   height="35px"
                   width="35px"
@@ -454,7 +458,7 @@ class DataSourceManager extends React.Component {
                   key={item.key}
                   title={item.title}
                   src={item.src}
-                  handleClick={() => renderSelectedDatasource(item)}
+                  handleClick={() => renderSelectedDatasource(item, 'apis')}
                   usepluginIcon={true}
                   height="35px"
                   width="35px"
@@ -470,7 +474,7 @@ class DataSourceManager extends React.Component {
                   key={item.key}
                   title={item.title}
                   src={item.src}
-                  handleClick={() => renderSelectedDatasource(item)}
+                  handleClick={() => renderSelectedDatasource(item, 'cloud storage')}
                   usepluginIcon={true}
                   height="35px"
                   width="35px"
@@ -499,7 +503,7 @@ class DataSourceManager extends React.Component {
               key={item.key}
               title={item.title}
               src={item.src}
-              handleClick={() => renderSelectedDatasource(item)}
+              handleClick={() => renderSelectedDatasource(item, type)}
               usepluginIcon={true}
               height="35px"
               width="35px"

@@ -1,6 +1,7 @@
 import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
+import posthog from 'posthog-js';
 
 export const LeftSidebarItem = ({
   tip = '',
@@ -21,7 +22,16 @@ export const LeftSidebarItem = ({
       overlay={<Tooltip id="button-tooltip">{tip}</Tooltip>}
     >
       <div>
-        <div {...rest} className={className} onClick={onClick && onClick}>
+        <div
+          {...rest}
+          className={className}
+          onClick={(e) => {
+            if (onClick) {
+              onClick(e);
+              computePosthogEvent(text);
+            }
+          }}
+        >
           {icon && (
             <img
               className="svg-icon"
@@ -38,6 +48,25 @@ export const LeftSidebarItem = ({
     </OverlayTrigger>
   );
 };
+
+function computePosthogEvent(text) {
+  let label = '';
+  switch (text) {
+    case 'Sources':
+      label = 'click_menu_datasources';
+      break;
+    case 'Debugger':
+      label = 'click_menu_debugger';
+      break;
+    case 'Inspector':
+      label = 'click_menu_inspector';
+      break;
+    case 'Comments':
+      label = 'click_menu_comment';
+      break;
+  }
+  posthog.capture(label);
+}
 
 function CommentBadge() {
   return (

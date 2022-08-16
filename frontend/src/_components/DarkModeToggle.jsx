@@ -2,6 +2,7 @@ import React from 'react';
 import { useSpring, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
+import posthog from 'posthog-js';
 
 export const DarkModeToggle = function DarkModeToggle({
   darkMode = false,
@@ -9,6 +10,7 @@ export const DarkModeToggle = function DarkModeToggle({
   tooltipPlacement = 'bottom',
 }) {
   const toggleDarkMode = () => {
+    posthog.capture('darkMode', { mode: !darkMode ? 'dark' : 'white' });
     switchDarkMode(!darkMode);
   };
 

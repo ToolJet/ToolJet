@@ -5,6 +5,7 @@ import { appVersionService } from '@/_services';
 import { Confirm } from './Viewer/Confirm';
 import Select from '../_ui/Select';
 import defaultStyle from '../_ui/Select/styles';
+import posthog from 'posthog-js';
 export const AppVersionsManager = function AppVersionsManager({
   appId,
   editingVersion,
@@ -267,6 +268,7 @@ export const AppVersionsManager = function AppVersionsManager({
               <div
                 className="dropdown-item"
                 onClick={() => {
+                  posthog.capture('click_create_version'); //posthog event
                   setVersionName('');
                   setShowModal(true);
                 }}
@@ -445,7 +447,10 @@ const CreateVersionModal = function CreateVersionModal({
           </button>
           <button
             className={`btn btn-primary ${isCreatingVersion ? 'btn-loading' : ''}`}
-            onClick={() => createVersion(versionName, createAppVersionFrom)}
+            onClick={() => {
+              posthog.capture('save_version'); //posthog event
+              createVersion(versionName, createAppVersionFrom);
+            }}
           >
             Create Version
           </button>

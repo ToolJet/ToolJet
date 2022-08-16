@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { datasourceService } from '@/_services';
+import posthog from 'posthog-js';
 
 export const TestConnection = ({ kind, options, onConnectionTestFailed, darkMode }) => {
   const [isTesting, setTestingStatus] = useState(false);
@@ -23,7 +24,7 @@ export const TestConnection = ({ kind, options, onConnectionTestFailed, darkMode
 
   function testDataSource() {
     setTestingStatus(true);
-
+    posthog.capture('test_connection_datasource', { dataSource: kind }); //posthog event
     datasourceService.test(kind, options).then(
       (data) => {
         setTestingStatus(false);

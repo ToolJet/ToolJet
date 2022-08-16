@@ -60,6 +60,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import RealtimeAvatars from './RealtimeAvatars';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
+import posthog from 'posthog-js';
 
 setAutoFreeze(false);
 enablePatches();
@@ -164,6 +165,7 @@ class Editor extends React.Component {
       currentSidebarTab: 2,
       selectedComponents: [],
     });
+    posthog.register({ appId: this.state.appId });
   }
 
   /**
@@ -650,11 +652,12 @@ class Editor extends React.Component {
       childComponents.forEach((componentId) => {
         delete newDefinition.components[componentId];
       });
-
+      const deletingComponent = newDefinition.components[component.id];
       delete newDefinition.components[component.id];
       toast('Component deleted! (⌘Z to undo)', {
         icon: '🗑️',
       });
+      posthog.capture('delete_widget', { widget: deletingComponent.component });
       this.appDefinitionChanged(newDefinition, {
         skipAutoSave: this.isVersionReleased(),
       });
@@ -1459,7 +1462,8 @@ class Editor extends React.Component {
                                 className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
                                 data-tip="Add new query"
                                 data-class="py-1 px-2"
-                                onClick={() =>
+                                onClick={() => {
+                                  posthog.capture('click_create_query_plus'); //posthog event
                                   this.setState({
                                     options: {},
                                     selectedDataSource: null,
@@ -1467,8 +1471,8 @@ class Editor extends React.Component {
                                     editingQuery: false,
                                     addingQuery: true,
                                     isSourceSelected: false,
-                                  })
-                                }
+                                  });
+                                }}
                               >
                                 <img className="mt-2" src="/assets/images/icons/plus.svg" width="24" height="24" />
                               </span>
@@ -1492,15 +1496,16 @@ class Editor extends React.Component {
                                 <span className="mute-text">{dataQueriesDefaultText}</span> <br />
                                 <button
                                   className={`button-family-secondary mt-3 ${this.props.darkMode && 'dark'}`}
-                                  onClick={() =>
+                                  onClick={() => {
+                                    posthog.capture('click_create_query'); //posthog event
                                     this.setState({
                                       options: {},
                                       selectedDataSource: null,
                                       selectedQuery: {},
                                       editingQuery: false,
                                       addingQuery: true,
-                                    })
-                                  }
+                                    });
+                                  }}
                                 >
                                   {'Create query'}
                                 </button>

@@ -10,6 +10,7 @@ import usePopover from '@/_hooks/use-popover';
 import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
 import DOMPurify from 'dompurify';
+import posthog from 'posthog-js';
 
 const Comment = ({
   socket,
@@ -77,6 +78,7 @@ const Comment = ({
   }, [router]);
 
   const handleSubmit = async (comment) => {
+    posthog.capture('save_comment'); //posthog event
     await commentsService.createComment({
       threadId,
       comment: DOMPurify.sanitize(comment),

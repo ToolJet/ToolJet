@@ -16,6 +16,7 @@ import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 import produce from 'immer';
+import posthog from 'posthog-js';
 import { addComponents } from '@/_helpers/appUtils';
 
 export const Container = ({
@@ -60,6 +61,7 @@ export const Container = ({
 
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
+  const [draggingItem, setDraggingItem] = useState(null);
   const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
@@ -138,6 +140,7 @@ export const Container = ({
   const { draggingState } = useDragLayer((monitor) => {
     if (monitor.isDragging()) {
       if (!monitor.getItem().parent) {
+        setDraggingItem(monitor.getItem());
         return { draggingState: true };
       } else {
         return { draggingState: false };
@@ -157,7 +160,17 @@ export const Container = ({
 
   useEffect(() => {
     setIsDragging(draggingState);
+    triggerPosthogEvent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draggingState]);
+
+  const triggerPosthogEvent = () => {
+    if (draggingState) {
+      posthog.capture('start_dragging_widget', { widget: draggingItem.component.component });
+    } else if (!draggingState && draggingItem) {
+      posthog.capture('drop_widget', { widget: draggingItem.component.component });
+    }
+  };
 
   const [, drop] = useDrop(
     () => ({
@@ -388,6 +401,7 @@ export const Container = ({
 
     // Update the list of threads on the current users page
     addNewThread(data);
+    posthog.capture('drop_comment'); //posthog event
   };
 
   const handleAddThreadOnComponent = async (_, __, e) => {
@@ -432,6 +446,7 @@ export const Container = ({
 
     // Update the list of threads on the current users page
     addNewThread(data);
+    posthog.capture('drop_comment'); //posthog event
   };
 
   if (showComments) {
