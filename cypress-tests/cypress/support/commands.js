@@ -90,7 +90,6 @@ Cypress.Commands.add("createApp", (appName) => {
   });
   if (appName) {
     cy.clearAndType(commonSelectors.appNameInput, appName);
-    cy.get(commonSelectors.backButton).click();
   }
 });
 
@@ -99,7 +98,7 @@ Cypress.Commands.add(
   (widgetName, positionX = 190, positionY = 80) => {
     const dataTransfer = new DataTransfer();
 
-    cy.get(commonSelectors.searchField).type(widgetName);
+    cy.clearAndType(commonSelectors.searchField, widgetName);
     cy.get(commonWidgetSelector.widgetBox(widgetName)).trigger(
       "dragstart",
       { dataTransfer },
@@ -109,10 +108,7 @@ Cypress.Commands.add(
       dataTransfer,
       force: true,
     });
-    cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
-      "have.text",
-      commonText.autoSave
-    );
+    cy.save();
   }
 );
 
@@ -186,3 +182,14 @@ Cypress.Commands.add(
       .and(assertion, value, ...arg);
   }
 );
+
+Cypress.Commands.add("openInCurrentTab", (selector) => {
+  cy.get(selector).invoke("removeAttr", "target").click();
+});
+
+Cypress.Commands.add("save", () => {
+  cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
+    "have.text",
+    commonText.autoSave
+  );
+});
