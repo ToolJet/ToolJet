@@ -34,6 +34,21 @@ Browser camera APIs restrict this widget to only work in either `localhost` or `
 
 So if you're testing it out, be sure to either use `localhost` or `https`.
 
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
+
 ## Layout
 
 ### Show on desktop

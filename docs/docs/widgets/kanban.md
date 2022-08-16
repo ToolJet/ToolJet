@@ -50,9 +50,20 @@ and this `id` must be of type string.
 | Card data       | Enter the cards data - `id`, `title` and `columnId` in the form of array of objects or from a query that returns an array of objects. | `{{[{ id: "01", title: "one", columnId: "1" },{ id: "02", title: "two", columnId: "1" },{ id: "03", title: "three", columnId: "2" }]}}` or `{{queries.abc.data}}` |
 | Enable Add Card | This property allows you to show or hide the `Add Cards` button at the bottom of every column.                                        | By deafult its enabled, you can programmatically set `{{true}}` or `{{false}}` enable/disable button by clicking on the `Fx` next to it                           |
 
-## General
+### General
+#### Tooltip
 
-<b>Tooltip:</b> Set a tooltip text to specify the information about the data/kanban when the user moves the mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
 
 ## Layout
 
