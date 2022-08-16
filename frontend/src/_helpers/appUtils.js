@@ -927,6 +927,8 @@ export const debuggerActions = {
 
       const error = {};
       const generalProps = {
+        key,
+        type: value.type,
         kind: errorType !== 'transformations' ? value.kind : 'transformations',
         timestamp: moment(),
       };
@@ -966,8 +968,6 @@ export const debuggerActions = {
           break;
       }
       errorsArr.push({
-        key,
-        type: value.type,
         error,
         ...generalProps,
       });
