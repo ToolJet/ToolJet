@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
+// eslint-disable-next-line import/no-unresolved
 import CheckboxTree from 'react-checkbox-tree';
+// eslint-disable-next-line import/no-unresolved
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 
 export const TreeSelect = ({ height, properties, styles, setExposedVariable, fireEvent }) => {
