@@ -1258,7 +1258,7 @@ class Editor extends React.Component {
                 <span className="navbar-toggler-icon"></span>
               </button>
               <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                <Link to={'/'}>
+                <Link to={'/'} data-cy="editor-page-logo">
                   <Logo />
                 </Link>
               </h1>
@@ -1310,6 +1310,7 @@ class Editor extends React.Component {
                     target="_blank"
                     className="btn btn-sm font-500 color-primary border-0"
                     rel="noreferrer"
+                    data-cy="preview-button"
                   >
                     Preview
                   </a>

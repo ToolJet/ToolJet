@@ -239,7 +239,7 @@ class Viewer extends React.Component {
                 <header className="navbar navbar-expand-md navbar-light d-print-none">
                   <div className="container-xl header-container">
                     <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                      <a href="/">
+                      <a href="/" data-cy="viewer-page-logo">
                         <LogoIcon />
                       </a>
                     </h1>

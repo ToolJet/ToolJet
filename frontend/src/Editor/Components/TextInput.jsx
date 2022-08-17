@@ -53,6 +53,7 @@ export const TextInput = function TextInput({
         placeholder={properties.placeholder}
         style={{ height, display: styles.visibility ? '' : 'none', borderRadius: `${styles.borderRadius}px` }}
         value={value}
+        data-cy="draggable-widget-text-input"
       />
       <div className="invalid-feedback">{validationError}</div>
     </div>

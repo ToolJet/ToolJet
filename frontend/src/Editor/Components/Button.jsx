@@ -40,7 +40,7 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
           event.stopPropagation();
           fireEvent('onClick');
         }}
-        data-cy={`draggable-widget-${text.toLowerCase()}`}
+        data-cy={`draggable-widget-${String(text).toLowerCase()}`}
       >
         {label}
       </button>
