@@ -7,8 +7,9 @@ async function makeRequestToReadValues(spreadSheetId: string, sheet: string, ran
 }
 
 async function makeRequestToAppendValues(spreadSheetId: string, sheet: string, requestBody: any, authHeader: any) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${sheet || ''
-    }!A:Z:append?valueInputOption=USER_ENTERED`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${
+    sheet || ''
+  }!A:Z:append?valueInputOption=USER_ENTERED`;
 
   return await got.post(url, { headers: authHeader, json: requestBody }).json();
 }
@@ -34,8 +35,8 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
 
 export async function batchUpdateToSheet(
   spreadSheetId: string,
-  spreadsheetRange: string = 'A1:Z500',
-  sheet: string = '',
+  spreadsheetRange = 'A1:Z500',
+  sheet = '',
   requestBody: any,
   filterData: any,
   filterOperator: string,
