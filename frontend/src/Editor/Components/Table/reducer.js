@@ -1,6 +1,10 @@
 export const initialState = () => ({
   loadingState: false,
-  columnProperties: {},
+  columnProperties: [],
+  filterDetails: {
+    filters: [],
+    filtersVisible: false,
+  },
 });
 
 const mergeToState = (payload) => ({
@@ -13,11 +17,17 @@ const set = (payload) => ({
   payload,
 });
 
+const mergeToFilterDetails = (payload) => ({
+  type: 'MERGE_TO_FILTER_DETAILS',
+  payload,
+});
+
 export const reducerActions = {
   setColumnProperties: (columnProperties) => mergeToState({ columnProperties }),
   setSelectedRowId: (selectedRowId) => mergeToState({ selectedRowId }),
   setSelectedRowData: (selectedRowData) => mergeToState({ selectedRowData }),
   set,
+  mergeToFilterDetails,
 };
 
 export const reducer = (state, action) => {
@@ -32,6 +42,15 @@ export const reducer = (state, action) => {
       return {
         ...state,
         ...action.payload,
+      };
+
+    case 'MERGE_TO_FILTER_DETAILS':
+      return {
+        ...state,
+        filterDetails: {
+          ...state.filterDetails,
+          ...action.payload,
+        },
       };
 
     default:

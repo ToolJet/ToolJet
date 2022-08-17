@@ -24,9 +24,11 @@ import { Radio } from './Radio';
 import { Toggle } from './Toggle';
 import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
+import { Filter } from './Filter';
 var _ = require('lodash');
 import loadPropertiesAndStyles from './load-properties-and-styles';
 import { reducer, reducerActions, initialState } from './reducer';
+import customFilter from './custom-filter';
 
 export function Table({
   id,
@@ -70,64 +72,18 @@ export function Table({
     actions,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
-  const [tableDetails, dispatch] = useReducer(reducer, initialState);
+  const [tableDetails, dispatch] = useReducer(reducer, initialState());
 
   useEffect(() => {
-    dispatch(reducerActions.setColumnProperties(component?.definition?.properties?.columns?.value));
+    dispatch(reducerActions.set({ columnProperties: component?.definition?.properties?.columns?.value }));
   }, [component?.definition?.properties]);
 
-  const [isFiltersVisible, setFiltersVisibility] = useState(false);
-  const [filters, setFilters] = useState([]);
-
   function showFilters() {
-    setFiltersVisibility(true);
+    dispatch(reducerActions.mergeToFilterDetails({ filtersVisible: true }));
   }
 
   function hideFilters() {
-    setFiltersVisibility(false);
-  }
-
-  function filterColumnChanged(index, value) {
-    const newFilters = filters;
-    newFilters[index].id = value;
-    setFilters(newFilters);
-    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
-  }
-
-  function filterOperationChanged(index, value) {
-    const newFilters = filters;
-    newFilters[index].value = {
-      ...newFilters[index].value,
-      operation: value,
-    };
-    setFilters(newFilters);
-    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
-  }
-
-  function filterValueChanged(index, value) {
-    const newFilters = filters;
-    newFilters[index].value = {
-      ...newFilters[index].value,
-      value: value,
-    };
-    setFilters(newFilters);
-    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
-  }
-
-  function addFilter() {
-    setFilters([...filters, { id: '', value: { operation: 'contains', value: '' } }]);
-  }
-
-  function removeFilter(index) {
-    let newFilters = filters;
-    newFilters.splice(index, 1);
-    setFilters(newFilters);
-    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
-  }
-
-  function clearFilters() {
-    setFilters([]);
-    setAllFilters([]);
+    dispatch(reducerActions.mergeToFilterDetails({ filtersVisible: false }));
   }
 
   const defaultColumn = React.useMemo(
@@ -195,61 +151,6 @@ export function Table({
       changeSet: {},
       dataUpdates: [],
     });
-  }
-
-  function customFilter(rows, columnIds, filterValue) {
-    try {
-      if (filterValue.operation === 'equals') {
-        return rows.filter((row) => row.values[columnIds[0]] === filterValue.value);
-      }
-
-      if (filterValue.operation === 'ne') {
-        return rows.filter((row) => row.values[columnIds[0]] !== filterValue.value);
-      }
-
-      if (filterValue.operation === 'matches') {
-        return rows.filter((row) =>
-          row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
-        );
-      }
-
-      if (filterValue.operation === 'nl') {
-        return rows.filter(
-          (row) => !row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
-        );
-      }
-
-      if (filterValue.operation === 'gt') {
-        return rows.filter((row) => row.values[columnIds[0]] > filterValue.value);
-      }
-
-      if (filterValue.operation === 'lt') {
-        return rows.filter((row) => row.values[columnIds[0]] < filterValue.value);
-      }
-
-      if (filterValue.operation === 'gte') {
-        return rows.filter((row) => row.values[columnIds[0]] >= filterValue.value);
-      }
-
-      if (filterValue.operation === 'lte') {
-        return rows.filter((row) => row.values[columnIds[0]] <= filterValue.value);
-      }
-
-      let value = filterValue.value;
-      if (typeof value === 'string') {
-        value = value.toLowerCase();
-      }
-
-      return rows.filter((row) => {
-        let rowValue = row.values[columnIds[0]];
-        if (typeof rowValue === 'string') {
-          rowValue = rowValue.toLowerCase();
-        }
-        return rowValue.includes(value);
-      });
-    } catch {
-      return rows;
-    }
   }
 
   const changeSet = tableDetails?.changeSet ?? {};
@@ -861,7 +762,7 @@ export function Table({
               {showFilterButton && (
                 <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
                   <img src="/assets/images/icons/filter.svg" width="15" height="15" />
-                  {filters.length > 0 && (
+                  {tableDetails.filterDetails.filters.length > 0 && (
                     <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
                   )}
                 </span>
@@ -1039,96 +940,18 @@ export function Table({
           </div>
         </div>
       )}
-      {isFiltersVisible && (
-        <div className="table-filters card">
-          <div className="card-header row">
-            <div className="col">
-              <h4 className="font-weight-normal">Filters</h4>
-            </div>
-            <div className="col-auto">
-              <button onClick={() => hideFilters()} className="btn btn-light btn-sm">
-                x
-              </button>
-            </div>
-          </div>
-          <div className="card-body">
-            {filters.map((filter, index) => (
-              <div className="row mb-2" key={index}>
-                <div className="col p-2" style={{ maxWidth: '70px' }}>
-                  <small>{index > 0 ? 'and' : 'where'}</small>
-                </div>
-                <div className="col">
-                  <SelectSearch
-                    options={columnData.map((column) => {
-                      return { name: column.Header, value: column.id };
-                    })}
-                    value={filter.id}
-                    search={true}
-                    onChange={(value) => {
-                      filterColumnChanged(index, value);
-                    }}
-                    filterOptions={fuzzySearch}
-                    placeholder="Select.."
-                  />
-                </div>
-                <div className="col" style={{ maxWidth: '180px' }}>
-                  <SelectSearch
-                    options={[
-                      { name: 'contains', value: 'contains' },
-                      { name: 'matches', value: 'matches' },
-                      { name: 'does not match', value: 'nl' },
-                      { name: 'equals', value: 'equals' },
-                      { name: 'does not equal', value: 'ne' },
-                      { name: 'greater than', value: 'gt' },
-                      { name: 'less than', value: 'lt' },
-                      { name: 'greater than or equals', value: 'gte' },
-                      { name: 'less than or equals', value: 'lte' },
-                    ]}
-                    value={filter.value.operation}
-                    search={true}
-                    onChange={(value) => {
-                      filterOperationChanged(index, value);
-                    }}
-                    filterOptions={fuzzySearch}
-                    placeholder="Select.."
-                  />
-                </div>
-                <div className="col">
-                  <input
-                    type="text"
-                    value={filter.value.value}
-                    placeholder="value"
-                    className="form-control"
-                    onChange={(e) => filterValueChanged(index, e.target.value)}
-                  />
-                </div>
-                <div className="col-auto">
-                  <button
-                    onClick={() => removeFilter(index)}
-                    className={`btn ${darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
-                  >
-                    x
-                  </button>
-                </div>
-              </div>
-            ))}
-            {filters.length === 0 && (
-              <div>
-                <center>
-                  <span>no filters yet.</span>
-                </center>
-              </div>
-            )}
-          </div>
-          <div className="card-footer">
-            <button onClick={addFilter} className="btn btn-light btn-sm">
-              + add filter
-            </button>
-            <button onClick={() => clearFilters()} className="btn btn-light btn-sm mx-2">
-              clear filters
-            </button>
-          </div>
-        </div>
+      {tableDetails.filterDetails.filtersVisible && (
+        <Filter
+          hideFilters={hideFilters}
+          filters={tableDetails.filterDetails.filters}
+          columns={columnData.map((column) => {
+            return { name: column.Header, value: column.id };
+          })}
+          dispatch={dispatch}
+          filterDetails={tableDetails.filterDetails}
+          darkMode={darkMode}
+          setAllFilters={setAllFilters}
+        />
       )}
     </div>
   );
