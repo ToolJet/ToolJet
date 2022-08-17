@@ -13,6 +13,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
     placeholder = 'Select..',
     customOption = undefined,
     defaultValue = null,
+    // eslint-disable-next-line no-unused-vars
     useMenuPortal = true,
     maxMenuHeight = 250,
   } = restProps;
@@ -55,6 +56,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
         formatOptionLabel={(option) => renderCustomOption(option)}
         menuPlacement="auto"
         maxMenuHeight={maxMenuHeight}
+        menuPortalTarget={useMenuPortal ? document.body : null}
       />
     </React.Fragment>
   );

@@ -1,4 +1,5 @@
 import React from 'react';
+// eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 
 const Card = ({ title, src, handleClick, height = 50, width = 50, usepluginIcon = false }) => {

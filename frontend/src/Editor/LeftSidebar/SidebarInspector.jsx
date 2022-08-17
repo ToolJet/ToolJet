@@ -4,9 +4,10 @@ import { LeftSidebarItem } from './SidebarItem';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
-import { allSvgs } from '@tooljet/plugins/client';
 import RunjsIcon from '../Icons/runjs.svg';
 import { toast } from 'react-hot-toast';
+// eslint-disable-next-line import/no-unresolved
+import { allSvgs } from '@tooljet/plugins/client';
 
 export const LeftSidebarInspector = ({
   darkMode,

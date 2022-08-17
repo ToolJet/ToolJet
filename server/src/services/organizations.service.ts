@@ -124,6 +124,7 @@ export class OrganizationsService {
         lastName: orgUser.user.lastName,
         name: `${orgUser.user.firstName} ${orgUser.user.lastName}`,
         id: orgUser.id,
+        userId: orgUser.user.id,
         role: orgUser.role,
         status: orgUser.status,
         ...(isAdmin && orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
@@ -252,6 +253,12 @@ export class OrganizationsService {
           enabled: true,
           configs: {
             clientId: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+            clientSecret: await this.encryptionService.encryptColumnValue(
+              'ssoConfigs',
+              'clientSecret',
+              this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET')
+            ),
+            hostName: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
           },
         });
       }

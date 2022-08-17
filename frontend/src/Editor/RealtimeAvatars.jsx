@@ -1,5 +1,4 @@
 import React from 'react';
-import config from 'config';
 import ReactTooltip from 'react-tooltip';
 import Avatar from '@/_ui/Avatar';
 import { useOthers, useSelf } from '@y-presence/react';

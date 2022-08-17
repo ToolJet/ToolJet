@@ -22,8 +22,8 @@ export class OrganizationUsersController {
   @CheckPolicies((ability: AppAbility) => ability.can('inviteUser', UserEntity))
   @Post()
   async create(@Request() req, @User() user, @Body() inviteNewUserDto: InviteNewUserDto) {
-    const result = await this.organizationsService.inviteNewUser(req, user, inviteNewUserDto);
-    return decamelizeKeys({ users: result });
+    await this.organizationsService.inviteNewUser(req, user, inviteNewUserDto);
+    return;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)

@@ -122,7 +122,7 @@ class Viewer extends React.Component {
   runQueries = (data_queries) => {
     data_queries.forEach((query) => {
       if (query.options.runOnPageLoad) {
-        runQuery(this, query.id, query.name);
+        runQuery(this, query.id, query.name, undefined, 'view');
       }
     });
   };
