@@ -3,9 +3,12 @@ import * as request from 'supertest';
 import { BadRequestException, INestApplication } from '@nestjs/common';
 import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
 import { AuditLog } from 'src/entities/audit_log.entity';
+import { Repository } from 'typeorm';
+import { User } from 'src/entities/user.entity';
 
 describe('organization users controller', () => {
   let app: INestApplication;
+  let userRepository: Repository<User>;
 
   beforeEach(async () => {
     await clearDB();
@@ -13,6 +16,7 @@ describe('organization users controller', () => {
 
   beforeAll(async () => {
     app = await createNestAppInstance();
+    userRepository = app.get('UserRepository');
   });
 
   it('should allow only admin to be able to invite new users', async () => {
@@ -53,10 +57,15 @@ describe('organization users controller', () => {
       order: { createdAt: 'DESC' },
     });
 
-    expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
-    expect(auditLog.resourceId).toEqual(response.body.users.user.id);
+    const user = await userRepository.findOneOrFail({
+      where: { email: 'test@tooljet.io' },
+    });
+
+    expect(Object.keys(response.body).length).toBe(0); // Security issue fix - not returning user details
+    expect(auditLog.organizationId).toEqual(adminUserData.organization.id);
+    expect(auditLog.resourceId).toEqual(user.id);
     expect(auditLog.resourceType).toEqual('USER');
-    expect(auditLog.resourceName).toEqual(response.body.users.user.email);
+    expect(auditLog.resourceName).toEqual(user.email);
     expect(auditLog.actionType).toEqual('USER_INVITE');
     expect(auditLog.createdAt).toBeDefined();
 
