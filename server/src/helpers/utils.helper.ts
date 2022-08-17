@@ -58,7 +58,7 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   if (manager) {
     return await operation(manager);
   } else {
-    await getManager().transaction(async (manager) => {
+    return await getManager().transaction(async (manager) => {
       return await operation(manager);
     });
   }
