@@ -240,7 +240,7 @@ class Viewer extends React.Component {
                   <div className="container-xl header-container">
                     <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
                       <a href="/">
-                        <AppLogo />
+                        <AppLogo isLoadingFromHeader={true} />
                       </a>
                     </h1>
                     {this.state.app && <span>{this.state.app.name}</span>}

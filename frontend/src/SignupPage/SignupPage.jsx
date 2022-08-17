@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { validateEmail } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import AppLogo from '../_components/AppLogo';
 
 class SignupPage extends React.Component {
   constructor(props) {
@@ -73,19 +74,22 @@ class SignupPage extends React.Component {
   };
   render() {
     const { isLoading, signupSuccess } = this.state;
+    const isCustomLogoAvailable = window.public_config?.CUSTOM_LOGO_URL ? true : false;
 
     return (
       <div className="page page-center">
         <div className="container-tight py-2">
           <div className="text-center mb-4">
             <a href="." className="navbar-brand-autodark">
-              <img src="/assets/images/logo-color.svg" height="26" alt="" />
+              <AppLogo />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
             {!signupSuccess && (
               <div className="card-body">
-                <h2 className="card-title text-center mb-4">Create a ToolJet account</h2>
+                <h2 className="card-title text-center mb-4">
+                  {!isCustomLogoAvailable ? 'Create a ToolJet account' : 'Create account'}
+                </h2>
                 {this.ssoConfigs.enableSignUp && (
                   <div className="d-flex flex-column align-items-center separator-bottom">
                     {this.ssoConfigs.configs?.google?.enabled && (

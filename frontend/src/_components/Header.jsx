@@ -49,7 +49,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
         </button>
         <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0" data-cy="home-page-logo">
           <Link to={'/'} data-cy="home-page-logo">
-            <AppLogo />
+            <AppLogo isLoadingFromHeader={true} />
           </Link>
         </h1>
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
+import AppLogo from '../_components/AppLogo';
 
 export const RedirectSso = function RedirectSso() {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
@@ -37,7 +38,7 @@ export const RedirectSso = function RedirectSso() {
         <div className=" py-2">
           <div className="text-center mb-4">
             <a href="." className="navbar-brand-autodark">
-              <img src="/assets/images/logo-color.svg" height="26" alt="" />
+              <AppLogo />
             </a>
           </div>
           <div className="sso-helper-container">

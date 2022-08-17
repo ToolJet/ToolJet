@@ -1259,7 +1259,7 @@ class Editor extends React.Component {
               </button>
               <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
                 <Link to={'/'}>
-                  <AppLogo />
+                  <AppLogo isLoadingFromHeader={true} />
                 </Link>
               </h1>
               {this.state.app && (
