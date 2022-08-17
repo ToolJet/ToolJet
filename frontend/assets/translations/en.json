@@ -26,6 +26,8 @@
             "enterVersionName":"Enter version name",
             "versionAlreadyReleasedKindlyCreateANewVersion":"Version already released. Kindly create a new version or switch to a different version to continue making changes."
         },
+        "queries":"Queries",
+        "pleaseSelectAComponentToInspect":"Please select a component to inspect",
         "release":"Release"
     },
     "manageOrgUsers":{

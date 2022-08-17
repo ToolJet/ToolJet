@@ -1532,7 +1532,7 @@ class EditorComponent extends React.Component {
                                   style={{ fontSize: '14px', marginLeft: ' 6px' }}
                                   className="py-1 px-3 mt-2 text-muted"
                                 >
-                                  Queries
+                                  {this.props.t('editor.queries', 'Queries')}
                                 </h5>
                               </div>
 
@@ -1725,7 +1725,9 @@ class EditorComponent extends React.Component {
                         setSelectedComponent={this.setSelectedComponent}
                       ></Inspector>
                     ) : (
-                      <center className="mt-5 p-2">Please select a component to inspect</center>
+                      <center className="mt-5 p-2">
+                        {this.props.t('editor.pleaseSelectAComponentToInspect', 'Please select a component to inspect')}
+                      </center>
                     )}
                   </div>
                 )}
