@@ -6,11 +6,9 @@ title: Radio Button
 
 Radio button widget can be used to select one option from a group of options.
 
-<div style={{textAlign: 'center'}}>
+## How To Use Radio button Widget
 
-![ToolJet - Widget Reference - RadioButton](/img/widgets/radio-button/radiobutton.png)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/lfy7nq6NqAw" title="Radio button Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 :::tip
 Radio buttons are preferred when the list of options is less than six, and all the options can be displayed at once.
