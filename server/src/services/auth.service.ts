@@ -20,7 +20,7 @@ import { EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { dbManagerWrapper } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -244,7 +244,7 @@ export class AuthService {
       }
     }
 
-    await dbManagerWrapper(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       // Create default organization
       organization = await this.organizationsService.create('Untitled workspace', null, manager);
       const user = await this.usersService.create(
@@ -258,7 +258,7 @@ export class AuthService {
       );
       await this.organizationUsersService.create(user, organization, true, manager);
       await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
-    }, null);
+    });
     return {};
   }
 

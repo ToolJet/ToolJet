@@ -8,7 +8,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
-import { cleanObject, dbManagerWrapper } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
@@ -70,7 +70,7 @@ export class UsersService {
     const { email, firstName, lastName } = userParams;
     let user: User;
 
-    await dbManagerWrapper(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       if (!existingUser) {
         user = manager.create(User, {
           email,
@@ -93,7 +93,7 @@ export class UsersService {
   }
 
   async attachUserGroup(groups, organizationId, userId, manager?: EntityManager) {
-    await dbManagerWrapper(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       for (const group of groups) {
         const orgGroupPermission = await manager.findOne(GroupPermission, {
           where: {
@@ -102,15 +102,14 @@ export class UsersService {
           },
         });
 
-        if (orgGroupPermission) {
-          const userGroupPermission = manager.create(UserGroupPermission, {
-            groupPermissionId: orgGroupPermission.id,
-            userId: userId,
-          });
-          await manager.save(userGroupPermission);
-        } else {
+        if (!orgGroupPermission) {
           throw new BadRequestException(`${group} group does not exist for current organization`);
         }
+        const userGroupPermission = manager.create(UserGroupPermission, {
+          groupPermissionId: orgGroupPermission.id,
+          userId: userId,
+        });
+        await manager.save(userGroupPermission);
       }
     }, manager);
   }
@@ -152,7 +151,7 @@ export class UsersService {
     // removing keys with undefined values
     cleanObject(updatableParams);
 
-    return await dbManagerWrapper(async (manager: EntityManager) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(User, userId, updatableParams);
       const user = await manager.findOne(User, { where: { id: userId } });
       await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups, organizationId);
@@ -165,7 +164,7 @@ export class UsersService {
     if (updatableParams.password) {
       updatableParams.password = bcrypt.hashSync(updatableParams.password, 10);
     }
-    await dbManagerWrapper(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(User, userId, updatableParams);
     }, manager);
   }
@@ -181,7 +180,7 @@ export class UsersService {
         if (!orgGroupPermission) {
           throw new BadRequestException(`${group} group does not exist for current organization`);
         }
-        await dbManagerWrapper(async (manager: EntityManager) => {
+        await dbTransactionWrap(async (manager: EntityManager) => {
           const userGroupPermission = manager.create(UserGroupPermission, {
             groupPermissionId: orgGroupPermission.id,
             userId: user.id,
@@ -205,7 +204,7 @@ export class UsersService {
         throw new BadRequestException('Cannot remove user from default group.');
       }
 
-      await dbManagerWrapper(async (manager: EntityManager) => {
+      await dbTransactionWrap(async (manager: EntityManager) => {
         const groupPermissions = await manager.find(GroupPermission, {
           group: In(removeGroups),
           organizationId: orgId,

@@ -9,7 +9,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { dbManagerWrapper } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
@@ -214,7 +214,7 @@ export class OauthService {
     let organizationDetails: DeepPartial<Organization>;
     const isInstanceSSOLogin = !!(!configId && ssoType);
 
-    await dbManagerWrapper(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       if (!isSingleOrganization && isInstanceSSOLogin && !organizationId) {
         // Login from main login page - Multi-Workspace enabled
         userDetails = await this.usersService.findByEmail(userResponse.email);
@@ -283,7 +283,7 @@ export class OauthService {
 
         organizationDetails = organization;
       }
-    }, null);
+    });
 
     return await this.#generateLoginResultPayload(userDetails, organizationDetails, isInstanceSSOLogin);
   }

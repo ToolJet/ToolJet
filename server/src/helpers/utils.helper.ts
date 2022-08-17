@@ -54,7 +54,7 @@ export function lowercaseString(value: string) {
   return value?.toLowerCase();
 }
 
-export async function dbManagerWrapper(operation: (...args) => any, manager: EntityManager): Promise<any> {
+export async function dbTransactionWrap(operation: (...args) => any, manager?: EntityManager): Promise<any> {
   if (manager) {
     return await operation(manager);
   } else {

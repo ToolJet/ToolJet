@@ -7,7 +7,7 @@ import { App } from 'src/entities/app.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { UsersService } from './users.service';
-import { dbManagerWrapper } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class GroupPermissionsService {
@@ -52,7 +52,7 @@ export class GroupPermissionsService {
       throw new ConflictException('Group name already exist');
     }
 
-    return await dbManagerWrapper(async (manager: EntityManager) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
       return manager.save(
         manager.create(GroupPermission, {
           organizationId: user.organizationId,
@@ -72,7 +72,7 @@ export class GroupPermissionsService {
     if (groupPermission.group == 'admin' || groupPermission.group == 'all_users') {
       throw new BadRequestException('Cannot delete default group');
     }
-    await dbManagerWrapper(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       const relationalEntitiesToBeDeleted = [AppGroupPermission, UserGroupPermission];
 
       for (const entityToDelete of relationalEntitiesToBeDeleted) {
@@ -118,7 +118,7 @@ export class GroupPermissionsService {
       throw new BadRequestException('Cannot update admin group');
     }
 
-    await dbManagerWrapper(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(AppGroupPermission, appGroupPermissionId, actions);
     }, manager);
   }
@@ -147,7 +147,7 @@ export class GroupPermissionsService {
       folder_update,
     } = body;
 
-    await dbManagerWrapper(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       //update user group name
       if (name) {
         const newName = name.trim();
@@ -353,7 +353,7 @@ export class GroupPermissionsService {
   }
 
   async createUserGroupPermission(userId: string, groupPermissionId: string, manager?: EntityManager) {
-    await dbManagerWrapper(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.save(
         manager.create(UserGroupPermission, {
           userId,

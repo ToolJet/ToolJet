@@ -9,7 +9,7 @@ import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { ConfigService } from '@nestjs/config';
-import { dbManagerWrapper } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 const uuid = require('uuid');
 
 @Injectable()
@@ -28,7 +28,7 @@ export class OrganizationUsersService {
     isInvite?: boolean,
     manager?: EntityManager
   ): Promise<OrganizationUser> {
-    return await dbManagerWrapper(async (manager: EntityManager) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.save(
         manager.create(OrganizationUser, {
           user,
@@ -80,7 +80,7 @@ export class OrganizationUsersService {
 
     const invitationToken = uuid.v4();
 
-    await dbManagerWrapper(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(OrganizationUser, id, { status: 'invited', invitationToken });
 
       if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
@@ -101,7 +101,7 @@ export class OrganizationUsersService {
   }
 
   async activate(id: string, manager?: EntityManager) {
-    await dbManagerWrapper(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(OrganizationUser, id, {
         status: 'active',
         invitationToken: null,

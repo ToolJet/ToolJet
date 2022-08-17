@@ -4,7 +4,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { cleanObject, dbManagerWrapper } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
@@ -46,7 +46,7 @@ export class OrganizationsService {
   ) {}
 
   async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
-    return await dbManagerWrapper(async (manager: EntityManager) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
       const organization: Organization = await manager.save(
         manager.create(Organization, {
           ssoConfigs: [
@@ -89,7 +89,7 @@ export class OrganizationsService {
   async createDefaultGroupPermissionsForOrganization(organization: Organization, manager?: EntityManager) {
     const defaultGroups = ['all_users', 'admin'];
 
-    return await dbManagerWrapper(async (manager: EntityManager) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
       const createdGroupPermissions: GroupPermission[] = [];
       for (const group of defaultGroups) {
         const isAdmin = group === 'admin';
@@ -107,8 +107,8 @@ export class OrganizationsService {
         });
         await manager.save(groupPermission);
         createdGroupPermissions.push(groupPermission);
-        return createdGroupPermissions;
       }
+      return createdGroupPermissions;
     }, manager);
   }
 
@@ -407,7 +407,7 @@ export class OrganizationsService {
       throw new BadRequestException('User with such email already exists.');
     }
 
-    await dbManagerWrapper(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       if (user?.invitationToken) {
         // user sign up not completed, name will be empty - updating name
         await this.usersService.update(
@@ -447,7 +447,7 @@ export class OrganizationsService {
       )?.organization;
 
       organizationUser = await this.organizationUserService.create(user, currentOrganization, true, manager);
-    }, null);
+    });
 
     if (shouldSendWelcomeMail) {
       this.emailService
