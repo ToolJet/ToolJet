@@ -28,7 +28,45 @@
         },
         "queries":"Queries",
         "pleaseSelectAComponentToInspect":"Please select a component to inspect",
-        "release":"Release"
+        "release":"Release",
+        "queryManager":{
+            "general":"General",
+            "advanced":"Advanced",
+            "preview":"Preview",
+            "Save":"Save",
+            "selectDatasource":"Select Datasource",
+            "addDatasource":"Add datasource",
+            "dataSourceManager":{
+                "toast":{
+                    "success": {
+                        "dataSourceAdded": "Datasource Added",
+                        "dataSourceSaved": "Datasource Saved1"
+                    },
+                    "error" :{
+                       "theNameOfDatasourceShouldNotBeEmpty" :"The name of datasource should not be empty"
+                    }
+                },
+                "suggestDataSource":"Suggest Datasource",
+                "suggestAnIntegration":"Suggest an integration",
+                "tellUsWhatAreYouLookingFor":"Tell us what you were looking for?",
+                "dontSeeWhatAreYouLookingFor":"Don't see what you were looking for?",
+                "suggest":"Suggest",
+                "addNewDataSource":"Add new datasource",
+                "pleaseWhiteListOurIP":"Please white-list our IP address if the data source is not publicly accessible",
+                "copied":"Copied",
+                "copy":"Copy",
+                "save":"Save1",
+                "saving":"Saving",
+                "readDocumentation":"Read documentation",
+                "noResultsFor":"No results for12",
+                "thankYouWeveTakenANoteOfIt":"Thank you, we've taken a note of that!",
+                "goToAllDatasources":"Go to all Datasources",
+                "send":"Send",
+                "search":"Search"
+
+            }
+        }
+        
     },
     "manageOrgUsers":{
         "usersAndPermission":"Users & Permissions",
