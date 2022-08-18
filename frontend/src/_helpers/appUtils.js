@@ -923,7 +923,7 @@ const updateNewComponents = (appDefinition, newComponents, updateAppDefinition) 
   updateAppDefinition(newAppDefinition);
 };
 
-export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isCutting = false) => {
+export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isCut = false) => {
   const { selectedComponents, appDefinition } = _ref.state;
   if (selectedComponents.length < 1) return getSelectedText();
   const { components: allComponents } = appDefinition;
@@ -945,13 +945,13 @@ export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isC
     newComponentObj = {
       newComponents,
       isCloning,
-      isCutting,
+      isCut,
     };
   }
   if (isCloning) {
     addComponents(appDefinition, updateAppDefinition, undefined, newComponentObj);
     toast.success('Component cloned succesfully');
-  } else if (isCutting) {
+  } else if (isCut) {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
     removeSelectedComponent(newDefinition, selectedComponents);
     updateAppDefinition(newDefinition);
@@ -998,7 +998,7 @@ const getChildComponents = (allComponents, component, parentComponent) => {
   return selectedChildComponents;
 };
 
-const updateComponentLayout = (components, parentId) => {
+const updateComponentLayout = (components, parentId, isCut = false) => {
   let prevComponent;
   components.forEach((component, index) => {
     Object.keys(component.layouts).map((layout) => {
@@ -1011,7 +1011,7 @@ const updateComponentLayout = (components, parentId) => {
           component.layouts[layout].left = 0;
         }
         prevComponent = component;
-      } else {
+      } else if (!isCut) {
         component.layouts[layout].top = component.layouts[layout].top + component.layouts[layout].height;
       }
     });
@@ -1021,7 +1021,7 @@ const updateComponentLayout = (components, parentId) => {
 export const addComponents = (appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
   const finalComponents = [];
   let parentComponent = undefined;
-  const { isCloning, isCutting, newComponents: pastedComponent = [] } = newComponentObj;
+  const { isCloning, isCut, newComponents: pastedComponent = [] } = newComponentObj;
 
   if (parentId) {
     const id = Object.keys(appDefinition.components).filter((key) => parentId.startsWith(key));
@@ -1029,7 +1029,7 @@ export const addComponents = (appDefinition, appDefinitionChanged, parentId = un
     parentComponent.id = parentId;
   }
 
-  !isCloning && !isCutting && updateComponentLayout(pastedComponent, parentId);
+  !isCloning && updateComponentLayout(pastedComponent, parentId, isCut);
 
   const buildComponents = (components, parentComponent = undefined, skipTabCalendarCheck = false) => {
     if (Array.isArray(components) && components.length > 0) {
