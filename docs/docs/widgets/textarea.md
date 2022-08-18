@@ -10,11 +10,9 @@ Textarea widgets let users enter and edit just text like [Text Input](/docs/widg
 Textarea should be preferred over [Text Input](/docs/widgets/text-input) when user input is more than one sentence.
 :::
 
-<div style={{textAlign: 'center'}}>
+## How To Use Textarea Widget
 
-![ToolJet - Widget Reference - Text input](/img/widgets/textarea/textarea.png)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/ja66x6DeZxk" title="Textarea Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Properties
 
@@ -25,6 +23,21 @@ It specifies a hint that describes the expected value. This field expects a `Str
 ### Default value
 
 This property is used for setting the initial value in the textarea on the initial load. This field expects a `String` value.
+
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
 
 ## Layout
 

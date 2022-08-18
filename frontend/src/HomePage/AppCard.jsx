@@ -52,14 +52,18 @@ export default function AppCard({
       className={`app-card mb-3 p-3 pt-2${focused ? ' highlight' : ''}`}
       key={app.id}
       ref={hoverRef}
-      data-cy="app-card"
+      data-cy={`${app.name.toLowerCase()}-card`}
     >
       <div className="row mb-3">
         <div className="col-12 d-flex justify-content-between">
           <div className="pt-2">
             <div className="app-icon-main p-1">
               <div className="app-icon p-1 d-flex">
-                <img src={`/assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`} alt="Application Icon" />
+                <img
+                  src={`/assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`}
+                  alt="Application Icon"
+                  data-cy={`app-card-${app.icon || defaultIcon}-icon`}
+                />
               </div>
             </div>
           </div>
@@ -84,21 +88,25 @@ export default function AppCard({
       </div>
       <div>
         <ToolTip message={app.name}>
-          <div className="app-title">{app.name}</div>
+          <div className="app-title" data-cy={`${app.name.toLowerCase()}-title`}>
+            {app.name}
+          </div>
         </ToolTip>
       </div>
-      <div className="py-1">
-        <div className="app-creator py-1">{`${app.user?.first_name ? app.user.first_name : ''} ${
-          app.user?.last_name ? app.user.last_name : ''
-        }`}</div>
-        <div className="app-creation-time">
-          <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
-            <span>{updated === 'just now' ? updated : `${updated} ago`}</span>
-          </ToolTip>
+      {canUpdate && (
+        <div className="py-1">
+          <div className="app-creator py-1" data-cy="app-creator">{`${
+            app.user?.first_name ? app.user.first_name : ''
+          } ${app.user?.last_name ? app.user.last_name : ''}`}</div>
+          <div className="app-creation-time" data-cy="app-creation-time">
+            <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+              <span>{updated === 'just now' ? updated : `${updated} ago`}</span>
+            </ToolTip>
+          </div>
         </div>
-      </div>
+      )}
       <div style={{ display: focused ? 'block' : 'none' }}>
-        <div className="container-fluid d-flex flex-column align-content-center px-0 mt-1">
+        <div className={`container-fluid d-flex flex-column align-content-center px-0 ${canUpdate ? 'mt-1' : 'mt-4'}`}>
           <div className="row">
             {canUpdate && (
               <div className="col-6 pe-1">

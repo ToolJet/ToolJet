@@ -1,5 +1,5 @@
 ---
-id: Workspace-environment-variables
+id: workspace-environment-variables
 title: Workspace Environment Variables
 ---
 

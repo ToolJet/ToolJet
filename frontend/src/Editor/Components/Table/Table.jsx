@@ -102,7 +102,7 @@ export function Table({
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
   let parsedWidgetVisibility = widgetVisibility;
 
-  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext);
+  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
@@ -360,7 +360,11 @@ export function Table({
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
         const rowData = tableData[cell.row.index];
 
-        if (cell.row.index === 0 && !_.isEqual(variablesExposedForPreview[id]?.rowData, rowData)) {
+        if (
+          cell.row.index === 0 &&
+          variablesExposedForPreview &&
+          !_.isEqual(variablesExposedForPreview[id]?.rowData, rowData)
+        ) {
           const customResolvables = {};
           customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
@@ -585,6 +589,8 @@ export function Table({
             return (
               <div>
                 <Datepicker
+                  timeZoneValue={column.timeZoneValue}
+                  timeZoneDisplay={column.timeZoneDisplay}
                   dateDisplayFormat={column.dateFormat}
                   isTimeChecked={column.isTimeChecked}
                   value={cellValue}
@@ -739,7 +745,7 @@ export function Table({
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
-      JSON.stringify(variablesExposedForPreview[id]),
+      JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
     ] // Hack: need to fix
   );
 
@@ -886,12 +892,15 @@ export function Table({
       ref={tableRef}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
-      {displaySearchBox && (
-        <div className="card-body border-bottom py-3 jet-data-table-header">
-          <div className="d-flex">
-            <div className="ms-auto text-muted">
+      {(displaySearchBox || showDownloadButton || showFilterButton) && (
+        <div className="card-body border-bottom py-3 ">
+          <div
+            className={`d-flex align-items-center ms-auto text-muted ${
+              displaySearchBox ? 'justify-content-between' : 'justify-content-end'
+            }`}
+          >
+            {displaySearchBox && (
               <GlobalFilter
-                preGlobalFilteredRows={preGlobalFilteredRows}
                 globalFilter={state.globalFilter}
                 useAsyncDebounce={useAsyncDebounce}
                 setGlobalFilter={setGlobalFilter}
@@ -900,10 +909,30 @@ export function Table({
                 serverSideSearch={serverSideSearch}
                 onEvent={onEvent}
               />
+            )}
+            <div>
+              {showFilterButton && (
+                <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
+                  <img src="/assets/images/icons/filter.svg" width="15" height="15" />
+                  {filters.length > 0 && (
+                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                  )}
+                </span>
+              )}
+              {showDownloadButton && (
+                <span
+                  data-tip="Download as CSV"
+                  className="btn btn-light btn-sm p-1"
+                  onClick={() => exportData('csv', true)}
+                >
+                  <img src="/assets/images/icons/download.svg" width="15" height="15" />
+                </span>
+              )}
             </div>
           </div>
         </div>
       )}
+
       <div className="table-responsive jet-data-table">
         <table {...getTableProps()} className={`table table-vcenter table-nowrap ${tableType}`} style={computedStyles}>
           <thead>
@@ -1017,8 +1046,8 @@ export function Table({
         Object.keys(componentState.changeSet || {}).length > 0 ||
         showFilterButton ||
         showDownloadButton) && (
-        <div className="card-footer d-flex align-items-center jet-table-footer">
-          <div className="table-footer row">
+        <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
+          <div className="table-footer row gx-0">
             <div className="col">
               {(clientSidePagination || serverSidePagination) && (
                 <Pagination
@@ -1035,41 +1064,25 @@ export function Table({
               )}
             </div>
 
-            {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 && (
-              <div className="col">
-                <button
-                  className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
-                  onClick={() =>
-                    onEvent('onBulkUpdate', { component }).then(() => {
-                      handleChangesSaved();
-                    })
-                  }
-                >
-                  Save Changes
-                </button>
-                <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
-                  Discard changes
-                </button>
-              </div>
-            )}
-
-            <div className="col-auto">
-              {showFilterButton && (
-                <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
-                  <img src="/assets/images/icons/filter.svg" width="13" height="13" />
-                  {filters.length > 0 && (
-                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                  )}
-                </span>
-              )}
-              {showDownloadButton && (
-                <span
-                  data-tip="Download as CSV"
-                  className="btn btn-light btn-sm p-1"
-                  onClick={() => exportData('csv', true)}
-                >
-                  <img src="/assets/images/icons/download.svg" width="13" height="13" />
-                </span>
+            <div className="col d-flex justify-content-end">
+              {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 ? (
+                <>
+                  <button
+                    className={`btn btn-primary btn-sm mx-2 ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
+                    onClick={() =>
+                      onEvent('onBulkUpdate', { component }).then(() => {
+                        handleChangesSaved();
+                      })
+                    }
+                  >
+                    Save Changes
+                  </button>
+                  <button className="btn btn-light btn-sm" onClick={() => handleChangesDiscarded()}>
+                    Discard changes
+                  </button>
+                </>
+              ) : (
+                <span>{`${preGlobalFilteredRows.length} Records`}</span>
               )}
             </div>
           </div>

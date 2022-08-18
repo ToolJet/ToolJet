@@ -226,7 +226,7 @@ export const DraggableBox = function DraggableBox({
               mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
             } `}
             onResize={() => setResizing(true)}
-            onDrag={(e, direction) => {
+            onDrag={(e) => {
               e.preventDefault();
               e.stopImmediatePropagation();
               if (!isDragging2) {

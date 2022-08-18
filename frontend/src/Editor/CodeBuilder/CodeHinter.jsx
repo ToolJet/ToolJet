@@ -122,7 +122,7 @@ export function CodeHinter({
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
-    handleChange(editor, onChange, ignoreBraces, realState);
+    handleChange(editor, onChange, ignoreBraces, realState, componentName);
     setCurrentValue(editor.getValue()?.trim());
   }
 

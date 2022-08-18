@@ -11,7 +11,6 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { computeComponentName } from '@/_helpers/utils';
 import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
@@ -51,7 +50,6 @@ import RunjsIcon from './Icons/runjs.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
-import Spinner from '@/_ui/Spinner';
 import { AppVersionsManager } from './AppVersionsManager';
 import { SearchBoxComponent } from '@/_ui/Search';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
@@ -61,6 +59,7 @@ import RealtimeAvatars from './RealtimeAvatars';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
+// eslint-disable-next-line import/no-unresolved
 import Selecto from 'react-selecto';
 
 setAutoFreeze(false);
@@ -327,6 +326,7 @@ class Editor extends React.Component {
         dataqueryService.getAll(this.state.appId, this.state.editingVersion?.id).then((data) => {
           this.setState(
             {
+              allDataQueries: data.data_queries,
               dataQueries: data.data_queries,
               filterDataQueries: data.data_queries,
               loadingDataQueries: false,
@@ -684,28 +684,30 @@ class Editor extends React.Component {
   componentDefinitionChanged = (componentDefinition) => {
     let _self = this;
 
-    const newDefinition = {
-      appDefinition: produce(this.state.appDefinition, (draft) => {
-        draft.components[componentDefinition.id].component = componentDefinition.component;
-      }),
-    };
+    if (this.state.appDefinition?.components[componentDefinition.id]) {
+      const newDefinition = {
+        appDefinition: produce(this.state.appDefinition, (draft) => {
+          draft.components[componentDefinition.id].component = componentDefinition.component;
+        }),
+      };
 
-    produce(
-      this.state.appDefinition,
-      (draft) => {
-        draft.components[componentDefinition.id].component = componentDefinition.component;
-      },
-      this.handleAddPatch
-    );
-    setStateAsync(_self, newDefinition).then(() => {
-      computeComponentState(_self, _self.state.appDefinition.components);
-      this.setState({ isSaving: true });
-      this.autoSave();
-      this.props.ymap?.set('appDef', {
-        newDefinition: newDefinition.appDefinition,
-        editingVersionId: this.state.editingVersion?.id,
+      produce(
+        this.state.appDefinition,
+        (draft) => {
+          draft.components[componentDefinition.id].component = componentDefinition.component;
+        },
+        this.handleAddPatch
+      );
+      setStateAsync(_self, newDefinition).then(() => {
+        computeComponentState(_self, _self.state.appDefinition.components);
+        this.setState({ isSaving: true });
+        this.autoSave();
+        this.props.ymap?.set('appDef', {
+          newDefinition: newDefinition.appDefinition,
+          editingVersionId: this.state.editingVersion?.id,
+        });
       });
-    });
+    }
   };
 
   handleEditorEscapeKeyPress = () => {
@@ -924,11 +926,7 @@ class Editor extends React.Component {
               style={{ marginTop: '3px' }}
               className="btn badge bg-light-1"
               onClick={() => {
-                runQuery(this, dataQuery.id, dataQuery.name).then(() => {
-                  toast(`Query (${dataQuery.name}) completed.`, {
-                    icon: '🚀',
-                  });
-                });
+                runQuery(this, dataQuery.id, dataQuery.name);
               }}
             >
               <div className={`query-icon ${this.props.darkMode && 'dark'}`}>
@@ -979,7 +977,7 @@ class Editor extends React.Component {
 
   filterQueries = (value) => {
     if (value) {
-      const fuse = new Fuse(this.state.filterDataQueries, { keys: ['name'] });
+      const fuse = new Fuse(this.state.allDataQueries, { keys: ['name'] });
       const results = fuse.search(value);
       this.setState({
         filterDataQueries: results.map((result) => result.item),
@@ -1721,7 +1719,7 @@ class Editor extends React.Component {
                         switchSidebarTab={this.switchSidebarTab}
                         apps={apps}
                         darkMode={this.props.darkMode}
-                        setSelectedComponent={this.setSelectedComponent}
+                        handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">Please select a component to inspect</center>

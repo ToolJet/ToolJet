@@ -11,10 +11,10 @@ import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import RunjsIcon from '../Icons/runjs.svg';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
-import { allSvgs } from '@tooljet/plugins/client';
-// import { Confirm } from '../Viewer/Confirm';
 import _, { isEmpty, isEqual } from 'lodash';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
+// eslint-disable-next-line import/no-unresolved
+import { allSvgs } from '@tooljet/plugins/client';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 

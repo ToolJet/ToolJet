@@ -113,13 +113,18 @@ export const Multiselect = function Multiselect({
   return (
     <div
       className="multiselect-widget row g-0"
+      data-cy={`draggable-widget-${component.name.toLowerCase()}`}
       style={{ height, display: visibility ? '' : 'none' }}
       onFocus={() => {
         onComponentClick(this, id, component);
       }}
     >
       <div className="col-auto my-auto d-flex align-items-center">
-        <label style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }} className="form-label py-1">
+        <label
+          style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }}
+          className="form-label py-1"
+          data-cy={`multiselect-label-${component.name.toLowerCase()}`}
+        >
           {label}
         </label>
       </div>
