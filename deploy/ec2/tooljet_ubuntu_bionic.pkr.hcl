@@ -12,7 +12,6 @@ source "amazon-ebs" "ubuntu" {
   instance_type = "${var.instance_type}"
   region        = "${var.ami_region}"
   ami_regions   = "${var.ami_regions}"
-  ami_groups    = "${var.ami_groups}"
   source_ami_filter {
     filters = {
       name                = "ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"
@@ -53,5 +52,6 @@ build {
 
   provisioner "shell" {
     script = "setup_machine.sh"
+    environment_vars = ["SSH_PRIVATE_KEY=${var.ssh_private_key}"]
   }
 }

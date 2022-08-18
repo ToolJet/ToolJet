@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+
 # Setup prerequisite dependencies
 sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils curl
 sudo apt-get -y install git
@@ -58,7 +59,11 @@ sudo cp /tmp/nest.service /lib/systemd/system/nest.service
 
 # Setup app directory
 mkdir -p ~/app
-git clone -b develop https://github.com/ToolJet/tj-ee.git ~/app && cd ~/app
+# Add private key to clone repo
+sudo echo $SSH_PRIVATE_KEY  >> ~/.ssh/id_rsa
+sudo chmod 400 ~/.ssh/id_rsa
+ssh-keyscan github.com >> .ssh/known_hosts
+git clone -b develop git@github.com:ToolJet/tj-ee.git ~/app && cd ~/app
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
