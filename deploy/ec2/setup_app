@@ -16,7 +16,7 @@ else
   exit 1
 fi
 
-if sudo systemctl start openresty
+if sudo -E systemctl start openresty
 then
   echo "Successfully started reverse proxy!"
 else
@@ -24,10 +24,10 @@ else
   exit 1
 fi
 
-sudo npm --prefix server run db:setup:prod
-sudo npm --prefix server run db:seed:prod
+sudo -E npm --prefix server run db:setup
+sudo -E npm --prefix server run db:seed
 
-if sudo systemctl start nest
+if sudo -E systemctl start nest
 then
   echo "The app will be served at ${TOOLJET_HOST}"
 else
