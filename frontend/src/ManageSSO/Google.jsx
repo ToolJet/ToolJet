@@ -94,7 +94,7 @@ export function Google({ settings, updateData }) {
                 placeholder="Enter Client Id"
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
-                data-cy="client-id-input" 
+                data-cy="client-id-input"
                 required
               />
             </div>
