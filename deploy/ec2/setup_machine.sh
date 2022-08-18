@@ -58,7 +58,7 @@ sudo cp /tmp/nest.service /lib/systemd/system/nest.service
 
 # Setup app directory
 mkdir -p ~/app
-git clone -b main https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+git clone -b develop https://github.com/ToolJet/tj-ee.git ~/app && cd ~/app
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
