@@ -1,4 +1,7 @@
 {
+    "globals":{
+        "readDocumentation":"Read Documentation"
+    },
     "profile": {
       "profileSettings": "Profile Settings"
     },
@@ -40,7 +43,7 @@
                 "toast":{
                     "success": {
                         "dataSourceAdded": "Datasource Added",
-                        "dataSourceSaved": "Datasource Saved1"
+                        "dataSourceSaved": "Datasource Saved"
                     },
                     "error" :{
                        "theNameOfDatasourceShouldNotBeEmpty" :"The name of datasource should not be empty"
@@ -55,16 +58,27 @@
                 "pleaseWhiteListOurIP":"Please white-list our IP address if the data source is not publicly accessible",
                 "copied":"Copied",
                 "copy":"Copy",
-                "save":"Save1",
+                "save":"Save",
                 "saving":"Saving",
                 "readDocumentation":"Read documentation",
-                "noResultsFor":"No results for12",
+                "noResultsFor":"No results for",
                 "thankYouWeveTakenANoteOfIt":"Thank you, we've taken a note of that!",
-                "goToAllDatasources":"Go to all Datasources",
+                "goToAllDatasources":"Go to all Datasource",
                 "send":"Send",
                 "search":"Search"
-
+            },
+            "runThisQueryOnPageLoad":"Run this query on page load?",
+            "requestConfirmationBeforeRunningQuery":"Request confirmation before running query?",
+            "showNotificationOnSuccess":"Show notification on success?",
+            "successMessage":"Success Message",
+            "queryRanSuccessfully":"Query ran successfully",
+            "notificationDuration":"Notification duration (s)",
+            "events":"Events",
+            "transformation":{
+                "transformationToolTip":"Transformations can be used to transform the results of queries. All the app variables are accessible from transformers and supports JS libraries such as Lodash & Moment.",
+                "transformations":"Transformations"
             }
+
         }
         
     },

@@ -747,7 +747,10 @@ const EmptyStateContainer = ({
     <div className="empty">
       {queryString && !suggestionUI && (
         <h3>
-          `{this.props.t('editor.queryManager.dataSourceManager.noResultsFor')}` &quot;{queryString} &quot;
+          {t(
+            `editor.queryManager.dataSourceManager.noResultsFor + "${queryString}"`,
+            `No results for "${queryString}"`
+          )}
         </h3>
       )}
       <center className={`empty-results ${suggestionUI ? 'suggestionUI-results' : ''}`}>

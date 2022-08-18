@@ -15,6 +15,7 @@ import { allSvgs } from '@tooljet/plugins/client';
 // import { Confirm } from '../Viewer/Confirm';
 import _, { isEmpty, isEqual } from 'lodash';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
+// eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
@@ -667,7 +668,9 @@ class QueryManagerComponent extends React.Component {
                     onClick={() => this.toggleOption('runOnPageLoad')}
                     checked={this.state.options.runOnPageLoad}
                   />
-                  <span className="form-check-label">Run this query on page load?</span>
+                  <span className="form-check-label">
+                    {this.props.t('editor.queryManager.runThisQueryOnPageLoad', 'Run this query on page load?')}
+                  </span>
                 </div>
                 <div className="form-check form-switch">
                   <input
@@ -676,7 +679,12 @@ class QueryManagerComponent extends React.Component {
                     onClick={() => this.toggleOption('requestConfirmation')}
                     checked={this.state.options.requestConfirmation}
                   />
-                  <span className="form-check-label">Request confirmation before running query?</span>
+                  <span className="form-check-label">
+                    {this.props.t(
+                      'editor.queryManager.requestConfirmationBeforeRunningQuery',
+                      'Request confirmation before running query?'
+                    )}
+                  </span>
                 </div>
 
                 <div className="form-check form-switch">
@@ -686,13 +694,17 @@ class QueryManagerComponent extends React.Component {
                     onClick={() => this.toggleOption('showSuccessNotification')}
                     checked={this.state.options.showSuccessNotification}
                   />
-                  <span className="form-check-label">Show notification on success?</span>
+                  <span className="form-check-label">
+                    {this.props.t('editor.queryManager.showNotificationOnSuccess', ' Show notification on success?')}
+                  </span>
                 </div>
                 {this.state.options.showSuccessNotification && (
                   <div>
                     <div className="row mt-3">
                       <div className="col-auto">
-                        <label className="form-label p-2">Success Message</label>
+                        <label className="form-label p-2">
+                          {this.props.t('editor.queryManager.successMessage', 'Success Message')}
+                        </label>
                       </div>
                       <div className="col">
                         <CodeHinter
@@ -702,14 +714,19 @@ class QueryManagerComponent extends React.Component {
                           className="form-control"
                           theme={'default'}
                           onChange={(value) => this.optionchanged('successMessage', value)}
-                          placeholder="Query ran successfully"
+                          placeholder={this.props.t(
+                            'editor.queryManager.queryRanSuccessfully',
+                            'Query ran successfully'
+                          )}
                         />
                       </div>
                     </div>
 
                     <div className="row mt-3">
                       <div className="col-auto">
-                        <label className="form-label p-2">Notification duration (s)</label>
+                        <label className="form-label p-2">
+                          {this.props.t('editor.queryManager.notificationDuration', '}Notification duration (s)')}
+                        </label>
                       </div>
                       <div className="col">
                         <input
@@ -725,7 +742,7 @@ class QueryManagerComponent extends React.Component {
                   </div>
                 )}
 
-                <div className="hr-text hr-text-left">Events</div>
+                <div className="hr-text hr-text-left">{this.props.t('editor.queryManager.events', 'Events')}</div>
 
                 <div className="query-manager-events">
                   <EventManager

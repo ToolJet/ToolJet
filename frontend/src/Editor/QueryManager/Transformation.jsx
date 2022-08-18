@@ -7,8 +7,10 @@ import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { Popover, OverlayTrigger } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 
 export const Transformation = ({ changeOption, currentState, options, darkMode }) => {
+  const { t } = useTranslation();
   const defaultValue =
     options.transformation ||
     `// write your code here
@@ -17,7 +19,6 @@ return data.filter(row => row.amount > 1000);`;
 
   const [value, setValue] = useState(defaultValue);
   const [enableTransformation, setEnableTransformation] = useState(() => options.enableTransformation);
-
   // let suggestions = useMemo(() => getSuggestionKeys(currentState), [currentState.components, currentState.queries]);
   function codeChanged(value) {
     setValue(() => value);
@@ -32,11 +33,13 @@ return data.filter(row => row.amount > 1000);`;
   const popover = (
     <Popover id="transformation-popover-container">
       <p className="transformation-popover">
-        Transformations can be used to transform the results of queries. All the app variables are accessible from
-        transformers and supports JS libraries such as Lodash & Moment.
+        {t(
+          'editor.queryManager.transformation.transformationToolTip',
+          'Transformations can be used to transform the results of queries. All the app variables are accessible from transformers and supports JS libraries such as Lodash & Moment.'
+        )}
         <br />
         <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
-          Read documentation
+          {t('globals.readDocumentation', 'Read documentation')}
         </a>
         .
       </p>
@@ -64,7 +67,7 @@ return data.filter(row => row.amount > 1000);`;
             }}
             className="form-check-label mx-1"
           >
-            Transformations
+            {t('editor.queryManager.transformation.transformations', 'Transformations')}
           </span>
         </OverlayTrigger>
       </div>
