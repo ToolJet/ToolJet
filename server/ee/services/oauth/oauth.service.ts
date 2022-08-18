@@ -9,7 +9,8 @@ import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { DeepPartial } from 'typeorm';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
 import UserResponse from './models/user_response';
@@ -52,7 +53,8 @@ export class OauthService {
 
   async #findOrCreateUser(
     { firstName, lastName, email }: UserResponse,
-    organization: DeepPartial<Organization>
+    organization: DeepPartial<Organization>,
+    manager?: EntityManager
   ): Promise<User> {
     const existingUser = await this.usersService.findByEmail(email, organization.id, ['active', 'invited']);
     const organizationUser = existingUser?.organizationUsers?.[0];
@@ -61,20 +63,23 @@ export class OauthService {
       // User not exist in the workspace
       const { user, newUserCreated } = await this.usersService.findOrCreateByEmail(
         { firstName, lastName, email },
-        organization.id
+        organization.id,
+        manager
       );
 
       if (newUserCreated) {
-        await this.organizationUsersService.create(user, organization);
+        await this.organizationUsersService.create(user, organization, false, manager);
       }
       return user;
     } else {
-      if (organizationUser.status !== 'active') await this.organizationUsersService.activate(organizationUser.id);
+      if (organizationUser.status !== 'active') {
+        await this.organizationUsersService.activate(organizationUser.id, manager);
+      }
       return existingUser;
     }
   }
 
-  async #findAndActivateUser(email: string, organizationId: string): Promise<User> {
+  async #findAndActivateUser(email: string, organizationId: string, manager?: EntityManager): Promise<User> {
     const user = await this.usersService.findByEmail(email, organizationId, ['active', 'invited']);
     if (!user) {
       throw new UnauthorizedException('User does not exist in the workspace');
@@ -84,7 +89,9 @@ export class OauthService {
     if (!organizationUser) {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
-    if (organizationUser.status !== 'active') await this.organizationUsersService.activate(organizationUser.id);
+    if (organizationUser.status !== 'active') {
+      await this.organizationUsersService.activate(organizationUser.id, manager);
+    }
     return user;
   }
 
@@ -207,70 +214,77 @@ export class OauthService {
     let organizationDetails: DeepPartial<Organization>;
     const isInstanceSSOLogin = !!(!configId && ssoType);
 
-    if (isInstanceSSOLogin && !organizationId) {
-      // Login from main login page
-      userDetails = await this.usersService.findByEmail(userResponse.email);
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      if (!isSingleOrganization && isInstanceSSOLogin && !organizationId) {
+        // Login from main login page - Multi-Workspace enabled
+        userDetails = await this.usersService.findByEmail(userResponse.email);
 
-      if (!userDetails && enableSignUp) {
-        // Create new user
-        let defaultOrganization: DeepPartial<Organization> = organization;
+        if (!userDetails && enableSignUp) {
+          // Create new user
+          let defaultOrganization: DeepPartial<Organization> = organization;
 
-        // Not logging in to specific organization, creating new
-        defaultOrganization = await this.organizationService.create('Untitled workspace');
+          // Not logging in to specific organization, creating new
+          defaultOrganization = await this.organizationService.create('Untitled workspace', null, manager);
 
-        const groups = ['all_users', 'admin'];
-        userDetails = await this.usersService.create(
-          {
-            firstName: userResponse.firstName,
-            lastName: userResponse.lastName,
-            email: userResponse.email,
-          },
-          defaultOrganization.id,
-          groups
-        );
+          const groups = ['all_users', 'admin'];
+          userDetails = await this.usersService.create(
+            {
+              firstName: userResponse.firstName,
+              lastName: userResponse.lastName,
+              email: userResponse.email,
+            },
+            defaultOrganization.id,
+            groups,
+            null,
+            null,
+            null,
+            manager
+          );
 
-        await this.organizationUsersService.create(userDetails, defaultOrganization);
-        organizationDetails = defaultOrganization;
-      } else if (!userDetails) {
-        throw new UnauthorizedException('User does not exist in the workspace');
-      } else if (userDetails.invitationToken) {
-        // User account setup not done, activating default organization
-        await this.usersService.updateUser(userDetails.id, { invitationToken: null });
-        await this.organizationUsersService.activate(userDetails.defaultOrganizationId);
-      }
-
-      if (!organizationDetails) {
-        // Finding organization to be loaded
-        const organizationList: Organization[] = await this.organizationService.findOrganizationWithLoginSupport(
-          userDetails,
-          'sso'
-        );
-
-        const defaultOrgDetails: Organization = organizationList?.find(
-          (og) => og.id === userDetails.defaultOrganizationId
-        );
-        if (defaultOrgDetails) {
-          // default organization SSO login enabled
-          organizationDetails = defaultOrgDetails;
-        } else if (organizationList?.length > 0) {
-          // default organization SSO login not enabled, picking first one from SSO enabled list
-          organizationDetails = organizationList[0];
-        } else {
-          // no SSO login enabled organization available for user - creating new one
-          organizationDetails = await this.organizationService.create('Untitled workspace', userDetails);
+          await this.organizationUsersService.create(userDetails, defaultOrganization, false, manager);
+          organizationDetails = defaultOrganization;
+        } else if (!userDetails) {
+          throw new UnauthorizedException('User does not exist in the workspace');
+        } else if (userDetails.invitationToken) {
+          // User account setup not done, activating default organization
+          await this.usersService.updateUser(userDetails.id, { invitationToken: null }, manager);
+          await this.organizationUsersService.activate(userDetails.defaultOrganizationId, manager);
         }
-      }
-    } else {
-      userDetails = await (!enableSignUp
-        ? this.#findAndActivateUser(userResponse.email, organization.id)
-        : this.#findOrCreateUser(userResponse, organization));
 
-      if (!userDetails) {
-        throw new UnauthorizedException(`Email id ${userResponse.email} is not registered`);
-      }
+        if (!organizationDetails) {
+          // Finding organization to be loaded
+          const organizationList: Organization[] = await this.organizationService.findOrganizationWithLoginSupport(
+            userDetails,
+            'sso'
+          );
 
-      organizationDetails = organization;
-    }
+          const defaultOrgDetails: Organization = organizationList?.find(
+            (og) => og.id === userDetails.defaultOrganizationId
+          );
+          if (defaultOrgDetails) {
+            // default organization SSO login enabled
+            organizationDetails = defaultOrgDetails;
+          } else if (organizationList?.length > 0) {
+            // default organization SSO login not enabled, picking first one from SSO enabled list
+            organizationDetails = organizationList[0];
+          } else {
+            // no SSO login enabled organization available for user - creating new one
+            organizationDetails = await this.organizationService.create('Untitled workspace', userDetails, manager);
+          }
+        }
+      } else {
+        userDetails = await (!enableSignUp
+          ? this.#findAndActivateUser(userResponse.email, organization.id, manager)
+          : this.#findOrCreateUser(userResponse, organization, manager));
+
+        if (!userDetails) {
+          throw new UnauthorizedException(`Email id ${userResponse.email} is not registered`);
+        }
+
+        organizationDetails = organization;
+      }
+    });
+
     return await this.#generateLoginResultPayload(userDetails, organizationDetails, isInstanceSSOLogin);
   }
 }
