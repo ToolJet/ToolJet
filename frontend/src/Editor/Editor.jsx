@@ -1149,7 +1149,7 @@ class Editor extends React.Component {
   };
 
   onAreaSelectionStart = (e) => {
-    const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 1;
+    const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 0;
     this.setState((prevState) => {
       return {
         selectionInProgress: true,
