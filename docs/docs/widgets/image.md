@@ -54,6 +54,7 @@ Now hovering over the widget will display the string as the tooltip.
 ![ToolJet - widget- button](/img/tooltip.png)
 
 </div>
+
 ## Layout
 
 ### Show on desktop

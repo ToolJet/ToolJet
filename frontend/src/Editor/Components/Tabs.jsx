@@ -15,13 +15,13 @@ export const Tabs = function Tabs({
   fireEvent,
   registerAction,
   styles,
+  darkMode,
 }) {
   const { tabWidth } = styles;
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
   const defaultTab = component.definition.properties.defaultTab.value;
-
   // config for tabs. Includes title
   const tabs = component.definition.properties?.tabs?.value ?? [];
   let parsedTabs = tabs;
@@ -104,7 +104,12 @@ export const Tabs = function Tabs({
       <ul
         className="nav nav-tabs"
         data-bs-toggle="tabs"
-        style={{ zIndex: 1, display: parsedHideTabs && 'none', backgroundColor: '#fff', margin: '-1px' }}
+        style={{
+          zIndex: 1,
+          display: parsedHideTabs && 'none',
+          backgroundColor: darkMode ? '#324156' : '#fff',
+          margin: '-1px',
+        }}
       >
         {parsedTabs.map((tab) => (
           <li
