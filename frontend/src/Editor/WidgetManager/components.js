@@ -3,11 +3,12 @@ import { widgets } from './widgetConfig';
 const universalProps = {
   properties: {},
   general: {
-    tooltip: { type: 'code', displayName: 'Tooltip' },
+    tooltip: { type: 'code', displayName: 'Tooltip', validation: { schema: { type: 'string' } } },
   },
   others: {},
   events: {},
   styles: {},
+  validate: true,
   generalStyles: {
     boxShadow: { type: 'boxShadow', displayName: 'Box Shadow' },
   },
@@ -20,6 +21,7 @@ const universalProps = {
 
 const combineProperties = (widget, universal, isArray = false) => {
   return {
+    ...universal,
     ...widget,
     properties: { ...universal.properties, ...widget.properties },
     general: { ...universal.general, ...widget.general },

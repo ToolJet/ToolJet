@@ -48,6 +48,7 @@
     "@sentry/node": "6.17.6",
     "@sentry/tracing": "6.17.6",
     "@tooljet/plugins": "../plugins",
+    "@types/compression": "^1.7.2",
     "@types/got": "^9.6.12",
     "@types/humps": "^2.0.1",
     "@types/nodemailer": "^6.4.4",
@@ -56,11 +57,13 @@
     "bson": "^4.6.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.1",
+    "compression": "^1.7.4",
     "dotenv": "^10.0.0",
     "futoin-hkdf": "^1.4.2",
     "global-agent": "^3.0.0",
     "google-auth-library": "^7.9.2",
     "got": "^11.8.2",
+    "handlebars": "^4.7.7",
     "helmet": "^4.6.0",
     "humps": "^2.0.1",
     "joi": "^17.4.1",
@@ -84,9 +87,11 @@
     "ws": "^7.5.5",
     "y-websocket": "^1.4.0"
   },
+  "peerDependencies": {
+    "@nestjs/cli": "^8.0.0"
+  },
   "devDependencies": {
     "@golevelup/ts-jest": "^0.3.2",
-    "@nestjs/cli": "^8.0.0",
     "@nestjs/schematics": "^8.0.0",
     "@nestjs/testing": "^8.0.0",
     "@types/express": "^4.17.13",

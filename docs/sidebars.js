@@ -55,7 +55,7 @@ const sidebars = {
         'tutorial/manage-users-groups',
         'tutorial/keyboard-shortcuts',
         'tutorial/multiworkspace',
-        'tutorial/organization-environment-variables'
+        'tutorial/workspace-environment-variables'
       ],
     },
     {
@@ -89,12 +89,13 @@ const sidebars = {
         'data-sources/postgresql',
         'data-sources/redis',
         'data-sources/restapi',
+        'data-sources/rethinkdb',
         'data-sources/saphana',
         'data-sources/sendgrid',
         'data-sources/smtp',
         'data-sources/snowflake',
-        'data-sources/rethinkdb',
         'data-sources/typesense',
+        'data-sources/woocommerce',
       ],
     },
     {
@@ -144,6 +145,7 @@ const sidebars = {
         'widgets/timeline',
         'widgets/timer',
         'widgets/toggle-switch',
+        'widgets/tree-select',
         'widgets/vertical-divider'
       ],
     },
@@ -158,8 +160,20 @@ const sidebars = {
         keywords: ['actions','events'],
       },
       items: [
-        'actions/generate-file',
+        'actions/show-alert',
+        'actions/logout',
+        'actions/run-query',
+        'actions/open-webpage',
+        'actions/go-to-app',
+        'actions/show-modal',
+        'actions/close-modal',
+        'actions/copy-to-clipboard',
         'actions/set-localstorage',
+        'actions/generate-file',
+        'actions/set-table-page',
+        'actions/set-variable',
+        'actions/unset-variable',
+        'actions/control-component',
       ],
     },
     {

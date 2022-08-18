@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { WsAdapter } from '@nestjs/platform-ws';
+import * as compression from 'compression';
 import { AppModule } from './app.module';
 import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
@@ -28,6 +29,7 @@ async function bootstrap() {
   app.useWebSocketAdapter(new WsAdapter(app));
   app.setGlobalPrefix('api');
   app.enableCors();
+  app.use(compression());
 
   app.use(
     helmet.contentSecurityPolicy({

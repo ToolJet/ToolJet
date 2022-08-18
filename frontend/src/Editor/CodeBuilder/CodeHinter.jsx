@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -28,6 +28,7 @@ import { BoxShadow } from './Elements/BoxShadow';
 import FxButton from './Elements/FxButton';
 import { ToolTip } from '../Inspector/Elements/Components/ToolTip';
 import { toast } from 'react-hot-toast';
+import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 
 const AllElements = {
   Color,
@@ -62,7 +63,7 @@ export function CodeHinter({
   fieldMeta,
   onFxPress,
   fxActive,
-  // hideSuggestion = false,
+  component,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -92,6 +93,8 @@ export function CodeHinter({
     },
   });
 
+  const { variablesExposedForPreview } = useContext(EditorContext);
+
   const prevCountRef = useRef(false);
 
   useEffect(() => {
@@ -119,7 +122,7 @@ export function CodeHinter({
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
-    handleChange(editor, onChange, ignoreBraces, realState);
+    handleChange(editor, onChange, ignoreBraces, realState, componentName);
     setCurrentValue(editor.getValue()?.trim());
   }
 
@@ -146,9 +149,24 @@ export function CodeHinter({
     toast.success('Copied to clipboard');
   };
 
+  const getCustomResolvables = () => {
+    if (variablesExposedForPreview.hasOwnProperty(component?.id)) {
+      if (component?.component?.component === 'Table' && fieldMeta?.name) {
+        return {
+          ...variablesExposedForPreview[component?.id],
+          cellValue: variablesExposedForPreview[component?.id]?.rowData[fieldMeta?.name],
+          rowData: { ...variablesExposedForPreview[component?.id]?.rowData },
+        };
+      }
+      return variablesExposedForPreview[component.id];
+    }
+    return {};
+  };
+
   const getPreview = () => {
     if (!enablePreview) return;
-    const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
+    const customResolvables = getCustomResolvables();
+    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true);
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
 
     if (error) {
@@ -238,12 +256,13 @@ export function CodeHinter({
 
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
+  let cyLabel = paramLabel ? paramLabel.toLowerCase().replace(/\s+/g, '-') : '';
 
   return (
     <div ref={wrapperRef}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
-          <div className={`mb-2 field ${options.className}`} data-cy="accordion-components">
+          <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip label={paramLabel} meta={fieldMeta} />
           </div>
         )}
@@ -255,6 +274,7 @@ export function CodeHinter({
                 setForceCodeBox(false);
                 onFxPress(false);
               }}
+              dataCy={cyLabel}
             />
           </div>
         </div>
@@ -275,7 +295,7 @@ export function CodeHinter({
                 overflow: 'auto',
                 fontSize: ' .875rem',
               }}
-              data-cy="accordion-input"
+              data-cy={`${cyLabel}-input-field`}
             >
               {usePortalEditor && (
                 <CodeHinter.PopupIcon
@@ -332,6 +352,7 @@ export function CodeHinter({
               onFxPress(true);
             }}
             meta={fieldMeta}
+            cyLabel={cyLabel}
           />
         </div>
       )}

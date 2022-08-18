@@ -39,6 +39,7 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
 
   useEffect(() => {
     setDefaultActive(defaultSelected);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multiSelection]);
 
   const buttonClick = (index) => {

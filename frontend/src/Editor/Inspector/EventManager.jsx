@@ -237,7 +237,7 @@ export const EventManager = ({
                   <div className="col-3 p-2" data-cy="message-label">
                     Message
                   </div>
-                  <div className="col-9" data-cy="message-text">
+                  <div className="col-9" data-cy="alert-message-input-field">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
                       currentState={currentState}

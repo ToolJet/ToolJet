@@ -13,6 +13,7 @@ services:
       - logs:/var/log/openresty/
       - certs:/etc/resty-auto-ssl/
       - fallbackcerts:/etc/fallback-certs
+      # - /replace_path_here/nginx.conf.template:/etc/openresty/nginx.conf.template
     ports:
       - 80:80
       - 443:443

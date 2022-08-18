@@ -28,6 +28,7 @@ import { DataQueriesModule } from './modules/data_queries/data_queries.module';
 import { DataSourcesModule } from './modules/data_sources/data_sources.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { CommentModule } from './modules/comments/comment.module';
+import { CommentUsersModule } from './modules/comment_users/comment_users.module';
 import { join } from 'path';
 import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
@@ -103,7 +104,7 @@ if (process.env.APM_VENDOR == 'sentry') {
 }
 
 if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
-  imports.unshift(CommentModule, ThreadModule);
+  imports.unshift(CommentModule, ThreadModule, CommentUsersModule);
 }
 
 @Module({
