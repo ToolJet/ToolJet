@@ -10,10 +10,10 @@ export class GitOAuthService {
     return `${hostName || 'https://github.com'}${this.authUrl}`;
   }
   #getUserUrl(hostName) {
-    return `${hostName ? `${hostName}/api/v3` : 'https://github.com'}/user`;
+    return `${hostName ? `${hostName}/api/v3` : 'https://api.github.com'}/user`;
   }
   #getUserEmailUrl(hostName) {
-    return `${hostName ? `${hostName}/api/v3` : 'https://github.com'}/user/emails`;
+    return `${hostName ? `${hostName}/api/v3` : 'https://api.github.com'}/user/emails`;
   }
   async #getUserDetails({ access_token }: AuthResponse, hostName: string): Promise<UserResponse> {
     const response: any = await got(this.#getUserUrl(hostName), {
