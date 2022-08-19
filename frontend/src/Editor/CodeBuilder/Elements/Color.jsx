@@ -4,6 +4,7 @@ import FxButton from './FxButton';
 
 export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerStyle = {} }) => {
   const [showPicker, setShowPicker] = useState(false);
+
   const coverStyles = {
     position: 'fixed',
     top: '0px',
