@@ -929,18 +929,21 @@ export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isC
   const { components: allComponents } = appDefinition;
   let newDefinition = _.cloneDeep(appDefinition);
   let newComponents = [],
-    newComponentObj = {};
+    newComponentObj = {},
+    addedComponentId = new Set();
   for (let selectedComponent of selectedComponents) {
+    if (addedComponentId.has(selectedComponent.id)) continue;
     const component = {
       id: selectedComponent.id,
       component: allComponents[selectedComponent.id]?.component,
       layouts: allComponents[selectedComponent.id]?.layouts,
       parent: allComponents[selectedComponent.id]?.parent,
     };
+    addedComponentId.add(selectedComponent.id);
     let clonedComponent = JSON.parse(JSON.stringify(component));
     clonedComponent.parent = undefined;
     clonedComponent.children = [];
-    clonedComponent.children = [...getChildComponents(allComponents, component, clonedComponent)];
+    clonedComponent.children = [...getChildComponents(allComponents, component, clonedComponent, addedComponentId)];
     newComponents = [...newComponents, clonedComponent];
     newComponentObj = {
       newComponents,
@@ -962,7 +965,7 @@ export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isC
   _ref.setState({ currentSidebarTab: 2 });
 };
 
-const getChildComponents = (allComponents, component, parentComponent) => {
+const getChildComponents = (allComponents, component, parentComponent, addedComponentId) => {
   let childComponents = [],
     selectedChildComponents = [];
 
@@ -983,6 +986,7 @@ const getChildComponents = (allComponents, component, parentComponent) => {
         parent: allComponents[componentId]?.parent,
       })
     );
+    addedComponentId.add(componentId);
 
     if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
       const childTabId = childComponent.parent.split('-').at(-1);
@@ -991,7 +995,7 @@ const getChildComponents = (allComponents, component, parentComponent) => {
       childComponent.parent = parentComponent.id;
     }
     parentComponent.children = [...(parentComponent.children || []), childComponent];
-    childComponent.children = [...getChildComponents(allComponents, newComponent, childComponent)];
+    childComponent.children = [...getChildComponents(allComponents, newComponent, childComponent, addedComponentId)];
     selectedChildComponents.push(childComponent);
   });
 
@@ -1137,7 +1141,7 @@ export const removeSelectedComponent = (newDefinition, selectedComponents) => {
   selectedComponents.forEach((component) => {
     let childComponents = [];
 
-    if (newDefinition.components[component.id].component.component === 'Tabs') {
+    if (newDefinition.components[component.id]?.component?.component === 'Tabs') {
       childComponents = Object.keys(newDefinition.components).filter((key) =>
         newDefinition.components[key].parent?.startsWith(component.id)
       );
