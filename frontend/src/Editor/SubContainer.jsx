@@ -93,22 +93,31 @@ export const SubContainer = ({
       if (children.length === 0 && addDefaultChildren === true) {
         const defaultChildren = _.cloneDeep(parentComponent)['defaultChildren'];
         const childrenBoxes = {};
+        const parentId =
+          parentComponent.component !== 'Tabs'
+            ? parentRef.current.id
+            : parentRef.current.id?.substring(0, parentRef.current.id.lastIndexOf('-'));
+
         defaultChildren.forEach((child) => {
-          const { componentName, layout, incrementWidth, properties, accessorKey } = child;
+          const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue } = child;
 
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
 
-          const width = (componentMeta.defaultSize.width * 100) / 43;
-          const height = componentMeta.defaultSize.height;
+          const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / 43;
+          const height = layout.height ? layout.height : componentMeta.defaultSize.height;
           const newComponentDefinition = {
             ...componentData.definition.properties,
           };
 
           if (_.isArray(properties) && properties.length > 0) {
             properties.forEach((prop) => {
+              const accessor = customResolverVariable
+                ? `{{${customResolverVariable}.${accessorKey}}}`
+                : defaultValue[prop] || '';
+
               _.set(newComponentDefinition, prop, {
-                value: `{{${customResolverVariable}.${accessorKey}}}`,
+                value: accessor,
               });
             });
             _.set(componentData, 'definition.properties', newComponentDefinition);
@@ -128,7 +137,7 @@ export const SubContainer = ({
 
           _.set(childrenBoxes, newComponent.id, {
             component: newComponent.component,
-            parent: parentRef.current.id,
+            parent: parentComponent.component === 'Tabs' ? parentId + '-' + tab : parentId,
             layouts: {
               [currentLayout]: {
                 ...layout,
@@ -141,11 +150,10 @@ export const SubContainer = ({
 
         const _allComponents = JSON.parse(JSON.stringify(allComponents));
 
-        _allComponents[parentRef.current.id] = {
-          ...allComponents[parentRef.current.id],
+        _allComponents[parentId] = {
+          ...allComponents[parentId],
           withDefaultChildren: false,
         };
-
         setBoxes({
           ..._allComponents,
           ...childrenBoxes,
