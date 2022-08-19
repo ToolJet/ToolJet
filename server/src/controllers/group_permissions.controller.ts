@@ -17,9 +17,8 @@ export class GroupPermissionsController {
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Post()
   async create(@Request() req, @Body() createGroupPermissionDto: CreateGroupPermissionDto) {
-    const groupPermission = await this.groupPermissionsService.create(req, req.user, createGroupPermissionDto.group);
-
-    return decamelizeKeys(groupPermission);
+    await this.groupPermissionsService.create(req, req.user, createGroupPermissionDto.group);
+    return;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -41,24 +40,21 @@ export class GroupPermissionsController {
     @Param('id') id: string,
     @Param('appGroupPermissionId') appGroupPermissionId: string
   ) {
-    const groupPermission = await this.groupPermissionsService.updateAppGroupPermission(
+    await this.groupPermissionsService.updateAppGroupPermission(
       req,
       user,
       id,
       appGroupPermissionId,
       updateGroupPermissionDto.actions
     );
-
-    return decamelizeKeys(groupPermission);
+    return;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Put(':id')
   async update(@Request() req, @User() user, @Param('id') id, @Body() body) {
-    const groupPermission = await this.groupPermissionsService.update(req, user, id, body);
-
-    return decamelizeKeys(groupPermission);
+    await this.groupPermissionsService.update(req, user, id, body);
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -74,9 +70,8 @@ export class GroupPermissionsController {
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Delete(':id')
   async destroy(@Request() req, @User() user, @Param('id') id) {
-    const groupPermission = await this.groupPermissionsService.destroy(req, user, id);
-
-    return decamelizeKeys(groupPermission);
+    await this.groupPermissionsService.destroy(req, user, id);
+    return;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)

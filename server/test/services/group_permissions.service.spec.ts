@@ -29,11 +29,7 @@ describe('GroupPermissionsService', () => {
       const { adminUser } = await setupOrganization(nestApp);
       const mockReq = { headers: {} } as globalThis.Request;
 
-      const data = await service.create(mockReq, adminUser, 'avengers');
-
-      expect(data.id).toBeDefined();
-      expect(data.organizationId).toBeDefined();
-      expect(data.group).toEqual('avengers');
+      await service.create(mockReq, adminUser, 'avengers');
 
       await expect(service.create(mockReq, adminUser, 'avengers')).rejects.toEqual(
         new ConflictException('Group name already exist')

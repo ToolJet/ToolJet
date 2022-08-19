@@ -41,11 +41,18 @@ describe('group permissions controller', () => {
         .send({ group: 'avengers' });
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.group).toBe('avengers');
-      expect(response.body.organization_id).toBe(organization.id);
-      expect(response.body.id).toBeDefined();
-      expect(response.body.created_at).toBeDefined();
-      expect(response.body.updated_at).toBeDefined();
+
+      const updatedGroup: GroupPermission = await getManager().findOneOrFail(GroupPermission, {
+        where: {
+          organizationId: organization.id,
+          group: 'avengers',
+        },
+      });
+
+      expect(updatedGroup.group).toBe('avengers');
+      expect(updatedGroup.organizationId).toBe(organization.id);
+      expect(updatedGroup.createdAt).toBeDefined();
+      expect(updatedGroup.updatedAt).toBeDefined();
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
@@ -53,9 +60,9 @@ describe('group permissions controller', () => {
       });
 
       expect(auditLog.organizationId).toEqual(adminUser.organizationId);
-      expect(auditLog.resourceId).toEqual(response.body.id);
+      expect(auditLog.resourceId).toEqual(updatedGroup.id);
       expect(auditLog.resourceType).toEqual('GROUP_PERMISSION');
-      expect(auditLog.resourceName).toEqual(response.body.group);
+      expect(auditLog.resourceName).toEqual('avengers');
       expect(auditLog.actionType).toEqual('GROUP_PERMISSION_CREATE');
       expect(auditLog.createdAt).toBeDefined();
     });
@@ -141,10 +148,17 @@ describe('group permissions controller', () => {
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
-      const groupPermissionId = response.body.id;
+      expect(response.statusCode).toBe(201);
+
+      const updatedGroup: GroupPermission = await getManager().findOneOrFail(GroupPermission, {
+        where: {
+          organizationId: organization.id,
+          group: 'avengers',
+        },
+      });
 
       response = await request(nestApp.getHttpServer())
-        .get(`/api/group_permissions/${groupPermissionId}`)
+        .get(`/api/group_permissions/${updatedGroup.id}`)
         .set('Authorization', authHeaderForUser(adminUser));
 
       expect(response.statusCode).toBe(200);
@@ -192,7 +206,7 @@ describe('group permissions controller', () => {
 
     it('should allow admin to update a group name', async () => {
       const {
-        organization: { adminUser },
+        organization: { adminUser, organization },
       } = await setupOrganizations(nestApp);
 
       const createResponse = await request(nestApp.getHttpServer())
@@ -202,21 +216,28 @@ describe('group permissions controller', () => {
 
       expect(createResponse.statusCode).toBe(201);
 
+      let updatedGroup: GroupPermission = await getManager().findOneOrFail(GroupPermission, {
+        where: {
+          organizationId: organization.id,
+          group: 'avengers',
+        },
+      });
+
       //update a group name
       const updateResponse = await request(nestApp.getHttpServer())
-        .put(`/api/group_permissions/${createResponse.body.id}`)
+        .put(`/api/group_permissions/${updatedGroup.id}`)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ name: 'titans' });
 
       expect(updateResponse.statusCode).toBe(200);
 
-      const updatedGroup = await getManager().findOne(GroupPermission, createResponse.body.id);
+      updatedGroup = await getManager().findOne(GroupPermission, updatedGroup.id);
       expect(updatedGroup.group).toEqual('titans');
     });
 
     it('should not be able to update a group name with existing names', async () => {
       const {
-        organization: { adminUser },
+        organization: { adminUser, organization },
       } = await setupOrganizations(nestApp);
 
       const createResponse = await request(nestApp.getHttpServer())
@@ -226,9 +247,16 @@ describe('group permissions controller', () => {
 
       expect(createResponse.statusCode).toBe(201);
 
+      const updatedGroup: GroupPermission = await getManager().findOneOrFail(GroupPermission, {
+        where: {
+          organizationId: organization.id,
+          group: 'avengers',
+        },
+      });
+
       //update a group name
       const updateResponse = await request(nestApp.getHttpServer())
-        .put(`/api/group_permissions/${createResponse.body.id}`)
+        .put(`/api/group_permissions/${updatedGroup.id}`)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ name: 'All users' });
 
@@ -255,7 +283,7 @@ describe('group permissions controller', () => {
 
     it('should allow admin to add and remove apps to group permission', async () => {
       const {
-        organization: { adminUser, app },
+        organization: { adminUser, app, organization },
       } = await setupOrganizations(nestApp);
 
       let response = await request(nestApp.getHttpServer())
@@ -263,7 +291,16 @@ describe('group permissions controller', () => {
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
-      const groupPermissionId = response.body.id;
+      expect(response.statusCode).toBe(201);
+
+      const updatedGroup: GroupPermission = await getManager().findOneOrFail(GroupPermission, {
+        where: {
+          organizationId: organization.id,
+          group: 'avengers',
+        },
+      });
+
+      const groupPermissionId = updatedGroup.id;
 
       response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${groupPermissionId}`)
@@ -294,9 +331,9 @@ describe('group permissions controller', () => {
         order: { createdAt: 'DESC' },
       });
       expect(auditLog.organizationId).toEqual(adminUser.organizationId);
-      expect(auditLog.resourceId).toEqual(response.body.id);
+      expect(auditLog.resourceId).toEqual(groupPermissionId);
       expect(auditLog.resourceType).toEqual('GROUP_PERMISSION');
-      expect(auditLog.resourceName).toEqual(response.body.group);
+      expect(auditLog.resourceName).toEqual('avengers');
       expect(auditLog.actionType).toEqual('GROUP_PERMISSION_UPDATE');
       expect(auditLog.createdAt).toBeDefined();
       expect(auditLog.metadata).toEqual({
@@ -326,9 +363,9 @@ describe('group permissions controller', () => {
         order: { createdAt: 'DESC' },
       });
       expect(auditLog.organizationId).toEqual(adminUser.organizationId);
-      expect(auditLog.resourceId).toEqual(response.body.id);
+      expect(auditLog.resourceId).toEqual(groupPermissionId);
       expect(auditLog.resourceType).toEqual('GROUP_PERMISSION');
-      expect(auditLog.resourceName).toEqual(response.body.group);
+      expect(auditLog.resourceName).toEqual('avengers');
       expect(auditLog.actionType).toEqual('GROUP_PERMISSION_UPDATE');
       expect(auditLog.createdAt).toBeDefined();
       expect(auditLog.metadata).toEqual({
@@ -340,7 +377,7 @@ describe('group permissions controller', () => {
 
     it('should allow admin to add and remove users to group permission', async () => {
       const {
-        organization: { adminUser, defaultUser },
+        organization: { adminUser, defaultUser, organization },
       } = await setupOrganizations(nestApp);
 
       let response = await request(nestApp.getHttpServer())
@@ -348,7 +385,13 @@ describe('group permissions controller', () => {
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
-      const groupPermissionId = response.body.id;
+      const updatedGroup: GroupPermission = await getManager().findOneOrFail(GroupPermission, {
+        where: {
+          organizationId: organization.id,
+          group: 'avengers',
+        },
+      });
+      const groupPermissionId = updatedGroup.id;
 
       response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${groupPermissionId}`)
@@ -452,7 +495,14 @@ describe('group permissions controller', () => {
 
       expect(response.statusCode).toBe(201);
 
-      const groupPermissionId = response.body.id;
+      const updatedGroup: GroupPermission = await getManager().findOneOrFail(GroupPermission, {
+        where: {
+          organizationId: organization.id,
+          group: 'avengers',
+        },
+      });
+
+      const groupPermissionId = updatedGroup.id;
 
       // add apps and users to group permission
       response = await request(nestApp.getHttpServer())
@@ -551,7 +601,15 @@ describe('group permissions controller', () => {
 
       expect(response.statusCode).toBe(201);
 
-      const groupPermissionId = response.body.id;
+      const manager = getManager();
+      const groupPermission: GroupPermission = await manager.findOneOrFail(GroupPermission, {
+        where: {
+          organizationId: organization.id,
+          group: 'avengers',
+        },
+      });
+
+      const groupPermissionId = groupPermission.id;
 
       response = await request(nestApp.getHttpServer())
         .get(`/api/group_permissions/${groupPermissionId}/addable_apps`)
@@ -783,13 +841,13 @@ describe('group permissions controller', () => {
         organization: { adminUser, organization },
       } = await setupOrganizations(nestApp);
 
-      const createResponse = await request(nestApp.getHttpServer())
+      await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
       const manager = getManager();
-      await manager.findOne(GroupPermission, {
+      const groupPermission: GroupPermission = await manager.findOneOrFail(GroupPermission, {
         where: {
           organizationId: organization.id,
           group: 'avengers',
@@ -797,7 +855,7 @@ describe('group permissions controller', () => {
       });
 
       const response = await request(nestApp.getHttpServer())
-        .del(`/api/group_permissions/${createResponse.body.id}`)
+        .del(`/api/group_permissions/${groupPermission.id}`)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -809,9 +867,9 @@ describe('group permissions controller', () => {
       });
 
       expect(auditLog.organizationId).toEqual(adminUser.organizationId);
-      expect(auditLog.resourceId).toEqual(createResponse.body.id);
+      expect(auditLog.resourceId).toEqual(groupPermission.id);
       expect(auditLog.resourceType).toEqual('GROUP_PERMISSION');
-      expect(auditLog.resourceName).toEqual(createResponse.body.group);
+      expect(auditLog.resourceName).toEqual('avengers');
       expect(auditLog.actionType).toEqual('GROUP_PERMISSION_DELETE');
       expect(auditLog.createdAt).toBeDefined();
     });

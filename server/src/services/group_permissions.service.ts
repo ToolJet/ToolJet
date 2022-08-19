@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, createQueryBuilder, getManager, In, Not, DeleteResult } from 'typeorm';
+import { Repository, createQueryBuilder, In, Not, EntityManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
@@ -9,6 +9,7 @@ import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { UsersService } from './users.service';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class GroupPermissionsService {
@@ -33,7 +34,7 @@ export class GroupPermissionsService {
     private auditLoggerService: AuditLoggerService
   ) {}
 
-  async create(request: Request, user: User, group: string): Promise<GroupPermission> {
+  async create(request, user: User, group: string, manager?: EntityManager): Promise<void> {
     if (!group || group === '') {
       throw new BadRequestException('Cannot create group without name');
     }
@@ -55,29 +56,29 @@ export class GroupPermissionsService {
       throw new ConflictException('Group name already exist');
     }
 
-    const groupPermission = await this.groupPermissionsRepository.save(
-      this.groupPermissionsRepository.create({
-        organizationId: user.organizationId,
-        group: group,
-      })
-    );
-
-    await this.auditLoggerService.perform({
-      request,
-      userId: user.id,
-      organizationId: user.organizationId,
-      resourceId: groupPermission.id,
-      resourceName: groupPermission.group,
-      resourceType: ResourceTypes.GROUP_PERMISSION,
-      actionType: ActionTypes.GROUP_PERMISSION_CREATE,
-    });
-
-    return groupPermission;
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const groupPermission: GroupPermission = await manager.save(
+        manager.create(GroupPermission, {
+          organizationId: user.organizationId,
+          group: group,
+        })
+      );
+      await this.auditLoggerService.perform(
+        {
+          request,
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: groupPermission.id,
+          resourceName: groupPermission.group,
+          resourceType: ResourceTypes.GROUP_PERMISSION,
+          actionType: ActionTypes.GROUP_PERMISSION_CREATE,
+        },
+        manager
+      );
+    }, manager);
   }
 
-  async destroy(request: any, user: User, groupPermissionId: string) {
-    let result: DeleteResult;
-
+  async destroy(request, user: User, groupPermissionId: string, manager?: EntityManager): Promise<void> {
     const groupPermission = await this.groupPermissionsRepository.findOne({
       where: {
         id: groupPermissionId,
@@ -87,7 +88,7 @@ export class GroupPermissionsService {
     if (groupPermission.group == 'admin' || groupPermission.group == 'all_users') {
       throw new BadRequestException('Cannot delete default group');
     }
-    await getManager().transaction(async (manager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       const relationalEntitiesToBeDeleted = [AppGroupPermission, UserGroupPermission];
 
       for (const entityToDelete of relationalEntitiesToBeDeleted) {
@@ -100,23 +101,24 @@ export class GroupPermissionsService {
         }
       }
 
-      result = await manager.delete(GroupPermission, {
+      await manager.delete(GroupPermission, {
         organizationId: user.organizationId,
         id: groupPermissionId,
       });
-    });
 
-    await this.auditLoggerService.perform({
-      request,
-      userId: user.id,
-      organizationId: user.organizationId,
-      resourceId: groupPermission.id,
-      resourceName: groupPermission.group,
-      resourceType: ResourceTypes.GROUP_PERMISSION,
-      actionType: ActionTypes.GROUP_PERMISSION_DELETE,
-    });
-
-    return result;
+      await this.auditLoggerService.perform(
+        {
+          request,
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: groupPermission.id,
+          resourceName: groupPermission.group,
+          resourceType: ResourceTypes.GROUP_PERMISSION,
+          actionType: ActionTypes.GROUP_PERMISSION_DELETE,
+        },
+        manager
+      );
+    }, manager);
   }
 
   async updateAppGroupPermission(
@@ -124,7 +126,8 @@ export class GroupPermissionsService {
     user: User,
     groupPermissionId: string,
     appGroupPermissionId: string,
-    actions: any
+    actions: any,
+    manager?: EntityManager
   ) {
     const appGroupPermission = await this.appGroupPermissionsRepository.findOne({
       where: {
@@ -145,23 +148,26 @@ export class GroupPermissionsService {
       throw new BadRequestException('Cannot update admin group');
     }
 
-    const updatedGroupPermission = await this.appGroupPermissionsRepository.update(appGroupPermissionId, actions);
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(AppGroupPermission, appGroupPermissionId, actions);
 
-    await this.auditLoggerService.perform({
-      request,
-      userId: user.id,
-      organizationId: user.organizationId,
-      resourceId: appGroupPermission.id,
-      resourceName: groupPermission.group,
-      resourceType: ResourceTypes.APP_GROUP_PERMISSION,
-      actionType: ActionTypes.APP_GROUP_PERMISSION_UPDATE,
-      metadata: { updateParams: actions },
-    });
-
-    return updatedGroupPermission;
+      await this.auditLoggerService.perform(
+        {
+          request,
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: appGroupPermission.id,
+          resourceName: groupPermission.group,
+          resourceType: ResourceTypes.APP_GROUP_PERMISSION,
+          actionType: ActionTypes.APP_GROUP_PERMISSION_UPDATE,
+          metadata: { updateParams: actions },
+        },
+        manager
+      );
+    }, manager);
   }
 
-  async update(request: any, user: User, groupPermissionId: string, body: any) {
+  async update(request: any, user: User, groupPermissionId: string, body: any, manager?: EntityManager) {
     const groupPermission = await this.groupPermissionsRepository.findOne({
       where: {
         id: groupPermissionId,
@@ -185,7 +191,7 @@ export class GroupPermissionsService {
       folder_update,
     } = body;
 
-    await getManager().transaction(async (manager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       //update user group name
       if (name) {
         const newName = name.trim();
@@ -284,22 +290,23 @@ export class GroupPermissionsService {
           await this.usersService.update(userId, params, manager, user.organizationId);
         }
       }
-    });
 
-    await this.auditLoggerService.perform({
-      request,
-      userId: user.id,
-      organizationId: user.organizationId,
-      resourceId: groupPermission.id,
-      resourceName: groupPermission.group,
-      resourceType: ResourceTypes.GROUP_PERMISSION,
-      actionType: ActionTypes.GROUP_PERMISSION_UPDATE,
-      metadata: {
-        updateParams: body,
-      },
-    });
-
-    return this.groupPermissionsRepository.findOne({ id: groupPermissionId });
+      await this.auditLoggerService.perform(
+        {
+          request,
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: groupPermission.id,
+          resourceName: groupPermission.group,
+          resourceType: ResourceTypes.GROUP_PERMISSION,
+          actionType: ActionTypes.GROUP_PERMISSION_UPDATE,
+          metadata: {
+            updateParams: body,
+          },
+        },
+        manager
+      );
+    }, manager);
   }
 
   async findOne(user: User, groupPermissionId: string): Promise<GroupPermission> {
@@ -405,12 +412,14 @@ export class GroupPermissionsService {
       .getMany();
   }
 
-  async createUserGroupPermission(userId: string, groupPermissionId: string) {
-    await this.userGroupPermissionsRepository.save(
-      this.userGroupPermissionsRepository.create({
-        userId,
-        groupPermissionId,
-      })
-    );
+  async createUserGroupPermission(userId: string, groupPermissionId: string, manager?: EntityManager) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.save(
+        manager.create(UserGroupPermission, {
+          userId,
+          groupPermissionId,
+        })
+      );
+    }, manager);
   }
 }

@@ -18,10 +18,11 @@ import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -256,22 +257,34 @@ export class AuthService {
         throw new NotAcceptableException();
       }
     }
-    // Create default organization
-    organization = await this.organizationsService.create('Untitled workspace');
-    const user = await this.usersService.create({ email }, organization.id, ['all_users', 'admin'], existingUser, true);
-    await this.organizationUsersService.create(user, organization, true);
-    await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 
-    await this.auditLoggerService.perform({
-      request,
-      userId: user.id,
-      organizationId: organization.id,
-      resourceId: user.id,
-      resourceType: ResourceTypes.USER,
-      resourceName: user.email,
-      actionType: ActionTypes.USER_SIGNUP,
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      // Create default organization
+      organization = await this.organizationsService.create('Untitled workspace', null, manager);
+      const user = await this.usersService.create(
+        { email },
+        organization.id,
+        ['all_users', 'admin'],
+        existingUser,
+        true,
+        null,
+        manager
+      );
+      await this.organizationUsersService.create(user, organization, true, manager);
+      await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
+      await this.auditLoggerService.perform(
+        {
+          request,
+          userId: user.id,
+          organizationId: organization.id,
+          resourceId: user.id,
+          resourceType: ResourceTypes.USER,
+          resourceName: user.email,
+          actionType: ActionTypes.USER_SIGNUP,
+        },
+        manager
+      );
     });
-
     return {};
   }
 
