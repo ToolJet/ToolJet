@@ -12,9 +12,37 @@
       "data": {},
       "rawData": {}
     },
-    "options": {}
+    "options": {
+      "endPoint": {
+        "type": "string"
+      },
+      "key": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
   },
-  "defaults": {},
-  "properties": {},
-  "required": []
+  "defaults": {
+    "endPoint": {
+      "value": ""
+    },
+    "key": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "endPoint": {
+      "label": "EndPoint",
+      "key": "endPoint",
+      "type": "text",
+      "description": "https://your-account.documents.azure.com"
+    },
+    "key": {
+      "label": "Key",
+      "key": "key",
+      "type": "text",
+      "description": "Enter your key"
+    }
+  },
+  "required": ["endPoint", "key"]
 }
