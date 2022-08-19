@@ -5,5 +5,38 @@
   "description": "A schema defining CosmosDB datasource",
   "type": "database",
   "defaults": {},
-  "properties": {}
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "list_databases",
+          "name": "List Databases"
+        },
+        {
+          "value": "list_containers",
+          "name": "List Containers"
+        },
+        {
+          "value": "read_item",
+          "name": "Read Item"
+        },
+        {
+          "value": "insert_items",
+          "name": "insert Items"
+        },
+        {
+          "value": "delete_item",
+          "name": "Delete Item"
+        },
+        {
+          "value": "query_database",
+          "name": "Query Database"
+        }
+      ]
+    }
+  }
 }
