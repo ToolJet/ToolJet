@@ -24,8 +24,8 @@ export function GeneralSettings({ settings, updateData }) {
     organizationService.editOrganization({ enableSignUp, domain, inheritSSO }).then(
       () => {
         setSaving(false);
-        updateData('general', { enable_sign_up: enableSignUp, domain });
-        toast.success('updated SSO configurations', {
+        updateData('general', { enable_sign_up: enableSignUp, domain, inherit_s_s_o: inheritSSO });
+        toast.success('Updated SSO configurations', {
           position: 'top-center',
         });
       },
