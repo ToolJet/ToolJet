@@ -13,7 +13,7 @@
       "rawData": {}
     },
     "options": {
-      "endPoint": {
+      "endpoint": {
         "type": "string"
       },
       "key": {
@@ -23,7 +23,7 @@
     }
   },
   "defaults": {
-    "endPoint": {
+    "endpoint": {
       "value": ""
     },
     "key": {
@@ -32,17 +32,17 @@
   },
   "properties": {
     "endPoint": {
-      "label": "EndPoint",
-      "key": "endPoint",
+      "label": "Endpoint",
+      "key": "endpoint",
       "type": "text",
       "description": "https://your-account.documents.azure.com"
     },
     "key": {
       "label": "Key",
       "key": "key",
-      "type": "text",
+      "type": "password",
       "description": "Enter your key"
     }
   },
-  "required": ["endPoint", "key"]
+  "required": ["endpoint", "key"]
 }
