@@ -88,6 +88,22 @@ Action buttons will be displayed as the last column of the table. The styles of 
 | Background color (Action Button) | Background color of the action button. |
 | Text color (Action Button) | Color of button-text of the action button. |
 
+## Validation
+
+### Regex
+
+Use this field to enter a Regular Expression that will validate the password constraints.
+### Min length
+
+Enter the number for a minimum length of password allowed.
+
+### Max length
+
+Enter the number for the maximum length of password allowed.
+
+### Custom validation
+
+If the condition is true, the validation passes, otherwise return a string that should be displayed as the error message. For example: `{{components.passwordInput1.value === 'something' ? true: 'value should be something'}}`
 ## Options
 
 :::info
