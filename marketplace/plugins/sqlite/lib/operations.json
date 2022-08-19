@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Sqlite data query schema",
+  "description": "A schema defining sqlite data query",
+  "type": "database",
+  "defaults": {
+    "query": ""
+  },
+  "properties": {
+    "query": {
+      "key": "query",
+      "type": "codehinter",
+      "description": "Enter sqlite query",
+      "placeholder": "INSERT INTO tbl VALUES (test)",
+      "height": "150px"
+    }
+  },
+  "required": [
+    "query"
+  ]
+}

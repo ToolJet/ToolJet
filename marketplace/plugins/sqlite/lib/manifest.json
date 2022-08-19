@@ -1,0 +1,36 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Sqlite datasource",
+  "description": "A schema defining sqlite datasource",
+  "type": "database",
+  "source": {
+    "name": "Sqlite",
+    "kind": "sqlite",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "filename": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {
+    "filename": {
+      "value": "/tmp/sqlite.db"
+    }
+  },
+  "properties": {
+    "filename": {
+      "label": "File path to store on disk",
+      "key": "filename",
+      "type": "text",
+      "description": "Enter filename"
+    }
+  },
+  "required": [
+    "filename"
+  ]
+}
