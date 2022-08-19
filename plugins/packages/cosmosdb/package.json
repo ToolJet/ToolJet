@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
+    "@azure/cosmos": "^3.16.4",
     "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2"
   }
