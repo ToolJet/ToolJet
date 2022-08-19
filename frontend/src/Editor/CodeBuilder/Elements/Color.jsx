@@ -50,7 +50,7 @@ export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerSty
                 float: 'right',
                 width: '20px',
                 height: '20px',
-                background: value,
+                backgroundColor: value,
                 border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(value) && '#c5c8c9'}`,
               }}
             ></div>
