@@ -90,6 +90,8 @@ Action buttons will be displayed as the last column of the table. The styles of 
 
 ## Validation
 
+Under column properties, expand the detailed view of a column type to access a toggle button called `make editable`. You can toggle it `ON` to apply the validations for each column respectively using the following.
+
 ### Regex
 
 Use this field to enter a Regular Expression that will validate the password constraints.
