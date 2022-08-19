@@ -70,19 +70,35 @@ export class PluginsService {
   }
 
   async fetchPluginFiles(id: string) {
-    const promises = await Promise.all([
-      fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/dist/index.js`),
-      fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/lib/operations.json`),
-      fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/lib/icon.svg`),
-      fetch(`${process.env.MARKETPLACE_URL}/marketplace-assets/${id}/lib/manifest.json`),
+    if (process.env.NODE_ENV === 'production') {
+      const promises = await Promise.all([
+        fetch(`https://marketplace.tooljet.com/marketplace-assets/${id}/dist/index.js`),
+        fetch(`https://marketplace.tooljet.com/marketplace-assets/${id}/lib/operations.json`),
+        fetch(`https://marketplace.tooljet.com/marketplace-assets/${id}/lib/icon.svg`),
+        fetch(`https://marketplace.tooljet.com/marketplace-assets/${id}/lib/manifest.json`),
+      ]);
+
+      const files = promises.map((promise) => {
+        if (!promise.ok) throw new InternalServerErrorException();
+        return promise.arrayBuffer();
+      });
+
+      const [indexFile, operationsFile, iconFile, manifestFile] = await Promise.all(files);
+
+      return [indexFile, operationsFile, iconFile, manifestFile];
+    }
+
+    const fs = require('fs/promises');
+
+    // NOTE: big files are going to have a major impact on the memory consumption and speed of execution of the program
+    // as `fs.readFile` read the full content of the file in memory before returning the data.
+    // In this case, a better option is to read the file content using streams.
+    const [indexFile, operationsFile, iconFile, manifestFile] = await Promise.all([
+      fs.readFile(`../marketplace/plugins/${id}/dist/index.js`, 'utf8'),
+      fs.readFile(`../marketplace/plugins/${id}/lib/operations.json`, 'utf8'),
+      fs.readFile(`../marketplace/plugins/${id}/lib/icon.svg`, 'utf8'),
+      fs.readFile(`../marketplace/plugins/${id}/lib/manifest.json`, 'utf8'),
     ]);
-
-    const files = promises.map((promise) => {
-      if (!promise.ok) throw new InternalServerErrorException();
-      return promise.arrayBuffer();
-    });
-
-    const [indexFile, operationsFile, iconFile, manifestFile] = await Promise.all(files);
 
     return [indexFile, operationsFile, iconFile, manifestFile];
   }
