@@ -59,6 +59,7 @@ import RealtimeAvatars from './RealtimeAvatars';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
+// eslint-disable-next-line import/no-unresolved
 import Selecto from 'react-selecto';
 
 setAutoFreeze(false);
@@ -1149,7 +1150,7 @@ class Editor extends React.Component {
   };
 
   onAreaSelectionStart = (e) => {
-    const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 1;
+    const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 0;
     this.setState((prevState) => {
       return {
         selectionInProgress: true,
