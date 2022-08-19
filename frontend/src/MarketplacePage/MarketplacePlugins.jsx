@@ -1,15 +1,15 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
 import { MarketplaceCard } from './MarketplaceCard';
-import { pluginsService } from '@/_services';
+import { marketplaceService, pluginsService } from '@/_services';
 
 export const MarketplacePlugins = ({ isActive }) => {
   const [plugins, setPlugins] = React.useState([]);
   const [installedPlugins, setInstalledPlugins] = React.useState({});
   React.useEffect(() => {
-    fetch('https://raw.githubusercontent.com/ToolJet/ToolJet/add-extension-module/marketplace/plugins.json')
-      .then((response) => response.json())
-      .then((plugins) => setPlugins(plugins))
+    marketplaceService
+      .findAll()
+      .then(({ data = [] }) => setPlugins(data))
       .catch((error) => {
         toast.error(error?.message || 'something went wrong');
       });
