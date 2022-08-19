@@ -1840,7 +1840,6 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         imageFit: { value: 'contain' },
-        backgroundColor: { value: 'transparent' },
       },
     },
   },
