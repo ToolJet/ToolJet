@@ -1,0 +1,20 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "CosmosDB datasource",
+  "description": "A schema defining CosmosDB datasource",
+  "type": "database",
+  "source": {
+    "name": "CosmosDB",
+    "kind": "cosmosdb",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {},
+  "required": []
+}

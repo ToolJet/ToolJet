@@ -1,0 +1,9 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "CosmosDB datasource",
+  "description": "A schema defining CosmosDB datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {}
+}
