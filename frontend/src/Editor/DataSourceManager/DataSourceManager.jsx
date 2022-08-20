@@ -829,14 +829,7 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
             </svg>
           </span>
         )}
-        <input
-          type="text"
-          value={searchText}
-          onChange={handleChange}
-          className="form-control"
-          placeholder="Search"
-          autoFocus
-        />
+        <input type="text" value={searchText} onChange={handleChange} className="form-control" placeholder="Search" />
       </div>
     </div>
   );
