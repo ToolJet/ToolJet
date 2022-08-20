@@ -145,7 +145,9 @@ class DataSourceManager extends React.Component {
         });
       }
     } else {
-      toast.error('The name of datasource should not be empty', { position: 'top-center' });
+      toast.error('The name of datasource should not be empty', {
+        position: 'top-center',
+      });
     }
   };
 
@@ -827,7 +829,14 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
             </svg>
           </span>
         )}
-        <input type="text" value={searchText} onChange={handleChange} className="form-control" placeholder="Search" />
+        <input
+          type="text"
+          value={searchText}
+          onChange={handleChange}
+          className="form-control"
+          placeholder="Search"
+          autoFocus
+        />
       </div>
     </div>
   );
