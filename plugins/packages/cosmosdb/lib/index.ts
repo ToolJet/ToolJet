@@ -1,7 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { CosmosClient } from '@azure/cosmos';
-import { getItem, insertItems, listContainers, listDatabases } from './operations';
+import { deleteItem, getItem, insertItems, listContainers, listDatabases } from './operations';
 
 export default class Cosmosdb implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -24,6 +24,9 @@ export default class Cosmosdb implements QueryService {
           break;
         case 'read_item':
           result = await getItem(client, queryOptions.database, queryOptions.container, queryOptions.itemId);
+          break;
+        case 'delete_item':
+          result = await deleteItem(client, queryOptions.database, queryOptions.container, queryOptions.itemId);
           break;
 
         default:

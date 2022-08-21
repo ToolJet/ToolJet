@@ -118,6 +118,41 @@
         "className": "codehinter-plugins",
         "placeholder": "item_id"
       }
+    },
+    "delete_item": {
+      "database": {
+        "label": "Database",
+        "key": "database",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter database",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter database"
+      },
+      "container": {
+        "label": "Container",
+        "key": "container",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter container",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter container"
+      },
+      "itemId": {
+        "label": "Item ID",
+        "key": "itemId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter item ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "item_id"
+      }
     }
   }
 }

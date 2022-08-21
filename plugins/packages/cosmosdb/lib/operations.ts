@@ -49,6 +49,27 @@ export function insertItems(client: CosmosClient, database: string, containerId:
   });
 }
 
+export function deleteItem(client: CosmosClient, database: string, containerId: string, itemId) {
+  return new Promise((resolve, reject) => {
+    lookUpContainer(client, database, containerId)
+      .then((container: Container) => {
+        container
+          .item(itemId)
+          .delete()
+          .then(() => {
+            resolve({ message: 'Item deleted' });
+          })
+          .catch((err) => {
+            reject(err);
+          });
+      })
+      .catch((err) => {
+        reject(err);
+      })
+      .finally(() => client.dispose());
+  });
+}
+
 export async function getItem(client: CosmosClient, database: string, containerId: string, itemId: string) {
   const { container } = await client.database(database).containers.createIfNotExists({ id: containerId });
 
