@@ -26,7 +26,7 @@
         },
         {
           "value": "insert_items",
-          "name": "insert Items"
+          "name": "Insert Items"
         },
         {
           "value": "delete_item",
@@ -37,6 +37,87 @@
           "name": "Query Database"
         }
       ]
+    },
+    "list_containers": {
+      "database": {
+        "label": "Database",
+        "key": "database",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter database",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter database"
+      }
+    },
+    "insert_items": {
+      "database": {
+        "label": "Database",
+        "key": "database",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter database",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter database"
+      },
+      "container": {
+        "label": "Container",
+        "key": "container",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter container",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter container"
+      },
+      "items": {
+        "label": "Items",
+        "key": "items",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter items",
+        "className": "codehinter-plugins",
+        "placeholder": "[ { 'name': 'Olympia', 'state': 'WA'},{  'name': 'Redmond', 'state': 'WA']"
+      }
+    },
+    "read_item": {
+      "database": {
+        "label": "Database",
+        "key": "database",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter database",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter database"
+      },
+      "container": {
+        "label": "Container",
+        "key": "container",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter container",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter container"
+      },
+      "itemId": {
+        "label": "Item ID",
+        "key": "itemId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter item ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "item_id"
+      }
     }
   }
 }

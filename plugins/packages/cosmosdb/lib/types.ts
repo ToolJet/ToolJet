@@ -4,4 +4,8 @@ export type SourceOptions = {
 };
 export type QueryOptions = {
   operation: string;
+  database?: string;
+  container?: string;
+  items?: [];
+  itemId?: string;
 };
