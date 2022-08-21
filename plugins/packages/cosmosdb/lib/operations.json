@@ -141,17 +141,39 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "Enter container"
-      },
-      "itemId": {
-        "label": "Item ID",
-        "key": "itemId",
+      }
+    },
+    "query_database": {
+      "database": {
+        "label": "Database",
+        "key": "database",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter item ID",
+        "description": "Enter database",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "item_id"
+        "placeholder": "Enter database"
+      },
+      "container": {
+        "label": "Container",
+        "key": "container",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter container",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter container"
+      },
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter query",
+        "className": "codehinter-plugins",
+        "placeholder": "SELECT * from c WHERE c.isCapitol = true"
       }
     }
   }

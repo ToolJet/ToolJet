@@ -8,4 +8,5 @@ export type QueryOptions = {
   container?: string;
   items?: [];
   itemId?: string;
+  query?: string;
 };

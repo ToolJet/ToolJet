@@ -70,6 +70,27 @@ export function deleteItem(client: CosmosClient, database: string, containerId: 
   });
 }
 
+export function queryDatabase(client: CosmosClient, database: string, containerId: string, query: string) {
+  return new Promise((resolve, reject) => {
+    lookUpContainer(client, database, containerId)
+      .then((container: Container) => {
+        container.items
+          .query(query)
+          .fetchAll()
+          .then((data) => {
+            resolve(data.resources);
+          })
+          .catch((err) => {
+            reject(err);
+          });
+      })
+      .catch((err) => {
+        reject(err);
+      })
+      .finally(() => client.dispose());
+  });
+}
+
 export async function getItem(client: CosmosClient, database: string, containerId: string, itemId: string) {
   const { container } = await client.database(database).containers.createIfNotExists({ id: containerId });
 
