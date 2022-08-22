@@ -90,6 +90,15 @@
         "languageSelection":{
            "changeLanguage":"Change language",
            "searchLanguage":"Search language"
+        },
+        "notificationCenter":{
+            "notifications":"Notifications",
+            "markAllAs":"Mark all as",
+            "read":"read",
+            "un":"un",
+            "youDontHaveany":"You don't have any",
+            "youAreCaughtUp":"You're all caught up!",
+            "view":"View"
         }
     },
     "homePage":{
