@@ -47,7 +47,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     },
   }));
   return (
-    <div className="left-sidebar">
+    <div className="left-sidebar" data-cy="left-sidebar-inspector">
       <LeftSidebarInspector
         darkMode={darkMode}
         currentState={currentState}

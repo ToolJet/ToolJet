@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import config from 'config';
 import { Link } from 'react-router-dom';
 import { authenticationService, userService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
-import LogoIcon from '../Editor/Icons/logo.svg';
 import { Organization } from './Organization';
+import AppLogo from './AppLogo';
+import { NotificationCenter } from './NotificationCenter';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
   // eslint-disable-next-line no-unused-vars
@@ -47,7 +49,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
         </button>
         <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0" data-cy="home-page-logo">
           <Link to={'/'} data-cy="home-page-logo">
-            <LogoIcon />
+            <AppLogo isLoadingFromHeader={true} />
           </Link>
         </h1>
 
@@ -55,6 +57,11 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
           <div className="p-1 m-1 d-flex align-items-center" data-cy="mode-toggle">
             <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />
           </div>
+          {config.COMMENT_FEATURE_ENABLE && (
+            <div className="p-1 d-flex align-items-center" data-cy="notification-center">
+              <NotificationCenter />
+            </div>
+          )}
           <div>
             <Organization admin={admin} />
           </div>

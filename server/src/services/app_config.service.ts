@@ -26,7 +26,9 @@ export class AppConfigService {
       'DISABLE_MULTI_WORKSPACE',
       'SSO_GOOGLE_OAUTH2_CLIENT_ID',
       'SSO_GIT_OAUTH2_CLIENT_ID',
+      'SSO_GIT_OAUTH2_HOST',
       'SSO_DISABLE_SIGNUPS',
+      'CUSTOM_LOGO_URL',
     ];
   }
 

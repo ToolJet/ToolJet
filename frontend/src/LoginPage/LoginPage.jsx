@@ -8,6 +8,7 @@ import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
+import AppLogo from '../_components/AppLogo';
 
 class LoginPage extends React.Component {
   constructor(props) {
@@ -73,6 +74,7 @@ class LoginPage extends React.Component {
             enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
             configs: {
               client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
+              host_name: window.public_config?.SSO_GIT_OAUTH2_HOST,
             },
           },
           form: {
@@ -143,7 +145,7 @@ class LoginPage extends React.Component {
         <div className="container-tight py-2">
           <div className="text-center mb-4">
             <a href="." className="navbar-brand-autodark" data-cy="login-page-logo">
-              <img src="/assets/images/logo-color.svg" height="26" alt="" />
+              <AppLogo />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">

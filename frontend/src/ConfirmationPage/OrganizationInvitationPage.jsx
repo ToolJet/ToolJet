@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { ShowLoading } from '@/_components';
+import AppLogo from '../_components/AppLogo';
 
 class OrganizationInvitationPage extends React.Component {
   constructor(props) {
@@ -90,7 +91,7 @@ class OrganizationInvitationPage extends React.Component {
         <div className="container-tight py-2 invitation-page" data-cy="confirm-invite-container">
           <div className="text-center mb-4">
             <a href=".">
-              <img src="/assets/images/logo-color.svg" height="30" alt="" data-cy="page-logo" />
+              <AppLogo />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">

@@ -16,9 +16,9 @@ import {
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
-import LogoIcon from './Icons/logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { resolveReferences } from '@/_helpers/utils';
+import AppLogo from '../_components/AppLogo';
 
 class Viewer extends React.Component {
   constructor(props) {
@@ -122,7 +122,7 @@ class Viewer extends React.Component {
   runQueries = (data_queries) => {
     data_queries.forEach((query) => {
       if (query.options.runOnPageLoad) {
-        runQuery(this, query.id, query.name);
+        runQuery(this, query.id, query.name, undefined, 'view');
       }
     });
   };
@@ -240,7 +240,7 @@ class Viewer extends React.Component {
                   <div className="container-xl header-container">
                     <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
                       <a href="/">
-                        <LogoIcon />
+                        <AppLogo isLoadingFromHeader={true} />
                       </a>
                     </h1>
                     {this.state.app && <span>{this.state.app.name}</span>}

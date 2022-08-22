@@ -22,6 +22,7 @@ export const FolderMenu = function FolderMenu({
             closeMenu();
             onClick();
           }}
+          data-cy={`${text.toLowerCase().replace(/\s+/g, '-')}-card-option`}
         >
           {text}
         </span>
@@ -36,9 +37,9 @@ export const FolderMenu = function FolderMenu({
       rootClose
       onToggle={onMenuOpen}
       overlay={
-        <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'}>
+        <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'} data-cy="folder-card">
           <Popover.Content bsPrefix="popover-body">
-            <div data-cy="card-options">
+            <div>
               {canUpdateFolder && <Field text="Edit folder" onClick={editFolder} />}
               {canDeleteFolder && <Field text="Delete folder" customClass="field__danger" onClick={deleteFolder} />}
             </div>
@@ -47,7 +48,7 @@ export const FolderMenu = function FolderMenu({
       }
     >
       <div className={`d-grid menu-ico menu-ico`}>
-        <img className="svg-icon" src="/assets/images/icons/three-dots.svg" data-cy="folder-item-menu-icon" />
+        <img className="svg-icon" src="/assets/images/icons/three-dots.svg" data-cy="folder-card-menu-icon" />
       </div>
     </OverlayTrigger>
   );

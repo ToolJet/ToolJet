@@ -147,19 +147,6 @@ class Chart extends React.Component {
       });
     }
 
-    items.push({
-      title: 'Loading state',
-      children: renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        'loadingState',
-        'properties',
-        currentState
-      ),
-    });
-
     if (chartType !== 'pie') {
       if (!plotFromJson) {
         items.push({
@@ -177,28 +164,30 @@ class Chart extends React.Component {
       }
 
       items.push({
-        title: 'Show axes',
-        children: renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'showAxes',
-          'properties',
-          currentState
-        ),
-      });
-
-      items.push({
-        title: 'Show grid lines',
-        children: renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'showGridLines',
-          'properties',
-          currentState
+        title: 'Options',
+        children: (
+          <>
+            {renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              'loadingState',
+              'properties',
+              currentState
+            )}
+            {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showAxes', 'properties', currentState)}
+            ,
+            {renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              'showGridLines',
+              'properties',
+              currentState
+            )}
+          </>
         ),
       });
     }

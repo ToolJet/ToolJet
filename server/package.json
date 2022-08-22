@@ -58,11 +58,13 @@
     "class-validator": "^0.13.1",
     "customerio-node": "^3.1.1",
     "cookie-parser": "^1.4.6",
+    "compression": "^1.7.4",
     "dotenv": "^10.0.0",
     "futoin-hkdf": "^1.4.2",
     "global-agent": "^3.0.0",
     "google-auth-library": "^7.9.2",
     "got": "^11.8.2",
+    "handlebars": "^4.7.7",
     "helmet": "^4.6.0",
     "humps": "^2.0.1",
     "ioredis": "^4.27.6",
@@ -89,9 +91,11 @@
     "ws": "^7.5.5",
     "y-websocket": "^1.4.0"
   },
+  "peerDependencies": {
+    "@nestjs/cli": "^8.0.0"
+  },
   "devDependencies": {
     "@golevelup/ts-jest": "^0.3.2",
-    "@nestjs/cli": "^8.0.0",
     "@nestjs/schematics": "^8.0.0",
     "@nestjs/testing": "^8.0.0",
     "@types/cookie-parser": "^1.4.3",

@@ -62,10 +62,16 @@ COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 # copy frontend build
 COPY --from=builder /app/frontend/build ./app/frontend/build
 # copy server build
-# NOTE: typescript dependency on /server/scripts and typeorm for db creation and migration.
-# Need to check if we can optimize such that only executable dist from prev stage can be copied
-COPY --from=builder /app/server ./app/server
+COPY --from=builder /app/server/package.json ./app/server/package.json
+COPY --from=builder /app/server/.version ./app/server/.version
+COPY --from=builder /app/server/entrypoint.sh ./app/server/entrypoint.sh
+COPY --from=builder /app/server/node_modules ./app/server/node_modules
+COPY --from=builder /app/server/templates ./app/server/templates
+COPY --from=builder /app/server/scripts ./app/server/scripts
+COPY --from=builder /app/server/dist ./app/server/dist
 
 WORKDIR /app
+# Dependencies for scripts outside nestjs
+RUN npm install dotenv@10.0.0 joi@17.4.1
 
 ENTRYPOINT ["./server/entrypoint.sh"]

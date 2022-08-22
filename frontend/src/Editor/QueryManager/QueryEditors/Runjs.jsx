@@ -29,6 +29,7 @@ class Runjs extends React.Component {
           onChange={(value) => changeOption(this, 'code', value)}
           isMultiLineJs={false}
           enablePreview={false}
+          componentName="Runjs"
         />
       </div>
     );

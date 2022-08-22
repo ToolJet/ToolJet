@@ -4,8 +4,8 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { cleanObject } from 'src/helpers/utils.helper';
-import { createQueryBuilder, DeepPartial, Repository } from 'typeorm';
+import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
@@ -48,32 +48,37 @@ export class OrganizationsService {
     private auditLoggerService: AuditLoggerService
   ) {}
 
-  async create(name: string, user?: User): Promise<Organization> {
-    const organization = await this.organizationsRepository.save(
-      this.organizationsRepository.create({
-        ssoConfigs: [
-          {
-            sso: 'form',
-            enabled: true,
-          },
-        ],
-        name,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-    );
+  async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const organization: Organization = await manager.save(
+        manager.create(Organization, {
+          ssoConfigs: [
+            {
+              sso: 'form',
+              enabled: true,
+            },
+          ],
+          name,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
 
-    const createdGroupPermissions = await this.createDefaultGroupPermissionsForOrganization(organization);
+      const createdGroupPermissions: GroupPermission[] = await this.createDefaultGroupPermissionsForOrganization(
+        organization,
+        manager
+      );
 
-    if (user) {
-      await this.organizationUserService.create(user, organization, false);
+      if (user) {
+        await this.organizationUserService.create(user, organization, false, manager);
 
-      for (const groupPermission of createdGroupPermissions) {
-        await this.groupPermissionService.createUserGroupPermission(user.id, groupPermission.id);
+        for (const groupPermission of createdGroupPermissions) {
+          await this.groupPermissionService.createUserGroupPermission(user.id, groupPermission.id, manager);
+        }
       }
-    }
 
-    return organization;
+      return organization;
+    }, manager);
   }
 
   async get(id: string): Promise<Organization> {
@@ -84,29 +89,30 @@ export class OrganizationsService {
     return await this.organizationsRepository.findOne({ relations: ['ssoConfigs'] });
   }
 
-  async createDefaultGroupPermissionsForOrganization(organization: Organization) {
+  async createDefaultGroupPermissionsForOrganization(organization: Organization, manager?: EntityManager) {
     const defaultGroups = ['all_users', 'admin'];
-    const createdGroupPermissions = [];
 
-    for (const group of defaultGroups) {
-      const isAdmin = group === 'admin';
-      const groupPermission = this.groupPermissionsRepository.create({
-        organizationId: organization.id,
-        group: group,
-        appCreate: isAdmin,
-        appDelete: isAdmin,
-        folderCreate: isAdmin,
-        orgEnvironmentVariableCreate: isAdmin,
-        orgEnvironmentVariableUpdate: isAdmin,
-        orgEnvironmentVariableDelete: isAdmin,
-        folderUpdate: isAdmin,
-        folderDelete: isAdmin,
-      });
-      await this.groupPermissionsRepository.save(groupPermission);
-      createdGroupPermissions.push(groupPermission);
-    }
-
-    return createdGroupPermissions;
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const createdGroupPermissions: GroupPermission[] = [];
+      for (const group of defaultGroups) {
+        const isAdmin = group === 'admin';
+        const groupPermission = manager.create(GroupPermission, {
+          organizationId: organization.id,
+          group: group,
+          appCreate: isAdmin,
+          appDelete: isAdmin,
+          folderCreate: isAdmin,
+          orgEnvironmentVariableCreate: isAdmin,
+          orgEnvironmentVariableUpdate: isAdmin,
+          orgEnvironmentVariableDelete: isAdmin,
+          folderUpdate: isAdmin,
+          folderDelete: isAdmin,
+        });
+        await manager.save(groupPermission);
+        createdGroupPermissions.push(groupPermission);
+      }
+      return createdGroupPermissions;
+    }, manager);
   }
 
   async fetchUsers(user: any): Promise<FetchUserResponse[]> {
@@ -124,6 +130,7 @@ export class OrganizationsService {
         lastName: orgUser.user.lastName,
         name: `${orgUser.user.firstName} ${orgUser.user.lastName}`,
         id: orgUser.id,
+        userId: orgUser.user.id,
         role: orgUser.role,
         status: orgUser.status,
         ...(isAdmin && orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
@@ -252,6 +259,12 @@ export class OrganizationsService {
           enabled: true,
           configs: {
             clientId: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+            clientSecret: await this.encryptionService.encryptColumnValue(
+              'ssoConfigs',
+              'clientSecret',
+              this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET')
+            ),
+            hostName: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
           },
         });
       }
@@ -389,50 +402,68 @@ export class OrganizationsService {
 
     let user = await this.usersService.findByEmail(userParams.email);
     let defaultOrganization: Organization,
-      shouldSendWelcomeMail = false;
+      shouldSendWelcomeMail = false,
+      organizationUser: OrganizationUser,
+      currentOrganization: Organization;
 
     if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
       throw new BadRequestException('User with such email already exists.');
     }
 
-    if (user?.invitationToken) {
-      // user sign up not completed, name will be empty - updating name
-      await this.usersService.update(user.id, { firstName: userParams.firstName, lastName: userParams.lastName });
-    }
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      if (user?.invitationToken) {
+        // user sign up not completed, name will be empty - updating name
+        await this.usersService.update(
+          user.id,
+          { firstName: userParams.firstName, lastName: userParams.lastName },
+          manager
+        );
+      }
 
-    if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
-      // User not exist
-      shouldSendWelcomeMail = true;
-      // Create default organization
-      defaultOrganization = await this.create('Untitled workspace');
-    }
-    user = await this.usersService.create(
-      userParams,
-      currentUser.organizationId,
-      ['all_users'],
-      user,
-      true,
-      defaultOrganization?.id
-    );
+      if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
+        // User not exist
+        shouldSendWelcomeMail = true;
+        // Create default organization
+        defaultOrganization = await this.create('Untitled workspace', null, manager);
+      }
+      user = await this.usersService.create(
+        userParams,
+        currentUser.organizationId,
+        ['all_users'],
+        user,
+        true,
+        defaultOrganization?.id,
+        manager
+      );
 
-    if (defaultOrganization) {
-      // Setting up default organization
-      await this.organizationUserService.create(user, defaultOrganization, true);
-      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id);
-    }
+      if (defaultOrganization) {
+        // Setting up default organization
+        await this.organizationUserService.create(user, defaultOrganization, true, manager);
+        await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
+      }
 
-    const currentOrganization: Organization = (
-      await this.organizationUsersRepository.findOne({
-        where: { userId: currentUser.id, organizationId: currentUser.organizationId },
-        relations: ['organization'],
-      })
-    )?.organization;
+      currentOrganization = (
+        await this.organizationUsersRepository.findOne({
+          where: { userId: currentUser.id, organizationId: currentUser.organizationId },
+          relations: ['organization'],
+        })
+      )?.organization;
 
-    const organizationUser: OrganizationUser = await this.organizationUserService.create(
-      user,
-      currentOrganization,
-      true
-    );
+      organizationUser = await this.organizationUserService.create(user, currentOrganization, true, manager);
+
+      await this.auditLoggerService.perform(
+        {
+          request,
+          userId: currentUser.id,
+          organizationId: currentOrganization.id,
+          resourceId: user.id,
+          resourceName: user.email,
+          resourceType: ResourceTypes.USER,
+          actionType: ActionTypes.USER_INVITE,
+        },
+        manager
+      );
+    });
 
     if (shouldSendWelcomeMail) {
       this.emailService
@@ -456,17 +487,6 @@ export class OrganizationsService {
         )
         .catch((err) => console.error('Error while sending welcome mail', err));
     }
-
-    await this.auditLoggerService.perform({
-      request,
-      userId: currentUser.id,
-      organizationId: currentOrganization.id,
-      resourceId: user.id,
-      resourceName: user.email,
-      resourceType: ResourceTypes.USER,
-      actionType: ActionTypes.USER_INVITE,
-    });
-
     return organizationUser;
   }
 }

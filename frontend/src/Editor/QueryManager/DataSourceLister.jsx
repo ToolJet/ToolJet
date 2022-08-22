@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { allSvgs } from '@tooljet/plugins/client';
 import RunjsIcon from '../Icons/runjs.svg';
 import AddIcon from '../../../assets/images/icons/add-source.svg';
+// eslint-disable-next-line import/no-unresolved
+import { allSvgs } from '@tooljet/plugins/client';
 
 function DataSourceLister({
   dataSources,

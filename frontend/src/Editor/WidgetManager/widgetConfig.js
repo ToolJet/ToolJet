@@ -772,6 +772,7 @@ export const widgets = [
     },
     events: {
       onChange: { displayName: 'On change' },
+      onEnterPressed: { displayName: 'On Enter Pressed' },
     },
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility', validation: { schema: { type: 'boolean' } } },
@@ -1697,6 +1698,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      rotateButton: {
+        type: 'toggle',
+        displayName: 'Rotate button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -1769,6 +1777,7 @@ export const widgets = [
         loadingState: { value: '{{false}}' },
         alternativeText: { value: '' },
         zoomButtons: { value: '{{false}}' },
+        rotateButton: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -2628,7 +2637,11 @@ export const widgets = [
         },
       },
     },
-    events: { onFileSelected: { displayName: 'On File Selected' } },
+    events: {
+      onFileSelected: { displayName: 'On File Selected' },
+      onFileLoaded: { displayName: 'On File Loaded' },
+      onFileDeselected: { displayName: 'On File Deselected' },
+    },
     styles: {
       visibility: {
         type: 'toggle',
@@ -3157,9 +3170,42 @@ export const widgets = [
     displayName: 'List View',
     description: 'Wrapper for multiple components',
     defaultSize: {
-      width: 5,
-      height: 200,
+      width: 20,
+      height: 300,
     },
+    defaultChildren: [
+      {
+        componentName: 'Image',
+        layout: {
+          top: 15,
+          left: 6.976744186046512,
+          height: 100,
+        },
+        properties: ['source'],
+        accessorKey: 'imageURL',
+      },
+      {
+        componentName: 'Text',
+        layout: {
+          top: 50,
+          left: 27,
+          height: 30,
+        },
+        properties: ['text'],
+        accessorKey: 'text',
+      },
+      {
+        componentName: 'Button',
+        layout: {
+          top: 50,
+          left: 60,
+          height: 30,
+        },
+        incrementWidth: 2,
+        properties: ['text'],
+        accessorKey: 'buttonText',
+      },
+    ],
     component: 'Listview',
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -3225,7 +3271,11 @@ export const widgets = [
       },
       properties: {
         data: {
-          value: "{{ [ { image: 'https://reqres.in/img/faces/8-image.jpg' }] }}",
+          value: `{{[
+  { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 1' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 2' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 3' },
+  ]}}`,
         },
         rowHeight: {
           value: '100',
@@ -4152,6 +4202,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       url: { type: 'code', displayName: 'File URL', validation: { schema: { type: 'string' } } },
       scale: { type: 'toggle', displayName: 'Scale page to width', validation: { schema: { type: 'boolean' } } },
       pageControls: { type: 'toggle', displayName: 'Show page controls', validation: { schema: { type: 'boolean' } } },
+      showDownloadOption: {
+        type: 'toggle',
+        displayName: 'Show the Download',
+        validation: { schema: { type: 'boolean' } },
+      },
     },
     defaultSize: {
       width: 20,
@@ -4184,6 +4239,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           value: '{{true}}',
         },
         pageControls: {
+          value: `{{true}}`,
+        },
+        showDownloadOption: {
           value: `{{true}}`,
         },
       },
@@ -4406,6 +4464,85 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'TreeSelect',
+    displayName: 'Tree Select',
+    description: 'Select values from a tree view',
+    defaultSize: {
+      width: 12,
+      height: 200,
+    },
+    component: 'TreeSelect',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      label: { type: 'code', displayName: 'Title' },
+      data: { type: 'code', displayName: 'Structure' },
+      checkedData: { type: 'code', displayName: 'Checked Values' },
+      expandedData: { type: 'code', displayName: 'Expanded Values' },
+    },
+    events: {
+      onChange: { displayName: 'On change' },
+      onCheck: { displayName: 'On check' },
+      onUnCheck: { displayName: 'On uncheck' },
+    },
+    styles: {
+      textColor: { type: 'color', displayName: 'Text Color' },
+      checkboxColor: { type: 'color', displayName: 'Checkbox Color' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      checked: ['asia', 'china', 'beijing', 'shanghai', 'japan', 'india', 'delhi', 'mumbai', 'bengaluru'],
+      expanded: ['asia'],
+      checkedPathArray: [
+        ['asia'],
+        ['asia', 'china'],
+        ['asia', 'china', 'beijing'],
+        ['asia', 'china', 'shanghai'],
+        ['asia', 'japan'],
+        ['asia', 'india'],
+        ['asia', 'india', 'delhi'],
+        ['asia', 'india', 'mumbai'],
+        ['asia', 'india', 'bengaluru'],
+      ],
+      checkedPathStrings: [
+        'asia',
+        'asia-china',
+        'asia-china-beijing',
+        'asia-china-shanghai',
+        'asia-japan',
+        'asia-india',
+        'asia-india-delhi',
+        'asia-india-mumbai',
+        'asia-india-bengaluru',
+      ],
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        label: { value: 'Countries' },
+        data: {
+          value:
+            '{{[{"label":"Asia","value":"asia","children":[{"label":"China","value":"china","children":[{"label":"Beijing","value":"beijing"},{"label":"Shanghai","value":"shanghai"}]},{"label":"Japan","value":"japan"},{"label":"India","value":"india","children":[{"label":"Delhi","value":"delhi"},{"label":"Mumbai","value":"mumbai"},{"label":"Bengaluru","value":"bengaluru"}]}]},{"label":"Europe","value":"europe","children":[{"label":"France","value":"france"},{"label":"Spain","value":"spain"},{"label":"England","value":"england"}]},{"label":"Africa","value":"africa"}]}}',
+        },
+        checkedData: { value: '{{["asia"]}}' },
+        expandedData: { value: '{{["asia"]}}' },
+      },
+      events: [],
+      styles: {
+        textColor: { value: '#000' },
+        checkboxColor: { value: '#4D72FA' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
       },
     },
   },
