@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
+import { useTranslation } from 'react-i18next';
 
 export function Google({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
   const [clientId, setClientId] = useState(settings?.configs?.client_id || '');
   const [isSaving, setSaving] = useState(false);
   const [configId, setConfigId] = useState(settings?.id);
+  const { t } = useTranslation();
 
   const reset = () => {
     setClientId(settings?.configs?.client_id || '');
@@ -63,9 +65,11 @@ export function Google({ settings, updateData }) {
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
           <div className="card-title" data-cy="card-title">
-            Google
+            {t('header.organization.menus.manageSSO.google.title', 'Google')}
             <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`} data-cy="status-label">
-              {enabled ? 'Enabled' : 'Disabled'}
+              {enabled
+                ? t('header.organization.menus.manageSSO.google.enabled', 'Enabled')
+                : t('header.organization.menus.manageSSO.google.disabled', 'Disabled')}
             </span>
           </div>
           <div>
@@ -85,13 +89,13 @@ export function Google({ settings, updateData }) {
         <form noValidate>
           <div className="form-group mb-3">
             <label className="form-label" data-cy="client-id-label">
-              Client Id
+              {t('header.organization.menus.manageSSO.google.clientId', 'Client Id')}
             </label>
             <div>
               <input
                 type="text"
                 className="form-control"
-                placeholder="Enter Client Id"
+                placeholder={t('header.organization.menus.manageSSO.google.enterClientId', 'Enter Client Id')}
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
                 data-cy="client-id-input"
@@ -101,7 +105,7 @@ export function Google({ settings, updateData }) {
           {configId && (
             <div className="form-group mb-3">
               <label className="form-label" data-cy="redirect-url-label">
-                Redirect URL
+                {t('header.organization.menus.manageSSO.google.redirectUrl', 'Redirect URL')}
               </label>
               <div className="flexer-sso-input form-control">
                 <p
@@ -120,7 +124,7 @@ export function Google({ settings, updateData }) {
           )}
           <div className="form-footer">
             <button type="button" className="btn btn-light mr-2" onClick={reset} data-cy="cancel-button">
-              Cancel
+              {t('globals.cancel', 'Cancel')}
             </button>
             <button
               type="button"
@@ -129,7 +133,7 @@ export function Google({ settings, updateData }) {
               onClick={saveSettings}
               data-cy="save-button"
             >
-              Save
+              {t('globals.save', 'Save')}
             </button>
           </div>
         </form>

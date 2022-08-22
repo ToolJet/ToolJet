@@ -179,7 +179,14 @@
                         "useThisUrlToLoginDirectlyToTheWorkspace":"Use this URL to login directly to this workspace",
                         "allowDefaultSso":"Allow default SSO",
                         "allowUsersToAuthViaDefaultSso":"Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO."
-
+                    },
+                    "google":{
+                        "title":"Google",
+                        "enabled":"Enabled",
+                        "disabled":"Disabled",
+                        "clientId":"Client Id",
+                        "enterClientId":"Enter Client Id",
+                        "redirectUrl":"Redirect URL"
                     }
                 }
             }
