@@ -12,7 +12,8 @@
         "view":"View",
         "create":"Create",
         "enabled":"Enabled",
-        "disabled":"Disabled"
+        "disabled":"Disabled",
+        "yes":"Yes"
     },
     "profile": {
       "profileSettings": "Profile Settings"
@@ -200,6 +201,30 @@
                         "enterClientSecret":"Enter Client Secret",
                         "encrypted":"Encrypted",
                         "redirectUrl":"Redirect URL"
+                    },
+                    "passwordLogin":"Password Login",
+                    "environmentVariables" : {
+                        "title":"Environment Variables",
+                        "youHaventConfiguredAnyEnvironmentVariables":"You haven't configured any environment variables, press the 'Add new variable' button to create one",
+                        "variableWillBeDeletedDoYouWantToContinue":"Variable will be deleted, do you want to continue?",
+                        "addNewVariable":"Add new variable",
+                        "variableForm":{
+                            "addNewVariable":"Add new variable",
+                            "updatevariable":"Update variable",
+                            "name":"Name",
+                            "value":"Value",
+                            "enterVariableName":"Enter Variable Name",
+                            "enterValue":"Enter Value",
+                            "type":"Type",
+                            "enableEncryption":"Enable encryption",
+                            "addVariable":"Add variable"
+                        },
+                        "variableTable":{
+                            "name":"name",
+                            "value":"value",
+                            "type":"type",
+                            "secret":"secret"
+                        }
                     }
                 }
             }
