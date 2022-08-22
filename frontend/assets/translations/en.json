@@ -7,7 +7,11 @@
         "edit":"Edit",
         "search":"Search",
         "update":"Update",
-        "delete":"Delete"
+        "delete":"Delete",
+        "add":"Add1",
+        "view":"View",
+        "create":"Create"
+        
     },
     "profile": {
       "profileSettings": "Profile Settings"
@@ -146,7 +150,20 @@
                         "enterName":"Enter Name",
                         "createGroup":"Create Group",
                         "name":"Name"
-
+                    },
+                    "permissionResources":{
+                        "userGroup":"User group",
+                        "apps":"Apps",
+                        "users":"User",
+                        "permissions":"Permissions",
+                        "selectAppsToAddToTheGroup":"Select apps to add to the group",
+                        "name":"name",
+                        "selectUsersToAddToTheGroup":"Select users to add to the group",
+                        "email":"email",
+                        "resource":"resource",
+                        "createUpdateDelete":"Create/Update/Delete",
+                        "environmentVariables":"Environment variables",
+                        "folder":"Folder"
                     }
                 }
             }
