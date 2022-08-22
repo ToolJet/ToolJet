@@ -7,12 +7,14 @@ import { ListGroup } from 'react-bootstrap';
 // eslint-disable-next-line import/no-unresolved
 import i18n from 'i18next';
 import { isEqual } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
 export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom' }) => {
   const [showModal, setShow] = useState(false);
   const [selectedLang, setLanguage] = useState({});
   const [filteredLang, setFilteredLang] = useState([]);
   const languageRef = useRef(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const lang = i18n.language || 'en';
@@ -119,7 +121,7 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
         contentClassName={`lang-selection-modal ${darkMode && 'dark'}`}
       >
         <Modal.Header>
-          <Modal.Title>Change language</Modal.Title>
+          <Modal.Title>{t('header.languageSelection.changeLanguage', 'Change language')}</Modal.Title>
           <span className={`close-btn mx-4 mt-3 ${darkMode ? 'dark' : ''}`} onClick={handleClose}>
             <img src="/assets/images/icons/close.svg" width="12" height="12" />
           </span>
@@ -127,7 +129,11 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
         <Modal.Body>
           <div className="lang-list">
             <div className="search-box">
-              <SearchBox onSubmit={searchLanguage} width="100%" placeholder="Search language" />
+              <SearchBox
+                onSubmit={searchLanguage}
+                width="100%"
+                placeholder={t('header.languageSelection.searchLanguage', 'Search language')}
+              />
             </div>
             <ListGroup>{renderLanguageList()}</ListGroup>
           </div>
@@ -141,7 +147,9 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
       <OverlayTrigger
         placement={tooltipPlacement}
         delay={{ show: 250, hide: 400 }}
-        overlay={<Tooltip id="button-tooltip">{'Change language'}</Tooltip>}
+        overlay={
+          <Tooltip id="button-tooltip">{t('header.languageSelection.changeLanguage', 'Change language')}</Tooltip>
+        }
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

@@ -86,6 +86,10 @@
         "darkModeToggle":{
            "activateLightMode" :"Activate light mode",
            "activateDarkMode":"Activate dark mode"
+        },
+        "languageSelection":{
+           "changeLanguage":"Change language",
+           "searchLanguage":"Search language"
         }
     },
     "homePage":{
