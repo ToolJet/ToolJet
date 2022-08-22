@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
-import { useRenderLimit } from '@/_hooks/use-render-limit';
 
 export const Listview = function Listview({
   id,
@@ -56,12 +55,8 @@ export const Listview = function Listview({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenData]);
 
-  const renderLimit = useRenderLimit(1, exposedVariables);
-
   useEffect(() => {
-    if (renderLimit < 1 && !_.isEqual(exposedVariables.data, childrenData)) {
-      setExposedVariable('data', childrenData);
-    }
+    setExposedVariable('data', childrenData);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables]);
