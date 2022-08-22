@@ -2,8 +2,8 @@
 
 const cosmosdb = require('../lib');
 
-const AZURE_COSMOSDB_ENDPOINT = 'https://tj-test-datasource.documents.azure.com:443/';
-const AZURE_COSMOSDB_KEY = 'DCui7qlTgPLy0Czl0UCJvJPjS1VhFo4i5kFkpWVcdOZjAFYm4vuOyfeLIGpvImDvKKOqDHCNNtZjB6oFrAACew==';
+const AZURE_COSMOSDB_ENDPOINT = '';
+const AZURE_COSMOSDB_KEY = '';
 
 describe('cosmosdb', () => {
   const _cosmosdb = new cosmosdb.default();
