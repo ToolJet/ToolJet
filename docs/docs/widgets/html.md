@@ -41,6 +41,21 @@ The Raw HTML needs to be an HTML. In order to provide styles, one can add inline
 </div>
 
 
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
+
 ## Layout
 
 | Layout          | description                               | Expected value                                                                                                |

@@ -202,6 +202,7 @@ export const Container = ({
             layouts: {
               ...newComponent.layout,
             },
+            withDefaultChildren: newComponent.withDefaultChildren,
           },
         });
 
@@ -445,6 +446,7 @@ export const Container = ({
         const box = boxes[key];
         const canShowInCurrentLayout =
           box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+        const addDefaultChildren = box.withDefaultChildren;
         if (!box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
           return (
             <DraggableBox
@@ -503,6 +505,9 @@ export const Container = ({
                 hoveredComponent,
                 sideBarDebugger,
                 dataQueries,
+
+                addDefaultChildren,
+
                 setDraggingOrResizing,
               }}
               setDraggingOrResizing={setDraggingOrResizing}

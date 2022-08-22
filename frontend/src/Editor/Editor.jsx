@@ -59,6 +59,7 @@ import RealtimeAvatars from './RealtimeAvatars';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
+// eslint-disable-next-line import/no-unresolved
 import Selecto from 'react-selecto';
 
 setAutoFreeze(false);
@@ -325,6 +326,7 @@ class Editor extends React.Component {
         dataqueryService.getAll(this.state.appId, this.state.editingVersion?.id).then((data) => {
           this.setState(
             {
+              allDataQueries: data.data_queries,
               dataQueries: data.data_queries,
               filterDataQueries: data.data_queries,
               loadingDataQueries: false,
@@ -924,11 +926,7 @@ class Editor extends React.Component {
               style={{ marginTop: '3px' }}
               className="btn badge bg-light-1"
               onClick={() => {
-                runQuery(this, dataQuery.id, dataQuery.name).then(() => {
-                  toast(`Query (${dataQuery.name}) completed.`, {
-                    icon: '🚀',
-                  });
-                });
+                runQuery(this, dataQuery.id, dataQuery.name);
               }}
             >
               <div className={`query-icon ${this.props.darkMode && 'dark'}`}>
@@ -979,7 +977,7 @@ class Editor extends React.Component {
 
   filterQueries = (value) => {
     if (value) {
-      const fuse = new Fuse(this.state.filterDataQueries, { keys: ['name'] });
+      const fuse = new Fuse(this.state.allDataQueries, { keys: ['name'] });
       const results = fuse.search(value);
       this.setState({
         filterDataQueries: results.map((result) => result.item),
@@ -1152,7 +1150,7 @@ class Editor extends React.Component {
   };
 
   onAreaSelectionStart = (e) => {
-    const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 1;
+    const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 0;
     this.setState((prevState) => {
       return {
         selectionInProgress: true,
@@ -1721,7 +1719,7 @@ class Editor extends React.Component {
                         switchSidebarTab={this.switchSidebarTab}
                         apps={apps}
                         darkMode={this.props.darkMode}
-                        setSelectedComponent={this.setSelectedComponent}
+                        handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">Please select a component to inspect</center>

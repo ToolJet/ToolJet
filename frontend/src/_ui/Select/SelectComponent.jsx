@@ -56,6 +56,7 @@ export const SelectComponent = ({ options = [], value, onChange, ...restProps })
         formatOptionLabel={(option) => renderCustomOption(option)}
         menuPlacement="auto"
         maxMenuHeight={maxMenuHeight}
+        menuPortalTarget={useMenuPortal ? document.body : null}
       />
     </React.Fragment>
   );

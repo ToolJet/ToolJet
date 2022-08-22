@@ -18,6 +18,15 @@ import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 
+const ERROR_TYPES = Object.freeze({
+  ReferenceError: 'ReferenceError',
+  SyntaxError: 'SyntaxError',
+  TypeError: 'TypeError',
+  URIError: 'URIError',
+  RangeError: 'RangeError',
+  EvalError: 'EvalError',
+});
+
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
     _ref.setState(state, resolve);
@@ -73,17 +82,19 @@ export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
 
-export function runTransformation(_ref, rawData, transformation, query) {
+export function runTransformation(_ref, rawData, transformation, query, mode = 'edit') {
   const data = rawData;
-  const evalFunction = Function(
-    ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
-    transformation
-  );
+
   let result = [];
 
   const currentState = _ref.state.currentState || {};
 
   try {
+    const evalFunction = Function(
+      ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+      transformation
+    );
+
     result = evalFunction(
       data,
       moment,
@@ -95,6 +106,9 @@ export function runTransformation(_ref, rawData, transformation, query) {
     );
   } catch (err) {
     console.log('Transformation failed for query: ', query.name, err);
+    const $error = err.name;
+    const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
+    if (mode === 'edit') toast.error($errorMessage);
     result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
   }
 
@@ -586,7 +600,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         let finalData = data.data;
 
         if (query.options.enableTransformation) {
-          finalData = runTransformation(_ref, finalData, query.options.transformation, query);
+          finalData = runTransformation(_ref, finalData, query.options.transformation, query, 'edit');
         }
 
         if (calledFromQuery) {
@@ -622,7 +636,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
   });
 }
 
-export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) {
+export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit') {
   const query = _ref.state.app.data_queries.find((query) => query.id === queryId);
   let dataQuery = {};
 
@@ -716,6 +730,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
               () => {
                 resolve(data);
                 onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
+                if (mode !== 'view') toast.error(data.message);
               }
             );
           }
@@ -724,7 +739,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
           let finalData = data.data;
 
           if (dataQuery.options.enableTransformation) {
-            finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery);
+            finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery, mode);
             if (finalData.status === 'failed') {
               return _self.setState(
                 {
@@ -789,11 +804,17 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
             () => {
               resolve({ status: 'ok', data: finalData });
               onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
+
+              if (mode !== 'view') {
+                toast(`Query (${queryName}) completed.`, {
+                  icon: '🚀',
+                });
+              }
             }
           );
         })
         .catch(({ error }) => {
-          toast.error(error);
+          if (mode !== 'view') toast.error(error);
           _self.setState(
             {
               currentState: {
@@ -1065,7 +1086,8 @@ export const addNewWidgetToTheEditor = (
   currentLayout,
   shouldSnapToGrid,
   zoomLevel,
-  isInSubContainer = false
+  isInSubContainer = false,
+  addingDefault = false
 ) => {
   const componentMetaData = _.cloneDeep(componentMeta);
   const componentData = _.cloneDeep(componentMetaData);
@@ -1079,6 +1101,21 @@ export const addNewWidgetToTheEditor = (
 
   let left = 0;
   let top = 0;
+
+  if (isInSubContainer && addingDefault) {
+    const newComponent = {
+      id: uuidv4(),
+      component: componentData,
+      layout: {
+        [currentLayout]: {
+          top: top,
+          left: left,
+        },
+      },
+    };
+
+    return newComponent;
+  }
 
   const offsetFromTopOfWindow = canvasBoundingRect.top;
   const offsetFromLeftOfWindow = canvasBoundingRect.left;
@@ -1103,6 +1140,8 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.others.showOnMobile.value = true;
   }
 
+  const widgetsWithDefaultComponents = ['Listview', 'Tabs'];
+
   const newComponent = {
     id: uuidv4(),
     component: componentData,
@@ -1114,6 +1153,8 @@ export const addNewWidgetToTheEditor = (
         height: defaultHeight,
       },
     },
+
+    withDefaultChildren: widgetsWithDefaultComponents.includes(componentData.component),
   };
 
   return newComponent;

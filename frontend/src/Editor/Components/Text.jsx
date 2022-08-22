@@ -2,8 +2,22 @@ import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
 export const Text = function Text({ height, properties, styles, darkMode, registerAction }) {
-  const { textSize, textColor, textAlign, visibility, disabledState } = styles;
-
+  let {
+    textSize,
+    textColor,
+    textAlign,
+    visibility,
+    disabledState,
+    fontWeight,
+    decoration,
+    transformation,
+    fontStyle,
+    lineHeight,
+    textIndent,
+    letterSpacing,
+    wordSpacing,
+    fontVariant,
+  } = styles;
   const [loadingState, setLoadingState] = useState(false);
   const [text, setText] = useState(() => computeText());
 
@@ -31,6 +45,15 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     display: visibility ? 'flex' : 'none',
     alignItems: 'center',
     textAlign,
+    fontWeight: fontWeight ? fontWeight : fontWeight === '0' ? 0 : 'normal',
+    lineHeight: lineHeight ?? 1.5,
+    textDecoration: decoration ?? 'none',
+    textTransform: transformation ?? 'none',
+    fontStyle: fontStyle ?? 'none',
+    fontVariant: fontVariant ?? 'normal',
+    textIndent: `${textIndent}px` ?? '0px',
+    letterSpacing: `${letterSpacing}px` ?? '0px',
+    wordSpacing: `${wordSpacing}px` ?? '0px',
   };
 
   return (
