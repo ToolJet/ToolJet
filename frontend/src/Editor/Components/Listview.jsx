@@ -64,17 +64,14 @@ export const Listview = function Listview({
   const onChildRemoved = (child) => {
     const newChildrenData = _.cloneDeep(childrenData);
 
-    // const children = _.omitBy(newChildrenData, (value, key) => key === toDelte);
-
     const indexes = _.map(newChildrenData, (value, key) => {
       return key;
     });
     indexes.forEach((index) => {
       const rowChildren = _.omitBy(newChildrenData[index], (value, key) => key === child);
-      // update the row with new children
+
       newChildrenData[index] = rowChildren;
 
-      // if the row is empty, remove it
       if (_.isEmpty(newChildrenData[index])) {
         delete newChildrenData[index];
       }
