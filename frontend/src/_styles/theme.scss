@@ -5614,6 +5614,9 @@ div#driver-page-overlay {
   width: 20px !important;
   height: 25px !important;
   margin-left: 2px;
+  span{
+    transform: rotate(60deg);
+  }
 }
 
 .zoom-button-wrapper {
