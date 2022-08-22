@@ -1760,6 +1760,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      rotateButton: {
+        type: 'toggle',
+        displayName: 'Rotate button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -1832,6 +1839,7 @@ export const widgets = [
         loadingState: { value: '{{false}}' },
         alternativeText: { value: '' },
         zoomButtons: { value: '{{false}}' },
+        rotateButton: { value: '{{false}}' },
       },
       events: [],
       styles: {
