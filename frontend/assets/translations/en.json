@@ -82,6 +82,15 @@
         }
         
     },
+    "header":{
+        "darkModeToggle":{
+           "activateLightMode" :"Activate light mode",
+           "activateDarkMode":"Activate dark mode"
+        }
+    },
+    "homePage":{
+
+    },
     "manageOrgUsers":{
         "usersAndPermission":"Users & Permissions",
         "inviteNewUser":"Invite new user",
