@@ -165,6 +165,22 @@
                         "environmentVariables":"Environment variables",
                         "folder":"Folder"
                     }
+                },
+                "manageSSO":{
+                    "manageSso":"Manage SSO",
+                    "generalSettings":{
+                        "title":"General Settings",
+                        "enableSignup":"Enable Signup",
+                        "newAccrountWillBeCreated":"New account will be created for user's first time SSO sign in",
+                        "allowedDomains":"Allowed domains",
+                        "enterDomains":"Enter Domains",
+                        "supportMultipleDomains":"Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
+                        "loginUrl":"Login URL",
+                        "useThisUrlToLoginDirectlyToTheWorkspace":"Use this URL to login directly to this workspace",
+                        "allowDefaultSso":"Allow default SSO",
+                        "allowUsersToAuthViaDefaultSso":"Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO."
+
+                    }
                 }
             }
         }
