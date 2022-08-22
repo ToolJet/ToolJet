@@ -228,7 +228,26 @@
                     }
                 }
             }
-        }
+        },
+        "profileSettingPage":{
+            "profileSettings":"Profile Settings",
+            "firstName":"First name",
+            "lastName":"Last name",
+            "enterFirstName":"Enter First Name",
+            "enterLastName":"Enter Last Name",
+            "email":"Email",
+            "avatar":"Avatar",
+            "update":"Update",
+            "profile":"Profile",
+            "changePassword":"Change password",
+            "currentPassword":"Current password",
+            "newPassword":"New password",
+            "confirmNewPassword":"Confirm new password",
+            "enterCurrentPassword":"Enter current password",
+            "enterNewPassword":"Enter new password"
+        },
+        "profile":"Profile",
+        "logout":"Logout"
     },
     "homePage":{
 
