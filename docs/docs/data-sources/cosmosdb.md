@@ -30,15 +30,14 @@ You can find the endpoint and key in the **[Azure Portal](https://portal.azure.c
 
 
 ## Supported queries: 
-- [Cosmosdb](#cosmosdb)
-  - [Connection](#connection)
-  - [Supported queries:](#supported-queries)
-    - [Listing databases](#listing-databases)
-    - [Listing containers](#listing-containers)
-    - [Inserting item(s)](#inserting-items)
-    - [Retrieving an item](#retrieving-an-item)
-    - [Deleting an item](#deleting-an-item)
-    - [Querying documents](#querying-documents)
+
+- [Listing databases](#listing-databases)
+- [Listing containers](#listing-containers)
+- [Inserting item(s)](#inserting-items)
+- [Retrieving an item](#retrieving-an-item)
+- [Deleting an item](#deleting-an-item)
+- [Querying documents](#querying-documents)
+
 
 
 
