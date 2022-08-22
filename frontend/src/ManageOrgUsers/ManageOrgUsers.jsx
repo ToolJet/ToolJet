@@ -186,7 +186,7 @@ class ManageOrgUsersComponent extends React.Component {
                 <div className="col">
                   <div className="page-pretitle"></div>
                   <h2 className="page-title" data-cy="users-page-title">
-                    {this.props.t('manageOrgUsers.usersAndPermission', 'Users & Permissions')}
+                    {this.props.t('header.organization.menus.manageUsers.usersAndPermission', 'Users & Permissions')}
                   </h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
@@ -196,7 +196,7 @@ class ManageOrgUsersComponent extends React.Component {
                       onClick={() => this.setState({ showNewUserForm: true })}
                       data-cy="invite-new-user"
                     >
-                      {this.props.t('manageOrgUsers.inviteNewUser', 'Invite new user')}
+                      {this.props.t('header.organization.menus.manageUsers.inviteNewUser', 'Invite new user')}
                     </div>
                   )}
                 </div>
@@ -210,7 +210,7 @@ class ManageOrgUsersComponent extends React.Component {
                 <div className="card">
                   <div className="card-header">
                     <h3 className="card-title" data-cy="add-new-user">
-                      {this.props.t('manageOrgUsers.addNewUser', 'Add new user')}
+                      {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
                     </h3>
                   </div>
                   <div className="card-body">
@@ -221,7 +221,10 @@ class ManageOrgUsersComponent extends React.Component {
                             <input
                               type="text"
                               className="form-control"
-                              placeholder={this.props.t('manageOrgUsers.enterFirstName', 'Enter First Name')}
+                              placeholder={this.props.t(
+                                'header.organization.menus.manageUsers.enterFirstName',
+                                'Enter First Name'
+                              )}
                               name="firstName"
                               onChange={this.changeNewUserOption.bind(this, 'firstName')}
                               value={this.state.fields['firstName']}
@@ -235,7 +238,10 @@ class ManageOrgUsersComponent extends React.Component {
                             <input
                               type="text"
                               className="form-control"
-                              placeholder={this.props.t('manageOrgUsers.enterLastName', 'Enter Last Name')}
+                              placeholder={this.props.t(
+                                'header.organization.menus.manageUsers.enterLastName',
+                                'Enter Last Name'
+                              )}
                               name="lastName"
                               onChange={this.changeNewUserOption.bind(this, 'lastName')}
                               value={this.state.fields['lastName']}
@@ -249,14 +255,17 @@ class ManageOrgUsersComponent extends React.Component {
                       </div>
                       <div className="form-group mb-3 ">
                         <label className="form-label" data-cy="email-label">
-                          {this.props.t('manageOrgUsers.emailAddress', 'Email Address')}
+                          {this.props.t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
                         </label>
                         <div>
                           <input
                             type="text"
                             className="form-control"
                             aria-describedby="emailHelp"
-                            placeholder={this.props.t('manageOrgUsers.enterEmail', 'Enter Email')}
+                            placeholder={this.props.t(
+                              'header.organization.menus.manageUsers.enterEmail',
+                              'Enter Email'
+                            )}
                             name="email"
                             onChange={this.changeNewUserOption.bind(this, 'email')}
                             value={this.state.fields['email']}
@@ -279,7 +288,7 @@ class ManageOrgUsersComponent extends React.Component {
                           }
                           data-cy="cancel-button"
                         >
-                          {this.props.t('manageOrgUsers.cancel', 'Cancel')}
+                          {this.props.t('globals.cancel', 'Cancel')}
                         </button>
                         <button
                           type="submit"
@@ -287,7 +296,7 @@ class ManageOrgUsersComponent extends React.Component {
                           disabled={creatingUser}
                           data-cy="create-user-button"
                         >
-                          {this.props.t('manageOrgUsers.createUser', 'Create User')}
+                          {this.props.t('header.organization.menus.manageUsers.createUser', 'Create User')}
                         </button>
                       </div>
                     </form>
@@ -309,9 +318,15 @@ class ManageOrgUsersComponent extends React.Component {
                     <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
                       <thead>
                         <tr>
-                          <th data-cy="name-title">{this.props.t('manageOrgUsers.name', 'Name')}</th>
-                          <th data-cy="email-title">{this.props.t('manageOrgUsers.email', 'Email')}</th>
-                          <th data-cy="status-title">{this.props.t('manageOrgUsers.status', 'Status')}</th>
+                          <th data-cy="name-title">
+                            {this.props.t('header.organization.menus.manageUsers.name', 'Name')}
+                          </th>
+                          <th data-cy="email-title">
+                            {this.props.t('header.organization.menus.manageUsers.email', 'Email')}
+                          </th>
+                          <th data-cy="status-title">
+                            {this.props.t('header.organization.menus.manageUsers.status', 'Status')}
+                          </th>
                           <th className="w-1"></th>
                         </tr>
                       </thead>
@@ -419,8 +434,8 @@ class ManageOrgUsersComponent extends React.Component {
                                   data-cy="user-state"
                                 >
                                   {user.status === 'archived'
-                                    ? this.props.t('manageOrgUsers.unarchive', 'Unarchive')
-                                    : this.props.t('manageOrgUsers.archive', 'Archive')}
+                                    ? this.props.t('header.organization.menus.manageUsers.unarchive', 'Unarchive')
+                                    : this.props.t('header.organization.menus.manageUsers.archive', 'Archive')}
                                 </button>
                               </td>
                             </tr>
