@@ -32,7 +32,7 @@
   },
   "properties": {
     "endPoint": {
-      "label": "Endpoint",
+      "label": "End point",
       "key": "endpoint",
       "type": "text",
       "description": "https://your-account.documents.azure.com"
