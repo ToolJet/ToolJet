@@ -1,0 +1,18 @@
+{
+    "name": "Google Cloud Storage Explorer",
+    "description": "A file explorer template that lets you view, download, and upload files in any of your GCS bucket.",
+    "widgets": [
+        "List view",
+        "File Picker",
+        "Dropdown",
+        "Modal"
+    ],
+    "sources": [
+        {
+            "name": "GCS",
+            "id": "GCS"
+        }
+    ],
+    "id": "gcs-file-explorer",
+    "category": "product-management"
+}
