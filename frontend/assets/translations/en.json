@@ -5,7 +5,9 @@
         "save":"Save",
         "back":"Back",
         "edit":"Edit",
-        "search":"Search"
+        "search":"Search",
+        "update":"Update",
+        "delete":"Delete"
     },
     "profile": {
       "profileSettings": "Profile Settings"
@@ -134,6 +136,18 @@
                     "enterFirstName":"Enter First Name",
                     "enterLastName":"Enter Last Name",
                     "enterEmail":"Enter Email"
+                },
+                "manageGroups":{
+                    "permissions":{
+                        "userGroups":"User Groups",
+                        "createNewGroup":"Create new group",
+                        "udpateGroup":"Update group",
+                        "addNewGroup":"Add new group",
+                        "enterName":"Enter Name",
+                        "createGroup":"Create Group",
+                        "name":"Name"
+
+                    }
                 }
             }
         }
