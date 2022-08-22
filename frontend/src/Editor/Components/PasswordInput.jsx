@@ -10,7 +10,7 @@ export const PasswordInput = ({ height, validate, properties, styles, setExposed
   React.useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
+  }, [passwordValue, isValid]);
 
   return (
     <div>
