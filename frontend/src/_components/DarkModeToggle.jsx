@@ -52,7 +52,9 @@ export const DarkModeToggle = function DarkModeToggle({
       delay={{ show: 250, hide: 400 }}
       overlay={
         <Tooltip id="button-tooltip">
-          {darkMode ? t('header.darkModeToggle.activateLightMode') : t('header.darkModeToggle.activateDarkMode')}
+          {darkMode
+            ? t('header.darkModeToggle.activateLightMode', 'Activate light mode')
+            : t('header.darkModeToggle.activateDarkMode', 'Activate dark mode')}
         </Tooltip>
       }
     >
