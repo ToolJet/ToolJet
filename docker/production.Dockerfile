@@ -67,6 +67,7 @@ COPY --from=builder /app/server/.version ./app/server/.version
 COPY --from=builder /app/server/entrypoint.sh ./app/server/entrypoint.sh
 COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
+COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
 WORKDIR /app

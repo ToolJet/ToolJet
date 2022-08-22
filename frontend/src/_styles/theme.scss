@@ -2671,6 +2671,16 @@ hr {
   }
 }
 
+
+.theme-dark .wrapper {
+  .navbar .navbar-nav .active>.nav-link,
+  .navbar .navbar-nav .nav-link.active,
+  .navbar .navbar-nav .nav-link.show,
+  .navbar .navbar-nav .show>.nav-link {
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
 .home-page,
 .org-users-page {
 
@@ -5604,6 +5614,9 @@ div#driver-page-overlay {
   width: 20px !important;
   height: 25px !important;
   margin-left: 2px;
+  span{
+    transform: rotate(60deg);
+  }
 }
 
 .zoom-button-wrapper {
