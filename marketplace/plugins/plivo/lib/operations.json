@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Plivo datasource",
+  "description": "A schema defining Plivo datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "send_sms",
+          "name": "Send SMS"
+        }
+      ]
+    },
+    "send_sms": {
+      "to": {
+        "label": "To Number",
+        "key": "to",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter to number",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "from": {
+        "label": "From Number",
+        "key": "from",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter from number",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter message body",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter message body"
+      }
+    }
+  }
+}
