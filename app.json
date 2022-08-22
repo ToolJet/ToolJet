@@ -1,5 +1,6 @@
 {
   "name": "ToolJet",
+  "stack": "heroku-22",
   "description": "ToolJet is an open-source low-code framework to build and deploy internal tools.",
   "website": "https://tooljet.io/",
   "repository": "https://github.com/tooljet/tooljet",
