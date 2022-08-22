@@ -42,6 +42,8 @@ export const SubContainer = ({
   setDraggingOrResizing = () => {},
 }) => {
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
+  const [widgetManagerToCanvas, setWidgetManagerToCanvas] = useState();
+
   useEffect(() => {
     if (parentRef.current) {
       const canvasWidth = getContainerCanvasWidth();
@@ -94,6 +96,7 @@ export const SubContainer = ({
   const { draggingState } = useDragLayer((monitor) => {
     // TODO: Need to move to a performant version of the block below
     if (monitor.getItem()) {
+      setWidgetManagerToCanvas(monitor.getItem().component);
       if (monitor.getItem().id === undefined) {
         if (parentRef.current) {
           const currentOffset = monitor.getSourceClientOffset();
@@ -379,6 +382,7 @@ export const SubContainer = ({
             setDraggingOrResizing,
           }}
           setDraggingOrResizing={setDraggingOrResizing}
+          widgetManagerToCanvas={widgetManagerToCanvas}
         />
       ))}
 
