@@ -54,8 +54,9 @@ describe('cosmosdb', () => {
   it('should insert one or many records into a container', async () => {
     queryOptions.operation = 'insert_items';
     queryOptions.items = [
-      { id: 'test-id-1', name: 'sam', email: 'sam@test.in' },
-      { id: 'test-id-2', name: 'jon', email: 'jon@test.io' },
+      { id: 'test-id-1', name: 'sam', email: 'sam@test.in', age: 25 },
+      { id: 'test-id-2', name: 'jon', email: 'jon@test.io', age: 30 },
+      { id: 'test-id-3', name: 'dev', email: 'dev@test.io', age: 15 },
     ];
 
     const { status, data } = await _cosmosdb.run(sourceOptions, queryOptions, 'cosmos-db-test');
@@ -68,7 +69,6 @@ describe('cosmosdb', () => {
     queryOptions.itemId = 'test-id-1';
 
     const { status, data } = await _cosmosdb.run(sourceOptions, queryOptions, 'cosmos-db-test');
-    console.log(data);
     expect(status).toBe('ok');
     expect(data.id).toBe(queryOptions.itemId);
   });
@@ -80,5 +80,13 @@ describe('cosmosdb', () => {
     const { status, data } = await _cosmosdb.run(sourceOptions, queryOptions, 'cosmos-db-test');
     expect(status).toBe('ok');
     expect(data.message).toBe('Item deleted');
+  });
+
+  it('should query the items in a container using SQL-like syntax', async () => {
+    queryOptions.operation = 'query_database';
+    queryOptions.query = 'SELECT * FROM c WHERE c.age > 20 AND c.age <= 30';
+    const { status, data } = await _cosmosdb.run(sourceOptions, queryOptions, 'cosmos-db-test');
+    expect(status).toBe('ok');
+    expect(data instanceof Array).toBe(true);
   });
 });
