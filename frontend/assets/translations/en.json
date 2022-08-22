@@ -10,8 +10,9 @@
         "delete":"Delete",
         "add":"Add1",
         "view":"View",
-        "create":"Create"
-        
+        "create":"Create",
+        "enabled":"Enabled",
+        "disabled":"Disabled"
     },
     "profile": {
       "profileSettings": "Profile Settings"
@@ -186,6 +187,18 @@
                         "disabled":"Disabled",
                         "clientId":"Client Id",
                         "enterClientId":"Enter Client Id",
+                        "redirectUrl":"Redirect URL"
+                    },
+                    "github":{
+                        "title":"Github",
+                        "hostName":"Host Name",
+                        "enterHostName":"Enter Host Name",
+                        "requiredIfGithubIsSelfHosted":"Required if GitHub is self hosted",
+                        "clientId":"Client Id",
+                        "enterClientId":"Enter Client Id",
+                        "clientSecret":"Client Secret",
+                        "enterClientSecret":"Enter Client Secret",
+                        "encrypted":"Encrypted",
                         "redirectUrl":"Redirect URL"
                     }
                 }
