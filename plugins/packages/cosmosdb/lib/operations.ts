@@ -1,6 +1,6 @@
 import { Container, CosmosClient } from '@azure/cosmos';
 
-export function listDatabases(client: CosmosClient): Promise<object> {
+export async function listDatabases(client: CosmosClient): Promise<object> {
   return new Promise((resolve, reject) => {
     client.databases
       .readAll({})
@@ -18,17 +18,24 @@ export function listDatabases(client: CosmosClient): Promise<object> {
 
 export function listContainers(client: CosmosClient, database: string) {
   return new Promise((resolve, reject) => {
-    client
-      .database(database)
-      .containers.readAll()
-      .fetchAll()
-      .then((data) => {
-        const containers = data.resources.map((container) => container.id);
-        resolve(containers);
+    lookUpDatabase(client, database)
+      .then(() => {
+        client
+          .database(database)
+          .containers.readAll()
+          .fetchAll()
+          .then((data) => {
+            const containers = data.resources.map((container) => container.id);
+            resolve(containers);
+          })
+          .catch((err) => {
+            reject(err);
+          });
       })
       .catch((err) => {
         reject(err);
       })
+
       .finally(() => client.dispose());
   });
 }
@@ -109,4 +116,21 @@ function lookUpContainer(client: CosmosClient, database: string, containerId: st
         reject(err);
       });
   });
+}
+
+function lookUpDatabase(client: CosmosClient, database: string) {
+  return new Promise((resolve, reject) => {
+    client.databases
+      .createIfNotExists({ id: database })
+      .then((data) => {
+        resolve(data);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  })
+    .catch((err) => {
+      throw new Error(err);
+    })
+    .finally(() => client.dispose());
 }

@@ -49,10 +49,27 @@ export default class Cosmosdb implements QueryService {
     const { endpoint, key } = sourceOptions;
     const genericClient = new CosmosClient({ endpoint, key });
 
-    await genericClient.databases.readAll({}).fetchAll();
-
+    await genericClient.getDatabaseAccount();
     return {
       status: 'ok',
+    };
+  }
+
+  async deleteDatabase(sourceOptions: SourceOptions, databaseId: string) {
+    const { endpoint, key } = sourceOptions;
+    const genericClient = new CosmosClient({ endpoint, key });
+    //check if database exits
+    const database = await (await genericClient.databases.readAll().fetchAll()).resources;
+
+    if (database.find((db) => db.id === databaseId)) {
+      await genericClient.database(databaseId).delete();
+      return {
+        status: 'ok',
+      };
+    }
+
+    return {
+      status: 'Database with id ' + databaseId + ' does not exist',
     };
   }
 }
