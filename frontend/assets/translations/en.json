@@ -251,15 +251,14 @@
     },
     "homePage":{
         "appCard":{
-            "changeIcon":"Change Icon1",
-            "addToFolder":"Add to folder1",
+            "changeIcon":"Change Icon",
+            "addToFolder":"Add to folder",
             "move":"Move",
             "to":"to",
             "selectFolder":"Select folder",
-            "deleteApp":"Delete app1",
-            "theAppAndTheAssociatedDataWillBePermanentlyDeleted":"The app and the associated data will be permanently deleted, do you want to continue?",
-            "exportApp":"Export app1",
-            "cloneApp":"Clone app1",
+            "deleteApp":"Delete app",
+            "exportApp":"Export app",
+            "cloneApp":"Clone app",
             "launch":"Launch",
             "maintenance":"Maintenance",
             "appDoesNotHaveADeployedVersion":"App does not have a deployed version",
@@ -277,6 +276,7 @@
             "deleteFolder":"Delete folder",
             "folderName":"Folder name",
             "areYouSureYouWantToDeleteTheFolder":"Are you sure you want to delete the folder? Apps within the folder will not be deleted."
+           
         },
         "header":{
             "createNewApplication":"Create new application",
@@ -289,7 +289,11 @@
             "to":"to"
         },
         "noApplicationFound":" No Applications found",
-        "thisFolderIsEmpty":"This folder is empty"
+        "thisFolderIsEmpty":"This folder is empty",
+        "theAppAndTheAssociatedDataWillBePermanentlyDeleted":"The app and the associated data will be permanently deleted, do you want to continue?",
+        "theAppWillBeRemovedFromThisFolderDoYouWantToContinue":"The app will be removed from this folder, do you want to continue?",
+        "change":"Change"
+
     },
     "widgetManager": {
         "commonlyUsed": "commonly used",
