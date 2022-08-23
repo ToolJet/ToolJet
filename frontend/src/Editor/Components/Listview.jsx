@@ -56,7 +56,12 @@ export const Listview = function Listview({
   }, [childrenData]);
 
   useEffect(() => {
-    setExposedVariable('data', childrenData);
+    const currentExposedVariables = _.cloneDeep(exposedVariables);
+    const currentChildrenData = _.cloneDeep(childrenData);
+
+    if (!_.isEqual(currentExposedVariables, currentChildrenData)) {
+      setExposedVariable('data', currentChildrenData);
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables]);
