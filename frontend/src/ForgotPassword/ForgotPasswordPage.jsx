@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { validateEmail } from '../_helpers/utils';
 import { authenticationService } from '@/_services';
-
-class ForgotPassword extends React.Component {
+import { withTranslation } from 'react-i18next';
+class ForgotPasswordComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -59,15 +59,19 @@ class ForgotPassword extends React.Component {
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
             <div className="card-body">
-              <h2 className="card-title text-center mb-4">Forgot Password</h2>
+              <h2 className="card-title text-center mb-4">
+                {this.props.t('loginAndSignUpAndForgotPassword.forgotPassword', 'Forgot Password')}
+              </h2>
               <div className="mb-3">
-                <label className="form-label">Email address</label>
+                <label className="form-label">
+                  {this.props.t('loginAndSignUpAndForgotPassword.emailAddress', 'Email address')}
+                </label>
                 <input
                   onChange={this.handleChange}
                   name="email"
                   type="email"
                   className="form-control"
-                  placeholder="Enter email"
+                  placeholder={this.props.t('loginAndSignUpAndForgotPassword.enterEmail', 'Enter email')}
                   data-testid="emailField"
                 />
               </div>
@@ -78,15 +82,15 @@ class ForgotPassword extends React.Component {
                   onClick={this.handleClick}
                   disabled={isLoading || !this.state.email}
                 >
-                  Reset Password
+                  {this.props.t('loginAndSignUpAndForgotPassword.resetPassword', 'Reset Password')}
                 </button>
               </div>
             </div>
           </form>
           <div className="text-center text-muted mt-3">
-            Don&apos;t have account yet? &nbsp;
+            {this.props.t('loginAndSignUpAndForgotPassword.dontHaveAccountYet', `Don't have account yet?`)}
             <Link to={'/signup'} tabIndex="-1">
-              Sign up
+              {this.props.t('loginAndSignUpAndForgotPassword.signUp', `Sign up`)}
             </Link>
           </div>
         </div>
@@ -95,4 +99,4 @@ class ForgotPassword extends React.Component {
   }
 }
 
-export { ForgotPassword };
+export const ForgotPassword = withTranslation()(ForgotPasswordComponent);
