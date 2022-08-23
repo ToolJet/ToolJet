@@ -48,7 +48,7 @@
     "prebuild:frontend": "npm --prefix frontend install --production=false",
     "build:frontend": "NODE_ENV=production npm --prefix frontend run build",
     "postbuild:frontend": "npm --prefix frontend prune --production",
-    "prebuild:server": "npm --prefix server install",
+    "prebuild:server": "npm --prefix server install --production=false",
     "build:server": "NODE_ENV=production npm --prefix server run build",
     "postbuild:server": "npm --prefix server prune --production",
     "build": "npm run build:plugins:prod && npm run build:frontend && npm run build:server",
