@@ -23,7 +23,7 @@ export class CommentService {
     @InjectRepository(CommentUsers)
     private commentUsersRepository: Repository<CommentUsers>,
     private emailService: EmailService
-  ) { }
+  ) {}
 
   public async createComment(createCommentDto: CreateCommentDto, user: User): Promise<Comment> {
     try {
