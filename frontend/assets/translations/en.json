@@ -18,6 +18,24 @@
     "profile": {
       "profileSettings": "Profile Settings"
     },
+    "loginAndSignUpAndForgotPassword":{
+        "forgotPassword":"Forgot Password",
+        "emailAddress":"Email address",
+        "enterEmail":"Enter email",
+        "resetPassword":"Reset Password",
+        "dontHaveAccountYet":"Don't have account yet?",
+        "signIn":"Sign in",
+        "signUp":"Sign up",
+        "createAToolJetAccount":"Create a ToolJet account",
+        "enterYourBusinessEmail":"Enter your business email",
+        "alreadyHaveAnAccount":"Already have an account?",
+        "password":"Password",
+        "showPassword":"show password",
+        "loginTo":"Login to",
+        "yourAccount":"your account",
+        "noLoginMethodsEnabledForThisWorkspace":"No login methods enabled for this workspace"
+
+    },
     "editor": {
         "preview": "Preview",
         "share":"Share",

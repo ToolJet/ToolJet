@@ -7,8 +7,8 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
-
-class LoginPage extends React.Component {
+import { withTranslation } from 'react-i18next';
+class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -151,32 +151,42 @@ class LoginPage extends React.Component {
               <ShowLoading />
             ) : (
               <div className="card-body">
-                {!configs && <div className="text-center">No login methods enabled for this workspace</div>}
+                {!configs && (
+                  <div className="text-center">
+                    {this.props.t(
+                      'loginAndSignUpAndForgotPassword.noLoginMethodsEnabledForThisWorkspace',
+                      ' No login methods enabled for this workspace'
+                    )}
+                  </div>
+                )}
                 {configs?.form?.enabled && (
                   <div>
                     <h2 className="card-title text-center mb-4" data-cy="login-page-header">
-                      Login to {this.single_organization ? 'your account' : configs?.name || 'your account'}
+                      {this.props.t('loginAndSignUpAndForgotPassword.loginTo', 'Login to')}{' '}
+                      {this.single_organization
+                        ? this.props.t('loginAndSignUpAndForgotPassword.yourAccount', 'your account')
+                        : configs?.name || this.props.t('loginAndSignUpAndForgotPassword.yourAccount', 'your account')}
                     </h2>
                     <div className="mb-3">
                       <label className="form-label" data-cy="email-label">
-                        Email address
+                        {this.props.t('loginAndSignUpAndForgotPassword.emailAddress', 'Email address')}
                       </label>
                       <input
                         onChange={this.handleChange}
                         name="email"
                         type="email"
                         className="form-control"
-                        placeholder="Email"
+                        placeholder={this.props.t('loginAndSignUpAndForgotPassword.enterEmail', 'Enter email')}
                         data-testid="emailField"
                         data-cy="email-text-field"
                       />
                     </div>
                     <div className="mb-2">
                       <label className="form-label" data-cy="password-label">
-                        Password
+                        {this.props.t('loginAndSignUpAndForgotPassword.password', 'Password')}
                         <span className="form-label-description">
                           <Link to={'/forgot-password'} tabIndex="-1" data-cy="forgot-password-link">
-                            Forgot password
+                            {this.props.t('loginAndSignUpAndForgotPassword.forgotPassword', 'Forgot Password')}
                           </Link>
                         </span>
                       </label>
@@ -186,7 +196,7 @@ class LoginPage extends React.Component {
                           name="password"
                           type={this.state.showPassword ? 'text' : 'password'}
                           className="form-control"
-                          placeholder="Password"
+                          placeholder={this.props.t('loginAndSignUpAndForgotPassword.password', 'Password')}
                           autoComplete="off"
                           data-testid="passwordField"
                           data-cy="password-text-field"
@@ -208,7 +218,7 @@ class LoginPage extends React.Component {
                         htmlFor="check-input"
                         data-cy="show-password-label"
                       >
-                        show password
+                        {this.props.t('loginAndSignUpAndForgotPassword.showPassword', 'show password')}
                       </label>
                     </div>
                   </div>
@@ -225,7 +235,7 @@ class LoginPage extends React.Component {
                       onClick={this.authUser}
                       data-cy="login-button"
                     >
-                      Sign in
+                      {this.props.t('loginAndSignUpAndForgotPassword.signIn', 'Sign in')}
                     </button>
                   )}
                   {this.state.configs?.google?.enabled && (
@@ -241,9 +251,9 @@ class LoginPage extends React.Component {
           </form>
           {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
             <div className="text-center text-secondary mt-3" data-cy="sign-up-message">
-              Don&apos;t have account yet? &nbsp;
+              {this.props.t('loginAndSignUpAndForgotPassword.dontHaveAccountYet', `Don't have account yet?`)}
               <Link to={'/signup'} tabIndex="-1" data-cy="sign-up-link">
-                Sign up
+                {this.props.t('loginAndSignUpAndForgotPassword.signUp', `Sign up`)}
               </Link>
             </div>
           )}
@@ -258,4 +268,4 @@ class LoginPage extends React.Component {
   }
 }
 
-export { LoginPage };
+export const LoginPage = withTranslation()(LoginPageComponent);
