@@ -25,6 +25,7 @@ import { reducer, reducerActions, initialState } from './reducer';
 import customFilter from './custom-filter';
 import generateColumnsData from './columns';
 import generateActionsData from './columns/actions';
+import IndeterminateCheckbox from './IndeterminateCheckbox';
 
 export function Table({
   id,
@@ -198,32 +199,6 @@ export function Table({
     });
     return wrapOption?.textWrap;
   };
-
-  const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
-    const defaultRef = React.useRef();
-    const resolvedRef = ref || defaultRef;
-
-    React.useEffect(() => {
-      resolvedRef.current.indeterminate = indeterminate;
-    }, [resolvedRef, indeterminate]);
-
-    return (
-      <>
-        <input
-          type="checkbox"
-          ref={resolvedRef}
-          style={{
-            width: 15,
-            height: 15,
-            marginTop: 8,
-            marginLeft: 10,
-          }}
-          onClick={(event) => event.stopPropagation()}
-          {...rest}
-        />
-      </>
-    );
-  });
 
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
 
