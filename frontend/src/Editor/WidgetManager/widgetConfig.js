@@ -1760,6 +1760,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      rotateButton: {
+        type: 'toggle',
+        displayName: 'Rotate button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -1832,6 +1839,7 @@ export const widgets = [
         loadingState: { value: '{{false}}' },
         alternativeText: { value: '' },
         zoomButtons: { value: '{{false}}' },
+        rotateButton: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -1840,6 +1848,7 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         imageFit: { value: 'contain' },
+        backgroundColor: { value: '#ffffff00' },
       },
     },
   },
@@ -3009,8 +3018,47 @@ export const widgets = [
     description: 'Tabs component',
     defaultSize: {
       width: 30,
-      height: 200,
+      height: 300,
     },
+    defaultChildren: [
+      {
+        componentName: 'Image',
+        layout: {
+          top: 60,
+          left: 37,
+          height: 100,
+        },
+        tab: 0,
+        properties: ['source'],
+        defaultValue: {
+          source: 'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg',
+        },
+      },
+      {
+        componentName: 'Text',
+        layout: {
+          top: 100,
+          left: 17,
+          height: 50,
+          width: 34,
+        },
+        tab: 1,
+        properties: ['text'],
+        defaultValue: {
+          text: 'Open-source low-code framework to build & deploy internal tools within minutes.',
+        },
+      },
+      {
+        componentName: 'Table',
+        layout: {
+          top: 0,
+          left: 1,
+          width: 42,
+          height: 250,
+        },
+        tab: 2,
+      },
+    ],
     component: 'Tabs',
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
