@@ -8,6 +8,7 @@ import { CreatePluginDto } from '../dto/create-plugin.dto';
 import { UpdatePluginDto } from '../dto/update-plugin.dto';
 import { FilesService } from './files.service';
 import { encode } from 'js-base64';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PluginsService {
@@ -15,7 +16,8 @@ export class PluginsService {
     private readonly filesService: FilesService,
     private connection: Connection,
     @InjectRepository(Plugin)
-    private pluginsRepository: Repository<Plugin>
+    private pluginsRepository: Repository<Plugin>,
+    private configService: ConfigService
   ) {}
   async create(
     createPluginDto: CreatePluginDto,
@@ -71,11 +73,13 @@ export class PluginsService {
 
   async fetchPluginFiles(id: string) {
     if (process.env.NODE_ENV === 'production') {
+      const host = this.configService.get<string>('MARKETPLACE_URL', 'https://integrations.tooljet.com');
+
       const promises = await Promise.all([
-        fetch(`https://marketplace.tooljet.com/marketplace-assets/${id}/dist/index.js`),
-        fetch(`https://marketplace.tooljet.com/marketplace-assets/${id}/lib/operations.json`),
-        fetch(`https://marketplace.tooljet.com/marketplace-assets/${id}/lib/icon.svg`),
-        fetch(`https://marketplace.tooljet.com/marketplace-assets/${id}/lib/manifest.json`),
+        fetch(`${host}/marketplace-assets/${id}/dist/index.js`),
+        fetch(`${host}/marketplace-assets/${id}/lib/operations.json`),
+        fetch(`${host}/marketplace-assets/${id}/lib/icon.svg`),
+        fetch(`${host}/marketplace-assets/${id}/lib/manifest.json`),
       ]);
 
       const files = promises.map((promise) => {
