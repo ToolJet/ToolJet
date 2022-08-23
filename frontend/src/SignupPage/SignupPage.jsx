@@ -5,8 +5,9 @@ import { Link } from 'react-router-dom';
 import { validateEmail } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import { withTranslation } from 'react-i18next';
 
-class SignupPage extends React.Component {
+class SignupPageComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -88,7 +89,9 @@ class SignupPage extends React.Component {
           <form className="card card-md" action="." method="get" autoComplete="off">
             {!signupSuccess && (
               <div className="card-body">
-                <h2 className="card-title text-center mb-4">Create a ToolJet account</h2>
+                <h2 className="card-title text-center mb-4">
+                  {this.props.t('loginAndSignUpAndForgotPassword.createAToolJetAccount', 'Create a ToolJet account')}
+                </h2>
                 {this.ssoConfigs.enableSignUp && (
                   <div className="d-flex flex-column align-items-center separator-bottom">
                     {this.ssoConfigs.configs?.google?.enabled && (
@@ -109,29 +112,41 @@ class SignupPage extends React.Component {
                   </div>
                 )}
                 <div className="mb-3">
-                  <label className="form-label">Email address</label>
+                  <label className="form-label">
+                    {this.props.t('loginAndSignUpAndForgotPassword.emailAddress', 'Email address')}
+                  </label>
                   <input
                     onChange={this.handleChange}
                     name="email"
                     type="email"
                     className="form-control"
-                    placeholder="Enter your business email"
+                    placeholder={this.props.t(
+                      'loginAndSignUpAndForgotPassword.enterYourBusinessEmail',
+                      'Enter your business email'
+                    )}
                   />
                 </div>
                 <div className="form-footer">
                   <button className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`} onClick={this.signup}>
-                    Sign up
+                    {this.props.t('loginAndSignUpAndForgotPassword.signUp', 'Sign up')}
                   </button>
                 </div>
               </div>
             )}
-            {signupSuccess && <div className="card-body">Please check your email for confirmation link</div>}
+            {signupSuccess && (
+              <div className="card-body">
+                {this.props.t(
+                  'loginAndSignUpAndForgotPassword.pleaseCheckYourEmailForConfirmationLink',
+                  'Please check your email for confirmation link'
+                )}
+              </div>
+            )}
           </form>
           {!signupSuccess && (
             <div className="text-center text-muted mt-3">
-              Already have an account? &nbsp;
+              {this.props.t('loginAndSignUpAndForgotPassword.alreadyHaveAnAccount', 'Already have an account?')}
               <Link to={'/login'} tabIndex="-1">
-                Sign in
+                {this.props.t('loginAndSignUpAndForgotPassword.signIn', 'Sign in')}
               </Link>
             </div>
           )}
@@ -141,4 +156,4 @@ class SignupPage extends React.Component {
   }
 }
 
-export { SignupPage };
+export const SignupPage = withTranslation()(SignupPageComponent);
