@@ -7,13 +7,6 @@
     "id": "cassandra"
   },
   {
-    "name": "Sqlite plugin",
-    "description": "Datasource plugin for sqlite",
-    "author": "Tooljet",
-    "version": "1.0.0",
-    "id": "sqlite"
-  },
-  {
     "name": "Plivo plugin",
     "description": "API plugin for plivo",
     "author": "Tooljet",
