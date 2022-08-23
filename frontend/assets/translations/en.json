@@ -278,6 +278,11 @@
             "folderName":"Folder name",
             "areYouSureYouWantToDeleteTheFolder":"Are you sure you want to delete the folder? Apps within the folder will not be deleted."
         },
+        "header":{
+            "createNewApplication":"Create new application",
+            "import":"Import",
+            "chooseFromTemplate":"Choose from template"
+        },
         "noApplicationFound":" No Applications found",
         "thisFolderIsEmpty":"This folder is empty"
     },
