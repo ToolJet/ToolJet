@@ -283,6 +283,11 @@
             "import":"Import",
             "chooseFromTemplate":"Choose from template"
         },
+        "pagination":{
+            "showing":"Showing",
+            "of":"of",
+            "to":"to"
+        },
         "noApplicationFound":" No Applications found",
         "thisFolderIsEmpty":"This folder is empty"
     },
