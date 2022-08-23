@@ -13,7 +13,8 @@
         "create":"Create",
         "enabled":"Enabled",
         "disabled":"Disabled",
-        "yes":"Yes"
+        "yes":"Yes",
+        "submit":"Submit"
     },
     "profile": {
       "profileSettings": "Profile Settings"
@@ -34,8 +35,9 @@
         "loginTo":"Login to",
         "yourAccount":"your account",
         "noLoginMethodsEnabledForThisWorkspace":"No login methods enabled for this workspace",
-        "pleaseCheckYourEmailForConfirmationLink":"Please check your email for confirmation link"
-
+        "pleaseCheckYourEmailForConfirmationLink":"Please check your email for confirmation link",
+        "newPassword":"New Password",
+        "passwordConfirmation":"Password Confirmation"
     },
     "editor": {
         "preview": "Preview",
