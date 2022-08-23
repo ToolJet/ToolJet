@@ -28,6 +28,7 @@ import { OrgEnvironmentVariablesAbilityFactory } from './abilities/org-environme
     AppsAbilityFactory,
     ThreadsAbilityFactory,
     CommentsAbilityFactory,
+    PluginsAbilityFactory,
     FoldersAbilityFactory,
     OrgEnvironmentVariablesAbilityFactory,
   ],
