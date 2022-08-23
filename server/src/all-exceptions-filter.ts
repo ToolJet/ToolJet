@@ -24,13 +24,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest();
 
     let errorResponse: ErrorResponse;
+    const message = exception?.response?.message || exception.message;
 
     if (exception instanceof HttpException) {
-      errorResponse = { status: exception.getStatus(), message: exception.message };
+      errorResponse = { status: exception.getStatus(), message };
     } else if (exception instanceof QueryFailedError) {
       errorResponse = this.handleQueryExceptions(exception);
     } else {
-      errorResponse = { message: exception.message, status: HttpStatus.INTERNAL_SERVER_ERROR };
+      errorResponse = { message, status: HttpStatus.INTERNAL_SERVER_ERROR };
     }
 
     if (errorResponse.status === HttpStatus.INTERNAL_SERVER_ERROR) {
