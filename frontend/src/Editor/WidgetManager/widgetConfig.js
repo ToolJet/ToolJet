@@ -2692,6 +2692,7 @@ export const widgets = [
         options: [
           { name: 'Autodetect from extension', value: 'auto-detect' },
           { name: 'CSV', value: 'csv' },
+          { name: 'Microsoft Excel - xls', value: 'vnd.ms-excel' },
         ],
         validation: {
           schema: {

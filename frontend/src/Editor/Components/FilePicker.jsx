@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 
 export const FilePicker = ({
   width,
@@ -182,7 +183,9 @@ export const FilePicker = ({
       content: readFileAsText,
       dataURL: readFileAsDataURL, // TODO: Fix dataURL to have correct format
       base64Data: readFileAsDataURL,
-      parsedData: shouldProcessFileParsing ? await processFileContent(file.type, readFileAsText) : null,
+      parsedData: shouldProcessFileParsing
+        ? await processFileContent(file.type, { readFileAsText, readFileAsDataURL })
+        : null,
       filePath: file.path,
     };
   };
@@ -375,6 +378,7 @@ FilePicker.AcceptedFiles = ({ children, width, height }) => {
   );
 };
 
+//* CSV Parser
 const processCSV = (str, delimiter = ',') => {
   const headers = str.slice(0, str.indexOf('\n')).split(delimiter);
   const rows = str.slice(str.indexOf('\n') + 1).split('\n');
@@ -396,10 +400,24 @@ const processCSV = (str, delimiter = ',') => {
   }
 };
 
+//* XLSX Parser
+const processXLSX = (file) => {
+  try {
+    const workbook = XLSX.read(file, { type: 'base64' });
+    const sheet_name_list = workbook.SheetNames;
+    const xlData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+    return xlData;
+  } catch (error) {
+    handleErrors(error);
+  }
+};
+
 const processFileContent = (fileType, fileContent) => {
   switch (fileType) {
     case 'text/csv':
-      return processCSV(fileContent);
+      return processCSV(fileContent['readFileAsText']);
+    case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 'application/vnd.ms-excel':
+      return processXLSX(fileContent['readFileAsDataURL']);
 
     default:
       break;
