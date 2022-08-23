@@ -250,7 +250,23 @@
         "logout":"Logout"
     },
     "homePage":{
+        "appCard":{
+            "changeIcon":"Change Icon1",
+            "addToFolder":"Add to folder1",
+            "move":"Move",
+            "to":"to",
+            "selectFolder":"Select folder",
+            "deleteApp":"Delete app1",
+            "theAppAndTheAssociatedDataWillBePermanentlyDeleted":"The app and the associated data will be permanently deleted, do you want to continue?",
+            "exportApp":"Export app1",
+            "cloneApp":"Clone app1",
+            "launch":"Launch",
+            "maintenance":"Maintenance",
+            "appDoesNotHaveADeployedVersion":"App does not have a deployed version",
+            "openInAppViewer":"Open in app viewer",
+            "removeFromFolder":"Remove from folder1"
 
+        }
     },
     "widgetManager": {
         "commonlyUsed": "commonly used",
