@@ -35,7 +35,11 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const disabledState = styles?.disabledState?.value ?? false;
   const parsedDisabledState = disabledState;
 
-  const actions = component.definition.properties.actions || { value: [] };
+  const actionButtonRadius = styles.actionButtonRadius ? parseFloat(styles.actionButtonRadius) : 0;
+
+  const actions = {
+    value: (component.definition.properties.actions?.value ?? []).map((action) => ({ ...action, actionButtonRadius })),
+  };
 
   return {
     color,
@@ -53,6 +57,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     borderRadius,
     parsedWidgetVisibility,
     parsedDisabledState,
+    actionButtonRadius,
     loadingState,
     actions,
   };

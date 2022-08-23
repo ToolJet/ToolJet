@@ -24,6 +24,7 @@ import loadPropertiesAndStyles from './load-properties-and-styles';
 import { reducer, reducerActions, initialState } from './reducer';
 import customFilter from './custom-filter';
 import generateColumnsData from './columns';
+import generateActionsData from './columns/actions';
 
 export function Table({
   id,
@@ -64,6 +65,7 @@ export function Table({
     borderRadius,
     parsedWidgetVisibility,
     parsedDisabledState,
+    actionButtonRadius,
     actions,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
@@ -182,8 +184,13 @@ export function Table({
     tableRef,
   });
 
-  const leftActions = () => actions.value.filter((action) => action.position === 'left');
-  const rightActions = () => actions.value.filter((action) => [undefined, 'right'].includes(action.position));
+  const [leftActionsCellData, rightActionsCellData] = generateActionsData({
+    actions,
+    columnSizes,
+    defaultColumn,
+    actionButtonRadius,
+    fireEvent,
+  });
 
   const textWrapActions = (id) => {
     let wrapOption = tableDetails.columnProperties?.find((item) => {
@@ -191,82 +198,6 @@ export function Table({
     });
     return wrapOption?.textWrap;
   };
-
-  const leftActionsCellData =
-    leftActions().length > 0
-      ? [
-          {
-            id: 'leftActions',
-            Header: 'Actions',
-            accessor: 'edit',
-            width: columnSizes.leftActions || defaultColumn.width,
-            Cell: (cell) => {
-              return leftActions().map((action) => (
-                <button
-                  key={action.name}
-                  className="btn btn-sm m-1 btn-light"
-                  style={{
-                    background: action.backgroundColor,
-                    color: action.textColor,
-                    borderRadius: component.definition.styles.actionButtonRadius?.value
-                      ? parseFloat(component.definition.styles.actionButtonRadius?.value)
-                      : 0,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEvent('onTableActionButtonClicked', {
-                      component,
-                      data: cell.row.original,
-                      rowId: cell.row.id,
-                      action,
-                    });
-                  }}
-                >
-                  {action.buttonText}
-                </button>
-              ));
-            },
-          },
-        ]
-      : [];
-
-  const rightActionsCellData =
-    rightActions().length > 0
-      ? [
-          {
-            id: 'rightActions',
-            Header: 'Actions',
-            accessor: 'edit',
-            width: columnSizes.rightActions || defaultColumn.width,
-            Cell: (cell) => {
-              return rightActions().map((action) => (
-                <button
-                  key={action.name}
-                  className="btn btn-sm m-1 btn-light"
-                  style={{
-                    background: action.backgroundColor,
-                    color: action.textColor,
-                    borderRadius: component.definition.styles.actionButtonRadius?.value
-                      ? parseFloat(component.definition.styles.actionButtonRadius?.value)
-                      : 0,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEvent('onTableActionButtonClicked', {
-                      component,
-                      data: cell.row.original,
-                      rowId: cell.row.id,
-                      action,
-                    });
-                  }}
-                >
-                  {action.buttonText}
-                </button>
-              ));
-            },
-          },
-        ]
-      : [];
 
   const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
     const defaultRef = React.useRef();
