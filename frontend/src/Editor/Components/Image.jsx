@@ -4,7 +4,7 @@ import LazyLoad, { forceCheck } from 'react-lazyload';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 export const Image = function Image({ component, height, properties, styles, fireEvent, width }) {
-  const { source, loadingState, alternativeText, zoomButtons } = properties;
+  const { source, loadingState, alternativeText, zoomButtons, rotateButton } = properties;
   const { visibility, disabledState, borderType, backgroundColor, padding, imageFit } = styles;
   const {
     definition: { events },
@@ -13,6 +13,7 @@ export const Image = function Image({ component, height, properties, styles, fir
   const widgetVisibility = visibility ?? true;
   const imageRef = useRef(null);
   const [imageOffset, setImageOffset] = useState(0);
+  const [rotation, setRotation] = useState(0);
 
   function Placeholder() {
     return <div className="skeleton-image" style={{ objectFit: 'contain', height }}></div>;
@@ -32,6 +33,30 @@ export const Image = function Image({ component, height, properties, styles, fir
   useEffect(() => {
     forceCheck();
   }, [visibility]);
+
+  const rotateImage = () => setRotation((prevValue) => (prevValue === 270 ? 0 : prevValue + 90));
+
+  const renderImage = () => (
+    <img
+      src={source}
+      className={`zoom-image-wrap ${borderType !== 'none' ? borderType : ''}`}
+      style={{
+        backgroundColor,
+        padding: Number.parseInt(padding),
+        objectFit: imageFit ? imageFit : 'contain',
+        cursor: hasOnClickEvent ? 'pointer' : 'inherit',
+        pointerEvents: 'auto',
+        width,
+        height,
+        transform: `rotate(${rotation}deg)`,
+      }}
+      height={height}
+      onClick={() => fireEvent('onClick')}
+      alt={alternativeText}
+      width={width}
+    />
+  );
+
   return (
     <div
       data-disabled={disabledState}
@@ -58,30 +83,15 @@ export const Image = function Image({ component, height, properties, styles, fir
               <TransformWrapper>
                 {({ zoomIn, zoomOut }) => (
                   <>
-                    <React.Fragment>
-                      <TransformComponent>
-                        <img
-                          src={source}
-                          className={`zoom-image-wrap ${borderType !== 'none' ? borderType : ''}`}
-                          style={{
-                            backgroundColor,
-                            padding: Number.parseInt(padding),
-                            objectFit: imageFit ? imageFit : 'contain',
-                            cursor: hasOnClickEvent ? 'pointer' : 'inherit',
-                            pointerEvents: 'auto',
-                            width,
-                            height,
-                          }}
-                          height={height}
-                          onClick={() => fireEvent('onClick')}
-                          alt={alternativeText}
-                          width={width}
-                        />
-                      </TransformComponent>
-                    </React.Fragment>
+                    <TransformComponent>{renderImage()}</TransformComponent>
                     {zoomButtons && (
                       <div className="zoom-button-wrapper">
-                        <button className="btn zoom-buttons " onClick={() => zoomIn()}>
+                        {rotateButton && (
+                          <button className="btn zoom-buttons" onClick={rotateImage}>
+                            <span>↻</span>
+                          </button>
+                        )}
+                        <button className="btn zoom-buttons" onClick={() => zoomIn()}>
                           +
                         </button>
                         <button className="btn zoom-buttons" onClick={() => zoomOut()}>
@@ -94,23 +104,16 @@ export const Image = function Image({ component, height, properties, styles, fir
               </TransformWrapper>
             </>
           ) : (
-            <img
-              src={source}
-              className={`zoom-image-wrap ${borderType !== 'none' ? borderType : ''}`}
-              style={{
-                backgroundColor,
-                padding: Number.parseInt(padding),
-                objectFit: imageFit ? imageFit : 'contain',
-                cursor: hasOnClickEvent ? 'pointer' : 'inherit',
-                pointerEvents: 'auto',
-                width,
-                height,
-              }}
-              height={height}
-              onClick={() => fireEvent('onClick')}
-              alt={alternativeText}
-              width={width}
-            />
+            <>
+              {rotateButton && (
+                <div className="zoom-button-wrapper" style={{ zIndex: 1 }}>
+                  <button className="btn zoom-buttons" onClick={rotateImage}>
+                    <span>↻</span>
+                  </button>
+                </div>
+              )}
+              {renderImage()}
+            </>
           )}
         </LazyLoad>
       )}
