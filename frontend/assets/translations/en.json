@@ -8,7 +8,7 @@
         "search":"Search",
         "update":"Update",
         "delete":"Delete",
-        "add":"Add1",
+        "add":"Add",
         "view":"View",
         "create":"Create",
         "enabled":"Enabled",
@@ -318,6 +318,15 @@
         "theAppWillBeRemovedFromThisFolderDoYouWantToContinue":"The app will be removed from this folder, do you want to continue?",
         "change":"Change"
 
+    },
+    "onBoarding":{
+        "finishToolJetInstallation":"Finish ToolJet installation",
+        "organization":"Organization",
+        "name":"Name",
+        "email":"Email",
+        "youWillReceiveUpdatesFromTheToolJetTeam":"You will receive updates from the ToolJet team ( 1-2 emails every month, we do not spam )",
+        "finishSetup":"Finish setup",
+        "skip":"Skip"
     },
     "widgetManager": {
         "commonlyUsed": "commonly used",
