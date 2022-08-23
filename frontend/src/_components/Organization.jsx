@@ -297,7 +297,12 @@ export const Organization = function Organization() {
             <Link data-tesid="settingsBtn" to="/manage-sso" className="dropdown-item" data-cy="manage-sso">
               Manage SSO
             </Link>
-            <Link data-tesid="integrationBtn" to="/integrations" className="dropdown-item" data-cy="manage-sso">
+            <Link
+              data-tesid="integrationBtn"
+              to="/integrations"
+              className="dropdown-item"
+              data-cy="manage-integrations"
+            >
               Manage Integrations
             </Link>
           </>
