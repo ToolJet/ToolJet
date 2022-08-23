@@ -9,22 +9,31 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
+import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsService } from '../services/plugins.service';
 import { CreatePluginDto } from '../dto/create-plugin.dto';
 import { UpdatePluginDto } from '../dto/update-plugin.dto';
-import { Connection } from 'typeorm';
 import { decode } from 'js-base64';
+import { PluginsAbilityFactory } from 'src/modules/casl/abilities/plugins-ability.factory';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
+import { User } from 'src/decorators/user.decorator';
 
 @Controller('plugins')
 @UseInterceptors(ClassSerializerInterceptor)
 export class PluginsController {
-  constructor(private readonly pluginsService: PluginsService, private connection: Connection) {}
+  constructor(private readonly pluginsService: PluginsService, private pluginsAbilityFactory: PluginsAbilityFactory) {}
 
   @Post('install')
   @UseGuards(JwtAuthGuard)
-  install(@Body() createPluginDto: CreatePluginDto) {
+  async install(@User() user, @Body() createPluginDto: CreatePluginDto) {
+    const ability = await this.pluginsAbilityFactory.pluginActions(user);
+
+    if (!ability.can('installPlugin', Plugin)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
     return this.pluginsService.install(createPluginDto);
   }
 
@@ -47,13 +56,25 @@ export class PluginsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
-  update(@Param('id') id: string, @Body() updatePluginDto: UpdatePluginDto) {
+  async update(@User() user, @Param('id') id: string, @Body() updatePluginDto: UpdatePluginDto) {
+    const ability = await this.pluginsAbilityFactory.pluginActions(user);
+
+    if (!ability.can('updatePlugin', Plugin)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
     return this.pluginsService.update(id, updatePluginDto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  remove(@Param('id') id: string) {
+  async remove(@User() user, @Param('id') id: string) {
+    const ability = await this.pluginsAbilityFactory.pluginActions(user);
+
+    if (!ability.can('deletePlugin', Plugin)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
     return this.pluginsService.remove(id);
   }
 }
