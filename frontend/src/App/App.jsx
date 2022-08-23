@@ -260,7 +260,7 @@ class App extends React.Component {
             />
             <AdminRoute
               exact
-              path="/marketplace"
+              path="/integrations"
               component={MarketplacePage}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
