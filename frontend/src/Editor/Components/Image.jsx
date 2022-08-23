@@ -22,6 +22,10 @@ export const Image = function Image({ component, height, properties, styles, fir
     setImageOffset(computeOffset());
   }, [imageRef]);
 
+  useEffect(() => {
+    setRotation(0);
+  }, [source]);
+
   function computeOffset() {
     if (imageRef.current) {
       const clientRect = imageRef.current.getBoundingClientRect();
