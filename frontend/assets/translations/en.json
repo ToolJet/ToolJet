@@ -264,9 +264,22 @@
             "maintenance":"Maintenance",
             "appDoesNotHaveADeployedVersion":"App does not have a deployed version",
             "openInAppViewer":"Open in app viewer",
-            "removeFromFolder":"Remove from folder1"
-
-        }
+            "removeFromFolder":"Remove from folder"
+        },
+        "foldersSection":{
+            "allApplications":"All applications",
+            "folders":"Folders",
+            "createNewFolder":"+ Create new folder",
+            "youHaventCreatedAnyFolders":"You haven't created any folders. Use folders to organize your apps",
+            "createFolder":"Create folder",
+            "updateFolder":"Update folder",
+            "editFolder":"Edit folder",
+            "deleteFolder":"Delete folder",
+            "folderName":"Folder name",
+            "areYouSureYouWantToDeleteTheFolder":"Are you sure you want to delete the folder? Apps within the folder will not be deleted."
+        },
+        "noApplicationFound":" No Applications found",
+        "thisFolderIsEmpty":"This folder is empty"
     },
     "widgetManager": {
         "commonlyUsed": "commonly used",
