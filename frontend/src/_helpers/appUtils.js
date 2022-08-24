@@ -128,7 +128,7 @@ export function onComponentClick(_ref, id, component, mode = 'edit') {
   executeActionsForEventId(_ref, 'onClick', component, mode);
 }
 
-export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = false) {
+export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = false, mode = 'edit') {
   const filtertedQueryConfirmation = _ref.state?.queryConfirmationArr.filter(
     (query) => query.queryId !== queryConfirmationData.queryId
   );
@@ -136,7 +136,7 @@ export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = 
     showQueryConfirmation: filtertedQueryConfirmation.length > 0,
     queryConfirmationArr: filtertedQueryConfirmation,
   });
-  isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true);
+  isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
 
 export async function copyToClipboard(text) {
@@ -653,7 +653,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       queryId,
       queryName,
     };
-    queryConfirmationArr.push(queryConfirmation);
+    if (!queryConfirmationArr.some((query) => queryId === query.queryId)) {
+      queryConfirmationArr.push(queryConfirmation);
+    }
 
     if (confirmed === undefined) {
       _ref.setState({

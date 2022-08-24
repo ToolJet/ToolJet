@@ -230,8 +230,8 @@ class Viewer extends React.Component {
             <Confirm
               show={showQueryConfirmation}
               message={`Do you want to run this query - ${query?.queryName}?`}
-              onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true)}
-              onCancel={() => onQueryConfirmOrCancel(this, query)}
+              onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
+              onCancel={() => onQueryConfirmOrCancel(this, query, false, 'view')}
               queryConfirmationData={query}
               darkMode={this.props.darkMode}
               key={query?.queryName}
