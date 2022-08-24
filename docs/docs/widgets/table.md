@@ -14,16 +14,17 @@ Array of objects to be displayed on the table. It is commonly used to display da
 ## Columns
 ### Cell data types
 
-- String ( Default )
-- Text
-- Badge - can be used to display and edit predefined badges such as status of shipment.
-- Multiple badges
-- Tags - similar to badges but the values are not predefined.
-- Dropdown
-- Radio
-- Multiselect dropdown
-- Toggle switch
-- Date picker
+You can define the cell types as per your table's data source using the following:
+ 
+- <b>Text</b>: This is the default value that is used to display data of type `string`,
+- <b>Badge</b>: It can be used to display data with badges for e.g status of a shipment,
+- <b>Multiple badges</b>: Used to display multiple predefined badges,
+- <b>Tags</b>: Similar to badges but the values are not predefined,
+- <b>Dropdown</b>: When data is in the form of an array of options to be selected,
+- <b>Radio</b>: When data is displayed in the form of boolean,
+- <b>Multiselect dropdown</b>: Similar to dropdown but to display multiple selects,
+- <b>Toggle switch</b>: Again, this can be used to display data as boolean,
+- <b>Date picker</b>: Allowing users to display and select dates
 
 ### Displaying Data
 
