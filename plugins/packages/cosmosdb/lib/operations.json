@@ -141,17 +141,6 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "Enter container"
-      },
-      "itemId": {
-        "label": "Item ID",
-        "key": "itemId",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter item ID",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "item_id"
       }
     },
     "query_database": {

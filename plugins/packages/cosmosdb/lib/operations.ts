@@ -56,7 +56,7 @@ export function insertItems(client: CosmosClient, database: string, containerId:
   });
 }
 
-export function deleteItem(client: CosmosClient, database: string, containerId: string, itemId: string) {
+export function deleteItem(client: CosmosClient, database: string, containerId: string, itemId) {
   return new Promise((resolve, reject) => {
     lookUpContainer(client, database, containerId)
       .then((container: Container) => {
