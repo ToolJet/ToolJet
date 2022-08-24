@@ -81,7 +81,7 @@
         "lineNumbers": false,
         "description": "Enter items",
         "className": "codehinter-plugins",
-        "placeholder": "[ { 'name': 'Olympia', 'state': 'WA'},{  'name': 'Redmond', 'state': 'WA']"
+        "placeholder": "{{[ { 'name': 'Olympia', 'state': 'WA'},{  'name': 'Redmond', 'state': 'WA']}}"
       }
     },
     "read_item": {
