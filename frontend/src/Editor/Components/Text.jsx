@@ -1,9 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({ height, properties, styles, darkMode, registerAction }) {
-  const { textSize, textColor, textAlign, visibility, disabledState } = styles;
-
+export const Text = function Text({ height, properties, styles, darkMode, registerAction, component }) {
+  let {
+    textSize,
+    textColor,
+    textAlign,
+    visibility,
+    disabledState,
+    fontWeight,
+    decoration,
+    transformation,
+    fontStyle,
+    lineHeight,
+    textIndent,
+    letterSpacing,
+    wordSpacing,
+    fontVariant,
+  } = styles;
   const [loadingState, setLoadingState] = useState(false);
   const [text, setText] = useState(() => computeText());
 
@@ -46,8 +60,8 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     <div
       data-disabled={disabledState}
       className="text-widget"
-      data-cy={`draggable-widget-${component.name.toLowerCase()}`}
       style={computedStyles}
+      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
     >
       {!loadingState && (
         <div
