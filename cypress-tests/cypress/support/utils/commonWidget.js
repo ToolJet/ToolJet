@@ -140,7 +140,7 @@ export const selectColourFromColourPicker = (paramName, colour) => {
         })
     );
   });
-  cy.save();
+  cy.waitForAutoSave();
 };
 
 export const fillBoxShadowParams = (paramLabels, values) => {
@@ -190,7 +190,7 @@ export const verifyComponentFromInspector = (
 export const verifyAndModifyStylePickerFx = (
   paramName,
   defaultValue,
-  value
+  value,
 ) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName)).should(
     "have.text",
@@ -221,14 +221,14 @@ export const verifyAndModifyStylePickerFx = (
 
   cy.get(
     commonWidgetSelector.stylePickerFxInput(paramName)
-  ).clearAndTypeOnCodeMirror(value);
+  ).clearAndTypeOnCodeMirror(value)
 
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
     cy.get(".CodeMirror-line").should("be.visible").and("have.text", value);
   });
 };
 
-export const verifyWidgetCss = (widgetName, cssProperty, color) => {
+export const verifyWidgetColorCss = (widgetName, cssProperty, color) => {
   cy.forceClickOnCanvas();
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).should(
     "have.css",
@@ -250,6 +250,8 @@ export const verifyLoaderColor = (widgetName, color) => {
 };
 
 export const verifyLayout = (widgetName) => {
+  openEditorSidebar(widgetName);
+  openAccordion(commonWidgetText.accordionLayout)
   verifyAndModifyToggleFx(
     commonWidgetText.parameterShowOnDesktop,
     commonWidgetText.codeMirrorLabelTrue

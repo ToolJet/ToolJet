@@ -141,9 +141,9 @@ export const commonWidgetSelector = {
   eventHandlerCard: "[data-cy='event-handler-card']",
   alertMessageInputField: "[data-cy='alert-message-input-field']",
   actionSelection: '[data-cy="action-selection"]',
-  eventComponentSelection: '[data-cy="component-selection"]',
-  eventComponentActionSelection: '[data-cy="component-action-selection"]',
-  componentTextInput: '[data-cy="component-text-input',
+  eventComponentSelection: '[data-cy="action-options-component-selection-field"]',
+  eventComponentActionSelection: '[data-cy="action-options-action-selection-field"]',
+  componentTextInput: '[data-cy="action-options-text-input-field"]',
   changeLayoutButton: "[data-cy= 'change-layout-button']",
 
   sidebarinspector: "[data-cy='left-sidebar-inspector-button']",
@@ -157,7 +157,6 @@ export const commonWidgetSelector = {
   colourPickerParent: "[data-cy='color-picker-parent']",
   inputBoxShadow: "[data-cy= 'input-box-shadow']",
   boxShadowColorPicker: "[data-cy='box-shadow-color-picker']",
-  buttonWidget: "[data-cy=button-widget]",
-  textInputWidget: '[data-cy="draggable-widget-text-input"]',
+  textInputWidget: '[data-cy="draggable-widget-textinput1"]',
   previewButton: '[data-cy="preview-button"]',
 };

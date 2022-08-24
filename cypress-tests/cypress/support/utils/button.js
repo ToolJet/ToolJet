@@ -1,24 +1,13 @@
 import { commonWidgetSelector } from "Selectors/common";
-import { buttonText } from "Texts/button";
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
-
-export const openButtonStylesEditorSideBar = (widgetText, widgetName) => {
-  cy.get(commonWidgetSelector.draggableWidget(widgetText)).trigger("mouseover");
-  cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click();
-  cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-};
-
-export const openButtonPropertiesEditorSideBar = (widgetText, widgetName) => {
-  cy.get(commonWidgetSelector.draggableWidget(widgetText)).trigger("mouseover");
-  cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click();
-};
+import { commonWidgetText } from "Texts/common";
 
 export const verifyControlComponentAction = (widgetName, value) => {
   cy.forceClickOnCanvas();
   cy.dragAndDropWidget("Text input", 280, 90);
 
   openEditorSidebar(widgetName);
-  openAccordion(buttonText.eventsAccordion);
+  openAccordion(commonWidgetText.accordionEvents);
 
   cy.get(commonWidgetSelector.addMoreEventHandlerLink).click();
   cy.get(commonWidgetSelector.eventHandlerCard).eq(1).click();
@@ -35,5 +24,5 @@ export const verifyControlComponentAction = (widgetName, value) => {
     .clearAndTypeOnCodeMirror(value);
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).click();
 
-  cy.get(commonWidgetSelector.textInputWidget).should("have.value", value);
+  cy.get(commonWidgetSelector.draggableWidget('textinput1')).should("have.value", value);
 };

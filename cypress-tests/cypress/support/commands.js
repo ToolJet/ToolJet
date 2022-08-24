@@ -88,9 +88,6 @@ Cypress.Commands.add("createApp", (appName) => {
       }
     });
   });
-  if (appName) {
-    cy.clearAndType(commonSelectors.appNameInput, appName);
-  }
 });
 
 Cypress.Commands.add(
@@ -108,7 +105,7 @@ Cypress.Commands.add(
       dataTransfer,
       force: true,
     });
-    cy.save();
+    cy.waitForAutoSave();
   }
 );
 
@@ -187,9 +184,14 @@ Cypress.Commands.add("openInCurrentTab", (selector) => {
   cy.get(selector).invoke("removeAttr", "target").click();
 });
 
-Cypress.Commands.add("save", () => {
+Cypress.Commands.add("waitForAutoSave", () => {
   cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
     "have.text",
     commonText.autoSave
   );
 });
+
+Cypress.Commands.add("renameApp", (appName) =>{
+  cy.clearAndType(commonSelectors.appNameInput, appName);
+  cy.waitForAutoSave();
+})

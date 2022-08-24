@@ -194,7 +194,7 @@ describe("Date Picker widget", () => {
       commonWidgetText.parameterDisable,
       commonWidgetText.codeMirrorLabelFalse
     );
-    cy.save();
+    cy.waitForAutoSave();
     cy.get(
       commonWidgetSelector.draggableWidget(multiselectText.defaultWidgetName)
     )

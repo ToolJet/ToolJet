@@ -1,11 +1,8 @@
 export const buttonText = {
   defaultWidgetText: "Button",
-  buttonProperties: "Properties",
-  buttonStyles: "Styles",
   defaultWidgetName: "button1",
   buttonTextLabel: "Button Text",
   loadingState: "Loading State",
-  eventsAccordion: "Events",
   buttonDocumentationLink: "Button documentation",
   backgroundColor: "Background color",
   textColor: "Text color",
