@@ -11,6 +11,7 @@ export default class Create extends Command {
   static flags = {
     type: Flags.string({ options: ['database', 'api', 'cloud-storage'] }),
     build: Flags.boolean({ char: 'b' }),
+    marketplace: Flags.boolean({ char: 'm' }),
   };
   static description = 'Create a new tooljet plugin';
 
@@ -26,7 +27,7 @@ export default class Create extends Command {
       process.exit(1);
     }
 
-    let { type } = flags;
+    let { type, marketplace } = flags;
 
     const name = await CliUx.ux.prompt('Enter plugin display name');
 
@@ -47,16 +48,39 @@ export default class Create extends Command {
       type = responses.type;
     }
 
-    const pluginsPath = 'plugins';
+    if (!marketplace) {
+      const responses: any = await inquirer.prompt([
+        {
+          name: 'marketplace',
+          message: 'is it a marketplace integration?',
+          type: 'confirm',
+          default: false,
+        },
+      ]);
+      marketplace = responses.type;
+    }
+
+    const pluginsPath = marketplace ? 'marketplace' : 'plugins';
     const docsPath = 'docs';
-    const defaultTemplates = path.join('plugins', '_templates');
+    const defaultTemplates = path.join(pluginsPath, '_templates');
 
     if (!(fs.existsSync(pluginsPath) && fs.existsSync(docsPath) && fs.existsSync(defaultTemplates))) {
       this.log(
         '\x1b[41m%s\x1b[0m',
-        'Error : plugins, docs or plugins/_templates directory missing, make sure that you are runing this command in Tooljet directory'
+        `Error : ${pluginsPath}, docs or ${pluginsPath}/_templates directory missing, make sure that you are runing this command in Tooljet directory`
       );
       process.exit(1);
+    }
+
+    if (marketplace) {
+      const buffer = fs.readFileSync(path.join('server', 'src', 'assets', 'marketplace', 'plugins.json'), 'utf8');
+      const pluginsJson = JSON.parse(buffer);
+      pluginsJson.map((plugin: any) => {
+        if (plugin.id === args.plugin_name.toLowerCase()) {
+          this.log('\x1b[41m%s\x1b[0m', 'Error : Plugin id already exists');
+          process.exit(1);
+        }
+      });
     }
 
     const hygenArgs = [
@@ -88,23 +112,48 @@ export default class Create extends Command {
       debug: !!process.env.DEBUG,
     });
 
-    await execa('npx', ['lerna', 'link', 'convert'], { cwd: pluginsPath });
-    CliUx.ux.action.stop();
+    if (marketplace) {
+      await execa('npm', ['i'], { cwd: pluginsPath });
 
-    if (flags.build) {
-      CliUx.ux.action.start('building plugins');
-      await execa.command('npm run build:plugins', { cwd: process.cwd() });
-      CliUx.ux.action.stop();
+      const buffer = fs.readFileSync(path.join('server', 'src', 'assets', 'marketplace', 'plugins.json'), 'utf8');
+      const pluginsJson = JSON.parse(buffer);
+      const plugin = {
+        name: args.plugin_name,
+        description: `${type} plugin from ${args.plugin_name}`,
+        version: '1.0.0',
+        id: `${args.plugin_name.toLowerCase()}`,
+        author: 'Tooljet',
+        timestamp: new Date().toISOString(),
+      };
+
+      pluginsJson.push(plugin);
+
+      const jsonString = JSON.stringify(pluginsJson, null, 2);
+      fs.writeFileSync(path.join('server', 'src', 'assets', 'marketplace', 'plugins.json'), jsonString);
+    } else {
+      await execa('npx', ['lerna', 'link', 'convert'], { cwd: pluginsPath });
     }
+
+    CliUx.ux.action.stop();
 
     this.log('\x1b[42m', '\x1b[30m', `Plugin: ${args.plugin_name} created successfully`, '\x1b[0m');
 
+    if (flags.build) {
+      CliUx.ux.action.start('building plugins');
+      if (marketplace) {
+        await execa('npm', ['run', 'build', '--workspaces'], { cwd: pluginsPath });
+      } else {
+        await execa.command('npm run build:plugins', { cwd: process.cwd() });
+      }
+      CliUx.ux.action.stop();
+    }
+
     const tree = CliUx.ux.tree();
-    tree.insert('plugins');
+    tree.insert(pluginsPath);
 
     const subtree = CliUx.ux.tree();
     subtree.insert(`${args.plugin_name}`);
-    tree.nodes.plugins.insert('packages', subtree);
+    tree.nodes.plugins.insert(marketplace ? 'plugins' : 'packages', subtree);
 
     tree.display();
   }

@@ -11,7 +11,7 @@ $ npm install -g @tooljet/cli
 $ tooljet COMMAND
 running command...
 $ tooljet (--version)
-@tooljet/cli/0.0.12 darwin-arm64 node-v14.17.3
+@tooljet/cli/0.0.13 darwin-x64 node-v14.17.3
 $ tooljet --help [COMMAND]
 USAGE
   $ tooljet COMMAND
@@ -40,20 +40,23 @@ DESCRIPTION
   This command returns the information about where tooljet is being run
 ```
 
+_See code: [dist/commands/info.ts](https://github.com/tooljet/tooljet/blob/v0.0.13/dist/commands/info.ts)_
+
 ## `tooljet plugin create PLUGIN_NAME`
 
-Creates a new tooljet plugin
+Create a new tooljet plugin
 
 ```
 USAGE
-  $ tooljet plugin create [PLUGIN_NAME] [--type database|api|cloud-storage] [-b]
+  $ tooljet plugin create [PLUGIN_NAME] [--type database|api|cloud-storage] [-b] [-m]
 
 ARGUMENTS
   PLUGIN_NAME  Name of the plugin
 
 FLAGS
   -b, --build
-  --type=<option>  <options: database|api|cloud-storage>
+  -m, --marketplace
+  --type=<option>    <options: database|api|cloud-storage>
 
 DESCRIPTION
   Create a new tooljet plugin
@@ -64,7 +67,7 @@ EXAMPLES
 
 ## `tooljet plugin delete PLUGIN_NAME`
 
-Deletes a tooljet plugin
+Delete a tooljet plugin
 
 ```
 USAGE
@@ -77,7 +80,7 @@ FLAGS
   -b, --build
 
 DESCRIPTION
-  Deletes a tooljet plugin
+  Delete a tooljet plugin
 
 EXAMPLES
   $ tooljet plugin delete <name> [--build]
