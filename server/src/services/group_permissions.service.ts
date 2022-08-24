@@ -30,7 +30,7 @@ export class GroupPermissionsService {
     private usersService: UsersService
   ) {}
 
-  async create(user: User, group: string, manager?: EntityManager): Promise<GroupPermission> {
+  async create(user: User, group: string, manager?: EntityManager): Promise<void> {
     if (!group || group === '') {
       throw new BadRequestException('Cannot create group without name');
     }
@@ -52,8 +52,8 @@ export class GroupPermissionsService {
       throw new ConflictException('Group name already exist');
     }
 
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      return manager.save(
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.save(
         manager.create(GroupPermission, {
           organizationId: user.organizationId,
           group: group,
