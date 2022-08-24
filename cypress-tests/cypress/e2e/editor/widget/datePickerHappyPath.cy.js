@@ -1,3 +1,4 @@
+import moment from "moment";
 import { datePickerSelector } from "Selectors/datePicker";
 import { datePickerText } from "Texts/datePicker";
 import { commonText, commonWidgetText } from "Texts/common";
@@ -25,6 +26,7 @@ import {
   addTextWidgetToVerifyValue,
   verifyBoxShadowCss,
   verifyTooltip,
+  verifyWidgetText,
 } from "Support/utils/commonWidget";
 
 describe("Date Picker widget", () => {
@@ -187,7 +189,7 @@ describe("Date Picker widget", () => {
       .should("have.css", "border-radius", "20px");
   });
 
-  it.only("should verify widget in preview", () => {
+  it("should verify widget in preview", () => {
     const data = {};
     data.alertMessage = fake.randomSentence;
     data.widgetName = fake.widgetName;
@@ -197,8 +199,6 @@ describe("Date Picker widget", () => {
     data.randomTime = randomDateOrTime("hh:mm");
     data.colour = fake.randomRgba;
     data.boxShadowParam = fake.boxShadowParam;
-
-    // cy.modifyCanvasSize(1920, 700);
 
     openEditorSidebar(datePickerText.datepicker1);
     editAndVerifyWidgetName(data.widgetName);
@@ -211,12 +211,18 @@ describe("Date Picker widget", () => {
       commonWidgetSelector.parameterInputField(
         datePickerText.labelEnableDateSection
       )
-    ).clearAndTypeOnCodeMirror([`{{`, `!components.toggleswitch1.value}}`]);
+    ).clearAndTypeOnCodeMirror([
+      `{{`,
+      `!components.${commonWidgetText.toggleswitch1}.value}}`,
+    ]);
     cy.get(
       commonWidgetSelector.parameterInputField(
         datePickerText.labelEnableTimeSection
       )
-    ).clearAndTypeOnCodeMirror([`{{`, `components.toggleswitch1.value}}`]);
+    ).clearAndTypeOnCodeMirror([
+      `{{`,
+      `components.${commonWidgetText.toggleswitch1}.value}}`,
+    ]);
 
     openAccordion(commonWidgetText.accordionEvents);
     addDefaultEventHandler(data.alertMessage);
@@ -255,20 +261,24 @@ describe("Date Picker widget", () => {
     );
 
     addTextWidgetToVerifyValue(`components.${data.widgetName}.value`);
-    cy.dragAndDropWidget("Toggle Switch", 600, 160);
+    cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 160);
 
-    cy.openInCurrentTab(`[data-cy="preview-link-button"]`);
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
 
     // verifyDate(data.widgetName, data.date, "DD/MM/YY");
-    //cy.get("[data-cy='draggable-widget-text1']").should(
-    // "have.text", data.date)//WIP-Format
+    // verifyWidgetText(
+    //   commonWidgetText.text1,
+    //   moment(data.date, "DD/MM/YYYY").format("DD/MM/YY")
+    // );
 
     data.date = randomDateOrTime();
-    // selectAndVerifyDate(data.widgetName, data.date, "DD/MM/YY"); //value is on different format
-    // cy.get("[data-cy='draggable-widget-text1']").should("have.text", data.date); //WIP-Format
+    selectAndVerifyDate(data.widgetName, data.date, "DD/MM/YY");
+    verifyWidgetText(
+      commonWidgetText.text1,
+      moment(data.date, "DD/MM/YYYY").format("DD/MM/YY")
+    );
 
-    // cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
-    //verify new date on text
+    cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
 
     verifyTooltip(
       commonWidgetSelector.draggableWidget(data.widgetName),
@@ -286,11 +296,17 @@ describe("Date Picker widget", () => {
 
     verifyBoxShadowCss(data.widgetName, data.colour, data.boxShadowParam);
 
-    cy.get("[data-cy='draggable-widget-toggleswitch1']")
+    cy.get(commonWidgetSelector.draggableWidget(commonWidgetText.toggleswitch1))
       .find(".form-check-input")
       .click();
+
     verifyDate(data.widgetName, datePickerText.defaultTime, "hh:mm A");
+    // verifyWidgetText(commonWidgetText.text1, datePickerText.defaultTime);
 
     selectAndVerifyTime(data.widgetName, data.randomTime);
+    verifyWidgetText(
+      commonWidgetText.text1,
+      moment(data.randomTime, "hh:mm").format("h:mm A")
+    );
   });
 });

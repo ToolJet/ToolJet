@@ -281,3 +281,10 @@ export const verifyTooltip = (widgetSelector, message) => {
       cy.get(commonWidgetSelector.tooltipLabel).should("have.text", message);
     });
 };
+
+export const verifyWidgetText = (widgetName, text) => {
+  cy.get(commonWidgetSelector.draggableWidget(widgetName)).should(
+    "have.text",
+    text
+  );
+};
