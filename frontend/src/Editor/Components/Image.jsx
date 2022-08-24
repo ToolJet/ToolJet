@@ -14,6 +14,7 @@ export const Image = function Image({ component, height, properties, styles, fir
   const imageRef = useRef(null);
   const [imageOffset, setImageOffset] = useState(0);
   const [rotation, setRotation] = useState(0);
+  const [zoomReset, setZoomReset] = useState(false);
 
   function Placeholder() {
     return <div className="skeleton-image" style={{ objectFit: 'contain', height }}></div>;
@@ -21,6 +22,11 @@ export const Image = function Image({ component, height, properties, styles, fir
   useEffect(() => {
     setImageOffset(computeOffset());
   }, [imageRef]);
+
+  useEffect(() => {
+    setRotation(0);
+    setZoomReset(true);
+  }, [source]);
 
   function computeOffset() {
     if (imageRef.current) {
@@ -57,6 +63,11 @@ export const Image = function Image({ component, height, properties, styles, fir
     />
   );
 
+  const resetZoom = (resetTransform) => {
+    setZoomReset(false);
+    resetTransform();
+  };
+
   return (
     <div
       data-disabled={disabledState}
@@ -81,8 +92,9 @@ export const Image = function Image({ component, height, properties, styles, fir
           ) : zoomButtons ? (
             <>
               <TransformWrapper>
-                {({ zoomIn, zoomOut }) => (
+                {({ zoomIn, zoomOut, resetTransform }) => (
                   <>
+                    {zoomReset && resetZoom(resetTransform)}
                     <TransformComponent>{renderImage()}</TransformComponent>
                     {zoomButtons && (
                       <div className="zoom-button-wrapper">
