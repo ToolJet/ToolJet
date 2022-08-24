@@ -2,22 +2,8 @@ import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
 export const Text = function Text({ height, properties, styles, darkMode, registerAction }) {
-  let {
-    textSize,
-    textColor,
-    textAlign,
-    visibility,
-    disabledState,
-    fontWeight,
-    decoration,
-    transformation,
-    fontStyle,
-    lineHeight,
-    textIndent,
-    letterSpacing,
-    wordSpacing,
-    fontVariant,
-  } = styles;
+  const { textSize, textColor, textAlign, visibility, disabledState } = styles;
+
   const [loadingState, setLoadingState] = useState(false);
   const [text, setText] = useState(() => computeText());
 
@@ -57,7 +43,12 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
   };
 
   return (
-    <div data-disabled={disabledState} className="text-widget" style={computedStyles}>
+    <div
+      data-disabled={disabledState}
+      className="text-widget"
+      data-cy={`draggable-widget-${component.name.toLowerCase()}`}
+      style={computedStyles}
+    >
       {!loadingState && (
         <div
           style={{ width: '100%', fontSize: textSize }}

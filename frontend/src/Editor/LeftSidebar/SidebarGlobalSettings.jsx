@@ -91,6 +91,7 @@ export const LeftSidebarGlobalSettings = ({
               <div className="position-relative">
                 <div className="input-with-icon">
                   <input
+                    data-cy="maximum-canvas-width-input-field"
                     type="text"
                     className={`form-control form-control-sm`}
                     placeholder={'0'}
@@ -108,6 +109,7 @@ export const LeftSidebarGlobalSettings = ({
               <div className="position-relative">
                 <div className="input-with-icon">
                   <input
+                    data-cy="maximum-canvas-height-input-field"
                     type="text"
                     className={`form-control form-control-sm`}
                     placeholder={'0'}

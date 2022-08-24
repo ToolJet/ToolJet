@@ -1256,7 +1256,7 @@ class Editor extends React.Component {
                     target="_blank"
                     className="btn btn-sm font-500 color-primary border-0"
                     rel="noreferrer"
-                    data-cy="preview-button"
+                    data-cy="preview-link-button"
                   >
                     Preview
                   </Link>
