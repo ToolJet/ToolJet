@@ -55,7 +55,7 @@ const sidebars = {
         'tutorial/manage-users-groups',
         'tutorial/keyboard-shortcuts',
         'tutorial/multiworkspace',
-        'tutorial/organization-environment-variables'
+        'tutorial/workspace-environment-variables'
       ],
     },
     {
@@ -160,8 +160,20 @@ const sidebars = {
         keywords: ['actions','events'],
       },
       items: [
-        'actions/generate-file',
+        'actions/show-alert',
+        'actions/logout',
+        'actions/run-query',
+        'actions/open-webpage',
+        'actions/go-to-app',
+        'actions/show-modal',
+        'actions/close-modal',
+        'actions/copy-to-clipboard',
         'actions/set-localstorage',
+        'actions/generate-file',
+        'actions/set-table-page',
+        'actions/set-variable',
+        'actions/unset-variable',
+        'actions/control-component',
       ],
     },
     {
