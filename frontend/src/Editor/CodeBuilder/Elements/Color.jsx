@@ -43,7 +43,7 @@ export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerSty
           <div
             className="row mx-0 form-control color-picker-input"
             onClick={() => setShowPicker(true)}
-            data-cy={`${cyLabel}-picker`}
+            data-cy={`${String(cyLabel)}-picker`}
           >
             <div
               className="col-auto"
@@ -54,9 +54,9 @@ export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerSty
                 backgroundColor: value,
                 border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(value) && '#c5c8c9'}`,
               }}
-              data-cy={`${cyLabel}-picker-icon`}
+              data-cy={`${String(cyLabel)}-picker-icon`}
             ></div>
-            <div className="col" data-cy={`${cyLabel}-value`}>
+            <div className="col" data-cy={`${String(cyLabel)}-value`}>
               {value}
             </div>
           </div>
@@ -64,7 +64,7 @@ export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerSty
       </div>
       {!hideFx && (
         <div className="col-auto pt-0 style-fx fx-common">
-          <FxButton active={false} onPress={forceCodeBox} dataCy={cyLabel} />
+          <FxButton active={false} onPress={forceCodeBox} dataCy={String(cyLabel)} />
         </div>
       )}
     </div>

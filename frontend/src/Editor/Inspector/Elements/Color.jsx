@@ -43,7 +43,7 @@ export const Color = ({ param, definition, onChange, paramType, componentMeta, c
       <div
         className="row mx-0 form-control color-picker-input"
         onClick={() => setShowPicker(true)}
-        data-cy={`${cyLabel}-picker`}
+        data-cy={`${String(cyLabel)}-picker`}
       >
         <div
           className="col-auto"

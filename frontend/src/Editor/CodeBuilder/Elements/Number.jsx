@@ -23,12 +23,12 @@ export const Number = ({ value, onChange, forceCodeBox, cyLabel }) => {
                 onChange(`{{${e.target.value}}}`);
               }}
               value={number}
-              data-cy={`${cyLabel}-input-field`}
+              data-cy={`${String(cyLabel)}-input-field`}
             />
           </div>
         </div>
         <div className="col-auto pt-0 style-fx fx-common">
-          <FxButton active={false} onPress={forceCodeBox} dataCy={cyLabel} />
+          <FxButton active={false} onPress={forceCodeBox} dataCy={String(cyLabel)} />
         </div>
       </div>
     </>

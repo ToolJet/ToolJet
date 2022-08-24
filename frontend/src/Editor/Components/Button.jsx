@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
-export const Button = function Button({ height, properties, styles, fireEvent, registerAction }) {
+export const Button = function Button({ height, properties, styles, fireEvent, registerAction, component }) {
   const { loadingState, text } = properties;
   const { backgroundColor, textColor, borderRadius, visibility, disabledState, loaderColor } = styles;
 
@@ -29,7 +29,7 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
   });
 
   return (
-    <div className="widget-button" data-cy="button-widget">
+    <div className="widget-button">
       <button
         disabled={disabledState}
         className={cx('jet-button btn btn-primary p-1 overflow-hidden', {
@@ -40,7 +40,7 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
           event.stopPropagation();
           fireEvent('onClick');
         }}
-        data-cy={`draggable-widget-${String(text).toLowerCase()}`}
+        data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       >
         {label}
       </button>
