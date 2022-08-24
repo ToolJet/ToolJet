@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import useDebounce from '@/_hooks/useDebounce';
 
-export function SearchBox({ width = '300px', onSubmit, debounceDelay = 300 }) {
+export function SearchBox({ width = '200px', onSubmit, debounceDelay = 300 }) {
   const [searchText, setSearchText] = useState('');
   const debouncedSearchTerm = useDebounce(searchText, debounceDelay);
   const [isFocused, setFocussed] = useState(false);
