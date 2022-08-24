@@ -52,6 +52,7 @@ class Viewer extends React.Component {
     this.setState({
       app: data,
       isLoading: false,
+      isAppLoaded: true,
       appDefinition: data.definition || { components: {} },
     });
   };
@@ -153,7 +154,7 @@ class Viewer extends React.Component {
       this.setStateForApp(data);
       this.setStateForContainer(data);
       this.setWindowTitle(data.name);
-      this.setState({ isLoading: false, isAppLoaded: true });
+      this.setState({ isLoading: false });
     });
   };
 
