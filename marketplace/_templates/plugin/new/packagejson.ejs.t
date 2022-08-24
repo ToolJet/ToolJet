@@ -19,10 +19,10 @@ to: <%= plugins_path %>/plugins/<%= name %>/package.json
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@tooljet-marketplace/common": "^1.0.0",
+    "@tooljet-marketplace/common": "^1.0.0"
   },
   "devDependencies": {
-    "typescript": "^4.7.4"
-    "@vercel/ncc": "^0.34.0",
+    "typescript": "^4.7.4",
+    "@vercel/ncc": "^0.34.0"
   }
 }
