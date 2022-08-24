@@ -13,7 +13,7 @@ Once the key is downloaded, click on `+` button of data sources panel at the lef
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/add-ds-firestore.gif)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/add-ds-firestore.gif" />
 
 </div>
 
@@ -23,7 +23,7 @@ Click on `+` button of the query manager at the bottom panel of the editor and s
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/firestore-query.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/firestore-query.png" />
 
 </div>
 
@@ -52,7 +52,7 @@ Use this operation to get the data in a document.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/get.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/get.png" />
 
 </div>
 
@@ -74,7 +74,7 @@ Use this operation to query all the documents in a collection. Check firestore d
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/query-collection.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/query-collection.png" />
 
 </div>
 
@@ -95,7 +95,7 @@ Use this operation for creating a new document in a collection.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/add-document.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/add-document.png" />
 
 </div>
 
@@ -116,7 +116,7 @@ Use this operation for updating the existing document in a collection. Also, it 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/update.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/update.png" />
 
 </div>
 
@@ -137,7 +137,7 @@ This operation replaces your chosen object with the value that you provide. So i
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/set.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/set.png" />
 
 </div>
 
@@ -154,7 +154,7 @@ Use this operation for bulk updating documents.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/bulk.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/bulk.png" />
 
 </div>
 
@@ -168,7 +168,7 @@ Use this operation for deleting a document in a collection.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/delete.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/delete.png" />
 
 </div>
 

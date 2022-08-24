@@ -41,7 +41,8 @@ Click on `+` button of the query manager at the bottom panel of the editor and s
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - SAP HANA](/img/datasource-reference/saphana/query.png)
+<img className="screenshot-full" src="/img/datasource-reference/saphana/query.png" />
+
 
 </div>
 

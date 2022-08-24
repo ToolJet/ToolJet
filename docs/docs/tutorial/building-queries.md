@@ -22,7 +22,7 @@ SELECT * FROM customers;
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Building a query](/img/tutorial/building-queries/query.png)
+<img className="screenshot-full" src="/img/tutorial/building-queries/query.png" />
 
 </div>
 
@@ -30,7 +30,7 @@ Query results can be previewed by clicking the `preview` button. Previewing quer
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Building a query](/img/tutorial/building-queries/preview.png)
+<img className="screenshot-full" src="/img/tutorial/building-queries/preview.png" />
 
 </div>
 
@@ -39,7 +39,7 @@ Query results can be previewed by clicking the `preview` button. Previewing quer
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Building a query](/img/tutorial/building-queries/advanced-options.gif)
+<img className="screenshot-full" src="/img/tutorial/building-queries/advanced-options.gif" />
 
 </div>
 
@@ -51,7 +51,7 @@ Enable this option to show a prompt to confirm the action before a query is run.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Building a query](/img/tutorial/building-queries/confirm.png)
+<img className="screenshot-full" src="/img/tutorial/building-queries/confirm.png" />
 
 </div>
 

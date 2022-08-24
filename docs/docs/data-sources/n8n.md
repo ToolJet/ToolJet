@@ -20,7 +20,7 @@ n8n webhooks can be called with or without an **Authentication**. You can keep t
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - n8n](/img/datasource-reference/n8n/basicauth.png)
+<img className="screenshot-full" src="/img/datasource-reference/n8n/basicauth.png" />
 
 </div>
 
@@ -30,7 +30,7 @@ n8n webhooks can be called with or without an **Authentication**. You can keep t
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - n8n](/img/datasource-reference/n8n/headerauth.png)
+<img className="screenshot-full" src="/img/datasource-reference/n8n/headerauth.png" />
 
 </div>
 
@@ -48,6 +48,6 @@ You can trigger a workflow with `GET/POST` URL. Choose the request type from the
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - n8n](/img/datasource-reference/n8n/query.png)
+<img className="screenshot-full" src="/img/datasource-reference/n8n/query.png" />
 
 </div>

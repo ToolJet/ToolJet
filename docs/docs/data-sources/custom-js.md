@@ -9,7 +9,8 @@ You can write custom JavaScript code to interact with components and queries. To
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Custom JavaScript](/img/datasource-reference/custom-javascript/custom-javascript.png)
+<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/custom-javascript.png" />
+
 
 </div>
 
@@ -33,7 +34,8 @@ The return value is used as the `data` of the query.
 
 <div style={{textAlign: 'center'}}>
 
-![Display random number using JS](/img/datasource-reference/custom-javascript/jsrandom.gif)
+<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/jsrandom.gif" />
+
 
 </div>
 

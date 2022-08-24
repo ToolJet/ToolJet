@@ -11,7 +11,7 @@ For integrating Notion with ToolJet we will need the API token. The API token ca
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/api.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/api.png" />
 
 </div>
 
@@ -25,7 +25,7 @@ Notion API provides support for:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/querying.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/querying.png" />
 
 </div>
 
@@ -35,7 +35,7 @@ Before querying Notion, you must share the database with your integration. Click
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/share.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/share.png" />
 
 </div>
 
@@ -51,7 +51,7 @@ On database resource you can perform the following operations:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/db_q.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/db_q.png" />
 
 </div>
 
@@ -65,7 +65,7 @@ This operations retreives a Database object using the ID specified.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/db_retrieve.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/db_retrieve.png" />
 
 </div>
 
@@ -128,7 +128,7 @@ On page resource you can perform the following operations:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/page_q.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/page_q.png" />
 
 </div>
 
@@ -182,7 +182,7 @@ The following operations can be performed on the block resource:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/block_q.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/block_q.png" />
 
 </div>
 
@@ -231,7 +231,7 @@ This operation retrieves a User using the ID specified.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/user_q.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/user_q.png" />
 
 </div>
 

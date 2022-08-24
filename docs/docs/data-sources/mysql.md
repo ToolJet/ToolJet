@@ -24,7 +24,7 @@ It is recommended to create a new MySQL database user so that you can control th
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - MySQL](/img/datasource-reference/mysql/mysql.png)
+<img className="screenshot-full" src="/img/datasource-reference/mysql/mysql.png" />
 
 </div>
 
@@ -45,7 +45,7 @@ SQL mode can be used to write raw SQL queries. Select SQL mode from the dropdown
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - MySQL](/img/datasource-reference/mysql/mysql-sqlmode.png)
+<img className="screenshot-full" src="/img/datasource-reference/mysql/mysql-sqlmode.png" />
 
 </div>
 
@@ -58,7 +58,7 @@ GUI mode can be used to query MySQL database without writing queries. Select GUI
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - MySQL](/img/datasource-reference/mysql/mysql-guimode.png)
+<img className="screenshot-full" src="/img/datasource-reference/mysql/mysql-guimode.png" />
 
 </div>
 

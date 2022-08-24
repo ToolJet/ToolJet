@@ -26,7 +26,7 @@ It is recommended to create a new database user so that you can control the acce
 
 Click on 'Test connection' button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on 'Save' button to save the data source.
 
-<img src="/img/datasource-reference/mssql/connect.gif" alt="ToolJet - Redis connection" height="420"/>
+<img className="screenshot-full" src="/img/datasource-reference/mssql/connect.gif" alt="ToolJet - Redis connection" height="420"/>
 
 
 ## Querying SQL Server / Azure SQL databases
@@ -34,7 +34,7 @@ Click on '+' button of the query manager at the bottom panel of the editor and s
 
 Click on the 'run' button to run the query. NOTE: Query should be saved before running.
 
-<img src="/img/datasource-reference/mssql/query.gif" alt="ToolJet - Redis connection" height="420"/>
+<img className="screenshot-full" src="/img/datasource-reference/mssql/query.gif" alt="ToolJet - Redis connection" height="420"/>
 
 
 :::tip

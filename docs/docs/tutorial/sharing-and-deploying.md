@@ -11,7 +11,10 @@ Clicking on `Preview` will open up the currently opened version of the app in th
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/sharing/preview.gif)
+
+<img className="screenshot-full" src="/img/tutorial/sharing/preview.gif" />
+
+
 
 </div>
 
@@ -23,7 +26,9 @@ Once you have released a version of your app, you can share the app with others 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/sharing/share.png)
+
+<img className="screenshot-full" src="/img/tutorial/sharing/share.png" />
+
 
 </div>
 
@@ -31,7 +36,9 @@ Once you have released a version of your app, you can share the app with others 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/sharing/toggle.png)
+
+<img className="screenshot-full" src="/img/tutorial/sharing/toggle.png" />
+
 
 </div>
 
@@ -39,7 +46,8 @@ Once you have released a version of your app, you can share the app with others 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/sharing/url.png)
+<img className="screenshot-full" src="/img/tutorial/sharing/url.png" />
+
 
 </div>
 
@@ -47,6 +55,7 @@ Once you have released a version of your app, you can share the app with others 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/sharing/embedd.png)
+<img className="screenshot-full" src="/img/tutorial/sharing/embedd.png" />
+
 
 </div>

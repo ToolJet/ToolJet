@@ -23,7 +23,9 @@ You can also configure for **[additional optional parameters](https://github.com
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Amazon Athena - Connection](/img/datasource-reference/athena/athena-connection.png)
+
+<img className="screenshot-full" src="/img/datasource-reference/athena/athena-connection.png" />
+
 
 </div>
 
@@ -33,7 +35,8 @@ You can also configure for **[additional optional parameters](https://github.com
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Querying- Amazon Athena](/img/datasource-reference/athena/athena-query.png)
+<img className="screenshot-full" src="/img/datasource-reference/athena/athena-query.png" />
+
 
 </div>
 

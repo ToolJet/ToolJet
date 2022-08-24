@@ -9,7 +9,7 @@ The debugger captures errors that happens while running the queries. For example
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Debugger](/img/tutorial/debugger/debugger.gif)
+<img className="screenshot-full" src="/img/tutorial/debugger/debugger.gif" />
 
 </div>
 
@@ -19,6 +19,8 @@ You can click on the `pin` icon at the top-right corner of the debugger if you d
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Debugger](/img/tutorial/debugger/pinned-debugger.gif)
+
+<img className="screenshot-full" src="/img/tutorial/debugger/pinned-debugger.gif" />
+
 
 </div>

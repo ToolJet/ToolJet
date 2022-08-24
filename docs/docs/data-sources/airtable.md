@@ -10,7 +10,10 @@ ToolJet can connect to your Airtable account to read and write data. **Airtable 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtableds.gif)
+
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtableds.gif" />
+
+
 
 </div>
 
@@ -46,7 +49,8 @@ This query lists all the records in a table. The results are paginated and each 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtable_list.png)
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_list.png" />
+
 
 </div>
 
@@ -94,7 +98,9 @@ Example response from Airtable:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtable_retrieve.png)
+
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_retrieve.png" />
+
 
 </div>
 
@@ -120,7 +126,9 @@ Example response from Airtable:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtable_create.png)
+
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_create.png" />
+
 
 </div>
 
@@ -185,7 +193,9 @@ Example response from Airtable:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtable_update.png)
+
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_update.png" />
+
 
 </div>
 
@@ -193,7 +203,8 @@ Example response from Airtable:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtable-update-example-body.png)
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable-update-example-body.png" />
+
 
 </div>
 
@@ -224,7 +235,8 @@ Example response from Airtable:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Airtable](/img/datasource-reference/airtable/airtable_delete.png)
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_delete.png" />
+
 
 </div>
 

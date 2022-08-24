@@ -18,7 +18,9 @@ Suppose there is an `API key` or a value that you want to use in the queries or 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Workspace environment variables](/img/tutorial/use-env-org-vars/add-variable.gif)
+
+<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/add-variable.gif" />
+
 
 </div>
 
@@ -34,7 +36,9 @@ Variable Type cannot be changed once it has beed created.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Workspace environment variables](/img/tutorial/use-env-org-vars/variable-type.png)
+
+<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/variable-type.png" />
+
 
 </div>
 
@@ -52,7 +56,9 @@ So, the syntax for using the variable that we created before will be `%%client.p
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Workspace environment variables](/img/tutorial/use-env-org-vars/variable-usage.png)
+
+<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/variable-usage.png" />
+
 
 </div>
 
@@ -60,6 +66,7 @@ So, the syntax for using the variable that we created before will be `%%client.p
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Workspace environment variables](/img/tutorial/use-env-org-vars/server-variable-usage.png)
+<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/server-variable-usage.png" />
+
 
 </div>

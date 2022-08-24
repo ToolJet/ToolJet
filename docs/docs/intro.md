@@ -9,11 +9,7 @@ slug: /
 
 ToolJet is an **open-source low-code framework** to build and deploy custom internal tools. ToolJet can connect to your data sources such as databases ( PostgreSQL, MongoDB, MySQL, Elasticsearch, Firestore, DynamoDB, Redis and more ), API endpoints ( ToolJet supports OAuth2 authorization ) and external services ( Stripe, Slack, Google Sheets, Airtable and more ). Once the data sources are connected, ToolJet can run queries on these data sources to fetch and update data. The data fetched from data sources can be visualised and modified using the UI widgets such as tables, charts, forms, etc.
 
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - List view widget](/img/introduction/githubstar.png)
-
-</div>
+<img className="screenshot-full" src="/img/introduction/githubstar.png" />
 
 ## How ToolJet works
 

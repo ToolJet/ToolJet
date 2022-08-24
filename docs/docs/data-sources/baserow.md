@@ -11,7 +11,7 @@ ToolJet can connect to your Baserow account to read and write data. Baserow API 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-intro.gif)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-intro.gif" />
 
 </div>
 
@@ -39,7 +39,8 @@ This query lists all the fields in a table.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-list-fields.png)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-fields.png" />
+
 
 </div>
 
@@ -94,7 +95,7 @@ This query lists all the rows in a table.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-list-rows.png)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-rows.png" />
 
 </div>
 
@@ -143,7 +144,7 @@ Example response from Baserow:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-get-row.png)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-get-row.png" />
 
 </div>
 
@@ -169,7 +170,7 @@ Example response from Baserow:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-create-row.png)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-create-row.png" />
 
 </div>
 
@@ -207,7 +208,8 @@ Example response from Baserow:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-update-row.png)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-update-row.png" />
+
 
 </div>
 
@@ -248,7 +250,8 @@ Example response from Baserow:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-move-row.png)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-move-row.png" />
+
 
 </div>
 
@@ -274,7 +277,7 @@ Example response from Baserow:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-delete-row.png)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-delete-row.png" />
 
 </div>
 

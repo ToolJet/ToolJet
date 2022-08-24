@@ -17,7 +17,7 @@ ToolJet requires the following to connect to your TypeSense deployment:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - TypeSense](/img/datasource-reference/typesense/connect.png)
+<img className="screenshot-full" src="/img/datasource-reference/typesense/connect.png" />
 
 </div>
 
@@ -28,7 +28,7 @@ Select the operation that you want to perform on your TypeSense cluster and clic
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - TypeSense](/img/datasource-reference/typesense/query.png)
+<img className="screenshot-full" src="/img/datasource-reference/typesense/query.png" />
 
 </div>
 
@@ -44,7 +44,7 @@ With this operation you can easily create `Collections` in your TypeSense cluste
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - TypeSense](/img/datasource-reference/typesense/collection.png)
+<img className="screenshot-full" src="/img/datasource-reference/typesense/collection.png" />
 
 </div>
 
@@ -55,7 +55,7 @@ https://typesense.org/docs/0.22.2/api/documents.html#index-a-single-document)**.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - TypeSense](/img/datasource-reference/typesense/index.png)
+<img className="screenshot-full" src="/img/datasource-reference/typesense/index.png" />
 
 </div>
 
@@ -65,7 +65,7 @@ Use this operation to perform a search within the specified collection. Know mor
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - TypeSense](/img/datasource-reference/typesense/search.png)
+<img className="screenshot-full" src="/img/datasource-reference/typesense/search.png" />
 
 </div>
 
@@ -75,7 +75,7 @@ Use this operation to fetch an individual document in a collection by providing 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - TypeSense](/img/datasource-reference/typesense/get.png)
+<img className="screenshot-full" src="/img/datasource-reference/typesense/get.png" />
 
 </div>
 
@@ -85,7 +85,7 @@ Use this operation to update an individual document by providing the **Collectio
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - TypeSense](/img/datasource-reference/typesense/update.png)
+<img className="screenshot-full" src="/img/datasource-reference/typesense/update.png" />
 
 </div>
 
@@ -95,7 +95,7 @@ Delete a document from collection by providing the `Id` of the document. Check o
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - TypeSense](/img/datasource-reference/typesense/delete.png)
+<img className="screenshot-full" src="/img/datasource-reference/typesense/delete.png" />
 
 </div>
 

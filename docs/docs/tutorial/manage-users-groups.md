@@ -11,7 +11,9 @@ Admin of a workspace can add users to the workspace. To manage the users in your
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/menu1.png)
+
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/menu1.png" />
+
 
 </div>
 
@@ -23,7 +25,9 @@ Admins can invite anyone to a workspace using the email address. To invite a use
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/userspage.png)
+
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/userspage.png" />
+
 
 </div>
 
@@ -31,7 +35,9 @@ Admins can invite anyone to a workspace using the email address. To invite a use
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/addnewuser.png)
+
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/addnewuser.png" />
+
 
 </div>
 
@@ -45,7 +51,9 @@ You can also copy the invitation url by clicking on the copy icon next to `invit
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/status.png)
+
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/status.png" />
+
 
 </div>
 
@@ -55,7 +63,9 @@ You can disable any active user's access to your workspace by clicking on the **
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/archived.png)
+
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/archived.png" />
+
 
 </div>
 
@@ -65,7 +75,9 @@ Similar to archiving a user's access, you can enable it again by clicking on **U
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/status.png)
+
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/status.png" />
+
 
 </div>
 
@@ -75,7 +87,9 @@ On ToolJet, Admins can create groups for users added in a workspace and grant th
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/menu2.png)
+
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/menu2.png" />
+
 
 </div>
 
@@ -89,7 +103,9 @@ Admins can add or remove any number of apps for a group of users. To add an app 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/apps.png)
+
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/apps.png" />
+
 
 </div>
 
@@ -99,7 +115,8 @@ Admins can add or remove any numbers of users in a group. Just select a user fro
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/users.png)
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/users.png" />
+
 
 </div>
 
@@ -109,7 +126,8 @@ Admins can set granular permission like creating/deleting apps or creating folde
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/permissions.png)
+
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/permissions.png" />
 
 </div>
 
@@ -133,7 +151,8 @@ This group contains all the users and admins.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/allusers.png)
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/allusers.png" />
+
 
 </div>
 
@@ -147,7 +166,8 @@ This group contains admins by default. Admins can add more admins or remove the 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/admin.png)
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/admin.png" />
+
 
 </div>
 
@@ -157,7 +177,8 @@ This group contains admins by default. Admins can add more admins or remove the 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/newgroup1.png)
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/newgroup1.png" />
+
 
 </div>
 
@@ -165,7 +186,7 @@ This group contains admins by default. Admins can add more admins or remove the 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/newgroup2.png)
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/newgroup2.png" />
 
 </div>
 
@@ -177,6 +198,7 @@ To delete a group, click on `Delete` next to it. It will confirm whether you wan
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/manage-users-groups/deletegroup.png)
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/deletegroup.png" />
+
 
 </div>

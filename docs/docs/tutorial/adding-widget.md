@@ -9,7 +9,8 @@ To add a widget, navigate to the `Widget manager` on the right sidebar. It will 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Adding a widget](/img/tutorial/adding-widget/widget.png)
+<img className="screenshot-full" src="/img/tutorial/adding-widget/widget.png" />
+
 
 </div>
 
@@ -22,7 +23,8 @@ The widgets can be resized and repositioned within the canvas.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Adding a widget](/img/tutorial/adding-widget/resize.gif)
+<img className="screenshot-full" src="/img/tutorial/adding-widget/resize.gif" />
+
 
 </div>
 
@@ -40,7 +42,7 @@ Before triggering `Show modal action` we need to add a modal widget to the canva
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Adding a widget](/img/tutorial/adding-widget/modal.gif)
+<img className="screenshot-full" src="/img/tutorial/adding-widget/modal.gif" />
 
 </div>
 
@@ -49,7 +51,7 @@ We can resize the column width using the resize handle of the column.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Adding a widget](/img/tutorial/adding-widget/resize-table-column.gif)
+<img className="screenshot-full" src="/img/tutorial/adding-widget/resize-table-column.gif" />
 
 </div>
 
@@ -58,7 +60,8 @@ Click on the widget to open the inspect panel on right sidebar. Here you can cha
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Adding a widget](/img/tutorial/adding-widget/inspect-panel.gif)
+<img className="screenshot-full" src="/img/tutorial/adding-widget/inspect-panel.gif" />
+
 
 </div>
 
@@ -73,7 +76,7 @@ Since we have already run the query in previous step, the data will be immediate
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Adding a widget](/img/tutorial/adding-widget/table-data.png)
+<img className="screenshot-full" src="/img/tutorial/adding-widget/table-data.png" />
 
 </div>
 

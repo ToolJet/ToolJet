@@ -9,11 +9,11 @@ title: Adding a data source
 The data sources are created on app level and not on workspace level.
 :::
 
-**Datasource manager** is on the left-sidebar of the app builder. To add a new data source, click on the `Add datasource` button.
+**Datasource manager** is on the left-sidebar of the app builder. To add a new data source, click on the <br/> `Add datasource` button.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Adding a data source](/img/tutorial/adding-datasource/add-datasource.png)
+<img className="screenshot-full" src="/img/tutorial/adding-datasource/add-datasource.png" />
 
 </div>
 
@@ -33,6 +33,6 @@ If you are using ToolJet cloud and if your data source is not publicly accessibl
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Adding a data source](/img/tutorial/adding-datasource/postgres.png)
+<img className="screenshot-full" src="/img/tutorial/adding-datasource/postgres.png" />
 
 </div>

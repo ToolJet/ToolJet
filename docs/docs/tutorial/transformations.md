@@ -23,7 +23,7 @@ The query will now look like this:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Query result transformations](/img/tutorial/transformations/transform.png)
+<img className="screenshot-full" src="/img/tutorial/transformations/transform.png" />
 
 </div>
 
@@ -31,7 +31,7 @@ Click the `create` button to create the query. Saved queries can be run using th
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Query result transformations](/img/tutorial/transformations/result.png)
+<img className="screenshot-full" src="/img/tutorial/transformations/result.png" />
 
 </div>
 
@@ -39,7 +39,7 @@ We can see that `first_name` and `last_name` are added to all the rows in the `d
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Query result transformations](/img/tutorial/transformations/rawdata.png)
+<img className="screenshot-full" src="/img/tutorial/transformations/rawdata.png" />
 
 </div>
 

@@ -30,7 +30,7 @@ You can create a Google Sheets data source with one of either of the two permiss
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Data source Google Sheets](/img/datasource-reference/google-sheets/googlesheets.gif)
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/googlesheets.gif" />
 
 </div>
 
@@ -57,7 +57,7 @@ This operation returns the table data from the spreadsheet in the form of json o
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet- Data source - Google Sheets](/img/datasource-reference/google-sheets/read-data-op.png)
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/read-data-op.png" />
 
 </div>
 
@@ -73,7 +73,7 @@ You can add more rows to the table using the append operation.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Data source Google Sheets](/img/datasource-reference/google-sheets/append-data-op.png)
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/append-data-op.png" />
 
 </div>
 
@@ -91,7 +91,7 @@ You can update the existing data in sheet using this operation.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Data source - Google Sheets](/img/datasource-reference/google-sheets/update-data-op.png)
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/update-data-op.png" />
 
 </div>
 
@@ -108,7 +108,7 @@ Use this operation delete a specific row from the sheet.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Data source Google Sheets](/img/datasource-reference/google-sheets/delete-row-op.png)
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/delete-row-op.png" />
 
 </div>
 
@@ -120,6 +120,6 @@ Here is the `Preview` of the query that used the get spreadsheet info operation.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Data source Google Sheets](/img/datasource-reference/google-sheets/get-info2.png)
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/get-info2.png" />
 
 </div>

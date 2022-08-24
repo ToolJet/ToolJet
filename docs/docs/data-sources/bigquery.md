@@ -36,7 +36,7 @@ ToolJet requires the config json downloaded from your account to connect to BigQ
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-create.png)
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-create.png" />
 
 </div>
 
@@ -48,7 +48,7 @@ Click on `+` button of the query manager at the bottom panel of the editor and s
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-query.png)
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-query.png" />
 
 </div>
 
@@ -93,7 +93,7 @@ Retruns list of datasets.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/list_datasets.png)
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/list_datasets.png" />
 
 </div>
 
@@ -111,7 +111,7 @@ Return list of tables within a dataset
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/list_tables.png)
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/list_tables.png" />
 
 </div>
 
@@ -122,7 +122,7 @@ Return data based on the `Query`. `Query options` ([Reference](https://cloud.goo
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/query.png)
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/query.png" />
 
 </div>
 
@@ -131,7 +131,7 @@ Return data based on the `Query`. `Query options` ([Reference](https://cloud.goo
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-insert.png)
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-insert.png" />
 
 </div>
 
@@ -140,7 +140,7 @@ Return data based on the `Query`. `Query options` ([Reference](https://cloud.goo
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-delete.png)
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-delete.png" />
 
 </div>
 
@@ -152,7 +152,7 @@ NOTE: Be careful when deleting records in a table. If you omit the WHERE clause,
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-update.png)
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-update.png" />
 
 </div>
 
@@ -165,7 +165,7 @@ NOTE: Be careful when deleting records in a table. If you omit the WHERE clause,
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - BigQuery](/img/datasource-reference/bigquery/bq-view.png)
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-view.png" />
 
 </div>
 

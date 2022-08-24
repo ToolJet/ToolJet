@@ -36,7 +36,8 @@ Click on `+` button of the query manager at the bottom panel of the editor and s
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - GraphQl](/img/datasource-reference/graphql/graphql-query.png)
+<img className="screenshot-full" src="/img/datasource-reference/graphql/graphql-query.png" />
+
 
 </div>
 

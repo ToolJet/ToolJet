@@ -14,7 +14,8 @@ To create a new ToolJet app, click on the **'Create new application'** button on
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Creating an app](/img/tutorial/creating-new-app/dashboard.png)
+<img className="screenshot-full" src="/img/tutorial/creating-new-app/dashboard.png" />
+
 
 </div>
 

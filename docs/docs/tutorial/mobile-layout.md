@@ -14,7 +14,8 @@ Widgets can be shown on desktop, mobile, or both.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widgets list](/img/tutorial/mobile-layout/mobile-layout.gif)
+<img className="screenshot-full" src="/img/tutorial/mobile-layout/mobile-layout.gif" />
+
 
 </div>
 

@@ -24,7 +24,7 @@ It is recommended to create a new PostgreSQL database user so that you can contr
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - PostgreSQL](/img/datasource-reference/postgresql/pgconnect.png)
+<img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnect.png" />
 
 </div>
 
@@ -42,7 +42,7 @@ Select SQL mode from the dropdown and enter the query in the editor. Click on th
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - PostgreSQL](/img/datasource-reference/postgresql/pg-sql.png)
+<img className="screenshot-full" src="/img/datasource-reference/postgresql/pg-sql.png" />
 
 </div>
 
@@ -54,7 +54,7 @@ Click on the `run` button to run the query. **NOTE**: Query should be saved befo
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - PostgreSQL](/img/datasource-reference/postgresql/pg-gui.png)
+<img className="screenshot-full" src="/img/datasource-reference/postgresql/pg-gui.png" />
 
 </div>
 
