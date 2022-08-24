@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import { debounce } from 'lodash';
 
 export const PDF = React.memo(({ styles, properties, width, height, component }) => {
   const pdfName = component.name;
@@ -9,30 +11,39 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(null);
   const pageRef = useRef([]);
+  const documentRef = useRef(null);
+  const hasScrollRef = useRef(false);
   const [error, setError] = useState(true);
   const [pageLoading, setPageLoading] = useState(true);
-  const onDocumentLoadSuccess = (document) => {
+  const [hasButtonClicked, setButtonClick] = useState(false);
+
+  const onDocumentLoadSuccess = async (document) => {
     const { numPages: nextNumPages } = document;
     setNumPages(nextNumPages);
     setPageNumber(1);
     setError(false);
     setPageLoading(false);
   };
+
   const onDocumentLoadError = () => {
     setError(true);
   };
+
   useEffect(() => {
     setPageLoading(true);
   }, [url]);
+
   const options = {
     root: document.querySelector('#pdf-wrapper'),
     rootMargin: '0px',
-    threshold: 0.5,
+    threshold: 0.7,
   };
 
   const trackIntersection = (entries) => {
+    let isCaptured = false;
     entries.forEach((entry) => {
-      if (entry.isIntersecting) {
+      if (entry.isIntersecting && !isCaptured && hasScrollRef.current) {
+        isCaptured = true;
         const currentPage = parseInt(entry.target.getAttribute('data-page-number'));
         if (pageNumber !== currentPage) setPageNumber(currentPage);
       }
@@ -50,7 +61,9 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
 
   const updatePage = useCallback(
     (offset) => {
-      pageRef.current[pageNumber + offset - 1].scrollIntoView({ block: 'nearest' });
+      const { offsetTop } = pageRef.current[pageNumber + offset - 1];
+      documentRef.current.scrollTop = offsetTop;
+      setButtonClick(true);
       setPageNumber((prevPageNumber) => (prevPageNumber || 1) + offset);
     },
     [pageNumber]
@@ -99,10 +112,24 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
     document.body.removeChild(anchor);
     URL.revokeObjectURL(pdfURL);
   }
+
+  const handleScroll = () => {
+    if (hasButtonClicked) return setButtonClick(false);
+    if (!hasScrollRef.current) hasScrollRef.current = true;
+    debounce(() => {
+      if (hasScrollRef.current) hasScrollRef.current = false;
+    }, 150);
+  };
+
   return (
     <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height }}>
       <div className="d-flex position-relative h-100 flex-column" style={{ margin: '0 auto', overflow: 'hidden' }}>
-        <div className="scrollable h-100 col position-relative" id="pdf-wrapper">
+        <div
+          className="scrollable h-100 col position-relative"
+          id="pdf-wrapper"
+          ref={documentRef}
+          onScroll={handleScroll}
+        >
           {url === '' ? 'No PDF file specified' : renderPDF()}
         </div>
         {!error && !pageLoading && (showDownloadOption || pageControls) && (
