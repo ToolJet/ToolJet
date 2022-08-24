@@ -1104,6 +1104,7 @@ class Editor extends React.Component {
     flush: () => {
       debuggerActions.flush(this);
     },
+    generateErrorLogs: (errors) => debuggerActions.generateErrorLogs(errors),
   };
 
   changeDarkMode = (newMode) => {
