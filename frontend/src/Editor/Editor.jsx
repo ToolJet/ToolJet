@@ -27,8 +27,7 @@ import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onEvent,
-  onQueryConfirm,
-  onQueryCancel,
+  onQueryConfirmOrCancel,
   runQuery,
   setStateAsync,
   computeComponentState,
@@ -142,6 +141,7 @@ class Editor extends React.Component {
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
+      queryConfirmationArr: [],
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
       isSaving: false,
@@ -1236,14 +1236,17 @@ class Editor extends React.Component {
       <div className="editor wrapper">
         <ReactTooltip type="dark" effect="solid" eventOff="click" delayShow={250} />
         {/* This is for viewer to show query confirmations */}
-        <Confirm
-          show={showQueryConfirmation}
-          message={`Do you want to run this query - ${this.state.queryConfirmationData?.queryName}?`}
-          onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
-          onCancel={() => onQueryCancel(this)}
-          queryConfirmationData={this.state.queryConfirmationData}
-          darkMode={this.props.darkMode}
-        />
+        {this.state.queryConfirmationArr.map((query) => (
+          <Confirm
+            show={showQueryConfirmation}
+            message={`Do you want to run this query - ${query?.queryName}?`}
+            onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true)}
+            onCancel={() => onQueryConfirmOrCancel(this, query)}
+            queryConfirmationData={query}
+            darkMode={this.props.darkMode}
+            key={query?.queryName}
+          />
+        ))}
         <Confirm
           show={showDataQueryDeletionConfirmation}
           message={'Do you really want to delete this query?'}

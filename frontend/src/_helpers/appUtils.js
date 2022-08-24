@@ -128,17 +128,15 @@ export function onComponentClick(_ref, id, component, mode = 'edit') {
   executeActionsForEventId(_ref, 'onClick', component, mode);
 }
 
-export function onQueryConfirm(_ref, queryConfirmationData) {
+export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = false) {
+  const filtertedQueryConfirmation = _ref.state?.queryConfirmationArr.filter(
+    (query) => query.queryId !== queryConfirmationData.queryId
+  );
   _ref.setState({
-    showQueryConfirmation: false,
+    showQueryConfirmation: filtertedQueryConfirmation.length > 0,
+    queryConfirmationArr: filtertedQueryConfirmation,
   });
-  runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true);
-}
-
-export function onQueryCancel(_ref) {
-  _ref.setState({
-    showQueryConfirmation: false,
-  });
+  isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true);
 }
 
 export async function copyToClipboard(text) {
@@ -207,7 +205,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
 
       case 'run-query': {
         const { queryId, queryName } = event;
-        return runQuery(_ref, queryId, queryName, true, mode);
+        return runQuery(_ref, queryId, queryName, undefined, mode);
       }
       case 'logout': {
         return logoutAction(_ref);
@@ -650,13 +648,17 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
   if (dataQuery.options.requestConfirmation) {
+    const queryConfirmationArr = _ref.state?.queryConfirmationArr || [];
+    const queryConfirmation = {
+      queryId,
+      queryName,
+    };
+    queryConfirmationArr.push(queryConfirmation);
+
     if (confirmed === undefined) {
       _ref.setState({
         showQueryConfirmation: true,
-        queryConfirmationData: {
-          queryId,
-          queryName,
-        },
+        queryConfirmationArr,
       });
       return;
     }

@@ -8,8 +8,7 @@ import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onComponentClick,
-  onQueryConfirm,
-  onQueryCancel,
+  onQueryConfirmOrCancel,
   onEvent,
   runQuery,
   computeComponentState,
@@ -44,6 +43,7 @@ class Viewer extends React.Component {
           environment_variables: {},
         },
       },
+      queryConfirmationArr: [],
     };
   }
 
@@ -226,13 +226,17 @@ class Viewer extends React.Component {
     } else {
       return (
         <div className="viewer wrapper">
-          <Confirm
-            show={showQueryConfirmation}
-            message={'Do you want to run this query?'}
-            onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
-            onCancel={() => onQueryCancel(this)}
-            queryConfirmationData={this.state.queryConfirmationData}
-          />
+          {this.state.queryConfirmationArr.map((query) => (
+            <Confirm
+              show={showQueryConfirmation}
+              message={`Do you want to run this query - ${query?.queryName}?`}
+              onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true)}
+              onCancel={() => onQueryConfirmOrCancel(this, query)}
+              queryConfirmationData={query}
+              darkMode={this.props.darkMode}
+              key={query?.queryName}
+            />
+          ))}
           <DndProvider backend={HTML5Backend}>
             {!appDefinition.globalSettings?.hideHeader && (
               <div className="header">
