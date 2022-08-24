@@ -22,16 +22,7 @@ module.exports = {
       isCloseable: true,
     },
     colorMode: {
-      switchConfig: {
-        darkIcon: '\00a0 ',
-        lightIcon: '\00a0',
-        darkIconStyle: {
-          display: 'none',
-        },
-        lightIconStyle: {
-          display: 'none',
-        },
-      },
+      
     },
     navbar: {
       logo: {
