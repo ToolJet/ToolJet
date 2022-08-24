@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx/xlsx.mjs';
 
 export const FilePicker = ({
   width,
@@ -184,7 +184,7 @@ export const FilePicker = ({
       dataURL: readFileAsDataURL, // TODO: Fix dataURL to have correct format
       base64Data: readFileAsDataURL,
       parsedData: shouldProcessFileParsing
-        ? await processFileContent(file.type, { readFileAsText, readFileAsDataURL })
+        ? await processFileContent(file.type, { readFileAsDataURL, readFileAsText })
         : null,
       filePath: file.path,
     };
@@ -378,7 +378,6 @@ FilePicker.AcceptedFiles = ({ children, width, height }) => {
   );
 };
 
-//* CSV Parser
 const processCSV = (str, delimiter = ',') => {
   const headers = str.slice(0, str.indexOf('\n')).split(delimiter);
   const rows = str.slice(str.indexOf('\n') + 1).split('\n');
@@ -399,15 +398,16 @@ const processCSV = (str, delimiter = ',') => {
     handleErrors(error);
   }
 };
-
-//* XLSX Parser
-const processXLSX = (file) => {
+const processXls = (str) => {
   try {
-    const workbook = XLSX.read(file, { type: 'base64' });
-    const sheet_name_list = workbook.SheetNames;
-    const xlData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
-    return xlData;
+    const wb = XLSX.read(str, { type: 'base64' });
+    const wsname = wb.SheetNames[0];
+    const ws = wb.Sheets[wsname];
+    /* Convert array of arrays */
+    const data = XLSX.utils.sheet_to_json(ws);
+    return data;
   } catch (error) {
+    console.log(error);
     handleErrors(error);
   }
 };
@@ -415,9 +415,10 @@ const processXLSX = (file) => {
 const processFileContent = (fileType, fileContent) => {
   switch (fileType) {
     case 'text/csv':
-      return processCSV(fileContent['readFileAsText']);
-    case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 'application/vnd.ms-excel':
-      return processXLSX(fileContent['readFileAsDataURL']);
+      return processCSV(fileContent.readFileAsText);
+    case 'application/vnd.ms-excel':
+    case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+      return processXls(fileContent.readFileAsDataURL);
 
     default:
       break;
