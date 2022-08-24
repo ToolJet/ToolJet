@@ -4,6 +4,7 @@ import { commonText, commonWidgetText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { randomDateOrTime } from "Support/utils/common";
+import { multiselectSelector } from "Selectors/multiselect";
 
 import {
   selectAndVerifyDate,
@@ -19,6 +20,11 @@ import {
   addAndVerifyTooltip,
   editAndVerifyWidgetName,
   verifyComponentValueFromInspector,
+  fillBoxShadowParams,
+  selectColourFromColourPicker,
+  addTextWidgetToVerifyValue,
+  verifyBoxShadowCss,
+  verifyTooltip,
 } from "Support/utils/commonWidget";
 
 describe("Date Picker widget", () => {
@@ -43,12 +49,14 @@ describe("Date Picker widget", () => {
     verifyAndModifyParameter(datePickerText.labelDefaultValue, data.date);
     verifyComponentValueFromInspector(data.widgetName, data.date);
 
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     verifyDate(data.widgetName, data.date);
     data.date = randomDateOrTime();
     selectAndVerifyDate(data.widgetName, data.date);
 
     openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(datePickerText.labelformat, "DD/MM/YY");
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     verifyDate(data.widgetName, data.date, "DD/MM/YY");
     verifyComponentValueFromInspector(data.widgetName, data.date, "opened");
     cy.get(commonSelectors.canvas).click({ force: true });
@@ -58,6 +66,7 @@ describe("Date Picker widget", () => {
       datePickerText.labelEnableDateSection,
       commonWidgetText.codeMirrorInputFalse
     );
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     verifyDate(data.widgetName, "");
 
     openEditorSidebar(data.widgetName);
@@ -65,6 +74,7 @@ describe("Date Picker widget", () => {
       datePickerText.labelEnableTimeSection,
       commonWidgetText.codeMirrorInputTrue
     );
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     verifyDate(data.widgetName, datePickerText.defaultTime, "hh:mm A");
     selectAndVerifyTime(data.widgetName, data.randomTime);
 
@@ -175,5 +185,112 @@ describe("Date Picker widget", () => {
     cy.get(commonWidgetSelector.draggableWidget(datePickerText.datepicker1))
       .find("input")
       .should("have.css", "border-radius", "20px");
+  });
+
+  it.only("should verify widget in preview", () => {
+    const data = {};
+    data.alertMessage = fake.randomSentence;
+    data.widgetName = fake.widgetName;
+    data.date = randomDateOrTime();
+    data.customMessage = fake.randomSentence;
+    data.tooltipText = fake.randomSentence;
+    data.randomTime = randomDateOrTime("hh:mm");
+    data.colour = fake.randomRgba;
+    data.boxShadowParam = fake.boxShadowParam;
+
+    // cy.modifyCanvasSize(1920, 700);
+
+    openEditorSidebar(datePickerText.datepicker1);
+    editAndVerifyWidgetName(data.widgetName);
+
+    openAccordion(commonWidgetText.accordionProperties);
+    verifyAndModifyParameter(datePickerText.labelDefaultValue, data.date);
+    verifyAndModifyParameter(datePickerText.labelformat, "DD/MM/YY");
+
+    cy.get(
+      commonWidgetSelector.parameterInputField(
+        datePickerText.labelEnableDateSection
+      )
+    ).clearAndTypeOnCodeMirror([`{{`, `!components.toggleswitch1.value}}`]);
+    cy.get(
+      commonWidgetSelector.parameterInputField(
+        datePickerText.labelEnableTimeSection
+      )
+    ).clearAndTypeOnCodeMirror([`{{`, `components.toggleswitch1.value}}`]);
+
+    openAccordion(commonWidgetText.accordionEvents);
+    addDefaultEventHandler(data.alertMessage);
+
+    openAccordion(commonWidgetText.accordionGenaral);
+    addAndVerifyTooltip(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.tooltipText
+    );
+
+    openEditorSidebar(data.widgetName);
+    openAccordion(commonWidgetText.accordionValidation);
+    verifyAndModifyParameter(
+      commonWidgetText.parameterCustomValidation,
+      datePickerText.customValidation(data.widgetName, data.customMessage)
+    );
+
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+    verifyAndModifyParameter(
+      commonWidgetText.parameterBorderRadius,
+      commonWidgetText.borderRadiusInput
+    );
+
+    openAccordion(commonWidgetText.accordionGenaral, "1");
+    cy.get(multiselectSelector.inputBoxShadow).click();
+    fillBoxShadowParams(
+      commonWidgetSelector.boxShadowDefaultParam,
+      data.boxShadowParam
+    );
+    cy.get(multiselectSelector.boxShadowPopover)
+      .find(multiselectSelector.colourPickerInput)
+      .click();
+    selectColourFromColourPicker(
+      multiselectSelector.colourPickerParent,
+      data.colour
+    );
+
+    addTextWidgetToVerifyValue(`components.${data.widgetName}.value`);
+    cy.dragAndDropWidget("Toggle Switch", 600, 160);
+
+    cy.openInCurrentTab(`[data-cy="preview-link-button"]`);
+
+    // verifyDate(data.widgetName, data.date, "DD/MM/YY");
+    //cy.get("[data-cy='draggable-widget-text1']").should(
+    // "have.text", data.date)//WIP-Format
+
+    data.date = randomDateOrTime();
+    // selectAndVerifyDate(data.widgetName, data.date, "DD/MM/YY"); //value is on different format
+    // cy.get("[data-cy='draggable-widget-text1']").should("have.text", data.date); //WIP-Format
+
+    // cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
+    //verify new date on text
+
+    verifyTooltip(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.tooltipText
+    );
+
+    cy.get(datePickerSelector.validationFeedbackMessage).should(
+      "have.text",
+      data.customMessage
+    );
+
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
+      .find("input")
+      .should("have.css", "border-radius", "20px");
+
+    verifyBoxShadowCss(data.widgetName, data.colour, data.boxShadowParam);
+
+    cy.get("[data-cy='draggable-widget-toggleswitch1']")
+      .find(".form-check-input")
+      .click();
+    verifyDate(data.widgetName, datePickerText.defaultTime, "hh:mm A");
+
+    selectAndVerifyTime(data.widgetName, data.randomTime);
   });
 });

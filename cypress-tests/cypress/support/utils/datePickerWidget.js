@@ -31,7 +31,6 @@ export const selectAndVerifyDate = (
 
 export const verifyDate = (widgetName, date, format = "DD/MM/YYYY") => {
   date = date != "" ? moment(date, "DD MM YYYY").format(format) : date;
-  cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .find("input")
     .should("have.value", date);
@@ -40,9 +39,13 @@ export const verifyDate = (widgetName, date, format = "DD/MM/YYYY") => {
 export const selectAndVerifyTime = (widgetName, time) => {
   cy.get(commonSelectors.canvas).click({ force: true });
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .scrollIntoView()
     .click()
+    .trigger("mouseleave")
     .within(() => {
       cy.get(datePickerSelector.calenderTimeInput)
+        .scrollIntoView()
+        .focus()
         .type(`${time}`)
         .should("have.value", time);
     });

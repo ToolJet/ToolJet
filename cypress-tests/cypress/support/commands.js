@@ -184,6 +184,7 @@ Cypress.Commands.add("openInCurrentTab", (selector) => {
   cy.get(selector).invoke("removeAttr", "target").click();
 });
 
+<<<<<<< HEAD
 Cypress.Commands.add("waitForAutoSave", () => {
   cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
     "have.text",
@@ -195,3 +196,11 @@ Cypress.Commands.add("renameApp", (appName) =>{
   cy.clearAndType(commonSelectors.appNameInput, appName);
   cy.waitForAutoSave();
 })
+=======
+Cypress.Commands.add("modifyCanvasSize", (x, y) => {
+  cy.get("[data-cy='left-sidebar-settings-button']").click();
+  cy.clearAndType("[data-cy='maximum-canvas-width-input-field']", x);
+  cy.clearAndType("[data-cy='maximum-canvas-height-input-field']", y);
+  cy.forceClickOnCanvas();
+});
+>>>>>>> b872a8aa ( Add preview for datePicker)
