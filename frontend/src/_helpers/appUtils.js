@@ -924,6 +924,63 @@ export const debuggerActions = {
       },
     }));
   },
+
+  //* @params: errors - Object
+  generateErrorLogs: (errors) => {
+    const errorsArr = [];
+    Object.entries(errors).forEach(([key, value]) => {
+      const errorType =
+        value.type === 'query' && (value.kind === 'restapi' || value.kind === 'runjs') ? value.kind : value.type;
+
+      const error = {};
+      const generalProps = {
+        key,
+        type: value.type,
+        kind: errorType !== 'transformations' ? value.kind : 'transformations',
+        timestamp: moment(),
+      };
+
+      switch (errorType) {
+        case 'restapi':
+          generalProps.message = value.data.message;
+          generalProps.description = value.data.description;
+          error.substitutedVariables = value.options;
+          error.request = value.data.data.requestObject;
+          error.response = value.data.data.responseObject;
+          break;
+
+        case 'runjs':
+          error.message = value.data.data.message;
+          error.description = value.data.data.description;
+          break;
+
+        case 'query':
+          error.message = value.data.message;
+          error.description = value.data.description;
+          error.substitutedVariables = value.options;
+          break;
+
+        case 'transformations':
+          generalProps.message = value.data.message;
+          error.data = value.data.data;
+          break;
+
+        case 'component':
+          generalProps.message = value.data.message;
+          generalProps.property = key.split('- ')[1];
+          error.resolvedProperties = value.resolvedProperties;
+          break;
+
+        default:
+          break;
+      }
+      errorsArr.push({
+        error,
+        ...generalProps,
+      });
+    });
+    return errorsArr;
+  },
 };
 
 export const getComponentName = (currentState, id) => {
