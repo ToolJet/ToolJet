@@ -96,6 +96,7 @@ const sidebars = {
         'data-sources/smtp',
         'data-sources/snowflake',
         'data-sources/stripe',
+        'data-sources/twilio',
         'data-sources/typesense',
         'data-sources/woocommerce',
       ],
