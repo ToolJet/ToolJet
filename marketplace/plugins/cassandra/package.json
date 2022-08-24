@@ -10,9 +10,11 @@
     "build": "ncc build lib/index.ts -o dist"
   },
   "dependencies": {
-    "@vercel/ncc": "^0.34.0",
     "@tooljet-marketplace/common": "^1.0.0",
-    "cassandra-driver": "^4.6.4",
+    "cassandra-driver": "^4.6.4"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.34.0",
     "typescript": "^4.7.4"
   }
 }
