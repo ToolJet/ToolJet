@@ -57,7 +57,7 @@ export default class Create extends Command {
           default: false,
         },
       ]);
-      marketplace = responses.type;
+      marketplace = responses.marketplace;
     }
 
     const pluginsPath = marketplace ? 'marketplace' : 'plugins';
@@ -100,7 +100,7 @@ export default class Create extends Command {
 
     CliUx.ux.action.start('creating plugin');
 
-    runner(hygenArgs, {
+    await runner(hygenArgs, {
       templates: defaultTemplates,
       cwd: process.cwd(),
       logger: new Logger(console.log.bind(console)),
@@ -123,7 +123,7 @@ export default class Create extends Command {
         version: '1.0.0',
         id: `${args.plugin_name.toLowerCase()}`,
         author: 'Tooljet',
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toUTCString(),
       };
 
       pluginsJson.push(plugin);
@@ -153,7 +153,7 @@ export default class Create extends Command {
 
     const subtree = CliUx.ux.tree();
     subtree.insert(`${args.plugin_name}`);
-    tree.nodes.plugins.insert(marketplace ? 'plugins' : 'packages', subtree);
+    tree.nodes[pluginsPath].insert(marketplace ? 'plugins' : 'packages', subtree);
 
     tree.display();
   }
