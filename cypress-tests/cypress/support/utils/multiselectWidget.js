@@ -31,12 +31,14 @@ export const verifyMultiselectStatus = (
 
 export const selectFromMultiSelect = (widgetName, options) => {
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
-    .find(multiselectSelector.dropdownArrow)
+    .find(multiselectSelector.multiselectHeader)
     .click();
-  cy.get(multiselectSelector.dropdownAllItems).each(($option, i) => {
-    if (options[i] == "true")
-      cy.wrap($option).find(multiselectSelector.dropdownCheckbox).click();
-  });
+  cy.get(multiselectSelector.dropdownAllItems, { timeout: 2000 }).each(
+    ($option, i) => {
+      if (options[i] == "true")
+        cy.wrap($option).find(multiselectSelector.dropdownCheckbox).click();
+    }
+  );
   cy.forceClickOnCanvas();
 };
 

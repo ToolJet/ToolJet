@@ -26,17 +26,22 @@ import {
   selectColourFromColourPicker,
   fillBoxShadowParams,
   verifyBoxShadowCss,
+<<<<<<< HEAD
   verifyAndModifyStylePickerFx,
+=======
+  addTextWidgetToVerifyValue,
+  verifyTooltip,
+>>>>>>> 569f226f ( Add preview for multiSelect)
 } from "Support/utils/commonWidget";
 
-describe("Date Picker widget", () => {
+describe("Multiselect widget", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.createApp();
     cy.dragAndDropWidget(multiselectText.multiselect);
   });
 
-  it("should verify the properties of the multiselect widget", () => {
+  it("should verify the properties of the widget", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     data.label = fake.widgetName;
@@ -118,6 +123,7 @@ describe("Date Picker widget", () => {
 
     openEditorSidebar(data.widgetName);
     verifyAndModifyToggleFx(multiselectText.enableSelectAllOptions);
+
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
       .find(multiselectSelector.multiselectHeader)
       .click();
@@ -126,6 +132,7 @@ describe("Date Picker widget", () => {
       .should("have.text", multiselectText.dropdwonOptionSelectAll)
       .click()
       .click();
+
     verifyMultiselectHeader(
       data.widgetName,
       multiselectText.labelAllItemsSelected
@@ -170,7 +177,7 @@ describe("Date Picker widget", () => {
     );
   });
 
-  it("should verify the styles of the multiselect widget", () => {
+  it("should verify the styles of the widget", () => {
     const data = {};
     data.colour = fake.randomRgba;
     data.boxShadowParam = fake.boxShadowParam;
@@ -241,5 +248,111 @@ describe("Date Picker widget", () => {
       data.colour,
       data.boxShadowParam
     );
+  });
+
+  it("should verify widget in preview", () => {
+    const data = {};
+    data.widgetName = fake.widgetName;
+    data.label = fake.widgetName;
+    data.customMessage = fake.randomSentence;
+    data.alertMessage = fake.randomSentence;
+    data.colour = fake.randomRgba;
+    data.boxShadowParam = fake.boxShadowParam;
+    data.randomLabels = multiselectSelector.textArrayOfLength(3);
+    data.randomValues = multiselectSelector.textArrayOfLength(3);
+
+    openEditorSidebar(multiselectText.defaultWidgetName);
+    editAndVerifyWidgetName(data.widgetName);
+    verifyAndModifyParameter(commonWidgetText.parameterLabel, data.label);
+    verifyAndModifyParameter(
+      commonWidgetText.labelDefaultValue,
+      codeMirrorInputLabel(`[${data.randomValues[0]}]`)
+    );
+
+    verifyAndModifyToggleFx(multiselectText.enableSelectAllOptions);
+    verifyAndModifyParameter(
+      commonWidgetText.parameterOptionvalues,
+      codeMirrorInputLabel(`[${data.randomValues}]`)
+    );
+
+    openAccordion(commonWidgetText.accordionEvents);
+    addDefaultEventHandler(data.alertMessage);
+
+    openAccordion(commonWidgetText.accordionGenaral);
+    addAndVerifyTooltip(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.customMessage
+    );
+
+    openEditorSidebar(data.widgetName);
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+    openAccordion(commonWidgetText.accordionGenaral, "1");
+    cy.get(multiselectSelector.inputBoxShadow).click();
+
+    fillBoxShadowParams(
+      commonWidgetSelector.boxShadowDefaultParam,
+      data.boxShadowParam
+    );
+    cy.get(multiselectSelector.boxShadowPopover)
+      .find(multiselectSelector.colourPickerInput)
+      .click();
+    selectColourFromColourPicker(
+      multiselectSelector.colourPickerParent,
+      data.colour
+    );
+    verifyAndModifyParameter(
+      commonWidgetText.parameterBorderRadius,
+      commonWidgetText.borderRadiusInput
+    );
+
+    addTextWidgetToVerifyValue(`components.${data.widgetName}.values`);
+
+    cy.openInCurrentTab(`[data-cy="preview-link-button"]`);
+    //investigate on default value
+
+    cy.get(multiselectSelector.multiselectLabel(data.widgetName)).should(
+      "have.text",
+      `${data.label}`
+    );
+
+    verifyMultiselectOptions(data.widgetName, [
+      "Select All",
+      "one",
+      "two",
+      "three",
+    ]);
+
+    cy.get("[data-cy='draggable-widget-text1']").should(
+      "have.text",
+      `${data.randomValues[0].replaceAll('"', "")}`
+    );
+    selectFromMultiSelect(data.widgetName, ["", "", "true"]);
+    cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
+    //alert
+
+    cy.get("[data-cy='draggable-widget-text1']").should(
+      "have.text",
+      `${data.randomValues.slice(0, 2)}`.replaceAll('"', "")
+    );
+
+    selectFromMultiSelect(data.widgetName, ["true"]);
+    cy.get("[data-cy='draggable-widget-text1']").should(
+      "have.text",
+      `${data.randomValues}`.replaceAll('"', "")
+    );
+    verifyMultiselectHeader(
+      data.widgetName,
+      multiselectText.labelAllItemsSelected
+    );
+
+    verifyTooltip(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.customMessage
+    );
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
+      .children(".h-100")
+      .should("have.css", "border-radius", "20px");
+
+    verifyBoxShadowCss(data.widgetName, data.colour, data.boxShadowParam);
   });
 });
