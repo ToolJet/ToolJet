@@ -13,13 +13,14 @@ export const Listview = function Listview({
   styles,
   fireEvent,
   setExposedVariable,
+  darkMode,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
 
   const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
-  const { backgroundColor, visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
-
+  const { visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
+  const backgroundColor = styles.backgroundColor === '#fff' && darkMode ? '#232E3C' : styles.backgroundColor;
   const computedStyles = {
     backgroundColor,
     height,
