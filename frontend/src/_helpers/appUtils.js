@@ -781,10 +781,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             });
           }
 
-          if (dataQuery.options.requestConfirmation) {
-            toast(`Query (${dataQuery.name}) completed.`);
-          }
-
           _self.setState(
             {
               currentState: {
