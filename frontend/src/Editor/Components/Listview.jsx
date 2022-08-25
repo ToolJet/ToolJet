@@ -20,7 +20,8 @@ export const Listview = function Listview({
 
   const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
   const { visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
-  const backgroundColor = styles.backgroundColor === '#fff' && darkMode ? '#232E3C' : styles.backgroundColor;
+  const backgroundColor =
+    ['#fff', '#ffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const computedStyles = {
     backgroundColor,
     height,
