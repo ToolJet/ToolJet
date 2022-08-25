@@ -73,7 +73,7 @@ export class PluginsService {
 
   async fetchPluginFiles(id: string) {
     if (process.env.NODE_ENV === 'production') {
-      const host = this.configService.get<string>('MARKETPLACE_URL', 'https://integrations.tooljet.com');
+      const host = this.configService.get<string>('TOOLJET_MARKETPLACE_URL', 'https://integrations.tooljet.com');
 
       const promises = await Promise.all([
         fetch(`${host}/marketplace-assets/${id}/dist/index.js`),

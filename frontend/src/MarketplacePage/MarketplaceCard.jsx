@@ -38,7 +38,11 @@ export const MarketplaceCard = ({ id, name, description, version, isInstalled = 
           <div className="row align-items-center">
             <div className="col-auto">
               <span className="bg-blue text-white avatar">
-                <img height="40" width="40" src={`${config.MARKETPLACE_URL}/marketplace-assets/${id}/lib/icon.svg`} />
+                <img
+                  height="40"
+                  width="40"
+                  src={`${config.TOOLJET_MARKETPLACE_URL}/marketplace-assets/${id}/lib/icon.svg`}
+                />
               </span>
             </div>
             <div className="col">
