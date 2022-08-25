@@ -1,0 +1,96 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "ClickHouse datasource",
+  "description": "A schema defining Clickhouse datasource",
+  "type": "database",
+  "source": {
+    "name": "ClickHouse",
+    "kind": "clickhouse",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+
+    "options": {
+      "username": { "type": "string" },
+      "host": { "type": "string" },
+      "password": { "type": "string", "encrypted": true },
+      "port": { "type": "string" },
+      "database": { "type": "string" },
+      "format": { "type": "string" },
+      "protocol": { "type": "string" }
+    }
+  },
+  "properties": {
+    "username": {
+      "label": "Username",
+      "key": "username",
+      "type": "text",
+      "description": "Enter username"
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "Enter password"
+    },
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "localhost"
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "5984"
+    },
+    "database": {
+      "label": "Database Name",
+      "key": "database",
+      "type": "text",
+      "description": "database name"  
+      },
+    "format": {
+      "label": "Format",
+      "key": "format",
+      "description": "format name",
+      "type": "dropdown",
+      "list": [
+        {
+          "name": "JSON",
+          "value": "json"
+        },
+        {
+          "name": "CSV",
+          "value": "csv"
+        },
+        {
+          "name": "TSV",
+          "value": "tsv"
+        }
+      ],
+      "description": "Enter format"
+    },
+    "protocol": {
+      "label": "Protocol",
+      "key": "protocol",
+      "type": "dropdown",
+      "list": [
+        {
+          "name": "HTTP",
+          "value": "http"
+        },
+        {
+          "name": "HTTPS",
+          "value": "https"
+        }
+      ],
+      "description": "Enter protocol"
+    }
+  },
+  "required": ["port", "host", "protocol"]
+}
