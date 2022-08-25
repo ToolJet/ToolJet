@@ -31,7 +31,7 @@ function createDatabase(): void {
   });
 
   const createdb =
-    `PGPASSWORD=${envVars.PG_PASS} createdb ` +
+    `PGPASSWORD="${envVars.PG_PASS}" createdb ` +
     `-h ${envVars.PG_HOST} ` +
     `-p ${envVars.PG_PORT} ` +
     `-U ${envVars.PG_USER} ` +

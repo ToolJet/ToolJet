@@ -5,10 +5,14 @@ import { Organization } from '../entities/organization.entity';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { WorkspaceDbSetupService } from './workspace_db_setup.service';
 
 @Injectable()
 export class SeedsService {
-  constructor(private readonly entityManager: EntityManager) {}
+  constructor(
+    private readonly entityManager: EntityManager,
+    private workspaceDbSetupService: WorkspaceDbSetupService
+  ) {}
 
   async perform(): Promise<void> {
     await this.entityManager.transaction(async (manager) => {
@@ -54,6 +58,7 @@ export class SeedsService {
       await manager.save(organizationUser);
 
       await this.createDefaultUserGroups(manager, user);
+      await this.workspaceDbSetupService.perform(manager, organization.id)
 
       console.log(
         'Seeding complete. Use default credentials to login.\n' + 'email: dev@tooljet.io\n' + 'password: password'

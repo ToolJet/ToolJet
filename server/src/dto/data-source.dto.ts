@@ -10,6 +10,9 @@ export class CreateDataSourceDto {
   @IsUUID()
   app_version_id: string;
 
+  @IsUUID()
+  organization_id: string;
+
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @IsNotEmpty()

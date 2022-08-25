@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
+import { Organization } from './organization.entity';
 
 @Entity({ name: 'data_sources' })
 export class DataSource extends BaseEntity {
@@ -40,6 +41,10 @@ export class DataSource extends BaseEntity {
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.id)
   @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;
+
+  @ManyToOne(() => Organization, (organization) => organization.id)
+  @JoinColumn({ name: 'organization_id' })
+  organization: Organization;
 
   @ManyToOne(() => App, (app) => app.id)
   @JoinColumn({ name: 'app_id' })
