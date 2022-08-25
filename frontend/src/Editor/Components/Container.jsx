@@ -2,8 +2,18 @@ import React, { useRef } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 
-export const Container = function Container({ id, component, width, height, containerProps, removeComponent, styles }) {
-  const { backgroundColor, visibility, disabledState, borderRadius } = styles;
+export const Container = function Container({
+  id,
+  component,
+  width,
+  height,
+  containerProps,
+  removeComponent,
+  styles,
+  darkMode,
+}) {
+  const { visibility, disabledState, borderRadius } = styles;
+  const backgroundColor = styles.backgroundColor === '#fff' && darkMode ? '#232E3C' : styles.backgroundColor;
 
   const computedStyles = {
     backgroundColor,
