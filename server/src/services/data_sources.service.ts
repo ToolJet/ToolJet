@@ -6,15 +6,12 @@ import { User } from '../../src/entities/user.entity';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
 import { cleanObject } from 'src/helpers/utils.helper';
-import { decode } from 'js-base64';
-import { PluginsService } from './plugins.service';
-import { requireFromString } from 'module-from-string';
-const plugins = {};
+import { PluginsHelper } from '../helpers/plugins.helper';
 
 @Injectable()
 export class DataSourcesService {
   constructor(
-    private readonly pluginsService: PluginsService,
+    private readonly pluginsHelper: PluginsHelper,
     private credentialsService: CredentialsService,
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
@@ -101,7 +98,7 @@ export class DataSourcesService {
         sourceOptions[key] = options[key]['value'];
       }
 
-      const service = await this.getService(kind, plugin_id);
+      const service = await this.pluginsHelper.getService(plugin_id, kind);
       if (!service?.testConnection) {
         throw new NotImplementedException('testConnection method not implemented');
       }
@@ -114,30 +111,6 @@ export class DataSourcesService {
     }
 
     return result;
-  }
-
-  async getService(kind: string, pluginId: any) {
-    let service: any;
-    if (pluginId) {
-      let decoded: string;
-      if (plugins[pluginId]) {
-        decoded = decode(plugins[pluginId]);
-      } else {
-        const plugin = await this.pluginsService.findOne(pluginId);
-        decoded = decode(plugin.indexFile.data.toString());
-        plugins[pluginId] = decoded;
-      }
-      const code = requireFromString(decoded, { useCurrentGlobal: true });
-      try {
-        service = new code.default();
-      } catch (error) {
-        console.error('error', error);
-      }
-    } else {
-      service = new allPlugins[kind]();
-    }
-
-    return service;
   }
 
   async parseOptionsForOauthDataSource(options: Array<object>) {

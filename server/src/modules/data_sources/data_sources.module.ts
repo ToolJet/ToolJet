@@ -24,6 +24,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
 import { FilesService } from '@services/files.service';
 import { PluginsService } from '@services/plugins.service';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { Plugin } from 'src/entities/plugin.entity';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 
@@ -58,6 +59,7 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
     AppImportExportService,
     FilesService,
     PluginsService,
+    PluginsHelper,
   ],
   controllers: [DataSourcesController],
 })

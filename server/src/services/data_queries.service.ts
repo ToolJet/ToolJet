@@ -1,4 +1,3 @@
-import allPlugins from '@tooljet/plugins/dist/server';
 import got from 'got';
 import { Injectable, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,19 +7,15 @@ import { DataQuery } from '../../src/entities/data_query.entity';
 import { CredentialsService } from './credentials.service';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
-import { PluginsService } from './plugins.service';
-import { decode } from 'js-base64';
-import { requireFromString } from 'module-from-string';
+import { PluginsHelper } from '../helpers/plugins.helper';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { EncryptionService } from './encryption.service';
 import { App } from 'src/entities/app.entity';
 
-const plugins = {};
-
 @Injectable()
 export class DataQueriesService {
   constructor(
-    private readonly pluginsService: PluginsService,
+    private readonly pluginsHelper: PluginsHelper,
     private credentialsService: CredentialsService,
     private dataSourcesService: DataSourcesService,
     private encryptionService: EncryptionService,
@@ -94,25 +89,8 @@ export class DataQueriesService {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id);
     const kind = dataQuery.kind;
-    let service: any;
-    if (dataQuery.pluginId) {
-      let decoded: string;
-      if (plugins[dataQuery.pluginId]) {
-        decoded = plugins[dataQuery.pluginId];
-      } else {
-        const plugin = await this.pluginsService.findOne(dataQuery.pluginId);
-        decoded = decode(plugin.indexFile.data.toString());
-        plugins[dataQuery.pluginId] = decoded;
-      }
-      const code = requireFromString(decoded, { useCurrentGlobal: true });
-      try {
-        service = new code.default();
-      } catch (error) {
-        console.error('error', error);
-      }
-    } else {
-      service = new allPlugins[kind]();
-    }
+    const service = await this.pluginsHelper.getService(dataQuery.pluginId, kind);
+
     return { service, sourceOptions, parsedQueryOptions };
   }
 

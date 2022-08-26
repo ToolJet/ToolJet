@@ -26,6 +26,7 @@ import { AppImportExportService } from '@services/app_import_export.service';
 import { DataSourcesService } from '@services/data_sources.service';
 import { CredentialsService } from '@services/credentials.service';
 import { Credential } from 'src/entities/credential.entity';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
 
 @Module({
   controllers: [OrgEnvironmentVariablesController],
@@ -59,6 +60,7 @@ import { Credential } from 'src/entities/credential.entity';
     AppImportExportService,
     DataSourcesService,
     CredentialsService,
+    PluginsHelper,
   ],
 })
 export class OrgEnvironmentVariablesModule {}

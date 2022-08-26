@@ -29,6 +29,7 @@ import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
 import { PluginsService } from '@services/plugins.service';
 import { Plugin } from 'src/entities/plugin.entity';
+import { PluginsHelper } from 'src/helpers/plugins.helper';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { Plugin } from 'src/entities/plugin.entity';
     EncryptionService,
     FilesService,
     PluginsService,
+    PluginsHelper,
   ],
   controllers: [AppsController, AppUsersController],
 })
