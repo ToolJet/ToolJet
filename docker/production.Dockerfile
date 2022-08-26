@@ -23,7 +23,7 @@ RUN npm --prefix plugins prune --production
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
 COPY ./frontend/ ./frontend/
-RUN npm --prefix frontend run build
+RUN ASSET_PATH="__REPLACE_ASSET_PATH__" npm --prefix frontend run build
 
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
