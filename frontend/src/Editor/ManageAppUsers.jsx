@@ -7,6 +7,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Skeleton from 'react-loading-skeleton';
 import { debounce } from 'lodash';
 import Textarea from '@/_ui/Textarea';
+import { retrieveWhiteLabelText } from '@/_helpers/utils';
 
 class ManageAppUsers extends React.Component {
   constructor(props) {
@@ -128,7 +129,9 @@ class ManageAppUsers extends React.Component {
     const appLink = `${window.location.origin}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = isSlugVerificationInProgress ? '' : slugError !== null ? 'is-invalid' : 'is-valid';
-    const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="Tooljet app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
+    const embeddableLink = `<iframe width="560" height="315" src="${appLink}${
+      this.props.slug
+    }" title="${retrieveWhiteLabelText()} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
 
     return (
       <div>

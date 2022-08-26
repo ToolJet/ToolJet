@@ -63,3 +63,7 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
     });
   }
 }
+
+export const retrieveWhiteLabelText = () => {
+  return process.env?.WHITE_LABEL_TEXT ? process.env.WHITE_LABEL_TEXT : 'ToolJet';
+};

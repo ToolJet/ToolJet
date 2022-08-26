@@ -60,6 +60,7 @@ import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import AppLogo from '../_components/AppLogo';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
 import Selecto from 'react-selecto';
+import { retrieveWhiteLabelText } from '@/_helpers/utils';
 
 setAutoFreeze(false);
 enablePatches();
@@ -156,7 +157,7 @@ class Editor extends React.Component {
   }
 
   setWindowTitle(name) {
-    document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
+    document.title = name ? `${name} - ${retrieveWhiteLabelText()}` : `Untitled App - ${retrieveWhiteLabelText()}`;
   }
 
   componentDidMount() {

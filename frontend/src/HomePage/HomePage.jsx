@@ -11,6 +11,7 @@ import Modal from './Modal';
 import SelectSearch from 'react-select-search';
 import Fuse from 'fuse.js';
 import configs from './Configs/AppIcon.json';
+import { retrieveWhiteLabelText } from '../_helpers/utils';
 
 const { iconList, defaultIcon } = configs;
 
@@ -50,6 +51,7 @@ class HomePage extends React.Component {
   componentDidMount() {
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
+    document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
 
   fetchApps = (page = 1, folder, searchKey) => {

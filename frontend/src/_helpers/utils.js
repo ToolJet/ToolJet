@@ -508,3 +508,8 @@ export const hightlightMentionedUserInComment = (comment) => {
   var regex = /(\()([^)]+)(\))/g;
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
 };
+
+export const retrieveWhiteLabelText = () => {
+  const custom_label = window.public_config?.WHITE_LABEL_TEXT;
+  return custom_label ? custom_label : 'ToolJet';
+};

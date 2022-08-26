@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import handlebars from 'handlebars';
+import { retrieveWhiteLabelText } from 'src/helpers/utils.helper';
 const path = require('path');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
@@ -41,7 +42,7 @@ export class EmailService {
     });
 
     const message = {
-      from: `"ToolJet" <${this.FROM_EMAIL}>`,
+      from: `"${retrieveWhiteLabelText()}" <${this.FROM_EMAIL}>`,
       to,
       subject,
       html,
@@ -73,7 +74,7 @@ export class EmailService {
     organizationName?: string,
     sender?: string
   ) {
-    const subject = 'Welcome to ToolJet';
+    const subject = `Welcome to ${retrieveWhiteLabelText()}`;
     const inviteUrl = `${this.TOOLJET_HOST}/invitations/${invitationtoken}${
       organizationInvitationToken ? `/workspaces/${organizationInvitationToken}` : ''
     }`;
@@ -88,7 +89,7 @@ export class EmailService {
           ${
             organizationInvitationToken && sender && organizationName
               ? `<span>
-              ${sender} has invited you to use ToolJet workspace: ${organizationName}.
+              ${sender} has invited you to use ${retrieveWhiteLabelText()} workspace: ${organizationName}.
             </span>`
               : ''
           }
@@ -100,7 +101,7 @@ export class EmailService {
           <br>
           <p>
             Welcome aboard,<br>
-            ToolJet Team
+            ${retrieveWhiteLabelText()} Team
           </p>
         </body>
       </html>
@@ -116,7 +117,7 @@ export class EmailService {
     invitationtoken: string,
     organizationName: string
   ) {
-    const subject = 'Welcome to ToolJet';
+    const subject = `Welcome to ${retrieveWhiteLabelText()}`;
     const inviteUrl = `${this.TOOLJET_HOST}/organization-invitations/${invitationtoken}`;
     const html = `
       <!DOCTYPE html>
@@ -128,7 +129,7 @@ export class EmailService {
           <p>Hi ${name || ''},</p>
           <br>
           <span>
-          ${sender} has invited you to use ToolJet workspace: ${organizationName}. Use the link below to set up your account and get started.
+          ${sender} has invited you to use ${retrieveWhiteLabelText()} workspace: ${organizationName}. Use the link below to set up your account and get started.
           </span>
           <br>
           <a href="${inviteUrl}">${inviteUrl}</a>
@@ -136,7 +137,7 @@ export class EmailService {
           <br>
           <p>
             Welcome aboard,<br>
-            ToolJet Team
+            ${retrieveWhiteLabelText()} Team
           </p>
         </body>
       </html>
@@ -167,6 +168,10 @@ export class EmailService {
     const filePath = path.join(__dirname, '../assets/email-templates/comment-mention.html');
     const source = fs.readFileSync(filePath, 'utf-8').toString();
     const template = handlebars.compile(source);
+    const companyName = retrieveWhiteLabelText();
+    const companyLogo = process.env?.WHITE_LABEL_LOGO
+      ? process.env.WHITE_LABEL_LOGO
+      : 'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg';
     const replacements = {
       to,
       from,
@@ -176,6 +181,8 @@ export class EmailService {
       commentLink,
       comment,
       fromAvatar,
+      companyName,
+      companyLogo,
     };
     const htmlToSend = template(replacements);
     const subject = `You were mentioned on ${appName}`;

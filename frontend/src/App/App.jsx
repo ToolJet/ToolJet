@@ -29,6 +29,7 @@ import { RedirectSso } from '@/RedirectSso/RedirectSso';
 
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
+import { retrieveWhiteLabelText } from '../_helpers/utils';
 
 class App extends React.Component {
   constructor(props) {
@@ -54,11 +55,24 @@ class App extends React.Component {
     }
   };
 
+  setFaviconAndTitle() {
+    const favicon_url = window.public_config?.WHITE_LABEL_FAVICON;
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = favicon_url ? favicon_url : '/assets/images/logo.svg';
+    document.title = `${retrieveWhiteLabelText()} - Dashboard`;
+  }
+
   componentDidMount() {
     authenticationService.currentUser.subscribe((x) => {
       this.setState({ currentUser: x }, this.fetchMetadata);
       setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     });
+    this.setFaviconAndTitle();
   }
 
   logout = () => {
@@ -92,7 +106,7 @@ class App extends React.Component {
             {updateAvailable && (
               <div className="alert alert-info alert-dismissible" role="alert">
                 <h3 className="mb-1">Update available</h3>
-                <p>A new version of ToolJet has been released.</p>
+                <p>{`A new version of ${retrieveWhiteLabelText()} has been released.`}</p>
                 <div className="btn-list">
                   <a
                     href="https://docs.tooljet.io/docs/setup/updating"

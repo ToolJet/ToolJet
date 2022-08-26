@@ -1,4 +1,5 @@
 import React from 'react';
+import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import TemplateLibraryModal from './TemplateLibraryModal/';
 
 export const BlankPage = function BlankPage({
@@ -31,11 +32,11 @@ export const BlankPage = function BlankPage({
                 style={{ color: darkMode && '#ffffff' }}
                 data-cy="empty-welcome-header"
               >
-                Welcome to ToolJet!
+                {`Welcome to ${retrieveWhiteLabelText()}!`}
               </h3>
               <p className={`empty-title ${darkMode && 'text-white-50'}`} data-cy="empty-description">
-                You can get started by creating a new application or by creating an application using a template in
-                ToolJet Library.
+                {`You can get started by creating a new application or by creating an application using a template in
+                ${retrieveWhiteLabelText()} Library.`}
               </p>
               <div className="empty-action">
                 <a

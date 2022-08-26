@@ -1,5 +1,6 @@
 import React from 'react';
 import { tooljetService } from '@/_services';
+import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import Modal from 'react-bootstrap/Modal';
 
 class OnboardingModal extends React.Component {
@@ -54,7 +55,7 @@ class OnboardingModal extends React.Component {
         className={`${this.props.darkMode && 'dark'} onboarding-modal`}
       >
         <Modal.Header>
-          <Modal.Title className="text-center">Finish ToolJet installation</Modal.Title>
+          <Modal.Title className="text-center">{`Finish ${retrieveWhiteLabelText()} installation`}</Modal.Title>
           <br />
         </Modal.Header>
 
@@ -100,7 +101,9 @@ class OnboardingModal extends React.Component {
               <span className="input-group-text"></span>
             </div>
           </div>
-          <small>You will receive updates from the ToolJet team ( 1-2 emails every month, we do not spam )</small>
+          <small>
+            {`You will receive updates from the ${retrieveWhiteLabelText()} team ( 1-2 emails every month, we do not spam )`}
+          </small>
         </Modal.Body>
 
         <Modal.Footer>
