@@ -5,6 +5,7 @@ import moment from 'moment';
 import { ToolTip } from '@/_components';
 import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
+import { Link } from 'react-router-dom';
 
 const { defaultIcon } = configs;
 
@@ -60,7 +61,7 @@ export default function AppCard({
             <div className="app-icon-main p-1">
               <div className="app-icon p-1 d-flex">
                 <img
-                  src={`/assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`}
+                  src={`assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`}
                   alt="Application Icon"
                   data-cy={`app-card-${app.icon || defaultIcon}-icon`}
                 />
@@ -109,14 +110,11 @@ export default function AppCard({
             {canUpdate && (
               <div className="col-6 pe-1">
                 <ToolTip message="Open in app builder">
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-light edit-button"
-                    onClick={() => history.push(`/apps/${app.id}`)}
-                    data-cy="edit-button"
-                  >
-                    Edit
-                  </button>
+                  <Link to={`/apps/${app.id}`}>
+                    <button type="button" className="btn btn-sm btn-light edit-button" data-cy="edit-button">
+                      Edit
+                    </button>
+                  </Link>
                 </ToolTip>
               </div>
             )}

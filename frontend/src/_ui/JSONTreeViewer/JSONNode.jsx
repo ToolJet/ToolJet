@@ -240,7 +240,7 @@ export const JSONNode = ({ data, ...restProps }) => {
                 className="mx-1"
                 onClick={() => dispatchAction(data, currentNode)}
               >
-                <img src={src ?? `/assets/images/icons/${iconName}.svg`} width={width} height={height} />
+                <img src={src ?? `assets/images/icons/${iconName}.svg`} width={width} height={height} />
               </span>
             </ToolTip>
           );

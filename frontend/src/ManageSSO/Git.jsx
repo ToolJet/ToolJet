@@ -128,7 +128,7 @@ export function Git({ settings, updateData }) {
             <label className="form-label" data-cy="client-secret-label">
               Client Secret
               <small className="text-green mx-2" data-cy="encripted-label">
-                <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+                <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
                 Encrypted
               </small>
             </label>
@@ -155,7 +155,7 @@ export function Git({ settings, updateData }) {
                 >{`${window.location.protocol}//${window.location.host}/sso/git/${configId}`}</p>
                 <img
                   onClick={() => copyFunction('redirect-url')}
-                  src={`/assets/images/icons/copy-dark.svg`}
+                  src={`assets/images/icons/copy-dark.svg`}
                   width="22"
                   height="22"
                   className="sso-copy"

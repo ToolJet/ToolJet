@@ -37,7 +37,7 @@ export const RedirectSso = function RedirectSso() {
         <div className=" py-2">
           <div className="text-center mb-4">
             <a href="." className="navbar-brand-autodark">
-              <img src="/assets/images/logo-color.svg" height="26" alt="" />
+              <img src="assets/images/logo-color.svg" height="26" alt="" />
             </a>
           </div>
           <div className="sso-helper-container">
@@ -137,7 +137,7 @@ export const RedirectSso = function RedirectSso() {
 
                             <img
                               onClick={() => copyFunction('google-url')}
-                              src={`/assets/images/icons/copy.svg`}
+                              src={`assets/images/icons/copy.svg`}
                               width="16"
                               height="16"
                               className="sso-copy"
@@ -160,7 +160,7 @@ export const RedirectSso = function RedirectSso() {
 
                             <img
                               onClick={() => copyFunction('git-url')}
-                              src={`/assets/images/icons/copy.svg`}
+                              src={`assets/images/icons/copy.svg`}
                               width="16"
                               height="16"
                               className="sso-copy"

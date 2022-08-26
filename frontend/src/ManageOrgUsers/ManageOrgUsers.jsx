@@ -389,7 +389,7 @@ class ManageOrgUsers extends React.Component {
                                     <img
                                       data-tip="Copy invitation link"
                                       className="svg-icon"
-                                      src="/assets/images/icons/copy.svg"
+                                      src="assets/images/icons/copy.svg"
                                       width="15"
                                       height="15"
                                       style={{

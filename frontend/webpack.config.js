@@ -11,7 +11,7 @@ const API_URL = {
   development: `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
 };
 
-const ASSET_PATH = process.env.ASSET_PATH || '/';
+const ASSET_PATH = process.env.ASSET_PATH || '';
 
 module.exports = {
   mode: environment,

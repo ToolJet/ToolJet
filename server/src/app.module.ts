@@ -34,6 +34,7 @@ import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
+import * as fs from 'fs';
 
 const imports = [
   ConfigModule.forRoot({
@@ -86,6 +87,21 @@ const imports = [
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {
+  if (process.env.SUB_PATH !== undefined) {
+    const filesToReplaceAssetPath = ['index.html'].map((file) => join(__dirname, '../../../', 'frontend/build', file));
+    for (const filePath of filesToReplaceAssetPath) {
+      fs.readFile(filePath, 'utf8', function (err, data) {
+        if (err) {
+          return console.log(err);
+        }
+        const result = data.replace(/__REPLACE_SUB_PATH__/g, process.env.SUB_PATH || '');
+        fs.writeFile(filePath, result, 'utf8', function (err) {
+          if (err) return console.log(err);
+        });
+      });
+    }
+  }
+
   imports.unshift(
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../../', 'frontend/build'),
