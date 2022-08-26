@@ -1,5 +1,6 @@
 import React from 'react';
 import { buildURLWithQuery } from '@/_helpers/utils';
+import { assetPath } from '@/_helpers/appUtils';
 
 export default function GitSSOLoginButton({ configs, text }) {
   const gitLogin = (e) => {
@@ -12,7 +13,7 @@ export default function GitSSOLoginButton({ configs, text }) {
   return (
     <div data-cy="git-tile">
       <button onClick={gitLogin} className="btn border-0 rounded-2">
-        <img src="/assets/images/sso-buttons/git.svg" className="h-4" data-cy="git-icon" />
+        <img src={assetPath('/assets/images/sso-buttons/git.svg')} className="h-4" data-cy="git-icon" />
         <span className="px-1" data-cy="git-sign-in-text">
           {text || 'Sign in with GitHub'}
         </span>

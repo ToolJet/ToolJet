@@ -1,5 +1,6 @@
 import React from 'react';
 import GoogleLogin from 'react-google-login';
+import { assetPath } from '@/_helpers/appUtils';
 
 export default function GoogleSSOLoginButton(props) {
   return (
@@ -16,7 +17,7 @@ export default function GoogleSSOLoginButton(props) {
               <img
                 onClick={renderProps.onClick}
                 disabled={renderProps.disabled}
-                src="/assets/images/sso-buttons/google.svg"
+                src={assetPath('/assets/images/sso-buttons/google.svg')}
                 className="h-4"
                 data-cy="google-icon"
               />
