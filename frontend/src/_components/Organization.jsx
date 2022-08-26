@@ -80,7 +80,7 @@ export const Organization = function Organization() {
       (data) => {
         setIsCreating(false);
         authenticationService.updateCurrentUserDetails(data);
-        window.location.href = '/';
+        window.location.href = '';
       },
       () => {
         setIsCreating(false);
