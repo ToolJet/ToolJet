@@ -3012,6 +3012,13 @@ input:focus-visible {
 
   .DateInput_input {
     background-color: #1f2936;
+    color: #fff;
+  }
+
+  &.daterange-picker-widget{
+    .DateRangePickerInput_arrow_svg{
+      fill: #fff;
+    }
   }
 
   .DateRangePickerInput {
