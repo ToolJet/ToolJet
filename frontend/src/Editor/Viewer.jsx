@@ -231,12 +231,10 @@ class Viewer extends React.Component {
         <div className="viewer wrapper">
           <Confirm
             show={queryConfirmationList.length > 0}
-            message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
+            message={'Do you want to run this query?'}
             onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
             onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0], false, 'view')}
             queryConfirmationData={queryConfirmationList[0]}
-            darkMode={this.props.darkMode}
-            key={queryConfirmationList[0]?.queryName}
           />
           <DndProvider backend={HTML5Backend}>
             {!appDefinition.globalSettings?.hideHeader && isAppLoaded && (
