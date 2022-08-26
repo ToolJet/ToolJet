@@ -734,7 +734,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               () => {
                 resolve(data);
                 onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
-                console.log('onDataQueryFailure', data);
                 if (mode !== 'view') {
                   const errorMessage = data.message || data.data.message;
                   toast.error(errorMessage);
