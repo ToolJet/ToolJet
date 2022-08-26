@@ -22,16 +22,7 @@ module.exports = {
       isCloseable: true,
     },
     colorMode: {
-      switchConfig: {
-        darkIcon: '\00a0 ',
-        lightIcon: '\00a0',
-        darkIconStyle: {
-          display: 'none',
-        },
-        lightIconStyle: {
-          display: 'none',
-        },
-      },
+      
     },
     navbar: {
       logo: {
@@ -78,8 +69,8 @@ module.exports = {
           title: 'Community',
           items: [
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/tooljet',
+              label: 'Slack',
+              href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
             },
           ],
         },
@@ -91,8 +82,8 @@ module.exports = {
               href: 'https://github.com/ToolJet/ToolJet',
             },
             {
-              label: 'Slack',
-              href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
+              label: 'YouTube',
+              href: 'https://www.youtube.com/channel/UCf1p2G5Z7fPpvlBPf4l2I1w',
             },
             {
               label: 'Twitter',

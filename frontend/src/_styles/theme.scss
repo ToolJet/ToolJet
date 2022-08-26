@@ -5034,6 +5034,12 @@ div#driver-page-overlay {
   }
 }
 
+.toast-dark-mode {
+   .btn-close {
+    filter: brightness(0) invert(1);
+  }
+}
+
 .editor .editor-sidebar .inspector .form-control-plaintext {
   padding: 2px 4px;
 }

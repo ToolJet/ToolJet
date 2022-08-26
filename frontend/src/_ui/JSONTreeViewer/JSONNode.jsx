@@ -32,7 +32,9 @@ export const JSONNode = ({ data, ...restProps }) => {
     expandWithLabels,
     getAbsoluteNodePath,
     actionsList,
+    fontSize,
     updateParentState = () => null,
+    inspectorTree,
   } = restProps;
 
   const [expandable, set] = React.useState(() =>
@@ -176,8 +178,8 @@ export const JSONNode = ({ data, ...restProps }) => {
   let $key = (
     <span
       onClick={() => toExpandNode && handleOnClickLabels(data, currentNode, path)}
-      style={{ marginTop: '1px', cursor: 'pointer', textTransform: 'none' }}
-      className={cx('node-key fs-12 mx-0 badge badge-outline', {
+      style={{ marginTop: '1px', cursor: 'pointer', textTransform: 'none', fontSize: fontSize }}
+      className={cx('node-key mx-0 badge badge-outline', {
         'color-primary': applySelectedNodeStyles && !showHiddenOptionsForNode,
         'hovered-node': showHiddenOptionsForNode,
         'node-key-outline': !applySelectedNodeStyles && !showHiddenOptionsForNode,
@@ -297,21 +299,23 @@ export const JSONNode = ({ data, ...restProps }) => {
       })}
       onMouseLeave={() => updateHoveredNode(null)}
     >
-      <div className={`json-tree-icon-container  mx-2 ${applySelectedNodeStyles && 'selected-node'}`}>
-        <JSONNodeIndicator
-          toExpand={expandable}
-          toShowNodeIndicator={toShowNodeIndicator}
-          handleToggle={toggleExpandNode}
-          typeofCurrentNode={typeofCurrentNode}
-          currentNode={currentNode}
-          isSelected={selectedNode?.node === currentNode}
-          toExpandNode={toExpandNode}
-          data={data}
-          path={currentNodePath}
-          toExpandWithLabels={expandWithLabels}
-          toggleWithLabels={handleOnClickLabels}
-        />
-      </div>
+      {(inspectorTree || toShowNodeIndicator) && (
+        <div className={`json-tree-icon-container  mx-2 ${applySelectedNodeStyles && 'selected-node'}`}>
+          <JSONNodeIndicator
+            toExpand={expandable}
+            toShowNodeIndicator={toShowNodeIndicator}
+            handleToggle={toggleExpandNode}
+            typeofCurrentNode={typeofCurrentNode}
+            currentNode={currentNode}
+            isSelected={selectedNode?.node === currentNode}
+            toExpandNode={toExpandNode}
+            data={data}
+            path={currentNodePath}
+            toExpandWithLabels={expandWithLabels}
+            toggleWithLabels={handleOnClickLabels}
+          />
+        </div>
+      )}
 
       <div
         style={{ width: 'inherit' }}
@@ -328,7 +332,9 @@ export const JSONNode = ({ data, ...restProps }) => {
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {$NODEType}
           {!toExpandNode && !toRenderSelector ? $VALUE : null}
-          <div className="action-icons-group">{showHiddenOptionsForNode && renderHiddenOptionsForNode()}</div>
+          <div className="action-icons-group">
+            {useActions && showHiddenOptionsForNode && renderHiddenOptionsForNode()}
+          </div>
         </div>
         {toRenderSelector && (toExpandNode && !expandable ? null : $VALUE)}
       </div>
