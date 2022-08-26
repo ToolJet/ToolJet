@@ -63,7 +63,7 @@ const AppList = (props) => {
         <div>
           <img
             className="mx-auto d-block"
-            src={assetPath('assets/images/icons/empty-folder-svgrepo-com.svg')}
+            src={assetPath('/assets/images/icons/empty-folder-svgrepo-com.svg')}
             height="120px"
             data-cy="empty-folder-image"
           />
