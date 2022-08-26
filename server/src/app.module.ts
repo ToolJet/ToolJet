@@ -90,7 +90,7 @@ if (process.env.SERVE_CLIENT !== 'false') {
   // NOTE: We always expect the asset path on prebuilt client for the server
   // to have a placeholder __REPLACE_ASSET_PATH__ which would be replaced in
   // runtime based with env var ASSET_PATH or by '' as default
-  const filesToReplaceAssetPath = ['index.html', 'runtime.js'].map((file) =>
+  const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'].map((file) =>
     join(__dirname, '../../../', 'frontend/build', file)
   );
   for (const filePath of filesToReplaceAssetPath) {
