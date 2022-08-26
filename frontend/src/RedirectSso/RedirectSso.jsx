@@ -133,7 +133,7 @@ export const RedirectSso = function RedirectSso() {
                           </p>
                           <div className="flexer">
                             <span> Redirect URL: </span>
-                            <p id="google-url">{`${window.location.protocol}//${window.location.host}/sso/google/${organization?.google?.config_id}`}</p>
+                            <p id="google-url">{`${window.public_config?.TOOLJET_HOST}/sso/google/${organization?.google?.config_id}`}</p>
 
                             <img
                               onClick={() => copyFunction('google-url')}
@@ -156,7 +156,7 @@ export const RedirectSso = function RedirectSso() {
 
                           <div className="flexer">
                             <span> Redirect URL :</span>
-                            <p id="git-url">{`${window.location.protocol}//${window.location.host}/sso/git/${organization?.git?.config_id}`}</p>
+                            <p id="git-url">{`${window.public_config?.TOOLJET_HOST}/sso/git/${organization?.git?.config_id}`}</p>
 
                             <img
                               onClick={() => copyFunction('git-url')}
