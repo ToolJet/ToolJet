@@ -22,7 +22,7 @@ module.exports = {
       isCloseable: true,
     },
     colorMode: {
-      
+
     },
     navbar: {
       logo: {
@@ -38,18 +38,21 @@ module.exports = {
         },
         {
           href: 'https://github.com/ToolJet/ToolJet',
-          label: 'GitHub',
           position: 'right',
+          className: 'navbar-social-link navbar-github-logo',
+          'aria-label': 'GitHub repository',
         },
         {
           href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
-          label: 'Slack',
           position: 'right',
+          className: 'navbar-social-link navbar-slack-logo',
+          'aria-label': 'Slack workspace',
         },
         {
           href: 'https://twitter.com/ToolJet',
-          label: 'Twitter',
           position: 'right',
+          className: 'navbar-social-link navbar-twitter-logo',
+          'aria-label': 'Twitter account',
         },
       ],
     },
