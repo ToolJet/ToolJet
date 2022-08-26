@@ -98,7 +98,7 @@ if (process.env.SERVE_CLIENT !== 'false') {
       if (err) {
         return console.log(err);
       }
-      const result = data.replace(/__REPLACE_ASSET_PATH__/g, process.env.ASSET_PATH || '/');
+      const result = data.replace(/__REPLACE_ASSET_PATH__/g, process.env.ASSET_PATH || '');
       fs.writeFile(filePath, result, 'utf8', function (err) {
         if (err) return console.log(err);
       });
