@@ -1,4 +1,5 @@
 import config from 'config';
+import { linkTo } from './appUtils';
 
 class WebSocketConnection {
   constructor(appId) {
@@ -9,9 +10,9 @@ class WebSocketConnection {
 
   getWebsocketUrl() {
     const re = /https?:\/\//g;
-    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '/ws');
+    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', linkTo('/ws'));
 
-    return window.location.host + '/ws';
+    return window.location.host + linkTo('/ws');
   }
 
   addListeners(appId) {
