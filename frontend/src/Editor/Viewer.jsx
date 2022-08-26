@@ -235,6 +235,7 @@ class Viewer extends React.Component {
             onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
             onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0], false, 'view')}
             queryConfirmationData={queryConfirmationList[0]}
+            key={queryConfirmationList[0]?.queryName}
           />
           <DndProvider backend={HTML5Backend}>
             {!appDefinition.globalSettings?.hideHeader && isAppLoaded && (

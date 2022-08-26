@@ -1228,6 +1228,7 @@ class Editor extends React.Component {
           onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0])}
           queryConfirmationData={queryConfirmationList[0]}
           darkMode={this.props.darkMode}
+          key={queryConfirmationList[0]?.queryName}
         />
         <Confirm
           show={showDataQueryDeletionConfirmation}
