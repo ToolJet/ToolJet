@@ -109,21 +109,6 @@ if (process.env.SERVE_CLIENT !== 'false') {
     });
   }
 
-  // const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'].map((file) =>
-  //   join(__dirname, '../../../', 'frontend/build', file)
-  // );
-  // for (const filePath of filesToReplaceAssetPath) {
-  //   fs.readFile(filePath, 'utf8', function (err, data) {
-  //     if (err) {
-  //       return console.log(err);
-  //     }
-  //     const result = data.replace(/__REPLACE_SUB_PATH__/g, process.env.SUB_PATH !== undefined ? process.env.SUB_PATH : '');
-  //     fs.writeFile(filePath, result, 'utf8', function (err) {
-  //       if (err) return console.log(err);
-  //     });
-  //   });
-  // }
-
   imports.unshift(
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../../', 'frontend/build'),
