@@ -43,7 +43,7 @@ class Viewer extends React.Component {
           environment_variables: {},
         },
       },
-      queryConfirmationArr: [],
+      queryConfirmationList: [],
       isAppLoaded: false,
     };
   }
@@ -207,7 +207,6 @@ class Viewer extends React.Component {
   render() {
     const {
       appDefinition,
-      showQueryConfirmation,
       isLoading,
       isAppLoaded,
       currentLayout,
@@ -215,6 +214,7 @@ class Viewer extends React.Component {
       defaultComponentStateComputed,
       canvasWidth,
       dataQueries,
+      queryConfirmationList,
     } = this.state;
     if (this.state.app?.is_maintenance_on) {
       return (
@@ -229,17 +229,15 @@ class Viewer extends React.Component {
     } else {
       return (
         <div className="viewer wrapper">
-          {this.state.queryConfirmationArr.map((query) => (
-            <Confirm
-              show={showQueryConfirmation}
-              message={`Do you want to run this query - ${query?.queryName}?`}
-              onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
-              onCancel={() => onQueryConfirmOrCancel(this, query, false, 'view')}
-              queryConfirmationData={query}
-              darkMode={this.props.darkMode}
-              key={query?.queryName}
-            />
-          ))}
+          <Confirm
+            show={queryConfirmationList.length > 0}
+            message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
+            onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
+            onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0], false, 'view')}
+            queryConfirmationData={queryConfirmationList[0]}
+            darkMode={this.props.darkMode}
+            key={queryConfirmationList[0]?.queryName}
+          />
           <DndProvider backend={HTML5Backend}>
             {!appDefinition.globalSettings?.hideHeader && isAppLoaded && (
               <div className="header">

@@ -129,12 +129,12 @@ export function onComponentClick(_ref, id, component, mode = 'edit') {
 }
 
 export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = false, mode = 'edit') {
-  const filtertedQueryConfirmation = _ref.state?.queryConfirmationArr.filter(
+  const filtertedQueryConfirmation = _ref.state?.queryConfirmationList.filter(
     (query) => query.queryId !== queryConfirmationData.queryId
   );
+
   _ref.setState({
-    showQueryConfirmation: filtertedQueryConfirmation.length > 0,
-    queryConfirmationArr: filtertedQueryConfirmation,
+    queryConfirmationList: filtertedQueryConfirmation,
   });
   isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
@@ -648,19 +648,18 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
   if (dataQuery.options.requestConfirmation) {
-    const queryConfirmationArr = _ref.state?.queryConfirmationArr || [];
+    const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
     const queryConfirmation = {
       queryId,
       queryName,
     };
-    if (!queryConfirmationArr.some((query) => queryId === query.queryId)) {
-      queryConfirmationArr.push(queryConfirmation);
+    if (!queryConfirmationList.some((query) => queryId === query.queryId)) {
+      queryConfirmationList.push(queryConfirmation);
     }
 
     if (confirmed === undefined) {
       _ref.setState({
-        showQueryConfirmation: true,
-        queryConfirmationArr,
+        queryConfirmationList,
       });
       return;
     }
