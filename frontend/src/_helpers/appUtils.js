@@ -905,7 +905,7 @@ export const getSvgIcon = (key, height = 50, width = 50) => {
 export const assetPath = (path) => {
   if (isEmpty(__webpack_public_path__)) return path;
 
-  if (__webpack_public_path__.at[-1] !== '/') return `${__webpack_public_path__}${path}`;
+  if (__webpack_public_path__.at(-1) !== '/') return `${__webpack_public_path__}${path}`;
 
   return `${__webpack_public_path__}${path.slice(1)}`;
 };
