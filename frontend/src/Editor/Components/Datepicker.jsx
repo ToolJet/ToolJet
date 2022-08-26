@@ -76,7 +76,7 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
-  const CustomInputBox = React.forwardRef((props, ref) => {
+  const CustomInputBox = ({ props }) => {
     return (
       <input
         readOnly
@@ -86,10 +86,9 @@ export const Datepicker = function Datepicker({
           darkMode ? 'bg-dark color-white' : 'bg-light'
         }`}
         style={{ height, borderRadius: `${borderRadius}px` }}
-        ref={ref}
       />
     );
-  });
+  };
 
   return (
     <div
