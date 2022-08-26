@@ -5,6 +5,7 @@ import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
 import useHover from '@/_hooks/useHover';
 import { ConfirmDialog } from '@/_components';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const Folders = function Folders({
   folders,
@@ -210,7 +211,7 @@ export const Folders = function Folders({
                 >
                   <span className="me-2">
                     <img
-                      src="/assets/images/icons/folder.svg"
+                      src={assetPath('/assets/images/icons/folder.svg')}
                       alt=""
                       width="14"
                       height="14"

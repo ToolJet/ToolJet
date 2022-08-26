@@ -5,6 +5,7 @@ import moment from 'moment';
 import { ToolTip } from '@/_components';
 import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
+import { assetPath } from '@/_helpers/appUtils';
 
 const { defaultIcon } = configs;
 
@@ -60,7 +61,7 @@ export default function AppCard({
             <div className="app-icon-main p-1">
               <div className="app-icon p-1 d-flex">
                 <img
-                  src={`/assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`}
+                  src={assetPath(`/assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`)}
                   alt="Application Icon"
                   data-cy={`app-card-${app.icon || defaultIcon}-icon`}
                 />

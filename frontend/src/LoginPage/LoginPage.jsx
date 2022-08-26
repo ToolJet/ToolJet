@@ -7,6 +7,7 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
+import { assetPath } from '@/_helpers/appUtils';
 
 class LoginPage extends React.Component {
   constructor(props) {
@@ -143,7 +144,7 @@ class LoginPage extends React.Component {
         <div className="container-tight py-2">
           <div className="text-center mb-4">
             <a href="." className="navbar-brand-autodark" data-cy="login-page-logo">
-              <img src="/assets/images/logo-color.svg" height="26" alt="" />
+              <img src={assetPath('/assets/images/logo-color.svg')} height="26" alt="" />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">

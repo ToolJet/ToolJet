@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { CardEventPopover } from './CardPopover';
 import { ReactPortal } from '@/_components/Portal/ReactPortal';
 import _ from 'lodash';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const Card = ({
   item,
@@ -86,7 +87,7 @@ export const Card = ({
                 type="btn btn-sm btn-danger"
                 onClick={() => removeCardHandler(keyIndex, index)}
               >
-                <img className="mx-1" src={`/assets/images/icons/trash.svg`} width={12} height={12} />
+                <img className="mx-1" src={assetPath(`/assets/images/icons/trash.svg`)} width={12} height={12} />
               </span>
             )}
             {eventPopoverOptions.show && (

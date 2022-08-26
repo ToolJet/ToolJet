@@ -12,7 +12,7 @@ appService
     window.public_config = config;
 
     if (window.public_config.APM_VENDOR === 'sentry') {
-      const history = createBrowserHistory();
+      const history = createBrowserHistory({ basename: __webpack_public_path__ });
       const tooljetServerUrl = window.public_config.TOOLJET_SERVER_URL;
       const tracingOrigins = ['localhost', /^\//];
       const releaseVersion = window.public_config.RELEASE_VERSION

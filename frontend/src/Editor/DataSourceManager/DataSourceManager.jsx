@@ -2,7 +2,7 @@ import React from 'react';
 import { datasourceService, authenticationService } from '@/_services';
 import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
-import { getSvgIcon } from '@/_helpers/appUtils';
+import { getSvgIcon, assetPath } from '@/_helpers/appUtils';
 import { TestConnection } from './TestConnection';
 import {
   DataBaseSources,
@@ -539,7 +539,7 @@ class DataSourceManager extends React.Component {
                       autoFocus
                     />
                     <span className="input-icon-addon">
-                      <img src="/assets/images/icons/edit-source.svg" width="12" height="12" />
+                      <img src={assetPath('/assets/images/icons/edit-source.svg')} width="12" height="12" />
                     </span>
                   </div>
                 </div>
@@ -550,7 +550,7 @@ class DataSourceManager extends React.Component {
               className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
               onClick={() => this.hideModal()}
             >
-              <img src="/assets/images/icons/close.svg" width="12" height="12" />
+              <img src={assetPath('/assets/images/icons/close.svg')} width="12" height="12" />
             </span>
           </Modal.Header>
 
@@ -708,7 +708,7 @@ const EmptyStateContainer = ({
     <div className="empty">
       {queryString && !suggestionUI && <h3>No results for &quot;{queryString} &quot;</h3>}
       <center className={`empty-results ${suggestionUI ? 'suggestionUI-results' : ''}`}>
-        <img src="/assets/images/icons/no-results.svg" width="150" height="150" />
+        <img src={assetPath('/assets/images/icons/no-results.svg')} width="150" height="150" />
         {status ? (
           <div>
             <p className="text-success mt-2">Thank you, we&apos;ve taken a note of that!</p>

@@ -1,6 +1,7 @@
 import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const SidebarPinnedButton = ({ state, component, updateState, darkMode }) => {
   const tooltipMsg = state ? `Unpin ${component}` : `Pin ${component}`;
@@ -16,7 +17,8 @@ export const SidebarPinnedButton = ({ state, component, updateState, darkMode })
       >
         <img
           className="svg-icon"
-          src={`/assets/images/icons/editor/left-sidebar/${pinnedIcon}.svg`}
+          src={assetPath(`/assets/images/icons/editor/left-sidebar/${pinnedIcon}.svg`)}
+          I
           width="16"
           height="16"
         />

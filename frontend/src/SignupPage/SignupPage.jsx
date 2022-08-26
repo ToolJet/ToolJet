@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { validateEmail } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import { assetPath } from '@/_helpers/appUtils';
 
 class SignupPage extends React.Component {
   constructor(props) {
@@ -79,7 +80,7 @@ class SignupPage extends React.Component {
         <div className="container-tight py-2">
           <div className="text-center mb-4">
             <a href="." className="navbar-brand-autodark">
-              <img src="/assets/images/logo-color.svg" height="26" alt="" />
+              <img src={assetPath('/assets/images/logo-color.svg')} height="26" alt="" />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">

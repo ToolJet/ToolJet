@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const PDF = React.memo(({ styles, properties, width, height, component }) => {
   const pdfName = component.name;
@@ -143,7 +145,7 @@ export const PDF = React.memo(({ styles, properties, width, height, component })
                 onClick={() => downloadFile(url, pdfName)}
               >
                 <img
-                  src="/assets/images/icons/download.svg"
+                  src={assetPath('/assets/images/icons/download.svg')}
                   alt="download logo"
                   style={downloadIconImgStyle}
                   className="mx-1"

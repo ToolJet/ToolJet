@@ -9,6 +9,7 @@ import JSONNodeObject from './JSONNodeObject';
 import JSONNodeArray from './JSONNodeArray';
 import JSONNodeValue from './JSONNodeValue';
 import JSONNodeIndicator from './JSONNodeIndicator';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const JSONNode = ({ data, ...restProps }) => {
   const {
@@ -240,7 +241,7 @@ export const JSONNode = ({ data, ...restProps }) => {
                 className="mx-1"
                 onClick={() => dispatchAction(data, currentNode)}
               >
-                <img src={src ?? `/assets/images/icons/${iconName}.svg`} width={width} height={height} />
+                <img src={assetPath(src ?? `/assets/images/icons/${iconName}.svg`)} width={width} height={height} />
               </span>
             </ToolTip>
           );

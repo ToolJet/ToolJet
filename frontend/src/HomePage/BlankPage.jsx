@@ -1,5 +1,6 @@
 import React from 'react';
 import TemplateLibraryModal from './TemplateLibraryModal/';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const BlankPage = function BlankPage({
   createApp,
@@ -21,7 +22,9 @@ export const BlankPage = function BlankPage({
             <div className="empty">
               <div className="empty-img">
                 <img
-                  src={darkMode ? '/assets/images/dark-mode-onboarding.svg' : '/assets/images/onboarding.svg'}
+                  src={assetPath(
+                    darkMode ? '/assets/images/dark-mode-onboarding.svg' : '/assets/images/onboarding.svg'
+                  )}
                   alt=""
                   data-cy="empty-img"
                 />

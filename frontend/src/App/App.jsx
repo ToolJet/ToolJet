@@ -1,6 +1,6 @@
 import React from 'react';
 import config from 'config';
-import { Router, Route, Redirect } from 'react-router-dom';
+import { BrowserRouter, Route, Redirect, Router } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute } from '@/_components';
@@ -86,7 +86,7 @@ class App extends React.Component {
 
     return (
       <>
-        <Router history={history}>
+        <Router history={history} basename={__webpack_public_path__}>
           <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
             {updateAvailable && (
               <div className="alert alert-info alert-dismissible" role="alert">

@@ -1,6 +1,7 @@
 import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const FolderMenu = function FolderMenu({
   deleteFolder,
@@ -48,7 +49,11 @@ export const FolderMenu = function FolderMenu({
       }
     >
       <div className={`d-grid menu-ico menu-ico`}>
-        <img className="svg-icon" src="/assets/images/icons/three-dots.svg" data-cy="folder-card-menu-icon" />
+        <img
+          className="svg-icon"
+          src={assetPath('/assets/images/icons/three-dots.svg')}
+          data-cy="folder-card-menu-icon"
+        />
       </div>
     </OverlayTrigger>
   );

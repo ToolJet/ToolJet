@@ -8,6 +8,7 @@ import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 import OpenApi from '@/_ui/OpenAPI';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
+import { assetPath } from '@/_helpers/appUtils';
 
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
@@ -208,7 +209,7 @@ const DynamicForm = ({
                     <small className="text-green mx-2">
                       <img
                         className="mx-2 encrypted-icon"
-                        src="/assets/images/icons/padlock.svg"
+                        src={assetPath('/assets/images/icons/padlock.svg')}
                         width="12"
                         height="12"
                       />

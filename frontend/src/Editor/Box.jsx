@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useContext } from 'react';
+import { assetPath, renderTooltip, getComponentName } from '@/_helpers/appUtils';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -34,7 +35,6 @@ import { Pagination } from './Components/Pagination';
 import { Tags } from './Components/Tags';
 import { Spinner } from './Components/Spinner';
 import { CircularProgressBar } from './Components/CirularProgressbar';
-import { renderTooltip, getComponentName } from '@/_helpers/appUtils';
 import { RangeSlider } from './Components/RangeSlider';
 import { Timeline } from './Components/Timeline';
 import { SvgImage } from './Components/SvgImage';
@@ -312,7 +312,9 @@ export const Box = function Box({
                     width: '20px',
                     height: '20px',
                     backgroundSize: 'contain',
-                    backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
+                    backgroundImage: `url(${assetPath(
+                      `/assets/images/icons/widgets/${component.name.toLowerCase()}.svg`
+                    )})`,
                     backgroundRepeat: 'no-repeat',
                   }}
                 ></div>

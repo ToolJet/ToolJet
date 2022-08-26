@@ -3,6 +3,7 @@ import useRouter from '@/_hooks/use-router';
 import { authenticationService } from '@/_services';
 import { Redirect } from 'react-router-dom';
 import Configs from './Configs/Config.json';
+import { assetPath } from '@/_helpers/appUtils';
 
 export function Authorize() {
   const [error, setError] = useState('');
@@ -55,7 +56,9 @@ export function Authorize() {
         <div className="col-4 sso-ico d-flex">
           <div>
             <img
-              src={`/assets/images/sso-buttons/${Configs[router.query.origin] ? router.query.origin : 'unknown'}.svg`}
+              src={assetPath(
+                `/assets/images/sso-buttons/${Configs[router.query.origin] ? router.query.origin : 'unknown'}.svg`
+              )}
             />
           </div>
         </div>

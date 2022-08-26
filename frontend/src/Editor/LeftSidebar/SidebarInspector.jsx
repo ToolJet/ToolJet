@@ -8,6 +8,7 @@ import RunjsIcon from '../Icons/runjs.svg';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const LeftSidebarInspector = ({
   darkMode,
@@ -86,9 +87,11 @@ export const LeftSidebarInspector = ({
     if (!_.isEmpty(component) && component.name === key) {
       return {
         iconName: key,
-        iconPath: `/assets/images/icons/widgets/${
-          component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
-        }.svg`,
+        iconPath: assetPath(
+          `/assets/images/icons/widgets/${
+            component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
+          }.svg`
+        ),
         className: 'component-icon',
       };
     }
@@ -128,7 +131,7 @@ export const LeftSidebarInspector = ({
           name: 'Run Query',
           dispatchAction: handleRunQuery,
           icon: true,
-          src: '/assets/images/icons/editor/play.svg',
+          src: assetPath('/assets/images/icons/editor/play.svg'),
           width: 8,
           height: 8,
         },

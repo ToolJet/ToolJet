@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
+import PadLockSvg from '@assets/images/icons/padlock.svg';
+import CopyDarkSvg from '@assets/images/icons/copy-dark.svg';
 
 export function Git({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -128,7 +130,7 @@ export function Git({ settings, updateData }) {
             <label className="form-label" data-cy="client-secret-label">
               Client Secret
               <small className="text-green mx-2" data-cy="encripted-label">
-                <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+                <PadLockSvg className="mx-2 encrypted-icon" style={{ width: 12, height: 12 }} />
                 Encrypted
               </small>
             </label>
@@ -153,11 +155,12 @@ export function Git({ settings, updateData }) {
                   data-cy="redirect-url"
                   id="redirect-url"
                 >{`${window.location.protocol}//${window.location.host}/sso/git/${configId}`}</p>
-                <img
+                <CopyDarkSvg
                   onClick={() => copyFunction('redirect-url')}
-                  src={`/assets/images/icons/copy-dark.svg`}
-                  width="22"
-                  height="22"
+                  style={{
+                    width: '22',
+                    height: '22',
+                  }}
                   className="sso-copy"
                 />
               </div>

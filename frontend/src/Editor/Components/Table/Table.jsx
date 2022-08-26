@@ -26,6 +26,7 @@ import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
+import { assetPath } from '@/_helpers/appUtils';
 
 export function Table({
   id,
@@ -913,7 +914,7 @@ export function Table({
             <div>
               {showFilterButton && (
                 <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
-                  <img src="/assets/images/icons/filter.svg" width="15" height="15" />
+                  <img src={assetPath('/assets/images/icons/filter.svg')} width="15" height="15" />
                   {filters.length > 0 && (
                     <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
                   )}
@@ -925,7 +926,7 @@ export function Table({
                   className="btn btn-light btn-sm p-1"
                   onClick={() => exportData('csv', true)}
                 >
-                  <img src="/assets/images/icons/download.svg" width="15" height="15" />
+                  <img src={assetPath('/assets/images/icons/download.svg')} width="15" height="15" />
                 </span>
               )}
             </div>

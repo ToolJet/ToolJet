@@ -1,6 +1,7 @@
 import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const LeftSidebarItem = ({
   tip = '',
@@ -31,7 +32,7 @@ export const LeftSidebarItem = ({
             <div className="position-relative">
               <img
                 className="svg-icon"
-                src={`/assets/images/icons/editor/left-sidebar/${icon}.svg`}
+                src={assetPath(`/assets/images/icons/editor/left-sidebar/${icon}.svg`)}
                 width="20"
                 height="20"
               />

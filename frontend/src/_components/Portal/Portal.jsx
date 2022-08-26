@@ -1,6 +1,7 @@
 import React from 'react';
 import { ReactPortal } from './ReactPortal.js';
 import { Rnd } from 'react-rnd';
+import { assetPath } from '@/_helpers/appUtils';
 
 const Portal = ({ children, ...restProps }) => {
   const { isOpen, trigger, styles, className, componentName, dragResizePortal } = restProps;
@@ -75,7 +76,7 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
         >
           <img
             style={{ transform: 'rotate(-90deg)', filter: darkMode && 'brightness(0) invert(1)' }}
-            src="/assets/images/icons/portal-close.svg"
+            src={assetPath('/assets/images/icons/portal-close.svg')}
             width="12"
             height="12"
           />

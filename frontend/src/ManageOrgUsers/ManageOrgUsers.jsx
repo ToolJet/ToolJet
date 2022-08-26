@@ -4,6 +4,7 @@ import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ReactTooltip from 'react-tooltip';
+import { assetPath } from '@/_helpers/appUtils';
 
 class ManageOrgUsers extends React.Component {
   constructor(props) {
@@ -389,7 +390,7 @@ class ManageOrgUsers extends React.Component {
                                     <img
                                       data-tip="Copy invitation link"
                                       className="svg-icon"
-                                      src="/assets/images/icons/copy.svg"
+                                      src={assetPath('/assets/images/icons/copy.svg')}
                                       width="15"
                                       height="15"
                                       style={{

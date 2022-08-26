@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const FilePicker = ({
   width,
@@ -317,7 +318,7 @@ export const FilePicker = ({
                       clearSelectedFiles(index);
                     }}
                   >
-                    <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
+                    <img src={assetPath('/assets/images/icons/trash.svg')} width="12" height="12" className="mx-1" />
                   </button>
                 </div>
               </>

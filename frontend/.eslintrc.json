@@ -58,6 +58,7 @@
       "fetch": true,
       "process": true,
       "module": true,
-      "__dirname": true
+      "__dirname": true,
+      "__webpack_public_path__": "writable"
     }
 }

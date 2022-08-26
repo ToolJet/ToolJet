@@ -8,7 +8,7 @@ import {
   computeComponentName,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
@@ -899,6 +899,14 @@ export const getSvgIcon = (key, height = 50, width = 50) => {
   const Icon = allSvgs[key];
 
   return <Icon style={{ height, width }} />;
+};
+
+export const assetPath = (path) => {
+  if (isEmpty(__webpack_public_path__)) return path;
+
+  if (__webpack_public_path__.at[-1] !== '/') return `${__webpack_public_path__}${path}`;
+
+  return `${__webpack_public_path__}${path.slice(1)}`;
 };
 
 export const debuggerActions = {

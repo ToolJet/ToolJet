@@ -35,6 +35,7 @@ import {
   getSvgIcon,
   debuggerActions,
   cloneComponents,
+  assetPath,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -908,7 +909,12 @@ class Editor extends React.Component {
               }}
             >
               <div>
-                <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" className="mx-1" />
+                <img
+                  src={assetPath('/assets/images/icons/query-trash-icon.svg')}
+                  width="12"
+                  height="12"
+                  className="mx-1"
+                />
               </div>
             </button>
           )}
@@ -929,7 +935,7 @@ class Editor extends React.Component {
               }}
             >
               <div className={`query-icon ${this.props.darkMode && 'dark'}`}>
-                <img src="/assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
+                <img src={assetPath('/assets/images/icons/editor/play.svg')} width="8" height="8" className="mx-1" />
               </div>
             </button>
           )}
@@ -1540,7 +1546,7 @@ class Editor extends React.Component {
                                 >
                                   <img
                                     className="py-1 mt-2"
-                                    src="/assets/images/icons/lens.svg"
+                                    src={assetPath('/assets/images/icons/lens.svg')}
                                     width="24"
                                     height="24"
                                   />
@@ -1561,7 +1567,12 @@ class Editor extends React.Component {
                                     })
                                   }
                                 >
-                                  <img className="mt-2" src="/assets/images/icons/plus.svg" width="24" height="24" />
+                                  <img
+                                    className="mt-2"
+                                    src={assetPath('/assets/images/icons/plus.svg')}
+                                    width="24"
+                                    height="24"
+                                  />
                                 </span>
                               </div>
                             </>

@@ -6,7 +6,7 @@ import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
 import Tooltip from 'react-bootstrap/esm/Tooltip';
-import { getSvgIcon } from '@/_helpers/appUtils';
+import { getSvgIcon, assetPath } from '@/_helpers/appUtils';
 import { datasourceService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
@@ -75,7 +75,7 @@ export const LeftSidebarDataSources = ({
         <div className="col-auto">
           <button className="btn btn-sm ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
             <div>
-              <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" />
+              <img src={assetPath('/assets/images/icons/query-trash-icon.svg')} width="12" height="12" />
             </div>
           </button>
         </div>
@@ -139,7 +139,7 @@ const LeftSidebarDataSourcesContainer = ({ renderDataSource, dataSources = [], t
               overlay={<Tooltip id="button-tooltip">{'Add datasource'}</Tooltip>}
             >
               <button onClick={() => toggleDataSourceManagerModal(true)} className="btn btn-sm add-btn">
-                <img className="" src="/assets/images/icons/plus.svg" width="12" height="12" />
+                <img className="" src={assetPath('/assets/images/icons/plus.svg')} width="12" height="12" />
               </button>
             </OverlayTrigger>
           </div>

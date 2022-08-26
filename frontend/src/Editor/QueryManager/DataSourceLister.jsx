@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import RunjsIcon from '../Icons/runjs.svg';
-import AddIcon from '../../../assets/images/icons/add-source.svg';
+import AddIcon from '@assets/images/icons/add-source.svg';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 

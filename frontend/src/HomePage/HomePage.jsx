@@ -11,6 +11,7 @@ import Modal from './Modal';
 import SelectSearch from 'react-select-search';
 import Fuse from 'fuse.js';
 import configs from './Configs/AppIcon.json';
+import { assetPath } from '@/_helpers/appUtils';
 
 const { iconList, defaultIcon } = configs;
 
@@ -433,7 +434,7 @@ class HomePage extends React.Component {
         onClick={() => this.setState({ appOperations: { ...appOperations, selectedIcon: icon } })}
         key={index}
       >
-        <img src={`/assets/images/icons/app-icons/${icon}.svg`} data-cy={`${icon}-icon`} />
+        <img src={assetPath(`/assets/images/icons/app-icons/${icon}.svg`)} data-cy={`${icon}-icon`} />
       </li>
     ));
   };

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const CardEventPopover = function ({
   show,
@@ -100,7 +101,7 @@ export const CardEventPopover = function ({
                 <h3>
                   {card?.title ?? ''}
                   <img
-                    src="/assets/images/icons/editor/edit.svg"
+                    src={assetPath('/assets/images/icons/editor/edit.svg')}
                     style={{ visibility: titleHovered ? 'visible' : 'hidden', height: 15, width: 15, paddingLeft: 1 }}
                     onClick={() => setTitleEditMode(true)}
                   />
@@ -136,7 +137,7 @@ export const CardEventPopover = function ({
                     card.description
                   )}
                   <img
-                    src="/assets/images/icons/editor/edit.svg"
+                    src={assetPath('/assets/images/icons/editor/edit.svg')}
                     style={{
                       visibility: descriptionHovered ? 'visible' : 'hidden',
                       height: 15,

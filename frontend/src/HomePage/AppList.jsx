@@ -1,5 +1,6 @@
 import React from 'react';
 import AppCard from './AppCard';
+import { assetPath } from '@/_helpers/appUtils';
 
 const AppList = (props) => {
   return (
@@ -62,7 +63,7 @@ const AppList = (props) => {
         <div>
           <img
             className="mx-auto d-block"
-            src="assets/images/icons/empty-folder-svgrepo-com.svg"
+            src={assetPath('assets/images/icons/empty-folder-svgrepo-com.svg')}
             height="120px"
             data-cy="empty-folder-image"
           />

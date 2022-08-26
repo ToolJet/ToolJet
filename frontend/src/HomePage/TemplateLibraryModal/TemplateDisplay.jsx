@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Row, Badge } from 'react-bootstrap';
 import { ImageWithSpinner } from '@/_components';
-import { getSvgIcon } from '@/_helpers/appUtils';
+import { getSvgIcon, assetPath } from '@/_helpers/appUtils';
 
 export default function TemplateDisplay(props) {
   const { id, name, description, sources } = props?.app ?? {};
@@ -42,7 +42,7 @@ export default function TemplateDisplay(props) {
         </Row>
         <Row className="align-items-center justify-content-center" style={{ height: '88%', position: 'relative' }}>
           <ImageWithSpinner
-            src={`/assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`}
+            src={assetPath(`/assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`)}
             className="template-image"
             spinnerClassName="template-spinner"
             useSmallSpinner={true}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const Alert = ({ children, svg, cls = '' }) => {
   return (
@@ -6,7 +7,7 @@ export const Alert = ({ children, svg, cls = '' }) => {
       <div className="d-flex">
         {svg && (
           <span>
-            <img src={`/assets/images/icons/${svg}.svg`} alt="alert" />
+            <img src={assetPath(`/assets/images/icons/${svg}.svg`)} alt="alert" />
           </span>
         )}
         <Alert.Message>{children}</Alert.Message>

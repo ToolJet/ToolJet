@@ -1,4 +1,5 @@
 import React from 'react';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const ConfigHandle = function ConfigHandle({
   id,
@@ -30,7 +31,7 @@ export const ConfigHandle = function ConfigHandle({
         >
           <img
             style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
-            src="/assets/images/icons/settings.svg"
+            src={assetPath('/assets/images/icons/settings.svg')}
             width="12"
             height="12"
             draggable="false"
@@ -41,7 +42,7 @@ export const ConfigHandle = function ConfigHandle({
           <div className="delete-part">
             <img
               style={{ cursor: 'pointer', marginLeft: '5px' }}
-              src="/assets/images/icons/trash-light.svg"
+              src={assetPath('/assets/images/icons/trash-light.svg')}
               width="12"
               role="button"
               height="12"

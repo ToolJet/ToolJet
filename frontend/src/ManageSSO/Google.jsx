@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
+import CopyDarkSvg from '@assets/images/icons/copy-dark.svg';
 
 export function Google({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -108,11 +109,12 @@ export function Google({ settings, updateData }) {
                   data-cy="redirect-url"
                   id="redirect-url"
                 >{`${window.location.protocol}//${window.location.host}/sso/google/${configId}`}</p>
-                <img
+                <CopyDarkSvg
                   onClick={() => copyFunction('redirect-url')}
-                  src={`/assets/images/icons/copy-dark.svg`}
-                  width="22"
-                  height="22"
+                  style={{
+                    width: '22',
+                    height: '22',
+                  }}
                   className="sso-copy"
                 />
               </div>
