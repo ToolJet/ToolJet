@@ -160,9 +160,9 @@ class ManageOrgUsers extends React.Component {
 
   generateInvitationURL = (user) => {
     if (user.account_setup_token) {
-      return `${window.location.origin}/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}?oid=${this.state.currentUser.organization_id}`;
+      return `${document.baseURI}invitations/${user.account_setup_token}/workspaces/${user.invitation_token}?oid=${this.state.currentUser.organization_id}`;
     }
-    return `${window.location.origin}/organization-invitations/${user.invitation_token}`;
+    return `${document.baseURI}organization-invitations/${user.invitation_token}`;
   };
 
   invitationLinkCopyHandler = () => {
