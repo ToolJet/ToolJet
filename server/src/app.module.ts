@@ -1,4 +1,5 @@
 import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs/common';
+import * as fs from 'fs';
 
 import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -86,6 +87,24 @@ const imports = [
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {
+  // NOTE: We always expect the asset path on prebuilt client for the server
+  // to have a placeholder __REPLACE_ASSET_PATH__ which would be replaced in
+  // runtime based with env var ASSET_PATH or by '/' as default
+  const filesToReplaceAssetPath = ['index.html', 'runtime.js'].map((file) =>
+    join(__dirname, '../../../', 'frontend/build', file)
+  );
+  for (const filePath of filesToReplaceAssetPath) {
+    fs.readFile(filePath, 'utf8', function (err, data) {
+      if (err) {
+        return console.log(err);
+      }
+      const result = data.replace(/__REPLACE_ASSET_PATH__/g, process.env.ASSET_PATH || '/');
+      fs.writeFile(filePath, result, 'utf8', function (err) {
+        if (err) return console.log(err);
+      });
+    });
+  }
+
   imports.unshift(
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../../', 'frontend/build'),
