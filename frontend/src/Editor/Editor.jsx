@@ -36,6 +36,7 @@ import {
   debuggerActions,
   cloneComponents,
   assetPath,
+  linkTo,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -1235,7 +1236,7 @@ class Editor extends React.Component {
       isDraggingOrResizing,
     } = this.state;
 
-    const appVersionPreviewLink = editingVersion ? `/applications/${app.id}/versions/${editingVersion.id}` : '';
+    const appVersionPreviewLink = editingVersion ? linkTo(`/applications/${app.id}/versions/${editingVersion.id}`) : '';
 
     return (
       <div className="editor wrapper">

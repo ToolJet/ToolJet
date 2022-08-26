@@ -176,9 +176,10 @@ function showModal(_ref, modal, show) {
 }
 
 function logoutAction(_ref) {
+  const loginLink = linkTo('/login');
   localStorage.clear();
-  _ref.props.history.push('/login');
-  window.location.href = '/login';
+  _ref.props.history.push(loginLink);
+  window.location.href = loginLink;
 
   return Promise.resolve();
 }
@@ -908,6 +909,7 @@ export const assetPath = (path) => {
 
   return `${__webpack_public_path__}${path.slice(1)}`;
 };
+export const linkTo = (path) => assetPath(path);
 
 export const debuggerActions = {
   error: (_self, errors) => {
