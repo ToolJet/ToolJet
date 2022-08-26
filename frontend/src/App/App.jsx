@@ -86,7 +86,7 @@ class App extends React.Component {
 
     return (
       <>
-        <BrowserRouter history={history} basename="/installations/low-code/oss/tooljet">
+        <BrowserRouter history={history} basename={window.public_config?.SUB_PATH || '/'}>
           <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
             {updateAvailable && (
               <div className="alert alert-info alert-dismissible" role="alert">

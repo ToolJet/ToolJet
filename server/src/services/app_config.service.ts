@@ -29,6 +29,7 @@ export class AppConfigService {
       'SSO_GIT_OAUTH2_HOST',
       'SSO_DISABLE_SIGNUPS',
       'TOOLJET_HOST',
+      'SUB_PATH',
     ];
   }
 

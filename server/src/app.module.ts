@@ -87,22 +87,42 @@ const imports = [
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {
-  if (process.env.SUB_PATH !== undefined) {
-    const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'].map((file) =>
-      join(__dirname, '../../../', 'frontend/build', file)
-    );
-    for (const filePath of filesToReplaceAssetPath) {
-      fs.readFile(filePath, 'utf8', function (err, data) {
-        if (err) {
-          return console.log(err);
-        }
-        const result = data.replace(/__REPLACE_SUB_PATH__/g, process.env.SUB_PATH || '');
-        fs.writeFile(filePath, result, 'utf8', function (err) {
-          if (err) return console.log(err);
-        });
-      });
+  const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
+
+  for (const fileName of filesToReplaceAssetPath) {
+    const file = join(__dirname, '../../../', 'frontend/build', fileName);
+
+    let newValue = process.env.SUB_PATH;
+
+    if (process.env.SUB_PATH === undefined) {
+      newValue = fileName === 'index.html' ? '/' : '';
     }
+
+    fs.readFile(file, 'utf8', function (err, data) {
+      if (err) {
+        return console.log(err);
+      }
+      const result = data.replace(/__REPLACE_SUB_PATH__/g, newValue);
+      fs.writeFile(file, result, 'utf8', function (err) {
+        if (err) return console.log(err);
+      });
+    });
   }
+
+  // const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'].map((file) =>
+  //   join(__dirname, '../../../', 'frontend/build', file)
+  // );
+  // for (const filePath of filesToReplaceAssetPath) {
+  //   fs.readFile(filePath, 'utf8', function (err, data) {
+  //     if (err) {
+  //       return console.log(err);
+  //     }
+  //     const result = data.replace(/__REPLACE_SUB_PATH__/g, process.env.SUB_PATH !== undefined ? process.env.SUB_PATH : '');
+  //     fs.writeFile(filePath, result, 'utf8', function (err) {
+  //       if (err) return console.log(err);
+  //     });
+  //   });
+  // }
 
   imports.unshift(
     ServeStaticModule.forRoot({
