@@ -1,7 +1,7 @@
 import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import ThreeDotsSvg from '@assets/images/icons/three-dots.svg';
+import { assetPath } from '@/_helpers/appUtils';
 
 export const AppMenu = function AppMenu({
   deleteApp,
@@ -65,7 +65,7 @@ export const AppMenu = function AppMenu({
       }
     >
       <div className={`d-grid menu-ico menu-ico${isMenuOpen ? '__open' : ''}`}>
-        <ThreeDotsSvg className="svg-icon" data-cy="app-card-menu-icon" />
+        <img className="svg-icon" src={assetPath('/assets/images/icons/three-dots.svg')} data-cy="app-card-menu-icon" />
       </div>
     </OverlayTrigger>
   );
