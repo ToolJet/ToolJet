@@ -87,7 +87,6 @@
   "devDependencies": {
     "terser-webpack-plugin": "^5.3.4",
     "css-loader": "^6.5.1",
-    "babel-eslint": "^10.1.0",
     "babel-loader": "^8.0.5",
     "babel-plugin-console-source": "^2.0.5",
     "babel-plugin-import": "^1.13.3",
@@ -110,6 +109,7 @@
     "prettier": "^2.3.2",
     "webpack-dev-server": "^4.7.4",
     "@babel/core": "^7.4.3",
+    "@babel/eslint-parser": "^7.18.9",
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/plugin-transform-runtime": "^7.16.10",
     "@babel/preset-env": "^7.4.3",
