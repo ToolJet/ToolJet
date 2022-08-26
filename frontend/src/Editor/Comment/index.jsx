@@ -63,7 +63,8 @@ const Comment = ({
       fetchData();
     } else {
       // resetting the query param
-      router.push(window.location.pathname);
+      // FIXME: setting basename appends the ASSET_PATH multiple times
+      // router.push(window.location.pathname);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
