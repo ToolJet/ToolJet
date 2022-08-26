@@ -154,7 +154,7 @@ export function Git({ settings, updateData }) {
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"
-                >{`${window.location.protocol}//${window.location.host}/sso/git/${configId}`}</p>
+                >{`${window.public_config?.TOOLJET_HOST}/sso/git/${configId}`}</p>
                 <CopyDarkSvg
                   onClick={() => copyFunction('redirect-url')}
                   style={{

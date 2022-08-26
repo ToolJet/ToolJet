@@ -174,7 +174,7 @@ export function GeneralSettings({ settings, updateData }) {
 
               <div className="flexer-sso-input form-control">
                 <p id="login-url" data-cy="login-url">
-                  {`${window.location.protocol}//${window.location.host}/login/${authenticationService?.currentUserValue?.organization_id}`}
+                  {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentUserValue?.organization_id}`}
                 </p>
                 <CopyDarkSvg
                   onClick={() => copyFunction('login-url')}
