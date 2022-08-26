@@ -5,7 +5,7 @@ import moment from 'moment';
 import { ToolTip } from '@/_components';
 import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
-import { assetPath, linkTo } from '@/_helpers/appUtils';
+import { assetPath, prependPublicPath } from '@/_helpers/appUtils';
 
 const { defaultIcon } = configs;
 
@@ -134,7 +134,7 @@ export default function AppCard({
                     disabled={app?.current_version_id === null || app?.is_maintenance_on}
                     onClick={() => {
                       if (app?.current_version_id) {
-                        window.open(linkTo(`/applications/${app.slug}`));
+                        window.open(prependPublicPath(`/applications/${app.slug}`));
                       } else {
                         history.push(app?.current_version_id ? `/applications/${app.slug}` : '');
                       }

@@ -4,7 +4,7 @@ import { authenticationService, organizationService } from '@/_services';
 import Modal from '../HomePage/Modal';
 import { toast } from 'react-hot-toast';
 import { SearchBox } from './SearchBox';
-import { linkTo } from '@/_helpers/appUtils';
+import { prependPublicPath } from '@/_helpers/appUtils';
 
 export const Organization = function Organization() {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
@@ -81,7 +81,7 @@ export const Organization = function Organization() {
       (data) => {
         setIsCreating(false);
         authenticationService.updateCurrentUserDetails(data);
-        window.location.href = linkTo('/');
+        window.location.href = prependPublicPath('/');
       },
       () => {
         setIsCreating(false);
@@ -131,10 +131,10 @@ export const Organization = function Organization() {
     organizationService.switchOrganization(orgId).then(
       (data) => {
         authenticationService.updateCurrentUserDetails(data);
-        window.location.href = linkTo('/');
+        window.location.href = prependPublicPath('/');
       },
       () => {
-        return (window.location.href = linkTo(`/login/${orgId}`));
+        return (window.location.href = prependPublicPath(`/login/${orgId}`));
       }
     );
   };

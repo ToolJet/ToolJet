@@ -176,7 +176,7 @@ function showModal(_ref, modal, show) {
 }
 
 function logoutAction(_ref) {
-  const loginLink = linkTo('/login');
+  const loginLink = prependPublicPath('/login');
   localStorage.clear();
   _ref.props.history.push(loginLink);
   window.location.href = loginLink;
@@ -902,14 +902,21 @@ export const getSvgIcon = (key, height = 50, width = 50) => {
   return <Icon style={{ height, width }} />;
 };
 
-export const assetPath = (path) => {
+export const prependPublicPath = (path) => {
   if (isEmpty(__webpack_public_path__)) return path;
-
   if (__webpack_public_path__.at(-1) !== '/') return `${__webpack_public_path__}${path}`;
 
   return `${__webpack_public_path__}${path.slice(1)}`;
 };
-export const linkTo = (path) => assetPath(path);
+
+export const assetPath = (path) => prependPublicPath(path);
+
+export const appendPublicPath = (path) => {
+  if (isEmpty(__webpack_public_path__)) return path;
+  if (path.at(-1) === '/') return `${path.slice(0, -1)}${__webpack_public_path__}`;
+
+  return `${path}${__webpack_public_path__}`;
+};
 
 export const debuggerActions = {
   error: (_self, errors) => {

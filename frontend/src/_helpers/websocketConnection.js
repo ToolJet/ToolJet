@@ -1,5 +1,5 @@
 import config from 'config';
-import { linkTo } from './appUtils';
+import { prependPublicPath } from './appUtils';
 
 class WebSocketConnection {
   constructor(appId) {
@@ -10,9 +10,10 @@ class WebSocketConnection {
 
   getWebsocketUrl() {
     const re = /https?:\/\//g;
-    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', linkTo('/ws'));
+    if (re.test(config.apiUrl))
+      return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', prependPublicPath('/ws'));
 
-    return window.location.host + linkTo('/ws');
+    return window.location.host + prependPublicPath('/ws');
   }
 
   addListeners(appId) {
