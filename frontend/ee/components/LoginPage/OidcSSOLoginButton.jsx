@@ -2,10 +2,10 @@ import config from 'config';
 import React from 'react';
 import toast from 'react-hot-toast';
 
-export default function OIDCSSOLoginButton({ configId, configs }) {
+export default function OIDCSSOLoginButton({ configId, configs, text }) {
   const doLogin = (e) => {
     e.preventDefault();
-    fetch(`${config.apiUrl}/oauth/openid/configs/${configId}`, {
+    fetch(`${config.apiUrl}/oauth/openid/configs${configId ? `/${configId}` : ''}`, {
       method: 'GET',
       credentials: 'include',
     })
@@ -24,7 +24,9 @@ export default function OIDCSSOLoginButton({ configId, configs }) {
     <div>
       <button onClick={doLogin} className="btn border-0 rounded-2">
         <img src="/assets/images/sso-buttons/openid.svg" className="h-4" />
-        <span className="px-1">Sign in with {configs?.name || 'Open ID'}</span>
+        <span className="px-1">
+          {text} {configs?.name || 'Open ID'}
+        </span>
       </button>
     </div>
   );

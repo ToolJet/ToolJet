@@ -77,6 +77,12 @@ class LoginPage extends React.Component {
               host_name: window.public_config?.SSO_GIT_OAUTH2_HOST,
             },
           },
+          openid: {
+            enabled: !!window.public_config?.SSO_OPENID_CLIENT_ID,
+            configs: {
+              client_id: window.public_config?.SSO_OPENID_CLIENT_ID,
+            },
+          },
           form: {
             enable_sign_up: window.public_config?.DISABLE_SIGNUPS !== 'true',
             enabled: true,
@@ -241,6 +247,7 @@ class LoginPage extends React.Component {
                     <OidcSSOLoginButton
                       configId={this.state.configs?.openid?.config_id}
                       configs={this.state.configs?.openid?.configs}
+                      text="Sign in with"
                     />
                   )}
                 </div>

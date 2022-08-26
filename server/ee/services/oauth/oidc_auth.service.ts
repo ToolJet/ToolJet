@@ -17,12 +17,23 @@ export class OidcOAuthService {
   private oidcClient: BaseClient;
   private readonly redirectUri: string;
 
+  #getRedirectURL = (configId: string) => `${this.tooljetHost}/sso/openid${configId ? `/${configId}` : ''}`;
+
   async #setClient(configs: any, configId: string) {
     let ssoConfigs: any;
-    if (!configs) {
-      ssoConfigs = (await this.organizationsService.getConfigs(configId))?.configs;
+
+    if (configId) {
+      if (!configs) {
+        ssoConfigs = (await this.organizationsService.getConfigs(configId))?.configs;
+      } else {
+        ssoConfigs = configs;
+      }
     } else {
-      ssoConfigs = configs;
+      ssoConfigs = {
+        clientId: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
+        clientSecret: this.configService.get<string>('SSO_OPENID_CLIENT_SECRET'),
+        wellKnownUrl: this.configService.get<string>('SSO_OPENID_WELL_KNOWN_URL'),
+      };
     }
 
     const issuer = await Issuer.discover(ssoConfigs.wellKnownUrl);
@@ -30,7 +41,7 @@ export class OidcOAuthService {
     this.oidcClient = new issuer.Client({
       client_id: ssoConfigs.clientId,
       client_secret: ssoConfigs.clientSecret,
-      redirect_uris: [`${this.tooljetHost}/sso/openid/${configId}`],
+      redirect_uris: [this.#getRedirectURL(configId)],
     });
   }
 
@@ -44,7 +55,7 @@ export class OidcOAuthService {
       code_challenge: codeChallenge,
       code_challenge_method: 'S256',
       state: uuid.v4(),
-      redirect_uri: `${this.tooljetHost}/sso/openid/${configId}`,
+      redirect_uri: this.#getRedirectURL(configId),
     });
 
     return {
@@ -83,13 +94,9 @@ export class OidcOAuthService {
     const params: CallbackParamsType = {
       code,
     };
-    const tokenSet: TokenSet = await this.oidcClient.callback(
-      `${this.tooljetHost}/sso/openid/${configs.configId}`,
-      params,
-      {
-        code_verifier: configs.codeVerifier,
-      }
-    );
+    const tokenSet: TokenSet = await this.oidcClient.callback(this.#getRedirectURL(configs.configId), params, {
+      code_verifier: configs.codeVerifier,
+    });
 
     return await this.#getUserDetails(tokenSet);
   }

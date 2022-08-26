@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { validateEmail } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import AppLogo from '../_components/AppLogo';
 
 class SignupPage extends React.Component {
@@ -30,6 +31,12 @@ class SignupPage extends React.Component {
           enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
           configs: {
             client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
+          },
+        },
+        openid: {
+          enabled: !!window.public_config?.SSO_OPENID_CLIENT_ID,
+          configs: {
+            client_id: window.public_config?.SSO_OPENID_CLIENT_ID,
           },
         },
       },
@@ -102,13 +109,14 @@ class SignupPage extends React.Component {
                     {this.ssoConfigs.configs?.git?.enabled && (
                       <GitSSOLoginButton text="Sign up with GitHub" configs={this.ssoConfigs.configs?.git?.configs} />
                     )}
-                    {(this.ssoConfigs.configs?.git?.enabled || this.ssoConfigs.configs?.google?.enabled) && (
-                      <div className="mt-2 separator">
-                        <h2>
-                          <span>OR</span>
-                        </h2>
-                      </div>
+                    {this.ssoConfigs.configs?.openid?.enabled && (
+                      <OidcSSOLoginButton text="Sign up with" configs={this.ssoConfigs.configs?.openid?.configs} />
                     )}
+                    <div className="mt-2 separator">
+                      <h2>
+                        <span>OR</span>
+                      </h2>
+                    </div>
                   </div>
                 )}
                 <div className="mb-3">

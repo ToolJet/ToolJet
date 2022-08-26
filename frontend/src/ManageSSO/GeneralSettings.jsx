@@ -117,7 +117,9 @@ export function GeneralSettings({ settings, updateData }) {
             </div>
           </div>
           {!isSingleOrganization &&
-            (window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID || window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID) && (
+            (window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID ||
+              window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID ||
+              window.public_config?.SSO_OPENID_CLIENT_ID) && (
               <div className="form-group mb-3">
                 <label className="form-check form-switch">
                   <input
@@ -134,6 +136,7 @@ export function GeneralSettings({ settings, updateData }) {
                 <div className="d-flex tick-cross-info mb-2">
                   {window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID && ssoButtons('google')}
                   {window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID && ssoButtons('git')}
+                  {window.public_config?.SSO_OPENID_CLIENT_ID && ssoButtons('openid')}
                 </div>
                 <div className="help-text mt-1">
                   <div data-cy="login-help-text">
