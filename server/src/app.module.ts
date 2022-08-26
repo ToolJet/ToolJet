@@ -88,7 +88,9 @@ const imports = [
 
 if (process.env.SERVE_CLIENT !== 'false') {
   if (process.env.SUB_PATH !== undefined) {
-    const filesToReplaceAssetPath = ['index.html'].map((file) => join(__dirname, '../../../', 'frontend/build', file));
+    const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'].map((file) =>
+      join(__dirname, '../../../', 'frontend/build', file)
+    );
     for (const filePath of filesToReplaceAssetPath) {
       fs.readFile(filePath, 'utf8', function (err, data) {
         if (err) {
