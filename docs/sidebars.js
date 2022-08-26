@@ -17,6 +17,7 @@ const sidebars = {
       link: {type: 'doc', id: 'setup/index'},
       items: [
         'setup/try-tooljet',
+        'setup/digitalocean',
         'setup/docker',
         'setup/heroku',
         'setup/ec2',
