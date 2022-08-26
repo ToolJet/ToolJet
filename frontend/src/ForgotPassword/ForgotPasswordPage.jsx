@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { validateEmail } from '../_helpers/utils';
 import { authenticationService } from '@/_services';
-import LogoColorSvg from '@assets/images/logo-color.svg';
+import { assetPath } from '@/_helpers/appUtils';
 
 class ForgotPassword extends React.Component {
   constructor(props) {
@@ -55,7 +55,7 @@ class ForgotPassword extends React.Component {
         <div className="container-tight py-2">
           <div className="text-center mb-4">
             <a href="." className="navbar-brand-autodark">
-              <LogoColorSvg style={{ height: '30' }} aria-hidden="true" />
+              <img src={assetPath('/assets/images/logo-color.svg')} height="30" alt="" />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
