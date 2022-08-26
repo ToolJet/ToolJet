@@ -113,7 +113,7 @@ export const Datepicker = function Datepicker({
         showMonthDropdown
         showYearDropdown
         dropdownMode="select"
-        customInput={<CustomInputBox />}
+        customInputRef={<CustomInputBox />}
         excludeDates={excludedDates}
       />
 
