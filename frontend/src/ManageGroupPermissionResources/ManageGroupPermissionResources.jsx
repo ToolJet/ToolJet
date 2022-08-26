@@ -118,7 +118,20 @@ class ManageGroupPermissionResources extends React.Component {
       (permission) => permission.group_permission_id === groupPermissionId
     );
 
-    let actionParams = { read: true, update: action === 'edit' };
+    let actionParams = {
+      read: true,
+      update: action === 'edit',
+    };
+
+    if (action === 'isHiddenFromDashboard') {
+      actionParams['isHiddenFromDashboard'] = !this.canAppGroupPermission(
+        app,
+        groupPermissionId,
+        'isHiddenFromDashboard'
+      );
+    }
+
+    if (action === 'edit') actionParams['isHiddenFromDashboard'] = false;
 
     groupPermissionService
       .updateAppGroupPermission(groupPermissionId, appGroupPermission.id, actionParams)
@@ -144,6 +157,9 @@ class ManageGroupPermissionResources extends React.Component {
         appGroupPermission = this.findAppGroupPermission(app, groupPermissionId);
 
         return appGroupPermission['read'] && !appGroupPermission['update'];
+      case 'isHiddenFromDashboard':
+        appGroupPermission = this.findAppGroupPermission(app, groupPermissionId);
+        return appGroupPermission['read'] && appGroupPermission['is_hidden_from_dashboard'];
       default:
         return false;
     }
@@ -446,6 +462,30 @@ class ManageGroupPermissionResources extends React.Component {
                                           <span className="form-check-label">Edit</span>
                                         </label>
                                       </div>
+                                      {this.canAppGroupPermission(app, groupPermission.id, 'view') && (
+                                        <div>
+                                          <label className="form-check form-check-inline">
+                                            <input
+                                              className="form-check-input"
+                                              type="checkbox"
+                                              onChange={() => {
+                                                this.updateAppGroupPermission(
+                                                  app,
+                                                  groupPermission.id,
+                                                  'isHiddenFromDashboard'
+                                                );
+                                              }}
+                                              disabled={groupPermission.group === 'admin'}
+                                              checked={this.canAppGroupPermission(
+                                                app,
+                                                groupPermission.id,
+                                                'isHiddenFromDashboard'
+                                              )}
+                                            />
+                                            <span className="form-check-label">Hide from dashboard</span>
+                                          </label>
+                                        </div>
+                                      )}
                                     </td>
                                     <td>
                                       {groupPermission.group !== 'admin' && (
