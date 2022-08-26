@@ -4,7 +4,7 @@ import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ReactTooltip from 'react-tooltip';
-import { assetPath } from '@/_helpers/appUtils';
+import { assetPath, appendPublicPath } from '@/_helpers/appUtils';
 
 class ManageOrgUsers extends React.Component {
   constructor(props) {
@@ -161,9 +161,11 @@ class ManageOrgUsers extends React.Component {
 
   generateInvitationURL = (user) => {
     if (user.account_setup_token) {
-      return `${window.location.origin}/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}?oid=${this.state.currentUser.organization_id}`;
+      return `${appendPublicPath(window.location.origin)}/invitations/${user.account_setup_token}/workspaces/${
+        user.invitation_token
+      }?oid=${this.state.currentUser.organization_id}`;
     }
-    return `${window.location.origin}/organization-invitations/${user.invitation_token}`;
+    return `${appendPublicPath(window.location.origin)}/organization-invitations/${user.invitation_token}`;
   };
 
   invitationLinkCopyHandler = () => {
