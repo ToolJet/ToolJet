@@ -128,11 +128,11 @@ export function onComponentClick(_ref, id, component, mode = 'edit') {
   executeActionsForEventId(_ref, 'onClick', component, mode);
 }
 
-export function onQueryConfirm(_ref, queryConfirmationData) {
+export function onQueryConfirm(_ref, queryConfirmationData, mode = 'edit') {
   _ref.setState({
     showQueryConfirmation: false,
   });
-  runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true);
+  runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
 
 export function onQueryCancel(_ref) {
@@ -730,7 +730,11 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               () => {
                 resolve(data);
                 onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
-                if (mode !== 'view') toast.error(data.message);
+                console.log('onDataQueryFailure', data);
+                if (mode !== 'view') {
+                  const errorMessage = data.message || data.data.message;
+                  toast.error(errorMessage);
+                }
               }
             );
           }
@@ -775,10 +779,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             toast.success(dataQuery.options.successMessage, {
               duration: notificationDuration,
             });
-          }
-
-          if (dataQuery.options.requestConfirmation) {
-            toast(`Query (${dataQuery.name}) completed.`);
           }
 
           _self.setState(
