@@ -14,6 +14,7 @@ import { FilePicker } from './Components/FilePicker';
 import { CustomComponent } from './Components/CustomComponent';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
+import { cloneDeep } from 'lodash';
 
 export const Inspector = ({
   selectedComponentId,
@@ -105,7 +106,7 @@ export const Inspector = ({
   };
 
   function paramUpdated(param, attr, value, paramType) {
-    let newDefinition = { ...component.component.definition };
+    let newDefinition = cloneDeep(component.component.definition);
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
     if (!paramObject) {

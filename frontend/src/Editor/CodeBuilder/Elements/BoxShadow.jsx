@@ -22,8 +22,8 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
 
   const input = ['X', 'Y', 'Blur', 'Spread'];
 
-  const [boxShadow, setBoxShadow] = useState(defaultValue);
-  const [debouncedShadow, setDebouncedShadow] = useState(defaultValue);
+  const [boxShadow, setBoxShadow] = useState(value);
+  const [debouncedShadow, setDebouncedShadow] = useState(value);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -49,7 +49,11 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
   }, []);
 
   useEffect(() => {
-    onChange(Object.values(debouncedShadow).join('px '));
+    const changedValue =
+      typeof debouncedShadow === 'string' ? debouncedShadow : Object.values(debouncedShadow).join('px ');
+    if (changedValue !== value) {
+      onChange(changedValue);
+    }
     if (boxShadow !== debouncedShadow) {
       setBoxShadow(debouncedShadow);
     }
