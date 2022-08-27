@@ -63,7 +63,7 @@ const Comment = ({
       fetchData();
     } else {
       // resetting the query param
-      router.push(window.location.pathname);
+      // router.push(window.location.pathname);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);

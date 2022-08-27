@@ -7,11 +7,11 @@ const TerserPlugin = require('terser-webpack-plugin');
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
 const API_URL = {
-  production: process.env.TOOLJET_SERVER_URL || '',
+  production: process.env.TOOLJET_SERVER_URL || (process.env.SERVE_CLIENT !== 'false' ? '__REPLACE_SUB_PATH__' : ''),
   development: `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
 };
 
-const ASSET_PATH = process.env.ASSET_PATH || '/';
+const ASSET_PATH = process.env.ASSET_PATH || '';
 
 module.exports = {
   mode: environment,
@@ -112,7 +112,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './src/index.html',
+      template: './src/index.ejs',
       favicon: './assets/images/logo.svg',
     }),
     new CompressionPlugin({
