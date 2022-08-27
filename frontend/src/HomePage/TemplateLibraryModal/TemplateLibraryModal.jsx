@@ -6,7 +6,7 @@ import { libraryAppService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
-import { history } from '@/_helpers';
+import { useHistory } from 'react-router-dom';
 
 const identifyUniqueCategories = (templates) =>
   ['all', ...new Set(_.map(templates, 'category'))].map((categoryId) => ({
@@ -15,6 +15,7 @@ const identifyUniqueCategories = (templates) =>
   }));
 
 export default function TemplateLibraryModal(props) {
+  const history = useHistory();
   const [libraryApps, setLibraryApps] = useState([]);
   const [selectedCategory, selectCategory] = useState({ id: 'all', count: 0 });
   const filteredApps = libraryApps.filter(
