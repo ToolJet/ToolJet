@@ -75,7 +75,7 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
         >
           <img
             style={{ transform: 'rotate(-90deg)', filter: darkMode && 'brightness(0) invert(1)' }}
-            src="/assets/images/icons/portal-close.svg"
+            src="assets/images/icons/portal-close.svg"
             width="12"
             height="12"
           />

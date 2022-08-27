@@ -7,7 +7,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Skeleton from 'react-loading-skeleton';
 import { debounce } from 'lodash';
 import Textarea from '@/_ui/Textarea';
-
+import { Link } from 'react-router-dom';
 class ManageAppUsers extends React.Component {
   constructor(props) {
     super(props);
@@ -125,7 +125,7 @@ class ManageAppUsers extends React.Component {
   render() {
     const { isLoading, app, slugError, isSlugVerificationInProgress } = this.state;
     const appId = app.id;
-    const appLink = `${window.location.origin}/applications/`;
+    const appLink = `${window.public_config?.TOOLJET_HOST}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = isSlugVerificationInProgress ? '' : slugError !== null ? 'is-invalid' : 'is-valid';
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="Tooljet app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
@@ -305,9 +305,9 @@ class ManageAppUsers extends React.Component {
           </Modal.Body>
 
           <Modal.Footer>
-            <a href="/users" target="_blank" className="btn color-primary mt-3">
+            <Link to="/users" target="_blank" className="btn color-primary mt-3">
               Manage Users
-            </a>
+            </Link>
           </Modal.Footer>
         </Modal>
       </div>

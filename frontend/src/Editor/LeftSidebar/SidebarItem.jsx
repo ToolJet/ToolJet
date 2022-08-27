@@ -31,7 +31,7 @@ export const LeftSidebarItem = ({
             <div className="position-relative">
               <img
                 className="svg-icon"
-                src={`/assets/images/icons/editor/left-sidebar/${icon}.svg`}
+                src={`assets/images/icons/editor/left-sidebar/${icon}.svg`}
                 width="20"
                 height="20"
               />
