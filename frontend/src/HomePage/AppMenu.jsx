@@ -64,7 +64,7 @@ export const AppMenu = function AppMenu({
       }
     >
       <div className={`d-grid menu-ico menu-ico${isMenuOpen ? '__open' : ''}`}>
-        <img className="svg-icon" src="/assets/images/icons/three-dots.svg" data-cy="app-card-menu-icon" />
+        <img className="svg-icon" src="assets/images/icons/three-dots.svg" data-cy="app-card-menu-icon" />
       </div>
     </OverlayTrigger>
   );

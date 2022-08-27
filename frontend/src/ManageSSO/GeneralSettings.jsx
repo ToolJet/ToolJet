@@ -83,7 +83,7 @@ export function GeneralSettings({ settings, updateData }) {
     return (
       <div className={`d-flex main-box ${inheritSSO ? 'tick' : 'cross'}-box`}>
         <div className="icon-box">{inheritSSO ? tickIcon() : crossIcon()}</div>
-        <img width="35px" src={`/assets/images/sso-buttons/${type}.svg`} />
+        <img width="35px" src={`assets/images/sso-buttons/${type}.svg`} />
       </div>
     );
   };
@@ -173,11 +173,11 @@ export function GeneralSettings({ settings, updateData }) {
 
               <div className="flexer-sso-input form-control">
                 <p id="login-url" data-cy="login-url">
-                  {`${window.location.protocol}//${window.location.host}/login/${authenticationService?.currentUserValue?.organization_id}`}
+                  {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentUserValue?.organization_id}`}
                 </p>
                 <img
                   onClick={() => copyFunction('login-url')}
-                  src={`/assets/images/icons/copy-dark.svg`}
+                  src={`assets/images/icons/copy-dark.svg`}
                   width="22"
                   height="22"
                   className="sso-copy"

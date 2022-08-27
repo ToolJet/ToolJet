@@ -26,6 +26,7 @@
     "babel-plugin-import": "^1.13.3",
     "bootstrap": "^4.6.0",
     "classnames": "^2.3.1",
+    "compression-webpack-plugin": "^10.0.0",
     "css-loader": "^6.5.1",
     "date-fns": "^2.28.0",
     "dompurify": "^2.2.7",
@@ -95,13 +96,13 @@
     "superstruct": "^0.15.4",
     "terser-webpack-plugin": "^5.3.4",
     "tinycolor2": "^1.4.2",
+    "url-join": "^5.0.0",
     "uuid": "8.3.2",
     "webpack": "^5.55.1",
     "webpack-cli": "^4.8.0",
     "y-websocket": "^1.4.0",
     "yjs": "^13.5.28",
-    "yup": "^0.27.0",
-    "compression-webpack-plugin": "^10.0.0"
+    "yup": "^0.27.0"
   },
   "devDependencies": {
     "eslint": "^7.32.0",

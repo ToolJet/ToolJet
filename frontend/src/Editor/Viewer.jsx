@@ -19,7 +19,7 @@ import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import LogoIcon from './Icons/logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { resolveReferences } from '@/_helpers/utils';
-
+import { Link } from 'react-router-dom';
 class Viewer extends React.Component {
   constructor(props) {
     super(props);
@@ -239,9 +239,9 @@ class Viewer extends React.Component {
                 <header className="navbar navbar-expand-md navbar-light d-print-none">
                   <div className="container-xl header-container">
                     <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                      <a href="/">
+                      <Link to="/">
                         <LogoIcon />
-                      </a>
+                      </Link>
                     </h1>
                     {this.state.app && <span>{this.state.app.name}</span>}
                     <div className="d-flex align-items-center m-1 p-1">
