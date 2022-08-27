@@ -1,6 +1,6 @@
 import React from 'react';
 import config from 'config';
-import { BrowserRouter, Router, Route, Redirect } from 'react-router-dom';
+import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute } from '@/_components';

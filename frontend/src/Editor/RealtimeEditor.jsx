@@ -15,7 +15,6 @@ const getWebsocketUrl = () => {
   const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
   const re = /https?:\/\//g;
 
-  const isSecure = re.test(config.apiUrl);
   const apiUrlStartsWithProtocol = config.apiUrl.startsWith('http');
 
   let url;
@@ -25,8 +24,6 @@ const getWebsocketUrl = () => {
   } else {
     url = `${window.location.host}${config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '')}`;
   }
-
-  if (isSecure) return `${protocol}://${url}`;
 
   return `${protocol}://${url}`;
 };
