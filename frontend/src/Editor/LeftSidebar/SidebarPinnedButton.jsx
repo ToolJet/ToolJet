@@ -16,7 +16,7 @@ export const SidebarPinnedButton = ({ state, component, updateState, darkMode })
       >
         <img
           className="svg-icon"
-          src={`/assets/images/icons/editor/left-sidebar/${pinnedIcon}.svg`}
+          src={`assets/images/icons/editor/left-sidebar/${pinnedIcon}.svg`}
           width="16"
           height="16"
         />

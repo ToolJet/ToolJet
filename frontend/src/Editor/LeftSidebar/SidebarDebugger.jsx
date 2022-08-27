@@ -190,7 +190,7 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
       <p className="text-azure" onClick={() => setOpen((prev) => !prev)}>
         <img
           className={`svg-icon ${open ? 'iopen' : ''}`}
-          src={`/assets/images/icons/caret-right.svg`}
+          src={`assets/images/icons/caret-right.svg`}
           width="16"
           height="16"
         />

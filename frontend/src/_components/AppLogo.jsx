@@ -11,7 +11,7 @@ export default function AppLogo({ isLoadingFromHeader }) {
           <img src={url} height={26} />
         </>
       ) : (
-        <>{isLoadingFromHeader ? <Logo /> : <img src="../../assets/images/logo-color.svg" height={26} />}</>
+        <>{isLoadingFromHeader ? <Logo /> : <img src="assets/images/logo-color.svg" height={26} />}</>
       )}
     </>
   );

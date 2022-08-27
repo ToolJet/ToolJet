@@ -264,7 +264,7 @@ class LoginPage extends React.Component {
           )}
           {authenticationService?.currentUserValue?.organization && (
             <div className="text-center mt-3">
-              back to <a href="/">{authenticationService?.currentUserValue?.organization}</a>
+              back to <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
             </div>
           )}
         </div>

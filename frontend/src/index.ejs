@@ -1,15 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <% if (process.env.NODE_ENV==='production' ) { %>
+    <base href="__REPLACE_SUB_PATH__" />
+    <% } else { %>
+    <base href="/" />
+    <% } %>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>&lrm;</title>
+    <title>ToolJet - Dashboard</title>
 
     <style>
       a {
         cursor: pointer;
       }
     </style>
+
+    <link
+      rel="icon"
+      href="/assets/images/logo.svg"
+      sizes="any"
+      type="image/svg+xml"
+    />
 
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link
@@ -21,6 +33,7 @@
       rel="stylesheet"
     />
   </head>
+
   <body>
     <div id="app"></div>
   </body>

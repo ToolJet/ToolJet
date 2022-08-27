@@ -6,7 +6,7 @@ export const Alert = ({ children, svg, cls = '' }) => {
       <div className="d-flex">
         {svg && (
           <span>
-            <img src={`/assets/images/icons/${svg}.svg`} alt="alert" />
+            <img src={`assets/images/icons/${svg}.svg`} alt="alert" />
           </span>
         )}
         <Alert.Message>{children}</Alert.Message>

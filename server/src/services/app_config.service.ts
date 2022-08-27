@@ -32,6 +32,8 @@ export class AppConfigService {
       'WHITE_LABEL_LOGO',
       'WHITE_LABEL_TEXT',
       'WHITE_LABEL_FAVICON',
+      'TOOLJET_HOST',
+      'SUB_PATH',
     ];
   }
 
