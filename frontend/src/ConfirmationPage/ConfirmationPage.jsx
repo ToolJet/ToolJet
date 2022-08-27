@@ -140,7 +140,7 @@ class ConfirmationPage extends React.Component {
         >
           <div className="text-center mb-4">
             <a href=".">
-              <img src="/assets/images/logo-color.svg" height="30" alt="" data-cy="page-logo" />
+              <img src="assets/images/logo-color.svg" height="30" alt="" data-cy="page-logo" />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off" data-cy="confirm-invite-container">

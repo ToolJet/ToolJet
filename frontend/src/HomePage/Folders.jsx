@@ -210,7 +210,7 @@ export const Folders = function Folders({
                 >
                   <span className="me-2">
                     <img
-                      src="/assets/images/icons/folder.svg"
+                      src="assets/images/icons/folder.svg"
                       alt=""
                       width="14"
                       height="14"
