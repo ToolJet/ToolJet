@@ -1253,11 +1253,11 @@ button {
     .app-list {
       .app-card {
         .app-creation-time {
-          color: #61656f;
+          color: #afb0b2;
         }
 
         .app-creator {
-          color: #7c86a1;
+          color: #c3c4cb;
         }
       }
 
@@ -2668,6 +2668,16 @@ hr {
 
   .row {
     --tblr-gutter-x: 0rem;
+  }
+}
+
+
+.theme-dark .wrapper {
+  .navbar .navbar-nav .active>.nav-link,
+  .navbar .navbar-nav .nav-link.active,
+  .navbar .navbar-nav .nav-link.show,
+  .navbar .navbar-nav .show>.nav-link {
+    color: rgba(255, 255, 255, 0.7);
   }
 }
 
@@ -5024,6 +5034,12 @@ div#driver-page-overlay {
   }
 }
 
+.toast-dark-mode {
+   .btn-close {
+    filter: brightness(0) invert(1);
+  }
+}
+
 .editor .editor-sidebar .inspector .form-control-plaintext {
   padding: 2px 4px;
 }
@@ -5604,6 +5620,9 @@ div#driver-page-overlay {
   width: 20px !important;
   height: 25px !important;
   margin-left: 2px;
+  span{
+    transform: rotate(60deg);
+  }
 }
 
 .zoom-button-wrapper {

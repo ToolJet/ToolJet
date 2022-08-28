@@ -74,11 +74,13 @@ export const Container = ({
     '⌘+v, control+v',
     () => {
       if (isContainerFocused) {
-        navigator.clipboard
-          .readText()
-          .then((cliptext) =>
-            addComponents(appDefinition, appDefinitionChanged, focusedParentIdRef.current, JSON.parse(cliptext))
-          );
+        navigator.clipboard.readText().then((cliptext) => {
+          try {
+            addComponents(appDefinition, appDefinitionChanged, focusedParentIdRef.current, JSON.parse(cliptext));
+          } catch (err) {
+            console.log(err);
+          }
+        });
       }
     },
     [isContainerFocused, appDefinition, focusedParentIdRef]
@@ -86,7 +88,7 @@ export const Container = ({
 
   useEffect(() => {
     const handleClick = (e) => {
-      if (canvasRef.current.contains(e.target)) {
+      if (canvasRef.current.contains(e.target) || document.getElementById('modal-container').contains(e.target)) {
         const elem = e.target.closest('.real-canvas').getAttribute('id');
         if (elem === 'real-canvas') {
           focusedParentIdRef.current = undefined;
@@ -200,6 +202,7 @@ export const Container = ({
             layouts: {
               ...newComponent.layout,
             },
+            withDefaultChildren: newComponent.withDefaultChildren,
           },
         });
 
@@ -443,6 +446,7 @@ export const Container = ({
         const box = boxes[key];
         const canShowInCurrentLayout =
           box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+        const addDefaultChildren = box.withDefaultChildren;
         if (!box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
           return (
             <DraggableBox
@@ -501,6 +505,9 @@ export const Container = ({
                 hoveredComponent,
                 sideBarDebugger,
                 dataQueries,
+
+                addDefaultChildren,
+
                 setDraggingOrResizing,
               }}
               setDraggingOrResizing={setDraggingOrResizing}

@@ -55,7 +55,7 @@ export function Authorize() {
         <div className="col-4 sso-ico d-flex">
           <div>
             <img
-              src={`/assets/images/sso-buttons/${Configs[router.query.origin] ? router.query.origin : 'unknown'}.svg`}
+              src={`assets/images/sso-buttons/${Configs[router.query.origin] ? router.query.origin : 'unknown'}.svg`}
             />
           </div>
         </div>

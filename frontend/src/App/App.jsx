@@ -1,6 +1,6 @@
 import React from 'react';
 import config from 'config';
-import { Router, Route, Redirect } from 'react-router-dom';
+import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute, AdminRoute } from '@/_components';
@@ -22,7 +22,7 @@ import { MarketplacePage } from '@/MarketplacePage';
 import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
-import { Toaster } from 'react-hot-toast';
+import Toast from '@/_ui/Toast';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import { Editor } from '@/Editor/Editor';
 import { RedirectSso } from '@/RedirectSso/RedirectSso';
@@ -77,6 +77,7 @@ class App extends React.Component {
 
     if (darkMode) {
       toastOptions = {
+        className: 'toast-dark-mode',
         style: {
           borderRadius: '10px',
           background: '#333',
@@ -87,7 +88,7 @@ class App extends React.Component {
 
     return (
       <>
-        <Router history={history}>
+        <BrowserRouter history={history} basename={window.public_config?.SUB_PATH || '/'}>
           <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
             {updateAvailable && (
               <div className="alert alert-info alert-dismissible" role="alert">
@@ -266,8 +267,8 @@ class App extends React.Component {
               darkMode={darkMode}
             />
           </div>
-        </Router>
-        <Toaster toastOptions={toastOptions} />
+        </BrowserRouter>
+        <Toast toastOptions={toastOptions} />
       </>
     );
   }

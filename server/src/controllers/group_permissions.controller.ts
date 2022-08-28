@@ -17,8 +17,8 @@ export class GroupPermissionsController {
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Post()
   async create(@User() user, @Body() createGroupPermissionDto: CreateGroupPermissionDto) {
-    const groupPermission = await this.groupPermissionsService.create(user, createGroupPermissionDto.group);
-    return decamelizeKeys(groupPermission);
+    await this.groupPermissionsService.create(user, createGroupPermissionDto.group);
+    return;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -39,23 +39,20 @@ export class GroupPermissionsController {
     @Param('id') id: string,
     @Param('appGroupPermissionId') appGroupPermissionId: string
   ) {
-    const groupPermission = await this.groupPermissionsService.updateAppGroupPermission(
+    await this.groupPermissionsService.updateAppGroupPermission(
       user,
       id,
       appGroupPermissionId,
       updateGroupPermissionDto.actions
     );
-
-    return decamelizeKeys(groupPermission);
+    return;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Put(':id')
   async update(@User() user, @Param('id') id, @Body() body) {
-    const groupPermission = await this.groupPermissionsService.update(user, id, body);
-
-    return decamelizeKeys(groupPermission);
+    await this.groupPermissionsService.update(user, id, body);
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -71,9 +68,8 @@ export class GroupPermissionsController {
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Delete(':id')
   async destroy(@User() user, @Param('id') id) {
-    const groupPermission = await this.groupPermissionsService.destroy(user, id);
-
-    return decamelizeKeys(groupPermission);
+    await this.groupPermissionsService.destroy(user, id);
+    return;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)

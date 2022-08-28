@@ -80,7 +80,7 @@ export const Organization = function Organization() {
       (data) => {
         setIsCreating(false);
         authenticationService.updateCurrentUserDetails(data);
-        window.location.href = '/';
+        window.location.href = '';
       },
       () => {
         setIsCreating(false);
@@ -130,10 +130,10 @@ export const Organization = function Organization() {
     organizationService.switchOrganization(orgId).then(
       (data) => {
         authenticationService.updateCurrentUserDetails(data);
-        window.location.href = '/';
+        window.location.href = '';
       },
       () => {
-        return (window.location.href = `/login/${orgId}`);
+        return (window.location.href = `login/${orgId}`);
       }
     );
   };

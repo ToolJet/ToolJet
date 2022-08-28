@@ -63,7 +63,7 @@ export default class VariablesTable extends React.Component {
                             <small className="text-green">
                               <img
                                 className="encrypted-icon"
-                                src="/assets/images/icons/padlock.svg"
+                                src="assets/images/icons/padlock.svg"
                                 width="12"
                                 height="12"
                               />
@@ -89,7 +89,7 @@ export default class VariablesTable extends React.Component {
                                   <img
                                     data-tip="Update"
                                     className="svg-icon"
-                                    src="/assets/images/icons/edit.svg"
+                                    src="assets/images/icons/edit.svg"
                                     width="15"
                                     height="15"
                                     style={{
@@ -108,7 +108,7 @@ export default class VariablesTable extends React.Component {
                                   <img
                                     data-tip="Delete"
                                     className="svg-icon"
-                                    src="/assets/images/icons/query-trash-icon.svg"
+                                    src="assets/images/icons/query-trash-icon.svg"
                                     width="15"
                                     height="15"
                                     style={{

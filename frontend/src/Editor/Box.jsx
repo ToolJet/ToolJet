@@ -163,6 +163,7 @@ export const Box = function Box({
     mode === 'edit' && component.validate
       ? validateProperties(resolvedProperties, componentMeta.properties)
       : [resolvedProperties, []];
+
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
   const [validatedStyles, styleErrors] =
     mode === 'edit' && component.validate
@@ -308,7 +309,7 @@ export const Box = function Box({
                     width: '20px',
                     height: '20px',
                     backgroundSize: 'contain',
-                    backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
+                    backgroundImage: `url(assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
                     backgroundRepeat: 'no-repeat',
                   }}
                 ></div>
