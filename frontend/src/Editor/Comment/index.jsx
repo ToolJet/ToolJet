@@ -63,7 +63,8 @@ const Comment = ({
       fetchData();
     } else {
       // resetting the query param
-      // router.push(window.location.pathname);
+      // react router updates the url with the set basename resulting invalid url unless replaced
+      router.push(window.location.pathname.replace(window.public_config?.SUB_PATH, '/'));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
