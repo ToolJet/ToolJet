@@ -8,7 +8,7 @@ import allPlugins from '@tooljet/plugins/dist/server';
 
 @Injectable()
 export class PluginsHelper {
-  private readonly plugins: any = [];
+  private readonly plugins: any = {};
   private static instance: PluginsHelper;
 
   constructor(
