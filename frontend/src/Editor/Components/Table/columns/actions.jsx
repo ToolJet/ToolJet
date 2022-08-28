@@ -1,8 +1,8 @@
 import React from 'react';
 
-const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent }) => {
-  const leftActions = () => actions.value.filter((action) => action.position === 'left');
-  const rightActions = () => actions.value.filter((action) => [undefined, 'right'].includes(action.position));
+const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, setExposedVariables }) => {
+  const leftActions = () => actions.filter((action) => action.position === 'left');
+  const rightActions = () => actions.filter((action) => [undefined, 'right'].includes(action.position));
   const leftActionsCellData =
     leftActions().length > 0
       ? [
@@ -23,10 +23,15 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent })
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    fireEvent('onTableActionButtonClicked', {
-                      data: cell.row.original,
-                      rowId: cell.row.id,
-                      action,
+                    setExposedVariables({
+                      selectedRowId: cell.row.id,
+                      selectedRow: cell.row.original,
+                    }).then(() => {
+                      fireEvent('onTableActionButtonClicked', {
+                        data: cell.row.original,
+                        rowId: cell.row.id,
+                        action,
+                      });
                     });
                   }}
                 >
@@ -58,10 +63,15 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent })
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    fireEvent('onTableActionButtonClicked', {
-                      data: cell.row.original,
-                      rowId: cell.row.id,
-                      action,
+                    setExposedVariables({
+                      selectedRowId: cell.row.id,
+                      selectedRow: cell.row.original,
+                    }).then(() => {
+                      fireEvent('onTableActionButtonClicked', {
+                        data: cell.row.original,
+                        rowId: cell.row.id,
+                        action,
+                      });
                     });
                   }}
                 >

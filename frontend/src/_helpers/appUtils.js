@@ -187,7 +187,12 @@ export const executeAction = (_ref, event, mode, customVariables) => {
   if (event) {
     switch (event.actionId) {
       case 'show-alert': {
-        const message = resolveReferences(event.message, _ref.state.currentState, undefined, customVariables);
+        const message = resolveReferences(
+          event.__TjDoNotResolve__message,
+          _ref.state.currentState,
+          undefined,
+          customVariables
+        );
         switch (event.alertType) {
           case 'success':
           case 'error':
@@ -370,6 +375,32 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
+  if (eventName === 'onRowClicked' && options?.component?.component === 'Table') {
+    const { component, data, rowId } = options;
+    _self.setState(
+      {
+        currentState: {
+          ..._self.state.currentState,
+          components: {
+            ..._self.state.currentState.components,
+            [component.name]: {
+              ..._self.state.currentState.components[component.name],
+              selectedRow: data,
+              selectedRowId: rowId,
+            },
+          },
+        },
+      },
+      () => {
+        executeActionsForEventId(_ref, 'onRowClicked', component, mode, customVariables);
+      }
+    );
+  }
+
+  if (eventName === 'onRowClicked' && options?.component?.component === 'Listview') {
+    executeActionsForEventId(_ref, 'onRowClicked', options.component, mode, customVariables);
+  }
+
   if (eventName === 'onCalendarEventSelect') {
     const { component, calendarEvent } = options;
     _self.setState(
@@ -414,6 +445,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
 
   if (eventName === 'onTableActionButtonClicked') {
     const { component, data, action, rowId } = options;
+    console.log({ data, action, rowId });
     _self.setState(
       {
         currentState: {
@@ -507,7 +539,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCardSelected',
       'onCardUpdated',
       'onTabSwitch',
-      'onRowClicked',
     ].includes(eventName)
   ) {
     const { component } = options;

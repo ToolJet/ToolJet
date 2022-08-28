@@ -1,4 +1,4 @@
-export default function loadPropertiesAndStyles(properties, styles, darkMode, component) {
+export default function loadPropertiesAndStyles(properties, styles, darkMode) {
   const color = styles.textColor !== '#000' ? styles.textColor : darkMode && '#fff';
 
   let serverSidePagination = properties.serverSidePagination ?? false;
@@ -23,6 +23,8 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
 
   const loadingState = properties.loadingState ?? false;
 
+  const columnSizes = properties.columnSizes ?? {};
+
   const tableType = styles.tableType ?? 'table-bordered';
 
   const cellSizeType = styles?.cellSizeType;
@@ -37,9 +39,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
 
   const actionButtonRadius = styles.actionButtonRadius ? parseFloat(styles.actionButtonRadius) : 0;
 
-  const actions = {
-    value: (component.definition.properties.actions?.value ?? []).map((action) => ({ ...action, actionButtonRadius })),
-  };
+  const actions = (properties.actions ?? []).map((action) => ({ ...action, actionButtonRadius }));
 
   return {
     color,
@@ -52,6 +52,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     showBulkUpdateActions,
     showBulkSelector,
     highlightSelectedRow,
+    columnSizes,
     tableType,
     cellSizeType,
     borderRadius,

@@ -61,6 +61,7 @@ export function Table({
     showBulkSelector,
     highlightSelectedRow,
     loadingState,
+    columnSizes,
     tableType,
     cellSizeType,
     borderRadius,
@@ -68,7 +69,7 @@ export function Table({
     parsedDisabledState,
     actionButtonRadius,
     actions,
-  } = loadPropertiesAndStyles(properties, styles, darkMode, component);
+  } = loadPropertiesAndStyles(properties, styles, darkMode);
 
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
 
@@ -91,8 +92,6 @@ export function Table({
     }),
     []
   );
-
-  const columnSizes = component.definition.properties.columnSizes || {};
 
   function handleCellValueChange(index, key, value, rowData) {
     const changeSet = tableDetails.changeSet;
@@ -169,6 +168,7 @@ export function Table({
   }
 
   tableData = tableData || [];
+
   const columnData = generateColumnsData({
     columnProperties: component.definition.properties.columns.value,
     columnSizes,
@@ -185,13 +185,18 @@ export function Table({
     tableRef,
   });
 
-  const [leftActionsCellData, rightActionsCellData] = generateActionsData({
-    actions,
-    columnSizes,
-    defaultColumn,
-    actionButtonRadius,
-    fireEvent,
-  });
+  const [leftActionsCellData, rightActionsCellData] = useMemo(
+    () =>
+      generateActionsData({
+        actions,
+        columnSizes,
+        defaultColumn,
+        actionButtonRadius,
+        fireEvent,
+        setExposedVariables,
+      }),
+    [JSON.stringify(actions)]
+  );
 
   const textWrapActions = (id) => {
     let wrapOption = tableDetails.columnProperties?.find((item) => {
@@ -327,9 +332,12 @@ export function Table({
   }, [tableData.length, tableDetails.changeSet]);
 
   useEffect(() => {
+    const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
     if (!state.columnResizing.isResizingColumn) {
       changeCanDrag(true);
-      paramUpdated(id, 'columnSizes', { ...columnSizes, ...state.columnResizing.columnWidths });
+      paramUpdated(id, 'columnSizes', {
+        value: { ...columnSizes, ...state.columnResizing.columnWidths },
+      });
     } else {
       changeCanDrag(false);
     }
@@ -433,7 +441,6 @@ export function Table({
 
           {!loadingState && (
             <tbody {...getTableBodyProps()} style={{ color: computeFontColor() }}>
-              {console.log('page', page)}
               {page.map((row, index) => {
                 prepareRow(row);
                 return (
@@ -461,7 +468,6 @@ export function Table({
                             _.get(tableDetails.changeSet[cell.row.index], currentColumn?.accessor, undefined) !==
                             undefined
                           ) {
-                            console.log('tableDetails.changeSet', tableDetails.changeSet);
                             cellProps.style.backgroundColor = darkMode ? '#1c252f' : '#ffffde';
                             cellProps.style['--tblr-table-accent-bg'] = darkMode ? '#1c252f' : '#ffffde';
                           }

@@ -143,8 +143,10 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
       } else if (!_.isEmpty(object)) {
         console.log(`[Resolver] Resolving as object ${typeof object}, state: ${state}`);
         Object.keys(object).forEach((key) => {
-          const resolved_object = resolveReferences(object[key], state);
-          object[key] = resolved_object;
+          if (key.slice(0, 18) === '__TjDoNotResolve') {
+            const resolved_object = resolveReferences(object[key], state);
+            object[key] = resolved_object;
+          }
         });
         if (withError) return [object, error];
         return object;

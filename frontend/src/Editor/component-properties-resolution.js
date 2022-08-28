@@ -2,17 +2,16 @@ import { resolveReferences } from '@/_helpers/utils';
 
 export const resolveProperties = (component, currentState, defaultValue, customResolvables) => {
   if (currentState) {
-    return Object.entries(component.definition.properties).reduce(
-      (properties, entry) => ({
+    return Object.entries(component.definition.properties).reduce((properties, entry) => {
+      return {
         ...properties,
         ...{
           [entry[0]]: entry[1]?.skipResolve
             ? entry[1].value
             : resolveReferences(entry[1].value, currentState, defaultValue, customResolvables),
         },
-      }),
-      {}
-    );
+      };
+    }, {});
   } else return {};
 };
 
