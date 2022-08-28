@@ -2,7 +2,6 @@ import React from 'react';
 import { authenticationService, userService } from '@/_services';
 import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
-import { Link } from 'react-router-dom';
 
 function SettingsPage(props) {
   const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
@@ -206,13 +205,13 @@ function SettingsPage(props) {
                     </div>
                   </div>
                 </div>
-                <Link
+                <button
                   className={'btn btn-primary' + (updateInProgress ? '  btn-loading' : '')}
                   onClick={updateDetails}
                   data-cy="update-button"
                 >
                   Update
-                </Link>
+                </button>
                 {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
                 {/* The div below is a placeholder to prevent it from affecting the button above.  */}
                 <div></div>
@@ -279,13 +278,13 @@ function SettingsPage(props) {
                     />
                   </div>
                 </div>
-                <Link
+                <button
                   className={'btn btn-primary' + (passwordChangeInProgress ? '  btn-loading' : '')}
                   onClick={changePassword}
                   data-cy="change-password-button"
                 >
                   Change password
-                </Link>
+                </button>
                 {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
                 {/* The div below is a placeholder to prevent it from affecting the button above.  */}
                 <div></div>
