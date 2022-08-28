@@ -23,7 +23,7 @@ export default function OIDCSSOLoginButton({ configId, configs, text }) {
   return (
     <div>
       <button onClick={doLogin} className="btn border-0 rounded-2">
-        <img src="/assets/images/sso-buttons/openid.svg" className="h-4" />
+        <img src="assets/images/sso-buttons/openid.svg" className="h-4" />
         <span className="px-1">
           {text} {configs?.name || 'Open ID'}
         </span>
