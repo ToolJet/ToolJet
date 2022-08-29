@@ -10,6 +10,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
+import { custom } from 'openid-client';
 
 const fs = require('fs');
 
@@ -23,6 +24,10 @@ async function bootstrap() {
   const configService = app.get<ConfigService>(ConfigService);
   const host = new URL(process.env.TOOLJET_HOST);
   const domain = host.hostname;
+
+  custom.setHttpOptionsDefaults({
+    timeout: parseInt(process.env.OIDC_CONNECTION_TIMEOUT || '3500'), // Default 3.5 seconds
+  });
 
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));

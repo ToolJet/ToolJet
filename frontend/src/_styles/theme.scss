@@ -3392,6 +3392,12 @@ input:focus-visible {
       color: #656d77;
     }
   }
+
+  .oidc-button {
+    .btn-loading:after {
+      color: $white;
+    }
+  }
 }
 
 .main-wrapper {
@@ -6098,5 +6104,11 @@ input.hide-input-arrows{
       background:#fff; 
       padding:0 10px; 
     }
+  }
+}
+
+.oidc-button {
+  .btn-loading:after {
+    color: $primary;
   }
 }
