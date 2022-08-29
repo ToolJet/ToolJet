@@ -34,6 +34,7 @@ import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
+import * as fs from 'fs';
 
 const imports = [
   ConfigModule.forRoot({
@@ -86,6 +87,28 @@ const imports = [
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {
+  const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
+
+  for (const fileName of filesToReplaceAssetPath) {
+    const file = join(__dirname, '../../../', 'frontend/build', fileName);
+
+    let newValue = process.env.SUB_PATH;
+
+    if (process.env.SUB_PATH === undefined) {
+      newValue = fileName === 'index.html' ? '/' : '';
+    }
+
+    fs.readFile(file, 'utf8', function (err, data) {
+      if (err) {
+        return console.log(err);
+      }
+      const result = data.replace(/__REPLACE_SUB_PATH__/g, newValue);
+      fs.writeFile(file, result, 'utf8', function (err) {
+        if (err) return console.log(err);
+      });
+    });
+  }
+
   imports.unshift(
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../../', 'frontend/build'),

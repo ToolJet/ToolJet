@@ -17,6 +17,7 @@ import generateFile from '@/_lib/generate-file';
 import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
+import urlJoin from 'url-join';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -249,7 +250,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           _ref.props.history.go();
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-            window.open(url, '_blank');
+            window.open(urlJoin(window.public_config?.TOOLJET_HOST, `applications/${slug}`));
           }
         }
         return Promise.resolve();

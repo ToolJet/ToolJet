@@ -86,7 +86,7 @@ export const Card = ({
                 type="btn btn-sm btn-danger"
                 onClick={() => removeCardHandler(keyIndex, index)}
               >
-                <img className="mx-1" src={`/assets/images/icons/trash.svg`} width={12} height={12} />
+                <img className="mx-1" src={`assets/images/icons/trash.svg`} width={12} height={12} />
               </span>
             )}
             {eventPopoverOptions.show && (
