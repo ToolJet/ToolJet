@@ -56,7 +56,11 @@ export const Inspector = ({
 
   useEffect(() => {
     componentNameRef.current = newComponentName;
-  }, [newComponentName]);
+  }, [newComponentName, component.component.name]);
+
+  useEffect(() => {
+    setNewComponentName(component.component.name);
+  }, [component.component.name]);
 
   useEffect(() => {
     return () => {
@@ -89,7 +93,7 @@ export const Inspector = ({
     }
 
     if (validateQueryName(newName)) {
-      let newComponent = { ...component };
+      let newComponent = cloneDeep(component);
       newComponent.component.name = newName;
       componentDefinitionChanged(newComponent);
     } else {
