@@ -1630,7 +1630,7 @@ class Editor extends React.Component {
                 <div className="editor-actions col-md-12">
                   <div className="m-auto undo-redo-buttons">
                     <OverlayTrigger
-                      trigger={['hover']}
+                      trigger={['hover', 'focus']}
                       placement="top"
                       delay={{ show: 100, hide: 100 }}
                       overlay={<Tooltip id="button-tooltip">{'undo'}</Tooltip>}
@@ -1659,7 +1659,7 @@ class Editor extends React.Component {
                       </svg>
                     </OverlayTrigger>
                     <OverlayTrigger
-                      trigger={['hover']}
+                      trigger={['hover', 'focus']}
                       placement="top"
                       delay={{ show: 100, hide: 100 }}
                       overlay={<Tooltip id="button-tooltip">{'redo'}</Tooltip>}
