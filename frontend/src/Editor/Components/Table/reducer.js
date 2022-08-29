@@ -7,13 +7,8 @@ export const initialState = () => ({
   },
 });
 
-const mergeToState = (payload) => ({
-  type: 'MERGE',
-  payload,
-});
-
-const set = (payload) => ({
-  type: 'SET',
+const mergeToTableDetails = (payload) => ({
+  type: 'MERGE_TO_TABLE_DETAILS',
   payload,
 });
 
@@ -23,16 +18,13 @@ const mergeToFilterDetails = (payload) => ({
 });
 
 export const reducerActions = {
-  setColumnProperties: (columnProperties) => mergeToState({ columnProperties }),
-  setSelectedRowId: (selectedRowId) => mergeToState({ selectedRowId }),
-  setSelectedRowData: (selectedRowData) => mergeToState({ selectedRowData }),
-  set,
   mergeToFilterDetails,
+  mergeToTableDetails,
 };
 
 export const reducer = (state, action) => {
   switch (action.type) {
-    case 'MERGE':
+    case 'MERGE_TO_TABLE_DETAILS':
       return {
         ...state,
         ...action.payload,

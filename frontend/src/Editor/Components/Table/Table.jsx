@@ -73,16 +73,20 @@ export function Table({
 
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
 
-  useEffect(() => {
-    dispatch(reducerActions.set({ columnProperties: component?.definition?.properties?.columns?.value }));
-  }, [component?.definition?.properties]);
+  const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
+  const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
+
+  useEffect(
+    () => mergeToTableDetails({ columnProperties: component?.definition?.properties?.columns?.value }),
+    [component?.definition?.properties]
+  );
 
   function showFilters() {
-    dispatch(reducerActions.mergeToFilterDetails({ filtersVisible: true }));
+    mergeToFilterDetails({ filtersVisible: true });
   }
 
   function hideFilters() {
-    dispatch(reducerActions.mergeToFilterDetails({ filtersVisible: false }));
+    mergeToFilterDetails({ filtersVisible: false });
   }
 
   const defaultColumn = React.useMemo(
@@ -114,7 +118,7 @@ export function Table({
       [index]: { ...obj },
     };
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
-    dispatch(reducerActions.set(changesToBeSavedAndExposed));
+    mergeToFilterDetails(changesToBeSavedAndExposed);
     return setExposedVariables(changesToBeSavedAndExposed);
   }
 
@@ -452,9 +456,9 @@ export function Table({
                     {...row.getRowProps()}
                     onClick={(e) => {
                       e.stopPropagation();
-                      dispatch(reducerActions.setSelectedRowId(row.id));
-                      dispatch(reducerActions.setSelectedRowData(row.original));
-                      setExposedVariables({ selectedRowId: row.id, selectedRow: row.original }).then(() => {
+                      const selectedRowDetails = { selectedRowId: row.id, selectedRowData: row.original };
+                      mergeToTableDetails(selectedRowDetails);
+                      setExposedVariables(selectedRowDetails).then(() => {
                         fireEvent('onRowClicked');
                       });
                     }}
@@ -574,7 +578,7 @@ export function Table({
           columns={columnData.map((column) => {
             return { name: column.Header, value: column.id };
           })}
-          dispatch={dispatch}
+          mergeToFilterDetails={mergeToFilterDetails}
           filterDetails={tableDetails.filterDetails}
           darkMode={darkMode}
           setAllFilters={setAllFilters}

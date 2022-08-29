@@ -1,14 +1,9 @@
 import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
-import { reducerActions } from './reducer';
 
 export function Filter(props) {
-  const { dispatch, filterDetails, setAllFilters } = props;
+  const { mergeToFilterDetails, filterDetails, setAllFilters } = props;
   const { filters } = filterDetails;
-
-  const mergeToFilterDetails = (newDetails) => {
-    dispatch(reducerActions.mergeToFilterDetails(newDetails));
-  };
 
   function filterColumnChanged(index, value) {
     const newFilters = filters;
