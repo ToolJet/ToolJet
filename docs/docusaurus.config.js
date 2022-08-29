@@ -1,3 +1,5 @@
+const devServerPlugin = require('./src/plugins/devServer/index.js');
+
 const isProd = process.env.NODE_ENV === 'production';
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
@@ -128,5 +130,8 @@ module.exports = {
           : undefined,
       },
     ],
+  ],
+  plugins: [
+    devServerPlugin,
   ],
 };
