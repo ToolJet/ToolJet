@@ -13,8 +13,9 @@ export const Container = function Container({
   darkMode,
 }) {
   const { visibility, disabledState, borderRadius } = styles;
+  console.log(styles.backgroundColor);
   const backgroundColor =
-    ['#fff', '#ffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
+    ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const computedStyles = {
     backgroundColor,
     height,
