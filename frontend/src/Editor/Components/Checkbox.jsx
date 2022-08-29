@@ -15,7 +15,7 @@ export const Checkbox = function Checkbox({
   const { label } = properties;
   const { visibility, disabledState, checkboxColor } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
-  console.log(textColor, 'textColor');
+
   function toggleValue(e) {
     const isChecked = e.target.checked;
     setChecked(isChecked);
