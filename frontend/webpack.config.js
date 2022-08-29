@@ -13,6 +13,10 @@ const API_URL = {
 
 const ASSET_PATH = process.env.ASSET_PATH || '';
 
+function stripTrailingSlash(str) {
+  return str.replace(/[/]+$/, '');
+}
+
 module.exports = {
   mode: environment,
   optimization: {
@@ -138,7 +142,7 @@ module.exports = {
   externals: {
     // global app config object
     config: JSON.stringify({
-      apiUrl: `${API_URL[environment] || ''}/api`,
+      apiUrl: `${stripTrailingSlash(API_URL[environment]) || ''}/api`,
       SERVER_IP: process.env.SERVER_IP,
       COMMENT_FEATURE_ENABLE: true,
       ENABLE_MULTIPLAYER_EDITING: true,
