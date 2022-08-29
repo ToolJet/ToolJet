@@ -206,6 +206,7 @@ class Table extends React.Component {
             <div className="field mb-2">
               <label className="form-label">Overflow</label>
               <SelectSearch
+                className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                 options={[
                   { name: 'Wrap', value: 'wrap' },
                   { name: 'Scroll', value: 'scroll' },
