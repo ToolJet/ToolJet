@@ -84,7 +84,6 @@ export const Datepicker = function Datepicker({
       style={{
         height,
         display: visibility ? '' : 'none',
-        borderRadius: `${borderRadius}px`,
       }}
     >
       <DatePickerComponent
@@ -103,6 +102,7 @@ export const Datepicker = function Datepicker({
         showYearDropdown
         dropdownMode="select"
         excludeDates={excludedDates}
+        customInput={<input style={{ borderRadius: `${borderRadius}px` }} />}
       />
 
       <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
