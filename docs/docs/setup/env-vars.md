@@ -97,7 +97,7 @@ You can set `SERVE_CLIENT` to `false` to disable this behaviour.
 #### Serve client at subpath
 
 If ToolJet is hosted on a domain subpath, you can set the environment variable `SUB_PATH` to support it.
-Please not the subpath is to be set with trailing `/` and is applicable only when the server is serving the frontend client.
+Please note the subpath is to be set with trailing `/` and is applicable only when the server is serving the frontend client.
 
 #### SMTP configuration ( optional )
 
