@@ -1629,51 +1629,63 @@ class Editor extends React.Component {
               <div className="editor-sidebar">
                 <div className="editor-actions col-md-12">
                   <div className="m-auto undo-redo-buttons">
-                    <svg
-                      onClick={this.handleUndo}
-                      xmlns="http://www.w3.org/2000/svg"
-                      className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-back-up', {
-                        disabled: !this.canUndo,
-                      })}
-                      width="44"
-                      data-tip="undo"
-                      height="44"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                    <OverlayTrigger
+                      trigger={['hover']}
+                      placement="top"
+                      delay={{ show: 100, hide: 100 }}
+                      overlay={<Tooltip id="button-tooltip">{'undo'}</Tooltip>}
                     >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none">
-                        <title>undo</title>
-                      </path>
-                      <path d="M9 13l-4 -4l4 -4m-4 4h11a4 4 0 0 1 0 8h-1" fill="none">
-                        <title>undo</title>
-                      </path>
-                    </svg>
-                    <svg
-                      title="redo"
-                      data-tip="redo"
-                      onClick={this.handleRedo}
-                      xmlns="http://www.w3.org/2000/svg"
-                      className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
-                        disabled: !this.canRedo,
-                      })}
-                      width="44"
-                      height="44"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                      <svg
+                        onClick={this.handleUndo}
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-back-up', {
+                          disabled: !this.canUndo,
+                        })}
+                        width="44"
+                        height="44"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none">
+                          <title>undo</title>
+                        </path>
+                        <path d="M9 13l-4 -4l4 -4m-4 4h11a4 4 0 0 1 0 8h-1" fill="none">
+                          <title>undo</title>
+                        </path>
+                      </svg>
+                    </OverlayTrigger>
+                    <OverlayTrigger
+                      trigger={['hover']}
+                      placement="top"
+                      delay={{ show: 100, hide: 100 }}
+                      overlay={<Tooltip id="button-tooltip">{'redo'}</Tooltip>}
                     >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none">
-                        <title>redo</title>
-                      </path>
-                      <path d="M15 13l4 -4l-4 -4m4 4h-11a4 4 0 0 0 0 8h1" />
-                    </svg>
+                      <svg
+                        title="redo"
+                        onClick={this.handleRedo}
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={cx('cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
+                          disabled: !this.canRedo,
+                        })}
+                        width="44"
+                        height="44"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke={this.props.darkMode ? '#fff' : '#2c3e50'}
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none">
+                          <title>redo</title>
+                        </path>
+                        <path d="M15 13l4 -4l-4 -4m4 4h-11a4 4 0 0 0 0 8h1" />
+                      </svg>
+                    </OverlayTrigger>
                   </div>
                   <div className="layout-buttons cursor-pointer">
                     {this.renderLayoutIcon(currentLayout === 'desktop')}
