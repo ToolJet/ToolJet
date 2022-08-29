@@ -14,7 +14,7 @@ const API_URL = {
 const ASSET_PATH = process.env.ASSET_PATH || '';
 
 function stripTrailingSlash(str) {
-  return str.replace(/[\/]+$/, '')
+  return str.replace(/[/]+$/, '');
 }
 
 module.exports = {
