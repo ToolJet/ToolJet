@@ -3,9 +3,9 @@ set -e
 
 if [ -d "./server/dist" ]
 then
-    npm run db:setup:prod
+    ./scripts/wait-for-it.sh $PG_HOST:$PG_PORT --strict --timeout=300 -- npm run db:setup:prod
 else
-    npm run db:setup
+    ./scripts/wait-for-it.sh $PG_HOST:$PG_PORT --strict --timeout=300 -- npm run db:setup
 fi
 
 exec "$@"
