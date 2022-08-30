@@ -33,7 +33,10 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
-  app.setGlobalPrefix('api');
+
+  const UrlPrefix = process.env.SUB_PATH === undefined ? '' : process.env.SUB_PATH;
+
+  app.setGlobalPrefix(UrlPrefix + 'api');
   app.enableCors({
     origin: true,
     credentials: true,

@@ -116,6 +116,7 @@ if (process.env.SERVE_CLIENT !== 'false') {
 
   imports.unshift(
     ServeStaticModule.forRoot({
+      serveRoot: process.env.SUB_PATH === undefined ? '' : process.env.SUB_PATH,
       rootPath: join(__dirname, '../../../', 'frontend/build'),
     })
   );
