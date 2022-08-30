@@ -20,6 +20,13 @@
       "port": { "type": "string" },
       "database": { "type": "string" },
       "format": { "type": "string" },
+      "protocol": { "type": "string" },
+      "usePost": { "type": "string" },
+      "isUseGzip": { "type": "string" },
+      "session_id": { "type": "string" },
+      "session_timeout": { "type": "string" },
+      "debug": { "type": "string" },
+      "raw": { "type": "string" },
       "protocol": { "type": "string" }
     }
   },
@@ -46,7 +53,7 @@
       "label": "Port",
       "key": "port",
       "type": "text",
-      "description": "5984"
+      "description": "8123"
     },
     "database": {
       "label": "Database Name",
@@ -90,6 +97,48 @@
         }
       ],
       "description": "Enter protocol"
+    },
+    "usePost": {
+      "label": "Use Post",
+      "key": "usePost",
+      "type": "text",
+      "description": "Enter true/false"
+    },
+    "trimQuery": {
+      "label": "Trim Query",
+      "key": "trimQuery",
+      "type": "text",
+      "description": "Enter true/false"
+    },
+    "isUseGzip": {
+      "label": "Use Gzip",
+      "key": "isUseGzip",
+      "type": "text",
+      "description": "Enter true/false"
+    },
+    "session_id": {
+      "label": "Session ID",
+      "key": "session_id",
+      "type": "text",
+      "description": "Enter session id"
+    },
+    "session_timeout": {
+      "label": "Session timeout",
+      "key": "session_timeout",
+      "type": "text",
+      "description": "Enter session timeout"
+    },
+    "debug": {
+      "label": "Debug",
+      "key": "debug",
+      "type": "text",
+      "description": "Enter true/false"
+    },
+    "raw": {
+      "label": "Raw",
+      "key": "raw",
+      "type": "text",
+      "description": "Enter true/false"
     }
   },
   "required": ["port", "host", "protocol"]

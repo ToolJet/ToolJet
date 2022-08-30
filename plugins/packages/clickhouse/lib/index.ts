@@ -1,17 +1,34 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 const { ClickHouse } = require('clickhouse');
+const JSON5 = require('json5');
 
 export default class Click implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    const { query } = queryOptions;
-
+    const { query, operation, fields } = queryOptions;
+    // const { database } = sourceOptions;
     let result = {};
     const clickhouseClient = await this.getConnection(sourceOptions);
 
     try {
-      result = await clickhouseClient.query(query).toPromise();
-      console.log('data is', result);
+      switch (operation) {
+        case 'sql': {
+          result = await clickhouseClient.query(query).toPromise();
+          break;
+        }
+        case 'insert': {
+          console.log('entry', this.parseJSON(query), fields);
+          result = await clickhouseClient
+            .insert(
+              `insert into test_array (date, str, arr, arr2, 
+              arr3, id1)`,
+              this.parseJSON(query)
+            )
+            .toPromise();
+
+          break;
+        }
+      }
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
     }
@@ -21,27 +38,7 @@ export default class Click implements QueryService {
     };
   }
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const { port, host, protocol, database, username, password, format } = sourceOptions;
-
-    const clickhouse = new ClickHouse({
-      url: `${protocol}://${host}`,
-      port: port,
-      debug: false,
-      basicAuth: {
-        username: `${username ? username : 'default'}`,
-        password: `${password ? password : ' '}`,
-      },
-      isUseGzip: false,
-      trimQuery: false,
-      usePost: false,
-      format: `${format ? format : 'json'}`, // "json" || "csv" || "tsv"
-      raw: false,
-      config: {
-        output_format_json_quote_64bit_integers: 0,
-        enable_http_compression: 0,
-        database: `${database}`,
-      },
-    });
+    const clickhouse = await this.getConnection(sourceOptions);
     const query = 'SHOW DATABASES';
     clickhouse.query(query).toPromise();
 
@@ -50,27 +47,50 @@ export default class Click implements QueryService {
     };
   }
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const { port, host, protocol, database, username, password, format } = sourceOptions;
+    const {
+      port,
+      host,
+      protocol,
+      database,
+      username,
+      password,
+      format,
+      usePost,
+      trimQuery,
+      isUseGzip,
+      session_id,
+      session_timeout,
+      debug,
+      raw,
+    } = sourceOptions;
 
     const clickhouse = new ClickHouse({
       url: `${protocol}://${host}`,
-      port: port,
-      debug: false,
-      basicAuth: {
-        username: `${username ? username : 'default'}`,
-        password: `${password ? password : ' '}`,
-      },
-      isUseGzip: false,
-      trimQuery: false,
-      usePost: false,
+      port: port ? port : 8123,
+      debug: debug ? debug : false,
+      basicAuth:
+        username?.length > 0 && password?.length > 0
+          ? { username: username ? username : 'default', password: password ? password : ' ' }
+          : 'null',
+      isUseGzip: isUseGzip ? isUseGzip : false,
+      trimQuery: trimQuery ? trimQuery : false,
+      usePost: usePost ? usePost : false,
       format: `${format ? format : 'json'}`, // "json" || "csv" || "tsv"
-      raw: false,
+      raw: raw ? raw : false,
       config: {
+        ...(session_id?.length > 0 && { session_id: session_id }),
+        session_timeout: session_timeout ? session_timeout : 60,
         output_format_json_quote_64bit_integers: 0,
         enable_http_compression: 0,
-        database: `${database}`,
+        ...(database?.length > 0 && { database: database }),
       },
     });
     return clickhouse;
+  }
+
+  private parseJSON(json?: string): object {
+    if (!json) return {};
+
+    return JSON5.parse(json);
   }
 }
