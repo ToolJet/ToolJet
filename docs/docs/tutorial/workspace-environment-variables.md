@@ -16,13 +16,9 @@ Suppose there is an `API key` or a value that you want to use in the queries or 
 - Give a `Name` to the variable, set the value, choose `Type`, toggle `Encryption`, and click **Add Variable** button
 - Now this variable can be used inside any application of this Workspace
 
-<div style={{textAlign: 'center'}}>
 
+<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/add-variable.gif" alt="add variable" />
 
-<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/add-variable.gif" />
-
-
-</div>
 
 ### Types of variables
 
@@ -34,13 +30,8 @@ Suppose there is an `API key` or a value that you want to use in the queries or 
 Variable Type cannot be changed once it has beed created.
 :::
 
-<div style={{textAlign: 'center'}}>
 
-
-<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/variable-type.png" />
-
-
-</div>
+<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/variable-type.png" alt="variable-type" />
 
 ### Encryption
 
@@ -54,19 +45,10 @@ So, the syntax for using the variable that we created before will be `%%client.p
 
 **Example for client variable usage:**
 
-<div style={{textAlign: 'center'}}>
 
+<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/variable-usage.png" alt="variable-usage" />
 
-<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/variable-usage.png" />
-
-
-</div>
 
 **Example for server variable usage:**
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/server-variable-usage.png" />
-
-
-</div>
+<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/server-variable-usage.png"  alt="server-variable-usage" />

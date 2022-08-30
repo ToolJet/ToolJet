@@ -21,24 +21,17 @@ ToolJet requires the following to connect to your Athena.
 You can also configure for **[additional optional parameters](https://github.com/ghdna/athena-express)**.
 :::
 
-<div style={{textAlign: 'center'}}>
 
+<img className="screenshot-full" src="/img/datasource-reference/athena/athena-connection.png" alt="Athena connection" />
 
-<img className="screenshot-full" src="/img/datasource-reference/athena/athena-connection.png" />
-
-
-</div>
 
 ## Querying Amazon Athena
 
 - Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the datasource. Query manager then can be used to write SQL queries.
 
-<div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/athena/athena-query.png" />
+<img className="screenshot-full" src="/img/datasource-reference/athena/athena-query.png" alt="Athena query" />
 
-
-</div>
 
 - Click on the `run` button to run the query. 
 

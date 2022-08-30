@@ -8,14 +8,9 @@ title: Airtable
 
 ToolJet can connect to your Airtable account to read and write data. **Airtable API key** is required to create an Airtable data source on ToolJet. You can generate API key by visiting [Airtable account page](https://airtable.com/account). 
 
-<div style={{textAlign: 'center'}}>
 
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtableds.gif" alt="irtable record"/>
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtableds.gif" />
-
-
-
-</div>
 
 :::info
 Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here **[Airtable API]( https://airtable.com/api )**.
@@ -47,12 +42,9 @@ This query lists all the records in a table. The results are paginated and each 
 - **Page size:** The number of records returned in each request. Must be less than or equal to 100. Default is 100.
 - **offset:** If there are more records, the response will contain an offset. To fetch the next page of records, include offset in the next request's parameters.
 
-<div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_list.png" />
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_list.png"  alt="List airtable record" />
 
-
-</div>
 
 Example response from Airtable: 
 
@@ -96,13 +88,9 @@ Example response from Airtable:
 - **Table name** 
 - **Record ID**
 
-<div style={{textAlign: 'center'}}>
 
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_retrieve.png"  alt="Retrieve airtable record" />
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_retrieve.png" />
-
-
-</div>
 
 Example response from Airtable: 
 
@@ -124,13 +112,8 @@ Example response from Airtable:
 - **Table name**
 - **Records**
 
-<div style={{textAlign: 'center'}}>
 
-
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_create.png" />
-
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_create.png" alt="Create airtable record" />
 
 #### Example Records:
 
@@ -191,22 +174,17 @@ Example response from Airtable:
 - **Table name**
 - **Record ID**
 
-<div style={{textAlign: 'center'}}>
 
-
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_update.png" />
-
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_update.png" alt="Update airtable record"/>
 
 #### Example body:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable-update-example-body.png" />
-
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable-update-example-body.png" alt="Airtable update body" />
 
 </div>
+
 
 Click on the `run` button to run the query.
 
@@ -233,12 +211,7 @@ Example response from Airtable:
 - **Table name**
 - **Record ID**
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_delete.png" />
-
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/airtable/airtable_delee.png" alt="Delete airtable record" />
 
 
 Click on the `run` button to run the query.

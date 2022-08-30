@@ -50,12 +50,9 @@ For generating API Token visit [InfluxDB docs](https://docs.influxdata.com/influ
 
 - [Delete a bucket](#delete-a-bucket)
 
-<div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/influxdb/operations.png" />
+<img className="screenshot-full" src="/img/datasource-reference/influxdb/operations.png" alt="influx operations" />
 
-
-</div>
 
 ### Write data 
 

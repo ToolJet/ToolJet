@@ -9,7 +9,7 @@ User can create their own workspaces, user who created workspace will be having 
 
 
 
-<img className="screenshot-full" src="/img/multiworkspace/multi-workspace.gif" />
+<img className="screenshot-full" src="/img/multiworkspace/multi-workspace.gif" alt="multi workspace" />
 
 
 ## Hierarchy
@@ -17,7 +17,7 @@ User can create their own workspaces, user who created workspace will be having 
 <div style={{textAlign: 'center'}}>
 
 
-<img className="screenshot-full" src="/img/multiworkspace/Tooljet-workspace.png" />
+<img className="screenshot-full" src="/img/multiworkspace/Tooljet-workspace.png" alt="tooljet workspace" />
 
 
 </div>
