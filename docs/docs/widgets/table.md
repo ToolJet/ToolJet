@@ -15,16 +15,16 @@ Array of objects to be displayed on the table. It is commonly used to display da
 ### Cell data types
 
 You can define the cell types as per your table's data source using the following:
- 
-- <b>Text</b>: This is the default value that is used to display data of type `string`,
-- <b>Badge</b>: It can be used to display data with badges for e.g status of a shipment,
-- <b>Multiple badges</b>: Used to display multiple predefined badges,
-- <b>Tags</b>: Similar to badges but the values are not predefined,
-- <b>Dropdown</b>: When data is in the form of an array of options to be selected,
-- <b>Radio</b>: When data is displayed in the form of boolean,
-- <b>Multiselect dropdown</b>: Similar to dropdown but to display multiple selects,
-- <b>Toggle switch</b>: Again, this can be used to display data as boolean,
-- <b>Date picker</b>: Allowing users to display and select dates
+
+- <b>String | Default</b>: It is used to render the data for cell types: <i>text or textarea</i>,
+- <b>Badge</b>: It is a labeling component used to display data with badges for e.g <b><i>status of a shipment</i></b>
+- <b>Multiple badges</b>: Similar to badge, used to display multiple data badges in the form of array of objects,
+- <b>Tags</b>: Used to display an array of objects in the form of tags, e.g <b><i>status, levels, steps</i></b>
+- <b>Dropdown</b>: When data is in the form of an array of options to be selected, e.g <b><i>select priority</i></b>
+- <b>Radio</b>: Used to make a selection from a group of options, e.g <b><i>select your salary-range</i></b>
+- <b>Multiselect</b>: Similar to dropdown but to collect multiple user inputs from a list of options,
+- <b>Toggle switch</b>: Allows a user to change a setting between two states, e.g <b><i>select between Yes/No</i></b>,
+- <b>Date picker</b>: Allowing users to display and select dates, e.g <b><i>delivery date</i></b>
 
 ### Displaying Data
 
