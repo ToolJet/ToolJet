@@ -247,7 +247,8 @@ export default class RestapiQueryService implements QueryService {
     const clientId = sourceOptions['client_id'];
     const clientSecret = sourceOptions['client_secret'];
     const grantType = 'refresh_token';
-    const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['headers']);
+    const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['access_token_custom_headers']);
+    const customAccessTokenHeaders = sanitizeCustomParams(sourceOptions['access_token_custom_headers']);
 
     const data = {
       client_id: clientId,
@@ -263,6 +264,7 @@ export default class RestapiQueryService implements QueryService {
         method: 'post',
         headers: {
           'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
+          ...customAccessTokenHeaders,
         },
         form: isUrlEncoded ? data : undefined,
         json: !isUrlEncoded ? data : undefined,
