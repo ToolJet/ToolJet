@@ -6105,3 +6105,23 @@ input.hide-input-arrows{
     }
   }
 }
+
+.link-widget{
+  &.hover{
+    a{
+      &:hover{
+        text-decoration: underline;
+      }
+    }
+  }
+  &.no-underline{
+    a{
+      text-decoration: none !important;
+    }
+  }
+  &.underline{
+    a{
+      text-decoration: underline;
+    }
+  }
+}
