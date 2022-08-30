@@ -9,6 +9,7 @@ import {
   Post,
   Request,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
 import { decamelizeKeys } from 'humps';
@@ -32,9 +33,32 @@ export class OrganizationsController {
 
   @UseGuards(JwtAuthGuard)
   @Get('users')
-  async getUsers(@Request() req) {
-    const result = await this.organizationsService.fetchUsers(req.user);
-    return decamelizeKeys({ users: result });
+  async getUsers(@Request() req, @Query() query) {
+    const page = query.page;
+
+    const email = query.email;
+    const firstName = query.first_name;
+    const lastName = query.last_name;
+    const filterOptions = {};
+    if (email) filterOptions['email'] = email;
+    if (firstName) filterOptions['firstName'] = email;
+    if (lastName) filterOptions['lastName'] = email;
+
+    const users = await this.organizationsService.fetchUsers(req.user, page, filterOptions);
+    const usersCount = await this.organizationsService.usersCount(req.user);
+
+    const meta = {
+      total_pages: Math.ceil(usersCount / 10),
+      total_count: usersCount,
+      current_page: parseInt(page || 1),
+    };
+
+    const response = {
+      meta,
+      users,
+    };
+
+    return decamelizeKeys(response);
   }
 
   @UseGuards(JwtAuthGuard)

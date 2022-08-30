@@ -112,10 +112,12 @@ export class OrganizationsService {
     }, manager);
   }
 
-  async fetchUsers(user: any): Promise<FetchUserResponse[]> {
+  async fetchUsers(user: any, page: number, options: any): Promise<FetchUserResponse[]> {
     const organizationUsers = await this.organizationUsersRepository.find({
-      where: { organizationId: user.organizationId },
+      where: { organizationId: user.organizationId, user: options },
       relations: ['user'],
+      take: page ? 2 : undefined,
+      skip: page ? 2 * (page - 1) : undefined,
     });
 
     const isAdmin = await this.usersService.hasGroup(user, 'admin');
@@ -137,6 +139,13 @@ export class OrganizationsService {
           ? { accountSetupToken: orgUser.user.invitationToken }
           : {}),
       };
+    });
+  }
+
+  async usersCount(user: any): Promise<number> {
+    return await this.organizationUsersRepository.count({
+      where: { organizationId: user.organizationId },
+      relations: ['user'],
     });
   }
 
