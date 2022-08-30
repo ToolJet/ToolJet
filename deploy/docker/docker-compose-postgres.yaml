@@ -36,6 +36,7 @@ services:
   postgres:
     image: postgres:13
     restart: always
+    user: root
     ports:
       - 5432:5432
     volumes:
