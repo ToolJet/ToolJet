@@ -181,7 +181,7 @@ export const AppVersionsManager = function AppVersionsManager({
         }}
       >
         <span className={`${releasedVersionId === editingAppVersion.id ? 'released' : ''}`}>
-          {releasedVersionId === editingAppVersion.id && <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />}
+          {releasedVersionId === editingAppVersion.id && <img src={'assets/images/icons/editor/deploy-rocket.svg'} />}
           <span className="px-1">{editingAppVersion.name}</span>
         </span>
         {showDropDown && (
@@ -198,7 +198,7 @@ export const AppVersionsManager = function AppVersionsManager({
                       >
                         <div className="col-md-4">{version.name}</div>
                         <div className="released-subtext">
-                          <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
+                          <img src={'assets/images/icons/editor/deploy-rocket.svg'} />
                           <span className="px-1">Currently Released</span>
                         </div>
                       </div>
@@ -229,7 +229,7 @@ export const AppVersionsManager = function AppVersionsManager({
                             }}
                           >
                             <img
-                              src="/assets/images/icons/edit.svg"
+                              src="assets/images/icons/edit.svg"
                               width="12"
                               height="12"
                               className="mx-1"
@@ -250,7 +250,7 @@ export const AppVersionsManager = function AppVersionsManager({
                             }}
                           >
                             <img
-                              src="/assets/images/icons/query-trash-icon.svg"
+                              src="assets/images/icons/query-trash-icon.svg"
                               width="12"
                               height="12"
                               className="mx-1"
@@ -423,7 +423,7 @@ const CreateVersionModal = function CreateVersionModal({
               <div className="row py-3">
                 <div className="col-1 py-2">
                   <span className="pe-1">
-                    <img src={'/assets/images/icons/editor/bulb-sharp.svg'} />
+                    <img src={'assets/images/icons/editor/bulb-sharp.svg'} />
                   </span>
                 </div>
                 <div className="col">

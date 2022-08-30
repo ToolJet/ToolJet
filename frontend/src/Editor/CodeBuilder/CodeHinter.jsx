@@ -371,7 +371,7 @@ const PopupIcon = ({ callback, icon, tip }) => {
       >
         <img
           className="svg-icon m-2 popup-btn"
-          src={`/assets/images/icons/${icon}.svg`}
+          src={`assets/images/icons/${icon}.svg`}
           width="12"
           height="12"
           onClick={(e) => {

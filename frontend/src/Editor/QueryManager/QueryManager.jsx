@@ -694,8 +694,7 @@ let QueryManager = class QueryManager extends React.Component {
                           currentState={this.props.currentState}
                           initialValue={this.state.options.successMessage}
                           height="36px"
-                          className="form-control"
-                          theme={'default'}
+                          theme={this.props.darkMode ? 'monokai' : 'default'}
                           onChange={(value) => this.optionchanged('successMessage', value)}
                           placeholder="Query ran successfully"
                         />
