@@ -4,7 +4,7 @@ import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ReactTooltip from 'react-tooltip';
-
+import urlJoin from 'url-join';
 class ManageOrgUsers extends React.Component {
   constructor(props) {
     super(props);
@@ -160,9 +160,12 @@ class ManageOrgUsers extends React.Component {
 
   generateInvitationURL = (user) => {
     if (user.account_setup_token) {
-      return `${window.location.origin}/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}?oid=${this.state.currentUser.organization_id}`;
+      return urlJoin(
+        window.public_config?.TOOLJET_HOST,
+        `/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}?oid=${this.state.currentUser.organization_id}`
+      );
     }
-    return `${window.location.origin}/organization-invitations/${user.invitation_token}`;
+    return urlJoin(window.public_config?.TOOLJET_HOST, `/organization-invitations/${user.invitation_token}`);
   };
 
   invitationLinkCopyHandler = () => {
@@ -389,7 +392,7 @@ class ManageOrgUsers extends React.Component {
                                     <img
                                       data-tip="Copy invitation link"
                                       className="svg-icon"
-                                      src="/assets/images/icons/copy.svg"
+                                      src="assets/images/icons/copy.svg"
                                       width="15"
                                       height="15"
                                       style={{
