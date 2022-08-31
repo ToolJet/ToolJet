@@ -203,6 +203,7 @@ const sidebars = {
       label: 'Enterprise',
       items: [
         'Enterprise/audit_logs',
+        'Enterprise/white-label',
       ]
     },
     {
