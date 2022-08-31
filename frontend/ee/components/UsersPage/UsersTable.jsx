@@ -22,6 +22,19 @@ const UsersTable = ({
     return window.innerHeight - elementHeight;
   }
 
+  const setWidth = () =>
+    (document.querySelector('.users-pagination').style.width = `${tableRef.current.offsetWidth}px`);
+
+  React.useEffect(() => {
+    window.addEventListener('resize', setWidth);
+    return () => window.removeEventListener('resize', setWidth);
+  });
+
+  React.useEffect(() => {
+    setWidth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tableRef]);
+
   return (
     <div className="container-xl">
       <div className="card">
