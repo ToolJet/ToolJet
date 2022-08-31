@@ -110,11 +110,15 @@ class SignupPage extends React.Component {
                     {this.ssoConfigs.configs?.openid?.enabled && (
                       <OidcSSOLoginButton text="Sign up with" configs={this.ssoConfigs.configs?.openid?.configs} />
                     )}
-                    <div className="mt-2 separator">
-                      <h2>
-                        <span>OR</span>
-                      </h2>
-                    </div>
+                    {(this.ssoConfigs.configs?.git?.enabled ||
+                      this.ssoConfigs.configs?.google?.enabled ||
+                      this.ssoConfigs.configs?.openid?.enabled) && (
+                      <div className="mt-2 separator">
+                        <h2>
+                          <span>OR</span>
+                        </h2>
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="mb-3">
