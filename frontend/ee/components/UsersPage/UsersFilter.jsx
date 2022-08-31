@@ -1,11 +1,16 @@
 import React from 'react';
 
-const UsersFilter = ({ filterList, darkMode }) => {
+const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
   const [options, setOptions] = React.useState({ email: '', firstName: '', lastName: '' });
 
   const valuesChanged = (event) => {
     const newOptions = { ...options, [event.target.name]: event.target.value };
     setOptions(newOptions);
+  };
+
+  const clearTextAndResult = () => {
+    setOptions({ email: '', firstName: '', lastName: '' });
+    clearIconPressed();
   };
 
   return (
@@ -45,11 +50,7 @@ const UsersFilter = ({ filterList, darkMode }) => {
           <button type="submit" className="btn btn-primary" onClick={() => filterList(options)}>
             Filter
           </button>
-          <div
-            className="d-flex align-items-center"
-            style={{ cursor: 'pointer' }}
-            onClick={() => setOptions({ email: '', firstName: '', lastName: '' })}
-          >
+          <div className="d-flex align-items-center" style={{ cursor: 'pointer' }} onClick={clearTextAndResult}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon icon-tabler icon-tabler-x"

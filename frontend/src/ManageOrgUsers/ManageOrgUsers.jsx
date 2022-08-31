@@ -306,7 +306,13 @@ class ManageOrgUsers extends React.Component {
               </div>
             )}
 
-            {!showNewUserForm && <UsersFilter filterList={this.filterList} darkMode={this.props.darkMode} />}
+            {!showNewUserForm && (
+              <UsersFilter
+                filterList={this.filterList}
+                darkMode={this.props.darkMode}
+                clearIconPressed={() => this.fetchUsers()}
+              />
+            )}
 
             {!showNewUserForm && (
               <UsersTable
