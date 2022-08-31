@@ -6,10 +6,6 @@
     "@react-google-maps/api": "^2.1.1",
     "@sentry/react": "^6.17.6",
     "@sentry/tracing": "^6.17.6",
-    "@svgr/webpack": "^5.5.0",
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.5.0",
-    "@testing-library/user-event": "^7.2.1",
     "@tooljet/plugins": "../plugins",
     "@uiw/react-codemirror": "^3.0.6",
     "@y-presence/react": "^2.0.0",
@@ -17,8 +13,6 @@
     "axios": "^0.24.0",
     "bootstrap": "^4.6.0",
     "classnames": "^2.3.1",
-    "compression-webpack-plugin": "^10.0.0",
-    "css-loader": "^6.5.1",
     "date-fns": "^2.28.0",
     "dompurify": "^2.2.7",
     "draft-js": "^0.11.7",
@@ -119,7 +113,11 @@
     "terser-webpack-plugin": "^5.3.4",
     "webpack": "^5.55.1",
     "webpack-cli": "^4.8.0",
-    "webpack-dev-server": "^4.7.4"
+    "webpack-dev-server": "^4.7.4",
+    "@svgr/webpack": "^5.5.0",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^7.2.1"
   },
   "scripts": {
     "start": "webpack serve --port 8082 --host 0.0.0.0",
