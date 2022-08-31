@@ -6097,3 +6097,19 @@ input.hide-input-arrows{
   position: fixed;
   bottom: 2rem;
 }
+
+@media (min-width: 1025px) and (max-width: 1280px){
+  .users-pagination {
+    position: fixed;
+    bottom: 2rem;
+    width:89.5%;
+  }
+}
+
+@media (min-width: 1281px) {
+  .users-pagination {
+    position: fixed;
+    bottom: 2rem;
+    width:66.8%;
+  }
+}
