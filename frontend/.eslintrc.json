@@ -17,7 +17,7 @@
   "parserOptions": {
     "requireConfigFile": false,
     "babelOptions": {
-      "presets": ["@babel/preset-react"]
+      "configFile": "./frontend/babel.config.js"
     },
     "ecmaFeatures": {
       "jsx": true
