@@ -11,9 +11,9 @@ export const organizationService = {
   editOrganizationConfigs,
 };
 
-function getUsers() {
+function getUsers(page) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/organizations/users`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/organizations/users?page=${page}`, requestOptions).then(handleResponse);
 }
 
 function createOrganization(name) {
