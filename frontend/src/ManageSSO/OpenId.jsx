@@ -118,7 +118,7 @@ export function OpenId({ settings, updateData }) {
             <label className="form-label">
               Client Secret
               <small className="text-green mx-2">
-                <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+                <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
                 Encrypted
               </small>
             </label>
@@ -147,7 +147,7 @@ export function OpenId({ settings, updateData }) {
           {configId && (
             <div className="form-group mb-3">
               <label className="form-label">Redirect URL</label>
-              <div>{`${window.location.protocol}//${window.location.host}/sso/openid/${configId}`}</div>
+              <div>{`${window.public_config?.TOOLJET_HOST}/sso/openid/${configId}`}</div>
             </div>
           )}
           <div className="form-footer">

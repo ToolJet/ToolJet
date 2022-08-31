@@ -63,7 +63,7 @@ class App extends React.Component {
       link.rel = 'icon';
       document.getElementsByTagName('head')[0].appendChild(link);
     }
-    link.href = favicon_url ? favicon_url : '/assets/images/logo.svg';
+    link.href = favicon_url ? favicon_url : 'assets/images/logo.svg';
     document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
 
