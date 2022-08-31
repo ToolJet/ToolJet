@@ -12,6 +12,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
 import { CustomComponent } from './Components/CustomComponent';
+import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 
@@ -282,6 +283,22 @@ export const Inspector = ({
       case 'CustomComponent':
         return (
           <CustomComponent
+            layoutPropertyChanged={layoutPropertyChanged}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            darkMode={darkMode}
+            eventsChanged={eventsChanged}
+            apps={apps}
+            allComponents={allComponents}
+          />
+        );
+
+      case 'Icon':
+        return (
+          <Icon
             layoutPropertyChanged={layoutPropertyChanged}
             component={component}
             paramUpdated={paramUpdated}

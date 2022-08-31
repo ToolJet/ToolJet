@@ -4653,4 +4653,86 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
   },
+  {
+    name: 'Icon',
+    displayName: 'Icon',
+    description: 'Icon',
+    defaultSize: {
+      width: 5,
+      height: 48,
+    },
+    component: 'Icon',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      iconPicker: {
+        type: 'code',
+        displayName: 'Link Target',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+    },
+    events: {
+      onClick: { displayName: 'On click' },
+      onHover: { displayName: 'On hover' },
+    },
+    styles: {
+      iconColor: {
+        type: 'color',
+        displayName: 'Icon Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      iconSize: {
+        type: 'number',
+        displayName: 'Icon Size',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      iconAlign: {
+        type: 'alignButtons',
+        displayName: 'Align Icon',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        iconPicker: { value: 'https://dev.to/' },
+      },
+      events: [],
+      styles: {
+        iconColor: { value: '#375FCF' },
+        iconSize: { value: 14 },
+        iconAlign: { value: 'left' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];
