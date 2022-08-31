@@ -1,5 +1,5 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -136,7 +136,7 @@ export class DataQueriesService {
     return result;
   }
 
-  checkIfContentTypeIsURLenc(headers: []) {
+  checkIfContentTypeIsURLenc(headers: [] = []) {
     const objectHeaders = Object.fromEntries(headers);
     const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
     return contentType === 'application/x-www-form-urlencoded';
@@ -165,19 +165,34 @@ export class DataQueriesService {
       redirect_uri: `${tooljetHost}/oauth2/authorize`,
       ...customParams,
     };
+    try {
+      const response = await got(accessTokenUrl, {
+        method: 'post',
+        headers: {
+          'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
+          ...customAccessTokenHeaders,
+        },
+        form: isUrlEncoded ? bodyData : undefined,
+        json: !isUrlEncoded ? bodyData : undefined,
+      });
 
-    const response = await got(accessTokenUrl, {
-      method: 'post',
-      headers: {
-        'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
-        ...customAccessTokenHeaders,
-      },
-      form: isUrlEncoded ? bodyData : undefined,
-      json: !isUrlEncoded ? bodyData : undefined,
-    });
+      const result = JSON.parse(response.body);
+      return { access_token: result['access_token'], refresh_token: result['refresh_token'] };
+    } catch (err) {
+      throw new BadRequestException(this.parseErrorResponse(err?.response?.body, err?.response?.statusCode));
+    }
+  }
 
-    const result = JSON.parse(response.body);
-    return { access_token: result['access_token'], refresh_token: result['refresh_token'] };
+  private parseErrorResponse(error = 'unknown error', statusCode?: number): any {
+    let errorObj = {};
+    try {
+      errorObj = JSON.parse(error);
+    } catch (err) {
+      errorObj['error_details'] = error;
+    }
+
+    errorObj['status_code'] = statusCode;
+    return JSON.stringify(errorObj);
   }
 
   /* This function fetches access token from authorization code */

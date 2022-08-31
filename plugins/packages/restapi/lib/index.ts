@@ -208,7 +208,7 @@ export default class RestapiQueryService implements QueryService {
     };
   }
 
-  checkIfContentTypeIsURLenc(headers: []) {
+  checkIfContentTypeIsURLenc(headers: [] = []) {
     const objectHeaders = Object.fromEntries(headers);
     const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
     return contentType === 'application/x-www-form-urlencoded';
