@@ -4658,8 +4658,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     displayName: 'Link',
     description: 'Add link to the text',
     defaultSize: {
-      width: 5,
-      height: 24,
+      width: 6,
+      height: 30,
     },
     component: 'Link',
     others: {

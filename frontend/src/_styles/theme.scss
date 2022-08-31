@@ -6107,6 +6107,9 @@ input.hide-input-arrows{
 }
 
 .link-widget{
+  display: flex;
+  align-items: center;
+  overflow: auto;
   &.hover{
     a{
       &:hover{
@@ -6123,5 +6126,10 @@ input.hide-input-arrows{
     a{
       text-decoration: underline;
     }
+  }
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
   }
 }

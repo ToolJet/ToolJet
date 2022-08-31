@@ -1,12 +1,13 @@
 import React from 'react';
 
-export const Link = ({ properties, styles, fireEvent, registerAction }) => {
+export const Link = ({ height, properties, styles, fireEvent, registerAction }) => {
   const { linkTarget, linkText, targetType } = properties;
   const { textColor, textSize, textAlign, underline, disabledState, visibility } = styles;
   const computedStyles = {
     fontSize: textSize,
     textAlign,
     display: visibility ? '' : 'none',
+    height,
   };
 
   registerAction('click', async function () {
