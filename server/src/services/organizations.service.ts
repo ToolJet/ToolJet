@@ -116,8 +116,8 @@ export class OrganizationsService {
     const organizationUsers = await this.organizationUsersRepository.find({
       where: { organizationId: user.organizationId, user: options },
       relations: ['user'],
-      take: page ? 2 : undefined,
-      skip: page ? 2 * (page - 1) : undefined,
+      take: page ? 10 : undefined,
+      skip: page ? 10 * (page - 1) : undefined,
     });
 
     const isAdmin = await this.usersService.hasGroup(user, 'admin');

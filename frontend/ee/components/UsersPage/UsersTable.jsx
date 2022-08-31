@@ -143,12 +143,12 @@ const UsersTable = ({
         </div>
       </div>
       <div className="users-pagination">
-        {meta.total_count > 2 && (
+        {meta.total_count > 10 && (
           <Pagination
             currentPage={meta.current_page}
             count={meta.total_count}
             pageChanged={pageChanged}
-            itemsPerPage={2}
+            itemsPerPage={10}
             darkMode={darkMode}
           />
         )}

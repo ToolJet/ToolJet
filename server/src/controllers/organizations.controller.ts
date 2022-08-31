@@ -37,12 +37,12 @@ export class OrganizationsController {
     const page = query.page;
 
     const email = query.email;
-    const firstName = query.first_name;
-    const lastName = query.last_name;
+    const firstName = query.firstName;
+    const lastName = query.lastName;
     const filterOptions = {};
     if (email) filterOptions['email'] = email;
-    if (firstName) filterOptions['firstName'] = email;
-    if (lastName) filterOptions['lastName'] = email;
+    if (firstName) filterOptions['firstName'] = firstName;
+    if (lastName) filterOptions['lastName'] = lastName;
 
     const users = await this.organizationsService.fetchUsers(req.user, page, filterOptions);
     const usersCount = await this.organizationsService.usersCount(req.user);

@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
 import urlJoin from 'url-join';
 import UsersTable from '../../ee/components/UsersPage/UsersTable';
+import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
 class ManageOrgUsers extends React.Component {
   constructor(props) {
     super(props);
@@ -57,13 +58,13 @@ class ManageOrgUsers extends React.Component {
     this.fetchUsers(1);
   }
 
-  fetchUsers = (page = 1) => {
+  fetchUsers = (page = 1, options = {}) => {
     this.setState({
       isLoading: true,
       currentPage: page,
     });
 
-    organizationService.getUsers(page).then((data) => {
+    organizationService.getUsers(page, options).then((data) => {
       this.setState({
         users: data.users,
         meta: data.meta,
@@ -175,6 +176,10 @@ class ManageOrgUsers extends React.Component {
 
   pageChanged = (page) => {
     this.fetchUsers(page);
+  };
+
+  filterList = (options) => {
+    this.fetchUsers(1, options);
   };
 
   render() {
@@ -300,6 +305,8 @@ class ManageOrgUsers extends React.Component {
                 </div>
               </div>
             )}
+
+            {!showNewUserForm && <UsersFilter filterList={this.filterList} darkMode={this.props.darkMode} />}
 
             {!showNewUserForm && (
               <UsersTable
