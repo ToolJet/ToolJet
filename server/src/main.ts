@@ -6,7 +6,7 @@ import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from './all-exceptions-filter';
-import { ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
 
@@ -27,7 +27,19 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
-  app.setGlobalPrefix('api');
+  const hasSubPath = process.env.SUB_PATH !== undefined;
+  const UrlPrefix = hasSubPath ? process.env.SUB_PATH : '';
+
+  // Exclude these endpoints from prefix. These endpoints are required for health checks.
+  const pathsToExclude = [];
+  if (hasSubPath) {
+    pathsToExclude.push({ path: 'health', method: RequestMethod.GET });
+    pathsToExclude.push({ path: '/', method: RequestMethod.GET });
+  }
+
+  app.setGlobalPrefix(UrlPrefix + 'api', {
+    exclude: pathsToExclude,
+  });
   app.enableCors();
   app.use(compression());
 
