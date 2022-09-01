@@ -114,6 +114,8 @@ if (process.env.SERVE_CLIENT !== 'false') {
 
   imports.unshift(
     ServeStaticModule.forRoot({
+      // Have to remove trailing slash of SUB_PATH.
+      serveRoot: process.env.SUB_PATH === undefined ? '' : process.env.SUB_PATH.replace(/\/$/, ''),
       rootPath: join(__dirname, '../../../', 'frontend/build'),
     })
   );
