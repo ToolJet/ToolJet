@@ -41,6 +41,7 @@ describe("Editor- Test Button widget", () => {
     data.alertMessage = fake.randomSentence;
     data.widgetName = fake.widgetName;
     data.customMessage = fake.randomSentence;
+    data.tooltipText = fake.randomSentence;
 
     cy.renameApp(data.appName);
 
@@ -78,7 +79,7 @@ describe("Editor- Test Button widget", () => {
     openAccordion(commonWidgetText.accordionGenaral);
     addAndVerifyTooltip(
       commonWidgetSelector.draggableWidget(data.widgetName),
-      data.customMessage
+      data.tooltipText
     );
 
     verifyLayout(data.widgetName);
@@ -104,8 +105,11 @@ describe("Editor- Test Button widget", () => {
   it("should verify the styles of the button widget", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
+    data.backgroundColor = fake.randomRgba;
+    data.textColor = fake.randomRgba;
+    data.loaderColor = fake.randomRgba;
+    data.boxShadowColor = fake.randomRgba;
     data.colourHex = fake.randomRgbaHex;
-    data.colour = fake.randomRgba;
     data.boxShadowParam = fake.boxShadowParam;
 
     cy.renameApp(data.appName);
@@ -123,17 +127,18 @@ describe("Editor- Test Button widget", () => {
       commonWidgetSelector.parameterFxButton(buttonText.backgroundColor)
     ).click();
 
-    selectColourFromColourPicker(buttonText.backgroundColor, data.colour);
+    selectColourFromColourPicker(buttonText.backgroundColor, data.backgroundColor);
 
     verifyWidgetColorCss(
       buttonText.defaultWidgetName,
       "background-color",
-      data.colour
+      data.backgroundColor
     );
 
     openEditorSidebar(buttonText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
+    data.colourHex = fake.randomRgbaHex;
     verifyAndModifyStylePickerFx(
       buttonText.textColor,
       buttonText.defaultTextColor,
@@ -144,14 +149,14 @@ describe("Editor- Test Button widget", () => {
       commonWidgetSelector.parameterFxButton(buttonText.textColor)
     ).click();
 
-    selectColourFromColourPicker(buttonText.textColor, data.colour);
+    selectColourFromColourPicker(buttonText.textColor, data.textColor);
 
-    verifyWidgetColorCss(buttonText.defaultWidgetName, "color", data.colour);
+    verifyWidgetColorCss(buttonText.defaultWidgetName, "color", data.textColor);
 
     openEditorSidebar(buttonText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
-
+    data.colourHex = fake.randomRgbaHex;
     verifyAndModifyStylePickerFx(
       buttonText.loaderColor,
       buttonText.defaultLoaderColor,
@@ -161,9 +166,10 @@ describe("Editor- Test Button widget", () => {
     cy.get(
       commonWidgetSelector.parameterFxButton(buttonText.loaderColor)
     ).click();
-    selectColourFromColourPicker(buttonText.loaderColor, data.colour);
 
-    verifyLoaderColor(buttonText.defaultWidgetName, data.colour);
+    selectColourFromColourPicker(buttonText.loaderColor, data.loaderColor);
+
+    verifyLoaderColor(buttonText.defaultWidgetName, data.loaderColor);
 
     openEditorSidebar(buttonText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -209,6 +215,7 @@ describe("Editor- Test Button widget", () => {
     openEditorSidebar(buttonText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
+    data.colourHex = fake.randomRgbaHex;
     openAccordion(commonWidgetText.accordionGenaral, "1");
     verifyAndModifyStylePickerFx(
       commonWidgetText.parameterBoxShadow,
@@ -229,27 +236,29 @@ describe("Editor- Test Button widget", () => {
       commonWidgetSelector.boxShadowDefaultParam,
       data.boxShadowParam
     );
-
-    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
+    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.boxShadowColor);
 
     verifyBoxShadowCss(
       buttonText.defaultWidgetName,
-      data.colour,
+      data.boxShadowColor,
       data.boxShadowParam
     );
     cy.get(commonSelectors.editorPageLogo).click();
     cy.deleteApp(data.appName);
   });
 
-  it("verify the app preview", () => {
+  it("should verify the app preview", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.alertMessage = fake.randomSentence;
     data.widgetName = fake.widgetName;
     data.customMessage = fake.randomSentence;
-    data.colourHex = fake.randomRgbaHex;
-    data.colour = fake.randomRgba;
+    data.backgroundColor = fake.randomRgba;
+    data.textColor = fake.randomRgba;
+    data.loaderColor = fake.randomRgba;
+    data.boxShadowColor = fake.randomRgba;
     data.boxShadowParam = fake.boxShadowParam;
+    data.tooltipText = fake.randomSentence;
 
     cy.renameApp(data.appName);
 
@@ -262,22 +271,22 @@ describe("Editor- Test Button widget", () => {
     openAccordion(commonWidgetText.accordionGenaral);
     addAndVerifyTooltip(
       commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName),
-      data.customMessage
+      data.tooltipText
     );
 
     openEditorSidebar(buttonText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    selectColourFromColourPicker(buttonText.backgroundColor, data.colour);
+    selectColourFromColourPicker(buttonText.backgroundColor, data.backgroundColor);
+    
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    openEditorSidebar(buttonText.defaultWidgetName);
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+    selectColourFromColourPicker(buttonText.textColor, data.textColor);
 
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     openEditorSidebar(buttonText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    selectColourFromColourPicker(buttonText.textColor, data.colour);
-
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
-    openEditorSidebar(buttonText.defaultWidgetName);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    selectColourFromColourPicker(buttonText.loaderColor, data.colour);
+    selectColourFromColourPicker(buttonText.loaderColor, data.loaderColor);
 
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     openEditorSidebar(buttonText.defaultWidgetName);
@@ -302,8 +311,7 @@ describe("Editor- Test Button widget", () => {
       commonWidgetSelector.boxShadowDefaultParam,
       data.boxShadowParam
     );
-
-    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
+    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.boxShadowColor);
 
     verifyControlComponentAction(buttonText.defaultWidgetName, data.customMessage);
 
@@ -323,12 +331,12 @@ describe("Editor- Test Button widget", () => {
 
     verifyTooltip(
       commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName),
-      data.customMessage
+      data.tooltipText
     );
 
-    verifyWidgetColorCss(buttonText.defaultWidgetName, "background-color", data.colour);
-    verifyWidgetColorCss(buttonText.defaultWidgetName, "color", data.colour);
-    verifyLoaderColor(buttonText.defaultWidgetName, data.colour);
+    verifyWidgetColorCss(buttonText.defaultWidgetName, "background-color", data.backgroundColor);
+    verifyWidgetColorCss(buttonText.defaultWidgetName, "color", data.textColor);
+    verifyLoaderColor(buttonText.defaultWidgetName, data.loaderColor);
 
     cy.get(commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)).should(
       "have.css",
@@ -336,7 +344,7 @@ describe("Editor- Test Button widget", () => {
       "20px"
     );
 
-    verifyBoxShadowCss(buttonText.defaultWidgetName, data.colour, data.boxShadowParam);
+    verifyBoxShadowCss(buttonText.defaultWidgetName, data.boxShadowColor, data.boxShadowParam);
 
     cy.get(commonSelectors.viewerPageLogo).click();
     cy.deleteApp(data.appName);
