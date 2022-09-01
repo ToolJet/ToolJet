@@ -188,7 +188,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
     switch (event.actionId) {
       case 'show-alert': {
         const message = resolveReferences(
-          event.__TjDoNotResolve__message,
+          event.message,
           _ref.state.currentState,
           undefined,
           customVariables

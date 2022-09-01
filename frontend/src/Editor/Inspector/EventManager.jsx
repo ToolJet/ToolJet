@@ -176,7 +176,7 @@ export const EventManager = ({
     newEvents.push({
       eventId: Object.keys(componentMeta.events)[0],
       actionId: 'show-alert',
-      __TjDoNotResolve__message: 'Hello world!',
+      message: 'Hello world!',
       alertType: 'info',
     });
     eventsChanged(newEvents);
@@ -241,8 +241,8 @@ export const EventManager = ({
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
                       currentState={currentState}
-                      initialValue={event.__TjDoNotResolve__message}
-                      onChange={(value) => handlerChanged(index, '__TjDoNotResolve__message', value)}
+                      initialValue={event.message}
+                      onChange={(value) => handlerChanged(index, 'message', value)}
                       usePortalEditor={false}
                     />
                   </div>
