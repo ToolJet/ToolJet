@@ -25,6 +25,7 @@
     "@tooljet-plugins/baserow": "file:packages/baserow",
     "@tooljet-plugins/bigquery": "file:packages/bigquery",
     "@tooljet-plugins/common": "file:packages/common",
+    "@tooljet-plugins/cosmosdb": "file:packages/cosmosdb",
     "@tooljet-plugins/couchdb": "file:packages/couchdb",
     "@tooljet-plugins/dynamodb": "file:packages/dynamodb",
     "@tooljet-plugins/elasticsearch": "file:packages/elasticsearch",

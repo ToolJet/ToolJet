@@ -764,7 +764,7 @@ button {
 
 .page-body,
 .homepage-body {
-  height: 90.6vh;
+  height: 93vh;
 
   .list-group.list-group-transparent.dark .all-apps-link,
   .list-group-item-action.dark.active {
@@ -1208,7 +1208,7 @@ button {
   top: 7px !important;
   right: -26px;
 }
-// targeting select component library class 
+// targeting select component library class
 
 .component-action-select *.css-1nfapid-container
 {
@@ -1253,11 +1253,11 @@ button {
     .app-list {
       .app-card {
         .app-creation-time {
-          color: #61656f;
+          color: #afb0b2;
         }
 
         .app-creator {
-          color: #7c86a1;
+          color: #c3c4cb;
         }
       }
 
@@ -3012,6 +3012,13 @@ input:focus-visible {
 
   .DateInput_input {
     background-color: #1f2936;
+    color: #fff;
+  }
+
+  &.daterange-picker-widget{
+    .DateRangePickerInput_arrow_svg{
+      fill: #fff;
+    }
   }
 
   .DateRangePickerInput {
@@ -4384,7 +4391,7 @@ input[type="text"] {
       filter: invert(29%) sepia(84%) saturate(4047%) hue-rotate(215deg) brightness(98%) contrast(111%);
     }
   }
-  
+
   .folder-ico.dark {
     filter: invert(1);
   }
@@ -5037,6 +5044,12 @@ div#driver-page-overlay {
 
   .popover-body {
     color: #d9dcde !important;
+  }
+}
+
+.toast-dark-mode {
+   .btn-close {
+    filter: brightness(0) invert(1);
   }
 }
 
@@ -5694,12 +5707,12 @@ div#driver-page-overlay {
   .btn-org-env {
     width: 36px;
   }
-  
+
   .encryption-input {
     width: fit-content;
   }
 
-  .no-vars-text {    
+  .no-vars-text {
     display: block;
     text-align: center;
     margin-top: 100px;
@@ -6092,17 +6105,17 @@ input.hide-input-arrows{
     width: 100%;
 
     h2 {
-      width: 100%; 
-      text-align: center; 
-      border-bottom: 1px solid $primary; 
+      width: 100%;
+      text-align: center;
+      border-bottom: 1px solid $primary;
       line-height: 0.1em;
-      margin: 10px 0 20px; 
-    } 
-    
-    h2 span { 
+      margin: 10px 0 20px;
+    }
+
+    h2 span {
       color: $primary;
-      background:#fff; 
-      padding:0 10px; 
+      background:#fff;
+      padding:0 10px;
     }
   }
 }

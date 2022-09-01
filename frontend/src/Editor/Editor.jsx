@@ -35,6 +35,7 @@ import {
   getSvgIcon,
   debuggerActions,
   cloneComponents,
+  removeSelectedComponent,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -59,6 +60,7 @@ import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import AppLogo from '../_components/AppLogo';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
+// eslint-disable-next-line import/no-unresolved
 import Selecto from 'react-selecto';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
 
@@ -615,25 +617,7 @@ class Editor extends React.Component {
       let newDefinition = cloneDeep(this.state.appDefinition);
       const selectedComponents = this.state?.selectedComponents;
 
-      selectedComponents.forEach((component) => {
-        let childComponents = [];
-
-        if (newDefinition.components[component.id].component.component === 'Tabs') {
-          childComponents = Object.keys(newDefinition.components).filter((key) =>
-            newDefinition.components[key].parent?.startsWith(component.id)
-          );
-        } else {
-          childComponents = Object.keys(newDefinition.components).filter(
-            (key) => newDefinition.components[key].parent === component.id
-          );
-        }
-
-        childComponents.forEach((componentId) => {
-          delete newDefinition.components[componentId];
-        });
-
-        delete newDefinition.components[component.id];
-      });
+      removeSelectedComponent(newDefinition, selectedComponents);
 
       toast('Selected components deleted! (⌘Z to undo)', {
         icon: '🗑️',
@@ -750,6 +734,8 @@ class Editor extends React.Component {
     appDefinition.components = newComponents;
     this.appDefinitionChanged(appDefinition);
   };
+
+  cutComponents = () => cloneComponents(this, this.appDefinitionChanged, false, true);
 
   copyComponents = () => cloneComponents(this, this.appDefinitionChanged, false);
 
@@ -1119,6 +1105,7 @@ class Editor extends React.Component {
     flush: () => {
       debuggerActions.flush(this);
     },
+    generateErrorLogs: (errors) => debuggerActions.generateErrorLogs(errors),
   };
 
   changeDarkMode = (newMode) => {
@@ -1698,6 +1685,7 @@ class Editor extends React.Component {
                   moveComponents={this.moveComponents}
                   cloneComponents={this.cloneComponents}
                   copyComponents={this.copyComponents}
+                  cutComponents={this.cutComponents}
                   handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
                   removeMultipleComponents={this.removeComponents}
                 />
