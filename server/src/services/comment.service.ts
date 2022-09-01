@@ -6,7 +6,7 @@ import { CommentRepository } from '../repositories/comment.repository';
 import { CreateCommentDto, UpdateCommentDto } from '../dto/comment.dto';
 import { groupBy, head } from 'lodash';
 import { EmailService } from './email.service';
-import { Repository } from 'typeorm';
+import { createQueryBuilder, Repository } from 'typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { User } from 'src/entities/user.entity';
 import { CommentUsers } from 'src/entities/comment_user.entity';
@@ -64,15 +64,17 @@ export class CommentService {
   }
 
   public async getComments(threadId: string, appVersionsId: string): Promise<Comment[]> {
-    return await this.commentRepository.find({
-      where: {
+    return await createQueryBuilder(Comment, 'comment')
+      .innerJoin('comment.user', 'user')
+      .addSelect(['user.id', 'user.firstName', 'user.lastName'])
+      .andWhere('comment.threadId = :threadId', {
         threadId,
+      })
+      .andWhere('comment.appVersionsId = :appVersionsId', {
         appVersionsId,
-      },
-      order: {
-        createdAt: 'ASC',
-      },
-    });
+      })
+      .orderBy('comment.createdAt', 'ASC')
+      .getMany();
   }
 
   public async getOrganizationComments(organizationId: string, appVersionsId: string): Promise<Comment[]> {
@@ -93,16 +95,22 @@ export class CommentService {
     isResolved = false,
     appVersionsId: string
   ): Promise<Comment[]> {
-    const comments = await this.commentRepository.find({
-      where: {
-        thread: { appId, isResolved },
+    const comments = await createQueryBuilder(Comment, 'comment')
+      .innerJoin('comment.user', 'user')
+      .addSelect(['user.id', 'user.firstName', 'user.lastName'])
+      .innerJoin('comment.thread', 'thread')
+      .addSelect(['thread.id'])
+      .andWhere('thread.appId = :appId', {
+        appId,
+      })
+      .andWhere('thread.isResolved = :isResolved', {
+        isResolved,
+      })
+      .andWhere('comment.appVersionsId = :appVersionsId', {
         appVersionsId,
-      },
-      order: {
-        createdAt: 'DESC',
-      },
-      relations: ['thread'],
-    });
+      })
+      .orderBy('comment.createdAt', 'DESC')
+      .getMany();
 
     const groupedComments = groupBy(comments, 'threadId');
 

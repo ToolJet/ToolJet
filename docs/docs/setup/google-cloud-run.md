@@ -130,7 +130,7 @@ Signing up requires [SMTP configuration](https://docs.tooljet.com/docs/setup/env
    ```bash
    gcloud run deploy <replace-service-name> \
    --image gcr.io/<replace-your-project-id>/tooljet/tooljet-server-ce:latest \
-   --args "npm,run,db:seed"
+   --args "npm,run,db:seed:prod"
    ```
 
 The deployment will fail as it runs a seed script. Check logs to see that default user was created. Now run the following command to have the app deployed.

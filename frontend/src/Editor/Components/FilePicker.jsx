@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
+import * as XLSX from 'xlsx/xlsx.mjs';
 
 export const FilePicker = ({
   width,
@@ -24,9 +25,11 @@ export const FilePicker = ({
   const fileType = component.definition.properties.fileType?.value ?? 'image/*';
   const maxSize = component.definition.properties.maxSize?.value ?? 1048576;
   const minSize = component.definition.properties.minSize?.value ?? 0;
-  const parseContent = component.definition.properties.parseContent?.value ?? false;
+  const parseContent = resolveWidgetFieldValue(
+    component.definition.properties.parseContent?.value ?? false,
+    currentState
+  );
   const fileTypeFromExtension = component.definition.properties.parseFileType?.value ?? 'auto-detect';
-
   const parsedEnableDropzone =
     typeof enableDropzone !== 'boolean' ? resolveWidgetFieldValue(enableDropzone, currentState) : true;
   const parsedEnablePicker =
@@ -182,7 +185,9 @@ export const FilePicker = ({
       content: readFileAsText,
       dataURL: readFileAsDataURL, // TODO: Fix dataURL to have correct format
       base64Data: readFileAsDataURL,
-      parsedData: shouldProcessFileParsing ? await processFileContent(file.type, readFileAsText) : null,
+      parsedData: shouldProcessFileParsing
+        ? await processFileContent(file.type, { readFileAsDataURL, readFileAsText })
+        : null,
       filePath: file.path,
     };
   };
@@ -395,11 +400,27 @@ const processCSV = (str, delimiter = ',') => {
     handleErrors(error);
   }
 };
+const processXls = (str) => {
+  try {
+    const wb = XLSX.read(str, { type: 'base64' });
+    const wsname = wb.SheetNames[0];
+    const ws = wb.Sheets[wsname];
+    /* Convert array of arrays */
+    const data = XLSX.utils.sheet_to_json(ws);
+    return data;
+  } catch (error) {
+    console.log(error);
+    handleErrors(error);
+  }
+};
 
 const processFileContent = (fileType, fileContent) => {
   switch (fileType) {
     case 'text/csv':
-      return processCSV(fileContent);
+      return processCSV(fileContent.readFileAsText);
+    case 'application/vnd.ms-excel':
+    case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+      return processXls(fileContent.readFileAsDataURL);
 
     default:
       break;

@@ -21,7 +21,7 @@ import { ResetPassword } from '@/ResetPassword';
 import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
-import { Toaster } from 'react-hot-toast';
+import Toast from '@/_ui/Toast';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import { Editor } from '@/Editor/Editor';
 import { RedirectSso } from '@/RedirectSso/RedirectSso';
@@ -76,6 +76,7 @@ class App extends React.Component {
 
     if (darkMode) {
       toastOptions = {
+        className: 'toast-dark-mode',
         style: {
           borderRadius: '10px',
           background: '#333',
@@ -259,7 +260,7 @@ class App extends React.Component {
             />
           </div>
         </BrowserRouter>
-        <Toaster toastOptions={toastOptions} />
+        <Toast toastOptions={toastOptions} />
       </>
     );
   }
