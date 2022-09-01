@@ -10,11 +10,9 @@ Textarea widgets let users enter and edit just text like [Text Input](/docs/widg
 Textarea should be preferred over [Text Input](/docs/widgets/text-input) when user input is more than one sentence.
 :::
 
-<div style={{textAlign: 'center'}}>
+## How To Use Textarea Widget
 
-![ToolJet - Widget Reference - Text input](/img/widgets/textarea/textarea.png)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/ja66x6DeZxk" title="Textarea Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Properties
 
