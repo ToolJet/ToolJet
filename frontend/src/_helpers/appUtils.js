@@ -188,12 +188,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
   if (event) {
     switch (event.actionId) {
       case 'show-alert': {
-        const message = resolveReferences(
-          event.message,
-          _ref.state.currentState,
-          undefined,
-          customVariables
-        );
+        const message = resolveReferences(event.message, _ref.state.currentState, undefined, customVariables);
         switch (event.alertType) {
           case 'success':
           case 'error':
@@ -446,7 +441,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
 
   if (eventName === 'onTableActionButtonClicked') {
     const { component, data, action, rowId } = options;
-    console.log({ data, action, rowId });
     _self.setState(
       {
         currentState: {
