@@ -5,13 +5,22 @@ const JSON5 = require('json5');
 
 export default class Click implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    const { query } = queryOptions;
-
+    const { query, operation, fields, tablename } = queryOptions;
     let result = {};
     const clickhouseClient = await this.getConnection(sourceOptions);
-
     try {
-      result = await clickhouseClient.query(query).toPromise();
+      switch (operation) {
+        case 'sql': {
+          result = await clickhouseClient.query(query).toPromise();
+          break;
+        }
+        case 'insert': {
+          result = await clickhouseClient
+            .insert(`INSERT INTO ${tablename} (${fields.join(',')})`, this.parseJSON(query))
+            .toPromise();
+          break;
+        }
+      }
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
     }
