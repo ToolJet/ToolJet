@@ -24,8 +24,8 @@ else
   exit 1
 fi
 
-sudo -E npm --prefix server run db:setup
-sudo -E npm --prefix server run db:seed
+sudo -E npm --prefix server run db:setup:prod
+sudo -E npm --prefix server run db:seed:prod
 
 if sudo -E systemctl start nest
 then
