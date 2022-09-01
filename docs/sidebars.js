@@ -92,8 +92,11 @@ const sidebars = {
         'data-sources/rethinkdb',
         'data-sources/saphana',
         'data-sources/sendgrid',
+        'data-sources/slack',
         'data-sources/smtp',
         'data-sources/snowflake',
+        'data-sources/stripe',
+        'data-sources/twilio',
         'data-sources/typesense',
         'data-sources/woocommerce',
       ],
@@ -200,6 +203,7 @@ const sidebars = {
       label: 'Enterprise',
       items: [
         'Enterprise/audit_logs',
+        'Enterprise/white-label',
       ]
     },
     {

@@ -108,7 +108,9 @@ export const EventManager = ({
 
   function getComponentActionOptions(componentId) {
     if (componentId == undefined) return [];
-    const component = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId)[0][1];
+    const filteredComponents = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId);
+    if (_.isEmpty(filteredComponents)) return [];
+    const component = filteredComponents[0][1];
     const targetComponentMeta = componentTypes.find(
       (componentType) => component.component.component === componentType.component
     );
@@ -124,7 +126,9 @@ export const EventManager = ({
 
   function getAction(componentId, actionHandle) {
     if (componentId == undefined || actionHandle == undefined) return {};
-    const component = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId)[0][1];
+    const filteredComponents = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId);
+    if (_.isEmpty(filteredComponents)) return {};
+    const component = filteredComponents[0][1];
     const targetComponentMeta = componentTypes.find(
       (componentType) => component.component.component === componentType.component
     );
