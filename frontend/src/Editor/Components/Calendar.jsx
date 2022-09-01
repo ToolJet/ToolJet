@@ -30,7 +30,6 @@ export const Calendar = function ({
 }) {
   const style = { height };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
-
   const events =
     typeof properties?.events === Array
       ? properties?.events?.map((event) => prepareEvent(event, properties.dateFormat))
