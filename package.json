@@ -18,25 +18,10 @@
     ]
   },
   "devDependencies": {
-    "@babel/core": "^7.4.3",
-    "@babel/plugin-proposal-class-properties": "^7.10.4",
-    "@babel/preset-env": "^7.4.3",
-    "@babel/preset-react": "^7.0.0",
     "@tooljet/cli": "^0.0.12",
-    "babel-loader": "^8.0.5",
     "eslint": "^7.25.0",
-    "faker": "^5.5.3",
-    "html-webpack-plugin": "^5.3.2",
     "husky": "^7.0.2",
-    "lint-staged": "^11.2.3",
-    "path": "^0.12.7",
-    "webpack": "^5.55.1",
-    "webpack-cli": "^4.8.0"
-  },
-  "dependencies": {
-    "@nestjs/cli": "^8.1.0",
-    "@nestjs/mapped-types": "*",
-    "ts-node": "^10.1.0"
+    "lint-staged": "^11.2.3"
   },
   "scripts": {
     "prebuild:plugins": "npm run install:plugins",
