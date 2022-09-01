@@ -1,4 +1,4 @@
-export default function loadPropertiesAndStyles(properties, styles, darkMode) {
+export default function loadPropertiesAndStyles(properties, styles, darkMode, component) {
   const color = styles.textColor !== '#000' ? styles.textColor : darkMode && '#fff';
 
   let serverSidePagination = properties.serverSidePagination ?? false;
@@ -39,7 +39,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode) {
 
   const actionButtonRadius = styles.actionButtonRadius ? parseFloat(styles.actionButtonRadius) : 0;
 
-  const actions = (properties.actions ?? []).map((action) => ({ ...action, actionButtonRadius }));
+  const actions = (component.definition.properties.actions.value ?? []).map((action) => ({ ...action, actionButtonRadius }));
 
   return {
     color,

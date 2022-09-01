@@ -69,7 +69,7 @@ export function Table({
     parsedDisabledState,
     actionButtonRadius,
     actions,
-  } = loadPropertiesAndStyles(properties, styles, darkMode);
+  } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
 
