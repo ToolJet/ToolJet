@@ -17,7 +17,6 @@ export class RestructureTableColumnSizesAndActionsToHaveAValueKeyThatPointsToIts
         for (const componentId of Object.keys(components)) {
           const component = components[componentId];
           if (component.component.component === 'Table') {
-            const actions = { value: component.component.definition.actions };
             const columnSizes = { value: component.component.definition.columnSizes };
             components[componentId] = {
               ...component,
@@ -25,8 +24,10 @@ export class RestructureTableColumnSizesAndActionsToHaveAValueKeyThatPointsToIts
                 ...component.component,
                 definition: {
                   ...component.component.definition,
-                  actions,
-                  columnSizes,
+                  properties: {
+                    ...component.component.definition.properties,
+                    columnSizes,
+                  },
                 },
               },
             };
