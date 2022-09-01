@@ -57,7 +57,7 @@ export class AppController {
     return {};
   }
 
-  @Get('/health')
+  @Get(['/health', '/api/health'])
   async healthCheck(@Request() req) {
     return { works: 'yeah' };
   }
