@@ -3,7 +3,7 @@ export type SourceOptions = {
   username: string;
   password: string;
   host: string;
-  database?: string;
+  database: string;
   format?: string;
   protocol: string;
   usePost?: string;
