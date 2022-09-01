@@ -70,6 +70,7 @@ const sidebars = {
         'data-sources/baserow',
         'data-sources/bigquery',
         'data-sources/firestore',
+        'data-sources/cosmosdb',
         'data-sources/couchdb',
         'data-sources/custom-js',
         'data-sources/dynamodb',
