@@ -406,7 +406,7 @@ export function Table({
                   className="btn btn-light btn-sm p-1"
                   onClick={() => exportData('csv', true)}
                 >
-                  <img src="/assets/images/icons/download.svg" width="15" height="15" />
+                  <img src="assets/images/icons/download.svg" width="15" height="15" />
                 </span>
               )}
             </div>

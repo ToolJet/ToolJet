@@ -110,7 +110,7 @@ export function Google({ settings, updateData }) {
                 >{`${window.location.protocol}//${window.location.host}/sso/google/${configId}`}</p>
                 <img
                   onClick={() => copyFunction('redirect-url')}
-                  src={`/assets/images/icons/copy-dark.svg`}
+                  src={`assets/images/icons/copy-dark.svg`}
                   width="22"
                   height="22"
                   className="sso-copy"

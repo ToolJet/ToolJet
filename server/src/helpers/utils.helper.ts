@@ -1,6 +1,19 @@
 import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
+import { isEmpty } from 'lodash';
+
+export function maybeSetSubPath(path) {
+  const hasSubPath = process.env.SUB_PATH !== undefined;
+  const urlPrefix = hasSubPath ? process.env.SUB_PATH : '';
+
+  if (isEmpty(urlPrefix)) {
+    return path;
+  }
+
+  const pathWithoutLeadingSlash = path.replace(/^\/+/, '');
+  return urlPrefix + pathWithoutLeadingSlash;
+}
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
