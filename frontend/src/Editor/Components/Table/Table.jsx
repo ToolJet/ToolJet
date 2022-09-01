@@ -337,10 +337,10 @@ export function Table({
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
-    if (!state.columnResizing.isResizingColumn) {
+    if (!state.columnResizing.isResizingColumn && !_.isEmpty(newColumnSizes)) {
       changeCanDrag(true);
       paramUpdated(id, 'columnSizes', {
-        value: { ...columnSizes, ...state.columnResizing.columnWidths },
+        value: newColumnSizes,
       });
     } else {
       changeCanDrag(false);
