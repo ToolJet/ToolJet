@@ -196,11 +196,6 @@ export const widgets = [
         validation: {
           schema: { type: 'boolean' },
         },
-        actions: {
-          type: 'ConfigurableList',
-          displayName: 'actions',
-          skipResolve: true,
-        },
       },
       showBulkSelector: {
         type: 'toggle',
