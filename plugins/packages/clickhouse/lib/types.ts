@@ -17,5 +17,4 @@ export type SourceOptions = {
 export type QueryOptions = {
   operation: string;
   query: string;
-  fields: Array<string>;
 };

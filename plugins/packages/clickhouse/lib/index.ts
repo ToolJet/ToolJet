@@ -5,30 +5,13 @@ const JSON5 = require('json5');
 
 export default class Click implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    const { query, operation, fields } = queryOptions;
-    // const { database } = sourceOptions;
+    const { query } = queryOptions;
+
     let result = {};
     const clickhouseClient = await this.getConnection(sourceOptions);
 
     try {
-      switch (operation) {
-        case 'sql': {
-          result = await clickhouseClient.query(query).toPromise();
-          break;
-        }
-        case 'insert': {
-          console.log('entry', this.parseJSON(query), fields);
-          result = await clickhouseClient
-            .insert(
-              `insert into test_array (date, str, arr, arr2, 
-              arr3, id1)`,
-              this.parseJSON(query)
-            )
-            .toPromise();
-
-          break;
-        }
-      }
+      result = await clickhouseClient.query(query).toPromise();
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
     }
@@ -40,8 +23,10 @@ export default class Click implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const clickhouse = await this.getConnection(sourceOptions);
     const query = 'SHOW DATABASES';
-    clickhouse.query(query).toPromise();
-
+    if (!clickhouse) {
+      throw new Error('Invalid credentials');
+    }
+    await clickhouse.query(query).toPromise();
     return {
       status: 'ok',
     };
