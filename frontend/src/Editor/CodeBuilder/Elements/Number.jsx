@@ -9,6 +9,7 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
     backgroundColor: 'transparent',
     border: 'none',
     color: darkMode && '#fff',
+    width: '100%',
   };
   return (
     <>
@@ -17,7 +18,7 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
           <div className="field form-control" style={{ padding: '0.225rem 0.35rem' }} data-cy="border-radius-input">
             <input
               style={numberTheme}
-              type="text"
+              type="number"
               onChange={(e) => {
                 setNumber(e.target.value);
                 onChange(`{{${e.target.value}}}`);
