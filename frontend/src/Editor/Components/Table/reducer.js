@@ -30,12 +30,6 @@ export const reducer = (state, action) => {
         ...action.payload,
       };
 
-    case 'SET':
-      return {
-        ...state,
-        ...action.payload,
-      };
-
     case 'MERGE_TO_FILTER_DETAILS':
       return {
         ...state,
