@@ -13,7 +13,7 @@ Both the ToolJet server and client requires some environment variables to start 
 
 | variable     | description                                                     |
 | ------------ | --------------------------------------------------------------- |
-| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com ) |
+| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com )  |
 
 #### Lockbox configuration ( required )
 
@@ -91,8 +91,13 @@ You will still be able to see the signup page but won't be able to successfully 
 
 #### Serve client as a server end-point ( optional )
 
-By default, the `SERVE_CLIENT` variable will be set to `false` and the server won't serve the client at its `/` end-point.
-You can set `SERVE_CLIENT` to `true` and the server will attempt to serve the client at its root end-point (`/`).
+By default, the `SERVE_CLIENT` variable will be unset and the server will serve the client at its `/` end-point.
+You can set `SERVE_CLIENT` to `false` to disable this behaviour.
+
+#### Serve client at subpath
+
+If ToolJet is hosted on a domain subpath, you can set the environment variable `SUB_PATH` to support it.
+Please note the subpath is to be set with trailing `/` and is applicable only when the server is serving the frontend client.
 
 #### SMTP configuration ( optional )
 

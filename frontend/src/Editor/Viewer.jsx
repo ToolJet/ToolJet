@@ -44,6 +44,7 @@ class Viewer extends React.Component {
           environment_variables: {},
         },
       },
+      isAppLoaded: false,
     };
   }
 
@@ -51,6 +52,7 @@ class Viewer extends React.Component {
     this.setState({
       app: data,
       isLoading: false,
+      isAppLoaded: true,
       appDefinition: data.definition || { components: {} },
     });
   };
@@ -151,8 +153,8 @@ class Viewer extends React.Component {
     appService.getAppBySlug(slug).then((data) => {
       this.setStateForApp(data);
       this.setStateForContainer(data);
-      this.setState({ isLoading: false });
       this.setWindowTitle(data.name);
+      this.setState({ isLoading: false });
     });
   };
 
@@ -207,6 +209,7 @@ class Viewer extends React.Component {
       appDefinition,
       showQueryConfirmation,
       isLoading,
+      isAppLoaded,
       currentLayout,
       deviceWindowWidth,
       defaultComponentStateComputed,
@@ -229,12 +232,12 @@ class Viewer extends React.Component {
           <Confirm
             show={showQueryConfirmation}
             message={'Do you want to run this query?'}
-            onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
+            onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData, 'view')}
             onCancel={() => onQueryCancel(this)}
             queryConfirmationData={this.state.queryConfirmationData}
           />
           <DndProvider backend={HTML5Backend}>
-            {!appDefinition.globalSettings?.hideHeader && (
+            {!appDefinition.globalSettings?.hideHeader && isAppLoaded && (
               <div className="header">
                 <header className="navbar navbar-expand-md navbar-light d-print-none">
                   <div className="container-xl header-container">

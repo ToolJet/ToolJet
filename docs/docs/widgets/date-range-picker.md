@@ -6,11 +6,9 @@ title: Date-range picker
 
 The date-range picker widget allows users to select a range of dates.
 
-<div style={{textAlign: 'center'}}>
+## How To Use Date Range Picker Widget
 
-![ToolJet - Widget Reference - Date range picker](/img/widgets/date-range-picker/date-range.gif)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/iBJQeh1kerE" title="Date range picker Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Properties
 

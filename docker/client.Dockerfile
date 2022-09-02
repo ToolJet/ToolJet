@@ -15,15 +15,15 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
-ENV NODE_ENV=production
-RUN npm --prefix plugins run build
+RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json  ./frontend/
-RUN npm --prefix frontend install --only=production
+RUN npm --prefix frontend install
 COPY ./frontend ./frontend
-RUN npm --prefix frontend run build
+RUN npm --prefix frontend run build --production
+RUN npm --prefix frontend prune --production
 
 FROM openresty/openresty:1.19.9.1rc1-buster-fat
 
