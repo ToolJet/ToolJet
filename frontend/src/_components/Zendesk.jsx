@@ -16,7 +16,7 @@ const Zendesk = ({ optionchanged, createDataSource, options, isSaving, selectedD
     const scope = options.access_type?.value === 'read' ? 'read' : 'read%20write';
 
     try {
-      const authUrl = `https://${subdomain?.value}.zendesk.com/oauth/authorizations/new?response_type=code&client_id=${client_id?.value}&redirect_uri=http://localhost:8082/oauth2/authorize&scope=${scope}`;
+      const authUrl = `https://${subdomain?.value}.zendesk.com/oauth/authorizations/new?response_type=code&client_id=${client_id?.value}&redirect_uri=${window.location.origin}/oauth2/authorize&scope=${scope}`;
       localStorage.setItem('sourceWaitingForOAuth', 'newSource');
       optionchanged('provider', provider).then(() => {
         optionchanged('oauth2', true);
