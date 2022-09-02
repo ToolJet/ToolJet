@@ -84,7 +84,6 @@
   "devDependencies": {
     "@babel/core": "^7.4.3",
     "@babel/eslint-parser": "^7.18.9",
-    "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/plugin-transform-runtime": "^7.16.10",
     "@babel/preset-env": "^7.4.3",
     "@babel/preset-react": "^7.18.6",
