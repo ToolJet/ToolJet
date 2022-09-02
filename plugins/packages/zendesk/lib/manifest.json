@@ -12,9 +12,31 @@
       "data": {},
       "rawData": {}
     },
-    "options": {}
+    "options": {},
+    "customTesting": true,
+    "hideSave": true
   },
-  "defaults": {},
-  "properties": {},
-  "required": []
+  "defaults": {
+    "access_type": {
+      "value": "read"
+    }, 
+    "subdomain": {
+      "value": "tooljet"
+    },
+    "client_id": {
+      "value": ""
+    },
+    "client_secret": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "zendesk": {
+      "label": "",
+      "key": "zendesk",
+      "type": "react-component-zendesk",
+      "description": "A component for Zendesk"
+    }
+  },
+  "required": [] 
 }
