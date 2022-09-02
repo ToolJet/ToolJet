@@ -160,8 +160,8 @@ export class AppsService {
             userId: user.id,
           })
             .andWhere('app_group_permissions.read = :value', { value: true })
-            .andWhere('app_group_permissions.is_hidden_from_dashboard = :isHiddenFromDashboard', {
-              isHiddenFromDashboard: false,
+            .andWhere('app_group_permissions.read_on_dashboard = :readOnDashboard', {
+              readOnDashboard: false,
             })
             .orWhere('apps.is_public = :value OR apps.user_id = :userId', {
               value: true,
@@ -195,8 +195,8 @@ export class AppsService {
             userId: user.id,
           })
             .andWhere('app_group_permissions.read = :value', { value: true })
-            .andWhere('app_group_permissions.is_hidden_from_dashboard = :isHiddenFromDashboard', {
-              isHiddenFromDashboard: false,
+            .andWhere('app_group_permissions.read_on_dashboard = :readOnDashboard', {
+              readOnDashboard: false,
             })
             .orWhere('apps.is_public = :value OR apps.user_id = :userId', {
               value: true,
