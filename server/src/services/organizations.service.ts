@@ -5,7 +5,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
-import { createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
+import { Brackets, createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
@@ -110,6 +110,36 @@ export class OrganizationsService {
       }
       return createdGroupPermissions;
     }, manager);
+  }
+
+  async fetchUsersByValue(user: any, searchInput: string): Promise<any> {
+    const organizationUsers = await createQueryBuilder(OrganizationUser, 'organization_user')
+      .innerJoinAndSelect('organization_user.user', 'user')
+      .where('organization_user.organization_id = :organizationId', {
+        organizationId: user.organizationId,
+      })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('user.email like :email', {
+            email: `%${searchInput}%`,
+          })
+            .orWhere('user.firstName like :firstName', {
+              firstName: `%${searchInput}%`,
+            })
+            .orWhere('user.lastName like :lastName', { lastName: `%${searchInput}%` });
+        })
+      )
+      .getMany();
+
+    return organizationUsers?.map((orgUser) => {
+      return {
+        email: orgUser.user.email,
+        firstName: orgUser.user.firstName,
+        lastName: orgUser.user.lastName,
+        name: `${orgUser.user.firstName} ${orgUser.user.lastName}`,
+        id: orgUser.id,
+      };
+    });
   }
 
   async fetchUsers(user: any, page: number, options: any): Promise<FetchUserResponse[]> {

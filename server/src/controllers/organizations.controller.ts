@@ -62,6 +62,18 @@ export class OrganizationsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('users/suggest')
+  async getUser(@Request() req, @Query() query) {
+    const searchInput = query.input;
+    const users = await this.organizationsService.fetchUsersByValue(req.user, searchInput);
+    const response = {
+      users,
+    };
+
+    return decamelizeKeys(response);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get()
   async get(@User() user) {
     const result = await this.organizationsService.fetchOrganizations(user);
