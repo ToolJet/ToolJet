@@ -9,16 +9,16 @@ const Mentions = ({ searchUser, value = '', setValue, setMentionedUsers, placeho
     if (value === '') setMentionsInputValue('');
   }, [value]);
 
+  const debouncedResults = React.useMemo(() => {
+    return debounce(searchUser, 300);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   React.useEffect(() => {
     return () => {
       debouncedResults.cancel();
     };
   });
-
-  const debouncedResults = React.useMemo(() => {
-    return debounce(searchUser, 300);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <MentionsInput
