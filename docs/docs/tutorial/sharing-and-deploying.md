@@ -9,11 +9,8 @@ title: Preview and Sharing Apps
 
 Clicking on `Preview` will open up the currently opened version of the app in the new tab. This is useful if you want to immediately check the app in production.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/sharing/preview.gif)
-
-</div>
+<img className="screenshot-full" src="/img/tutorial/sharing/preview.gif" alt="preview" />
 
 ## Sharing an app
 
@@ -23,7 +20,9 @@ Once you have released a version of your app, you can share the app with others 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/sharing/share.png)
+
+<img className="screenshot-full" src="/img/tutorial/sharing/share.png" alt="share" />
+
 
 </div>
 
@@ -31,7 +30,9 @@ Once you have released a version of your app, you can share the app with others 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/sharing/toggle.png)
+
+<img className="screenshot-full" src="/img/tutorial/sharing/toggle.png"  alt="toggle" />
+
 
 </div>
 
@@ -39,7 +40,8 @@ Once you have released a version of your app, you can share the app with others 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/sharing/url.png)
+<img className="screenshot-full" src="/img/tutorial/sharing/url.png" alt="url" />
+
 
 </div>
 
@@ -47,6 +49,7 @@ Once you have released a version of your app, you can share the app with others 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Managing Users and Groups](/img/tutorial/sharing/embedd.png)
+<img className="screenshot-full" src="/img/tutorial/sharing/embedd.png" alt="embedd" />
+
 
 </div>
