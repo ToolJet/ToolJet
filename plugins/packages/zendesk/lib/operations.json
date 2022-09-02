@@ -1,0 +1,131 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Zendesk datasource",
+  "description": "A schema defining Zendesk datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "read_tickets",
+          "name": "List tickets"
+        },
+        {
+          "value": "read_requested_tickets",
+          "name": "List requested tickets"
+        },
+        {
+          "value": "show_ticket",
+          "name": "Show ticket"
+        },
+        {
+          "value": "update_ticket",
+          "name": "Update ticket"
+        },
+        {
+          "value": "list_users",
+          "name": "List users"
+        },
+        {
+          "value": "get_user",
+          "name": "Get user"
+        },
+        {
+          "value": "get_profile",
+          "name": "Get profile"
+        },
+        {
+          "value": "search",
+          "name": "Search"
+        }
+      ]
+    },
+    "read_requested_tickets": {
+      "user_id": {
+        "label": "User ID",
+        "key": "user_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter user id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter user id"
+      }
+    },
+    "show_ticket": {
+      "ticket_id": {
+        "label": "Ticket ID",
+        "key": "ticket_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter ticket id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter ticket id"
+      }
+    },
+    "get_user": {
+      "user_id": {
+        "label": "User ID",
+        "key": "user_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter user id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter user id"
+      }
+    },
+    "get_profile": {
+      "user_id": {
+        "label": "User ID",
+        "key": "user_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter user id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter user id"
+      }
+    },
+    "update_ticket": {
+      "ticket_id": {
+        "label": "Ticket ID",
+        "key": "ticket_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter ticket id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter ticket id"
+      },
+      "body": {
+        "label": "body",
+        "key": "body",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "height": "150px",
+        "description": "Enter ticket",
+        "placeholder": "Enter ticket"
+      }
+    },
+    "search": {
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "height": "36px",
+        "description": "Enter query",
+        "placeholder": "type:ticket status:open"
+      }
+    }
+  }
+}

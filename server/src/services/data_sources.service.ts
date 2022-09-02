@@ -111,7 +111,8 @@ export class DataSourcesService {
       const authCode = findOption(options, 'code')['value'];
 
       const queryService = new allPlugins[provider]();
-      const accessDetails = await queryService.accessDetailsFrom(authCode);
+
+      const accessDetails = await queryService.accessDetailsFrom(authCode, options);
 
       for (const row of accessDetails) {
         const option = {};
@@ -209,6 +210,7 @@ export class DataSourcesService {
 
   async getAuthUrl(provider): Promise<object> {
     const service = new allPlugins[provider]();
+    console.log('zendesk ==========>', JSON.stringify(service));
     return { url: service.authUrl() };
   }
 }
