@@ -7,7 +7,14 @@ import Button from '@/_ui/Button';
 import usePopover from '@/_hooks/use-popover';
 import { useHotkeys } from 'react-hotkeys-hook';
 
-function CommentFooter({ users, editComment = '', setMentionedUsers, editCommentId, setEditCommentId, handleSubmit }) {
+function CommentFooter({
+  searchUser,
+  editComment = '',
+  setMentionedUsers,
+  editCommentId,
+  setEditCommentId,
+  handleSubmit,
+}) {
   const [comment, setComment] = React.useState(editComment);
   const [loading, setLoading] = React.useState(false);
   const [open, trigger, content, setOpen] = usePopover(false);
@@ -40,7 +47,7 @@ function CommentFooter({ users, editComment = '', setMentionedUsers, editComment
         <div className="row align-items-center">
           <div className="col-8">
             <TextareaMentions
-              users={users}
+              searchUser={searchUser}
               setMentionedUsers={setMentionedUsers}
               value={comment}
               setValue={setComment}

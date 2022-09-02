@@ -1,13 +1,24 @@
 import React from 'react';
 import { MentionsInput, Mention } from 'react-mentions';
-import { uniqBy } from 'lodash';
+import { uniqBy, debounce } from 'lodash';
 
-const Mentions = ({ users, value = '', setValue, setMentionedUsers, placeholder, darkMode }) => {
+const Mentions = ({ searchUser, value = '', setValue, setMentionedUsers, placeholder, darkMode }) => {
   const [mentionsInputValue, setMentionsInputValue] = React.useState(value);
 
   React.useEffect(() => {
     if (value === '') setMentionsInputValue('');
   }, [value]);
+
+  React.useEffect(() => {
+    return () => {
+      debouncedResults.cancel();
+    };
+  });
+
+  const debouncedResults = React.useMemo(() => {
+    return debounce(searchUser, 300);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <MentionsInput
@@ -65,7 +76,7 @@ const Mentions = ({ users, value = '', setValue, setMentionedUsers, placeholder,
         trigger="@"
         displayTransform={(_, display) => `(@${display})`}
         markup="(@__display__){__id__}"
-        data={users}
+        data={debouncedResults}
         appendSpaceOnAdd
         renderSuggestion={(suggestion) => (
           <div

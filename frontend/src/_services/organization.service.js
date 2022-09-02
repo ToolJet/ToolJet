@@ -3,6 +3,7 @@ import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_
 
 export const organizationService = {
   getUsers,
+  getUsersByValue,
   createOrganization,
   editOrganization,
   getOrganizations,
@@ -19,6 +20,13 @@ function getUsers(page, options) {
     }&${options?.lastName ? `lastName=${options.lastName}` : ''}`,
     requestOptions
   ).then(handleResponse);
+}
+
+function getUsersByValue(searchInput) {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/organizations/users/suggest?input=${searchInput}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function createOrganization(name) {

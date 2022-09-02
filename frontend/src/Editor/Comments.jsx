@@ -1,31 +1,16 @@
 import '@/_styles/editor/comments.scss';
 
 import React from 'react';
-import { isEmpty, capitalize } from 'lodash';
+import { isEmpty } from 'lodash';
 
 import Comment from './Comment';
-import { commentsService, organizationService } from '@/_services';
+import { commentsService } from '@/_services';
 
 import useRouter from '@/_hooks/use-router';
 
 const Comments = ({ newThread = {}, appVersionsId, socket, canvasWidth }) => {
   const [threads, setThreads] = React.useState([]);
   const router = useRouter();
-
-  const [users, setUsers] = React.useState([]);
-
-  React.useEffect(() => {
-    organizationService.getUsers(null).then((data) => {
-      const _users = data.users.map((u) => ({
-        id: u.user_id,
-        display: `${capitalize(u.first_name)} ${capitalize(u.last_name)}`,
-        email: u.email,
-        first_name: u.first_name,
-        last_name: u.last_name,
-      }));
-      setUsers(_users);
-    });
-  }, []);
 
   async function fetchData() {
     const { data } = await commentsService.getThreads(router.query.id, appVersionsId);
@@ -62,7 +47,6 @@ const Comments = ({ newThread = {}, appVersionsId, socket, canvasWidth }) => {
         socket={socket}
         threadId={id}
         canvasWidth={canvasWidth}
-        users={users}
         {...thread}
       />
     );
