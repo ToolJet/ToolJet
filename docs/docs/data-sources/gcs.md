@@ -23,7 +23,7 @@ To add a new GCS source, click on the **Add or edit datasource** icon on the lef
 ToolJet requires the **json private key** of a service account to be able to connect to GCS.
 You can follow the [google documentation](https://cloud.google.com/docs/authentication/getting-started) to get started.
 
-![ToolJet - GCS connection](/img/datasource-reference/gcs-connect.png)
+<img className="screenshot-full" src="/img/datasource-reference/gcs-connect.png"  alt="gcs connection" />
 
 Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
 
@@ -31,7 +31,7 @@ Click on **Test connection** button to verify if the credentials are correct and
 
 Click on `+` button of the **query manager** at the bottom panel of the editor and select the data source added in the previous step as the data source. Select the operation that you want to perform and click **Save** to save the query.
 
-![ToolJet - GCS query](/img/datasource-reference/gcs-query.png)
+<img className="screenshot-full" src="/img/datasource-reference/gcs-query.png" alt="gcs query" />
 
 Click on the **run** button to run the query. 
 **NOTE**: Query should be saved before running.
