@@ -7,6 +7,7 @@
     "@sentry/react": "^6.17.6",
     "@sentry/tracing": "^6.17.6",
     "@svgr/webpack": "^5.5.0",
+    "@tabler/icons": "^1.91.1",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",

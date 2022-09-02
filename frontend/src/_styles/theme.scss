@@ -6105,3 +6105,27 @@ input.hide-input-arrows{
     }
   }
 }
+
+.icon-widget-popover{
+  .popover-header{
+    padding-bottom: 0;
+    background-color: #fff;
+    .input-icon{
+      margin-bottom: 0.5rem !important;
+    }
+  }
+  .popover-body{
+    height: 300px;
+    overflow: auto;
+    .icon-element{
+      cursor: pointer;
+      width: 24px;
+      box-sizing: content-box;
+      border: 0.5px solid #fff;
+      border-radius: $border-radius;
+      &:hover{
+        border: 0.5px solid $primary;
+      }
+    }
+  }
+}

@@ -1,37 +1,61 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SearchBox } from '@/_components/SearchBox';
+// eslint-disable-next-line import/no-unresolved
+import * as Icons from '@tabler/icons';
 
 export const Icon = ({ componentMeta, darkMode, ...restProps }) => {
-  const {
-    layoutPropertyChanged,
-    component,
-    paramUpdated,
-    dataQueries,
-    currentState,
-    eventsChanged,
-    apps,
-    allComponents,
-  } = restProps;
+  const { layoutPropertyChanged, component, dataQueries, currentState, eventsChanged, apps, allComponents } = restProps;
+
+  const [filteredIcons, setIcons] = useState([]);
+  const iconList = useRef([]);
+  let IconElemet;
+
+  useEffect(() => {
+    iconList.current = Object.keys(Icons);
+    setIcons(iconList.current);
+  }, []);
 
   const eventPopover = () => {
     return (
       <Popover
         id="popover-basic"
-        style={{ width: '350px', maxWidth: '350px' }}
-        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow`}
+        style={{ width: '450px', maxWidth: '450px' }}
+        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow icon-widget-popover`}
       >
-        <Popover.Content>
+        <Popover.Title>
           <SearchBox
-            onSubmit={(text) => {
-              console.log(text);
+            onSubmit={(searchText) => {
+              console.log('searchText--- ', searchText);
+              // setIcons(
+              //   iconList.current.filter((icon) =>
+              //     icon?.toLowerCase().includes(searchText ? searchText.toLowerCase() : '')
+              //   )
+              // );
             }}
             width="100%"
           />
+        </Popover.Title>
+        <Popover.Content>
+          <div className="row">
+            {filteredIcons.map((icon) => {
+              IconElemet = Icons[icon];
+              return (
+                <div className="icon-element p-2" key={icon}>
+                  <IconElemet
+                    color="black"
+                    stroke={3}
+                    strokeLinejoin="miter"
+                    style={{ width: '24px', height: '24px' }}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </Popover.Content>
       </Popover>
     );
