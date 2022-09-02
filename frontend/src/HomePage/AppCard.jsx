@@ -6,6 +6,7 @@ import { ToolTip } from '@/_components';
 import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
 import { Link } from 'react-router-dom';
+import urlJoin from 'url-join';
 
 const { defaultIcon } = configs;
 
@@ -94,18 +95,20 @@ export default function AppCard({
           </div>
         </ToolTip>
       </div>
-      <div className="py-1">
-        <div className="app-creator py-1" data-cy="app-creator">{`${app.user?.first_name ? app.user.first_name : ''} ${
-          app.user?.last_name ? app.user.last_name : ''
-        }`}</div>
-        <div className="app-creation-time" data-cy="app-creation-time">
-          <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
-            <span>{updated === 'just now' ? updated : `${updated} ago`}</span>
-          </ToolTip>
+      {canUpdate && (
+        <div className="py-1">
+          <div className="app-creator py-1" data-cy="app-creator">{`${
+            app.user?.first_name ? app.user.first_name : ''
+          } ${app.user?.last_name ? app.user.last_name : ''}`}</div>
+          <div className="app-creation-time" data-cy="app-creation-time">
+            <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+              <span>{updated === 'just now' ? updated : `${updated} ago`}</span>
+            </ToolTip>
+          </div>
         </div>
-      </div>
+      )}
       <div style={{ display: focused ? 'block' : 'none' }}>
-        <div className="container-fluid d-flex flex-column align-content-center px-0 mt-1">
+        <div className={`container-fluid d-flex flex-column align-content-center px-0 ${canUpdate ? 'mt-1' : 'mt-4'}`}>
           <div className="row">
             {canUpdate && (
               <div className="col-6 pe-1">
@@ -131,7 +134,7 @@ export default function AppCard({
                     disabled={app?.current_version_id === null || app?.is_maintenance_on}
                     onClick={() => {
                       if (app?.current_version_id) {
-                        window.open(`/applications/${app.slug}`);
+                        window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
                       } else {
                         history.push(app?.current_version_id ? `/applications/${app.slug}` : '');
                       }

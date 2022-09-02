@@ -764,7 +764,7 @@ button {
 
 .page-body,
 .homepage-body {
-  height: 90.6vh;
+  height: 93vh;
 
   .list-group.list-group-transparent.dark .all-apps-link,
   .list-group-item-action.dark.active {
@@ -1253,11 +1253,11 @@ button {
     .app-list {
       .app-card {
         .app-creation-time {
-          color: #61656f;
+          color: #afb0b2;
         }
 
         .app-creator {
-          color: #7c86a1;
+          color: #c3c4cb;
         }
       }
 
@@ -3012,6 +3012,13 @@ input:focus-visible {
 
   .DateInput_input {
     background-color: #1f2936;
+    color: #fff;
+  }
+
+  &.daterange-picker-widget{
+    .DateRangePickerInput_arrow_svg{
+      fill: #fff;
+    }
   }
 
   .DateRangePickerInput {
@@ -5031,6 +5038,12 @@ div#driver-page-overlay {
 
   .popover-body {
     color: #d9dcde !important;
+  }
+}
+
+.toast-dark-mode {
+   .btn-close {
+    filter: brightness(0) invert(1);
   }
 }
 

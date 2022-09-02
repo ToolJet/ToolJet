@@ -95,7 +95,7 @@ If you rather want to try out ToolJet locally with docker, you can follow the st
 8. Seed the database:
 
   ```bash
-  docker-compose run server npm run db:seed
+  docker-compose exec server npm run db:seed:prod
   ```
 
   This seeds the database with a default user with the following credentials:

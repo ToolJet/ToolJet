@@ -74,11 +74,13 @@ export const Container = ({
     '⌘+v, control+v',
     () => {
       if (isContainerFocused) {
-        navigator.clipboard
-          .readText()
-          .then((cliptext) =>
-            addComponents(appDefinition, appDefinitionChanged, focusedParentIdRef.current, JSON.parse(cliptext))
-          );
+        navigator.clipboard.readText().then((cliptext) => {
+          try {
+            addComponents(appDefinition, appDefinitionChanged, focusedParentIdRef.current, JSON.parse(cliptext));
+          } catch (err) {
+            console.log(err);
+          }
+        });
       }
     },
     [isContainerFocused, appDefinition, focusedParentIdRef]
@@ -86,7 +88,7 @@ export const Container = ({
 
   useEffect(() => {
     const handleClick = (e) => {
-      if (canvasRef.current.contains(e.target)) {
+      if (canvasRef.current.contains(e.target) || document.getElementById('modal-container').contains(e.target)) {
         const elem = e.target.closest('.real-canvas').getAttribute('id');
         if (elem === 'real-canvas') {
           focusedParentIdRef.current = undefined;
