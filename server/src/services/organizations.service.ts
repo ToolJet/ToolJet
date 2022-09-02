@@ -138,6 +138,7 @@ export class OrganizationsService {
         lastName: orgUser.user.lastName,
         name: `${orgUser.user.firstName} ${orgUser.user.lastName}`,
         id: orgUser.id,
+        userId: orgUser.user.id,
       };
     });
   }
