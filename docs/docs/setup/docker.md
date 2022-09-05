@@ -90,8 +90,8 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 
   1. Download our production docker-compose file into the server.
   ```bash
-  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose-postgres.yaml
-  mv docker-compose-postgres.yaml docker-compose.yaml
+  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose-db.yaml
+  mv docker-compose-db.yaml docker-compose.yaml
   mkdir postgres_data
   ```
 
@@ -204,8 +204,8 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 
   1. Download our production docker-compose file into the server.
   ```bash
-  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose-ssl-postgres.yaml
-  mv docker-compose-ssl-postgres.yaml docker-compose.yaml
+  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose-ssl-db.yaml
+  mv docker-compose-ssl-db.yaml docker-compose.yaml
   mkdir postgres_data
   ```
 
