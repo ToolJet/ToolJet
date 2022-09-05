@@ -126,6 +126,7 @@ module.exports = {
     new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
     new webpack.DefinePlugin({
       'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
+      'process.env.SERVE_CLIENT': JSON.stringify(process.env.SERVE_CLIENT),
     }),
   ],
   devServer: {
