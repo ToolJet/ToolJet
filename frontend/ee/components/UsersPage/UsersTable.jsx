@@ -50,7 +50,7 @@ const UsersTable = ({
               <tr>
                 <th data-cy="name-title">Name</th>
                 <th data-cy="email-title">Email</th>
-                <th data-cy="status-title">Status</th>
+                {(users && users[0]?.status) && <th data-cy="status-title">Status</th>}
                 <th className="w-1"></th>
               </tr>
             </thead>
@@ -67,9 +67,9 @@ const UsersTable = ({
                     <td className="col-4 p-3">
                       <div className="skeleton-line w-10"></div>
                     </td>
-                    <td className="col-2 p-3">
+                    {(users && users[0]?.status) &&<td className="col-2 p-3">
                       <div className="skeleton-line"></div>
-                    </td>
+                    </td>}
                     <td className="text-muted col-auto col-1 pt-3">
                       <div className="skeleton-line"></div>
                     </td>
@@ -104,7 +104,7 @@ const UsersTable = ({
                         {user.email}
                       </a>
                     </td>
-                    <td className="text-muted">
+                    {user.status && (<td className="text-muted">
                       <span
                         className={`badge bg-${
                           user.status === 'invited' ? 'warning' : user.status === 'archived' ? 'danger' : 'success'
@@ -131,7 +131,7 @@ const UsersTable = ({
                       ) : (
                         ''
                       )}
-                    </td>
+                    </td>)}
                     <td>
                       <button
                         type="button"
