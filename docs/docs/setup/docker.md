@@ -84,27 +84,7 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 
   5. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
 
-  ### Creating admin workspace and account
 
-  ```bash
-  docker-compose exec server npm run db:seed:prod
-  ```
-
-  This seeds the database with a default user with the following credentials:
-    - email: `dev@tooljet.io`
-    - password: `password`
-
-  :::caution
-  Make sure that the server can receive traffic on port 80 & 443.
-     For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
-
-   | protocol | port | allowed_cidr |
-   | -------- | ---- | ------------ |
-   | tcp      | 80   | 0.0.0.0/0    |
-   | tcp      | 443  | 0.0.0.0/0    |
-  :::info
-
-  You're all done! ToolJet would now be served at the URL you've set in `TOOLJET_HOST`.
   </TabItem>
   <TabItem value="with-in-built-db" label="With in-built DB">
 
@@ -156,27 +136,8 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 
   4. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
 
-  ### Creating admin workspace and account
 
-  ```bash
-  docker-compose exec server npm run db:seed:prod
-  ```
 
-  This seeds the database with a default user with the following credentials:
-    - email: `dev@tooljet.io`
-    - password: `password`
-
-  :::caution
-  Make sure that the server can receive traffic on port 80 & 443.
-     For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
-
-   | protocol | port | allowed_cidr |
-   | -------- | ---- | ------------ |
-   | tcp      | 80   | 0.0.0.0/0    |
-   | tcp      | 443  | 0.0.0.0/0    |
-  :::info
-
-  You're all done! ToolJet would now be served at the URL you've set in `TOOLJET_HOST`.
   </TabItem>
 
   <TabItem value="docker-auto-ssl-and-with-external" label="With auto SSL & external DB">
@@ -235,27 +196,8 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 
   5. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
 
-  ### Creating admin workspace and account
 
-  ```bash
-  docker-compose exec server npm run db:seed:prod
-  ```
 
-  This seeds the database with a default user with the following credentials:
-    - email: `dev@tooljet.io`
-    - password: `password`
-
-  :::caution
-  Make sure that the server can receive traffic on port 80 & 443.
-     For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
-
-   | protocol | port | allowed_cidr |
-   | -------- | ---- | ------------ |
-   | tcp      | 80   | 0.0.0.0/0    |
-   | tcp      | 443  | 0.0.0.0/0    |
-  :::info
-
-  You're all done! ToolJet would now be served at the URL you've set in `TOOLJET_HOST`.
   </TabItem>
 
   <TabItem value="docker-auto-ssl-and-inbuilt-db" label="With auto SSL & in-built DB">
@@ -313,6 +255,11 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 
   4. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
 
+
+
+  </TabItem>
+</Tabs>
+
 ### Creating admin workspace and account
 
   ```bash
@@ -323,17 +270,15 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
     - email: `dev@tooljet.io`
     - password: `password`
 
-  :::caution
-  Make sure that the server can receive traffic on port 80 & 443.
-     For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
 
-   | protocol | port | allowed_cidr |
-   | -------- | ---- | ------------ |
-   | tcp      | 80   | 0.0.0.0/0    |
-   | tcp      | 443  | 0.0.0.0/0    |
-  :::
+:::caution
+Make sure that the server can receive traffic on port 80 & 443.
+    For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
+
+  | protocol | port | allowed_cidr |
+  | -------- | ---- | ------------ |
+  | tcp      | 80   | 0.0.0.0/0    |
+  | tcp      | 443  | 0.0.0.0/0    |
+:::
 
   You're all done! ToolJet would now be served at the URL you've set in `TOOLJET_HOST`.
-
-  </TabItem>
-</Tabs>
