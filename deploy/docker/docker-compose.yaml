@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  tooljet:
+  server:
     tty: true
     stdin_open: true
     image: tooljet/tooljet-ce:latest
