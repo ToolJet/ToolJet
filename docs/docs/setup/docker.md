@@ -13,22 +13,12 @@ Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJ
 :::info
 If you rather want to try out ToolJet on your local machine with Docker, you can follow the steps [here](https://docs.tooljet.com/docs/setup/docker-local).
 :::
-
-:::caution
-Make sure that the server can receive traffic on port 80 & 443.
-   For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
-
-   | protocol | port | allowed_cidr |
-   | -------- | ---- | ------------ |
-   | tcp      | 80   | 0.0.0.0/0    |
-   | tcp      | 443  | 0.0.0.0/0    |
-:::info   
-
-
 ### Installing Docker and Docker Compose
 Install docker and docker-compose on the server.
    - Docs for [Docker Installation](https://docs.docker.com/engine/install/)
    - Docs for [Docker Compose Installation](https://docs.docker.com/compose/install/)
+
+### Deployment options
 
 There are four options to deploy ToolJet using Docker Compose: 
 1.   **Using an external PostgreSQL database**. This setup is recommended if you want to use a managed PostgreSQL service such as AWS RDS or Google Cloud SQL.
@@ -134,5 +124,15 @@ docker-compose exec server npm run db:seed:prod
 This seeds the database with a default user with the following credentials:
   - email: `dev@tooljet.io`
   - password: `password`
+
+:::caution
+Make sure that the server can receive traffic on port 80 & 443.
+   For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
+
+   | protocol | port | allowed_cidr |
+   | -------- | ---- | ------------ |
+   | tcp      | 80   | 0.0.0.0/0    |
+   | tcp      | 443  | 0.0.0.0/0    |
+:::info  
 
 You're all done! ToolJet would now be served at the URL you've set in `TOOLJET_HOST`.
