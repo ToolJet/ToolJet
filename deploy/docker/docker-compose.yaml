@@ -9,8 +9,6 @@ services:
     env_file: .env
     ports:
       - 80:80
-    depends_on:
-      - postgres
     environment:
       SERVE_CLIENT: "true"
       PORT: "80"
