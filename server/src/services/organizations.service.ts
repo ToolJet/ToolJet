@@ -120,13 +120,13 @@ export class OrganizationsService {
       })
       .andWhere(
         new Brackets((qb) => {
-          qb.where('user.email like :email', {
-            email: `%${searchInput}%`,
+          qb.where('lower(user.email) like :email', {
+            email: `%${searchInput.toLowerCase()}%`,
           })
-            .orWhere('user.firstName like :firstName', {
-              firstName: `%${searchInput}%`,
+            .orWhere('lower(user.firstName) like :firstName', {
+              firstName: `%${searchInput.toLowerCase()}%`,
             })
-            .orWhere('user.lastName like :lastName', { lastName: `%${searchInput}%` });
+            .orWhere('lower(user.lastName) like :lastName', { lastName: `%${searchInput.toLowerCase()}%` });
         })
       )
       .getMany();
@@ -147,8 +147,8 @@ export class OrganizationsService {
     const organizationUsers = await this.organizationUsersRepository.find({
       where: { organizationId: user.organizationId, user: options },
       relations: ['user'],
-      take: page ? 10 : undefined,
-      skip: page ? 10 * (page - 1) : undefined,
+      take: 10,
+      skip: 10 * (page - 1),
     });
 
     const isAdmin = await this.usersService.hasGroup(user, 'admin');

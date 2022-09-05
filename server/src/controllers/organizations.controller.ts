@@ -33,19 +33,15 @@ export class OrganizationsController {
 
   @UseGuards(JwtAuthGuard)
   @Get('users')
-  async getUsers(@Request() req, @Query() query) {
-    const page = query.page;
-
-    const email = query.email;
-    const firstName = query.firstName;
-    const lastName = query.lastName;
-    const filterOptions = {};
-    if (email) filterOptions['email'] = email;
-    if (firstName) filterOptions['firstName'] = firstName;
-    if (lastName) filterOptions['lastName'] = lastName;
-
-    const users = await this.organizationsService.fetchUsers(req.user, page, filterOptions);
-    const usersCount = await this.organizationsService.usersCount(req.user);
+  async getUsers(@User() user, @Query() query) {
+    const { page, email, firstName, lastName } = query;
+    const filterOptions = {
+      ...(email && { email }),
+      ...(firstName && { firstName }),
+      ...(lastName && { lastName }),
+    };
+    const users = await this.organizationsService.fetchUsers(user, page, filterOptions);
+    const usersCount = await this.organizationsService.usersCount(user);
 
     const meta = {
       total_pages: Math.ceil(usersCount / 10),
