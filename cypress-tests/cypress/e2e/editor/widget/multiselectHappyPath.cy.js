@@ -26,6 +26,7 @@ import {
   selectColourFromColourPicker,
   fillBoxShadowParams,
   verifyBoxShadowCss,
+  verifyAndModifyStylePickerFx,
 } from "Support/utils/commonWidget";
 
 describe("Date Picker widget", () => {
@@ -193,10 +194,7 @@ describe("Date Picker widget", () => {
       commonWidgetText.parameterDisable,
       commonWidgetText.codeMirrorLabelFalse
     );
-    cy.get(commonSelectors.autoSave, { timeout: 9000 }).should(
-      "have.text",
-      commonText.autoSave
-    );
+    cy.waitForAutoSave();
     cy.get(
       commonWidgetSelector.draggableWidget(multiselectText.defaultWidgetName)
     )
@@ -218,23 +216,26 @@ describe("Date Picker widget", () => {
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     openAccordion(commonWidgetText.accordionGenaral, "1");
 
-    verifyAndModifyToggleFx(
+    verifyAndModifyStylePickerFx(
       commonWidgetText.parameterBoxShadow,
       commonWidgetText.boxShadowDefaultValue,
-      false
+      commonWidgetText.boxShadowFxValue
     );
-    cy.get(multiselectSelector.inputBoxShadow).click();
+    cy.get(
+      commonWidgetSelector.parameterFxButton(
+        commonWidgetText.parameterBoxShadow
+      )
+    ).click();
+
+    cy.get(
+      commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
+    ).click();
     fillBoxShadowParams(
       commonWidgetSelector.boxShadowDefaultParam,
       data.boxShadowParam
     );
-    cy.get(multiselectSelector.boxShadowPopover)
-      .find(multiselectSelector.colourPickerInput)
-      .click();
-    selectColourFromColourPicker(
-      multiselectSelector.colourPickerParent,
-      data.colour
-    );
+
+    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
     verifyBoxShadowCss(
       multiselectText.defaultWidgetName,
       data.colour,
