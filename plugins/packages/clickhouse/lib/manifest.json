@@ -123,7 +123,7 @@
       "description": "Enter session id"
     },
     "session_timeout": {
-      "label": "Session timeout",
+      "label": "Session Timeout",
       "key": "session_timeout",
       "type": "text",
       "description": "Enter session timeout"
