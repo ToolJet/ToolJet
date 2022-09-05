@@ -1118,6 +1118,9 @@ class Editor extends React.Component {
       },
       showQuerySearchField: false,
     });
+    if (['#2f3c4c', '#edeff5'].includes(this.state.appDefinition.globalSettings.canvasBackgroundColor)) {
+      this.globalSettingsChanged('canvasBackgroundColor', newMode ? '#2f3c4c' : '#edeff5');
+    }
     this.props.switchDarkMode(newMode);
   };
 
