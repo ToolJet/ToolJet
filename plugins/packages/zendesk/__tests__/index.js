@@ -9,7 +9,7 @@ describe('zendesk', () => {
 
   let sourceOptions = {
     subdomain: ZENDESK_SUBDOMAIN,
-    access_token: 'b6ae53992e8a45e97b3b43c709700a3c0c5c65edd23fe159e89c692d79afbd13',
+    access_token: 'access_token',
   };
 
   let queryOptions = {};
