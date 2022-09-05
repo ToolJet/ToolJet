@@ -3,32 +3,65 @@ id: docker
 title: Docker
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Deploying ToolJet using docker-compose
 
-Follow the steps below to deploy ToolJet on a server using docker-compose. This setup will deploy both **ToolJet server** and **ToolJet client**.
+Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJet requires a PostgreSQL database to store applications definitions, (encrypted) credentials for datasources and user authentication data.
 
 :::info
-If you rather want to try out ToolJet locally with docker, you can follow the steps [here](https://docs.tooljet.com/docs/setup/docker-local).
+If you rather want to try out ToolJet on your local machine with Docker, you can follow the steps [here](https://docs.tooljet.com/docs/setup/docker-local).
 :::
 
-1. Make sure that the server can receive traffic on port 80, 443 and 22.
+:::caution
+Make sure that the server can receive traffic on port 80 & 443.
    For example, if the server is an AWS EC2 instance and the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
 
    | protocol | port | allowed_cidr |
    | -------- | ---- | ------------ |
-   | tcp      | 22   | your IP      |
    | tcp      | 80   | 0.0.0.0/0    |
    | tcp      | 443  | 0.0.0.0/0    |
+:::info   
 
-2. Install docker and docker-compose on the server.
+
+### Installing Docker and Docker Compose
+Install docker and docker-compose on the server.
    - Docs for [Docker Installation](https://docs.docker.com/engine/install/)
    - Docs for [Docker Compose Installation](https://docs.docker.com/compose/install/)
 
-3. Setup a PostgreSQL database and make sure that the database is accessible. (Optional)
-  :::info
-  We recommend to use managed postgres service on production for ease of administration, security and management (backups, monitoring etc).
-  If you'd want to run postgres with persistent volume rather, curl for the alternate docker compose file shared in the next step.
-  :::
+There are four options to deploy ToolJet using Docker Compose: 
+1.   **Using an external PostgreSQL database**. This setup is recommended if you want to use a managed PostgreSQL service such as AWS RDS or Google Cloud SQL.
+2.   **Using in-built PostgreSQL database**. This setup uses the official Docker image of PostgreSQL. 
+3.   **Using an external PostgreSQL database and auto SSL**. Recommended only if you want the Docker container itself to do do SSL termination.
+4.   **Using in-built PostgreSQL database and auto SSL**. Recommended only if you want the Docker container itself to do do SSL termination.
+
+Confused about which setup to select? feel free to ask the community via Slack: https://tooljet.com/slack.
+
+:::info
+We recommend to use managed PostgreSQL service on production for ease of administration, security and management (backups, monitoring etc).
+If you'd want to run postgres with persistent volume rather, curl for the alternate docker compose file shared in the next step.
+:::
+
+<Tabs>
+  <TabItem value="with-external-db" label="With external DB" default>
+    qfoqewhhqo
+  </TabItem>
+  <TabItem value="with-in-built-db" label="With in-built DB">
+    This is a banana 🍌
+  </TabItem>
+  <TabItem value="docker-auto-ssl-and-postgres" label="With auto SSL & external DB">
+    This is an apple 🍎
+  </TabItem>
+  <TabItem value="docker-auto-ssl-and--external-postgres" label="With auto SSL & in-built DB">
+    This is an apple 🍎
+  </TabItem>
+</Tabs>
+
+
+
+3. Setup a PostgreSQL database and make sure that the database is accessible.
+
 
 4. Download our production docker-compose file into the server.
 
@@ -92,14 +125,14 @@ If you rather want to try out ToolJet locally with docker, you can follow the st
 
 7. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
 
-8. Seed the database:
+### Creating admin workspace and account
 
-  ```bash
-  docker-compose exec server npm run db:seed:prod
-  ```
+```bash
+docker-compose exec server npm run db:seed:prod
+```
 
-  This seeds the database with a default user with the following credentials:
-   - email: `dev@tooljet.io`
-   - password: `password`
+This seeds the database with a default user with the following credentials:
+  - email: `dev@tooljet.io`
+  - password: `password`
 
-9.  You're all done, ToolJet client would now be served at the URL you've set in `TOOLJET_HOST`.
+You're all done! ToolJet would now be served at the URL you've set in `TOOLJET_HOST`.
