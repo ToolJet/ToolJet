@@ -69,6 +69,7 @@ const sidebars = {
         'data-sources/athena',
         'data-sources/baserow',
         'data-sources/bigquery',
+        'data-sources/clickhouse',
         'data-sources/firestore',
         'data-sources/cosmosdb',
         'data-sources/couchdb',
