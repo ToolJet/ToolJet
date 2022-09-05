@@ -50,7 +50,7 @@ const UsersTable = ({
               <tr>
                 <th data-cy="name-title">Name</th>
                 <th data-cy="email-title">Email</th>
-                {(users && users[0]?.status) && <th data-cy="status-title">Status</th>}
+                {users && users[0]?.status && <th data-cy="status-title">Status</th>}
                 <th className="w-1"></th>
               </tr>
             </thead>
@@ -67,9 +67,11 @@ const UsersTable = ({
                     <td className="col-4 p-3">
                       <div className="skeleton-line w-10"></div>
                     </td>
-                    {(users && users[0]?.status) &&<td className="col-2 p-3">
-                      <div className="skeleton-line"></div>
-                    </td>}
+                    {users && users[0]?.status && (
+                      <td className="col-2 p-3">
+                        <div className="skeleton-line"></div>
+                      </td>
+                    )}
                     <td className="text-muted col-auto col-1 pt-3">
                       <div className="skeleton-line"></div>
                     </td>
@@ -104,34 +106,36 @@ const UsersTable = ({
                         {user.email}
                       </a>
                     </td>
-                    {user.status && (<td className="text-muted">
-                      <span
-                        className={`badge bg-${
-                          user.status === 'invited' ? 'warning' : user.status === 'archived' ? 'danger' : 'success'
-                        } me-1 m-1`}
-                        data-cy="status-badge"
-                      ></span>
-                      <small className="user-status" data-cy="user-status">
-                        {user.status}
-                      </small>
-                      {user.status === 'invited' && 'invitation_token' in user ? (
-                        <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
-                          <img
-                            data-tip="Copy invitation link"
-                            className="svg-icon"
-                            src="assets/images/icons/copy.svg"
-                            width="15"
-                            height="15"
-                            style={{
-                              cursor: 'pointer',
-                            }}
-                            data-cy="copy-invitation-link"
-                          ></img>
-                        </CopyToClipboard>
-                      ) : (
-                        ''
-                      )}
-                    </td>)}
+                    {user.status && (
+                      <td className="text-muted">
+                        <span
+                          className={`badge bg-${
+                            user.status === 'invited' ? 'warning' : user.status === 'archived' ? 'danger' : 'success'
+                          } me-1 m-1`}
+                          data-cy="status-badge"
+                        ></span>
+                        <small className="user-status" data-cy="user-status">
+                          {user.status}
+                        </small>
+                        {user.status === 'invited' && 'invitation_token' in user ? (
+                          <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
+                            <img
+                              data-tip="Copy invitation link"
+                              className="svg-icon"
+                              src="assets/images/icons/copy.svg"
+                              width="15"
+                              height="15"
+                              style={{
+                                cursor: 'pointer',
+                              }}
+                              data-cy="copy-invitation-link"
+                            ></img>
+                          </CopyToClipboard>
+                        ) : (
+                          ''
+                        )}
+                      </td>
+                    )}
                     <td>
                       <button
                         type="button"
