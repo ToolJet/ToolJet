@@ -21,7 +21,7 @@ You can also test your connection before saving the configuration by clicking on
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - n8n](/img/datasource-reference/smtp/connect.png)
+<img className="screenshot-full" src="/img/datasource-reference/smtp/connect.png" alt="smtp connect" />
 
 </div>
 
@@ -35,19 +35,14 @@ To create a query for sending email, you will need to provide the following prop
   - **To** `required` : Recipient's email address
   - **Subject** : Subject of the email
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - n8n](/img/datasource-reference/smtp/query1.png)
+<img className="screenshot-full" src="/img/datasource-reference/smtp/query1.png" alt="smtp query1" />
 
-</div>
 
   - **Body** : You can enter the body text either in the form of `raw text` or `html` in their respective fields.
   - **Attachments** : Attachments can be added to a SMTP query by referencing the file from the `File Picker` component in the attachments field. 
   
   For example, you can set the `Attachments` field value to `{{ components.filepicker1.file }}` or you can pass an array of `{{ name: 'filename.jpg', dataURL: '......' }}` object to accomplish this.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - n8n](/img/datasource-reference/smtp/query2.png)
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/smtp/query2.png" alt="smtp query2" />

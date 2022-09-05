@@ -34,11 +34,10 @@ Click on the **Save** button to save the data source.
 
 Click on `+` button of the query manager at the bottom panel of the editor and select the GraphQL endpoint added in the previous step as the  data source.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - GraphQl](/img/datasource-reference/graphql/graphql-query.png)
+<img className="screenshot-full" src="/img/datasource-reference/graphql/graphql-query.png"  alt="graphql query" />
 
-</div>
+
 
 Click on the 'run' button to run the query. NOTE: Query should be saved before running.
 
