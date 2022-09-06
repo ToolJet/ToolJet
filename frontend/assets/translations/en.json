@@ -1,6 +1,6 @@
 {
     "globals":{
-        "readDocumentation":"Read Documentation",
+        "readDocumentation":"Read documentation",
         "cancel":"Cancel",
         "save":"Save",
         "back":"Back",
@@ -94,7 +94,6 @@
                 "copy":"Copy",
                 "save":"Save",
                 "saving":"Saving",
-                "readDocumentation":"Read documentation",
                 "noResultsFor":"No results for",
                 "thankYouWeveTakenANoteOfIt":"Thank you, we've taken a note of that!",
                 "goToAllDatasources":"Go to all Datasource",

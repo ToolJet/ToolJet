@@ -668,7 +668,7 @@ class DataSourceManagerComponent extends React.Component {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    {this.props.t('editor.queryManager.dataSourceManager.readDocumentation', 'Read documentation')}
+                    {this.props.t('globals.readDocumentation', 'Read documentation')}
                   </a>
                 </small>
               </div>
@@ -702,7 +702,7 @@ class DataSourceManagerComponent extends React.Component {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    {this.props.t('editor.queryManager.dataSourceManager.readDocumentation', 'Read documentation')}
+                    {this.props.t('globals.readDocumentation', 'Read documentation')}
                   </a>
                 </small>
               </div>
