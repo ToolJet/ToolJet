@@ -780,6 +780,7 @@ export function Table({
     state: { pageIndex, pageSize },
     exportData,
     selectedFlatRows,
+    globalFilteredRows,
   } = useTable(
     {
       autoResetPage: false,
@@ -873,6 +874,17 @@ export function Table({
   }, [pageCount]);
 
   const tableRef = React.useRef();
+
+  useEffect(() => {
+    setAllFilters(filters.filter((filter) => filter.id !== ''));
+  }, [JSON.stringify(data)]);
+
+  useEffect(() => {
+    setExposedVariable(
+      'filteredData',
+      globalFilteredRows.map((row) => row.original)
+    );
+  }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
 
   return (
     <div
