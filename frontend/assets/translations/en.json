@@ -61,7 +61,7 @@
             "editVersion": "Edit Version",
             "deleteVersion":"Do you really want to delete this version?",
             "enterVersionName":"Enter version name",
-            "versionAlreadyReleasedKindlyCreateANewVersion":"Version already released. Kindly create a new version or switch to a different version to continue making changes."
+            "versionAlreadyReleased":"Version already released. Kindly create a new version or switch to a different version to continue making changes."
         },
         "queries":"Queries",
         "pleaseSelectAComponentToInspect":"Please select a component to inspect",

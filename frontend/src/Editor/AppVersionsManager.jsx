@@ -441,7 +441,7 @@ const CreateVersionModal = function CreateVersionModal({
                 <div className="col">
                   <span>
                     {t(
-                      'editor.appVersionManager.versionAlreadyReleasedKindlyCreateANewVersion',
+                      'editor.appVersionManager.versionAlreadyReleased',
                       `Version already released. Kindly create a new version or switch to a different version to continue
                       making changes.`
                     )}
