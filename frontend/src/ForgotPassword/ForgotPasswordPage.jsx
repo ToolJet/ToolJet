@@ -60,18 +60,16 @@ class ForgotPasswordComponent extends React.Component {
           <form className="card card-md" action="." method="get" autoComplete="off">
             <div className="card-body">
               <h2 className="card-title text-center mb-4">
-                {this.props.t('loginAndSignUpAndForgotPassword.forgotPassword', 'Forgot Password')}
+                {this.props.t('loginSignupPage.forgotPassword', 'Forgot Password')}
               </h2>
               <div className="mb-3">
-                <label className="form-label">
-                  {this.props.t('loginAndSignUpAndForgotPassword.emailAddress', 'Email address')}
-                </label>
+                <label className="form-label">{this.props.t('loginSignupPage.emailAddress', 'Email address')}</label>
                 <input
                   onChange={this.handleChange}
                   name="email"
                   type="email"
                   className="form-control"
-                  placeholder={this.props.t('loginAndSignUpAndForgotPassword.enterEmail', 'Enter email')}
+                  placeholder={this.props.t('loginSignupPage.enterEmail', 'Enter email')}
                   data-testid="emailField"
                 />
               </div>
@@ -82,15 +80,15 @@ class ForgotPasswordComponent extends React.Component {
                   onClick={this.handleClick}
                   disabled={isLoading || !this.state.email}
                 >
-                  {this.props.t('loginAndSignUpAndForgotPassword.resetPassword', 'Reset Password')}
+                  {this.props.t('loginSignupPage.resetPassword', 'Reset Password')}
                 </button>
               </div>
             </div>
           </form>
           <div className="text-center text-muted mt-3">
-            {this.props.t('loginAndSignUpAndForgotPassword.dontHaveAccountYet', `Don't have account yet?`)}
+            {this.props.t('loginSignupPage.dontHaveAccountYet', `Don't have account yet?`)}
             <Link to={'/signup'} tabIndex="-1">
-              {this.props.t('loginAndSignUpAndForgotPassword.signUp', `Sign up`)}
+              {this.props.t('loginSignupPage.signUp', `Sign up`)}
             </Link>
           </div>
         </div>

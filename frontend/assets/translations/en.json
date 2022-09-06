@@ -20,7 +20,7 @@
     "profile": {
       "profileSettings": "Profile Settings"
     },
-    "loginAndSignUpAndForgotPassword":{
+    "loginSignupPage":{
         "forgotPassword":"Forgot Password",
         "emailAddress":"Email address",
         "enterEmail":"Enter email",

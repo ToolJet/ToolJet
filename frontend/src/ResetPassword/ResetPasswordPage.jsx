@@ -60,19 +60,17 @@ class ResetPasswordComponent extends React.Component {
           <form className="card card-md" action="." method="get" autoComplete="off">
             <div className="card-body">
               <h2 className="card-title text-center mb-4">
-                {this.props.t('loginAndSignUpAndForgotPassword.resetPassword', 'Reset Password')}
+                {this.props.t('loginSignupPage.resetPassword', 'Reset Password')}
               </h2>
               <div className="mb-2">
-                <label className="form-label">
-                  {this.props.t('loginAndSignUpAndForgotPassword.newPassword', 'New Password')}
-                </label>
+                <label className="form-label">{this.props.t('loginSignupPage.newPassword', 'New Password')}</label>
                 <div className="input-group input-group-flat">
                   <input
                     onChange={this.handleChange}
                     name="password"
                     type="password"
                     className="form-control"
-                    placeholder={this.props.t('loginAndSignUpAndForgotPassword.password', 'Password')}
+                    placeholder={this.props.t('loginSignupPage.password', 'Password')}
                     autoComplete="off"
                   />
                   <span className="input-group-text"></span>
@@ -80,7 +78,7 @@ class ResetPasswordComponent extends React.Component {
               </div>
               <div className="mb-2">
                 <label className="form-label">
-                  {this.props.t('loginAndSignUpAndForgotPassword.passwordConfirmation', 'Password Confirmation')}
+                  {this.props.t('loginSignupPage.passwordConfirmation', 'Password Confirmation')}
                 </label>
                 <div className="input-group input-group-flat">
                   <input
@@ -88,10 +86,7 @@ class ResetPasswordComponent extends React.Component {
                     name="password_confirmation"
                     type="password"
                     className="form-control"
-                    placeholder={this.props.t(
-                      'loginAndSignUpAndForgotPassword.passwordConfirmation',
-                      'Password Confirmation'
-                    )}
+                    placeholder={this.props.t('loginSignupPage.passwordConfirmation', 'Password Confirmation')}
                     autoComplete="off"
                   />
                   <span className="input-group-text"></span>

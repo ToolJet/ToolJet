@@ -90,7 +90,7 @@ class SignupPageComponent extends React.Component {
             {!signupSuccess && (
               <div className="card-body">
                 <h2 className="card-title text-center mb-4">
-                  {this.props.t('loginAndSignUpAndForgotPassword.createAToolJetAccount', 'Create a ToolJet account')}
+                  {this.props.t('loginSignupPage.createAToolJetAccount', 'Create a ToolJet account')}
                 </h2>
                 {this.ssoConfigs.enableSignUp && (
                   <div className="d-flex flex-column align-items-center separator-bottom">
@@ -112,23 +112,18 @@ class SignupPageComponent extends React.Component {
                   </div>
                 )}
                 <div className="mb-3">
-                  <label className="form-label">
-                    {this.props.t('loginAndSignUpAndForgotPassword.emailAddress', 'Email address')}
-                  </label>
+                  <label className="form-label">{this.props.t('loginSignupPage.emailAddress', 'Email address')}</label>
                   <input
                     onChange={this.handleChange}
                     name="email"
                     type="email"
                     className="form-control"
-                    placeholder={this.props.t(
-                      'loginAndSignUpAndForgotPassword.enterYourBusinessEmail',
-                      'Enter your business email'
-                    )}
+                    placeholder={this.props.t('loginSignupPage.enterYourBusinessEmail', 'Enter your business email')}
                   />
                 </div>
                 <div className="form-footer">
                   <button className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`} onClick={this.signup}>
-                    {this.props.t('loginAndSignUpAndForgotPassword.signUp', 'Sign up')}
+                    {this.props.t('loginSignupPage.signUp', 'Sign up')}
                   </button>
                 </div>
               </div>
@@ -136,7 +131,7 @@ class SignupPageComponent extends React.Component {
             {signupSuccess && (
               <div className="card-body">
                 {this.props.t(
-                  'loginAndSignUpAndForgotPassword.pleaseCheckYourEmailForConfirmationLink',
+                  'loginSignupPage.pleaseCheckYourEmailForConfirmationLink',
                   'Please check your email for confirmation link'
                 )}
               </div>
@@ -144,9 +139,9 @@ class SignupPageComponent extends React.Component {
           </form>
           {!signupSuccess && (
             <div className="text-center text-muted mt-3">
-              {this.props.t('loginAndSignUpAndForgotPassword.alreadyHaveAnAccount', 'Already have an account?')}
+              {this.props.t('loginSignupPage.alreadyHaveAnAccount', 'Already have an account?')}
               <Link to={'/login'} tabIndex="-1">
-                {this.props.t('loginAndSignUpAndForgotPassword.signIn', 'Sign in')}
+                {this.props.t('loginSignupPage.signIn', 'Sign in')}
               </Link>
             </div>
           )}

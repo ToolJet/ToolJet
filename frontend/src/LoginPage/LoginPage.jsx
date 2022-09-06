@@ -154,7 +154,7 @@ class LoginPageComponent extends React.Component {
                 {!configs && (
                   <div className="text-center">
                     {this.props.t(
-                      'loginAndSignUpAndForgotPassword.noLoginMethodsEnabledForThisWorkspace',
+                      'loginSignupPage.noLoginMethodsEnabledForThisWorkspace',
                       ' No login methods enabled for this workspace'
                     )}
                   </div>
@@ -162,31 +162,31 @@ class LoginPageComponent extends React.Component {
                 {configs?.form?.enabled && (
                   <div>
                     <h2 className="card-title text-center mb-4" data-cy="login-page-header">
-                      {this.props.t('loginAndSignUpAndForgotPassword.loginTo', 'Login to')}{' '}
+                      {this.props.t('loginSignupPage.loginTo', 'Login to')}{' '}
                       {this.single_organization
-                        ? this.props.t('loginAndSignUpAndForgotPassword.yourAccount', 'your account')
-                        : configs?.name || this.props.t('loginAndSignUpAndForgotPassword.yourAccount', 'your account')}
+                        ? this.props.t('loginSignupPage.yourAccount', 'your account')
+                        : configs?.name || this.props.t('loginSignupPage.yourAccount', 'your account')}
                     </h2>
                     <div className="mb-3">
                       <label className="form-label" data-cy="email-label">
-                        {this.props.t('loginAndSignUpAndForgotPassword.emailAddress', 'Email address')}
+                        {this.props.t('loginSignupPage.emailAddress', 'Email address')}
                       </label>
                       <input
                         onChange={this.handleChange}
                         name="email"
                         type="email"
                         className="form-control"
-                        placeholder={this.props.t('loginAndSignUpAndForgotPassword.enterEmail', 'Enter email')}
+                        placeholder={this.props.t('loginSignupPage.enterEmail', 'Enter email')}
                         data-testid="emailField"
                         data-cy="email-text-field"
                       />
                     </div>
                     <div className="mb-2">
                       <label className="form-label" data-cy="password-label">
-                        {this.props.t('loginAndSignUpAndForgotPassword.password', 'Password')}
+                        {this.props.t('loginSignupPage.password', 'Password')}
                         <span className="form-label-description">
                           <Link to={'/forgot-password'} tabIndex="-1" data-cy="forgot-password-link">
-                            {this.props.t('loginAndSignUpAndForgotPassword.forgotPassword', 'Forgot Password')}
+                            {this.props.t('loginSignupPage.forgotPassword', 'Forgot Password')}
                           </Link>
                         </span>
                       </label>
@@ -196,7 +196,7 @@ class LoginPageComponent extends React.Component {
                           name="password"
                           type={this.state.showPassword ? 'text' : 'password'}
                           className="form-control"
-                          placeholder={this.props.t('loginAndSignUpAndForgotPassword.password', 'Password')}
+                          placeholder={this.props.t('loginSignupPage.password', 'Password')}
                           autoComplete="off"
                           data-testid="passwordField"
                           data-cy="password-text-field"
@@ -218,7 +218,7 @@ class LoginPageComponent extends React.Component {
                         htmlFor="check-input"
                         data-cy="show-password-label"
                       >
-                        {this.props.t('loginAndSignUpAndForgotPassword.showPassword', 'show password')}
+                        {this.props.t('loginSignupPage.showPassword', 'show password')}
                       </label>
                     </div>
                   </div>
@@ -235,7 +235,7 @@ class LoginPageComponent extends React.Component {
                       onClick={this.authUser}
                       data-cy="login-button"
                     >
-                      {this.props.t('loginAndSignUpAndForgotPassword.signIn', 'Sign in')}
+                      {this.props.t('loginSignupPage.signIn', 'Sign in')}
                     </button>
                   )}
                   {this.state.configs?.google?.enabled && (
@@ -251,9 +251,9 @@ class LoginPageComponent extends React.Component {
           </form>
           {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
             <div className="text-center text-secondary mt-3" data-cy="sign-up-message">
-              {this.props.t('loginAndSignUpAndForgotPassword.dontHaveAccountYet', `Don't have account yet?`)}
+              {this.props.t('loginSignupPage.dontHaveAccountYet', `Don't have account yet?`)}
               <Link to={'/signup'} tabIndex="-1" data-cy="sign-up-link">
-                {this.props.t('loginAndSignUpAndForgotPassword.signUp', `Sign up`)}
+                {this.props.t('loginSignupPage.signUp', `Sign up`)}
               </Link>
             </div>
           )}
