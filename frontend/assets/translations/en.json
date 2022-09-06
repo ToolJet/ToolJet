@@ -312,7 +312,7 @@
             "of":"of",
             "to":"to"
         },
-        "noApplicationFound":" No Applications found",
+        "noApplicationFound":"No Applications found",
         "thisFolderIsEmpty":"This folder is empty",
         "theAppAndTheAssociatedDataWillBePermanentlyDeleted":"The app and the associated data will be permanently deleted, do you want to continue?",
         "theAppWillBeRemovedFromThisFolderDoYouWantToContinue":"The app will be removed from this folder, do you want to continue?",
@@ -498,7 +498,7 @@
         },
         "CustomComponent":{
             "displayName": "Custom Component",
-            "description": "Visual representation of a sequence of events"
+            "description": "Add your custom react component"
         },
         "ButtonGroup":{
             "displayName": "Button Group",
@@ -553,7 +553,7 @@
             "hideHeader": "Hide header for launched apps",
             "maintenanceMode":"Maintenance mode",
             "maxWidthOfCanvas":"Max width of canvas",
-            "maxHeightOfCanvas" :"Min height of canvas",
+            "maxHeightOfCanvas" :"Max height of canvas",
             "backgroundColorOfCanvas":"Background color of canvas"
 
         },
