@@ -669,7 +669,7 @@ class QueryManagerComponent extends React.Component {
                     checked={this.state.options.runOnPageLoad}
                   />
                   <span className="form-check-label">
-                    {this.props.t('editor.queryManager.runThisQueryOnPageLoad', 'Run this query on page load?')}
+                    {this.props.t('editor.queryManager.runQueryOnPageLoad', 'Run this query on page load?')}
                   </span>
                 </div>
                 <div className="form-check form-switch">
@@ -681,7 +681,7 @@ class QueryManagerComponent extends React.Component {
                   />
                   <span className="form-check-label">
                     {this.props.t(
-                      'editor.queryManager.requestConfirmationBeforeRunningQuery',
+                      'editor.queryManager.confirmBeforeQueryRun',
                       'Request confirmation before running query?'
                     )}
                   </span>
@@ -695,7 +695,7 @@ class QueryManagerComponent extends React.Component {
                     checked={this.state.options.showSuccessNotification}
                   />
                   <span className="form-check-label">
-                    {this.props.t('editor.queryManager.showNotificationOnSuccess', 'Show notification on success?')}
+                    {this.props.t('editor.queryManager.notificationOnSuccess', 'Show notification on success?')}
                   </span>
                 </div>
                 {this.state.options.showSuccessNotification && (

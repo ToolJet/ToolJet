@@ -64,7 +64,7 @@
             "versionAlreadyReleased":"Version already released. Kindly create a new version or switch to a different version to continue making changes."
         },
         "queries":"Queries",
-        "pleaseSelectAComponentToInspect":"Please select a component to inspect",
+        "inspectComponent":"Please select a component to inspect",
         "release":"Release",
         "searchQueries":"Search queries",
         "createQuery":"Create query",
@@ -82,27 +82,27 @@
                         "dataSourceSaved": "Datasource Saved"
                     },
                     "error" :{
-                       "theNameOfDatasourceShouldNotBeEmpty" :"The name of datasource should not be empty"
+                       "noEmptyDsName" :"The name of datasource should not be empty"
                     }
                 },
                 "suggestDataSource":"Suggest Datasource",
                 "suggestAnIntegration":"Suggest an integration",
-                "tellUsWhatAreYouLookingFor":"Tell us what you were looking for?",
-                "dontSeeWhatAreYouLookingFor":"Don't see what you were looking for?",
+                "whatLookingFor":"Tell us what you were looking for?",
+                "noResultFound":"Don't see what you were looking for?",
                 "suggest":"Suggest",
                 "addNewDataSource":"Add new datasource",
-                "pleaseWhiteListOurIP":"Please white-list our IP address if the data source is not publicly accessible",
+                "whiteListIP":"Please white-list our IP address if the data source is not publicly accessible",
                 "copied":"Copied",
                 "copy":"Copy",
                 "saving":"Saving",
                 "noResultsFor":"No results for",
-                "thankYouWeveTakenANoteOfIt":"Thank you, we've taken a note of that!",
+                "noteTaken":"Thank you, we've taken a note of that!",
                 "goToAllDatasources":"Go to all Datasource",
                 "send":"Send"
             },
-            "runThisQueryOnPageLoad":"Run this query on page load?",
-            "requestConfirmationBeforeRunningQuery":"Request confirmation before running query?",
-            "showNotificationOnSuccess":"Show notification on success?",
+            "runQueryOnPageLoad":"Run this query on page load?",
+            "confirmBeforeQueryRun":"Request confirmation before running query?",
+            "notificationOnSuccess":"Show notification on success?",
             "successMessage":"Success Message",
             "queryRanSuccessfully":"Query ran successfully",
             "notificationDuration":"Notification duration (s)",

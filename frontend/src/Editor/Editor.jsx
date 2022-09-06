@@ -1726,7 +1726,7 @@ class EditorComponent extends React.Component {
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">
-                        {this.props.t('editor.pleaseSelectAComponentToInspect', 'Please select a component to inspect')}
+                        {this.props.t('editor.inspectComponent', 'Please select a component to inspect')}
                       </center>
                     )}
                   </div>

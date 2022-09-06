@@ -154,7 +154,7 @@ class DataSourceManagerComponent extends React.Component {
     } else {
       toast.error(
         this.props.t(
-          'editor.queryManager.dataSourceManager.toast.error.theNameOfDatasourceShouldNotBeEmpty',
+          'editor.queryManager.dataSourceManager.toast.error.noEmptyDsName',
           'The name of datasource should not be empty'
         ),
         { position: 'top-center' }
@@ -295,7 +295,7 @@ class DataSourceManagerComponent extends React.Component {
                       handleBackToAllDatasources={this.handleBackToAllDatasources}
                       darkMode={this.props.darkMode}
                       placeholder={this.props.t(
-                        'editor.queryManager.dataSourceManager.tellUsWhatAreYouLookingFor',
+                        'editor.queryManager.dataSourceManager.whatLookingFor',
                         'Tell us what you were looking for?'
                       )}
                     />
@@ -372,7 +372,7 @@ class DataSourceManagerComponent extends React.Component {
           <p>
             <span className="footer-text">
               {this.props.t(
-                'editor.queryManager.dataSourceManager.dontSeeWhatAreYouLookingFor',
+                'editor.queryManager.dataSourceManager.noResultFound',
                 `Don't see what you were looking for?`
               )}
             </span>
@@ -612,7 +612,7 @@ class DataSourceManagerComponent extends React.Component {
                     <div className="col" style={{ maxWidth: '480px' }}>
                       <p>
                         {this.props.t(
-                          'editor.queryManager.dataSourceManager.pleaseWhiteListOurIP',
+                          'editor.queryManager.dataSourceManager.whiteListIP',
                           'Please white-list our IP address if the data source is not publicly accessible.'
                         )}
                       </p>
@@ -759,10 +759,7 @@ const EmptyStateContainer = ({
         {status ? (
           <div>
             <p className="text-success mt-2">
-              {t(
-                'editor.queryManager.dataSourceManager.thankYouWeveTakenANoteOfIt',
-                `Thank you, we've taken a note of that!`
-              )}
+              {t('editor.queryManager.dataSourceManager.noteTaken', `Thank you, we've taken a note of that!`)}
             </p>
             <button
               className={`datasource-modal-button ${darkMode && 'dark-button'}`}
