@@ -20,28 +20,22 @@ You can click on the 'enlarge' icon to enlarge query editor pane.
 SELECT * FROM customers;
 ```
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Building a query](/img/tutorial/building-queries/query.png)
+<img className="screenshot-full" src="/img/tutorial/building-queries/query.png" alt="query" />
 
-</div>
 
 Query results can be previewed by clicking the `preview` button. Previewing queries will not alter the state of the app.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Building a query](/img/tutorial/building-queries/preview.png)
+<img className="screenshot-full" src="/img/tutorial/building-queries/preview.png" alt="preview" />
 
-</div>
 
 
 ## Advanced options
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Building a query](/img/tutorial/building-queries/advanced-options.gif)
+<img className="screenshot-full" src="/img/tutorial/building-queries/advanced-options.gif" alt="advanced options"/>
 
-</div>
 
 #### Run query on page load 
 If this option is enabled, the query will be run when the app is loaded for the first time. The queries can have more than one trigger, ie the same query can later be triggered again using a button's click event or table's row selected event or any other events.
@@ -51,7 +45,7 @@ Enable this option to show a prompt to confirm the action before a query is run.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Building a query](/img/tutorial/building-queries/confirm.png)
+<img className="screenshot-full" src="/img/tutorial/building-queries/confirm.png" alt="confirm" />
 
 </div>
 

@@ -9,11 +9,9 @@ title: Baserow
 
 ToolJet can connect to your Baserow account to read and write data. Baserow API token is required to create an Baserow data source on ToolJet. You can follow the steps to create API token from [this link](https://baserow.io/api-docs).
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-intro.gif)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-intro.gif" alt="Baseqor intro" />
 
-</div>
 
 :::tip
 This guide assumes that you have already gone through [Adding a data source](/docs/tutorial/adding-a-datasource) tutorial.
@@ -37,11 +35,9 @@ This query lists all the fields in a table.
 
 - **Table ID**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-list-fields.png)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-fields.png" alt="Baserow list fields" />
 
-</div>
 
 Example response from Baserow:
 
@@ -92,11 +88,9 @@ This query lists all the rows in a table.
 
 - **Table ID**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-list-rows.png)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-rows.png" alt="Baserow list"/>
 
-</div>
 
 Example response from Baserow:
 
@@ -141,11 +135,9 @@ Example response from Baserow:
 - **Table ID**
 - **Row ID**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-get-row.png)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-get-row.png" alt="Baserow get" />
 
-</div>
 
 Example response from Baserow:
 
@@ -167,11 +159,9 @@ Example response from Baserow:
 - **Table ID**
 - **Records**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-create-row.png)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-create-row.png"  alt="Bserow create"/>
 
-</div>
 
 #### Example Records:
 
@@ -205,11 +195,8 @@ Example response from Baserow:
 - **Row ID**
 - **Records**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-update-row.png)
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-update-row.png" alt="Baserow update" />
 
 #### Example Records:
 
@@ -246,11 +233,9 @@ Example response from Baserow:
 
 - **Before ID** (The row will be moved before the entered ID. If not provided, then the row will be moved to the end )
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-move-row.png)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-move-row.png" alt="Baserow move row" />
 
-</div>
 
 Example response from Baserow:
 
@@ -272,10 +257,8 @@ Example response from Baserow:
 - **Table ID**
 - **Row ID**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Baserow](/img/datasource-reference/baserow/baserow-delete-row.png)
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-delete-row.png" alt="Baserow delete" />
 
-</div>
 
 While deleting a row, the response will be either success or failure from Baserow

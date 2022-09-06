@@ -76,21 +76,6 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
-  const CustomInputBox = React.forwardRef((props, ref) => {
-    return (
-      <input
-        readOnly
-        {...props}
-        value={date !== null ? computeDateString(date) : 'select date'}
-        className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
-          darkMode ? 'bg-dark color-white' : 'bg-light'
-        }`}
-        style={{ height, borderRadius: `${borderRadius}px` }}
-        ref={ref}
-      />
-    );
-  });
-
   return (
     <div
       data-disabled={disabledState}
@@ -99,11 +84,14 @@ export const Datepicker = function Datepicker({
       style={{
         height,
         display: visibility ? '' : 'none',
-        borderRadius: `${borderRadius}px`,
       }}
     >
       <DatePickerComponent
+        className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
+          darkMode ? 'bg-dark color-white' : 'bg-light'
+        }`}
         selected={date}
+        value={date !== null ? computeDateString(date) : 'select date'}
         onChange={(date) => onDateChange(date)}
         showTimeInput={enableTime ? true : false}
         showTimeSelectOnly={enableDate ? false : true}
@@ -113,8 +101,8 @@ export const Datepicker = function Datepicker({
         showMonthDropdown
         showYearDropdown
         dropdownMode="select"
-        customInput={<CustomInputBox />}
         excludeDates={excludedDates}
+        customInput={<input style={{ borderRadius: `${borderRadius}px` }} />}
       />
 
       <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>

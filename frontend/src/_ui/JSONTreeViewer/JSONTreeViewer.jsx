@@ -222,6 +222,8 @@ export class JSONTreeViewer extends React.Component {
             expandWithLabels={this.props.expandWithLabels ?? false} //expand and collapse: onclick of label
             getAbsoluteNodePath={this.getAbsoluteNodePath}
             updateParentState={this.state.updateParentState}
+            fontSize={this.props.fontSize ?? '12px'}
+            inspectorTree={this.props.treeType === 'inspector'}
           />
         </ErrorBoundary>
       </div>
