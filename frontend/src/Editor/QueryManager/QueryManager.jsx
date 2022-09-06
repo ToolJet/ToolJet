@@ -52,7 +52,7 @@ let QueryManager = class QueryManager extends React.Component {
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
     let dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
-    const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
+    const paneHeightChanged = this.state.queryPanelHeight !== props.queryPanelHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
     const queryPaneDragged = this.state.isQueryPaneDragging !== props.isQueryPaneDragging;
     this.setState(
@@ -65,7 +65,7 @@ let QueryManager = class QueryManager extends React.Component {
         currentTab: 1,
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
-        queryPaneHeight: props.queryPaneHeight,
+        queryPanelHeight: props.queryPanelHeight,
         isQueryPaneDragging: props.isQueryPaneDragging,
         currentState: props.currentState,
         selectedSource: source,
