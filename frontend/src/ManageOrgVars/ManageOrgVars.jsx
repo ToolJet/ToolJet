@@ -242,7 +242,7 @@ class ManageOrgVarsComponent extends React.Component {
         <ConfirmDialog
           show={this.state.showVariableDeleteConfirmation}
           message={this.props.t(
-            'header.organization.menus.manageSSO.environmentVar.variableWillBeDeletedDoYouWantToContinue',
+            'header.organization.menus.manageSSO.environmentVar.envWillBeDeleted',
             'Variable will be deleted, do you want to continue?'
           )}
           onConfirm={() => {
@@ -309,7 +309,7 @@ class ManageOrgVarsComponent extends React.Component {
                 ) : (
                   <span className="no-vars-text">
                     {this.props.t(
-                      'header.organization.menus.manageSSO.environmentVar.youHaventConfiguredAnyEnvironmentVariables',
+                      'header.organization.menus.manageSSO.environmentVar.noEnvConfig',
                       `You haven't configured any environment variables, press the 'Add new variable' button to create one`
                     )}
                   </span>

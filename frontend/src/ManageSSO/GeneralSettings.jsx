@@ -115,7 +115,7 @@ export function GeneralSettings({ settings, updateData }) {
             <div className="help-text">
               <div data-cy="general-settings-help-text">
                 {t(
-                  'header.organization.menus.manageSSO.generalSettings.newAccrountWillBeCreated',
+                  'header.organization.menus.manageSSO.generalSettings.newAccountWillBeCreated',
                   `New account will be created for user's first time SSO sign in`
                 )}
               </div>
@@ -143,7 +143,7 @@ export function GeneralSettings({ settings, updateData }) {
                 <div className="help-text mt-1">
                   <div data-cy="login-help-text">
                     {t(
-                      'header.organization.menus.manageSSO.generalSettings.allowUsersToAuthViaDefaultSso',
+                      'header.organization.menus.manageSSO.generalSettings.ssoAuth',
                       `Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO.`
                     )}
                   </div>
@@ -168,7 +168,7 @@ export function GeneralSettings({ settings, updateData }) {
             <div className="help-text mt-1">
               <div data-cy="login-help-text">
                 {t(
-                  'header.organization.menus.manageSSO.generalSettings.supportMultipleDomains',
+                  'header.organization.menus.manageSSO.generalSettings.supportMultiDomains',
                   `Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
                 )}
               </div>
@@ -195,7 +195,7 @@ export function GeneralSettings({ settings, updateData }) {
               <div className="help-text mt-1">
                 <div data-cy="login-help-text">
                   {t(
-                    'header.organization.menus.manageSSO.generalSettings.useThisUrlToLoginDirectlyToTheWorkspace',
+                    'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
                     `Use this URL to login directly to this workspace`
                   )}
                 </div>

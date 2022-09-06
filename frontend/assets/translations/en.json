@@ -177,9 +177,9 @@
                         "apps":"Apps",
                         "users":"User",
                         "permissions":"Permissions",
-                        "selectAppsToAddToTheGroup":"Select apps to add to the group",
+                        "addAppsToGroup":"Select apps to add to the group",
                         "name":"name",
-                        "selectUsersToAddToTheGroup":"Select users to add to the group",
+                        "addUsersToGroup":"Select users to add to the group",
                         "email":"email",
                         "resource":"resource",
                         "createUpdateDelete":"Create/Update/Delete",
@@ -191,14 +191,14 @@
                     "generalSettings":{
                         "title":"General Settings",
                         "enableSignup":"Enable Signup",
-                        "newAccrountWillBeCreated":"New account will be created for user's first time SSO sign in",
+                        "newAccountWillBeCreated":"New account will be created for user's first time SSO sign in",
                         "allowedDomains":"Allowed domains",
                         "enterDomains":"Enter Domains",
-                        "supportMultipleDomains":"Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
+                        "supportMultiDomains":"Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
                         "loginUrl":"Login URL",
-                        "useThisUrlToLoginDirectlyToTheWorkspace":"Use this URL to login directly to this workspace",
+                        "workspaceLogin":"Use this URL to login directly to this workspace",
                         "allowDefaultSso":"Allow default SSO",
-                        "allowUsersToAuthViaDefaultSso":"Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO."
+                        "ssoAuth":"Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO."
                     },
                     "google":{
                         "title":"Google",
@@ -212,7 +212,7 @@
                         "title":"Github",
                         "hostName":"Host Name",
                         "enterHostName":"Enter Host Name",
-                        "requiredIfGithubIsSelfHosted":"Required if GitHub is self hosted",
+                        "requiredGithub":"Required if GitHub is self hosted",
                         "clientId":"Client Id",
                         "enterClientId":"Enter Client Id",
                         "clientSecret":"Client Secret",
@@ -222,8 +222,8 @@
                     },
                     "passwordLogin":"Password Login",
                     "environmentVar" : {
-                        "youHaventConfiguredAnyEnvironmentVariables":"You haven't configured any environment variables, press the 'Add new variable' button to create one",
-                        "variableWillBeDeletedDoYouWantToContinue":"Variable will be deleted, do you want to continue?",
+                        "noEnvConfig":"You haven't configured any environment variables, press the 'Add new variable' button to create one",
+                        "envWillBeDeleted":"Variable will be deleted, do you want to continue?",
                         "addNewVariable":"Add new variable",
                         "variableForm":{
                             "addNewVariable":"Add new variable",

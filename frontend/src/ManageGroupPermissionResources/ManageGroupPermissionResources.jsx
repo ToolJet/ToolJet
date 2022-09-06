@@ -387,7 +387,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             onChange={(value) => this.setSelectedApps(value)}
                             printOptions="on-focus"
                             placeholder={this.props.t(
-                              'header.organization.menus.manageGroups.permissionResources.selectAppsToAddToTheGroup',
+                              'header.organization.menus.manageGroups.permissionResources.addAppsToGroup',
                               'Select apps to add to the group'
                             )}
                           />
@@ -513,7 +513,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             onChange={(value) => this.setSelectedUsers(value)}
                             printOptions="on-focus"
                             placeholder={this.props.t(
-                              'header.organization.menus.manageGroups.permissionResources.selectUsersToAddToTheGroup',
+                              'header.organization.menus.manageGroups.permissionResources.addUsersToGroup',
                               'Select users to add to the group'
                             )}
                           />

@@ -110,10 +110,7 @@ export function Git({ settings, updateData }) {
             <div className="help-text mt-2">
               <div data-cy="general-settings-help-text">
                 {' '}
-                {t(
-                  'header.organization.menus.manageSSO.github.requiredIfGithubIsSelfHosted',
-                  'Required if GitHub is self hosted'
-                )}
+                {t('header.organization.menus.manageSSO.github.requiredGithub', 'Required if GitHub is self hosted')}
               </div>
             </div>
           </div>
