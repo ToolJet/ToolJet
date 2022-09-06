@@ -10,6 +10,7 @@ import _ from 'lodash';
 import { componentTypes } from '../WidgetManager/components';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
+import { useTranslation } from 'react-i18next';
 
 export const EventManager = ({
   component,
@@ -24,6 +25,7 @@ export const EventManager = ({
   popoverPlacement,
 }) => {
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
+  const { t } = useTranslation();
 
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };
@@ -201,7 +203,7 @@ export const EventManager = ({
                 value={event.eventId}
                 search={false}
                 onChange={(value) => handlerChanged(index, 'eventId', value)}
-                placeholder="Select.."
+                placeholder={t('globals.select', 'Select') + '...'}
                 styles={styles}
                 useMenuPortal={false}
               />
@@ -218,7 +220,7 @@ export const EventManager = ({
                 value={event.actionId}
                 search={false}
                 onChange={(value) => handlerChanged(index, 'actionId', value)}
-                placeholder="Select.."
+                placeholder={t('globals.select', 'Select') + '...'}
                 styles={styles}
                 useMenuPortal={false}
               />
@@ -259,7 +261,7 @@ export const EventManager = ({
                       value={event.alertType}
                       search={false}
                       onChange={(value) => handlerChanged(index, 'alertType', value)}
-                      placeholder="Select.."
+                      placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
                     />
@@ -303,7 +305,7 @@ export const EventManager = ({
                     onChange={(value) => {
                       handlerChanged(index, 'modal', value);
                     }}
-                    placeholder="Select.."
+                    placeholder={t('globals.select', 'Select') + '...'}
                     styles={styles}
                     useMenuPortal={false}
                   />
@@ -323,7 +325,7 @@ export const EventManager = ({
                     onChange={(value) => {
                       handlerChanged(index, 'modal', value);
                     }}
-                    placeholder="Select.."
+                    placeholder={t('globals.select', 'Select') + '...'}
                     styles={styles}
                     useMenuPortal={false}
                   />
@@ -359,7 +361,7 @@ export const EventManager = ({
                       handlerChanged(index, 'queryId', query.id);
                       handlerChanged(index, 'queryName', query.name);
                     }}
-                    placeholder="Select.."
+                    placeholder={t('globals.select', 'Select') + '...'}
                     styles={styles}
                     useMenuPortal={false}
                   />
@@ -413,7 +415,7 @@ export const EventManager = ({
                       onChange={(value) => {
                         handlerChanged(index, 'fileType', value);
                       }}
-                      placeholder="Select.."
+                      placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
                     />
@@ -458,7 +460,7 @@ export const EventManager = ({
                       onChange={(value) => {
                         handlerChanged(index, 'table', value);
                       }}
-                      placeholder="Select.."
+                      placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
                     />
@@ -537,7 +539,7 @@ export const EventManager = ({
                         handlerChanged(index, 'componentSpecificActionHandle', '');
                         handlerChanged(index, 'componentId', value);
                       }}
-                      placeholder="Select.."
+                      placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
                     />
@@ -559,7 +561,7 @@ export const EventManager = ({
                           getComponentActionDefaultParams(event?.componentId, value)
                         );
                       }}
-                      placeholder="Select.."
+                      placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
                     />

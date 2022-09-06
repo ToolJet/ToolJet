@@ -14,7 +14,8 @@
         "enabled":"Enabled",
         "disabled":"Disabled",
         "yes":"Yes",
-        "submit":"Submit"
+        "submit":"Submit",
+        "select":"Select"
     },
     "profile": {
       "profileSettings": "Profile Settings"
@@ -65,6 +66,8 @@
         "queries":"Queries",
         "pleaseSelectAComponentToInspect":"Please select a component to inspect",
         "release":"Release",
+        "searchQueries":"Search queries",
+        "createQuery":"Create query",
         "queryManager":{
             "general":"General",
             "advanced":"Advanced",
@@ -95,8 +98,7 @@
                 "noResultsFor":"No results for",
                 "thankYouWeveTakenANoteOfIt":"Thank you, we've taken a note of that!",
                 "goToAllDatasources":"Go to all Datasource",
-                "send":"Send",
-                "search":"Search"
+                "send":"Send"
             },
             "runThisQueryOnPageLoad":"Run this query on page load?",
             "requestConfirmationBeforeRunningQuery":"Request confirmation before running query?",

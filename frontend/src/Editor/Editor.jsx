@@ -1519,7 +1519,7 @@ class EditorComponent extends React.Component {
                                 <SearchBoxComponent
                                   onChange={this.filterQueries}
                                   callback={this.toggleQuerySearch}
-                                  placeholder={'Search queries'}
+                                  placeholder={this.props.t('editor.searchQueries', 'Search queries')}
                                 />
                               </div>
                             </div>
@@ -1597,7 +1597,7 @@ class EditorComponent extends React.Component {
                                       })
                                     }
                                   >
-                                    {'Create query'}
+                                    {this.props.t('editor.createQuery', 'Create query')}
                                   </button>
                                 </center>
                               </div>

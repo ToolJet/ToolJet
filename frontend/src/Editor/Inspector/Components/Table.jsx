@@ -13,8 +13,8 @@ import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../EventManager';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
-
-class Table extends React.Component {
+import { withTranslation } from 'react-i18next';
+class TableComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -150,7 +150,7 @@ class Table extends React.Component {
                 this.onColumnItemChange(index, 'columnType', value);
               }}
               filterOptions={fuzzySearch}
-              placeholder="Select.."
+              placeholder={this.props.t('globals.select', 'Select') + '...'}
             />
           </div>
           <div className="field mb-2">
@@ -181,7 +181,7 @@ class Table extends React.Component {
                   this.onColumnItemChange(index, 'textWrap', value);
                 }}
                 filterOptions={fuzzySearch}
-                placeholder="Select.."
+                placeholder={this.props.t('globals.select', 'Select') + '...'}
               />
             </div>
           )}
@@ -829,4 +829,4 @@ class Table extends React.Component {
   }
 }
 
-export { Table };
+export const Table = withTranslation()(TableComponent);

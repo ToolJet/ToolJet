@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 // Table Search
 export const GlobalFilter = ({
   preGlobalFilteredRows,
@@ -24,9 +25,11 @@ export const GlobalFilter = ({
     });
   };
 
+  const { t } = useTranslation();
+
   return (
     <div className="ms-2 d-inline-block">
-      Search:{' '}
+      {t('globals.search', 'Search')}:{' '}
       <input
         type="text"
         className="global-search-field"

@@ -16,6 +16,7 @@ import config from 'config';
 import { isEmpty } from 'lodash';
 import { Card } from '@/_ui/card';
 import { withTranslation, useTranslation } from 'react-i18next';
+
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -883,7 +884,7 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
           value={searchText}
           onChange={handleChange}
           className="form-control"
-          placeholder={t('editor.queryManager.dataSourceManager.search', 'Search')}
+          placeholder={t('globals.search', 'Search')}
         />
       </div>
     </div>
