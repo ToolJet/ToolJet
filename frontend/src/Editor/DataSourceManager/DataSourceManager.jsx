@@ -687,7 +687,7 @@ class DataSourceManagerComponent extends React.Component {
                   variant="primary"
                   onClick={this.createDataSource}
                 >
-                  {this.props.t('editor.queryManager.dataSourceManager.save', 'Save')}
+                  {this.props.t('globals.save', 'Save')}
                 </Button>
               </div>
             </Modal.Footer>
@@ -710,7 +710,7 @@ class DataSourceManagerComponent extends React.Component {
                 <Button className="m-2" disabled={isSaving} variant="primary" onClick={this.createDataSource}>
                   {isSaving
                     ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
-                    : this.props.t('editor.queryManager.dataSourceManager.save', 'Save')}
+                    : this.props.t('globals.save', 'Save')}
                 </Button>
               </div>
             </Modal.Footer>

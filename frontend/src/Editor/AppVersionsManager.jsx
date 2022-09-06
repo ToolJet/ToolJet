@@ -328,7 +328,7 @@ export const AppVersionsManager = function AppVersionsManager({
               {t('globals.cancel', 'Cancel')}
             </button>
             <button className={`btn btn-primary ${isEditingVersion ? 'btn-loading' : ''}`} onClick={editVersionName}>
-              {t('editor.appVersionManager.save', 'Save')}
+              {t('globals.save', 'Save')}
             </button>
           </div>
         </div>
