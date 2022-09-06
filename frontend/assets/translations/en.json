@@ -45,9 +45,9 @@
         "share":"Share",
         "shareModal": {
             "makeApplicationPublic":"Make application public ?",
-            "getShareableLinkForThisApplication":"Get shareable link for this application",
+            "shareableLink":"Get shareable link for this application",
             "copy":"copy",
-            "getEmbeddableLinkForThisApplication":"Get embeddable link for this application",
+            "embeddableLink":"Get embeddable link for this application",
             "manageUsers":"Manage Users"
         },
         "appVersionManager":{

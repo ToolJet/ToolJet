@@ -181,10 +181,7 @@ class ManageAppUsersComponent extends React.Component {
                 <div className="shareable-link mb-3">
                   <label className="form-label">
                     <small>
-                      {this.props.t(
-                        'editor.shareModal.getShareableLinkForThisApplication',
-                        'Get shareable link for this application'
-                      )}
+                      {this.props.t('editor.shareModal.shareableLink', 'Get shareable link for this application')}
                     </small>
                   </label>
                   <div className="input-group">
@@ -220,10 +217,7 @@ class ManageAppUsersComponent extends React.Component {
                 <div className="shareable-link mb-3">
                   <label className="form-label">
                     <small>
-                      {this.props.t(
-                        'editor.shareModal.getEmbeddableLinkForThisApplication',
-                        'Get embeddable link for this application'
-                      )}
+                      {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
                     </small>
                   </label>
                   <div className="input-group">
