@@ -37,10 +37,6 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
     history.push('/login');
   }
 
-  function openSettings() {
-    history.push('/settings');
-  }
-
   return (
     <header className="navbar tabbed-navbar navbar-expand-md navbar-light d-print-none">
       <div className="container-xl">
@@ -95,13 +91,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
                   Audit Logs
                 </Link>
               )}
-              <Link
-                data-testid="settingsBtn"
-                to="#"
-                onClick={openSettings}
-                className="dropdown-item"
-                data-cy="profile-link"
-              >
+              <Link data-testid="settingsBtn" to="/settings" className="dropdown-item" data-cy="profile-link">
                 Profile
               </Link>
               <Link data-testid="logoutBtn" to="#" onClick={logout} className="dropdown-item" data-cy="logout-link">

@@ -140,6 +140,15 @@ export class OauthService {
             hostName: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
           },
         };
+      case 'openid':
+        return {
+          enabled: !!this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
+          configs: {
+            clientId: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
+            clientSecret: this.configService.get<string>('SSO_OPENID_CLIENT_SECRET'),
+            wellKnownUrl: this.configService.get<string>('SSO_OPENID_WELL_KNOWN_URL'),
+          },
+        };
       default:
         return;
     }

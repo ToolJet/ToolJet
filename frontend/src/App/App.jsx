@@ -1,6 +1,6 @@
 import React from 'react';
 import config from 'config';
-import { Router, Route, Redirect } from 'react-router-dom';
+import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute } from '@/_components';
@@ -23,13 +23,14 @@ import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
 import { AuditLogs } from '@/AuditLogs';
-import { Toaster } from 'react-hot-toast';
+import Toast from '@/_ui/Toast';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import { Editor } from '@/Editor/Editor';
 import { RedirectSso } from '@/RedirectSso/RedirectSso';
 
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
+import { retrieveWhiteLabelText } from '../_helpers/utils';
 
 class App extends React.Component {
   constructor(props) {
@@ -54,6 +55,18 @@ class App extends React.Component {
       });
     }
   };
+
+  setFaviconAndTitle() {
+    const favicon_url = window.public_config?.WHITE_LABEL_FAVICON;
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = favicon_url ? favicon_url : 'assets/images/logo.svg';
+    document.title = `${retrieveWhiteLabelText()} - Dashboard`;
+  }
 
   componentDidMount() {
     authenticationService.currentUser.subscribe((x) => {
@@ -118,6 +131,7 @@ class App extends React.Component {
       this.fetchMetadata();
       setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     });
+    this.setFaviconAndTitle();
   }
 
   logout = () => {
@@ -136,6 +150,7 @@ class App extends React.Component {
 
     if (darkMode) {
       toastOptions = {
+        className: 'toast-dark-mode',
         style: {
           borderRadius: '10px',
           background: '#333',
@@ -146,12 +161,12 @@ class App extends React.Component {
 
     return (
       <>
-        <Router history={history}>
+        <BrowserRouter history={history} basename={window.public_config?.SUB_PATH || '/'}>
           <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
             {updateAvailable && (
               <div className="alert alert-info alert-dismissible" role="alert">
                 <h3 className="mb-1">Update available</h3>
-                <p>A new version of ToolJet has been released.</p>
+                <p>{`A new version of ${retrieveWhiteLabelText()} has been released.`}</p>
                 <div className="btn-list">
                   <a
                     href="https://docs.tooljet.io/docs/setup/updating"
@@ -336,8 +351,8 @@ class App extends React.Component {
               darkMode={darkMode}
             />
           </div>
-        </Router>
-        <Toaster toastOptions={toastOptions} />
+        </BrowserRouter>
+        <Toast toastOptions={toastOptions} />
       </>
     );
   }

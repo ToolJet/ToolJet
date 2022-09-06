@@ -2,9 +2,10 @@ import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
-import { validateEmail } from '../_helpers/utils';
+import { retrieveWhiteLabelText, validateEmail } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import AppLogo from '../_components/AppLogo';
 
 class SignupPage extends React.Component {
@@ -30,6 +31,12 @@ class SignupPage extends React.Component {
           enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
           configs: {
             client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
+          },
+        },
+        openid: {
+          enabled: !!window.public_config?.SSO_OPENID_CLIENT_ID,
+          configs: {
+            client_id: window.public_config?.SSO_OPENID_CLIENT_ID,
           },
         },
       },
@@ -74,7 +81,7 @@ class SignupPage extends React.Component {
   };
   render() {
     const { isLoading, signupSuccess } = this.state;
-    const isCustomLogoAvailable = window.public_config?.CUSTOM_LOGO_URL ? true : false;
+    const label_text = retrieveWhiteLabelText();
 
     return (
       <div className="page page-center">
@@ -87,9 +94,7 @@ class SignupPage extends React.Component {
           <form className="card card-md" action="." method="get" autoComplete="off">
             {!signupSuccess && (
               <div className="card-body">
-                <h2 className="card-title text-center mb-4">
-                  {!isCustomLogoAvailable ? 'Create a ToolJet account' : 'Create account'}
-                </h2>
+                <h2 className="card-title text-center mb-4">{`Create a ${label_text} account`}</h2>
                 {this.ssoConfigs.enableSignUp && (
                   <div className="d-flex flex-column align-items-center separator-bottom">
                     {this.ssoConfigs.configs?.google?.enabled && (
@@ -102,7 +107,12 @@ class SignupPage extends React.Component {
                     {this.ssoConfigs.configs?.git?.enabled && (
                       <GitSSOLoginButton text="Sign up with GitHub" configs={this.ssoConfigs.configs?.git?.configs} />
                     )}
-                    {(this.ssoConfigs.configs?.git?.enabled || this.ssoConfigs.configs?.google?.enabled) && (
+                    {this.ssoConfigs.configs?.openid?.enabled && (
+                      <OidcSSOLoginButton text="Sign up with" configs={this.ssoConfigs.configs?.openid?.configs} />
+                    )}
+                    {(this.ssoConfigs.configs?.git?.enabled ||
+                      this.ssoConfigs.configs?.google?.enabled ||
+                      this.ssoConfigs.configs?.openid?.enabled) && (
                       <div className="mt-2 separator">
                         <h2>
                           <span>OR</span>

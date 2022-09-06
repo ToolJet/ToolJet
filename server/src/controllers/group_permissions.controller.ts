@@ -16,8 +16,8 @@ export class GroupPermissionsController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Post()
-  async create(@Request() req, @Body() createGroupPermissionDto: CreateGroupPermissionDto) {
-    await this.groupPermissionsService.create(req, req.user, createGroupPermissionDto.group);
+  async create(@Request() req, @User() user, @Body() createGroupPermissionDto: CreateGroupPermissionDto) {
+    await this.groupPermissionsService.create(req, user, createGroupPermissionDto.group);
     return;
   }
 

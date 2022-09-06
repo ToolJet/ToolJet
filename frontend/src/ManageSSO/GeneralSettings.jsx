@@ -83,7 +83,7 @@ export function GeneralSettings({ settings, updateData }) {
     return (
       <div className={`d-flex main-box ${inheritSSO ? 'tick' : 'cross'}-box`}>
         <div className="icon-box">{inheritSSO ? tickIcon() : crossIcon()}</div>
-        <img width="35px" src={`/assets/images/sso-buttons/${type}.svg`} />
+        <img width="35px" src={`assets/images/sso-buttons/${type}.svg`} />
       </div>
     );
   };
@@ -117,7 +117,9 @@ export function GeneralSettings({ settings, updateData }) {
             </div>
           </div>
           {!isSingleOrganization &&
-            (window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID || window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID) && (
+            (window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID ||
+              window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID ||
+              window.public_config?.SSO_OPENID_CLIENT_ID) && (
               <div className="form-group mb-3">
                 <label className="form-check form-switch">
                   <input
@@ -134,6 +136,7 @@ export function GeneralSettings({ settings, updateData }) {
                 <div className="d-flex tick-cross-info mb-2">
                   {window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID && ssoButtons('google')}
                   {window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID && ssoButtons('git')}
+                  {window.public_config?.SSO_OPENID_CLIENT_ID && ssoButtons('openid')}
                 </div>
                 <div className="help-text mt-1">
                   <div data-cy="login-help-text">
@@ -173,11 +176,11 @@ export function GeneralSettings({ settings, updateData }) {
 
               <div className="flexer-sso-input form-control">
                 <p id="login-url" data-cy="login-url">
-                  {`${window.location.protocol}//${window.location.host}/login/${authenticationService?.currentUserValue?.organization_id}`}
+                  {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentUserValue?.organization_id}`}
                 </p>
                 <img
                   onClick={() => copyFunction('login-url')}
-                  src={`/assets/images/icons/copy-dark.svg`}
+                  src={`assets/images/icons/copy-dark.svg`}
                   width="22"
                   height="22"
                   className="sso-copy"

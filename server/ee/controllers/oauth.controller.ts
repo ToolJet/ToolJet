@@ -14,12 +14,11 @@ export class OauthController {
     return result;
   }
 
-  @Get('openid/configs/:configId')
+  @Get(['openid/configs/:configId', 'openid/configs'])
   async getOpenIDRedirect(@Res({ passthrough: true }) response: Response, @Param('configId') configId) {
     const { codeVerifier, authorizationUrl } = await this.oidcOAuthService.getConfigs(configId);
     response.cookie('oidc_code_verifier', codeVerifier, {
       httpOnly: true,
-      expires: new Date(new Date().getTime() + 60 * 5 * 1000), // cookie expiry 5 minutes
       sameSite: 'strict',
     });
     return { authorizationUrl };
@@ -27,8 +26,8 @@ export class OauthController {
 
   @UseGuards(MultiOrganizationGuard)
   @Post('sign-in/common/:ssoType')
-  async commonSignIn(@Param('ssoType') ssoType, @Body() body) {
-    const result = await this.oauthService.signIn(body, null, ssoType);
+  async commonSignIn(@Req() req: Request, @Param('ssoType') ssoType, @Body() body) {
+    const result = await this.oauthService.signIn(body, null, ssoType, req.cookies);
     return result;
   }
 }

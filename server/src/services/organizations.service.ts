@@ -268,6 +268,27 @@ export class OrganizationsService {
           },
         });
       }
+      if (
+        this.configService.get<string>('SSO_OPENID_CLIENT_ID') &&
+        !result.ssoConfigs?.some((config) => config.sso === 'openid')
+      ) {
+        if (!result.ssoConfigs) {
+          result.ssoConfigs = [];
+        }
+        result.ssoConfigs.push({
+          sso: 'openid',
+          enabled: true,
+          configs: {
+            clientId: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
+            clientSecret: await this.encryptionService.encryptColumnValue(
+              'ssoConfigs',
+              'clientSecret',
+              this.configService.get<string>('SSO_OPENID_CLIENT_SECRET')
+            ),
+            wellKnownUrl: this.configService.get<string>('SSO_OPENID_WELL_KNOWN_URL'),
+          },
+        });
+      }
     }
 
     if (!isHideSensitiveData) {

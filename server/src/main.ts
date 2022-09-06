@@ -6,10 +6,11 @@ import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from './all-exceptions-filter';
-import { ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
+import { custom } from 'openid-client';
 
 const fs = require('fs');
 
@@ -24,11 +25,29 @@ async function bootstrap() {
   const host = new URL(process.env.TOOLJET_HOST);
   const domain = host.hostname;
 
+  custom.setHttpOptionsDefaults({
+    timeout: parseInt(process.env.OIDC_CONNECTION_TIMEOUT || '3500'), // Default 3.5 seconds
+  });
+
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
-  app.setGlobalPrefix('api');
+
+  const hasSubPath = process.env.SUB_PATH !== undefined;
+  const UrlPrefix = hasSubPath ? process.env.SUB_PATH : '';
+
+  // Exclude these endpoints from prefix. These endpoints are required for health checks.
+  const pathsToExclude = [];
+  if (hasSubPath) {
+    pathsToExclude.push({ path: '/', method: RequestMethod.GET });
+  }
+  pathsToExclude.push({ path: '/health', method: RequestMethod.GET });
+  pathsToExclude.push({ path: '/api/health', method: RequestMethod.GET });
+
+  app.setGlobalPrefix(UrlPrefix + 'api', {
+    exclude: pathsToExclude,
+  });
   app.enableCors({
     origin: true,
     credentials: true,

@@ -19,6 +19,7 @@ import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { resolveReferences } from '@/_helpers/utils';
 import AppLogo from '../_components/AppLogo';
+import { Link } from 'react-router-dom';
 
 class Viewer extends React.Component {
   constructor(props) {
@@ -44,6 +45,7 @@ class Viewer extends React.Component {
           environment_variables: {},
         },
       },
+      isAppLoaded: false,
     };
   }
 
@@ -51,6 +53,7 @@ class Viewer extends React.Component {
     this.setState({
       app: data,
       isLoading: false,
+      isAppLoaded: true,
       appDefinition: data.definition || { components: {} },
     });
   };
@@ -151,8 +154,8 @@ class Viewer extends React.Component {
     appService.getAppBySlug(slug).then((data) => {
       this.setStateForApp(data);
       this.setStateForContainer(data);
-      this.setState({ isLoading: false });
       this.setWindowTitle(data.name);
+      this.setState({ isLoading: false });
     });
   };
 
@@ -207,6 +210,7 @@ class Viewer extends React.Component {
       appDefinition,
       showQueryConfirmation,
       isLoading,
+      isAppLoaded,
       currentLayout,
       deviceWindowWidth,
       defaultComponentStateComputed,
@@ -229,19 +233,19 @@ class Viewer extends React.Component {
           <Confirm
             show={showQueryConfirmation}
             message={'Do you want to run this query?'}
-            onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
+            onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData, 'view')}
             onCancel={() => onQueryCancel(this)}
             queryConfirmationData={this.state.queryConfirmationData}
           />
           <DndProvider backend={HTML5Backend}>
-            {!appDefinition.globalSettings?.hideHeader && (
+            {!appDefinition.globalSettings?.hideHeader && isAppLoaded && (
               <div className="header">
                 <header className="navbar navbar-expand-md navbar-light d-print-none">
                   <div className="container-xl header-container">
                     <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                      <a href="/">
+                      <Link to="/">
                         <AppLogo isLoadingFromHeader={true} />
-                      </a>
+                      </Link>
                     </h1>
                     {this.state.app && <span>{this.state.app.name}</span>}
                     <div className="d-flex align-items-center m-1 p-1">

@@ -2,9 +2,10 @@ import http from 'http';
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server } from 'ws';
 import { AuthService } from 'src/services/auth.service';
-import { isEmpty } from 'lodash';
 import { setupWSConnection, setPersistence } from 'y-websocket/bin/utils';
 import { RedisPubSub } from '../helpers/redis';
+import { maybeSetSubPath } from '../helpers/utils.helper';
+import { isEmpty } from 'lodash';
 
 // TODO: Mock redis for test env
 if (process.env.NODE_ENV !== 'test') {
@@ -34,7 +35,7 @@ if (process.env.NODE_ENV !== 'test') {
   });
 }
 
-@WebSocketGateway({ path: '/yjs' })
+@WebSocketGateway({ path: maybeSetSubPath('/yjs') })
 export class YjsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private authService: AuthService) {}
   @WebSocketServer()

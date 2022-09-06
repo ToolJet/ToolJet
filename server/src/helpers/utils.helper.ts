@@ -1,6 +1,7 @@
 import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
+import { isEmpty } from 'lodash';
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -8,6 +9,18 @@ export function parseJson(jsonString: string, errorMessage?: string): object {
   } catch (err) {
     throw new QueryError(errorMessage, err.message, {});
   }
+}
+
+export function maybeSetSubPath(path) {
+  const hasSubPath = process.env.SUB_PATH !== undefined;
+  const urlPrefix = hasSubPath ? process.env.SUB_PATH : '';
+
+  if (isEmpty(urlPrefix)) {
+    return path;
+  }
+
+  const pathWithoutLeadingSlash = path.replace(/^\/+/, '');
+  return urlPrefix + pathWithoutLeadingSlash;
 }
 
 export async function cacheConnection(dataSourceId: string, connection: any): Promise<any> {
@@ -63,3 +76,7 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
     });
   }
 }
+
+export const retrieveWhiteLabelText = () => {
+  return process.env?.WHITE_LABEL_TEXT ? process.env.WHITE_LABEL_TEXT : 'ToolJet';
+};

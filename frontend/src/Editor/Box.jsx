@@ -164,9 +164,6 @@ export const Box = function Box({
       ? validateProperties(resolvedProperties, componentMeta.properties)
       : [resolvedProperties, []];
 
-  if (componentMeta.component === 'Button') {
-    // console.log('validated properties', validatedProperties, 'resolvedProperties', resolvedProperties);
-  }
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
   const [validatedStyles, styleErrors] =
     mode === 'edit' && component.validate
@@ -312,7 +309,7 @@ export const Box = function Box({
                     width: '20px',
                     height: '20px',
                     backgroundSize: 'contain',
-                    backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
+                    backgroundImage: `url(assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
                     backgroundRepeat: 'no-repeat',
                   }}
                 ></div>

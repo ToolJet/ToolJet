@@ -35,6 +35,7 @@ import {
   getSvgIcon,
   debuggerActions,
   cloneComponents,
+  removeSelectedComponent,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -60,7 +61,9 @@ import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import posthog from 'posthog-js';
 import AppLogo from '../_components/AppLogo';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
+// eslint-disable-next-line import/no-unresolved
 import Selecto from 'react-selecto';
+import { retrieveWhiteLabelText } from '@/_helpers/utils';
 
 setAutoFreeze(false);
 enablePatches();
@@ -157,7 +160,7 @@ class Editor extends React.Component {
   }
 
   setWindowTitle(name) {
-    document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
+    document.title = name ? `${name} - ${retrieveWhiteLabelText()}` : `Untitled App - ${retrieveWhiteLabelText()}`;
   }
 
   componentDidMount() {
@@ -616,25 +619,7 @@ class Editor extends React.Component {
       let newDefinition = cloneDeep(this.state.appDefinition);
       const selectedComponents = this.state?.selectedComponents;
 
-      selectedComponents.forEach((component) => {
-        let childComponents = [];
-
-        if (newDefinition.components[component.id].component.component === 'Tabs') {
-          childComponents = Object.keys(newDefinition.components).filter((key) =>
-            newDefinition.components[key].parent?.startsWith(component.id)
-          );
-        } else {
-          childComponents = Object.keys(newDefinition.components).filter(
-            (key) => newDefinition.components[key].parent === component.id
-          );
-        }
-
-        childComponents.forEach((componentId) => {
-          delete newDefinition.components[componentId];
-        });
-
-        delete newDefinition.components[component.id];
-      });
+      removeSelectedComponent(newDefinition, selectedComponents);
 
       toast('Selected components deleted! (⌘Z to undo)', {
         icon: '🗑️',
@@ -752,6 +737,8 @@ class Editor extends React.Component {
     appDefinition.components = newComponents;
     this.appDefinitionChanged(appDefinition);
   };
+
+  cutComponents = () => cloneComponents(this, this.appDefinitionChanged, false, true);
 
   copyComponents = () => cloneComponents(this, this.appDefinitionChanged, false);
 
@@ -911,7 +898,7 @@ class Editor extends React.Component {
               }}
             >
               <div>
-                <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" className="mx-1" />
+                <img src="assets/images/icons/query-trash-icon.svg" width="12" height="12" className="mx-1" />
               </div>
             </button>
           )}
@@ -932,7 +919,7 @@ class Editor extends React.Component {
               }}
             >
               <div className={`query-icon ${this.props.darkMode && 'dark'}`}>
-                <img src="/assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
+                <img src="assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
               </div>
             </button>
           )}
@@ -1121,6 +1108,7 @@ class Editor extends React.Component {
     flush: () => {
       debuggerActions.flush(this);
     },
+    generateErrorLogs: (errors) => debuggerActions.generateErrorLogs(errors),
   };
 
   changeDarkMode = (newMode) => {
@@ -1308,14 +1296,14 @@ class Editor extends React.Component {
               )}
               <div className="navbar-nav flex-row order-md-last release-buttons">
                 <div className="nav-item dropdown d-none d-md-flex me-2">
-                  <a
-                    href={appVersionPreviewLink}
+                  <Link
+                    to={appVersionPreviewLink}
                     target="_blank"
                     className="btn btn-sm font-500 color-primary border-0"
                     rel="noreferrer"
                   >
                     Preview
-                  </a>
+                  </Link>
                 </div>
                 <div className="nav-item dropdown d-none d-md-flex me-2">
                   {app.id && (
@@ -1543,7 +1531,7 @@ class Editor extends React.Component {
                                 >
                                   <img
                                     className="py-1 mt-2"
-                                    src="/assets/images/icons/lens.svg"
+                                    src="assets/images/icons/lens.svg"
                                     width="24"
                                     height="24"
                                   />
@@ -1565,7 +1553,7 @@ class Editor extends React.Component {
                                     });
                                   }}
                                 >
-                                  <img className="mt-2" src="/assets/images/icons/plus.svg" width="24" height="24" />
+                                  <img className="mt-2" src="assets/images/icons/plus.svg" width="24" height="24" />
                                 </span>
                               </div>
                             </>
@@ -1702,6 +1690,7 @@ class Editor extends React.Component {
                   moveComponents={this.moveComponents}
                   cloneComponents={this.cloneComponents}
                   copyComponents={this.copyComponents}
+                  cutComponents={this.cutComponents}
                   handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
                   removeMultipleComponents={this.removeComponents}
                 />

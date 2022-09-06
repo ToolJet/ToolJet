@@ -11,6 +11,7 @@ import Modal from './Modal';
 import SelectSearch from 'react-select-search';
 import Fuse from 'fuse.js';
 import configs from './Configs/AppIcon.json';
+import { retrieveWhiteLabelText } from '../_helpers/utils';
 
 const { iconList, defaultIcon } = configs;
 
@@ -50,6 +51,7 @@ class HomePage extends React.Component {
   componentDidMount() {
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
+    document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
 
   fetchApps = (page = 1, folder, searchKey) => {
@@ -433,7 +435,7 @@ class HomePage extends React.Component {
         onClick={() => this.setState({ appOperations: { ...appOperations, selectedIcon: icon } })}
         key={index}
       >
-        <img src={`/assets/images/icons/app-icons/${icon}.svg`} data-cy={`${icon}-icon`} />
+        <img src={`assets/images/icons/app-icons/${icon}.svg`} data-cy={`${icon}-icon`} />
       </li>
     ));
   };
