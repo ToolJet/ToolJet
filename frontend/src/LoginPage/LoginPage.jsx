@@ -154,8 +154,8 @@ class LoginPageComponent extends React.Component {
                 {!configs && (
                   <div className="text-center">
                     {this.props.t(
-                      'loginSignupPage.noLoginMethodsEnabledForThisWorkspace',
-                      ' No login methods enabled for this workspace'
+                      'loginSignupPage.noLoginMethodsEnabled',
+                      'No login methods enabled for this workspace'
                     )}
                   </div>
                 )}

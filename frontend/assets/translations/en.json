@@ -35,7 +35,7 @@
         "showPassword":"show password",
         "loginTo":"Login to",
         "yourAccount":"your account",
-        "noLoginMethodsEnabledForThisWorkspace":"No login methods enabled for this workspace",
+        "noLoginMethodsEnabled":"No login methods enabled for this workspace",
         "pleaseCheckYourEmailForConfirmationLink":"Please check your email for confirmation link",
         "newPassword":"New Password",
         "passwordConfirmation":"Password Confirmation"
