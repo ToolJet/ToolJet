@@ -4,17 +4,13 @@ title: Pagination
 ---
 # Pagination
 
-Pagination enables the user to select a specific page from a range of pages.
+Pagination enables the user to select a specific page from a range of pages. It is used to seperate the content into discrete pages.
 
 :::tip
-It is used seperate content into discrete pages.
+You can club pagination widget with the List View widget.
 :::
 
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - Widget Reference - Code editor](/img/widgets/pagination/pagination.png)
-
-</div>
+<img className="screenshot-full" src="/img/widgets/pagination/pagination.png" alt="pagination"/>
 
 ### Properties
 
@@ -42,7 +38,7 @@ Now hovering over the widget will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - widget- button](/img/tooltip.png)
+<img className="screenshot-full" src="/img/tooltip.png" alt="Widget button"/>
 
 </div>
 

@@ -133,6 +133,7 @@ const sidebars = {
         'widgets/number-input',
         'widgets/password-input',
         'widgets/pdf',
+        'widgets/pagination',
         'widgets/qr-scanner',
         'widgets/radio-button',
         'widgets/range-slider',
@@ -152,7 +153,6 @@ const sidebars = {
         'widgets/toggle-switch',
         'widgets/tree-select',
         'widgets/vertical-divider',
-        'widgets/pagination'
       ],
     },
     {
