@@ -325,7 +325,7 @@ export const AppVersionsManager = function AppVersionsManager({
         <div className="row">
           <div className="col d-flex modal-footer-btn">
             <button className="btn btn-light" onClick={() => setShowVersionUpdateModal(false)}>
-              {t('editor.appVersionManager.cancel', 'Cancel')}
+              {t('globals.cancel', 'Cancel')}
             </button>
             <button className={`btn btn-primary ${isEditingVersion ? 'btn-loading' : ''}`} onClick={editVersionName}>
               {t('editor.appVersionManager.save', 'Save')}
@@ -456,7 +456,7 @@ const CreateVersionModal = function CreateVersionModal({
       <div className="mb-3">
         <div className="col d-flex modal-footer-btn">
           <button className="btn btn-light" onClick={() => setShowModal(false)}>
-            {t('editor.appVersionManager.cancel', 'Cancel')}
+            {t('globals.cancel', 'Cancel')}
           </button>
           <button
             className={`btn btn-primary ${isCreatingVersion ? 'btn-loading' : ''}`}
