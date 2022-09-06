@@ -130,10 +130,7 @@ class SignupPageComponent extends React.Component {
             )}
             {signupSuccess && (
               <div className="card-body">
-                {this.props.t(
-                  'loginSignupPage.pleaseCheckYourEmailForConfirmationLink',
-                  'Please check your email for confirmation link'
-                )}
+                {this.props.t('loginSignupPage.emailConfirmLink', 'Please check your email for confirmation link')}
               </div>
             )}
           </form>

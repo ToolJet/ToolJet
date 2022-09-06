@@ -36,7 +36,7 @@
         "loginTo":"Login to",
         "yourAccount":"your account",
         "noLoginMethodsEnabled":"No login methods enabled for this workspace",
-        "pleaseCheckYourEmailForConfirmationLink":"Please check your email for confirmation link",
+        "emailConfirmLink":"Please check your email for confirmation link",
         "newPassword":"New Password",
         "passwordConfirmation":"Password Confirmation"
     },
