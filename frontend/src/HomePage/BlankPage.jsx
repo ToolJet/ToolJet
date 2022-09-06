@@ -37,7 +37,7 @@ export const BlankPage = function BlankPage({
               </h3>
               <p className={`empty-title ${darkMode && 'text-white-50'}`} data-cy="empty-description">
                 {t(
-                  'blankPage.youCanGetStartedByCreatingANewApplication',
+                  'blankPage.getStartedCreateNewApp',
                   'You can get started by creating a new application or by creating an application using a template in ToolJet Library.'
                 )}
               </p>
@@ -54,7 +54,7 @@ export const BlankPage = function BlankPage({
                   onChange={handleImportApp}
                 >
                   <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="import-an-application">
-                    {t('blankPage.importAnApplication', 'Import an application')}
+                    {t('blankPage.importApplication', 'Import an application')}
                     <input type="file" ref={fileInput} style={{ display: 'none' }} />
                   </label>
                 </a>

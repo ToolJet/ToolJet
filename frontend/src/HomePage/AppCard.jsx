@@ -125,7 +125,7 @@ export default function AppCard({
               <ToolTip
                 message={
                   app?.current_version_id === null
-                    ? t('homePage.appCard.appDoesNotHaveADeployedVersion', 'App does not have a deployed version')
+                    ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
                     : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
                 }
               >

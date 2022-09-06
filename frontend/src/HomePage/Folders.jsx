@@ -143,7 +143,7 @@ export const Folders = function Folders({
       <ConfirmDialog
         show={showDeleteConfirmation}
         message={t(
-          'homePage.foldersSection.areYouSureYouWantToDeleteTheFolder',
+          'homePage.foldersSection.wishToDeleteFolder',
           `Are you sure you want to delete the folder? Apps within the folder will not be deleted.`
         )}
         confirmButtonLoading={isDeleting}
@@ -240,7 +240,7 @@ export const Folders = function Folders({
           : !isLoading && (
               <div className="folder-info" data-cy="folder-info-text">
                 {t(
-                  'homePage.foldersSection.youHaventCreatedAnyFolders',
+                  'homePage.foldersSection.noFolders',
                   `You haven't created any folders. Use folders to organize your apps`
                 )}
               </div>

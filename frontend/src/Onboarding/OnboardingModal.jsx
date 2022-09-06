@@ -104,7 +104,7 @@ class OnboardingModalComponent extends React.Component {
           </div>
           <small>
             {this.props.t(
-              'onBoarding.youWillReceiveUpdatesFromTheToolJetTeam',
+              'onBoarding.receiveUpdatesFromToolJet',
               'You will receive updates from the ToolJet team ( 1-2 emails every month, we do not spam )'
             )}
           </small>

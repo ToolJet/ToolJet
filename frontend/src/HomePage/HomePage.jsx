@@ -506,7 +506,7 @@ class HomePageComponent extends React.Component {
         <ConfirmDialog
           show={showAppDeletionConfirmation}
           message={this.props.t(
-            'homePage.theAppAndTheAssociatedDataWillBePermanentlyDeleted',
+            'homePage.deleteAppAndData',
             'The app and the associated data will be permanently deleted, do you want to continue?'
           )}
           confirmButtonLoading={isDeletingApp}
@@ -518,7 +518,7 @@ class HomePageComponent extends React.Component {
         <ConfirmDialog
           show={showRemoveAppFromFolderConfirmation}
           message={this.props.t(
-            'homePage.theAppWillBeRemovedFromThisFolderDoYouWantToContinue',
+            'homePage.removeAppFromFolder',
             'The app will be removed from this folder, do you want to continue?'
           )}
           confirmButtonLoading={isDeletingAppFromFolder}
