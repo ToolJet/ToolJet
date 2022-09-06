@@ -242,7 +242,7 @@ class ManageOrgVarsComponent extends React.Component {
         <ConfirmDialog
           show={this.state.showVariableDeleteConfirmation}
           message={this.props.t(
-            'header.organization.menus.manageSSO.environmentVariables.variableWillBeDeletedDoYouWantToContinue',
+            'header.organization.menus.manageSSO.environmentVar.variableWillBeDeletedDoYouWantToContinue',
             'Variable will be deleted, do you want to continue?'
           )}
           onConfirm={() => {
@@ -262,12 +262,7 @@ class ManageOrgVarsComponent extends React.Component {
               <div className="row align-items-center">
                 <div className="col">
                   <div className="page-pretitle"></div>
-                  <h2 className="page-title">
-                    {this.props.t(
-                      'header.organization.menus.manageSSO.environmentVariables.title',
-                      'Environment Variables'
-                    )}
-                  </h2>
+                  <h2 className="page-title">{this.props.t('globals.environmentVar', 'Environment Variables')}</h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
                   {!showVariableForm && this.canCreateVariable() && (
@@ -276,7 +271,7 @@ class ManageOrgVarsComponent extends React.Component {
                       onClick={() => this.setState({ showVariableForm: true, errors: {} })}
                     >
                       {this.props.t(
-                        'header.organization.menus.manageSSO.environmentVariables.addNewVariable',
+                        'header.organization.menus.manageSSO.environmentVar.addNewVariable',
                         'Add new variable'
                       )}
                     </div>
@@ -314,7 +309,7 @@ class ManageOrgVarsComponent extends React.Component {
                 ) : (
                   <span className="no-vars-text">
                     {this.props.t(
-                      'header.organization.menus.manageSSO.environmentVariables.youHaventConfiguredAnyEnvironmentVariables',
+                      'header.organization.menus.manageSSO.environmentVar.youHaventConfiguredAnyEnvironmentVariables',
                       `You haven't configured any environment variables, press the 'Add new variable' button to create one`
                     )}
                   </span>

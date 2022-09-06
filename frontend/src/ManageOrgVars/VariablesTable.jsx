@@ -27,22 +27,13 @@ class VariablesTable extends React.Component {
               <thead>
                 <tr>
                   <th>
-                    {this.props.t(
-                      'header.organization.menus.manageSSO.environmentVariables.variableTable.name',
-                      'Name'
-                    )}
+                    {this.props.t('header.organization.menus.manageSSO.environmentVar.variableTable.name', 'Name')}
                   </th>
                   <th>
-                    {this.props.t(
-                      'header.organization.menus.manageSSO.environmentVariables.variableTable.value',
-                      'Value'
-                    )}
+                    {this.props.t('header.organization.menus.manageSSO.environmentVar.variableTable.value', 'Value')}
                   </th>
                   <th>
-                    {this.props.t(
-                      'header.organization.menus.manageSSO.environmentVariables.variableTable.type',
-                      'Type'
-                    )}
+                    {this.props.t('header.organization.menus.manageSSO.environmentVar.variableTable.type', 'Type')}
                   </th>
                   {(this.props.canUpdateVariable || this.props.canDeleteVariable) && <th className="w-1"></th>}
                 </tr>
@@ -85,7 +76,7 @@ class VariablesTable extends React.Component {
                               />
                               <span className="text-success mx-2">
                                 {this.props.t(
-                                  'header.organization.menus.manageSSO.environmentVariables.variableTable.secret',
+                                  'header.organization.menus.manageSSO.environmentVar.variableTable.secret',
                                   'secret'
                                 )}
                               </span>

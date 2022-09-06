@@ -290,8 +290,8 @@ export const Organization = function Organization() {
         )}
         <Link data-tesid="settingsBtn" to="/manage-environment-vars" className="dropdown-item">
           {admin
-            ? t('header.organization.menus.menusList.manageEnvironmentVariables', 'Manage Environment Variables')
-            : t('header.organization.menus.menusList.environmentVariables', 'Environment Variables')}
+            ? t('header.organization.menus.menusList.manageEnv', 'Manage Environment Variables')
+            : t('globals.environmentVar', 'Environment Variables')}
         </Link>
       </div>
     );

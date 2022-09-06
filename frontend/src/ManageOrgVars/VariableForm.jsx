@@ -14,11 +14,11 @@ class VariableForm extends React.Component {
             <h3 className="card-title">
               {!this.props.selectedVariableId
                 ? this.props.t(
-                    'header.organization.menus.manageSSO.environmentVariables.variableForm.addNewVariable',
+                    'header.organization.menus.manageSSO.environmentVar.variableForm.addNewVariable',
                     'Add new variable'
                   )
                 : this.props.t(
-                    'header.organization.menus.manageSSO.environmentVariables.variableForm.updatevariable',
+                    'header.organization.menus.manageSSO.environmentVar.variableForm.updatevariable',
                     'Update variable'
                   )}
             </h3>
@@ -29,16 +29,13 @@ class VariableForm extends React.Component {
                 <div className="row">
                   <div className="col">
                     <label className="form-label">
-                      {this.props.t(
-                        'header.organization.menus.manageSSO.environmentVariables.variableForm.name',
-                        'Name'
-                      )}
+                      {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.name', 'Name')}
                     </label>
                     <input
                       type="text"
                       className="form-control"
                       placeholder={this.props.t(
-                        'header.organization.menus.manageSSO.environmentVariables.variableForm.enterVariableName',
+                        'header.organization.menus.manageSSO.environmentVar.variableForm.enterVariableName',
                         'Enter Variable Name'
                       )}
                       name="variable_name"
@@ -50,16 +47,13 @@ class VariableForm extends React.Component {
                   <div className="col">
                     <label className="form-label">
                       {' '}
-                      {this.props.t(
-                        'header.organization.menus.manageSSO.environmentVariables.variableForm.value',
-                        'Value'
-                      )}
+                      {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.value', 'Value')}
                     </label>
                     <input
                       type="text"
                       className="form-control"
                       placeholder={this.props.t(
-                        'header.organization.menus.manageSSO.environmentVariables.variableForm.enterValue',
+                        'header.organization.menus.manageSSO.environmentVar.variableForm.enterValue',
                         'Enter Value'
                       )}
                       name="value"
@@ -74,10 +68,7 @@ class VariableForm extends React.Component {
                 <div className="row">
                   <div className="col">
                     <label className="form-label">
-                      {this.props.t(
-                        'header.organization.menus.manageSSO.environmentVariables.variableForm.type',
-                        'Type'
-                      )}
+                      {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.type', 'Type')}
                     </label>
                     {this.props.selectedVariableId ? (
                       <span>{this.props.fields['variable_type']}</span>
@@ -97,7 +88,7 @@ class VariableForm extends React.Component {
                   <div className="col">
                     <label className="form-label">
                       {this.props.t(
-                        'header.organization.menus.manageSSO.environmentVariables.variableForm.enableEncryption',
+                        'header.organization.menus.manageSSO.environmentVar.variableForm.enableEncryption',
                         ' Enable encryption'
                       )}
                     </label>
@@ -130,7 +121,7 @@ class VariableForm extends React.Component {
                 >
                   {!this.props.selectedVariableId
                     ? this.props.t(
-                        'header.organization.menus.manageSSO.environmentVariables.variableForm.addVariable',
+                        'header.organization.menus.manageSSO.environmentVar.variableForm.addVariable',
                         'Add variable'
                       )
                     : this.props.t('globals.save', 'Save')}

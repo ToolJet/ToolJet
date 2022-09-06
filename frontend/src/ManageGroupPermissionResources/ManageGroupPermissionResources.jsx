@@ -714,12 +714,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                     <td></td>
                                   </tr>
                                   <tr>
-                                    <td>
-                                      {this.props.t(
-                                        'header.organization.menus.manageGroups.permissionResources.environmentVariables',
-                                        'Environment variables'
-                                      )}
-                                    </td>
+                                    <td>{this.props.t('globals.environmentVar', 'Environment variables')}</td>
                                     <td className="text-muted">
                                       <div>
                                         <label className="form-check form-check-inline">

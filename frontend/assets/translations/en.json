@@ -15,7 +15,8 @@
         "disabled":"Disabled",
         "yes":"Yes",
         "submit":"Submit",
-        "select":"Select"
+        "select":"Select",
+        "environmentVar":"Environment Variables"
     },
     "profile": {
       "profileSettings": "Profile Settings"
@@ -144,8 +145,7 @@
                     "manageUsers":"Manage Users",
                     "manageGroups":"Manage Groups",
                     "manageSso":"Manage SSO",
-                    "manageEnvironmentVariables":"Manage Environment Variables",
-                    "environmentVariables":"Environment Variables"
+                    "manageEnv":"Manage Environment Variables"
                 },
                 "manageUsers":{
                     "usersAndPermission":"Users & Permissions",
@@ -183,7 +183,6 @@
                         "email":"email",
                         "resource":"resource",
                         "createUpdateDelete":"Create/Update/Delete",
-                        "environmentVariables":"Environment variables",
                         "folder":"Folder"
                     }
                 },
@@ -222,8 +221,7 @@
                         "redirectUrl":"Redirect URL"
                     },
                     "passwordLogin":"Password Login",
-                    "environmentVariables" : {
-                        "title":"Environment Variables",
+                    "environmentVar" : {
                         "youHaventConfiguredAnyEnvironmentVariables":"You haven't configured any environment variables, press the 'Add new variable' button to create one",
                         "variableWillBeDeletedDoYouWantToContinue":"Variable will be deleted, do you want to continue?",
                         "addNewVariable":"Add new variable",
