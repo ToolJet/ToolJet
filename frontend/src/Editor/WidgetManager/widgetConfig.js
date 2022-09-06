@@ -1760,6 +1760,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      rotateButton: {
+        type: 'toggle',
+        displayName: 'Rotate button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -1832,6 +1839,7 @@ export const widgets = [
         loadingState: { value: '{{false}}' },
         alternativeText: { value: '' },
         zoomButtons: { value: '{{false}}' },
+        rotateButton: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -1840,6 +1848,7 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         imageFit: { value: 'contain' },
+        backgroundColor: { value: '#ffffff00' },
       },
     },
   },
@@ -2683,6 +2692,11 @@ export const widgets = [
         options: [
           { name: 'Autodetect from extension', value: 'auto-detect' },
           { name: 'CSV', value: 'csv' },
+          { name: 'Microsoft Excel - xls', value: 'vnd.ms-excel' },
+          {
+            name: 'Microsoft Excel - xlsx',
+            value: 'vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          },
         ],
         validation: {
           schema: {

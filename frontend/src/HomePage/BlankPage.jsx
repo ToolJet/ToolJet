@@ -21,7 +21,7 @@ export const BlankPage = function BlankPage({
             <div className="empty">
               <div className="empty-img">
                 <img
-                  src={darkMode ? '/assets/images/dark-mode-onboarding.svg' : '/assets/images/onboarding.svg'}
+                  src={darkMode ? 'assets/images/dark-mode-onboarding.svg' : 'assets/images/onboarding.svg'}
                   alt=""
                   data-cy="empty-img"
                 />

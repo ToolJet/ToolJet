@@ -122,7 +122,7 @@ export const Multiselect = function Multiselect({
       <div className="col-auto my-auto d-flex align-items-center">
         <label
           style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }}
-          className="form-label py-1"
+          className="form-label py-1 text-secondary"
           data-cy={`multiselect-label-${component.name.toLowerCase()}`}
         >
           {label}

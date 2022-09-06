@@ -33,8 +33,14 @@
         "method": "get",
         "url": "https://api.github.com/repos/{{components.textinput1.value}}/contributors",
         "url_params": [
-          ["page", "{{components.table1.pageIndex}}"],
-          ["per_page", "100"]
+          [
+            "page",
+            "{{components.table1.pageIndex}}"
+          ],
+          [
+            "per_page",
+            "100"
+          ]
         ],
         "headers": [],
         "body": []
@@ -63,13 +69,22 @@
               "description": "Display paginated tabular data",
               "component": "Table",
               "properties": {
-                "title": { "type": "string", "displayName": "Title" },
-                "data": { "type": "code", "displayName": "Table data" },
+                "title": {
+                  "type": "string",
+                  "displayName": "Title"
+                },
+                "data": {
+                  "type": "code",
+                  "displayName": "Table data"
+                },
                 "loadingState": {
                   "type": "code",
                   "displayName": "Loading state"
                 },
-                "columns": { "type": "array", "displayName": "Table Columns" },
+                "columns": {
+                  "type": "array",
+                  "displayName": "Table Columns"
+                },
                 "serverSidePagination": {
                   "type": "toggle",
                   "displayName": "Server Side Pagination"
@@ -83,14 +98,26 @@
                   "displayName": "Text Color"
                 }
               },
-              "defaultSize": { "width": 810, "height": 300 },
+              "defaultSize": {
+                "width": 810,
+                "height": 300
+              },
               "events": {
-                "onRowClicked": { "displayName": "On row clicked" },
-                "onBulkUpdate": { "displayName": "Bulk update query" },
-                "onPageChanged": { "displayName": "On page changed query" }
+                "onRowClicked": {
+                  "displayName": "On row clicked"
+                },
+                "onBulkUpdate": {
+                  "displayName": "Bulk update query"
+                },
+                "onPageChanged": {
+                  "displayName": "On page changed query"
+                }
               },
               "styles": {
-                "textColor": { "type": "color", "displayName": "Text Color" }
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                }
               },
               "exposedVariables": {
                 "selectedRow": {},
@@ -100,17 +127,30 @@
               },
               "definition": {
                 "properties": {
-                  "title": { "value": "Table" },
-                  "visible": { "value": true },
+                  "title": {
+                    "value": "Table"
+                  },
+                  "visible": {
+                    "value": true
+                  },
                   "loadingState": {
                     "value": "{{queries.fetchContributors.isLoading}}"
                   },
-                  "data": { "value": "{{queries.fetchContributors.data}}" },
-                  "serverSidePagination": { "value": true },
+                  "data": {
+                    "value": "{{queries.fetchContributors.data}}"
+                  },
+                  "serverSidePagination": {
+                    "value": true
+                  },
                   "columns": {
                     "value": [
-                      { "name": "username", "key": "login" },
-                      { "name": "contributions" }
+                      {
+                        "name": "username",
+                        "key": "login"
+                      },
+                      {
+                        "name": "contributions"
+                      }
                     ]
                   },
                   "actions": {
@@ -136,9 +176,16 @@
                       }
                     ]
                   },
-                  "columnSizes": { "actions": 229, "contributions": 208 },
-                  "showBulkSelector": { "value": false },
-                  "highlightSelectedRow": { "value": false }
+                  "columnSizes": {
+                    "actions": 229,
+                    "contributions": 208
+                  },
+                  "showBulkSelector": {
+                    "value": false
+                  },
+                  "highlightSelectedRow": {
+                    "value": false
+                  }
                 },
                 "events": [
                   {
@@ -153,12 +200,20 @@
                   }
                 ],
                 "styles": {
-                  "textColor": { "value": "" },
-                  "cellSize": { "value": "compact" }
+                  "textColor": {
+                    "value": ""
+                  },
+                  "cellSize": {
+                    "value": "compact"
+                  }
                 },
                 "others": {
-                  "showOnDesktop": { "value": true },
-                  "showOnMobile": { "value": false }
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
                 }
               }
             },
@@ -181,19 +236,38 @@
               "name": "container1",
               "displayName": "Container",
               "description": "Wrapper for multiple components",
-              "defaultSize": { "width": 200, "height": 200 },
+              "defaultSize": {
+                "width": 200,
+                "height": 200
+              },
               "component": "Container",
               "properties": {},
               "events": {},
-              "styles": { "backgroundColor": { "type": "color" } },
+              "styles": {
+                "backgroundColor": {
+                  "type": "color"
+                }
+              },
               "exposedVariables": {},
               "definition": {
-                "properties": { "visible": { "value": true } },
+                "properties": {
+                  "visible": {
+                    "value": true
+                  }
+                },
                 "events": [],
-                "styles": { "backgroundColor": { "value": "#fff" } },
+                "styles": {
+                  "backgroundColor": {
+                    "value": "#fff"
+                  }
+                },
                 "others": {
-                  "showOnDesktop": { "value": true },
-                  "showOnMobile": { "value": false }
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
                 }
               }
             },
@@ -216,12 +290,22 @@
               "name": "image1",
               "displayName": "Image",
               "description": "Display an Image",
-              "defaultSize": { "width": 200, "height": 200 },
+              "defaultSize": {
+                "width": 200,
+                "height": 200
+              },
               "component": "Image",
               "properties": {
-                "source": { "type": "code", "displayName": "URL" }
+                "source": {
+                  "type": "code",
+                  "displayName": "URL"
+                }
               },
-              "events": { "onClick": { "displayName": "On click" } },
+              "events": {
+                "onClick": {
+                  "displayName": "On click"
+                }
+              },
               "styles": {},
               "exposedVariables": {},
               "definition": {
@@ -229,13 +313,19 @@
                   "source": {
                     "value": "{{queries.fetchGithubProfile.data.avatar_url}}"
                   },
-                  "visible": { "value": true }
+                  "visible": {
+                    "value": true
+                  }
                 },
                 "events": [],
                 "styles": {},
                 "others": {
-                  "showOnDesktop": { "value": true },
-                  "showOnMobile": { "value": false }
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
                 }
               }
             },
@@ -261,29 +351,52 @@
               "description": "Display markdown or HTML",
               "component": "Text",
               "properties": {
-                "text": { "type": "code", "displayName": "Text" },
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
                 "loadingState": {
                   "type": "code",
                   "displayName": "Show loading state"
                 }
               },
-              "defaultSize": { "width": 210, "height": 24 },
+              "defaultSize": {
+                "width": 210,
+                "height": 24
+              },
               "events": [],
               "styles": {
-                "textColor": { "type": "color", "displayName": "Text Color" }
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                }
               },
               "exposedVariables": {},
               "definition": {
                 "properties": {
-                  "text": { "value": "Name:" },
-                  "visible": { "value": true },
-                  "loadingState": { "value": "{{false}}" }
+                  "text": {
+                    "value": "Name:"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
                 },
                 "events": [],
-                "styles": { "textColor": { "value": "#000" } },
+                "styles": {
+                  "textColor": {
+                    "value": "#000"
+                  }
+                },
                 "others": {
-                  "showOnDesktop": { "value": true },
-                  "showOnMobile": { "value": false }
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
                 }
               }
             },
@@ -309,29 +422,52 @@
               "description": "Display markdown or HTML",
               "component": "Text",
               "properties": {
-                "text": { "type": "code", "displayName": "Text" },
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
                 "loadingState": {
                   "type": "code",
                   "displayName": "Show loading state"
                 }
               },
-              "defaultSize": { "width": 210, "height": 24 },
+              "defaultSize": {
+                "width": 210,
+                "height": 24
+              },
               "events": [],
               "styles": {
-                "textColor": { "type": "color", "displayName": "Text Color" }
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                }
               },
               "exposedVariables": {},
               "definition": {
                 "properties": {
-                  "text": { "value": "Organization:" },
-                  "visible": { "value": true },
-                  "loadingState": { "value": "{{false}}" }
+                  "text": {
+                    "value": "Organization:"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
                 },
                 "events": [],
-                "styles": { "textColor": { "value": "#000" } },
+                "styles": {
+                  "textColor": {
+                    "value": "#000"
+                  }
+                },
                 "others": {
-                  "showOnDesktop": { "value": true },
-                  "showOnMobile": { "value": false }
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
                 }
               }
             },
@@ -357,29 +493,52 @@
               "description": "Display markdown or HTML",
               "component": "Text",
               "properties": {
-                "text": { "type": "code", "displayName": "Text" },
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
                 "loadingState": {
                   "type": "code",
                   "displayName": "Show loading state"
                 }
               },
-              "defaultSize": { "width": 210, "height": 24 },
+              "defaultSize": {
+                "width": 210,
+                "height": 24
+              },
               "events": [],
               "styles": {
-                "textColor": { "type": "color", "displayName": "Text Color" }
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                }
               },
               "exposedVariables": {},
               "definition": {
                 "properties": {
-                  "text": { "value": "Followers:" },
-                  "visible": { "value": true },
-                  "loadingState": { "value": "{{false}}" }
+                  "text": {
+                    "value": "Followers:"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
                 },
                 "events": [],
-                "styles": { "textColor": { "value": "#000" } },
+                "styles": {
+                  "textColor": {
+                    "value": "#000"
+                  }
+                },
                 "others": {
-                  "showOnDesktop": { "value": true },
-                  "showOnMobile": { "value": false }
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
                 }
               }
             },
@@ -405,16 +564,25 @@
               "description": "Display markdown or HTML",
               "component": "Text",
               "properties": {
-                "text": { "type": "code", "displayName": "Text" },
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
                 "loadingState": {
                   "type": "code",
                   "displayName": "Show loading state"
                 }
               },
-              "defaultSize": { "width": 210, "height": 24 },
+              "defaultSize": {
+                "width": 210,
+                "height": 24
+              },
               "events": [],
               "styles": {
-                "textColor": { "type": "color", "displayName": "Text Color" }
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                }
               },
               "exposedVariables": {},
               "definition": {
@@ -422,16 +590,26 @@
                   "text": {
                     "value": "{{queries.fetchGithubProfile.data.name}}"
                   },
-                  "visible": { "value": true },
+                  "visible": {
+                    "value": true
+                  },
                   "loadingState": {
                     "value": "{{queries.fetchGithubProfile.isLoading}}"
                   }
                 },
                 "events": [],
-                "styles": { "textColor": { "value": "#000" } },
+                "styles": {
+                  "textColor": {
+                    "value": "#000"
+                  }
+                },
                 "others": {
-                  "showOnDesktop": { "value": true },
-                  "showOnMobile": { "value": false }
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
                 }
               }
             },
@@ -457,16 +635,25 @@
               "description": "Display markdown or HTML",
               "component": "Text",
               "properties": {
-                "text": { "type": "code", "displayName": "Text" },
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
                 "loadingState": {
                   "type": "code",
                   "displayName": "Show loading state"
                 }
               },
-              "defaultSize": { "width": 210, "height": 24 },
+              "defaultSize": {
+                "width": 210,
+                "height": 24
+              },
               "events": [],
               "styles": {
-                "textColor": { "type": "color", "displayName": "Text Color" }
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                }
               },
               "exposedVariables": {},
               "definition": {
@@ -474,16 +661,26 @@
                   "text": {
                     "value": "{{queries.fetchGithubProfile.data.company}}"
                   },
-                  "visible": { "value": true },
+                  "visible": {
+                    "value": true
+                  },
                   "loadingState": {
                     "value": "{{queries.fetchGithubProfile.isLoading}}"
                   }
                 },
                 "events": [],
-                "styles": { "textColor": { "value": "#000" } },
+                "styles": {
+                  "textColor": {
+                    "value": "#000"
+                  }
+                },
                 "others": {
-                  "showOnDesktop": { "value": true },
-                  "showOnMobile": { "value": false }
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
                 }
               }
             },
@@ -509,16 +706,25 @@
               "description": "Display markdown or HTML",
               "component": "Text",
               "properties": {
-                "text": { "type": "code", "displayName": "Text" },
+                "text": {
+                  "type": "code",
+                  "displayName": "Text"
+                },
                 "loadingState": {
                   "type": "code",
                   "displayName": "Show loading state"
                 }
               },
-              "defaultSize": { "width": 210, "height": 24 },
+              "defaultSize": {
+                "width": 210,
+                "height": 24
+              },
               "events": [],
               "styles": {
-                "textColor": { "type": "color", "displayName": "Text Color" }
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                }
               },
               "exposedVariables": {},
               "definition": {
@@ -526,16 +732,26 @@
                   "text": {
                     "value": "{{queries.fetchGithubProfile.data.followers}}"
                   },
-                  "visible": { "value": true },
+                  "visible": {
+                    "value": true
+                  },
                   "loadingState": {
                     "value": "{{queries.fetchGithubProfile.isLoading}}"
                   }
                 },
                 "events": [],
-                "styles": { "textColor": { "value": "#000" } },
+                "styles": {
+                  "textColor": {
+                    "value": "#000"
+                  }
+                },
                 "others": {
-                  "showOnDesktop": { "value": true },
-                  "showOnMobile": { "value": false }
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
                 }
               }
             },
@@ -560,22 +776,36 @@
               "displayName": "Text Input",
               "description": "Text field for forms",
               "component": "TextInput",
-              "defaultSize": { "width": 200, "height": 30 },
+              "defaultSize": {
+                "width": 200,
+                "height": 30
+              },
               "properties": {
-                "placeholder": { "type": "code", "displayName": "Placeholder" }
+                "placeholder": {
+                  "type": "code",
+                  "displayName": "Placeholder"
+                }
               },
               "events": {},
               "styles": {},
-              "exposedVariables": { "value": {} },
+              "exposedVariables": {
+                "value": {}
+              },
               "definition": {
                 "properties": {
-                  "placeholder": { "value": "organization/repository" }
+                  "placeholder": {
+                    "value": "organization/repository"
+                  }
                 },
                 "events": [],
                 "styles": {},
                 "others": {
-                  "showOnDesktop": { "value": true },
-                  "showOnMobile": { "value": false }
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
                 }
               }
             },
@@ -594,33 +824,52 @@
             "width": 174,
             "height": 30,
             "component": {
-              "icon": "/assets/images/icons/button.svg",
+              "icon": "assets/images/icons/button.svg",
               "name": "button1",
               "displayName": "Button",
               "description": "Trigger actions: queries, alerts etc",
               "component": "Button",
-              "defaultSize": { "width": 120, "height": 30 },
+              "defaultSize": {
+                "width": 120,
+                "height": 30
+              },
               "properties": {
-                "text": { "type": "code", "displayName": "Button Text" },
+                "text": {
+                  "type": "code",
+                  "displayName": "Button Text"
+                },
                 "loadingState": {
                   "type": "code",
                   "displayName": "Loading State"
                 }
               },
-              "events": { "onClick": { "displayName": "On click" } },
+              "events": {
+                "onClick": {
+                  "displayName": "On click"
+                }
+              },
               "styles": {
                 "backgroundColor": {
                   "type": "color",
                   "displayName": "Background color"
                 },
-                "textColor": { "type": "color", "displayName": "Text color" }
+                "textColor": {
+                  "type": "color",
+                  "displayName": "Text color"
+                }
               },
               "exposedVariables": {},
               "definition": {
                 "properties": {
-                  "text": { "value": "Fetch contributors" },
-                  "visible": { "value": true },
-                  "loadingState": { "value": "{{false}}" }
+                  "text": {
+                    "value": "Fetch contributors"
+                  },
+                  "visible": {
+                    "value": true
+                  },
+                  "loadingState": {
+                    "value": "{{false}}"
+                  }
                 },
                 "events": [
                   {
@@ -630,12 +879,20 @@
                   }
                 ],
                 "styles": {
-                  "backgroundColor": { "value": "#3c92dc" },
-                  "textColor": { "value": "#fff" }
+                  "backgroundColor": {
+                    "value": "#3c92dc"
+                  },
+                  "textColor": {
+                    "value": "#fff"
+                  }
                 },
                 "others": {
-                  "showOnDesktop": { "value": true },
-                  "showOnMobile": { "value": false }
+                  "showOnDesktop": {
+                    "value": true
+                  },
+                  "showOnMobile": {
+                    "value": false
+                  }
                 }
               }
             },
@@ -676,13 +933,22 @@
             "description": "Display paginated tabular data",
             "component": "Table",
             "properties": {
-              "title": { "type": "string", "displayName": "Title" },
-              "data": { "type": "code", "displayName": "Table data" },
+              "title": {
+                "type": "string",
+                "displayName": "Title"
+              },
+              "data": {
+                "type": "code",
+                "displayName": "Table data"
+              },
               "loadingState": {
                 "type": "code",
                 "displayName": "Loading state"
               },
-              "columns": { "type": "array", "displayName": "Table Columns" },
+              "columns": {
+                "type": "array",
+                "displayName": "Table Columns"
+              },
               "serverSidePagination": {
                 "type": "toggle",
                 "displayName": "Server Side Pagination"
@@ -696,14 +962,26 @@
                 "displayName": "Text Color"
               }
             },
-            "defaultSize": { "width": 810, "height": 300 },
+            "defaultSize": {
+              "width": 810,
+              "height": 300
+            },
             "events": {
-              "onRowClicked": { "displayName": "On row clicked" },
-              "onBulkUpdate": { "displayName": "Bulk update query" },
-              "onPageChanged": { "displayName": "On page changed query" }
+              "onRowClicked": {
+                "displayName": "On row clicked"
+              },
+              "onBulkUpdate": {
+                "displayName": "Bulk update query"
+              },
+              "onPageChanged": {
+                "displayName": "On page changed query"
+              }
             },
             "styles": {
-              "textColor": { "type": "color", "displayName": "Text Color" }
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              }
             },
             "exposedVariables": {
               "selectedRow": {},
@@ -713,17 +991,30 @@
             },
             "definition": {
               "properties": {
-                "title": { "value": "Table" },
-                "visible": { "value": true },
+                "title": {
+                  "value": "Table"
+                },
+                "visible": {
+                  "value": true
+                },
                 "loadingState": {
                   "value": "{{queries.fetchContributors.isLoading}}"
                 },
-                "data": { "value": "{{queries.fetchContributors.data}}" },
-                "serverSidePagination": { "value": true },
+                "data": {
+                  "value": "{{queries.fetchContributors.data}}"
+                },
+                "serverSidePagination": {
+                  "value": true
+                },
                 "columns": {
                   "value": [
-                    { "name": "username", "key": "login" },
-                    { "name": "contributions" }
+                    {
+                      "name": "username",
+                      "key": "login"
+                    },
+                    {
+                      "name": "contributions"
+                    }
                   ]
                 },
                 "actions": {
@@ -749,9 +1040,16 @@
                     }
                   ]
                 },
-                "columnSizes": { "actions": 229, "contributions": 208 },
-                "showBulkSelector": { "value": false },
-                "highlightSelectedRow": { "value": false }
+                "columnSizes": {
+                  "actions": 229,
+                  "contributions": 208
+                },
+                "showBulkSelector": {
+                  "value": false
+                },
+                "highlightSelectedRow": {
+                  "value": false
+                }
               },
               "events": [
                 {
@@ -766,12 +1064,20 @@
                 }
               ],
               "styles": {
-                "textColor": { "value": "" },
-                "cellSize": { "value": "compact" }
+                "textColor": {
+                  "value": ""
+                },
+                "cellSize": {
+                  "value": "compact"
+                }
               },
               "others": {
-                "showOnDesktop": { "value": true },
-                "showOnMobile": { "value": false }
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
               }
             }
           },
@@ -794,19 +1100,38 @@
             "name": "container1",
             "displayName": "Container",
             "description": "Wrapper for multiple components",
-            "defaultSize": { "width": 200, "height": 200 },
+            "defaultSize": {
+              "width": 200,
+              "height": 200
+            },
             "component": "Container",
             "properties": {},
             "events": {},
-            "styles": { "backgroundColor": { "type": "color" } },
+            "styles": {
+              "backgroundColor": {
+                "type": "color"
+              }
+            },
             "exposedVariables": {},
             "definition": {
-              "properties": { "visible": { "value": true } },
+              "properties": {
+                "visible": {
+                  "value": true
+                }
+              },
               "events": [],
-              "styles": { "backgroundColor": { "value": "#fff" } },
+              "styles": {
+                "backgroundColor": {
+                  "value": "#fff"
+                }
+              },
               "others": {
-                "showOnDesktop": { "value": true },
-                "showOnMobile": { "value": false }
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
               }
             }
           },
@@ -829,12 +1154,22 @@
             "name": "image1",
             "displayName": "Image",
             "description": "Display an Image",
-            "defaultSize": { "width": 200, "height": 200 },
+            "defaultSize": {
+              "width": 200,
+              "height": 200
+            },
             "component": "Image",
             "properties": {
-              "source": { "type": "code", "displayName": "URL" }
+              "source": {
+                "type": "code",
+                "displayName": "URL"
+              }
             },
-            "events": { "onClick": { "displayName": "On click" } },
+            "events": {
+              "onClick": {
+                "displayName": "On click"
+              }
+            },
             "styles": {},
             "exposedVariables": {},
             "definition": {
@@ -842,13 +1177,19 @@
                 "source": {
                   "value": "{{queries.fetchGithubProfile.data.avatar_url}}"
                 },
-                "visible": { "value": true }
+                "visible": {
+                  "value": true
+                }
               },
               "events": [],
               "styles": {},
               "others": {
-                "showOnDesktop": { "value": true },
-                "showOnMobile": { "value": false }
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
               }
             }
           },
@@ -874,29 +1215,52 @@
             "description": "Display markdown or HTML",
             "component": "Text",
             "properties": {
-              "text": { "type": "code", "displayName": "Text" },
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
               "loadingState": {
                 "type": "code",
                 "displayName": "Show loading state"
               }
             },
-            "defaultSize": { "width": 210, "height": 24 },
+            "defaultSize": {
+              "width": 210,
+              "height": 24
+            },
             "events": [],
             "styles": {
-              "textColor": { "type": "color", "displayName": "Text Color" }
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              }
             },
             "exposedVariables": {},
             "definition": {
               "properties": {
-                "text": { "value": "Name:" },
-                "visible": { "value": true },
-                "loadingState": { "value": "{{false}}" }
+                "text": {
+                  "value": "Name:"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
               },
               "events": [],
-              "styles": { "textColor": { "value": "#000" } },
+              "styles": {
+                "textColor": {
+                  "value": "#000"
+                }
+              },
               "others": {
-                "showOnDesktop": { "value": true },
-                "showOnMobile": { "value": false }
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
               }
             }
           },
@@ -922,29 +1286,52 @@
             "description": "Display markdown or HTML",
             "component": "Text",
             "properties": {
-              "text": { "type": "code", "displayName": "Text" },
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
               "loadingState": {
                 "type": "code",
                 "displayName": "Show loading state"
               }
             },
-            "defaultSize": { "width": 210, "height": 24 },
+            "defaultSize": {
+              "width": 210,
+              "height": 24
+            },
             "events": [],
             "styles": {
-              "textColor": { "type": "color", "displayName": "Text Color" }
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              }
             },
             "exposedVariables": {},
             "definition": {
               "properties": {
-                "text": { "value": "Organization:" },
-                "visible": { "value": true },
-                "loadingState": { "value": "{{false}}" }
+                "text": {
+                  "value": "Organization:"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
               },
               "events": [],
-              "styles": { "textColor": { "value": "#000" } },
+              "styles": {
+                "textColor": {
+                  "value": "#000"
+                }
+              },
               "others": {
-                "showOnDesktop": { "value": true },
-                "showOnMobile": { "value": false }
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
               }
             }
           },
@@ -970,29 +1357,52 @@
             "description": "Display markdown or HTML",
             "component": "Text",
             "properties": {
-              "text": { "type": "code", "displayName": "Text" },
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
               "loadingState": {
                 "type": "code",
                 "displayName": "Show loading state"
               }
             },
-            "defaultSize": { "width": 210, "height": 24 },
+            "defaultSize": {
+              "width": 210,
+              "height": 24
+            },
             "events": [],
             "styles": {
-              "textColor": { "type": "color", "displayName": "Text Color" }
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              }
             },
             "exposedVariables": {},
             "definition": {
               "properties": {
-                "text": { "value": "Followers:" },
-                "visible": { "value": true },
-                "loadingState": { "value": "{{false}}" }
+                "text": {
+                  "value": "Followers:"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
               },
               "events": [],
-              "styles": { "textColor": { "value": "#000" } },
+              "styles": {
+                "textColor": {
+                  "value": "#000"
+                }
+              },
               "others": {
-                "showOnDesktop": { "value": true },
-                "showOnMobile": { "value": false }
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
               }
             }
           },
@@ -1018,31 +1428,52 @@
             "description": "Display markdown or HTML",
             "component": "Text",
             "properties": {
-              "text": { "type": "code", "displayName": "Text" },
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
               "loadingState": {
                 "type": "code",
                 "displayName": "Show loading state"
               }
             },
-            "defaultSize": { "width": 210, "height": 24 },
+            "defaultSize": {
+              "width": 210,
+              "height": 24
+            },
             "events": [],
             "styles": {
-              "textColor": { "type": "color", "displayName": "Text Color" }
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              }
             },
             "exposedVariables": {},
             "definition": {
               "properties": {
-                "text": { "value": "{{queries.fetchGithubProfile.data.name}}" },
-                "visible": { "value": true },
+                "text": {
+                  "value": "{{queries.fetchGithubProfile.data.name}}"
+                },
+                "visible": {
+                  "value": true
+                },
                 "loadingState": {
                   "value": "{{queries.fetchGithubProfile.isLoading}}"
                 }
               },
               "events": [],
-              "styles": { "textColor": { "value": "#000" } },
+              "styles": {
+                "textColor": {
+                  "value": "#000"
+                }
+              },
               "others": {
-                "showOnDesktop": { "value": true },
-                "showOnMobile": { "value": false }
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
               }
             }
           },
@@ -1068,16 +1499,25 @@
             "description": "Display markdown or HTML",
             "component": "Text",
             "properties": {
-              "text": { "type": "code", "displayName": "Text" },
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
               "loadingState": {
                 "type": "code",
                 "displayName": "Show loading state"
               }
             },
-            "defaultSize": { "width": 210, "height": 24 },
+            "defaultSize": {
+              "width": 210,
+              "height": 24
+            },
             "events": [],
             "styles": {
-              "textColor": { "type": "color", "displayName": "Text Color" }
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              }
             },
             "exposedVariables": {},
             "definition": {
@@ -1085,16 +1525,26 @@
                 "text": {
                   "value": "{{queries.fetchGithubProfile.data.company}}"
                 },
-                "visible": { "value": true },
+                "visible": {
+                  "value": true
+                },
                 "loadingState": {
                   "value": "{{queries.fetchGithubProfile.isLoading}}"
                 }
               },
               "events": [],
-              "styles": { "textColor": { "value": "#000" } },
+              "styles": {
+                "textColor": {
+                  "value": "#000"
+                }
+              },
               "others": {
-                "showOnDesktop": { "value": true },
-                "showOnMobile": { "value": false }
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
               }
             }
           },
@@ -1120,16 +1570,25 @@
             "description": "Display markdown or HTML",
             "component": "Text",
             "properties": {
-              "text": { "type": "code", "displayName": "Text" },
+              "text": {
+                "type": "code",
+                "displayName": "Text"
+              },
               "loadingState": {
                 "type": "code",
                 "displayName": "Show loading state"
               }
             },
-            "defaultSize": { "width": 210, "height": 24 },
+            "defaultSize": {
+              "width": 210,
+              "height": 24
+            },
             "events": [],
             "styles": {
-              "textColor": { "type": "color", "displayName": "Text Color" }
+              "textColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              }
             },
             "exposedVariables": {},
             "definition": {
@@ -1137,16 +1596,26 @@
                 "text": {
                   "value": "{{queries.fetchGithubProfile.data.followers}}"
                 },
-                "visible": { "value": true },
+                "visible": {
+                  "value": true
+                },
                 "loadingState": {
                   "value": "{{queries.fetchGithubProfile.isLoading}}"
                 }
               },
               "events": [],
-              "styles": { "textColor": { "value": "#000" } },
+              "styles": {
+                "textColor": {
+                  "value": "#000"
+                }
+              },
               "others": {
-                "showOnDesktop": { "value": true },
-                "showOnMobile": { "value": false }
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
               }
             }
           },
@@ -1171,22 +1640,36 @@
             "displayName": "Text Input",
             "description": "Text field for forms",
             "component": "TextInput",
-            "defaultSize": { "width": 200, "height": 30 },
+            "defaultSize": {
+              "width": 200,
+              "height": 30
+            },
             "properties": {
-              "placeholder": { "type": "code", "displayName": "Placeholder" }
+              "placeholder": {
+                "type": "code",
+                "displayName": "Placeholder"
+              }
             },
             "events": {},
             "styles": {},
-            "exposedVariables": { "value": {} },
+            "exposedVariables": {
+              "value": {}
+            },
             "definition": {
               "properties": {
-                "placeholder": { "value": "organization/repository" }
+                "placeholder": {
+                  "value": "organization/repository"
+                }
               },
               "events": [],
               "styles": {},
               "others": {
-                "showOnDesktop": { "value": true },
-                "showOnMobile": { "value": false }
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
               }
             }
           },
@@ -1205,30 +1688,52 @@
           "width": 174,
           "height": 30,
           "component": {
-            "icon": "/assets/images/icons/button.svg",
+            "icon": "assets/images/icons/button.svg",
             "name": "button1",
             "displayName": "Button",
             "description": "Trigger actions: queries, alerts etc",
             "component": "Button",
-            "defaultSize": { "width": 120, "height": 30 },
-            "properties": {
-              "text": { "type": "code", "displayName": "Button Text" },
-              "loadingState": { "type": "code", "displayName": "Loading State" }
+            "defaultSize": {
+              "width": 120,
+              "height": 30
             },
-            "events": { "onClick": { "displayName": "On click" } },
+            "properties": {
+              "text": {
+                "type": "code",
+                "displayName": "Button Text"
+              },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Loading State"
+              }
+            },
+            "events": {
+              "onClick": {
+                "displayName": "On click"
+              }
+            },
             "styles": {
               "backgroundColor": {
                 "type": "color",
                 "displayName": "Background color"
               },
-              "textColor": { "type": "color", "displayName": "Text color" }
+              "textColor": {
+                "type": "color",
+                "displayName": "Text color"
+              }
             },
             "exposedVariables": {},
             "definition": {
               "properties": {
-                "text": { "value": "Fetch contributors" },
-                "visible": { "value": true },
-                "loadingState": { "value": "{{false}}" }
+                "text": {
+                  "value": "Fetch contributors"
+                },
+                "visible": {
+                  "value": true
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
               },
               "events": [
                 {
@@ -1238,12 +1743,20 @@
                 }
               ],
               "styles": {
-                "backgroundColor": { "value": "#3c92dc" },
-                "textColor": { "value": "#fff" }
+                "backgroundColor": {
+                  "value": "#3c92dc"
+                },
+                "textColor": {
+                  "value": "#fff"
+                }
               },
               "others": {
-                "showOnDesktop": { "value": true },
-                "showOnMobile": { "value": false }
+                "showOnDesktop": {
+                  "value": true
+                },
+                "showOnMobile": {
+                  "value": false
+                }
               }
             }
           },

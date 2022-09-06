@@ -7,11 +7,9 @@ title: CouchDB
 
 ToolJet can connect to CouchDB databases to read and write data. CocuhDB uses basic auth for authentication , username and password for the database is required to create an CouchDB data source on ToolJet. For more info visit [CouchDB docs](https://docs.couchdb.org/en/stable/).
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/auth_couch.gif)
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/auth_couch.gif" alt="Couch auth" />
 
-</div>
 
 ## Supported queries: 
 
@@ -48,11 +46,9 @@ include_docs (boolean) – include_docs key is set to false by default , if true
 
 :::
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/listing.png)
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/listing.png" alt="Couch listing"/>
 
-</div>
 
 
 Example response from CouchDb: 
@@ -93,11 +89,9 @@ Example response from CouchDb:
 
 - **Record ID**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/retrieving.png)
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/retrieving.png" alt="Couch retrive view" />
 
-</div>
 
 
 Example response from CouchDb: 
@@ -116,11 +110,9 @@ The returned JSON is the JSON of the document, including the document ID and rev
 
 ### Creating a record
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/creating.png)
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/creating.png" alt="Couch create view"/>
 
-</div>
 
 #### Example Records:
 
@@ -154,11 +146,9 @@ You get the document as JSON in the response. For each update to the document, t
 - **Revision ID**
 - **Record ID**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/updating.png)
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/updating.png" alt="Couch update view" />
 
-</div>
 
 #### Example body:
 
@@ -188,11 +178,9 @@ Example response from CouchDb:
 - **Revision ID**
 - **Record ID**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/deleting.png)
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/deleting.png" alt="Couch delete view"/>
 
-</div>
 
 
 Click on the `run` button to run the query.
@@ -220,11 +208,9 @@ NOTE:
 selector syntax: https://pouchdb.com/guides/mango-queries.html
 :::
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/find.png)
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/find.png" alt="Couch find" />
 
-</div>
 
 #### Example body:
 
@@ -249,11 +235,9 @@ More information : https://docs.couchdb.org/en/stable/api/database/find.html
 
 Example response from CouchDb:
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/find_response.png)
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/find_response.png" alt="Couch find response" />
 
-</div>
 
 ### Retrieving a view
 
@@ -264,11 +248,9 @@ Views are the primary tool used for querying and reporting on CouchDB documents.
 
 Reference for view :https://docs.couchdb.org/en/3.2.0/ddocs/views/intro.html#what-is-a-view
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - CouchDb](/img/datasource-reference/couchdb/get_view.png)
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/get_view.png" alt="Couch get view" />
 
-</div>
 
 #### Optional parameters: 
 

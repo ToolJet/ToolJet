@@ -8,13 +8,17 @@ title: Multi-Workspace
 User can create their own workspaces, user who created workspace will be having admin privileges for the workspace.
 
 
-![ToolJet - Google create project](/img/multiworkspace/multi-workspace.gif)
+
+<img className="screenshot-full" src="/img/multiworkspace/multi-workspace.gif" alt="multi workspace" />
+
 
 ## Hierarchy
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Google create project](/img/multiworkspace/Tooljet-workspace.png)
+
+<img className="screenshot-full" src="/img/multiworkspace/Tooljet-workspace.png" alt="tooljet workspace" />
+
 
 </div>
 

@@ -42,7 +42,7 @@ export default function TemplateDisplay(props) {
         </Row>
         <Row className="align-items-center justify-content-center" style={{ height: '88%', position: 'relative' }}>
           <ImageWithSpinner
-            src={`/assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`}
+            src={`assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`}
             className="template-image"
             spinnerClassName="template-spinner"
             useSmallSpinner={true}
