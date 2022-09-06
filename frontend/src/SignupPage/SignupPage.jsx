@@ -90,7 +90,7 @@ class SignupPageComponent extends React.Component {
             {!signupSuccess && (
               <div className="card-body">
                 <h2 className="card-title text-center mb-4">
-                  {this.props.t('loginSignupPage.createAToolJetAccount', 'Create a ToolJet account')}
+                  {this.props.t('loginSignupPage.createToolJetAccount', 'Create a ToolJet account')}
                 </h2>
                 {this.ssoConfigs.enableSignUp && (
                   <div className="d-flex flex-column align-items-center separator-bottom">
@@ -118,7 +118,7 @@ class SignupPageComponent extends React.Component {
                     name="email"
                     type="email"
                     className="form-control"
-                    placeholder={this.props.t('loginSignupPage.enterYourBusinessEmail', 'Enter your business email')}
+                    placeholder={this.props.t('loginSignupPage.enterBusinessEmail', 'Enter your business email')}
                   />
                 </div>
                 <div className="form-footer">
