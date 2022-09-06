@@ -22,7 +22,7 @@ RUN npm --prefix plugins prune --production
 COPY ./frontend/package.json ./frontend/package-lock.json  ./frontend/
 RUN npm --prefix frontend install
 COPY ./frontend ./frontend
-RUN npm --prefix frontend run build --production
+RUN SERVE_CLIENT=false npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
 FROM openresty/openresty:1.19.9.1rc1-buster-fat
