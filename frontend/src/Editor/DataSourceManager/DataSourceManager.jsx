@@ -373,7 +373,7 @@ class DataSourceManagerComponent extends React.Component {
             <span className="footer-text">
               {this.props.t(
                 'editor.queryManager.dataSourceManager.dontSeeWhatAreYouLookingFor',
-                'Don&apos;t see what you were looking for?'
+                `Don't see what you were looking for?`
               )}
             </span>
             <br />
@@ -613,7 +613,7 @@ class DataSourceManagerComponent extends React.Component {
                       <p>
                         {this.props.t(
                           'editor.queryManager.dataSourceManager.pleaseWhiteListOurIP',
-                          'Please white-listour IP address if the data source is not publicly accessible.'
+                          'Please white-list our IP address if the data source is not publicly accessible.'
                         )}
                       </p>
                     </div>

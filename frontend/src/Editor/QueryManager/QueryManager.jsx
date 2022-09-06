@@ -695,7 +695,7 @@ class QueryManagerComponent extends React.Component {
                     checked={this.state.options.showSuccessNotification}
                   />
                   <span className="form-check-label">
-                    {this.props.t('editor.queryManager.showNotificationOnSuccess', ' Show notification on success?')}
+                    {this.props.t('editor.queryManager.showNotificationOnSuccess', 'Show notification on success?')}
                   </span>
                 </div>
                 {this.state.options.showSuccessNotification && (
@@ -725,7 +725,7 @@ class QueryManagerComponent extends React.Component {
                     <div className="row mt-3">
                       <div className="col-auto">
                         <label className="form-label p-2">
-                          {this.props.t('editor.queryManager.notificationDuration', '}Notification duration (s)')}
+                          {this.props.t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
                         </label>
                       </div>
                       <div className="col">
