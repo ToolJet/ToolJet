@@ -18,7 +18,11 @@
         "select":"Select",
         "environmentVar":"Environment Variables",
         "saving":"Saving...",
-        "saveDatasource":"Save data source"
+        "saveDatasource":"Save data source",
+        "authorize":"Authorize",
+        "connect":"Connect",
+        "reconnect":"Reconnect"
+
     },
     "app":{
         "updateAvailable":"Update available",
@@ -32,6 +36,15 @@
         "chatWrite":"chat:write",
         "listUsersAndSendMessage":"Your ToolJet app will be able to list users and send messages to users & channels.",
         "connectSlack":"Connect to Slack"
+    },
+    "googleSheets":{
+        "readOnly":"Read only",
+        "enableReadAndWrite":"If you want your ToolJet apps to modify your Google sheets, make sure to select read and write access",
+        "readDataFromSheets":"Your ToolJet apps can only read data from Google sheets",
+        "readWrite":"Read and write",
+        "readModifySheets":"Your ToolJet apps can read data from sheets, modify sheets, and more.",
+        "toGoogleSheets":"to Google Sheets"
+
     },
     "profile": {
       "profileSettings": "Profile Settings"
