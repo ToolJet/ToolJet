@@ -18,6 +18,12 @@
         "select":"Select",
         "environmentVar":"Environment Variables"
     },
+    "app":{
+        "updateAvailable":"Update available",
+        "newVersionReleased":"A new version of ToolJet has been released.",
+        "readReleaseNotes":"Read release notes & update",
+        "skipVersion":"Skip this version"
+    },
     "profile": {
       "profileSettings": "Profile Settings"
     },
