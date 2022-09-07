@@ -23,7 +23,9 @@
         "connect":"Connect",
         "reconnect":"Reconnect",
         "components":"components",
-        "send":"Send"
+        "send":"Send",
+        "noConnection":"could not connect",
+        "connectionVerifeid":"connection verified"
 
     },
     "app":{
