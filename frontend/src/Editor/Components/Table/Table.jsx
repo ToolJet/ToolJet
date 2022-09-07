@@ -884,7 +884,7 @@ export function Table({
   useEffect(() => {
     setGlobalFilter(globalFilter);
     setAllFilters(filters.filter((filter) => filter.id !== ''));
-  }, [JSON.stringify(data)]);
+  }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
 
   useEffect(() => {
     setExposedVariable(
