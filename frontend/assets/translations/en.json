@@ -323,6 +323,10 @@
             "use":"Use",
             "preview":"Preview",
             "leadGeneretion":"Lead generetion"
+        },
+        "templateLibraryModal":{
+            "select":"Select template",
+            "createAppfromTemplate":"Create application from template"
         }
 
     },

@@ -77,7 +77,7 @@ export default function TemplateLibraryModal(props) {
       centered
     >
       <Modal.Header>
-        <Modal.Title>Select template</Modal.Title>
+        <Modal.Title>{t('homePage.templateLibraryModal.select', 'Select template')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container fluid>
@@ -116,7 +116,7 @@ export default function TemplateLibraryModal(props) {
                           deployApp();
                         }}
                       >
-                        Create application from template
+                        {t('homePage.templateLibraryModal.createAppfromTemplate', 'Create application from template')}
                       </a>
                     </div>
                   </Col>
