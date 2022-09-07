@@ -171,18 +171,18 @@ docker-compose run --rm -e NODE_ENV=test server npm run db:migrate
 
 To run the unit tests
 ```bash
-docker-compose --rm run server npm run test
+docker-compose --rm run server npm run --prefix server test
 ```
 
 To run e2e tests
 ```bash
-docker-compose run --rm server npm run test:e2e
+docker-compose run --rm server npm run --prefix server test:e2e
 ```
 
 To run a specific unit test
 
 ```bash
-docker-compose run --rm server npm run test <path-to-file>
+docker-compose run --rm server npm --prefix server run test <path-to-file>
 ```
 
 ## Troubleshooting

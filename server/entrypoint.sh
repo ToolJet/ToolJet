@@ -8,6 +8,13 @@ else
   SETUP_CMD='npm run db:setup'
 fi
 
+if [ -f "./.env" ]
+then
+  declare $(grep -v '^#' ./.env)
+fi
+
+echo $PG_HOST
+
 ./server/scripts/wait-for-it.sh $PG_HOST:${PG_PORT:-5432} --strict --timeout=300 -- $SETUP_CMD
 
 exec "$@"
