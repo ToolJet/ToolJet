@@ -1,9 +1,9 @@
 import {
   GetObjectCommand,
   ListBucketsCommand,
-  ListObjectsCommand,
   PutObjectCommand,
   S3Client,
+  ListObjectsV2Command,
 } from '@aws-sdk/client-s3';
 // https://aws.amazon.com/blogs/developer/generate-presigned-url-modular-aws-sdk-javascript/
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -14,7 +14,13 @@ export async function listBuckets(client: S3Client, options: object): Promise<ob
 }
 
 export async function listObjects(client: S3Client, options: object): Promise<object> {
-  const command = new ListObjectsCommand({ Bucket: options['bucket'], Prefix: options['prefix'] });
+  const command = new ListObjectsV2Command({
+    Bucket: options['bucket'],
+    Prefix: options['prefix'],
+    MaxKeys: options['maxKeys'],
+    StartAfter: options['offset'],
+  });
+
   return client.send(command);
 }
 
