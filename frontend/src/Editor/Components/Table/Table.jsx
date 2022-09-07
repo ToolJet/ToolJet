@@ -790,6 +790,8 @@ export function Table({
   } = useTable(
     {
       autoResetPage: false,
+      autoResetGlobalFilter: false,
+      autoResetFilters: false,
       columns,
       data,
       defaultColumn,
@@ -880,11 +882,6 @@ export function Table({
   }, [pageCount]);
 
   const tableRef = React.useRef();
-
-  useEffect(() => {
-    setGlobalFilter(globalFilter);
-    setAllFilters(filters.filter((filter) => filter.id !== ''));
-  }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
 
   useEffect(() => {
     setExposedVariable(
