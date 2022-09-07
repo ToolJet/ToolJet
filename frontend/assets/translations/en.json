@@ -21,7 +21,8 @@
         "saveDatasource":"Save data source",
         "authorize":"Authorize",
         "connect":"Connect",
-        "reconnect":"Reconnect"
+        "reconnect":"Reconnect",
+        "components":"components"
 
     },
     "app":{
