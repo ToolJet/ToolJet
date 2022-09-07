@@ -1098,7 +1098,7 @@ export function Table({
                   </button>
                 </>
               ) : (
-                <span>{`${preGlobalFilteredRows.length} Records`}</span>
+                <span>{`${globalFilteredRows.length} Records`}</span>
               )}
             </div>
           </div>
