@@ -55,9 +55,12 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
           {/* <div class="empty-img">
             <img src="./static/illustrations/undraw_printing_invoices_5r4r.svg" height="128" alt="" />
           </div> */}
-          <p className="empty-title">No results found</p>
+          <p className="empty-title">{t('widgetManager.noResults', 'No results found')}</p>
           <p className={`empty-subtitle ${darkMode ? 'text-white-50' : 'text-secondary'}`}>
-            Try adjusting your search or filter to find what you&apos;re looking for.
+            {t(
+              'widgetManager.tryAdjustingFilterMessage',
+              "Try adjusting your search or filter to find what you're looking for."
+            )}
           </p>
           <button
             className="btn btn-sm btn-outline-azure mt-3"
@@ -66,7 +69,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
               setSearchQuery('');
             }}
           >
-            clear query
+            {t('widgetManager.clearQuery', 'clear query')}
           </button>
         </div>
       );
