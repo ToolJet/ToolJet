@@ -38,6 +38,7 @@
         "requestBody":"REQUEST BODY"
     },
     "errorBoundary":"Something went wrong.",
+    "viewer":"Sorry!. This app is under maintenance",
     "app":{
         "updateAvailable":"Update available",
         "newVersionReleased":"A new version of ToolJet has been released.",
