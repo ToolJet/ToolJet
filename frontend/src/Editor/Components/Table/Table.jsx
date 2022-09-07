@@ -778,7 +778,7 @@ export function Table({
     setAllFilters,
     preGlobalFilteredRows,
     setGlobalFilter,
-    state: { pageIndex, pageSize },
+    state: { pageIndex, globalFilter },
     exportData,
     selectedFlatRows,
     globalFilteredRows,
@@ -877,6 +877,7 @@ export function Table({
   const tableRef = React.useRef();
 
   useEffect(() => {
+    setGlobalFilter(globalFilter);
     setAllFilters(filters.filter((filter) => filter.id !== ''));
   }, [JSON.stringify(data)]);
 
