@@ -343,7 +343,11 @@
         "confirmPassword":"Confirm Password",
         "clickAndAgree":"By clicking the button below, you agree to our",
         "termsAndConditions":"Terms and Conditions",
-        "finishAccountSetup":"Finish account setup"
+        "finishAccountSetup":"Finish account setup",
+        "acceptInvite":"accept invite",
+        "accountExists":"Already have an account?",
+        "and":"and"
+
     },
     "onBoarding":{
         "finishToolJetInstallation":"Finish ToolJet installation",
