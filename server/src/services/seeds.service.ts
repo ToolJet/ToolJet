@@ -37,6 +37,7 @@ export class SeedsService {
         lastName: 'Developer',
         email: 'dev@tooljet.io',
         password: 'password',
+        userType: 'instance',
         defaultOrganizationId: organization.id,
       });
       user.organizationId = organization.id;

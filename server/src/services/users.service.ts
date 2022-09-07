@@ -93,6 +93,9 @@ export class UsersService {
     const { email, firstName, lastName } = userParams;
     let user: User;
 
+    const usersCount = await manager.count(User);
+    const userType = usersCount == 0 ? 'instance' : 'workspace';
+
     await dbTransactionWrap(async (manager: EntityManager) => {
       if (!existingUser) {
         user = manager.create(User, {
@@ -100,6 +103,7 @@ export class UsersService {
           firstName,
           lastName,
           password,
+          userType,
           invitationToken: isInvite ? uuid.v4() : null,
           defaultOrganizationId: defaultOrganizationId || organizationId,
           createdAt: new Date(),
