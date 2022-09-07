@@ -37,6 +37,7 @@
         "query":"QUERY",
         "requestBody":"REQUEST BODY"
     },
+    "errorBoundary":"Something went wrong.",
     "app":{
         "updateAvailable":"Update available",
         "newVersionReleased":"A new version of ToolJet has been released.",
