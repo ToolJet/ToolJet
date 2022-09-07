@@ -752,7 +752,12 @@ export function Table({
 
   const data = useMemo(
     () => tableData,
-    [tableData.length, componentState.changeSet, component.definition.properties.data.value, properties.data]
+    [
+      tableData.length,
+      componentState.changeSet,
+      component.definition.properties.data.value,
+      JSON.stringify(properties.data),
+    ]
   );
 
   const computedStyles = {
