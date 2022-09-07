@@ -22,7 +22,8 @@
         "authorize":"Authorize",
         "connect":"Connect",
         "reconnect":"Reconnect",
-        "components":"components"
+        "components":"components",
+        "send":"Send"
 
     },
     "app":{
@@ -627,7 +628,9 @@
         },
         "Comments":{
             "text":"Comments",
-            "tip" : "toggle comments"
+            "tip" : "toggle comments",
+            "commentBody":"There are no comments to display",
+            "typeComment":"Type your comment here"
         },
         "Settings":{
             "text":"Settings",
