@@ -16,13 +16,22 @@
         "yes":"Yes",
         "submit":"Submit",
         "select":"Select",
-        "environmentVar":"Environment Variables"
+        "environmentVar":"Environment Variables",
+        "saving":"Saving...",
+        "saveDatasource":"Save data source"
     },
     "app":{
         "updateAvailable":"Update available",
         "newVersionReleased":"A new version of ToolJet has been released.",
         "readReleaseNotes":"Read release notes & update",
         "skipVersion":"Skip this version"
+    },
+    "slack":{
+        "authorize":"Authorize",
+        "connectToolJetToSlack":"ToolJet can connect to Slack and list users, send messages, etc. Please select appropriate permission scopes.",
+        "chatWrite":"chat:write",
+        "listUsersAndSendMessage":"Your ToolJet app will be able to list users and send messages to users & channels.",
+        "connectSlack":"Connect to Slack"
     },
     "profile": {
       "profileSettings": "Profile Settings"
