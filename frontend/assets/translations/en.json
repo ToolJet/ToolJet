@@ -347,7 +347,11 @@
         "google":"Google",
         "redirectUrl":"Redirect URL:",
         "gitHub":"GitHub"
-
+    },
+    "oAuth2": {
+        "pleaseWait":"Please wait...",
+        "authSuccess":"Auth successful, you can close this tab now.",
+        "authFailed":"Auth failed"
     },
     "widgetManager": {
         "commonlyUsed": "commonly used",
