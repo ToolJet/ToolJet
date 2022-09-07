@@ -29,14 +29,25 @@
         "left":"Left",
         "center":"Center",
         "right":"Right",
-        "justified":"Justified"
-
+        "justified":"Justified",
+        "host":"Host",
+        "operation":"Operation",
+        "header":"HEADER",
+        "path":"PATH",
+        "query":"QUERY",
+        "requestBody":"REQUEST BODY"
     },
     "app":{
         "updateAvailable":"Update available",
         "newVersionReleased":"A new version of ToolJet has been released.",
         "readReleaseNotes":"Read release notes & update",
         "skipVersion":"Skip this version"
+    },
+    "stripe":"Please wait whle we load the OpenAPI specification for Stripe.",
+    "openApi":{
+        "noValidOpenApi":"Valid OpenAPI Spec is not available!.",
+        "selectHost":"Select a host",
+        "selectOperation":"Select an operation"
     },
     "slack":{
         "authorize":"Authorize",
