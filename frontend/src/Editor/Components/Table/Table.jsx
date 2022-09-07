@@ -43,6 +43,7 @@ export function Table({
   fireEvent,
   setExposedVariable,
   registerAction,
+  properties,
 }) {
   const color =
     component.definition.styles.textColor.value !== '#000'
@@ -751,7 +752,7 @@ export function Table({
 
   const data = useMemo(
     () => tableData,
-    [tableData.length, componentState.changeSet, component.definition.properties.data.value]
+    [tableData.length, componentState.changeSet, component.definition.properties.data.value, properties.data]
   );
 
   const computedStyles = {
