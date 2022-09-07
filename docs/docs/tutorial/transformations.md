@@ -21,25 +21,21 @@ return data.map((row) => {
 
 The query will now look like this:
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Query result transformations](/img/tutorial/transformations/transform.png)
+<img className="screenshot-full" src="/img/tutorial/transformations/transform.png" alt="transform" />
 
-</div>
 
 Click the `create` button to create the query. Saved queries can be run using the `run` icon near the query name. Queries run using the run button will behave just as if it was triggered by an app event like button click and thus will alter the state of the app. You can view the query results using the state inspector on the left side-bar of the app builder.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Query result transformations](/img/tutorial/transformations/result.png)
+<img className="screenshot-full" src="/img/tutorial/transformations/result.png"  alt="result"/>
 
-</div>
 
 We can see that `first_name` and `last_name` are added to all the rows in the `data` object of the query. If you need the original data of the query, it will be available in the `rawData` object of the query.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Query result transformations](/img/tutorial/transformations/rawdata.png)
+<img className="screenshot-full" src="/img/tutorial/transformations/rawdata.png" alt="raw data" />
 
 </div>
 

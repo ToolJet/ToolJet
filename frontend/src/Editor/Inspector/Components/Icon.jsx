@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
@@ -7,83 +7,107 @@ import Popover from 'react-bootstrap/Popover';
 import { SearchBox } from '@/_components/SearchBox';
 // eslint-disable-next-line import/no-unresolved
 import * as Icons from '@tabler/icons';
+import { VirtuosoGrid } from 'react-virtuoso';
 
-export const Icon = ({ componentMeta, darkMode, ...restProps }) => {
-  const { layoutPropertyChanged, component, dataQueries, currentState, eventsChanged, apps, allComponents } = restProps;
+export function Icon({ componentMeta, darkMode, ...restProps }) {
+  const {
+    layoutPropertyChanged,
+    component,
+    dataQueries,
+    paramUpdated,
+    currentState,
+    eventsChanged,
+    apps,
+    allComponents,
+  } = restProps;
 
-  const [filteredIcons, setIcons] = useState([]);
-  const iconList = useRef([]);
-  let IconElemet;
+  const [searchText, setSearchText] = useState('');
+  const iconList = useRef(Object.keys(Icons));
 
-  useEffect(() => {
-    iconList.current = Object.keys(Icons);
-    setIcons(iconList.current);
-  }, []);
+  const searchIcon = (text) => {
+    if (searchText === text) return;
+    setSearchText(text);
+  };
+
+  const filteredIcons =
+    searchText === ''
+      ? iconList.current
+      : iconList.current.filter((icon) => icon?.toLowerCase().includes(searchText ? searchText.toLowerCase() : ''));
+
+  const onIconSelect = (icon) => {
+    paramUpdated({ name: 'icon' }, 'value', icon, 'properties');
+  };
 
   const eventPopover = () => {
     return (
       <Popover
         id="popover-basic"
-        style={{ width: '450px', maxWidth: '450px' }}
+        style={{ width: '460px', maxWidth: '460px' }}
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow icon-widget-popover`}
       >
         <Popover.Title>
-          <SearchBox
-            onSubmit={(searchText) => {
-              console.log('searchText--- ', searchText);
-              // setIcons(
-              //   iconList.current.filter((icon) =>
-              //     icon?.toLowerCase().includes(searchText ? searchText.toLowerCase() : '')
-              //   )
-              // );
-            }}
-            width="100%"
-          />
+          <SearchBox onSubmit={searchIcon} width="100%" />
         </Popover.Title>
         <Popover.Content>
           <div className="row">
-            {filteredIcons.map((icon) => {
-              IconElemet = Icons[icon];
-              return (
-                <div className="icon-element p-2" key={icon}>
-                  <IconElemet
-                    color="black"
-                    stroke={3}
-                    strokeLinejoin="miter"
-                    style={{ width: '24px', height: '24px' }}
-                  />
-                </div>
-              );
-            })}
+            {
+              <VirtuosoGrid
+                style={{ height: 300 }}
+                totalCount={filteredIcons.length}
+                listClassName="icon-list-wrapper"
+                itemClassName="icon-list"
+                itemContent={(index) => {
+                  if (filteredIcons[index] === undefined) return null;
+                  const IconElement = Icons[filteredIcons[index]];
+                  return (
+                    <div className="icon-element p-2" onClick={() => onIconSelect(filteredIcons[index])}>
+                      <IconElement
+                        color="black"
+                        stroke={3}
+                        strokeLinejoin="miter"
+                        style={{ width: '24px', height: '24px' }}
+                      />
+                    </div>
+                  );
+                }}
+              />
+            }
           </div>
         </Popover.Content>
       </Popover>
     );
   };
 
-  const renderIconPicker = () => {
+  function renderIconPicker() {
+    const icon = component.component.definition.properties.icon;
+    const IconElement = Icons[icon.value];
     return (
-      <div className="row fx-container">
-        <div className="col">
-          <div className="field mb-2">
-            <OverlayTrigger trigger="click" placement={'left'} rootClose={true} overlay={eventPopover()}>
-              <div className="row mx-0 form-control color-picker-input">
-                <div
-                  className="col-auto"
-                  style={{
-                    float: 'right',
-                    width: '20px',
-                    height: '20px',
-                  }}
-                ></div>
-                <small className="col p-0">123</small>
-              </div>
-            </OverlayTrigger>
+      <>
+        <div className="mb-2 field">
+          <label className="form-label">Icon</label>
+        </div>
+        <div className="card">
+          <div className="card-body p-0">
+            <div className="field">
+              <OverlayTrigger trigger="click" placement={'left'} rootClose={true} overlay={eventPopover()}>
+                <div className="row p-2" role="button">
+                  <div className="col-auto">
+                    <IconElement
+                      color="black"
+                      stroke={2}
+                      strokeLinejoin="miter"
+                      style={{ width: '20px', height: '20px' }}
+                    />
+                  </div>
+                  <div className="col text-truncate">{icon.value}</div>
+                </div>
+              </OverlayTrigger>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
-  };
+  }
 
   let items = [];
 
@@ -158,4 +182,4 @@ export const Icon = ({ componentMeta, darkMode, ...restProps }) => {
   });
 
   return <Accordion items={items} />;
-};
+}

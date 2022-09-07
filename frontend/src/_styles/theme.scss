@@ -6115,16 +6115,23 @@ input.hide-input-arrows{
     }
   }
   .popover-body{
-    height: 300px;
-    overflow: auto;
+    padding: 0 0.5rem;
+    .row{
+      > div{
+        overflow-x: hidden !important;
+      }
+    }
+    .icon-list-wrapper{
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      margin: 0.5rem 1rem 0.5rem 0.5rem;
+    }
     .icon-element{
       cursor: pointer;
-      width: 24px;
-      box-sizing: content-box;
-      border: 0.5px solid #fff;
+      border: 1px solid #fff;
       border-radius: $border-radius;
       &:hover{
-        border: 0.5px solid $primary;
+        border: 1px solid $primary;
       }
     }
   }

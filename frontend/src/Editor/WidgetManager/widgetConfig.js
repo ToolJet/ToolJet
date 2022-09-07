@@ -4667,9 +4667,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      iconPicker: {
-        type: 'code',
-        displayName: 'Link Target',
+      icon: {
+        type: 'iconPicker',
+        displayName: 'Icon',
         validation: {
           schema: { type: 'string' },
         },
@@ -4687,30 +4687,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           schema: { type: 'string' },
         },
       },
-      iconSize: {
-        type: 'number',
-        displayName: 'Icon Size',
-        validation: {
-          schema: { type: 'number' },
-        },
-      },
-      iconAlign: {
-        type: 'alignButtons',
-        displayName: 'Align Icon',
-        validation: {
-          schema: { type: 'string' },
-        },
-      },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -4723,15 +4702,12 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        iconPicker: { value: 'https://dev.to/' },
+        icon: { value: 'IconHome2' },
       },
       events: [],
       styles: {
-        iconColor: { value: '#375FCF' },
-        iconSize: { value: 14 },
-        iconAlign: { value: 'left' },
+        iconColor: { value: '#000' },
         visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
       },
     },
   },

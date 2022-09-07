@@ -39,11 +39,9 @@ Click on `+` button of the query manager at the bottom panel of the editor and s
 
 **NOTE**: Query should be saved before running.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - SAP HANA](/img/datasource-reference/saphana/query.png)
+<img className="screenshot-full" src="/img/datasource-reference/saphana/query.png" alt="saphana query" />
 
-</div>
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
