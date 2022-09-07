@@ -1,11 +1,13 @@
 import React from 'react';
 import { ToolTip } from './Components/ToolTip';
+import { useTranslation } from 'react-i18next';
 
 export const AlignButtons = ({ param, definition, onChange, paramType, componentMeta }) => {
   const initialValue = definition ? definition.value : '';
   const paramMeta = componentMeta[paramType][param.name];
   const displayName = paramMeta.displayName || param.name;
   const options = paramMeta.options || {};
+  const { t } = useTranslation();
 
   function handleOptionChanged(event) {
     onChange(param, 'value', event.currentTarget.value, paramType);
@@ -33,7 +35,7 @@ export const AlignButtons = ({ param, definition, onChange, paramType, component
               />
             </svg>
           </div>
-          <span className="tooltiptext">Left</span>
+          <span className="tooltiptext">{t('globals.left', 'Left')}</span>
         </label>
 
         <label className="radio-img">
@@ -54,7 +56,7 @@ export const AlignButtons = ({ param, definition, onChange, paramType, component
               />
             </svg>
           </div>
-          <span className="tooltiptext">Center</span>
+          <span className="tooltiptext">{t('globals.center', 'Center')}</span>
         </label>
 
         <label className="radio-img">
@@ -75,7 +77,7 @@ export const AlignButtons = ({ param, definition, onChange, paramType, component
               />
             </svg>
           </div>
-          <span className="tooltiptext">Right</span>
+          <span className="tooltiptext">{t('globals.right', 'Right')}</span>
         </label>
 
         <label className="radio-img">
@@ -97,7 +99,7 @@ export const AlignButtons = ({ param, definition, onChange, paramType, component
               />
             </svg>
           </div>
-          <span className="tooltiptext">Justified</span>
+          <span className="tooltiptext">{t('globals.justified', 'Justified')}</span>
         </label>
       </div>
     </div>
