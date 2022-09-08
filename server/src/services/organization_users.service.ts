@@ -87,6 +87,8 @@ export class OrganizationUsersService {
         // Resetting password if single organization
         await this.usersService.updateUser(id, { password: uuid.v4() }, manager);
       }
+
+      await this.usersService.validateLicense(manager);
     }, manager);
 
     await this.emailService.sendOrganizationUserWelcomeEmail(

@@ -282,6 +282,7 @@ class App extends React.Component {
             />
           </div>
         </BrowserRouter>
+        <div id="modal-div"></div>
         <Toast toastOptions={toastOptions} />
       </>
     );

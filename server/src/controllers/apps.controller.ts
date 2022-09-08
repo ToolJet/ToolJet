@@ -1,16 +1,4 @@
-import {
-  Controller,
-  ForbiddenException,
-  Request,
-  Get,
-  Param,
-  Post,
-  Put,
-  Delete,
-  Query,
-  UseGuards,
-  Body,
-} from '@nestjs/common';
+import { Controller, ForbiddenException, Get, Param, Post, Put, Delete, Query, UseGuards, Body } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
@@ -24,6 +12,7 @@ import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { User } from 'src/decorators/user.decorator';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
+import { AppCountGuard } from '@ee/licensing/guards/app.guard';
 
 @Controller('apps')
 export class AppsController {
@@ -35,9 +24,9 @@ export class AppsController {
     private auditLoggerService: AuditLoggerService
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AppCountGuard)
   @Post()
-  async create(@Request() req, @User() user) {
+  async create(@User() user) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
     if (!ability.can('createApp', App)) {
@@ -50,9 +39,8 @@ export class AppsController {
     await this.appsService.update(user, app.id, appUpdateDto);
 
     await this.auditLoggerService.perform({
-      request: req,
-      userId: req.user.id,
-      organizationId: req.user.organizationId,
+      userId: user.id,
+      organizationId: user.organizationId,
       resourceId: app.id,
       resourceType: ResourceTypes.APP,
       resourceName: app.name,
@@ -60,6 +48,12 @@ export class AppsController {
     });
 
     return decamelizeKeys(app);
+  }
+
+  @UseGuards(JwtAuthGuard, AppCountGuard)
+  @Get('license-terms')
+  async getAppCount() {
+    return;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -100,7 +94,7 @@ export class AppsController {
 
   @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
   @Get('slugs/:slug')
-  async appFromSlug(@Request() req, @User() user, @Param('slug') slug) {
+  async appFromSlug(@User() user, @Param('slug') slug) {
     if (user) {
       const app = await this.appsService.findBySlug(slug);
       const ability = await this.appsAbilityFactory.appsActions(user, app.id);
@@ -110,9 +104,8 @@ export class AppsController {
       }
 
       await this.auditLoggerService.perform({
-        request: req,
-        userId: req.user.id,
-        organizationId: req.user.organizationId,
+        userId: user.id,
+        organizationId: user.organizationId,
         resourceId: app.id,
         resourceType: ResourceTypes.APP,
         resourceName: app.name,
@@ -139,7 +132,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(@Request() req, @User() user, @Param('id') id, @Body('app') appUpdateDto: AppUpdateDto) {
+  async update(@User() user, @Param('id') id, @Body('app') appUpdateDto: AppUpdateDto) {
     const app = await this.appsService.find(id);
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
@@ -150,23 +143,22 @@ export class AppsController {
     const result = await this.appsService.update(user, id, appUpdateDto);
 
     await this.auditLoggerService.perform({
-      request: req,
-      userId: req.user.id,
-      organizationId: req.user.organizationId,
+      userId: user.id,
+      organizationId: user.organizationId,
       resourceId: app.id,
       resourceType: ResourceTypes.APP,
       resourceName: app.name,
       actionType: ActionTypes.APP_UPDATE,
-      metadata: { updateParams: req.body },
+      metadata: { updateParams: { app: appUpdateDto } },
     });
     const response = decamelizeKeys(result);
 
     return response;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AppCountGuard)
   @Post(':id/clone')
-  async clone(@Request() req, @User() user, @Param('id') id) {
+  async clone(@User() user, @Param('id') id) {
     const existingApp = await this.appsService.find(id);
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
@@ -176,9 +168,8 @@ export class AppsController {
 
     const result = await this.appsService.clone(existingApp, user);
     await this.auditLoggerService.perform({
-      request: req,
-      userId: req.user.id,
-      organizationId: req.user.organizationId,
+      userId: user.id,
+      organizationId: user.organizationId,
       resourceId: result.id,
       resourceType: ResourceTypes.APP,
       resourceName: result.name,
@@ -191,7 +182,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/export')
-  async export(@Request() req, @User() user, @Param('id') id) {
+  async export(@User() user, @Param('id') id) {
     const appToExport = await this.appsService.find(id);
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
@@ -202,9 +193,8 @@ export class AppsController {
     const app = await this.appImportExportService.export(user, id);
 
     await this.auditLoggerService.perform({
-      request: req,
-      userId: req.user.id,
-      organizationId: req.user.organizationId,
+      userId: user.id,
+      organizationId: user.organizationId,
       resourceId: app.id,
       resourceType: ResourceTypes.APP,
       resourceName: app.name,
@@ -217,9 +207,9 @@ export class AppsController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AppCountGuard)
   @Post('/import')
-  async import(@Request() req, @User() user, @Body() body) {
+  async import(@User() user, @Body() body) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
     if (!ability.can('createApp', App)) {
@@ -228,9 +218,8 @@ export class AppsController {
     const app = await this.appImportExportService.import(user, body);
 
     await this.auditLoggerService.perform({
-      request: req,
-      userId: req.user.id,
-      organizationId: req.user.organizationId,
+      userId: user.id,
+      organizationId: user.organizationId,
       resourceId: app.id,
       resourceType: ResourceTypes.APP,
       resourceName: app.name,
@@ -242,7 +231,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async delete(@Request() req, @User() user, @Param('id') id) {
+  async delete(@User() user, @Param('id') id) {
     const app = await this.appsService.find(id);
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
@@ -253,9 +242,8 @@ export class AppsController {
     const result = await this.appsService.delete(id);
 
     await this.auditLoggerService.perform({
-      request: req,
-      userId: req.user.id,
-      organizationId: req.user.organizationId,
+      userId: user.id,
+      organizationId: user.organizationId,
       resourceId: app.id,
       resourceType: ResourceTypes.APP,
       resourceName: app.name,

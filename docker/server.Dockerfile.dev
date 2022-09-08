@@ -21,6 +21,8 @@ COPY ./package.json ./package.json
 
 # install app dependencies
 COPY ./server/package.json ./server/package-lock.json ./server/
+COPY ./server/keys/public.pem ./server/keys/
+
 RUN npm --prefix server install
 COPY ./server/ ./server/
 

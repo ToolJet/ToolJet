@@ -1,4 +1,4 @@
-import { Controller, Request, Param, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Param, Post, UseGuards, Body } from '@nestjs/common';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -21,8 +21,8 @@ export class OrganizationUsersController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('inviteUser', UserEntity))
   @Post()
-  async create(@Request() req, @User() user, @Body() inviteNewUserDto: InviteNewUserDto) {
-    await this.organizationsService.inviteNewUser(req, user, inviteNewUserDto);
+  async create(@User() user, @Body() inviteNewUserDto: InviteNewUserDto) {
+    await this.organizationsService.inviteNewUser(user, inviteNewUserDto);
     return;
   }
 

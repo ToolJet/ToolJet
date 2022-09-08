@@ -10,8 +10,11 @@ import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
+import License from '@ee/licensing/configs/License';
+import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 import { custom } from 'openid-client';
 
+const license = License.Instance;
 const fs = require('fs');
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
@@ -32,6 +35,7 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalGuards(new LicenseExpiryGuard());
   app.useWebSocketAdapter(new WsAdapter(app));
 
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -96,6 +100,7 @@ async function bootstrap() {
 
   await app.listen(port, '0.0.0.0', function () {
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
+    console.log(`License Terms : ${JSON.stringify(license.terms)} 🚀`);
     console.log(`Ready to use at ${tooljetHost} 🚀`);
   });
 }

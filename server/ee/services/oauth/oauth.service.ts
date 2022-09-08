@@ -15,6 +15,7 @@ import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
 import UserResponse from './models/user_response';
+import License from '@ee/licensing/configs/License';
 
 @Injectable()
 export class OauthService {
@@ -211,6 +212,9 @@ export class OauthService {
         break;
 
       case 'openid':
+        if (!License.Instance.oidc) {
+          throw new UnauthorizedException('OIDC login disabled');
+        }
         userResponse = await this.oidcOAuthService.signIn(token, {
           ...configs,
           configId,
@@ -307,6 +311,7 @@ export class OauthService {
 
         organizationDetails = organization;
       }
+      await this.usersService.validateLicense(manager);
     });
 
     return await this.#generateLoginResultPayload(userDetails, organizationDetails, isInstanceSSOLogin);

@@ -11,6 +11,8 @@ import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { decamelizeKeys } from 'humps';
+import { UserCountGuard } from '@ee/licensing/guards/user.guard';
+import { getManager } from 'typeorm';
 
 @Controller('users')
 export class UsersController {
@@ -26,6 +28,23 @@ export class UsersController {
       first_name: user.firstName,
       last_name: user.lastName,
     };
+  }
+
+  @UseGuards(JwtAuthGuard, UserCountGuard)
+  @Get('license-terms')
+  async getUserCount() {
+    return;
+  }
+
+  // Not used by UI, uses for testing
+  @UseGuards(JwtAuthGuard)
+  @Get('license-terms/terms')
+  async getTerms() {
+    const manager = getManager();
+    const { editor, viewer } = await this.usersService.fetchTotalViewerEditorCount(manager);
+    const totalActive = await this.usersService.getCount(true);
+    const total = await this.usersService.getCount();
+    return { editor, viewer, totalActive, total };
   }
 
   @Post('avatar')

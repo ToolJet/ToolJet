@@ -21,5 +21,6 @@ import { FilesService } from '@services/files.service';
   ],
   providers: [UsersService, AuditLoggerService, FilesService],
   controllers: [UsersController],
+  exports: [UsersService],
 })
 export class UsersModule {}

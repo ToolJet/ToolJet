@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import config from 'config';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { authenticationService, userService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
 import { Organization } from './Organization';
+import { auditLogsService } from '../_services/auditLogsService';
 import AppLogo from './AppLogo';
 import { NotificationCenter } from './NotificationCenter';
 
@@ -14,6 +15,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   const [avatar, setAvatar] = useState();
   const { first_name, last_name, avatar_id, admin } = authenticationService.currentUserValue;
   const currentVersion = localStorage.getItem('currentVersion');
+  const newHistory = useHistory();
 
   useEffect(() => {
     setPathName(document.location.pathname);
@@ -35,6 +37,10 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   function logout() {
     authenticationService.logout();
     history.push('/login');
+  }
+
+  function handleAuditLogClick() {
+    auditLogsService.getLicenseTerms().then(() => newHistory.push('/audit_logs'));
   }
 
   return (
@@ -87,7 +93,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
             </a>
             <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow end-0" data-cy="dropdown-menu">
               {admin && (
-                <Link data-tesid="settingsBtn" to="/audit_logs" className="dropdown-item">
+                <Link data-tesid="settingsBtn" to="#" onClick={handleAuditLogClick} className="dropdown-item">
                   Audit Logs
                 </Link>
               )}

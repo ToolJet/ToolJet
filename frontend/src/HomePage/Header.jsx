@@ -1,6 +1,7 @@
 import React from 'react';
 import { SearchBox } from '@/_components/SearchBox';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
+import { appService } from '@/_services';
 
 export default function Header({
   folderName,
@@ -13,6 +14,9 @@ export default function Header({
   showTemplateLibraryModal,
   fileInput,
 }) {
+  const openFilePicker = () => {
+    appService.getLicenseTerms().then(() => fileInput.current.click());
+  };
   return (
     <div className="row">
       <div className="col-4">
@@ -37,10 +41,10 @@ export default function Header({
                 <Dropdown.Toggle split className="btn btn-primary d-none d-lg-inline mb-3 " />
                 <Dropdown.Menu className="import-lg-position">
                   <Dropdown.Item onClick={showTemplateLibraryModal}>Choose from template</Dropdown.Item>
-                  <label className="homepage-dropdown-style" onChange={handleImportApp}>
+                  <label className="homepage-dropdown-style" onClick={openFilePicker} onChange={handleImportApp}>
                     Import
-                    <input type="file" accept=".json" ref={fileInput} style={{ display: 'none' }} />
                   </label>
+                  <input type="file" accept=".json" ref={fileInput} style={{ display: 'none' }} />
                 </Dropdown.Menu>
               </Dropdown>
             )}

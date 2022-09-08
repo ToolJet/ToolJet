@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createQueryBuilder, EntityManager, getManager, In, Repository } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { Metadata } from 'src/entities/metadata.entity';
 import { gt } from 'semver';
 import got from 'got';
 import { User } from 'src/entities/user.entity';
+import { UsersService } from '@services/users.service';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -12,7 +13,8 @@ export class MetadataService {
   constructor(
     @InjectRepository(Metadata)
     private metadataRepository: Repository<Metadata>,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private usersService: UsersService
   ) {}
 
   async getMetaData() {
@@ -55,8 +57,9 @@ export class MetadataService {
   async sendTelemetryData(metadata: Metadata) {
     const manager = getManager();
     const totalUserCount = await manager.count(User);
-    const totalEditorCount = await this.fetchTotalEditorCount(manager);
-    const totalViewerCount = await this.fetchTotalViewerCount(manager);
+    const { editor: totalEditorCount, viewer: totalViewerCount } = await this.usersService.fetchTotalViewerEditorCount(
+      manager
+    );
 
     return await got('https://hub.tooljet.io/telemetry', {
       method: 'post',
@@ -90,39 +93,5 @@ export class MetadataService {
 
     await this.updateMetaData(newOptions);
     return { latestVersion };
-  }
-
-  async fetchTotalEditorCount(manager: EntityManager) {
-    const userIdsWithEditPermissions = (
-      await manager
-        .createQueryBuilder(User, 'users')
-        .innerJoin('users.groupPermissions', 'group_permissions')
-        .innerJoin('group_permissions.appGroupPermission', 'app_group_permissions')
-        .where('app_group_permissions.read = true AND app_group_permissions.update = true')
-        .select('users.id')
-        .distinct()
-        .getMany()
-    ).map((record) => record.id);
-
-    const userIdsOfAppOwners = (
-      await createQueryBuilder(User, 'users').innerJoin('users.apps', 'apps').select('users.id').distinct().getMany()
-    ).map((record) => record.id);
-
-    const totalEditorCount = await manager.count(User, {
-      where: { id: In([...userIdsWithEditPermissions, ...userIdsOfAppOwners]) },
-    });
-
-    return totalEditorCount;
-  }
-
-  async fetchTotalViewerCount(manager: EntityManager) {
-    return await manager
-      .createQueryBuilder(User, 'users')
-      .innerJoin('users.groupPermissions', 'group_permissions')
-      .innerJoin('group_permissions.appGroupPermission', 'app_group_permissions')
-      .where('app_group_permissions.read = true AND app_group_permissions.update = false')
-      .select('users.id')
-      .distinct()
-      .getCount();
   }
 }

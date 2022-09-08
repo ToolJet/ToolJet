@@ -1,11 +1,10 @@
 import { ActionTypes, AuditLog, ResourceTypes } from 'src/entities/audit_log.entity';
 import { EntityManager } from 'typeorm';
-
 import * as requestIp from 'request-ip';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { RequestContext } from 'src/models/request-context.model';
 
 interface AuditLogFields {
-  request: any;
   userId: string;
   organizationId: string;
   resourceId: string;
@@ -18,7 +17,6 @@ interface AuditLogFields {
 export class AuditLoggerService {
   public async perform(
     {
-      request,
       userId,
       organizationId,
       resourceId,
@@ -30,6 +28,7 @@ export class AuditLoggerService {
     manager?: EntityManager
   ): Promise<AuditLog> {
     return await dbTransactionWrap(async (manager) => {
+      const request = RequestContext?.currentContext?.req;
       return await manager.save(
         manager.create(AuditLog, {
           userId,
@@ -38,9 +37,9 @@ export class AuditLoggerService {
           resourceType,
           actionType,
           resourceName,
-          ipAddress: request.clientIp || requestIp.getClientIp(request),
+          ipAddress: request?.clientIp || requestIp.getClientIp(request),
           metadata: {
-            userAgent: request.headers['user-agent'],
+            userAgent: request?.headers['user-agent'],
             tooljetVersion: globalThis.TOOLJET_VERSION,
             ...metadata,
           },

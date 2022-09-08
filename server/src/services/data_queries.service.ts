@@ -139,7 +139,6 @@ export class DataQueriesService {
 
     if (user) {
       await this.auditLoggerService.perform({
-        request,
         userId: user.id,
         organizationId: user.organizationId,
         resourceId: dataQuery?.id,

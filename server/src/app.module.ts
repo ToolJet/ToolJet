@@ -35,6 +35,7 @@ import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
 import { AuditLogsModule } from './modules/audit_logs/audit_logs.module';
+import { RequestContextModule } from './modules/request_context/request-context.module';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -69,6 +70,7 @@ const imports = [
     },
   }),
   TypeOrmModule.forRoot(ormconfig),
+  RequestContextModule,
   AppConfigModule,
   SeedsModule,
   AuthModule,

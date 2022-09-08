@@ -66,6 +66,7 @@ COPY --from=builder /app/frontend/build ./app/frontend/build
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
+COPY --from=builder /app/server/keys ./app/server/keys
 COPY --from=builder /app/server/entrypoint.sh ./app/server/entrypoint.sh
 COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates

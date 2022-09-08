@@ -19,7 +19,8 @@ export function ManageSSO({ switchDarkMode, darkMode }) {
   ];
   const changePage = useCallback(
     (page) => {
-      setCurrentPage(page);
+      if (page === 'openid') organizationService.getOIDCLicenseTerms().then(() => setCurrentPage(page));
+      else setCurrentPage(page);
     },
     [setCurrentPage]
   );

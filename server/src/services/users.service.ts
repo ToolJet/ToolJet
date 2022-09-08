@@ -1,15 +1,17 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
 import { App } from 'src/entities/app.entity';
-import { Connection, createQueryBuilder, EntityManager, getRepository, In, Repository } from 'typeorm';
+import { Brackets, Connection, createQueryBuilder, EntityManager, getRepository, In, Repository } from 'typeorm';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
+import { ConfigService } from '@nestjs/config';
+import License from '@ee/licensing/configs/License';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -18,6 +20,7 @@ export class UsersService {
   constructor(
     private readonly filesService: FilesService,
     private connection: Connection,
+    private configService: ConfigService,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(App)
@@ -30,6 +33,18 @@ export class UsersService {
       select: ['id', 'email', 'firstName', 'lastName'],
       relations: [],
     });
+  }
+
+  async getCount(isOnlyActive?: boolean): Promise<number> {
+    const statusList = ['invited', 'active'];
+    !isOnlyActive && statusList.push('archived');
+    return await createQueryBuilder(User, 'users')
+      .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+        statusList,
+      })
+      .select('users.id')
+      .distinct()
+      .getCount();
   }
 
   async findOne(id: string): Promise<User> {
@@ -457,5 +472,105 @@ export class UsersService {
       })
       .andWhere('user_group_permissions.user_id = :userId', { userId: user.id })
       .getMany();
+  }
+
+  private async getUserIdWithEditPermission(manager: EntityManager) {
+    const statusList = ['invited', 'active'];
+    const userIdsWithEditPermissions = (
+      await manager
+        .createQueryBuilder(User, 'users')
+        .innerJoin('users.groupPermissions', 'group_permissions')
+        .leftJoin('group_permissions.appGroupPermission', 'app_group_permissions')
+        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+          statusList,
+        })
+        .where(
+          new Brackets((qb) => {
+            qb.where('app_group_permissions.read = true AND app_group_permissions.update = true').orWhere(
+              'group_permissions.appCreate = true'
+            );
+          })
+        )
+        .select('users.id')
+        .distinct()
+        .getMany()
+    ).map((record) => record.id);
+
+    const userIdsOfAppOwners = (
+      await createQueryBuilder(User, 'users')
+        .innerJoin('users.apps', 'apps')
+        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+          statusList,
+        })
+        .select('users.id')
+        .distinct()
+        .getMany()
+    ).map((record) => record.id);
+
+    return [...new Set([...userIdsWithEditPermissions, ...userIdsOfAppOwners])];
+  }
+
+  async fetchTotalEditorCount(manager: EntityManager): Promise<number> {
+    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager);
+    return userIdsWithEditPermissions?.length || 0;
+  }
+
+  async fetchTotalViewerEditorCount(manager: EntityManager): Promise<{ editor: number; viewer: number }> {
+    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager);
+
+    if (!userIdsWithEditPermissions?.length) {
+      // No editors -> No viewers
+      return { editor: 0, viewer: 0 };
+    }
+
+    const statusList = ['invited', 'active'];
+    const viewer = await manager
+      .createQueryBuilder(User, 'users')
+      .innerJoin('users.groupPermissions', 'group_permissions')
+      .leftJoin(
+        'group_permissions.appGroupPermission',
+        'app_group_permissions',
+        'app_group_permissions.read = true AND app_group_permissions.update = false'
+      )
+      .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+        statusList,
+      })
+      .where('users.id NOT IN(:...userIdsWithEditPermissions)', { userIdsWithEditPermissions })
+      .select('users.id')
+      .distinct()
+      .getCount();
+
+    return { editor: userIdsWithEditPermissions?.length || 0, viewer };
+  }
+
+  async validateLicense(manager: EntityManager): Promise<void> {
+    const licensing = License.Instance;
+    let editor = -1,
+      viewer = -1;
+
+    if (licensing.users !== 'UNLIMITED' && (await this.getCount(true)) > licensing.users) {
+      throw new HttpException('License violation - Maximum user limit reached', 451);
+    }
+
+    if (licensing.editorUsers !== 'UNLIMITED' && licensing.viewerUsers !== 'UNLIMITED') {
+      ({ editor, viewer } = await this.fetchTotalViewerEditorCount(manager));
+    }
+    if (licensing.editorUsers !== 'UNLIMITED') {
+      if (editor === -1) {
+        editor = await this.fetchTotalEditorCount(manager);
+      }
+      if (editor > licensing.editorUsers) {
+        throw new HttpException('License violation - Number of editors exceeded', 451);
+      }
+    }
+
+    if (licensing.viewerUsers !== 'UNLIMITED') {
+      if (viewer === -1) {
+        ({ viewer } = await this.fetchTotalViewerEditorCount(manager));
+      }
+      if (viewer > licensing.viewerUsers) {
+        throw new HttpException('License violation - Number of viewers exceeded', 451);
+      }
+    }
   }
 }

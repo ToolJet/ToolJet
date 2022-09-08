@@ -15,7 +15,6 @@ export class OidcOAuthService {
   }
   private readonly tooljetHost: string;
   private oidcClient: BaseClient;
-  private readonly redirectUri: string;
 
   #getRedirectURL = (configId: string) => `${this.tooljetHost}/sso/openid${configId ? `/${configId}` : ''}`;
 

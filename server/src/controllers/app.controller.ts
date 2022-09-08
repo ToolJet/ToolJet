@@ -6,6 +6,8 @@ import { AuthService } from '../services/auth.service';
 import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
 import { CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
+import { UserCountGuard } from '@ee/licensing/guards/user.guard';
+import { EditorUserCountGuard } from '@ee/licensing/guards/editorUser.guard';
 
 @Controller()
 export class AppController {
@@ -27,21 +29,21 @@ export class AppController {
 
   @UseGuards(SignupDisableGuard)
   @Post('set-password-from-token')
-  async create(@Request() req, @Body() userCreateDto: CreateUserDto) {
-    await this.authService.setupAccountFromInvitationToken(req, userCreateDto);
+  async create(@Body() userCreateDto: CreateUserDto) {
+    await this.authService.setupAccountFromInvitationToken(userCreateDto);
     return {};
   }
 
   @Post('accept-invite')
-  async acceptInvite(@Request() req, @Body() acceptInviteDto: AcceptInviteDto) {
-    await this.authService.acceptOrganizationInvite(req, acceptInviteDto);
+  async acceptInvite(@Body() acceptInviteDto: AcceptInviteDto) {
+    await this.authService.acceptOrganizationInvite(acceptInviteDto);
     return {};
   }
 
-  @UseGuards(SignupDisableGuard)
+  @UseGuards(SignupDisableGuard, UserCountGuard, EditorUserCountGuard)
   @Post('signup')
-  async signup(@Request() req, @Body() appAuthDto: AppAuthenticationDto) {
-    return this.authService.signup(req, appAuthDto.email);
+  async signup(@Body() appAuthDto: AppAuthenticationDto) {
+    return this.authService.signup(appAuthDto.email);
   }
 
   @Post('/forgot-password')
