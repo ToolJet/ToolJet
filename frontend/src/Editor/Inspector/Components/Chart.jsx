@@ -177,7 +177,6 @@ class Chart extends React.Component {
               currentState
             )}
             {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showAxes', 'properties', currentState)}
-            ,
             {renderElement(
               component,
               componentMeta,
