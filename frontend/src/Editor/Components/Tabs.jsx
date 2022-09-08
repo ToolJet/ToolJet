@@ -27,6 +27,9 @@ export const Tabs = function Tabs({
   let parsedTabs = tabs;
   parsedTabs = resolveWidgetFieldValue(parsedTabs, currentState);
   const hideTabs = component.definition.properties?.hideTabs?.value ?? false;
+
+  // renderOnlyActiveTab - TRUE (renders only the content of the active tab)
+  // renderOnlyActiveTab - FALSE (renders all the content irrespective of the active tab to persist value from other tabs)
   const renderOnlyActiveTab = component.definition.properties?.renderOnlyActiveTab?.value ?? false;
 
   // set index as id if id is not provided
