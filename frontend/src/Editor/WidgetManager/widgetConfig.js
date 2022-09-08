@@ -4693,7 +4693,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         },
       },
       visibility: {
-        type: 'code',
+        type: 'toggle',
         displayName: 'Visibility',
         validation: {
           schema: { type: 'boolean' },
@@ -4748,7 +4748,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         linkTarget: { value: 'https://dev.to/' },
         linkText: { value: 'Click here' },
         targetType: { value: 'new' },
-        visibility: { value: '{{true}}' },
+        visibility: { value: '{{true}}', fxActive: true },
       },
       events: [],
       styles: {
