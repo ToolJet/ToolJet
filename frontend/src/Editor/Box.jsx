@@ -168,14 +168,22 @@ export const Box = function Box({
       ? validateProperties(resolvedProperties, componentMeta.properties)
       : [resolvedProperties, []];
 
-  const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
+  const resolvedStyles = useMemo(
+    () => resolveStyles(component, currentState, null, customResolvables),
+    [component, currentState, customResolvables]
+  );
+
   const [validatedStyles, styleErrors] =
     mode === 'edit' && component.validate
       ? validateProperties(resolvedStyles, componentMeta.styles)
       : [resolvedStyles, []];
   validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
 
-  const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
+  const resolvedGeneralProperties = useMemo(
+    () => resolveGeneralProperties(component, currentState, null, customResolvables),
+    [component, currentState, customResolvables]
+  );
+
   const [validatedGeneralProperties, generalPropertiesErrors] =
     mode === 'edit' && component.validate
       ? validateProperties(resolvedGeneralProperties, componentMeta.general)
