@@ -21,6 +21,7 @@ class ConfirmationPage extends React.Component {
 
   componentDidMount() {
     if (this.single_organization) {
+      this.setState({ isGettingConfigs: false });
       return;
     }
     authenticationService.deleteLoginOrganizationId();
