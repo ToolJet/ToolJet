@@ -611,12 +611,13 @@ export function Table({
   });
 
   const tableData = useMemo(() => {
+    let tableData = [];
     if (currentState) {
-      let tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
+      tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
       if (!Array.isArray(tableData)) tableData = [];
       console.log('resolved param', tableData);
-      return tableData;
     }
+    return tableData;
   }, [currentState, component.definition.properties.data.value]);
 
   const leftActions = () => actions.value.filter((action) => action.position === 'left');
