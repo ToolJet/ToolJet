@@ -3,10 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MetadataController } from '@controllers/metadata.controller';
 import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   controllers: [MetadataController],
-  imports: [TypeOrmModule.forFeature([Metadata])],
+  imports: [TypeOrmModule.forFeature([Metadata]), UsersModule],
   providers: [MetadataService],
 })
 export class MetaModule {}

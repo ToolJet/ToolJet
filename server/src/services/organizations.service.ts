@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
@@ -16,6 +16,7 @@ import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from './audit_logger.service';
+import License from '@ee/licensing/configs/License';
 
 type FetchUserResponse = {
   email: string;
@@ -75,6 +76,8 @@ export class OrganizationsService {
         for (const groupPermission of createdGroupPermissions) {
           await this.groupPermissionService.createUserGroupPermission(user.id, groupPermission.id, manager);
         }
+
+        await this.usersService.validateLicense(manager);
       }
 
       return organization;
@@ -291,6 +294,11 @@ export class OrganizationsService {
       }
     }
 
+    // filter oidc configs
+    if (result?.ssoConfigs?.some((sso) => sso.sso === 'openid') && !License.Instance.oidc) {
+      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'openid');
+    }
+
     if (!isHideSensitiveData) {
       if (!(result?.ssoConfigs?.length > 0)) {
         return;
@@ -380,6 +388,10 @@ export class OrganizationsService {
       throw new BadRequestException();
     }
 
+    if (type === 'openid' && !License.Instance.oidc) {
+      throw new HttpException('OIDC disabled', 451);
+    }
+
     await this.encryptSecret(configs);
     const organization: Organization = await this.getSSOConfigs(organizationId, type);
 
@@ -414,7 +426,7 @@ export class OrganizationsService {
     return result;
   }
 
-  async inviteNewUser(request: any, currentUser: User, inviteNewUserDto: InviteNewUserDto): Promise<OrganizationUser> {
+  async inviteNewUser(currentUser: User, inviteNewUserDto: InviteNewUserDto): Promise<OrganizationUser> {
     const userParams = <User>{
       firstName: inviteNewUserDto.first_name,
       lastName: inviteNewUserDto.last_name,
@@ -472,9 +484,10 @@ export class OrganizationsService {
 
       organizationUser = await this.organizationUserService.create(user, currentOrganization, true, manager);
 
+      await this.usersService.validateLicense(manager);
+
       await this.auditLoggerService.perform(
         {
-          request,
           userId: currentUser.id,
           organizationId: currentOrganization.id,
           resourceId: user.id,

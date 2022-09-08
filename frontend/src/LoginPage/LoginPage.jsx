@@ -39,6 +39,11 @@ class LoginPage extends React.Component {
           this.setState({ isGettingConfigs: false, configs });
         },
         (response) => {
+          if (response.data.statusCode === 451) {
+            return toast.error('Enterprise License expired', {
+              position: 'top-center',
+            });
+          }
           if (response.data.statusCode !== 404) {
             return this.props.history.push({
               pathname: '/',

@@ -3,6 +3,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '@services/users.service';
+import License from '@ee/licensing/configs/License';
 
 type Actions =
   | 'changeRole'
@@ -30,9 +31,12 @@ export class CaslAbilityFactory {
       can('archiveUser', User);
       can('changeRole', User);
       can('accessGroupPermission', User);
-      can('accessAuditLogs', User);
       can('fetchAllUsers', User);
       can('updateOrganizations', User);
+
+      if (License.Instance.auditLog) {
+        can('accessAuditLogs', User);
+      }
     }
 
     return build({

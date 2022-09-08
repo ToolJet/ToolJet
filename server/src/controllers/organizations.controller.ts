@@ -21,6 +21,7 @@ import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
+import { OIDCGuard } from '@ee/licensing/guards/oidc.guard';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -94,5 +95,11 @@ export class OrganizationsController {
   async updateConfigs(@Body() body, @User() user) {
     const result: any = await this.organizationsService.updateOrganizationConfigs(user.organizationId, body);
     return decamelizeKeys({ id: result.id });
+  }
+
+  @UseGuards(JwtAuthGuard, OIDCGuard)
+  @Get('license-terms/oidc')
+  async getOIDC() {
+    return;
   }
 }

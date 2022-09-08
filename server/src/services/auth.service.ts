@@ -148,7 +148,6 @@ export class AuthService {
     });
 
     await this.auditLoggerService.perform({
-      request,
       userId: user.id,
       organizationId: organization.id,
       resourceId: user.id,
@@ -248,7 +247,7 @@ export class AuthService {
     });
   }
 
-  async signup(request: any, email: string) {
+  async signup(email: string) {
     const existingUser = await this.usersService.findByEmail(email);
     if (existingUser?.organizationUsers?.some((ou) => ou.status === 'active')) {
       throw new NotAcceptableException('Email already exists');
@@ -298,7 +297,6 @@ export class AuthService {
 
       await this.auditLoggerService.perform(
         {
-          request,
           userId: user.id,
           organizationId: organization.id,
           resourceId: user.id,
@@ -335,7 +333,7 @@ export class AuthService {
     }
   }
 
-  async setupAccountFromInvitationToken(request: any, userCreateDto: CreateUserDto) {
+  async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
     const {
       organization,
       password,
@@ -410,7 +408,6 @@ export class AuthService {
     }
 
     await this.auditLoggerService.perform({
-      request,
       userId: user.id,
       organizationId: organizationUser.organizationId,
       resourceId: user.id,
@@ -456,7 +453,7 @@ export class AuthService {
     return true;
   }
 
-  async acceptOrganizationInvite(request: any, acceptInviteDto: AcceptInviteDto) {
+  async acceptOrganizationInvite(acceptInviteDto: AcceptInviteDto) {
     const { password, token } = acceptInviteDto;
 
     if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true' && !password) {
@@ -515,7 +512,6 @@ export class AuthService {
     );
 
     await this.auditLoggerService.perform({
-      request,
       userId: user.id,
       organizationId: organizationUser.organizationId,
       resourceId: user.id,

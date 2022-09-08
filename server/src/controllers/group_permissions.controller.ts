@@ -1,4 +1,4 @@
-import { Controller, Body, Request, Post, Get, Put, Delete, UseGuards, Param } from '@nestjs/common';
+import { Controller, Body, Post, Get, Put, Delete, UseGuards, Param } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { GroupPermissionsService } from '../services/group_permissions.service';
@@ -16,8 +16,8 @@ export class GroupPermissionsController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Post()
-  async create(@Request() req, @User() user, @Body() createGroupPermissionDto: CreateGroupPermissionDto) {
-    await this.groupPermissionsService.create(req, user, createGroupPermissionDto.group);
+  async create(@User() user, @Body() createGroupPermissionDto: CreateGroupPermissionDto) {
+    await this.groupPermissionsService.create(user, createGroupPermissionDto.group);
     return;
   }
 
@@ -34,14 +34,12 @@ export class GroupPermissionsController {
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Put(':id/app_group_permissions/:appGroupPermissionId')
   async updateAppGroupPermission(
-    @Request() req,
     @Body() updateGroupPermissionDto: UpdateGroupPermissionDto,
     @User() user,
     @Param('id') id: string,
     @Param('appGroupPermissionId') appGroupPermissionId: string
   ) {
     await this.groupPermissionsService.updateAppGroupPermission(
-      req,
       user,
       id,
       appGroupPermissionId,
@@ -53,8 +51,8 @@ export class GroupPermissionsController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Put(':id')
-  async update(@Request() req, @User() user, @Param('id') id, @Body() body) {
-    await this.groupPermissionsService.update(req, user, id, body);
+  async update(@User() user, @Param('id') id, @Body() body) {
+    await this.groupPermissionsService.update(user, id, body);
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -69,8 +67,8 @@ export class GroupPermissionsController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', UserEntity))
   @Delete(':id')
-  async destroy(@Request() req, @User() user, @Param('id') id) {
-    await this.groupPermissionsService.destroy(req, user, id);
+  async destroy(@User() user, @Param('id') id) {
+    await this.groupPermissionsService.destroy(user, id);
     return;
   }
 

@@ -21,6 +21,7 @@ export const appService = {
   setSlug,
   setPasswordFromToken,
   acceptInvite,
+  getLicenseTerms,
 };
 
 function getConfig() {
@@ -152,4 +153,9 @@ function acceptInvite({ token, password }) {
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/accept-invite`, requestOptions);
+}
+
+function getLicenseTerms() {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/apps/license-terms`, requestOptions).then(handleResponse);
 }

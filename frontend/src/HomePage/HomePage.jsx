@@ -476,7 +476,7 @@ class HomePage extends React.Component {
   };
 
   showTemplateLibraryModal = () => {
-    this.setState({ showTemplateLibraryModal: true });
+    appService.getLicenseTerms().then(() => this.setState({ showTemplateLibraryModal: true }));
   };
   hideTemplateLibraryModal = () => {
     this.setState({ showTemplateLibraryModal: false });

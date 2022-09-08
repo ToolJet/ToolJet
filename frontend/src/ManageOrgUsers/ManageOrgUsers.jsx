@@ -1,5 +1,5 @@
 import React from 'react';
-import { authenticationService, organizationService, organizationUserService } from '@/_services';
+import { authenticationService, organizationService, organizationUserService, userService } from '@/_services';
 import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -174,6 +174,10 @@ class ManageOrgUsers extends React.Component {
     });
   };
 
+  inviteNewUserClicked = () => {
+    userService.getLicenseTerms().then(() => this.setState({ showNewUserForm: true }));
+  };
+
   render() {
     const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser } = this.state;
     return (
@@ -193,11 +197,7 @@ class ManageOrgUsers extends React.Component {
                 </div>
                 <div className="col-auto ms-auto d-print-none">
                   {!showNewUserForm && (
-                    <div
-                      className="btn btn-primary"
-                      onClick={() => this.setState({ showNewUserForm: true })}
-                      data-cy="invite-new-user"
-                    >
+                    <div className="btn btn-primary" onClick={this.inviteNewUserClicked} data-cy="invite-new-user">
                       Invite new user
                     </div>
                   )}

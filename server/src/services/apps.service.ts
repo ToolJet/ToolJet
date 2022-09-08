@@ -11,7 +11,6 @@ import { DataQuery } from 'src/entities/data_query.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { UsersService } from './users.service';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
@@ -45,7 +44,6 @@ export class AppsService {
     @InjectRepository(AppGroupPermission)
     private appGroupPermissionsRepository: Repository<AppGroupPermission>,
 
-    private usersService: UsersService,
     private appImportExportService: AppImportExportService,
     private dataSourcesService: DataSourcesService
   ) {}

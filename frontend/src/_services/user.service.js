@@ -9,6 +9,7 @@ export const userService = {
   changePassword,
   getAvatar,
   updateAvatar,
+  getLicenseTerms,
 };
 
 function getAll() {
@@ -61,4 +62,9 @@ function changePassword(currentPassword, newPassword) {
   const body = { currentPassword, newPassword };
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/users/change_password`, requestOptions).then(handleResponse);
+}
+
+function getLicenseTerms() {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/users/license-terms`, requestOptions).then(handleResponse);
 }

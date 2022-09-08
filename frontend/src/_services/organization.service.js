@@ -9,6 +9,7 @@ export const organizationService = {
   switchOrganization,
   getSSODetails,
   editOrganizationConfigs,
+  getOIDCLicenseTerms,
 };
 
 function getUsers() {
@@ -44,4 +45,9 @@ function getSSODetails() {
 function editOrganizationConfigs(params) {
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(params) };
   return fetch(`${config.apiUrl}/organizations/configs`, requestOptions).then(handleResponse);
+}
+
+function getOIDCLicenseTerms() {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/organizations/license-terms/oidc`, requestOptions).then(handleResponse);
 }

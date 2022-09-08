@@ -23,9 +23,6 @@ export class GroupPermissionsService {
     @InjectRepository(UserGroupPermission)
     private userGroupPermissionsRepository: Repository<UserGroupPermission>,
 
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-
     @InjectRepository(App)
     private appRepository: Repository<App>,
 
@@ -34,7 +31,7 @@ export class GroupPermissionsService {
     private auditLoggerService: AuditLoggerService
   ) {}
 
-  async create(request, user: User, group: string, manager?: EntityManager): Promise<void> {
+  async create(user: User, group: string, manager?: EntityManager): Promise<void> {
     if (!group || group === '') {
       throw new BadRequestException('Cannot create group without name');
     }
@@ -65,7 +62,6 @@ export class GroupPermissionsService {
       );
       await this.auditLoggerService.perform(
         {
-          request,
           userId: user.id,
           organizationId: user.organizationId,
           resourceId: groupPermission.id,
@@ -78,7 +74,7 @@ export class GroupPermissionsService {
     }, manager);
   }
 
-  async destroy(request, user: User, groupPermissionId: string, manager?: EntityManager): Promise<void> {
+  async destroy(user: User, groupPermissionId: string, manager?: EntityManager): Promise<void> {
     const groupPermission = await this.groupPermissionsRepository.findOne({
       where: {
         id: groupPermissionId,
@@ -108,7 +104,6 @@ export class GroupPermissionsService {
 
       await this.auditLoggerService.perform(
         {
-          request,
           userId: user.id,
           organizationId: user.organizationId,
           resourceId: groupPermission.id,
@@ -122,7 +117,6 @@ export class GroupPermissionsService {
   }
 
   async updateAppGroupPermission(
-    request: any,
     user: User,
     groupPermissionId: string,
     appGroupPermissionId: string,
@@ -151,9 +145,10 @@ export class GroupPermissionsService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(AppGroupPermission, appGroupPermissionId, actions);
 
+      await this.usersService.validateLicense(manager);
+
       await this.auditLoggerService.perform(
         {
-          request,
           userId: user.id,
           organizationId: user.organizationId,
           resourceId: appGroupPermission.id,
@@ -167,7 +162,7 @@ export class GroupPermissionsService {
     }, manager);
   }
 
-  async update(request: any, user: User, groupPermissionId: string, body: any, manager?: EntityManager) {
+  async update(user: User, groupPermissionId: string, body: any, manager?: EntityManager) {
     const groupPermission = await this.groupPermissionsRepository.findOne({
       where: {
         id: groupPermissionId,
@@ -291,9 +286,10 @@ export class GroupPermissionsService {
         }
       }
 
+      await this.usersService.validateLicense(manager);
+
       await this.auditLoggerService.perform(
         {
-          request,
           userId: user.id,
           organizationId: user.organizationId,
           resourceId: groupPermission.id,

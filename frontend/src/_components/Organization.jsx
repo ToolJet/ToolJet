@@ -82,9 +82,9 @@ export const Organization = function Organization() {
         authenticationService.updateCurrentUserDetails(data);
         window.location.href = '';
       },
-      () => {
+      (data) => {
         setIsCreating(false);
-        toast.error('Error while creating workspace', {
+        toast.error(data?.error ?? 'Error while creating workspace', {
           position: 'top-center',
         });
       }

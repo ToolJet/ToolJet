@@ -192,6 +192,9 @@ class ManageGroupPermissionResources extends React.Component {
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
+        this.setState({
+          isAddingApps: false,
+        });
       });
   };
 
@@ -239,6 +242,9 @@ class ManageGroupPermissionResources extends React.Component {
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
+        this.setState({
+          isAddingUsers: false,
+        });
       });
   };
 

@@ -43,6 +43,7 @@ export function Table({
   fireEvent,
   setExposedVariable,
   registerAction,
+  properties,
 }) {
   const color =
     component.definition.styles.textColor.value !== '#000'
@@ -751,7 +752,12 @@ export function Table({
 
   const data = useMemo(
     () => tableData,
-    [tableData.length, componentState.changeSet, component.definition.properties.data.value]
+    [
+      tableData.length,
+      componentState.changeSet,
+      component.definition.properties.data.value,
+      JSON.stringify(properties.data),
+    ]
   );
 
   const computedStyles = {
@@ -777,12 +783,15 @@ export function Table({
     setAllFilters,
     preGlobalFilteredRows,
     setGlobalFilter,
-    state: { pageIndex, pageSize },
+    state: { pageIndex, globalFilter },
     exportData,
     selectedFlatRows,
+    globalFilteredRows,
   } = useTable(
     {
       autoResetPage: false,
+      autoResetGlobalFilter: false,
+      autoResetFilters: false,
       columns,
       data,
       defaultColumn,
@@ -873,6 +882,13 @@ export function Table({
   }, [pageCount]);
 
   const tableRef = React.useRef();
+
+  useEffect(() => {
+    setExposedVariable(
+      'filteredData',
+      globalFilteredRows.map((row) => row.original)
+    );
+  }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
 
   return (
     <div
@@ -1082,7 +1098,7 @@ export function Table({
                   </button>
                 </>
               ) : (
-                <span>{`${preGlobalFilteredRows.length} Records`}</span>
+                <span>{`${globalFilteredRows.length} Records`}</span>
               )}
             </div>
           </div>
