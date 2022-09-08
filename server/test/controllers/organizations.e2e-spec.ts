@@ -36,7 +36,7 @@ describe('organizations controller', () => {
       const { user, orgUser } = userData;
 
       const response = await request(app.getHttpServer())
-        .get('/api/organizations/users')
+        .get('/api/organizations/users?page=1')
         .set('Authorization', authHeaderForUser(user));
 
       expect(response.statusCode).toBe(200);
