@@ -47,6 +47,26 @@ class Viewer extends React.Component {
       isAppLoaded: false,
     };
   }
+  globalSettingsChanged = (key, value) => {
+    const appDefinition = { ...this.state.appDefinition };
+    if (value?.[1]?.a == undefined) appDefinition.globalSettings[key] = value;
+    else {
+      const hexCode = `${value?.[0]}${this.decimalToHex(value?.[1]?.a)}`;
+      appDefinition.globalSettings[key] = hexCode;
+    }
+    this.setState(
+      {
+        appDefinition,
+      }
+      // () => {
+      //   this.props.ymap?.set('appDef', {
+      //     newDefinition: appDefinition,
+      //     editingVersionId: this.state.editingVersion?.id,
+      //   });
+      //   this.autoSave();
+      // }
+    );
+  };
 
   setStateForApp = (data) => {
     this.setState({
@@ -191,6 +211,7 @@ class Viewer extends React.Component {
   }
 
   changeDarkMode = (newMode) => {
+    const canvasBackgroundColor = this.state.appDefinition.globalSettings.canvasBackgroundColor;
     this.setState({
       currentState: {
         ...this.state.currentState,
@@ -201,6 +222,10 @@ class Viewer extends React.Component {
       },
       showQuerySearchField: false,
     });
+    this.globalSettingsChanged(
+      'canvasBackgroundColor',
+      ['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor) ? (newMode ? '#2f3c4c' : '#edeff5') : canvasBackgroundColor
+    );
     this.props.switchDarkMode(newMode);
   };
 
