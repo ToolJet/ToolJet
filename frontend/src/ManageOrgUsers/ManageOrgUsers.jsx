@@ -314,7 +314,14 @@ class ManageOrgUsers extends React.Component {
               />
             )}
 
-            {!showNewUserForm && (
+            {users?.length === 0 && (
+              <div className="d-flex justify-content-center flex-column">
+                <span className="text-center pt-5 font-weight-bold">No result found</span>
+                <small className="text-center text-muted">Try changing the filters</small>
+              </div>
+            )}
+
+            {!showNewUserForm && users?.length !== 0 && (
               <UsersTable
                 isLoading={isLoading}
                 users={users}
