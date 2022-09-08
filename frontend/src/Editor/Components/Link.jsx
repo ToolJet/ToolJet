@@ -1,21 +1,26 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
-export const Link = ({ height, properties, styles, fireEvent, registerAction }) => {
-  const { linkTarget, linkText, targetType } = properties;
-  const { textColor, textSize, textAlign, underline, disabledState, visibility } = styles;
+export const Link = ({ height, properties, styles, fireEvent, registerAction, currentState }) => {
+  const { linkTarget, linkText, targetType, visibility } = properties;
+  const { textColor, textSize, underline } = styles;
+  const clickRef = useRef();
+
+  const parsedVisibility =
+    typeof hideTabs !== 'boolean' ? resolveWidgetFieldValue(visibility, currentState) : visibility;
+
   const computedStyles = {
     fontSize: textSize,
-    textAlign,
-    display: visibility ? '' : 'none',
+    display: parsedVisibility ? '' : 'none',
     height,
   };
 
   registerAction('click', async function () {
-    fireEvent('onClick');
+    clickRef.current.click();
   });
 
   return (
-    <div data-disabled={disabledState} className={`link-widget ${underline}`} style={computedStyles}>
+    <div className={`link-widget ${underline}`} style={computedStyles}>
       <a
         href={linkTarget}
         target={targetType === 'new' && '_blank'}
@@ -28,6 +33,7 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction }) 
           fireEvent('onHover');
         }}
         style={{ color: textColor }}
+        ref={clickRef}
       >
         {linkText}
       </a>
