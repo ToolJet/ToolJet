@@ -42,7 +42,7 @@ export class OrganizationsController {
       ...(lastName && { lastName }),
     };
     const users = await this.organizationsService.fetchUsers(user, page, filterOptions);
-    const usersCount = await this.organizationsService.usersCount(user);
+    const usersCount = await this.organizationsService.usersCount(user, filterOptions);
 
     const meta = {
       total_pages: Math.ceil(usersCount / 10),

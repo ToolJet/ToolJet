@@ -144,12 +144,30 @@ export class OrganizationsService {
   }
 
   async fetchUsers(user: any, page: number, options: any): Promise<FetchUserResponse[]> {
-    const organizationUsers = await this.organizationUsersRepository.find({
-      where: { organizationId: user.organizationId, user: options },
-      relations: ['user'],
-      take: 10,
-      skip: 10 * (page - 1),
-    });
+    const organizationUsers = await createQueryBuilder(OrganizationUser, 'organization_user')
+      .innerJoinAndSelect('organization_user.user', 'user')
+      .where('organization_user.organization_id = :organizationId', {
+        organizationId: user.organizationId,
+      })
+      .andWhere(
+        new Brackets((qb) => {
+          if (options?.email)
+            qb.where('lower(user.email) like :email', {
+              email: `%${options?.email.toLowerCase()}%`,
+            });
+          if (options?.firstName)
+            qb.where('lower(user.firstName) like :firstName', {
+              firstName: `%${options?.firstName.toLowerCase()}%`,
+            });
+          if (options?.lastName)
+            qb.where('lower(user.lastName) like :lastName', {
+              lastName: `%${options?.lastName.toLowerCase()}%`,
+            });
+        })
+      )
+      .take(10)
+      .skip(10 * (page - 1))
+      .getMany();
 
     const isAdmin = await this.usersService.hasGroup(user, 'admin');
 
@@ -173,11 +191,29 @@ export class OrganizationsService {
     });
   }
 
-  async usersCount(user: any): Promise<number> {
-    return await this.organizationUsersRepository.count({
-      where: { organizationId: user.organizationId },
-      relations: ['user'],
-    });
+  async usersCount(user: any, options: any): Promise<number> {
+    return await createQueryBuilder(OrganizationUser, 'organization_user')
+      .innerJoinAndSelect('organization_user.user', 'user')
+      .where('organization_user.organization_id = :organizationId', {
+        organizationId: user.organizationId,
+      })
+      .andWhere(
+        new Brackets((qb) => {
+          if (options?.email)
+            qb.where('lower(user.email) like :email', {
+              email: `%${options?.email.toLowerCase()}%`,
+            });
+          if (options?.firstName)
+            qb.where('lower(user.firstName) like :firstName', {
+              firstName: `%${options?.firstName.toLowerCase()}%`,
+            });
+          if (options?.lastName)
+            qb.where('lower(user.lastName) like :lastName', {
+              lastName: `%${options?.lastName.toLowerCase()}%`,
+            });
+        })
+      )
+      .getCount();
   }
 
   async fetchOrganizations(user: any): Promise<Organization[]> {
