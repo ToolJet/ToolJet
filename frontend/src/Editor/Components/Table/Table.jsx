@@ -610,14 +610,14 @@ export function Table({
     };
   });
 
-  let tableData = [];
-  if (currentState) {
-    tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
-    if (!Array.isArray(tableData)) tableData = [];
-    console.log('resolved param', tableData);
-  }
-
-  tableData = tableData || [];
+  const tableData = useMemo(() => {
+    if (currentState) {
+      let tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
+      if (!Array.isArray(tableData)) tableData = [];
+      console.log('resolved param', tableData);
+      return tableData;
+    }
+  }, [currentState, component.definition.properties.data.value]);
 
   const leftActions = () => actions.value.filter((action) => action.position === 'left');
   const rightActions = () => actions.value.filter((action) => [undefined, 'right'].includes(action.position));
