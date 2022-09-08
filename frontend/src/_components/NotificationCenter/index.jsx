@@ -3,12 +3,13 @@ import { commentNotificationsService } from '@/_services';
 import { Notification } from './Notification';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
+import { useTranslation } from 'react-i18next';
 
 export const NotificationCenter = () => {
   const [loading, setLoading] = React.useState(false);
   const [isRead, setIsRead] = React.useState(false);
   const [commentNotifications, setCommentNotifications] = React.useState([]);
-
+  const { t } = useTranslation();
   async function fetchData() {
     setLoading(true);
     const { data, error } = await commentNotificationsService.findAll(isRead);
@@ -70,7 +71,7 @@ export const NotificationCenter = () => {
       >
         <div className="card">
           <div className="card-header">
-            <h1 className="card-title">Notifications</h1>
+            <h1 className="card-title">{t('header.notificationCenter.notifications', 'Notifications')}</h1>
             {!loading && commentNotifications?.length > 0 && (
               <a href="#" onClick={updateAllNotifications} className="text-muted text-decoration-none ms-auto">
                 Mark all as {isRead && 'un'}read
@@ -85,9 +86,17 @@ export const NotificationCenter = () => {
             {!loading && commentNotifications.length === 0 && (
               <div className="empty">
                 <div className="empty-img pb-3">🔔</div>
-                <p className="empty-title mb-1">You&apos;re all caught up!</p>
+                <p className="empty-title mb-1">
+                  {t('header.notificationCenter.youAreCaughtUp', `You're all caught up!`)}
+                </p>
                 <p className="empty-subtitle text-muted">
-                  You don&apos;t have any {!isRead && 'un'}read notifications!
+                  {`${t('header.notificationCenter.youDontHaveany', `You don't have any`)} ${
+                    !isRead && t('header.notificationCenter.un', 'un')
+                  }${t('header.notificationCenter.read', 'read')} ${t(
+                    `header.notificationCenter.notifications`,
+                    'notifications'
+                  ).toLowerCase()}!
+                  `}
                 </p>
               </div>
             )}
@@ -99,7 +108,10 @@ export const NotificationCenter = () => {
           </div>
           <div className="card-footer text-center margin-auto">
             <a href="#" className="text-muted text-decoration-none" onClick={() => setIsRead(!isRead)}>
-              View {isRead && 'un'}read notifications
+              {`${t('header.notificationCenter.view', 'View')} ${isRead && t('header.notificationCenter.un', 'un')}${t(
+                'header.notificationCenter.read',
+                'read'
+              )} ${t(`header.notificationCenter.notifications`, 'notifications').toLowerCase()}`}
             </a>
           </div>
         </div>

@@ -1,7 +1,10 @@
 import React from 'react';
 import SelectSearch from 'react-select-search';
+import { useTranslation } from 'react-i18next';
 
 export const CustomSelect = ({ options, value, multiple, onChange }) => {
+  const { t } = useTranslation();
+
   function renderValue(valueProps) {
     if (valueProps) {
       return valueProps.value.split(', ').map((value, index) => (
@@ -22,7 +25,7 @@ export const CustomSelect = ({ options, value, multiple, onChange }) => {
         search={false}
         onChange={onChange}
         multiple={multiple}
-        placeholder="Select.."
+        placeholder={t('globals.select', 'Select') + '...'}
       />
     </div>
   );

@@ -8,6 +8,7 @@ import LogoIcon from '../Editor/Icons/logo.svg';
 import { Organization } from './Organization';
 import { NotificationCenter } from './NotificationCenter';
 import { LanguageSelection } from './LanguageSelection';
+import { useTranslation } from 'react-i18next';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
   // eslint-disable-next-line no-unused-vars
@@ -15,6 +16,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   const [avatar, setAvatar] = useState();
   const { first_name, last_name, avatar_id, admin } = authenticationService.currentUserValue;
   const currentVersion = localStorage.getItem('currentVersion');
+  const { t } = useTranslation();
 
   useEffect(() => {
     setPathName(document.location.pathname);
@@ -101,10 +103,10 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
                 className="dropdown-item"
                 data-cy="profile-link"
               >
-                Profile
+                {t('header.profile', 'Profile')}
               </Link>
               <Link data-testid="logoutBtn" to="#" onClick={logout} className="dropdown-item" data-cy="logout-link">
-                Logout
+                {t('header.logout', 'Logout')}
               </Link>
               {currentVersion && (
                 <Link to="#" className={`dropdown-item pe-none ${darkMode ? 'color-muted-darkmode' : 'color-muted'}`}>

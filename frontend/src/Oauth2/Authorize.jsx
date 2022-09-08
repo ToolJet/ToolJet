@@ -1,8 +1,8 @@
 import React from 'react';
 import queryString from 'query-string';
 import { datasourceService } from '@/_services';
-
-class Authorize extends React.Component {
+import { withTranslation } from 'react-i18next';
+class AuthorizeComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -50,14 +50,14 @@ class Authorize extends React.Component {
 
     return (
       <div>
-        {isLoading && <div>Please wait...</div>}
+        {isLoading && <div>{this.props.t('oAuth2.pleaseWait', 'Please wait...')}</div>}
 
-        {authSucess && <div>Auth successful, you can close this tab now.</div>}
+        {authSucess && <div>{this.props.t('oAuth2.authSuccess', 'Auth successful, you can close this tab now.')}</div>}
 
-        {authFailure && <div>Auth failed</div>}
+        {authFailure && <div>{this.props.t('oAuth2.authFailed', 'Auth failed')}</div>}
       </div>
     );
   }
 }
 
-export { Authorize };
+export const Authorize = withTranslation()(AuthorizeComponent);

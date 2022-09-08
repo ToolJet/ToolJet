@@ -1,6 +1,7 @@
 import React from 'react';
+import { withTranslation } from 'react-i18next';
 
-export default class VariablesTable extends React.Component {
+class VariablesTable extends React.Component {
   constructor(props) {
     super(props);
 
@@ -25,9 +26,15 @@ export default class VariablesTable extends React.Component {
             <table data-testid="variablesTable" className="table table-vcenter" disabled={true}>
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Value</th>
-                  <th>Type</th>
+                  <th>
+                    {this.props.t('header.organization.menus.manageSSO.environmentVar.variableTable.name', 'Name')}
+                  </th>
+                  <th>
+                    {this.props.t('header.organization.menus.manageSSO.environmentVar.variableTable.value', 'Value')}
+                  </th>
+                  <th>
+                    {this.props.t('header.organization.menus.manageSSO.environmentVar.variableTable.type', 'Type')}
+                  </th>
                   {(this.props.canUpdateVariable || this.props.canDeleteVariable) && <th className="w-1"></th>}
                 </tr>
               </thead>
@@ -67,7 +74,12 @@ export default class VariablesTable extends React.Component {
                                 width="12"
                                 height="12"
                               />
-                              <span className="text-success mx-2">secret</span>
+                              <span className="text-success mx-2">
+                                {this.props.t(
+                                  'header.organization.menus.manageSSO.environmentVar.variableTable.secret',
+                                  'secret'
+                                )}
+                              </span>
                             </small>
                           ) : (
                             variable.value
@@ -132,3 +144,4 @@ export default class VariablesTable extends React.Component {
     );
   }
 }
+export default withTranslation()(VariablesTable);

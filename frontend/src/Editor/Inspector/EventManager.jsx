@@ -10,6 +10,7 @@ import _ from 'lodash';
 import { componentTypes } from '../WidgetManager/components';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
+import { useTranslation } from 'react-i18next';
 
 export const EventManager = ({
   component,
@@ -24,6 +25,7 @@ export const EventManager = ({
   popoverPlacement,
 }) => {
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
+  const { t } = useTranslation();
 
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };
@@ -192,7 +194,7 @@ export const EventManager = ({
         <Popover.Content>
           <div className="row">
             <div className="col-3 p-2">
-              <span data-cy="event-label">Event</span>
+              <span data-cy="event-label">{t('editor.inspector.eventManager.event', 'Event')}</span>
             </div>
             <div className="col-9" data-cy="event-selection">
               <Select
@@ -201,7 +203,7 @@ export const EventManager = ({
                 value={event.eventId}
                 search={false}
                 onChange={(value) => handlerChanged(index, 'eventId', value)}
-                placeholder="Select.."
+                placeholder={t('globals.select', 'Select') + '...'}
                 styles={styles}
                 useMenuPortal={false}
               />
@@ -209,7 +211,7 @@ export const EventManager = ({
           </div>
           <div className="row mt-3">
             <div className="col-3 p-2">
-              <span data-cy="action-label">Action</span>
+              <span data-cy="action-label">{t('editor.inspector.eventManager.action', 'Action')}</span>
             </div>
             <div className="col-9 popover-action-select-search" data-cy="action-selection">
               <Select
@@ -218,7 +220,7 @@ export const EventManager = ({
                 value={event.actionId}
                 search={false}
                 onChange={(value) => handlerChanged(index, 'actionId', value)}
-                placeholder="Select.."
+                placeholder={t('globals.select', 'Select') + '...'}
                 styles={styles}
                 useMenuPortal={false}
               />
@@ -227,7 +229,7 @@ export const EventManager = ({
 
           {actionLookup[event.actionId].options?.length > 0 && (
             <div className="hr-text" data-cy="action-option">
-              Action options
+              {t('editor.inspector.eventManager.actionOptions', 'Action options')}
             </div>
           )}
           <div>
@@ -235,7 +237,7 @@ export const EventManager = ({
               <>
                 <div className="row">
                   <div className="col-3 p-2" data-cy="message-label">
-                    Message
+                    {t('editor.inspector.eventManager.message', 'Message')}
                   </div>
                   <div className="col-9" data-cy="message-text">
                     <CodeHinter
@@ -250,7 +252,7 @@ export const EventManager = ({
                 </div>
                 <div className="row mt-3">
                   <div className="col-3 p-2" data-cy="alert-type-label">
-                    Alert Type
+                    {t('editor.inspector.eventManager.alertType', 'Alert Type')}
                   </div>
                   <div className="col-9" data-cy="alert-message-type">
                     <Select
@@ -259,7 +261,7 @@ export const EventManager = ({
                       value={event.alertType}
                       search={false}
                       onChange={(value) => handlerChanged(index, 'alertType', value)}
-                      placeholder="Select.."
+                      placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
                     />
@@ -270,7 +272,7 @@ export const EventManager = ({
 
             {event.actionId === 'open-webpage' && (
               <div className="p-1">
-                <label className="form-label mt-1">URL</label>
+                <label className="form-label mt-1">{t('editor.inspector.eventManager.url', 'URL')}</label>
                 <CodeHinter
                   theme={darkMode ? 'monokai' : 'default'}
                   currentState={currentState}
@@ -293,7 +295,7 @@ export const EventManager = ({
 
             {event.actionId === 'show-modal' && (
               <div className="row">
-                <div className="col-3 p-2">Modal</div>
+                <div className="col-3 p-2">{t('editor.inspector.eventManager.modal', 'Modal')}</div>
                 <div className="col-9">
                   <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
@@ -303,7 +305,7 @@ export const EventManager = ({
                     onChange={(value) => {
                       handlerChanged(index, 'modal', value);
                     }}
-                    placeholder="Select.."
+                    placeholder={t('globals.select', 'Select') + '...'}
                     styles={styles}
                     useMenuPortal={false}
                   />
@@ -313,7 +315,7 @@ export const EventManager = ({
 
             {event.actionId === 'close-modal' && (
               <div className="row">
-                <div className="col-3 p-2">Modal</div>
+                <div className="col-3 p-2">{t('editor.inspector.eventManager.modal', 'Modal')}</div>
                 <div className="col-9">
                   <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
@@ -323,7 +325,7 @@ export const EventManager = ({
                     onChange={(value) => {
                       handlerChanged(index, 'modal', value);
                     }}
-                    placeholder="Select.."
+                    placeholder={t('globals.select', 'Select') + '...'}
                     styles={styles}
                     useMenuPortal={false}
                   />
@@ -333,7 +335,7 @@ export const EventManager = ({
 
             {event.actionId === 'copy-to-clipboard' && (
               <div className="p-1">
-                <label className="form-label mt-1">Text</label>
+                <label className="form-label mt-1">{t('editor.inspector.eventManager.text', 'Text')}</label>
                 <CodeHinter
                   theme={darkMode ? 'monokai' : 'default'}
                   currentState={currentState}
@@ -345,7 +347,7 @@ export const EventManager = ({
 
             {event.actionId === 'run-query' && (
               <div className="row">
-                <div className="col-3 p-2">Query</div>
+                <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
                 <div className="col-9">
                   <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
@@ -359,7 +361,7 @@ export const EventManager = ({
                       handlerChanged(index, 'queryId', query.id);
                       handlerChanged(index, 'queryName', query.name);
                     }}
-                    placeholder="Select.."
+                    placeholder={t('globals.select', 'Select') + '...'}
                     styles={styles}
                     useMenuPortal={false}
                   />
@@ -370,7 +372,7 @@ export const EventManager = ({
             {event.actionId === 'set-localstorage-value' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">Key</div>
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
@@ -383,7 +385,7 @@ export const EventManager = ({
                   </div>
                 </div>
                 <div className="row mt-3">
-                  <div className="col-3 p-2">Value</div>
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
@@ -400,7 +402,7 @@ export const EventManager = ({
             {event.actionId === 'generate-file' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">Type</div>
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.type', 'Type')}</div>
                   <div className="col-9">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
@@ -413,14 +415,14 @@ export const EventManager = ({
                       onChange={(value) => {
                         handlerChanged(index, 'fileType', value);
                       }}
-                      placeholder="Select.."
+                      placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
                     />
                   </div>
                 </div>
                 <div className="row mt-3">
-                  <div className="col-3 p-2">File name</div>
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.fileName', 'File name')}</div>
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
@@ -432,7 +434,7 @@ export const EventManager = ({
                   </div>
                 </div>
                 <div className="row mt-3">
-                  <div className="col-3 p-2">Data</div>
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.data', 'Data')}</div>
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
@@ -448,7 +450,7 @@ export const EventManager = ({
             {event.actionId === 'set-table-page' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">Table</div>
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.table', 'Table')}</div>
                   <div className="col-9">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
@@ -458,14 +460,14 @@ export const EventManager = ({
                       onChange={(value) => {
                         handlerChanged(index, 'table', value);
                       }}
-                      placeholder="Select.."
+                      placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
                     />
                   </div>
                 </div>
                 <div className="row mt-3">
-                  <div className="col-3 p-2">Page index</div>
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.pageIndex', 'Page index')}</div>
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
@@ -482,7 +484,7 @@ export const EventManager = ({
             {event.actionId === 'set-custom-variable' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">Key</div>
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
@@ -494,7 +496,7 @@ export const EventManager = ({
                   </div>
                 </div>
                 <div className="row mt-3">
-                  <div className="col-3 p-2">Value</div>
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
@@ -510,7 +512,7 @@ export const EventManager = ({
             {event.actionId === 'unset-custom-variable' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">Key</div>
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
@@ -526,7 +528,7 @@ export const EventManager = ({
             {event.actionId === 'control-component' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-1">Component</div>
+                  <div className="col-3 p-1">{t('editor.inspector.eventManager.component', 'Component')}</div>
                   <div className="col-9">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
@@ -537,14 +539,14 @@ export const EventManager = ({
                         handlerChanged(index, 'componentSpecificActionHandle', '');
                         handlerChanged(index, 'componentId', value);
                       }}
-                      placeholder="Select.."
+                      placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
                     />
                   </div>
                 </div>
                 <div className="row mt-2">
-                  <div className="col-3 p-1">Action</div>
+                  <div className="col-3 p-1">{t('editor.inspector.eventManager.action', 'Action')}</div>
                   <div className="col-9">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
@@ -559,7 +561,7 @@ export const EventManager = ({
                           getComponentActionDefaultParams(event?.componentId, value)
                         );
                       }}
-                      placeholder="Select.."
+                      placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
                       useMenuPortal={false}
                     />
@@ -769,12 +771,14 @@ export const EventManager = ({
             onClick={addHandler}
             data-cy="add-event-handler"
           >
-            + Add event handler
+            {t('editor.inspector.eventManager.addEventHandler', '+ Add event handler')}
           </button>
         </div>
         <div className="text-center">
           <small className="color-disabled" data-cy="no-event-handler-message">
-            This {componentName.toLowerCase()} doesn&apos;t have any event handlers
+            {t('editor.inspector.eventManager.emptyMessage', "This {{componentName}} doesn't have any event handlers", {
+              componentName: componentName.toLowerCase(),
+            })}
           </small>
         </div>
       </>
@@ -789,7 +793,7 @@ export const EventManager = ({
           onClick={addHandler}
           data-cy="add-more-event-handler"
         >
-          + Add handler
+          {t('editor.inspector.eventManager.addHandler', '+ Add handler')}
         </button>
       </div>
       {renderHandlers(events)}

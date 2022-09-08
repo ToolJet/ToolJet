@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { useTranslation } from 'react-i18next';
 
 export function GotoApp({ getAllApps, currentState, event, handlerChanged, eventIndex }) {
   const queryParamChangeHandler = (index, key, value) => {
     event.queryParams[index][key] = value;
     handlerChanged(eventIndex, 'queryParams', event.queryParams);
   };
+  const { t } = useTranslation();
 
   const addQueryParam = () => {
     if (!event.queryParams) {
@@ -45,7 +47,7 @@ export function GotoApp({ getAllApps, currentState, event, handlerChanged, event
           handlerChanged(eventIndex, 'slug', value);
         }}
         filterOptions={fuzzySearch}
-        placeholder="Select.."
+        placeholder={t('globals.select', 'Select') + '...'}
       />
       <label className="form-label mt-2">Query params</label>
 

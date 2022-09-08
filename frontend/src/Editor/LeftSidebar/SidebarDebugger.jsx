@@ -5,8 +5,10 @@ import ReactJson from 'react-json-view';
 import _ from 'lodash';
 import moment from 'moment';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
+import { useTranslation } from 'react-i18next';
 
 export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
+  const { t } = useTranslation();
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
   const [currrentTab, setCurrentTab] = React.useState(1);
   const [errorLogs, setErrorLogs] = React.useState([]);
@@ -141,7 +143,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
             <ul className="nav nav-tabs d-flex justify-content-between" data-bs-toggle="tabs">
               <li className="nav-item">
                 <a onClick={() => switchCurrentTab(1)} className={currrentTab === 1 ? 'nav-link active' : 'nav-link'}>
-                  Errors
+                  {t(`leftSidebar.Debugger.errors`, 'Errors')}
                 </a>
               </li>
               <li className="btn-group">
@@ -152,7 +154,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
                     className="btn btn-light btn-sm m-1 py-1"
                     aria-label="clear button"
                   >
-                    <span className="text-muted">clear</span>
+                    <span className="text-muted">{t(`leftSidebar.Debugger.clear`, 'clear')}</span>
                   </button>
                 )}
                 <SidebarPinnedButton
@@ -168,7 +170,9 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
 
         {currrentTab === 1 && (
           <div className="card-body">
-            {errorLogs.length === 0 && <center className="p-2 text-muted">No errors found.</center>}
+            {errorLogs.length === 0 && (
+              <center className="p-2 text-muted">{t(`leftSidebar.Debugger.noErrors`, 'No errors found.')}</center>
+            )}
 
             <div className="tab-content">
               {errorLogs.map((error, index) => (
