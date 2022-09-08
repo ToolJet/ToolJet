@@ -160,7 +160,7 @@ export const Box = function Box({
 
   const resolvedProperties = useMemo(
     () => resolveProperties(component, currentState, null, customResolvables),
-    [component, currentState, null, customResolvables]
+    [component, currentState, customResolvables]
   );
 
   const [validatedProperties, propertyErrors] =
