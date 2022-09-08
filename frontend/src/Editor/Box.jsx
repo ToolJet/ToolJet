@@ -158,7 +158,11 @@ export const Box = function Box({
   const [renderCount, setRenderCount] = useState(0);
   const [renderStartTime, setRenderStartTime] = useState(new Date());
 
-  const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
+  const resolvedProperties = useMemo(
+    () => resolveProperties(component, currentState, null, customResolvables),
+    [component, currentState, null, customResolvables]
+  );
+
   const [validatedProperties, propertyErrors] =
     mode === 'edit' && component.validate
       ? validateProperties(resolvedProperties, componentMeta.properties)
