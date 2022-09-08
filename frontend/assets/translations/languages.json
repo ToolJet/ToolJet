@@ -1,9 +1,6 @@
 {
   "languageList": [
   { "lang": "English", "code": "en", "nativeLang": "English" },
-  { "lang": "French", "code": "fr", "nativeLang": "Français" },
-  { "lang": "Spanish","code": "es", "nativeLang": "Español" },
-  { "lang": "Arabic", "code": "ar", "nativeLang": "العربية" },
-  { "lang": "Chinese", "code": "zh", "nativeLang": "繁體中文" }
+  { "lang": "French", "code": "fr", "nativeLang": "Français" }
   ]
 }

@@ -56,9 +56,9 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
           <div className="p-1 m-1 d-flex align-items-center" data-cy="mode-toggle">
             <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />
           </div>
-          <div className="p-1 m-1 d-flex align-items-center">
+          {/* <div className="p-1 m-1 d-flex align-items-center">
             <LanguageSelection darkMode={darkMode} />
-          </div>
+          </div> */}
           {config.COMMENT_FEATURE_ENABLE && (
             <div className="p-1 d-flex align-items-center" data-cy="notification-center">
               <NotificationCenter />
