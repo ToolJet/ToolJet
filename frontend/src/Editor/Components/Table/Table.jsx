@@ -908,6 +908,7 @@ export function Table({
                 component={component}
                 serverSideSearch={serverSideSearch}
                 onEvent={onEvent}
+                darkMode={darkMode}
               />
             )}
             <div>
@@ -1103,6 +1104,7 @@ export function Table({
           <div className="card-body">
             {filters.map((filter, index) => (
               <div className="row mb-2" key={index}>
+                {console.log(filter, 'filter')}
                 <div className="col p-2" style={{ maxWidth: '70px' }}>
                   <small>{index > 0 ? 'and' : 'where'}</small>
                 </div>
@@ -1111,7 +1113,7 @@ export function Table({
                     options={columnData.map((column) => {
                       return { name: column.Header, value: column.id };
                     })}
-                    value={filter.id}
+                    value={columnData[0].id}
                     search={true}
                     onChange={(value) => {
                       filterColumnChanged(index, value);
@@ -1147,8 +1149,9 @@ export function Table({
                     type="text"
                     value={filter.value.value}
                     placeholder="value"
-                    className="form-control"
+                    className={`form-control ${darkMode && 'dark-theme-placeholder'}`}
                     onChange={(e) => filterValueChanged(index, e.target.value)}
+                    style={{ backgroundColor: darkMode ? '#2B3546' : 'white' }}
                   />
                 </div>
                 <div className="col-auto">
