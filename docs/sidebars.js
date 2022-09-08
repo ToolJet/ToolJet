@@ -125,6 +125,7 @@ const sidebars = {
         'widgets/image',
         'widgets/kanban',
         'widgets/listview',
+        'widgets/link',
         'widgets/map',
         'widgets/modal',
         'widgets/multiselect',
