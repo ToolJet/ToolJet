@@ -65,7 +65,7 @@ export default class Zendesk implements QueryService {
         authDetails.push(['refresh_token', result['refresh_token']]);
       }
     } catch (error) {
-      console.log(error.response.body);
+      console.log(error?.response?.body);
       throw Error('could not connect to Zendesk');
     }
 
