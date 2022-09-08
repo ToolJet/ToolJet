@@ -27,6 +27,7 @@ export const Tabs = function Tabs({
   let parsedTabs = tabs;
   parsedTabs = resolveWidgetFieldValue(parsedTabs, currentState);
   const hideTabs = component.definition.properties?.hideTabs?.value ?? false;
+  const renderOnlyActiveTab = component.definition.properties?.renderOnlyActiveTab?.value ?? false;
 
   // set index as id if id is not provided
   parsedTabs = parsedTabs.map((parsedTab, index) => ({ ...parsedTab, id: parsedTab.id ? parsedTab.id : index }));
@@ -44,6 +45,10 @@ export const Tabs = function Tabs({
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   const parsedHideTabs = typeof hideTabs !== 'boolean' ? resolveWidgetFieldValue(hideTabs, currentState) : hideTabs;
+  const parsedRenderOnlyActiveTab =
+    typeof renderOnlyActiveTab !== 'boolean'
+      ? resolveWidgetFieldValue(renderOnlyActiveTab, currentState)
+      : renderOnlyActiveTab;
 
   let parsedWidgetVisibility = widgetVisibility;
 
@@ -94,6 +99,28 @@ export const Tabs = function Tabs({
       setExposedVariable('currentTab', id).then(() => fireEvent('onTabSwitch'));
     }
   });
+
+  const renderTabContent = (id, tab) => (
+    <div
+      className={`tab-pane active`}
+      style={{
+        visibility: computeTabVisibility(id, tab.id),
+        height: parsedHideTabs ? height : height - 41,
+        position: 'absolute',
+        top: parsedHideTabs ? '0px' : '41px',
+        width: '100%',
+      }}
+    >
+      <SubContainer
+        parent={`${id}-${tab.id}`}
+        {...containerProps}
+        parentRef={parentRef}
+        removeComponent={removeComponent}
+        containerCanvasWidth={width - 4}
+        parentComponent={component}
+      />
+    </div>
+  );
 
   return (
     <div
@@ -150,25 +177,7 @@ export const Tabs = function Tabs({
           id={`${id}-${tab.id}`}
           key={tab.id}
         >
-          <div
-            className={`tab-pane active`}
-            style={{
-              visibility: computeTabVisibility(id, tab.id),
-              height: parsedHideTabs ? height : height - 41,
-              position: 'absolute',
-              top: parsedHideTabs ? '0px' : '41px',
-              width: '100%',
-            }}
-          >
-            <SubContainer
-              parent={`${id}-${tab.id}`}
-              {...containerProps}
-              parentRef={parentRef}
-              removeComponent={removeComponent}
-              containerCanvasWidth={width - 4}
-              parentComponent={component}
-            />
-          </div>
+          {parsedRenderOnlyActiveTab ? tab.id === currentTab && renderTabContent(id, tab) : renderTabContent(id, tab)}
           {tab.id === currentTab && (
             <SubCustomDragLayer
               parent={`${id}-${tab.id}`}

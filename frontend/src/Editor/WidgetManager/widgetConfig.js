@@ -3107,6 +3107,15 @@ export const widgets = [
           },
         },
       },
+      renderOnlyActiveTab: {
+        type: 'toggle',
+        displayName: 'Render only active tab',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     events: { onTabSwitch: { displayName: 'On tab switch' } },
     styles: {
@@ -3169,6 +3178,7 @@ export const widgets = [
         },
         defaultTab: { value: '0' },
         hideTabs: { value: false },
+        renderOnlyActiveTab: { value: true },
       },
       events: [],
       styles: {
