@@ -6,11 +6,9 @@ title: Radio Button
 
 Radio button widget can be used to select one option from a group of options.
 
-<div style={{textAlign: 'center'}}>
+## How To Use Radio button Widget
 
-![ToolJet - Widget Reference - RadioButton](/img/widgets/radio-button/radiobutton.png)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/lfy7nq6NqAw" title="Radio button Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 :::tip
 Radio buttons are preferred when the list of options is less than six, and all the options can be displayed at once.
@@ -48,6 +46,21 @@ List of values for different items/options. Refer your query data with dynamic v
 ### Option labels
 
 List of labels for different items/options. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.label)}}` or populate it with sample values `{{["yes", "no"]}}`
+
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
 
 ## Layout
 

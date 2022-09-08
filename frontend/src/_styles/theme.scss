@@ -341,7 +341,6 @@ button {
   .editor-sidebar {
     height: 100%;
     position: fixed;
-    z-index: 1;
     right: 0;
     overflow-x: hidden;
     width: 300px;
@@ -764,7 +763,7 @@ button {
 
 .page-body,
 .homepage-body {
-  height: 90.6vh;
+  height: 93vh;
 
   .list-group.list-group-transparent.dark .all-apps-link,
   .list-group-item-action.dark.active {
@@ -1253,11 +1252,11 @@ button {
     .app-list {
       .app-card {
         .app-creation-time {
-          color: #61656f;
+          color: #afb0b2;
         }
 
         .app-creator {
-          color: #7c86a1;
+          color: #c3c4cb;
         }
       }
 
@@ -2671,6 +2670,16 @@ hr {
   }
 }
 
+
+.theme-dark .wrapper {
+  .navbar .navbar-nav .active>.nav-link,
+  .navbar .navbar-nav .nav-link.active,
+  .navbar .navbar-nav .nav-link.show,
+  .navbar .navbar-nav .show>.nav-link {
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
 .home-page,
 .org-users-page {
 
@@ -3002,6 +3011,13 @@ input:focus-visible {
 
   .DateInput_input {
     background-color: #1f2936;
+    color: #fff;
+  }
+
+  &.daterange-picker-widget{
+    .DateRangePickerInput_arrow_svg{
+      fill: #fff;
+    }
   }
 
   .DateRangePickerInput {
@@ -5024,6 +5040,12 @@ div#driver-page-overlay {
   }
 }
 
+.toast-dark-mode {
+   .btn-close {
+    filter: brightness(0) invert(1);
+  }
+}
+
 .editor .editor-sidebar .inspector .form-control-plaintext {
   padding: 2px 4px;
 }
@@ -5604,6 +5626,9 @@ div#driver-page-overlay {
   width: 20px !important;
   height: 25px !important;
   margin-left: 2px;
+  span{
+    transform: rotate(60deg);
+  }
 }
 
 .zoom-button-wrapper {
@@ -5623,16 +5648,8 @@ div#driver-page-overlay {
 }
 
 .pdf-page-controls {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
   background: white;
-  opacity: 0;
-  transform: translateX(-50%);
-  transition: opacity ease-in-out 0.2s;
   border-radius: 4px;
-  box-shadow: 0 30px 40px 0 rgba(16, 36, 94, 0.2);
-
   button {
     width: 36px;
     height: 36px;
@@ -5663,7 +5680,10 @@ div#driver-page-overlay {
     color: #000;
   }
 }
-
+//download button in pdf widget
+.download-icon-outer-wrapper:hover{
+  background-color: #e6e6e6 !important
+}
 .pdf-document {
   canvas {
     margin: 0px auto;
@@ -6082,6 +6102,114 @@ input.hide-input-arrows{
       background:#fff; 
       padding:0 10px; 
     }
+  }
+}
+
+// Language Selection Modal
+.lang-selection-modal {
+  font-weight: 500;
+
+  .list-group{
+    padding: 1rem 1.5rem;
+    padding-top: 0;
+    overflow-y: scroll;
+    height: calc(100% - 68px);
+  }
+
+  .list-group-item {
+    border: 0;
+    p {
+      margin-bottom: 0px;
+      margin-top: 2px;
+    }
+  }
+
+  .list-group-item.active {
+    background-color: #edf1ff;
+    color: #4d72fa;
+    font-weight: 600;
+    margin-top: 0px;
+  }
+
+  .modal-body{
+    height: 50vh;
+    padding: 0;
+  }
+
+  .lang-list {
+    height: 100%;
+    .search-box{
+      position: relative;
+      margin: 1rem 1.5rem;
+    }
+    input {
+      border-radius: 5px !important;
+    }
+
+    .input-icon {
+      display: flex;
+    }
+
+    .input-icon {
+      .search-icon {
+        display: block;
+        position: absolute;
+        left: 0;
+        margin-right: 0.5rem;
+      }
+
+      .clear-icon {
+        cursor: pointer;
+        display: block;
+        position: absolute;
+        right: 0;
+        margin-right: 0.5rem;
+      }
+    }
+
+    .list-group-item.active {
+      color: $primary;
+    }
+  }
+}
+
+.lang-selection-modal.dark {
+  .modal-header {
+    border-color: #232e3c !important;
+  }
+
+  .modal-body,
+  .modal-footer,
+  .modal-header,
+  .modal-content {
+    color: white;
+    background-color: #2b394a;
+  }
+
+  .list-group-item {
+    color: white;
+    border: 0;
+  }
+
+  .list-group-item:hover {
+    background-color: #232e3c;
+  }
+
+  .list-group-item.active {
+    background-color: #4d72fa;
+    color: white;
+    font-weight: 600;
+  }
+
+  .no-results-item {
+    background-color: #2b394a;
+    color: white;
+  }
+
+  input {
+    background-color: #2b394a;
+    border-color: #232e3c;
+    color: white;
   }
 }
 

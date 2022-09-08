@@ -207,14 +207,13 @@ function SettingsPage(props) {
                     </div>
                   </div>
                 </div>
-                <a
-                  href="#"
+                <button
                   className={'btn btn-primary' + (updateInProgress ? '  btn-loading' : '')}
                   onClick={updateDetails}
                   data-cy="update-button"
                 >
                   {t('header.profileSettingPage.update', 'Update')}
-                </a>
+                </button>
                 {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
                 {/* The div below is a placeholder to prevent it from affecting the button above.  */}
                 <div></div>
@@ -281,14 +280,13 @@ function SettingsPage(props) {
                     />
                   </div>
                 </div>
-                <a
-                  href="#"
+                <button
                   className={'btn btn-primary' + (passwordChangeInProgress ? '  btn-loading' : '')}
                   onClick={changePassword}
                   data-cy="change-password-button"
                 >
                   {t('header.profileSettingPage.changePassword', 'Change password')}
-                </a>
+                </button>
                 {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
                 {/* The div below is a placeholder to prevent it from affecting the button above.  */}
                 <div></div>

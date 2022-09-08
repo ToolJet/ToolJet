@@ -565,7 +565,7 @@ class DataSourceManagerComponent extends React.Component {
                       autoFocus
                     />
                     <span className="input-icon-addon">
-                      <img src="/assets/images/icons/edit-source.svg" width="12" height="12" />
+                      <img src="assets/images/icons/edit-source.svg" width="12" height="12" />
                     </span>
                   </div>
                 </div>
@@ -580,7 +580,7 @@ class DataSourceManagerComponent extends React.Component {
               className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
               onClick={() => this.hideModal()}
             >
-              <img src="/assets/images/icons/close.svg" width="12" height="12" />
+              <img src="assets/images/icons/close.svg" width="12" height="12" />
             </span>
           </Modal.Header>
 
@@ -755,7 +755,7 @@ const EmptyStateContainer = ({
         </h3>
       )}
       <center className={`empty-results ${suggestionUI ? 'suggestionUI-results' : ''}`}>
-        <img src="/assets/images/icons/no-results.svg" width="150" height="150" />
+        <img src="assets/images/icons/no-results.svg" width="150" height="150" />
         {status ? (
           <div>
             <p className="text-success mt-2">
@@ -882,6 +882,7 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
           onChange={handleChange}
           className="form-control"
           placeholder={t('globals.search', 'Search')}
+          autoFocus
         />
       </div>
     </div>

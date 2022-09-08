@@ -14,8 +14,19 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
-import { allSvgs } from '@tooljet/plugins/client';
 import { v4 as uuidv4 } from 'uuid';
+// eslint-disable-next-line import/no-unresolved
+import { allSvgs } from '@tooljet/plugins/client';
+import urlJoin from 'url-join';
+
+const ERROR_TYPES = Object.freeze({
+  ReferenceError: 'ReferenceError',
+  SyntaxError: 'SyntaxError',
+  TypeError: 'TypeError',
+  URIError: 'URIError',
+  RangeError: 'RangeError',
+  EvalError: 'EvalError',
+});
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -72,17 +83,19 @@ export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
 
-export function runTransformation(_ref, rawData, transformation, query) {
+export function runTransformation(_ref, rawData, transformation, query, mode = 'edit') {
   const data = rawData;
-  const evalFunction = Function(
-    ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
-    transformation
-  );
+
   let result = [];
 
   const currentState = _ref.state.currentState || {};
 
   try {
+    const evalFunction = Function(
+      ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables'],
+      transformation
+    );
+
     result = evalFunction(
       data,
       moment,
@@ -94,6 +107,9 @@ export function runTransformation(_ref, rawData, transformation, query) {
     );
   } catch (err) {
     console.log('Transformation failed for query: ', query.name, err);
+    const $error = err.name;
+    const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
+    if (mode === 'edit') toast.error($errorMessage);
     result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
   }
 
@@ -113,11 +129,11 @@ export function onComponentClick(_ref, id, component, mode = 'edit') {
   executeActionsForEventId(_ref, 'onClick', component, mode);
 }
 
-export function onQueryConfirm(_ref, queryConfirmationData) {
+export function onQueryConfirm(_ref, queryConfirmationData, mode = 'edit') {
   _ref.setState({
     showQueryConfirmation: false,
   });
-  runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true);
+  runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
 
 export function onQueryCancel(_ref) {
@@ -234,7 +250,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           _ref.props.history.go();
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-            window.open(url, '_blank');
+            window.open(urlJoin(window.public_config?.TOOLJET_HOST, `applications/${slug}`));
           }
         }
         return Promise.resolve();
@@ -496,6 +512,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onPageChanged',
       'onSearch',
       'onChange',
+      'onEnterPressed',
       'onSelectionChange',
       'onSelect',
       'onClick',
@@ -584,7 +601,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         let finalData = data.data;
 
         if (query.options.enableTransformation) {
-          finalData = runTransformation(_ref, finalData, query.options.transformation, query);
+          finalData = runTransformation(_ref, finalData, query.options.transformation, query, 'edit');
         }
 
         if (calledFromQuery) {
@@ -620,7 +637,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
   });
 }
 
-export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) {
+export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit') {
   const query = _ref.state.app.data_queries.find((query) => query.id === queryId);
   let dataQuery = {};
 
@@ -714,6 +731,11 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
               () => {
                 resolve(data);
                 onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
+                console.log('onDataQueryFailure', data);
+                if (mode !== 'view') {
+                  const errorMessage = data.message || data.data.message;
+                  toast.error(errorMessage);
+                }
               }
             );
           }
@@ -722,7 +744,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
           let finalData = data.data;
 
           if (dataQuery.options.enableTransformation) {
-            finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery);
+            finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery, mode);
             if (finalData.status === 'failed') {
               return _self.setState(
                 {
@@ -760,10 +782,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
             });
           }
 
-          if (dataQuery.options.requestConfirmation) {
-            toast(`Query (${dataQuery.name}) completed.`);
-          }
-
           _self.setState(
             {
               currentState: {
@@ -787,11 +805,17 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
             () => {
               resolve({ status: 'ok', data: finalData });
               onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
+
+              if (mode !== 'view') {
+                toast(`Query (${queryName}) completed.`, {
+                  icon: '🚀',
+                });
+              }
             }
           );
         })
         .catch(({ error }) => {
-          toast.error(error);
+          if (mode !== 'view') toast.error(error);
           _self.setState(
             {
               currentState: {
@@ -901,6 +925,63 @@ export const debuggerActions = {
       },
     }));
   },
+
+  //* @params: errors - Object
+  generateErrorLogs: (errors) => {
+    const errorsArr = [];
+    Object.entries(errors).forEach(([key, value]) => {
+      const errorType =
+        value.type === 'query' && (value.kind === 'restapi' || value.kind === 'runjs') ? value.kind : value.type;
+
+      const error = {};
+      const generalProps = {
+        key,
+        type: value.type,
+        kind: errorType !== 'transformations' ? value.kind : 'transformations',
+        timestamp: moment(),
+      };
+
+      switch (errorType) {
+        case 'restapi':
+          generalProps.message = value.data.message;
+          generalProps.description = value.data.description;
+          error.substitutedVariables = value.options;
+          error.request = value.data.data.requestObject;
+          error.response = value.data.data.responseObject;
+          break;
+
+        case 'runjs':
+          error.message = value.data.data.message;
+          error.description = value.data.data.description;
+          break;
+
+        case 'query':
+          error.message = value.data.message;
+          error.description = value.data.description;
+          error.substitutedVariables = value.options;
+          break;
+
+        case 'transformations':
+          generalProps.message = value.data.message;
+          error.data = value.data.data;
+          break;
+
+        case 'component':
+          generalProps.message = value.data.message;
+          generalProps.property = key.split('- ')[1];
+          error.resolvedProperties = value.resolvedProperties;
+          break;
+
+        default:
+          break;
+      }
+      errorsArr.push({
+        error,
+        ...generalProps,
+      });
+    });
+    return errorsArr;
+  },
 };
 
 export const getComponentName = (currentState, id) => {
@@ -921,34 +1002,49 @@ const updateNewComponents = (appDefinition, newComponents, updateAppDefinition) 
   updateAppDefinition(newAppDefinition);
 };
 
-export const cloneComponents = (_ref, updateAppDefinition, isCloning = true) => {
+export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isCut = false) => {
   const { selectedComponents, appDefinition } = _ref.state;
+  if (selectedComponents.length < 1) return getSelectedText();
   const { components: allComponents } = appDefinition;
-  let newComponents = [];
+  let newDefinition = _.cloneDeep(appDefinition);
+  let newComponents = [],
+    newComponentObj = {},
+    addedComponentId = new Set();
   for (let selectedComponent of selectedComponents) {
+    if (addedComponentId.has(selectedComponent.id)) continue;
     const component = {
       id: selectedComponent.id,
       component: allComponents[selectedComponent.id]?.component,
       layouts: allComponents[selectedComponent.id]?.layouts,
       parent: allComponents[selectedComponent.id]?.parent,
     };
+    addedComponentId.add(selectedComponent.id);
     let clonedComponent = JSON.parse(JSON.stringify(component));
     clonedComponent.parent = undefined;
     clonedComponent.children = [];
-    clonedComponent.children = [...getChildComponents(allComponents, component, clonedComponent)];
+    clonedComponent.children = [...getChildComponents(allComponents, component, clonedComponent, addedComponentId)];
     newComponents = [...newComponents, clonedComponent];
+    newComponentObj = {
+      newComponents,
+      isCloning,
+      isCut,
+    };
   }
   if (isCloning) {
-    addComponents(appDefinition, updateAppDefinition, undefined, newComponents, true);
+    addComponents(appDefinition, updateAppDefinition, undefined, newComponentObj);
     toast.success('Component cloned succesfully');
+  } else if (isCut) {
+    navigator.clipboard.writeText(JSON.stringify(newComponentObj));
+    removeSelectedComponent(newDefinition, selectedComponents);
+    updateAppDefinition(newDefinition);
   } else {
-    navigator.clipboard.writeText(JSON.stringify(newComponents));
+    navigator.clipboard.writeText(JSON.stringify(newComponentObj));
     toast.success('Component copied succesfully');
   }
   _ref.setState({ currentSidebarTab: 2 });
 };
 
-const getChildComponents = (allComponents, component, parentComponent) => {
+const getChildComponents = (allComponents, component, parentComponent, addedComponentId) => {
   let childComponents = [],
     selectedChildComponents = [];
 
@@ -969,6 +1065,7 @@ const getChildComponents = (allComponents, component, parentComponent) => {
         parent: allComponents[componentId]?.parent,
       })
     );
+    addedComponentId.add(componentId);
 
     if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
       const childTabId = childComponent.parent.split('-').at(-1);
@@ -977,14 +1074,14 @@ const getChildComponents = (allComponents, component, parentComponent) => {
       childComponent.parent = parentComponent.id;
     }
     parentComponent.children = [...(parentComponent.children || []), childComponent];
-    childComponent.children = [...getChildComponents(allComponents, newComponent, childComponent)];
+    childComponent.children = [...getChildComponents(allComponents, newComponent, childComponent, addedComponentId)];
     selectedChildComponents.push(childComponent);
   });
 
   return selectedChildComponents;
 };
 
-const updateComponentLayout = (components, parentId) => {
+const updateComponentLayout = (components, parentId, isCut = false) => {
   let prevComponent;
   components.forEach((component, index) => {
     Object.keys(component.layouts).map((layout) => {
@@ -997,22 +1094,17 @@ const updateComponentLayout = (components, parentId) => {
           component.layouts[layout].left = 0;
         }
         prevComponent = component;
-      } else {
+      } else if (!isCut) {
         component.layouts[layout].top = component.layouts[layout].top + component.layouts[layout].height;
       }
     });
   });
 };
 
-export const addComponents = (
-  appDefinition,
-  appDefinitionChanged,
-  parentId = undefined,
-  pastedComponent = [],
-  isCloning = false
-) => {
+export const addComponents = (appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
   const finalComponents = [];
   let parentComponent = undefined;
+  const { isCloning, isCut, newComponents: pastedComponent = [] } = newComponentObj;
 
   if (parentId) {
     const id = Object.keys(appDefinition.components).filter((key) => parentId.startsWith(key));
@@ -1020,7 +1112,7 @@ export const addComponents = (
     parentComponent.id = parentId;
   }
 
-  !isCloning && updateComponentLayout(pastedComponent, parentId);
+  !isCloning && updateComponentLayout(pastedComponent, parentId, isCut);
 
   const buildComponents = (components, parentComponent = undefined, skipTabCalendarCheck = false) => {
     if (Array.isArray(components) && components.length > 0) {
@@ -1053,4 +1145,127 @@ export const addComponents = (
 
   updateNewComponents(appDefinition, finalComponents, appDefinitionChanged);
   !isCloning && toast.success('Component pasted succesfully');
+};
+
+export const addNewWidgetToTheEditor = (
+  componentMeta,
+  eventMonitorObject,
+  currentComponents,
+  canvasBoundingRect,
+  currentLayout,
+  shouldSnapToGrid,
+  zoomLevel,
+  isInSubContainer = false,
+  addingDefault = false
+) => {
+  const componentMetaData = _.cloneDeep(componentMeta);
+  const componentData = _.cloneDeep(componentMetaData);
+
+  const defaultWidth = isInSubContainer
+    ? (componentMetaData.defaultSize.width * 100) / 43
+    : componentMetaData.defaultSize.width;
+  const defaultHeight = componentMetaData.defaultSize.height;
+
+  componentData.name = computeComponentName(componentData.component, currentComponents);
+
+  let left = 0;
+  let top = 0;
+
+  if (isInSubContainer && addingDefault) {
+    const newComponent = {
+      id: uuidv4(),
+      component: componentData,
+      layout: {
+        [currentLayout]: {
+          top: top,
+          left: left,
+        },
+      },
+    };
+
+    return newComponent;
+  }
+
+  const offsetFromTopOfWindow = canvasBoundingRect.top;
+  const offsetFromLeftOfWindow = canvasBoundingRect.left;
+  const currentOffset = eventMonitorObject.getSourceClientOffset();
+  const initialClientOffset = eventMonitorObject.getInitialClientOffset();
+  const delta = eventMonitorObject.getDifferenceFromInitialOffset();
+  const subContainerWidth = canvasBoundingRect.width;
+
+  left = Math.round(currentOffset?.x + currentOffset?.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+  top = Math.round(
+    initialClientOffset?.y - 10 + delta.y + initialClientOffset?.y * (1 - zoomLevel) - offsetFromTopOfWindow
+  );
+
+  if (shouldSnapToGrid) {
+    [left, top] = snapToGrid(subContainerWidth, left, top);
+  }
+
+  left = (left * 100) / subContainerWidth;
+
+  if (currentLayout === 'mobile') {
+    componentData.definition.others.showOnDesktop.value = false;
+    componentData.definition.others.showOnMobile.value = true;
+  }
+
+  const widgetsWithDefaultComponents = ['Listview', 'Tabs'];
+
+  const newComponent = {
+    id: uuidv4(),
+    component: componentData,
+    layout: {
+      [currentLayout]: {
+        top: top,
+        left: left,
+        width: defaultWidth,
+        height: defaultHeight,
+      },
+    },
+
+    withDefaultChildren: widgetsWithDefaultComponents.includes(componentData.component),
+  };
+
+  return newComponent;
+};
+
+export function snapToGrid(canvasWidth, x, y) {
+  const gridX = canvasWidth / 43;
+
+  const snappedX = Math.round(x / gridX) * gridX;
+  const snappedY = Math.round(y / 10) * 10;
+  return [snappedX, snappedY];
+}
+export const removeSelectedComponent = (newDefinition, selectedComponents) => {
+  selectedComponents.forEach((component) => {
+    let childComponents = [];
+
+    if (newDefinition.components[component.id]?.component?.component === 'Tabs') {
+      childComponents = Object.keys(newDefinition.components).filter((key) =>
+        newDefinition.components[key].parent?.startsWith(component.id)
+      );
+    } else {
+      childComponents = Object.keys(newDefinition.components).filter(
+        (key) => newDefinition.components[key].parent === component.id
+      );
+    }
+
+    childComponents.forEach((componentId) => {
+      delete newDefinition.components[componentId];
+    });
+
+    delete newDefinition.components[component.id];
+  });
+};
+
+const getSelectedText = () => {
+  if (window.getSelection) {
+    navigator.clipboard.writeText(window.getSelection());
+  }
+  if (window.document.getSelection) {
+    navigator.clipboard.writeText(window.document.getSelection());
+  }
+  if (window.document.selection) {
+    navigator.clipboard.writeText(window.document.selection.createRange().text);
+  }
 };

@@ -7,6 +7,8 @@ import { appService } from '@/_services';
 import { App } from './App';
 import './i18n';
 
+const AppWithProfiler = Sentry.withProfiler(App);
+
 appService
   .getConfig()
   .then((config) => {
@@ -36,4 +38,4 @@ appService
       });
     }
   })
-  .then(() => render(<App></App>, document.getElementById('app')));
+  .then(() => render(<AppWithProfiler />, document.getElementById('app')));

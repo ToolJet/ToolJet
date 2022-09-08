@@ -133,7 +133,7 @@ export function Git({ settings, updateData }) {
             <label className="form-label" data-cy="client-secret-label">
               {t('header.organization.menus.manageSSO.github.clientSecret', 'Client Secret')}
               <small className="text-green mx-2" data-cy="encripted-label">
-                <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+                <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
                 {t('header.organization.menus.manageSSO.github.encrypted', 'Encrypted')}
               </small>
             </label>
@@ -157,10 +157,10 @@ export function Git({ settings, updateData }) {
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"
-                >{`${window.location.protocol}//${window.location.host}/sso/git/${configId}`}</p>
+                >{`${window.public_config?.TOOLJET_HOST}/sso/git/${configId}`}</p>
                 <img
                   onClick={() => copyFunction('redirect-url')}
-                  src={`/assets/images/icons/copy-dark.svg`}
+                  src={`assets/images/icons/copy-dark.svg`}
                   width="22"
                   height="22"
                   className="sso-copy"

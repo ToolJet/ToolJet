@@ -45,7 +45,7 @@ export const Pagination = function Pagination({
   }
 
   return (
-    <div className="pagination">
+    <div className="pagination justify-content-start">
       {!serverSide && (
         <button
           className={`btn btn-sm btn-light mx-2 ${pageIndex === 1 ? 'cursor-not-allowed' : ''}`}

@@ -125,7 +125,7 @@ export function CodeHinter({
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
-    handleChange(editor, onChange, ignoreBraces, realState);
+    handleChange(editor, onChange, ignoreBraces, realState, componentName);
     setCurrentValue(editor.getValue()?.trim());
   }
 
@@ -374,7 +374,7 @@ const PopupIcon = ({ callback, icon, tip }) => {
       >
         <img
           className="svg-icon m-2 popup-btn"
-          src={`/assets/images/icons/${icon}.svg`}
+          src={`assets/images/icons/${icon}.svg`}
           width="12"
           height="12"
           onClick={(e) => {

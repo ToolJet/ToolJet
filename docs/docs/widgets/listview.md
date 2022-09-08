@@ -48,6 +48,21 @@ Check [Action Reference](/docs/actions/show-alert) docs to get the detailed info
 | Row height | Enter a numerical value to set the row height accordingly. | Any number between `1` to `100` |
 | Show bottom border | This property allows you to show or hide the row bottom border. | By default its `{{true}}`, set `{{false}}` to hide the border  |
 
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
+
 ## Layout
 
 <div style={{textAlign: 'center'}}>

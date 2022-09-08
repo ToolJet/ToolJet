@@ -57,6 +57,11 @@ function boxShadowParam() {
   return paramArray;
 }
 
+function randomRgbaHex() {
+  let rgba = faker.color.rgb({ format: "hex", casing: "lower" });
+  return rgba;
+}
+
 Object.defineProperty(fake, "email", { get: email });
 Object.defineProperty(fake, "password", { get: password });
 Object.defineProperty(fake, "firstName", { get: firstName });
@@ -67,3 +72,4 @@ Object.defineProperty(fake, "randomSentence", { get: randomSentence });
 Object.defineProperty(fake, "randomRgba", { get: randomRgba });
 Object.defineProperty(fake, "randomRgb", { get: randomRgb });
 Object.defineProperty(fake, "boxShadowParam", { get: boxShadowParam });
+Object.defineProperty(fake, "randomRgbaHex", { get: randomRgbaHex });

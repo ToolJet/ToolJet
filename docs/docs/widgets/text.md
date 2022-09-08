@@ -25,6 +25,21 @@ This property sets the content/text inside the Text widget. Refer your query dat
 
 Toggle `on` or `off` to show or hide the loading state. You can also click on the `Fx` next to it to set the value `{{true}}` and `{{false}}` dynamically. Shows a loading status if the value is `true`. This property is often used with the `isLoading` property of queries so that the table shows a spinner while the query is being run. Default value is `false`.
 
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
+
 ## Layout
 
 ### Show on desktop
@@ -36,17 +51,21 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 ## Styles
 
-### Text color
+| Style      | Description |
+| ----------- | ----------- | 
+| Font Weight | You can change the font weight of the text in following ways: **normal (default), bold, lighter, bolder** |
+| Text Decoration | You can change the text decoration in following ways : **none(default), overline, line-through, underline, overline underline** |
+| Text Transformation | You can transform the text in following ways: **none (default), uppercase, lowercase, capitalize** |
+| Font Style | You can change the font style in following ways: **normal(default), italic, oblique** |
+| Line Height | You can change the line height by providing number as input (example - 1.5) |
+| Text Indent | You can change the text indent by providing the number as input (example - 10) |
+| Letter Spacing | You can change the letter spacing by proviving the number as input  (example - 2) |
+| Word Spacing  | You can change the letter spacing by proviving the number as input  (example - 2) |
+| Font Variant | You can change the font variant of the text in the following ways: **normal (default), small-caps, initial, inherit** |
+| Text Size | By default, the text size is set to 14. You can enter any value from 1-100 to set custom text size. |
+| Text Color |  You can change the background color of the text by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Align Text | You can align the text inside the widget in following ways: left, right, center, justified |
 
-Change the color of the text by providing the `Hex color code` or choosing a color from the picker.
-
-### Align text
-
-You can align the text inside the widget in following ways:
-- Left
-- Right
-- Center
-- Justified
 
 ### Visibility
 

@@ -110,7 +110,9 @@ export const EventManager = ({
 
   function getComponentActionOptions(componentId) {
     if (componentId == undefined) return [];
-    const component = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId)[0][1];
+    const filteredComponents = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId);
+    if (_.isEmpty(filteredComponents)) return [];
+    const component = filteredComponents[0][1];
     const targetComponentMeta = componentTypes.find(
       (componentType) => component.component.component === componentType.component
     );
@@ -126,7 +128,9 @@ export const EventManager = ({
 
   function getAction(componentId, actionHandle) {
     if (componentId == undefined || actionHandle == undefined) return {};
-    const component = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId)[0][1];
+    const filteredComponents = Object.entries(components ?? {}).filter(([key, _value]) => key === componentId);
+    if (_.isEmpty(filteredComponents)) return {};
+    const component = filteredComponents[0][1];
     const targetComponentMeta = componentTypes.find(
       (componentType) => component.component.component === componentType.component
     );
@@ -239,14 +243,13 @@ export const EventManager = ({
                   <div className="col-3 p-2" data-cy="message-label">
                     {t('editor.inspector.eventManager.message', 'Message')}
                   </div>
-                  <div className="col-9" data-cy="message-text">
+                  <div className="col-9" data-cy="alert-message-input-field">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
                       currentState={currentState}
                       initialValue={event.message}
                       onChange={(value) => handlerChanged(index, 'message', value)}
                       usePortalEditor={false}
-                      paramLabel="alert-message"
                     />
                   </div>
                 </div>
@@ -528,8 +531,10 @@ export const EventManager = ({
             {event.actionId === 'control-component' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-1">{t('editor.inspector.eventManager.component', 'Component')}</div>
-                  <div className="col-9">
+                  <div className="col-3 p-1" data-cy="action-options-component-field-label">
+                    {t('editor.inspector.eventManager.component', 'Component')}
+                  </div>
+                  <div className="col-9" data-cy="action-options-component-selection-field">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={getComponentOptionsOfComponentsWithActions()}
@@ -546,8 +551,10 @@ export const EventManager = ({
                   </div>
                 </div>
                 <div className="row mt-2">
-                  <div className="col-3 p-1">{t('editor.inspector.eventManager.action', 'Action')}</div>
-                  <div className="col-9">
+                  <div className="col-3 p-1" data-cy="action-options-action-field-label">
+                    {t('editor.inspector.eventManager.action', 'Action')}
+                  </div>
+                  <div className="col-9" data-cy="action-options-action-selection-field">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={getComponentActionOptions(event?.componentId)}
@@ -571,11 +578,14 @@ export const EventManager = ({
                   event?.componentSpecificActionHandle &&
                   (getAction(event?.componentId, event?.componentSpecificActionHandle).params ?? []).map((param) => (
                     <div className="row mt-2" key={param.handle}>
-                      <div className="col-3 p-1">{param.displayName}</div>
+                      <div className="col-3 p-1" data-cy={`action-options-${param.displayName}-field-label`}>
+                        {param.displayName}
+                      </div>
                       <div
                         className={`${
                           param?.type ? 'col-7' : 'col-9 fx-container-eventmanager-code'
                         } fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                        data-cy="action-options-text-input-field"
                       >
                         <CodeHinter
                           theme={darkMode ? 'monokai' : 'default'}

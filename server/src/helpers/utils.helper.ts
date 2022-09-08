@@ -1,5 +1,19 @@
 import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
+import { EntityManager, getManager } from 'typeorm';
+import { isEmpty } from 'lodash';
+
+export function maybeSetSubPath(path) {
+  const hasSubPath = process.env.SUB_PATH !== undefined;
+  const urlPrefix = hasSubPath ? process.env.SUB_PATH : '';
+
+  if (isEmpty(urlPrefix)) {
+    return path;
+  }
+
+  const pathWithoutLeadingSlash = path.replace(/^\/+/, '');
+  return urlPrefix + pathWithoutLeadingSlash;
+}
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -51,4 +65,14 @@ export function sanitizeInput(value: string) {
 
 export function lowercaseString(value: string) {
   return value?.toLowerCase();
+}
+
+export async function dbTransactionWrap(operation: (...args) => any, manager?: EntityManager): Promise<any> {
+  if (manager) {
+    return await operation(manager);
+  } else {
+    return await getManager().transaction(async (manager) => {
+      return await operation(manager);
+    });
+  }
 }

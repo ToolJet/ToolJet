@@ -74,7 +74,6 @@ class SignupPageComponent extends React.Component {
       }
     );
   };
-
   render() {
     const { isLoading, signupSuccess } = this.state;
 
@@ -83,7 +82,7 @@ class SignupPageComponent extends React.Component {
         <div className="container-tight py-2">
           <div className="text-center mb-4">
             <a href="." className="navbar-brand-autodark">
-              <img src="/assets/images/logo-color.svg" height="26" alt="" />
+              <img src="assets/images/logo-color.svg" height="26" alt="" />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
@@ -104,11 +103,13 @@ class SignupPageComponent extends React.Component {
                     {this.ssoConfigs.configs?.git?.enabled && (
                       <GitSSOLoginButton text="Sign up with GitHub" configs={this.ssoConfigs.configs?.git?.configs} />
                     )}
-                    <div className="mt-2 separator">
-                      <h2>
-                        <span>OR</span>
-                      </h2>
-                    </div>
+                    {(this.ssoConfigs.configs?.git?.enabled || this.ssoConfigs.configs?.google?.enabled) && (
+                      <div className="mt-2 separator">
+                        <h2>
+                          <span>OR</span>
+                        </h2>
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="mb-3">

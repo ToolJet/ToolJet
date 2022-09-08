@@ -11,7 +11,6 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { computeComponentName } from '@/_helpers/utils';
 import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
@@ -36,6 +35,7 @@ import {
   getSvgIcon,
   debuggerActions,
   cloneComponents,
+  removeSelectedComponent,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -51,7 +51,6 @@ import RunjsIcon from './Icons/runjs.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
-import Spinner from '@/_ui/Spinner';
 import { AppVersionsManager } from './AppVersionsManager';
 import { SearchBoxComponent } from '@/_ui/Search';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
@@ -61,6 +60,7 @@ import RealtimeAvatars from './RealtimeAvatars';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
+// eslint-disable-next-line import/no-unresolved
 import Selecto from 'react-selecto';
 import { withTranslation } from 'react-i18next';
 
@@ -328,6 +328,7 @@ class EditorComponent extends React.Component {
         dataqueryService.getAll(this.state.appId, this.state.editingVersion?.id).then((data) => {
           this.setState(
             {
+              allDataQueries: data.data_queries,
               dataQueries: data.data_queries,
               filterDataQueries: data.data_queries,
               loadingDataQueries: false,
@@ -616,25 +617,7 @@ class EditorComponent extends React.Component {
       let newDefinition = cloneDeep(this.state.appDefinition);
       const selectedComponents = this.state?.selectedComponents;
 
-      selectedComponents.forEach((component) => {
-        let childComponents = [];
-
-        if (newDefinition.components[component.id].component.component === 'Tabs') {
-          childComponents = Object.keys(newDefinition.components).filter((key) =>
-            newDefinition.components[key].parent?.startsWith(component.id)
-          );
-        } else {
-          childComponents = Object.keys(newDefinition.components).filter(
-            (key) => newDefinition.components[key].parent === component.id
-          );
-        }
-
-        childComponents.forEach((componentId) => {
-          delete newDefinition.components[componentId];
-        });
-
-        delete newDefinition.components[component.id];
-      });
+      removeSelectedComponent(newDefinition, selectedComponents);
 
       toast('Selected components deleted! (⌘Z to undo)', {
         icon: '🗑️',
@@ -685,28 +668,30 @@ class EditorComponent extends React.Component {
   componentDefinitionChanged = (componentDefinition) => {
     let _self = this;
 
-    const newDefinition = {
-      appDefinition: produce(this.state.appDefinition, (draft) => {
-        draft.components[componentDefinition.id].component = componentDefinition.component;
-      }),
-    };
+    if (this.state.appDefinition?.components[componentDefinition.id]) {
+      const newDefinition = {
+        appDefinition: produce(this.state.appDefinition, (draft) => {
+          draft.components[componentDefinition.id].component = componentDefinition.component;
+        }),
+      };
 
-    produce(
-      this.state.appDefinition,
-      (draft) => {
-        draft.components[componentDefinition.id].component = componentDefinition.component;
-      },
-      this.handleAddPatch
-    );
-    setStateAsync(_self, newDefinition).then(() => {
-      computeComponentState(_self, _self.state.appDefinition.components);
-      this.setState({ isSaving: true });
-      this.autoSave();
-      this.props.ymap?.set('appDef', {
-        newDefinition: newDefinition.appDefinition,
-        editingVersionId: this.state.editingVersion?.id,
+      produce(
+        this.state.appDefinition,
+        (draft) => {
+          draft.components[componentDefinition.id].component = componentDefinition.component;
+        },
+        this.handleAddPatch
+      );
+      setStateAsync(_self, newDefinition).then(() => {
+        computeComponentState(_self, _self.state.appDefinition.components);
+        this.setState({ isSaving: true });
+        this.autoSave();
+        this.props.ymap?.set('appDef', {
+          newDefinition: newDefinition.appDefinition,
+          editingVersionId: this.state.editingVersion?.id,
+        });
       });
-    });
+    }
   };
 
   handleEditorEscapeKeyPress = () => {
@@ -749,6 +734,8 @@ class EditorComponent extends React.Component {
     appDefinition.components = newComponents;
     this.appDefinitionChanged(appDefinition);
   };
+
+  cutComponents = () => cloneComponents(this, this.appDefinitionChanged, false, true);
 
   copyComponents = () => cloneComponents(this, this.appDefinitionChanged, false);
 
@@ -908,7 +895,7 @@ class EditorComponent extends React.Component {
               }}
             >
               <div>
-                <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" className="mx-1" />
+                <img src="assets/images/icons/query-trash-icon.svg" width="12" height="12" className="mx-1" />
               </div>
             </button>
           )}
@@ -925,15 +912,11 @@ class EditorComponent extends React.Component {
               style={{ marginTop: '3px' }}
               className="btn badge bg-light-1"
               onClick={() => {
-                runQuery(this, dataQuery.id, dataQuery.name).then(() => {
-                  toast(`Query (${dataQuery.name}) completed.`, {
-                    icon: '🚀',
-                  });
-                });
+                runQuery(this, dataQuery.id, dataQuery.name);
               }}
             >
               <div className={`query-icon ${this.props.darkMode && 'dark'}`}>
-                <img src="/assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
+                <img src="assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
               </div>
             </button>
           )}
@@ -980,7 +963,7 @@ class EditorComponent extends React.Component {
 
   filterQueries = (value) => {
     if (value) {
-      const fuse = new Fuse(this.state.filterDataQueries, { keys: ['name'] });
+      const fuse = new Fuse(this.state.allDataQueries, { keys: ['name'] });
       const results = fuse.search(value);
       this.setState({
         filterDataQueries: results.map((result) => result.item),
@@ -1122,6 +1105,7 @@ class EditorComponent extends React.Component {
     flush: () => {
       debuggerActions.flush(this);
     },
+    generateErrorLogs: (errors) => debuggerActions.generateErrorLogs(errors),
   };
 
   changeDarkMode = (newMode) => {
@@ -1153,7 +1137,7 @@ class EditorComponent extends React.Component {
   };
 
   onAreaSelectionStart = (e) => {
-    const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 1;
+    const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 0;
     this.setState((prevState) => {
       return {
         selectionInProgress: true,
@@ -1262,7 +1246,7 @@ class EditorComponent extends React.Component {
                 <span className="navbar-toggler-icon"></span>
               </button>
               <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                <Link to={'/'}>
+                <Link to={'/'} data-cy="editor-page-logo">
                   <Logo />
                 </Link>
               </h1>
@@ -1309,14 +1293,15 @@ class EditorComponent extends React.Component {
               )}
               <div className="navbar-nav flex-row order-md-last release-buttons">
                 <div className="nav-item dropdown d-none d-md-flex me-2">
-                  <a
-                    href={appVersionPreviewLink}
+                  <Link
+                    to={appVersionPreviewLink}
                     target="_blank"
                     className="btn btn-sm font-500 color-primary border-0"
                     rel="noreferrer"
+                    data-cy="preview-button"
                   >
                     {this.props.t('editor.preview', 'Preview')}
-                  </a>
+                  </Link>
                 </div>
                 <div className="nav-item dropdown d-none d-md-flex me-2">
                   {app.id && (
@@ -1544,7 +1529,7 @@ class EditorComponent extends React.Component {
                                 >
                                   <img
                                     className="py-1 mt-2"
-                                    src="/assets/images/icons/lens.svg"
+                                    src="assets/images/icons/lens.svg"
                                     width="24"
                                     height="24"
                                   />
@@ -1565,7 +1550,7 @@ class EditorComponent extends React.Component {
                                     })
                                   }
                                 >
-                                  <img className="mt-2" src="/assets/images/icons/plus.svg" width="24" height="24" />
+                                  <img className="mt-2" src="assets/images/icons/plus.svg" width="24" height="24" />
                                 </span>
                               </div>
                             </>
@@ -1701,6 +1686,7 @@ class EditorComponent extends React.Component {
                   moveComponents={this.moveComponents}
                   cloneComponents={this.cloneComponents}
                   copyComponents={this.copyComponents}
+                  cutComponents={this.cutComponents}
                   handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
                   removeMultipleComponents={this.removeComponents}
                 />
@@ -1722,7 +1708,7 @@ class EditorComponent extends React.Component {
                         switchSidebarTab={this.switchSidebarTab}
                         apps={apps}
                         darkMode={this.props.darkMode}
-                        setSelectedComponent={this.setSelectedComponent}
+                        handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">

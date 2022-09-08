@@ -143,7 +143,7 @@ class LoginPageComponent extends React.Component {
         <div className="container-tight py-2">
           <div className="text-center mb-4">
             <a href="." className="navbar-brand-autodark" data-cy="login-page-logo">
-              <img src="/assets/images/logo-color.svg" height="26" alt="" />
+              <img src="assets/images/logo-color.svg" height="26" alt="" />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
@@ -259,7 +259,7 @@ class LoginPageComponent extends React.Component {
           )}
           {authenticationService?.currentUserValue?.organization && (
             <div className="text-center mt-3">
-              back to <a href="/">{authenticationService?.currentUserValue?.organization}</a>
+              back to <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
             </div>
           )}
         </div>

@@ -8,6 +8,7 @@ export const TextInput = function TextInput({
   setExposedVariable,
   fireEvent,
   registerAction,
+  component,
 }) {
   const [value, setValue] = useState(properties.value);
   const { isValid, validationError } = validate(value);
@@ -35,6 +36,14 @@ export const TextInput = function TextInput({
     <div className="text-input">
       <input
         disabled={styles.disabledState}
+        onKeyUp={(e) => {
+          if (e.key == 'Enter') {
+            setValue(e.target.value);
+            setExposedVariable('value', e.target.value).then(() => {
+              fireEvent('onEnterPressed');
+            });
+          }
+        }}
         onChange={(e) => {
           setValue(e.target.value);
           setExposedVariable('value', e.target.value);
@@ -45,6 +54,7 @@ export const TextInput = function TextInput({
         placeholder={properties.placeholder}
         style={{ height, display: styles.visibility ? '' : 'none', borderRadius: `${styles.borderRadius}px` }}
         value={value}
+        data-cy={`draggable-widget-${component.name}`}
       />
       <div className="invalid-feedback">{validationError}</div>
     </div>

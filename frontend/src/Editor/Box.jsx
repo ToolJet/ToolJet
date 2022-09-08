@@ -50,7 +50,7 @@ import { TreeSelect } from './Components/TreeSelect';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
-import { validateWidget, resolveReferences } from '@/_helpers/utils';
+import { validateWidget } from '@/_helpers/utils';
 import { componentTypes } from './WidgetManager/components';
 import {
   resolveProperties,
@@ -134,7 +134,6 @@ export const Box = function Box({
   mode,
   customResolvables,
   parentId,
-  allComponents,
   sideBarDebugger,
   dataQueries,
   readOnly,
@@ -166,6 +165,7 @@ export const Box = function Box({
     mode === 'edit' && component.validate
       ? validateProperties(resolvedProperties, componentMeta.properties)
       : [resolvedProperties, []];
+
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
   const [validatedStyles, styleErrors] =
     mode === 'edit' && component.validate
@@ -316,7 +316,7 @@ export const Box = function Box({
                     width: '20px',
                     height: '20px',
                     backgroundSize: 'contain',
-                    backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
+                    backgroundImage: `url(assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
                     backgroundRepeat: 'no-repeat',
                   }}
                 ></div>

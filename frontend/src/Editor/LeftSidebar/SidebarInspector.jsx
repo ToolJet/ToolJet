@@ -4,9 +4,10 @@ import { LeftSidebarItem } from './SidebarItem';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
-import { allSvgs } from '@tooljet/plugins/client';
 import RunjsIcon from '../Icons/runjs.svg';
 import { toast } from 'react-hot-toast';
+// eslint-disable-next-line import/no-unresolved
+import { allSvgs } from '@tooljet/plugins/client';
 
 export const LeftSidebarInspector = ({
   darkMode,
@@ -85,7 +86,7 @@ export const LeftSidebarInspector = ({
     if (!_.isEmpty(component) && component.name === key) {
       return {
         iconName: key,
-        iconPath: `/assets/images/icons/widgets/${
+        iconPath: `assets/images/icons/widgets/${
           component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
         }.svg`,
         className: 'component-icon',
@@ -127,7 +128,7 @@ export const LeftSidebarInspector = ({
           name: 'Run Query',
           dispatchAction: handleRunQuery,
           icon: true,
-          src: '/assets/images/icons/editor/play.svg',
+          src: 'assets/images/icons/editor/play.svg',
           width: 8,
           height: 8,
         },

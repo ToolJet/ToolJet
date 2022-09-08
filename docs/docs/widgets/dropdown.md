@@ -6,11 +6,9 @@ title: Dropdown
 
 The Dropdown widget can be used to collect user input from a list of options.
 
-<div style={{textAlign: 'center'}}>
+## How To Use Dropdown Widget
 
-![ToolJet - Widget Reference - Dropdown](/img/widgets/dropdown/drop.png)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/PKlkD2rtlP8" title="Dropdown widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 :::tip
 Dropdown options can be referred to your query data with dynamic variables.
@@ -72,6 +70,21 @@ Show a loading state in the widget using this property. It is off by default, to
 ### Custom validation
 
 Add a validation for the options in dropdown widget using the ternary operator.
+
+### General
+#### Tooltip
+
+A Tooltip is often used to specify extra information about something when the user hovers the 
+mouse pointer over the widget.
+
+Under the <b>General</b> accordion, you can set the value in the string format. 
+Now hovering over the widget will display the string as the tooltip.
+
+<div style={{textAlign: 'center'}}>
+
+![ToolJet - widget- button](/img/tooltip.png)
+
+</div>
 
 ## Layout
 

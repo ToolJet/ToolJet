@@ -11,10 +11,10 @@ import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import RunjsIcon from '../Icons/runjs.svg';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
-import { allSvgs } from '@tooljet/plugins/client';
-// import { Confirm } from '../Viewer/Confirm';
 import _, { isEmpty, isEqual } from 'lodash';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
+// eslint-disable-next-line import/no-unresolved
+import { allSvgs } from '@tooljet/plugins/client';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 
@@ -711,8 +711,7 @@ class QueryManagerComponent extends React.Component {
                           currentState={this.props.currentState}
                           initialValue={this.state.options.successMessage}
                           height="36px"
-                          className="form-control"
-                          theme={'default'}
+                          theme={this.props.darkMode ? 'monokai' : 'default'}
                           onChange={(value) => this.optionchanged('successMessage', value)}
                           placeholder={this.props.t(
                             'editor.queryManager.queryRanSuccessfully',
