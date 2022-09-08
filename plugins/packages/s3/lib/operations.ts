@@ -19,6 +19,7 @@ export async function listObjects(client: S3Client, options: object): Promise<ob
     Prefix: options['prefix'],
     MaxKeys: options['maxKeys'],
     StartAfter: options['offset'],
+    ContinuationToken: options['continuationToken'],
   });
 
   return client.send(command);

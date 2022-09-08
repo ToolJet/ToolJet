@@ -159,6 +159,16 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins col-6"
+      }, 
+      "NextContinuationToken": {
+        "label": "Next Continuation Token",
+        "key": "continuationToken",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter Next Continuation Token",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       }
     },
     "signed_url_for_get": {
