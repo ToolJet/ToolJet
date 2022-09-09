@@ -3,33 +3,35 @@ import {
   ListBucketsCommand,
   ListObjectsCommand,
   PutObjectCommand,
+  DeleteObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
 // https://aws.amazon.com/blogs/developer/generate-presigned-url-modular-aws-sdk-javascript/
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { QueryOptions } from './types';
 
-export async function listBuckets(client: S3Client, options: object): Promise<object> {
+export async function listBuckets(client: S3Client, options: QueryOptions): Promise<object> {
   const command = new ListBucketsCommand(options);
   return client.send(command);
 }
 
-export async function listObjects(client: S3Client, options: object): Promise<object> {
-  const command = new ListObjectsCommand({ Bucket: options['bucket'], Prefix: options['prefix'] });
+export async function listObjects(client: S3Client, options: QueryOptions): Promise<object> {
+  const command = new ListObjectsCommand({ Bucket: options.bucket, Prefix: options.prefix });
   return client.send(command);
 }
 
-export async function signedUrlForGet(client: S3Client, options: object): Promise<object> {
+export async function signedUrlForGet(client: S3Client, options: QueryOptions): Promise<object> {
   const command = new GetObjectCommand({
-    Bucket: options['bucket'],
-    Key: options['key'],
+    Bucket: options.bucket,
+    Key: options.key,
   });
   const url = await getSignedUrl(client, command, {
-    expiresIn: options['expiresIn'] || 3600,
+    expiresIn: options.expiresIn || 3600,
   });
   return { url };
 }
 
-export async function getObject(client: S3Client, options: object): Promise<object> {
+export async function getObject(client: S3Client, options: QueryOptions): Promise<object> {
   // Create a helper function to convert a ReadableStream to a string.
   const streamToString = (stream) =>
     new Promise((resolve, reject) => {
@@ -41,8 +43,8 @@ export async function getObject(client: S3Client, options: object): Promise<obje
 
   // Get the object from the Amazon S3 bucket. It is returned as a ReadableStream.
   const command = new GetObjectCommand({
-    Bucket: options['bucket'],
-    Key: options['key'],
+    Bucket: options.bucket,
+    Key: options.key,
   });
   const data = await client.send(command);
   // Convert the ReadableStream to a string.
@@ -50,34 +52,41 @@ export async function getObject(client: S3Client, options: object): Promise<obje
   return { ...data, Body: bodyContents };
 }
 
-export async function uploadObject(client: S3Client, options: object): Promise<object> {
-  const encoding = options['encoding'] || 'utf8';
-  const body = new Buffer(uploadData(options['data'], options['contentType']), encoding);
+export async function uploadObject(client: S3Client, options: QueryOptions): Promise<object> {
+  const encoding = options.encoding || 'utf8';
+  const uploadData = (data: any, contentType: string) => {
+    if (!data) {
+      return;
+    }
+    return typeof data === 'object' && contentType.includes('application/json') ? JSON.stringify(data) : data;
+  };
+  const body = new Buffer(uploadData(options.data, options.contentType), encoding);
   const command = new PutObjectCommand({
-    Bucket: options['bucket'],
-    Key: options['key'],
+    Bucket: options.bucket,
+    Key: options.key,
     Body: body,
-    ContentType: options['contentType'],
+    ContentType: options.contentType,
     ContentEncoding: encoding,
   });
-  const data = await client.send(command);
-  return data;
+  return await client.send(command);
 }
 
-export async function signedUrlForPut(client: S3Client, options: object): Promise<object> {
+export async function signedUrlForPut(client: S3Client, options: QueryOptions): Promise<object> {
   const command = new PutObjectCommand({
-    Bucket: options['bucket'],
-    Key: options['key'],
-    ContentType: options['contentType'],
+    Bucket: options.bucket,
+    Key: options.key,
+    ContentType: options.contentType,
   });
   const url = await getSignedUrl(client, command, {
-    expiresIn: options['expiresIn'] || 3600,
+    expiresIn: options.expiresIn || 3600,
   });
   return { url };
 }
-function uploadData(data: any, contentType: string) {
-  if (!data) {
-    return;
-  }
-  return typeof data === 'object' && contentType.includes('application/json') ? JSON.stringify(data) : data;
+
+export async function removeObject(client: S3Client, options: QueryOptions): Promise<object> {
+  const command = new DeleteObjectCommand({
+    Bucket: options.bucket,
+    Key: options.key,
+  });
+  return await client.send(command);
 }
