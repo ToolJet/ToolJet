@@ -86,7 +86,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
         <div className="mb-2 field">
           <label className="form-label">Icon</label>
         </div>
-        <div className="card">
+        <div className="card mb-3">
           <div className="card-body p-0">
             <div className="field">
               <OverlayTrigger trigger="click" placement={'left'} rootClose={true} overlay={eventPopover()}>
@@ -109,11 +109,20 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
     );
   }
 
+  const renderProperties = () => {
+    const propertyList = [];
+    propertyList.push(renderIconPicker());
+    propertyList.push(
+      renderElement(component, componentMeta, paramUpdated, dataQueries, 'visibility', 'properties', currentState)
+    );
+    return propertyList;
+  };
+
   let items = [];
 
   items.push({
     title: 'Properties',
-    children: renderIconPicker(),
+    children: renderProperties(),
   });
 
   items.push({

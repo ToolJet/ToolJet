@@ -4684,6 +4684,13 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           schema: { type: 'string' },
         },
       },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -4697,15 +4704,19 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           schema: { type: 'string' },
         },
       },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
     },
     exposedVariables: {},
+    actions: [
+      {
+        handle: 'click',
+        displayName: 'Click',
+      },
+      {
+        displayName: 'Hide',
+        handle: 'hide',
+        params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -4713,11 +4724,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       properties: {
         icon: { value: 'IconHome2' },
+        visibility: { value: '{{true}}', fxActive: true },
       },
       events: [],
       styles: {
         iconColor: { value: '#000' },
-        visibility: { value: '{{true}}' },
       },
     },
   },
