@@ -653,6 +653,7 @@ class HomePage extends React.Component {
                       fileInput={this.fileInput}
                       appCount={currentFolder.count}
                       showTemplateLibraryModal={this.showTemplateLibraryModal}
+                      darkMode={this.props.darkMode}
                     />
                     <AppList
                       apps={apps}
