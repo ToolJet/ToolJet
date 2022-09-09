@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Request, UseGuards, Body, Delete, Param, Put } from '@nestjs/common';
+import { Controller, Get, Post, Request, UseGuards, Body, Delete, Param, Patch } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { InstanceSettingsService } from '@services/instance_settings.service';
@@ -23,8 +23,8 @@ export class InstanceSettingsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put(':id')
-  async update(@Param('id') id, @Body('name') body: UpdateInstanceSettingsDto) {
+  @Patch(':id')
+  async update(@Param('id') id, @Body() body: UpdateInstanceSettingsDto) {
     await this.instanceSettingsService.update(id, body);
     return {};
   }
