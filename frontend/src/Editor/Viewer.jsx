@@ -191,7 +191,6 @@ class Viewer extends React.Component {
   }
 
   changeDarkMode = (newMode) => {
-    const canvasBackgroundColor = this.state.appDefinition.globalSettings.canvasBackgroundColor;
     this.setState({
       currentState: {
         ...this.state.currentState,
