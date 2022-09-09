@@ -67,3 +67,8 @@ div[data-disabled='true'] {
     width: 100%;
   }
 }
+.select-search-dark{
+  .select-search-dark__input::placeholder{
+    color: #E0E0E0;
+  }
+}
