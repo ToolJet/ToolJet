@@ -123,6 +123,7 @@ const sidebars = {
         'widgets/dropdown',
         'widgets/file-picker',
         'widgets/html',
+        'widgets/icon',
         'widgets/iframe',
         'widgets/image',
         'widgets/kanban',
