@@ -5,6 +5,7 @@ import { Organization } from '../entities/organization.entity';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { createDefaultInstanceSettings } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class SeedsService {
@@ -55,6 +56,8 @@ export class SeedsService {
       await manager.save(organizationUser);
 
       await this.createDefaultUserGroups(manager, user);
+
+      await createDefaultInstanceSettings(manager);
 
       console.log(
         'Seeding complete. Use default credentials to login.\n' + 'email: dev@tooljet.io\n' + 'password: password'

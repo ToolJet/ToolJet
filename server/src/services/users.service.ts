@@ -8,7 +8,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject, createDefaultInstanceSettings, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { ConfigService } from '@nestjs/config';
 import License from '@ee/licensing/configs/License';
@@ -114,6 +114,7 @@ export class UsersService {
         user = existingUser;
       }
       await this.attachUserGroup(groups, organizationId, user.id, manager);
+      if (userType === 'instance') await createDefaultInstanceSettings(manager);
     }, manager);
 
     return user;

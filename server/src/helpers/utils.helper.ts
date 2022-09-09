@@ -2,6 +2,7 @@ import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
+import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -79,4 +80,20 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
 
 export const retrieveWhiteLabelText = () => {
   return process.env?.WHITE_LABEL_TEXT ? process.env.WHITE_LABEL_TEXT : 'ToolJet';
+};
+
+export const createDefaultInstanceSettings = async (manager: EntityManager) => {
+  const settings = [
+    {
+      key: 'ALLOW_PERSONAL_WORKSPACE',
+      value: 'true',
+    },
+    {
+      key: 'ALLOW_PLUGIN_INTEGRATION',
+      value: 'true',
+    },
+  ];
+
+  const entries = settings.map((setting) => manager.create(InstanceSettings, setting));
+  return manager.save(entries);
 };
