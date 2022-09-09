@@ -14,7 +14,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Setup',
-      link: {type: 'doc', id: 'setup/index'},
+      link: { type: 'doc', id: 'setup/index' },
       items: [
         'setup/try-tooljet',
         'setup/digitalocean',
@@ -142,6 +142,7 @@ const sidebars = {
         'widgets/star',
         'widgets/statistics',
         'widgets/steps',
+        'widgets/svg-image',
         'widgets/table',
         'widgets/tabs',
         'widgets/tags',
@@ -163,7 +164,7 @@ const sidebars = {
         title: 'Actions Reference',
         description:
           "All the actions that can be performed through event handlers",
-        keywords: ['actions','events'],
+        keywords: ['actions', 'events'],
       },
       items: [
         'actions/show-alert',
@@ -218,7 +219,7 @@ const sidebars = {
         title: 'User Authentication',
         description:
           "Guides for setting up User Authentication and managing Single Sign-On",
-        keywords: ['SSO','authentication'],
+        keywords: ['SSO', 'authentication'],
       },
       collapsed: true,
       items: [
@@ -231,23 +232,23 @@ const sidebars = {
           items: [
             'user-authentication/sso/github',
             'user-authentication/sso/google',
-             {
-          type: 'category',
-          label: 'OpenId Connect',
-          link: {
-            type: 'generated-index',
-            title: 'OpenId Connect',
-            description:" ",
-            keywords: ['okta','openid','azureAD'],
-          },
-          collapsed: false,
-          items: [
-            'user-authentication/sso/openid/setup',
-            'user-authentication/sso/openid/azuread',
-            'user-authentication/sso/openid/okta',
-            'user-authentication/sso/openid/google-openid',
-          ],
-        }
+            {
+              type: 'category',
+              label: 'OpenId Connect',
+              link: {
+                type: 'generated-index',
+                title: 'OpenId Connect',
+                description: " ",
+                keywords: ['okta', 'openid', 'azureAD'],
+              },
+              collapsed: false,
+              items: [
+                'user-authentication/sso/openid/setup',
+                'user-authentication/sso/openid/azuread',
+                'user-authentication/sso/openid/okta',
+                'user-authentication/sso/openid/google-openid',
+              ],
+            }
           ],
         },
       ],
@@ -260,7 +261,7 @@ const sidebars = {
         title: 'Contributing Guide',
         description:
           "Guides for contributing to ToolJet",
-        keywords: ['contribute','contributing'],
+        keywords: ['contribute', 'contributing'],
       },
       collapsed: false,
       items: [
