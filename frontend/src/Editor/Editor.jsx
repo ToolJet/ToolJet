@@ -1016,6 +1016,14 @@ class Editor extends React.Component {
     return canvasBoundingRect?.height;
   };
 
+  computeCanvasBackgroundColor = () => {
+    const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#edeff5';
+    if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
+      return this.props.darkMode ? '#2f3c4c' : '#edeff5';
+    }
+    return canvasBackgroundColor;
+  };
+
   renderLayoutIcon = (isDesktopSelected) => {
     if (isDesktopSelected)
       return (
@@ -1400,7 +1408,7 @@ class Editor extends React.Component {
                       minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                       maxWidth: +this.state.appDefinition.globalSettings.canvasMaxWidth,
                       maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
-                      backgroundColor: this.state.appDefinition.globalSettings.canvasBackgroundColor,
+                      backgroundColor: this.computeCanvasBackgroundColor(),
                     }}
                   >
                     {config.ENABLE_MULTIPLAYER_EDITING && (
