@@ -195,6 +195,7 @@ const sidebars = {
         'how-to/run-actions-from-runjs',
         'how-to/bulk-update-multiple-rows',
         'how-to/access-cellvalue-rowdata',
+        'how-to/access-currentuser',
         'how-to/oauth2-authorization',
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
