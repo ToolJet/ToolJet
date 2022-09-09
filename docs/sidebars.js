@@ -28,6 +28,7 @@ const sidebars = {
         'setup/client',
         'setup/env-vars',
         'setup/http-proxy',
+        'setup/tooljet-subpath',
       ],
     },
     'security',
