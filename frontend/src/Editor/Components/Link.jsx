@@ -7,7 +7,7 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction, cu
   const clickRef = useRef();
 
   const parsedVisibility =
-    typeof hideTabs !== 'boolean' ? resolveWidgetFieldValue(visibility, currentState) : visibility;
+    typeof visibility !== 'boolean' ? resolveWidgetFieldValue(visibility, currentState) : visibility;
 
   const computedStyles = {
     fontSize: textSize,
