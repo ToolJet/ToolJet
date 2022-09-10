@@ -3355,7 +3355,13 @@ export const widgets = [
       onRowClicked: { displayName: 'Row clicked' },
     },
     styles: {
-      backgroundColor: { type: 'color' },
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
