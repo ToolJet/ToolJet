@@ -36,14 +36,15 @@
         "key": "query",
         "type": "codehinter",
         "description": "Enter array of objects",
-        "height": "150px"
+        "height": "150px",
+        "placeholder":"Enter array of objects"
       },
       "fields": {
         "label": "Fields",
         "key": "fields",
         "type": "codehinter",
         "description": "Enter fields",
-        "placeholder": "fields",
+        "placeholder": "{{['date', 'str', 'arr', 'arr2']}}",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",

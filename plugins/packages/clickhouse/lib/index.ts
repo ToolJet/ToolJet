@@ -57,23 +57,22 @@ export default class Click implements QueryService {
       debug,
       raw,
     } = sourceOptions;
-
     const clickhouse = new ClickHouse({
       url: `${protocol}://${host}`,
-      port: port ? port : 8123,
-      debug: debug ? debug : false,
+      port: port || 8123,
+      debug: debug || false,
       basicAuth:
         username?.length > 0 && password?.length > 0
-          ? { username: username ? username : 'default', password: password ? password : ' ' }
+          ? { username: username || 'default', password: password || ' ' }
           : 'null',
-      isUseGzip: isUseGzip ? isUseGzip : false,
-      trimQuery: trimQuery ? trimQuery : false,
-      usePost: usePost ? usePost : false,
-      format: `${format ? format : 'json'}`, // "json" || "csv" || "tsv"
-      raw: raw ? raw : false,
+      isUseGzip: isUseGzip || false,
+      trimQuery: trimQuery || false,
+      usePost: usePost || false,
+      format: `${format || 'json'}`, // "json" || "csv" || "tsv"
+      raw: raw || false,
       config: {
         ...(session_id?.length > 0 && { session_id: session_id }),
-        session_timeout: session_timeout ? session_timeout : 60,
+        session_timeout: session_timeout || 60,
         output_format_json_quote_64bit_integers: 0,
         enable_http_compression: 0,
         ...(database?.length > 0 && { database: database }),
