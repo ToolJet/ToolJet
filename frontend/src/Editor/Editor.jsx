@@ -538,10 +538,21 @@ class Editor extends React.Component {
     }
   };
 
-  appDefinitionChanged = (newDefinition, opts = {}) => {
+  // Dropped widget component is passed as 3rd parameter and
+  // updated the state along with appDefinition to avoid unwanted re-renders
+  appDefinitionChanged = (newDefinition, opts = {}, selectedComponentObj = null) => {
     if (isEqual(this.state.appDefinition, newDefinition)) return;
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
       this.props.ymap?.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
+    }
+
+    let selectedComponentState = {};
+
+    if (selectedComponentObj) {
+      selectedComponentState = {
+        selectedComponents: [{ id: selectedComponentObj.id, component: selectedComponentObj }],
+        currentSidebarTab: 1,
+      };
     }
 
     produce(
@@ -551,9 +562,16 @@ class Editor extends React.Component {
       },
       this.handleAddPatch
     );
-    this.setState({ isSaving: true, appDefinition: newDefinition }, () => {
-      if (!opts.skipAutoSave) this.autoSave();
-    });
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newDefinition,
+        ...selectedComponentState,
+      },
+      () => {
+        if (!opts.skipAutoSave) this.autoSave();
+      }
+    );
     computeComponentState(this, newDefinition.components);
   };
 

@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
@@ -77,6 +77,8 @@ export const SubContainer = ({
   const [boxes, setBoxes] = useState(allComponents);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  // selectedId ref holds the dropped widget ID
+  const selectedId = useRef(null);
 
   useEffect(() => {
     setBoxes(allComponents);
@@ -178,7 +180,8 @@ export const SubContainer = ({
 
   useEffect(() => {
     if (appDefinitionChanged) {
-      appDefinitionChanged({ ...appDefinition, components: boxes });
+      appDefinitionChanged({ ...appDefinition, components: boxes }, {}, selectedId.current);
+      selectedId.current = null;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
@@ -241,6 +244,8 @@ export const SubContainer = ({
           zoomLevel,
           true
         );
+
+        selectedId.current = newComponent;
 
         setBoxes({
           ...boxes,

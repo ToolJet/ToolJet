@@ -66,6 +66,8 @@ export const Container = ({
   const router = useRouter();
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
+  // selectedId ref holds the dropped widget ID
+  const selectedId = useRef(null);
 
   useHotkeys('⌘+z, control+z', () => handleUndo());
   useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
@@ -132,7 +134,8 @@ export const Container = ({
       firstUpdate.current = false;
       return;
     }
-    appDefinitionChanged({ ...appDefinition, components: boxes });
+    appDefinitionChanged({ ...appDefinition, components: boxes }, {}, selectedId.current);
+    selectedId.current = null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 
@@ -194,6 +197,8 @@ export const Container = ({
           snapToGrid,
           zoomLevel
         );
+
+        selectedId.current = newComponent;
 
         setBoxes({
           ...boxes,
