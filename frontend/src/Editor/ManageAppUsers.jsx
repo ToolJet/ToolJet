@@ -212,7 +212,12 @@ class ManageAppUsers extends React.Component {
                     <small>Get embeddable link for this application</small>
                   </label>
                   <div className="input-group">
-                    <Textarea disabled className="input-with-icon" rows={5} value={embeddableLink} />
+                    <Textarea
+                      disabled
+                      className={`input-with-icon ${this.props.darkMode && 'text-light'}`}
+                      rows={5}
+                      value={embeddableLink}
+                    />
                     <span className="input-group-text">
                       <CopyToClipboard
                         text={embeddableLink}

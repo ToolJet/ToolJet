@@ -122,7 +122,7 @@ export const Multiselect = function Multiselect({
       <div className="col-auto my-auto d-flex align-items-center">
         <label
           style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }}
-          className="form-label py-1 text-secondary"
+          className={`form-label py-1 ${darkMode ? 'text-light' : 'text-secondary'}`}
           data-cy={`multiselect-label-${component.name.toLowerCase()}`}
         >
           {label}
@@ -136,7 +136,7 @@ export const Multiselect = function Multiselect({
           onChange={onChangeHandler}
           labelledBy={'Select'}
           disabled={disabledState}
-          className={`multiselect-box${darkMode ? ' dark' : ''}`}
+          className={`multiselect-box${darkMode ? ' dark dark-multiselectinput' : ''}`}
           ItemRenderer={ItemRenderer}
         />
       </div>

@@ -263,7 +263,11 @@ export function CodeHinter({
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
-            <ToolTip label={paramLabel} meta={fieldMeta} />
+            <ToolTip
+              label={paramLabel}
+              meta={fieldMeta}
+              labelClass={`form-label ${darkMode && 'color-whitish-darkmode'}`}
+            />
           </div>
         )}
         <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
