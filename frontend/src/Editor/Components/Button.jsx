@@ -16,7 +16,6 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
     borderRadius: `${borderRadius}px`,
     height,
     display: visibility ? '' : 'none',
-    '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
   };
 
@@ -28,12 +27,18 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
     setLabel(text);
   });
 
+  const hasCustomBackground = backgroundColor.charAt() === '#';
+  if (hasCustomBackground) {
+    computedStyles['--tblr-btn-color-darker'] = tinycolor(backgroundColor).darken(8).toString();
+  }
+
   return (
     <div className="widget-button">
       <button
         disabled={disabledState}
         className={cx('jet-button btn btn-primary p-1 overflow-hidden', {
           'btn-loading': loadingState,
+          'btn-custom': hasCustomBackground,
         })}
         style={computedStyles}
         onClick={(event) => {

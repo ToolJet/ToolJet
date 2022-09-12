@@ -6,13 +6,17 @@ $border-grey-light: #D9DCDE;
 $border-grey-dark: #333C48;
 $light-green: #82bf99;
 $dark-green: #3b734f;
-$primary: #4D72FA;
+
 $disabled: #9E9EA8;
 $dark-background: #1f2936;
 $bg-light: #EEF3F9;
 $bg-dark: #22272E;
 $bg-dark-light: #232e3c;
-$primary-light: #7A95FB;
+
+$primary-rgb: 77, 114, 250;
+$primary-rgb-darker: 77, 94, 240;
+$primary: unquote("rgb(#{$primary-rgb})");
+$primary-light: unquote("rgb(#{$primary-rgb})");
 
 .color-primary {
   color: $primary !important;

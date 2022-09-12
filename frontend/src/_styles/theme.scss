@@ -855,7 +855,7 @@ button {
   }
 
   button.create-new-app-button {
-    background-color: #4d72fa;
+    background-color: $primary-light;
   }
 
   .app-list {
@@ -946,15 +946,15 @@ button {
 
       button.edit-button {
         background: #ffffff;
-        border: 1px solid #4d72fa;
+        border: 1px solid $primary-light;
         box-sizing: border-box;
         border-radius: 4px;
-        color: #4d72fa;
+        color: $primary-light;
       }
 
       button.launch-button {
-        background: #4d72fa;
-        border: 1px solid #4d72fa;
+        background: $primary-light;
+        border: 1px solid $primary-light;
         box-sizing: border-box;
         border-radius: 4px;
         color: #ffffff;
@@ -1010,7 +1010,7 @@ button {
 
     .list-group-item.active {
       background-color: #edf1ff;
-      color: #4d72fa;
+      color: $primary-light;
       font-weight: 600;
     }
   }
@@ -1135,7 +1135,7 @@ button {
     }
 
     .list-group-item.active {
-      background-color: #4d72fa;
+      background-color: $primary-light;
       color: white;
       font-weight: 600;
     }
@@ -1156,7 +1156,7 @@ button {
     }
 
     .list-group-item.active {
-      background-color: #4d72fa;
+      background-color: $primary-light;
       color: white;
     }
 
@@ -1196,7 +1196,7 @@ button {
 .fx-button:hover,
 .fx-button.active {
   font-weight: 600;
-  color: #4d72fa;
+  color: $primary-light;
   cursor: pointer;
 }
 .fx-container-eventmanager{
@@ -1207,7 +1207,7 @@ button {
   top: 7px !important;
   right: -26px;
 }
-// targeting select component library class 
+// targeting select component library class
 
 .component-action-select *.css-1nfapid-container
 {
@@ -1229,6 +1229,10 @@ button {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+.layout-buttons {
+  span { color: $primary; }
 }
 
 .theme-dark {
@@ -1270,8 +1274,8 @@ button {
         }
 
         button.launch-button {
-          background: #4d72fa;
-          border: 1px solid #4d72fa;
+          background: $primary-light;
+          border: 1px solid $primary-light;
           color: #ffffff;
         }
       }
@@ -1316,7 +1320,7 @@ button {
 .pagination {
   .page-item.active {
     a.page-link {
-      background-color: #4d72fa;
+      background-color: $primary-light;
     }
   }
 }
@@ -1955,8 +1959,8 @@ button {
 }
 
 .btn-primary {
-  --tblr-btn-color: 77, 114, 250;
-  --tblr-btn-color-darker: 77, 94, 240;
+  --tblr-btn-color: #{$primary-rgb};
+  --tblr-btn-color-darker: #{$primary-rgb-darker};
   border-color: none;
 }
 
@@ -2875,7 +2879,7 @@ input:focus-visible {
 }
 
 .jet-button {
-  &.btn-primary:hover {
+  &.btn-custom:hover {
     background: var(--tblr-btn-color-darker) !important;
   }
 }
@@ -3514,7 +3518,7 @@ input[type="text"] {
   }
 
   .rmsc.dark {
-    --rmsc-main: #4d72fa;
+    --rmsc-main: $primary-light;
     --rmsc-hover: #283647;
     --rmsc-selected: #1f2936;
     --rmsc-border: #333333;
@@ -3591,7 +3595,7 @@ input[type="text"] {
   }
 
   .react-datepicker__day--selected {
-    background-color: #4d72fa;
+    background-color: $primary-light;
   }
 }
 
@@ -3695,9 +3699,9 @@ input[type="text"] {
 }
 
 .empty-import-button {
-  color: #4d72fa !important;
+  color: $primary-light !important ;
   background: #ffffff !important;
-  border: 1px solid #4d72fa !important;
+  border: 1px solid $primary-light !important;
   cursor: pointer;
   position: relative;
 
@@ -3748,8 +3752,7 @@ input[type="text"] {
   font-weight: 500;
   font-size: 16px;
   line-height: 19px;
-  color: #4d72fa;
-
+  color: $primary-light;
   p {
     margin-right: 16px;
   }
@@ -4388,7 +4391,7 @@ input[type="text"] {
       filter: invert(29%) sepia(84%) saturate(4047%) hue-rotate(215deg) brightness(98%) contrast(111%);
     }
   }
-  
+
   .folder-ico.dark {
     filter: invert(1);
   }
@@ -4409,7 +4412,7 @@ input[type="text"] {
   }
 
   .folder-create-btn {
-    color: #0565ff;
+    color: $primary;
     cursor: pointer;
   }
 
@@ -4595,7 +4598,7 @@ input[type="text"] {
     }
 
     li.selected {
-      border: 2px solid #0565ff;
+      border: 2px solid $primary;
 
       img {
         filter: invert(27%) sepia(84%) saturate(5230%) hue-rotate(212deg) brightness(102%) contrast(100%);
@@ -5160,7 +5163,7 @@ div#driver-page-overlay {
   }
 
   .org-actions div {
-    color: #0565ff;
+    color: $primary;
     cursor: pointer;
     font-size: 12px;
   }
@@ -5201,7 +5204,7 @@ div#driver-page-overlay {
 
   .org-edit {
     span {
-      color: #0565ff;
+      color: $primary;
       cursor: pointer;
       font-size: 10px;
     }
@@ -5452,7 +5455,7 @@ div#driver-page-overlay {
   }
 
   .selected-node {
-    border-color: #4d72fa !important;
+    border-color: $primary-light !important;
   }
 
   .selected-node .group-object-container .badge {
@@ -5704,12 +5707,12 @@ div#driver-page-overlay {
   .btn-org-env {
     width: 36px;
   }
-  
+
   .encryption-input {
     width: fit-content;
   }
 
-  .no-vars-text {    
+  .no-vars-text {
     display: block;
     text-align: center;
     margin-top: 100px;
@@ -5854,7 +5857,7 @@ div#driver-page-overlay {
 
 #git-url,
 #google-url {
-  color: #0565ff;
+  color: $primary;
   margin-left: 4px;
   word-break: break-all;
 }
@@ -6094,17 +6097,17 @@ input.hide-input-arrows{
     width: 100%;
 
     h2 {
-      width: 100%; 
-      text-align: center; 
-      border-bottom: 1px solid $primary; 
+      width: 100%;
+      text-align: center;
+      border-bottom: 1px solid $primary;
       line-height: 0.1em;
-      margin: 10px 0 20px; 
-    } 
-    
-    h2 span { 
+      margin: 10px 0 20px;
+    }
+
+    h2 span {
       color: $primary;
-      background:#fff; 
-      padding:0 10px; 
+      background:#fff;
+      padding:0 10px;
     }
   }
 }
