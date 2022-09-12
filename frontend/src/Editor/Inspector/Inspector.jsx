@@ -319,7 +319,7 @@ export const Inspector = ({
 
     items.push({
       title: 'General',
-      isOpen: false,
+      isOpen: true,
       children: (
         <>
           {renderElement(

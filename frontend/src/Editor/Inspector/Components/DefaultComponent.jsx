@@ -121,7 +121,7 @@ export const baseComponentProperties = (
 
   items.push({
     title: 'General',
-    isOpen: false,
+    isOpen: true,
     children: (
       <>
         {renderElement(
@@ -140,7 +140,7 @@ export const baseComponentProperties = (
 
   items.push({
     title: 'Layout',
-    isOpen: false,
+    isOpen: true,
     children: (
       <>
         {renderElement(
