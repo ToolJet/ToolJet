@@ -7,7 +7,7 @@ import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 export const TreeSelect = ({ height, properties, styles, setExposedVariable, fireEvent, darkMode }) => {
   const { label, data, checkedData, expandedData } = properties;
   const { visibility, disabledState, checkboxColor } = styles;
-  const textColor = darkMode && ['#000'].includes(styles.textColor) ? '#fff' : styles.textColor;
+  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checked, setChecked] = useState(checkedData);
   const [expanded, setExpanded] = useState(expandedData);
 
