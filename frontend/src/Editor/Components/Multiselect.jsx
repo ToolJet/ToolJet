@@ -136,7 +136,7 @@ export const Multiselect = function Multiselect({
           onChange={onChangeHandler}
           labelledBy={'Select'}
           disabled={disabledState}
-          className={`multiselect-box${darkMode ? ' dark' : ''}`}
+          className={`multiselect-box${darkMode ? ' dark dark-multiselectinput' : ''}`}
           ItemRenderer={ItemRenderer}
         />
       </div>
