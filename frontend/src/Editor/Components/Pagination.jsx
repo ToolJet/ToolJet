@@ -217,7 +217,6 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
 };
 
 const PageLinks = ({ currentPage, totalPages, callback, darkMode }) => {
-  console.log(darkMode, 'dark');
   return Array.from(Array(totalPages).keys()).map((index) => {
     const pageNumber = index + 1;
     return (
