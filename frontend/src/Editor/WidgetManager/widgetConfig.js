@@ -453,6 +453,21 @@ export const widgets = [
         displayName: 'Set Text',
         params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
       },
+      {
+        handle: 'disable',
+        displayName: 'Disabled',
+        params: [{ handle: 'disable', displayName: 'Disabled', defaultValue: `{{false}}` }],
+      },
+      {
+        handle: 'visible',
+        displayName: 'Visibility',
+        params: [{ handle: 'visible', displayName: 'Visibility', defaultValue: `{{false}}` }],
+      },
+      {
+        handle: 'loading',
+        displayName: 'Loading',
+        params: [{ handle: 'loading', displayName: 'Loading', defaultValue: `{{false}}` }],
+      },
     ],
     definition: {
       others: {
