@@ -387,6 +387,22 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -413,22 +429,6 @@ export const widgets = [
         displayName: 'Loader color',
         validation: {
           schema: { type: 'string' },
-          defaultValue: false,
-        },
-      },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schema: { type: 'boolean' },
-          defaultValue: false,
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schema: { type: 'boolean' },
           defaultValue: false,
         },
       },
@@ -461,16 +461,16 @@ export const widgets = [
       properties: {
         text: { value: `Button` },
         visible: { value: '{{true}}' },
-        loadingState: { value: `{{false}}` },
+        loadingState: { value: `{{false}}`, fxActive: true },
+        visibility: { value: '{{true}}', fxActive: true },
+        disabledState: { value: '{{false}}', fxActive: true },
       },
       events: [],
       styles: {
         backgroundColor: { value: '#375FCF' },
         textColor: { value: '#fff' },
         loaderColor: { value: '#fff' },
-        visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
-        disabledState: { value: '{{false}}' },
       },
     },
   },
