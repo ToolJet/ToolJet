@@ -6109,13 +6109,13 @@ input.hide-input-arrows{
   }
 }
 .dark-theme-placeholder::placeholder{
-  color: rgb(200, 198, 198);
+  color: #C8C6C6;
 }
 .dark-multiselectinput{
   input{
     color: white;
     &::placeholder{
-      color: rgb(200, 198, 198);
+      color: #C8C6C6;
     }
   }
 }
