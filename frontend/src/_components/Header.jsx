@@ -59,7 +59,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
             </div>
           )}
           <div>
-            <Organization admin={admin} />
+            <Organization admin={admin} darkMode={darkMode} />
           </div>
           <div className="nav-item dropdown ms-2 user-avatar-nav-item">
             <a
@@ -78,7 +78,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
                     }}
                   />
                 ) : (
-                  <span className="avatar bg-secondary-lt">
+                  <span className={`avatar bg-secondary-lt ${darkMode && 'text-muted'}`}>
                     {first_name ? first_name[0] : ''}
                     {last_name ? last_name[0] : ''}
                   </span>

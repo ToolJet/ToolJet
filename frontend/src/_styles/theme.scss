@@ -1365,7 +1365,11 @@ button {
 .select-search *::before {
   box-sizing: inherit;
 }
-
+.select-search-dark{
+  .select-search-dark__input::placeholder{
+    color: #E0E0E0;
+  }
+}
 /**
  * Value wrapper
  */
@@ -6105,5 +6109,13 @@ input.hide-input-arrows{
   }
 }
 .dark-theme-placeholder::placeholder{
-  color: #E0E0E0;
+  color: #C8C6C6;
+}
+.dark-multiselectinput{
+  input{
+    color: white;
+    &::placeholder{
+      color: #C8C6C6;
+    }
+  }
 }
