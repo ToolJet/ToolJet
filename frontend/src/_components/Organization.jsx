@@ -5,7 +5,7 @@ import Modal from '../HomePage/Modal';
 import { toast } from 'react-hot-toast';
 import { SearchBox } from './SearchBox';
 
-export const Organization = function Organization() {
+export const Organization = function Organization({ darkMode }) {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const { admin, organization_id } = authenticationService.currentUserValue;
   const [organization, setOrganization] = useState(authenticationService.currentUserValue?.organization);
@@ -311,7 +311,7 @@ export const Organization = function Organization() {
       <div className="dropdown organization-list" data-cy="dropdown-organization-list">
         <a
           href="#"
-          className={`btn ${!isSingleOrganization || admin ? 'dropdown-toggle' : ''}`}
+          className={`btn ${!isSingleOrganization || admin ? 'dropdown-toggle' : ''} ${darkMode && 'text-muted'}`}
           onMouseOver={() => setIsListOrganizations(false)}
         >
           <div>{organization}</div>

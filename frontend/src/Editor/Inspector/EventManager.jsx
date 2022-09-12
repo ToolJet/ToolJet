@@ -291,6 +291,7 @@ export const EventManager = ({
                 eventIndex={index}
                 getAllApps={getAllApps}
                 currentState={currentState}
+                darkMode={darkMode}
               />
             )}
 

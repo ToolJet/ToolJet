@@ -163,7 +163,11 @@ export const Map = function Map({
         >
           {canSearch && (
             <Autocomplete onPlaceChanged={onPlaceChanged} onLoad={onAutocompleteLoad}>
-              <input type="text" placeholder="Search" className="place-search-input" />
+              <input
+                type="text"
+                placeholder="Search"
+                className={`place-search-input ${darkMode && 'text-light bg-dark dark-theme-placeholder'}`}
+              />
             </Autocomplete>
           )}
           {Array.isArray(markers) && (
