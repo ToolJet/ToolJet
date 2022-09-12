@@ -1,12 +1,15 @@
 import React from 'react';
 import queryString from 'query-string';
 import { datasourceService } from '@/_services';
+import { RedirectLoader } from '@/_components';
 
 class Authorize extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      isLoading: true,
+    };
   }
 
   componentDidMount() {
@@ -14,15 +17,7 @@ class Authorize extends React.Component {
     const query = props.location.search;
     const params = queryString.parse(query);
     const code = params.code;
-
     const details = { code };
-
-    let _self = this;
-
-    this.setState({
-      details,
-      isLoading: true,
-    });
 
     const sourceId = localStorage.getItem('sourceWaitingForOAuth');
 
@@ -32,29 +27,87 @@ class Authorize extends React.Component {
         .then(() => {
           this.setState({
             isLoading: false,
-            authSucess: true,
+            authSuccess: true,
           });
         })
-        .catch(function (error) {
-          _self.setState({ isLoading: false, authFailure: true });
-          console.log(error);
+        .catch((error) => {
+          this.setState({ isLoading: false, authSuccess: false, error: error?.error });
         });
     } else {
       localStorage.setItem('OAuthCode', code);
-      _self.setState({ isLoading: false, authSucess: true });
+      this.setState({ isLoading: false, authSuccess: true });
     }
   }
 
   render() {
-    const { isLoading, authSucess, authFailure } = this.state;
-
+    const { isLoading, authSuccess, error } = this.state;
     return (
       <div>
-        {isLoading && <div>Please wait...</div>}
-
-        {authSucess && <div>Auth successful, you can close this tab now.</div>}
-
-        {authFailure && <div>Auth failed</div>}
+        {isLoading ? (
+          <RedirectLoader />
+        ) : (
+          <div>
+            {!authSuccess ? (
+              <div className="container-tight auth-main px-lg-4">
+                <h4 style={{ fontSize: '32px' }}>
+                  <span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="icon"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                      stroke="currentColor"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <circle cx="12" cy="12" r="9"></circle>
+                      <line x1="9" y1="10" x2="9.01" y2="10"></line>
+                      <line x1="15" y1="10" x2="15.01" y2="10"></line>
+                      <path d="M9.5 15.25a3.5 3.5 0 0 1 5 0"></path>
+                    </svg>
+                  </span>
+                  Error
+                </h4>
+                <div>
+                  <div>Details: {error || ''}</div>
+                </div>
+              </div>
+            ) : (
+              <div className="container-tight auth-main px-lg-4">
+                <h4 style={{ fontSize: '32px' }}>
+                  <span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="icon"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                      stroke="currentColor"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <circle cx="12" cy="12" r="9"></circle>
+                      <line x1="9" y1="10" x2="9.01" y2="10"></line>
+                      <line x1="15" y1="10" x2="15.01" y2="10"></line>
+                      <path d="M9.5 15a3.5 3.5 0 0 0 5 0"></path>
+                    </svg>
+                  </span>
+                  Success
+                </h4>
+                <div>
+                  <div>Authorization successful, you can close this tab now.</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }

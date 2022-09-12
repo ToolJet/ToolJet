@@ -341,7 +341,6 @@ button {
   .editor-sidebar {
     height: 100%;
     position: fixed;
-    z-index: 1;
     right: 0;
     overflow-x: hidden;
     width: 300px;
@@ -764,7 +763,7 @@ button {
 
 .page-body,
 .homepage-body {
-  height: 90.6vh;
+  height: 93vh;
 
   .list-group.list-group-transparent.dark .all-apps-link,
   .list-group-item-action.dark.active {
@@ -6104,4 +6103,7 @@ input.hide-input-arrows{
       padding:0 10px; 
     }
   }
+}
+.dark-theme-placeholder::placeholder{
+  color: #E0E0E0;
 }

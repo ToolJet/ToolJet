@@ -30,8 +30,9 @@ export const Calendar = function ({
 }) {
   const style = { height };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
-
-  const events = properties.events ? properties.events.map((event) => prepareEvent(event, properties.dateFormat)) : [];
+  const events = Array.isArray(properties?.events)
+    ? properties?.events?.map((event) => prepareEvent(event, properties.dateFormat))
+    : [];
   const defaultDate = parseDate(properties.defaultDate, properties.dateFormat);
   const todayStartTime = moment().startOf('day').toDate();
   const todayEndTime = moment().endOf('day').toDate();

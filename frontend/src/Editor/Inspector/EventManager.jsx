@@ -529,8 +529,10 @@ export const EventManager = ({
             {event.actionId === 'control-component' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-1">Component</div>
-                  <div className="col-9">
+                  <div className="col-3 p-1" data-cy="action-options-component-field-label">
+                    Component
+                  </div>
+                  <div className="col-9" data-cy="action-options-component-selection-field">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={getComponentOptionsOfComponentsWithActions()}
@@ -547,8 +549,10 @@ export const EventManager = ({
                   </div>
                 </div>
                 <div className="row mt-2">
-                  <div className="col-3 p-1">Action</div>
-                  <div className="col-9">
+                  <div className="col-3 p-1" data-cy="action-options-action-field-label">
+                    Action
+                  </div>
+                  <div className="col-9" data-cy="action-options-action-selection-field">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                       options={getComponentActionOptions(event?.componentId)}
@@ -572,11 +576,14 @@ export const EventManager = ({
                   event?.componentSpecificActionHandle &&
                   (getAction(event?.componentId, event?.componentSpecificActionHandle).params ?? []).map((param) => (
                     <div className="row mt-2" key={param.handle}>
-                      <div className="col-3 p-1">{param.displayName}</div>
+                      <div className="col-3 p-1" data-cy={`action-options-${param.displayName}-field-label`}>
+                        {param.displayName}
+                      </div>
                       <div
                         className={`${
                           param?.type ? 'col-7' : 'col-9 fx-container-eventmanager-code'
                         } fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                        data-cy="action-options-text-input-field"
                       >
                         <CodeHinter
                           theme={darkMode ? 'monokai' : 'default'}
