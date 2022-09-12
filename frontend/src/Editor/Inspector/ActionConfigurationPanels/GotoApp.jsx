@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from '@/_ui/Select';
+import defaultStyles from '@/_ui/Select/styles';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
-export function GotoApp({ getAllApps, currentState, event, handlerChanged, eventIndex }) {
+export function GotoApp({ getAllApps, currentState, event, handlerChanged, eventIndex, darkMode }) {
   const queryParamChangeHandler = (index, key, value) => {
     event.queryParams[index][key] = value;
     handlerChanged(eventIndex, 'queryParams', event.queryParams);
@@ -34,18 +35,28 @@ export function GotoApp({ getAllApps, currentState, event, handlerChanged, event
     }
   });
 
+  const styles = {
+    ...defaultStyles(darkMode),
+    menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+    menuList: (base) => ({
+      ...base,
+    }),
+  };
+
   return (
-    <div className="p-1">
+    <div className="p-1 go-to-app">
       <label className="form-label mt-1">App</label>
-      <SelectSearch
+      <Select
         options={getAllApps()}
         search={true}
         value={event.slug}
         onChange={(value) => {
           handlerChanged(eventIndex, 'slug', value);
         }}
-        filterOptions={fuzzySearch}
         placeholder="Select.."
+        styles={styles}
+        useMenuPortal={false}
+        className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
       />
       <label className="form-label mt-2">Query params</label>
 

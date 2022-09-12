@@ -9,9 +9,11 @@ export const RadioButton = function RadioButton({
   fireEvent,
   setExposedVariable,
   registerAction,
+  darkMode,
 }) {
   const { label, value, values, display_values } = properties;
-  const { visibility, disabledState, textColor, activeColor } = styles;
+  const { visibility, disabledState, activeColor } = styles;
+  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checkedValue, set] = React.useState(value);
 
   let selectOptions = [];

@@ -433,7 +433,7 @@ class HomePage extends React.Component {
         onClick={() => this.setState({ appOperations: { ...appOperations, selectedIcon: icon } })}
         key={index}
       >
-        <img src={`/assets/images/icons/app-icons/${icon}.svg`} data-cy={`${icon}-icon`} />
+        <img src={`assets/images/icons/app-icons/${icon}.svg`} data-cy={`${icon}-icon`} />
       </li>
     ));
   };
@@ -653,6 +653,7 @@ class HomePage extends React.Component {
                       fileInput={this.fileInput}
                       appCount={currentFolder.count}
                       showTemplateLibraryModal={this.showTemplateLibraryModal}
+                      darkMode={this.props.darkMode}
                     />
                     <AppList
                       apps={apps}

@@ -263,7 +263,11 @@ export function CodeHinter({
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
-            <ToolTip label={paramLabel} meta={fieldMeta} />
+            <ToolTip
+              label={paramLabel}
+              meta={fieldMeta}
+              labelClass={`form-label ${darkMode && 'color-whitish-darkmode'}`}
+            />
           </div>
         )}
         <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
@@ -371,7 +375,7 @@ const PopupIcon = ({ callback, icon, tip }) => {
       >
         <img
           className="svg-icon m-2 popup-btn"
-          src={`/assets/images/icons/${icon}.svg`}
+          src={`assets/images/icons/${icon}.svg`}
           width="12"
           height="12"
           onClick={(e) => {

@@ -144,7 +144,7 @@ export const Map = function Map({
           top: height * 0.5 - 50,
         }}
       >
-        <img className="mx-2" src="/assets/images/icons/marker.svg" width="24" height="64" />
+        <img className="mx-2" src="assets/images/icons/marker.svg" width="24" height="64" />
       </div>
       <LoadScript googleMapsApiKey={window.public_config.GOOGLE_MAPS_API_KEY} libraries={['places']}>
         <GoogleMap
@@ -163,7 +163,11 @@ export const Map = function Map({
         >
           {canSearch && (
             <Autocomplete onPlaceChanged={onPlaceChanged} onLoad={onAutocompleteLoad}>
-              <input type="text" placeholder="Search" className="place-search-input" />
+              <input
+                type="text"
+                placeholder="Search"
+                className={`place-search-input ${darkMode && 'text-light bg-dark dark-theme-placeholder'}`}
+              />
             </Autocomplete>
           )}
           {Array.isArray(markers) && (

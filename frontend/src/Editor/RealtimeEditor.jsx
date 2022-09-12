@@ -14,9 +14,18 @@ const ydoc = new Y.Doc();
 const getWebsocketUrl = () => {
   const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
   const re = /https?:\/\//g;
-  if (re.test(config.apiUrl)) return `${protocol}://${config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '')}`;
 
-  return `${protocol}://${window.location.host}`;
+  const apiUrlStartsWithProtocol = config.apiUrl.startsWith('http');
+
+  let url;
+
+  if (apiUrlStartsWithProtocol) {
+    url = `${config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '')}`;
+  } else {
+    url = `${window.location.host}${config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '')}`;
+  }
+
+  return `${protocol}://${url}`;
 };
 
 export const RealtimeEditor = (props) => {

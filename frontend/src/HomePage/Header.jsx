@@ -12,6 +12,7 @@ export default function Header({
   createApp,
   showTemplateLibraryModal,
   fileInput,
+  darkMode,
 }) {
   return (
     <div className="row">
@@ -21,7 +22,7 @@ export default function Header({
         </h2>
       </div>
       <div className="col-8 ms-auto d-print-none d-flex flex-row justify-content-end">
-        <SearchBox onSubmit={onSearchSubmit} />
+        <SearchBox onSubmit={onSearchSubmit} darkMode={darkMode} />
         {canCreateApp() && (
           <>
             {canCreateApp() && (

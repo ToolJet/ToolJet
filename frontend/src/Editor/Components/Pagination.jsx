@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
-export const Pagination = ({ height, properties, styles, exposedVariables, setExposedVariable, fireEvent }) => {
+export const Pagination = ({
+  height,
+  properties,
+  styles,
+  exposedVariables,
+  setExposedVariable,
+  fireEvent,
+  darkMode,
+}) => {
   const { visibility, disabledState } = styles;
   const [currentPage, setCurrentPage] = useState(() => properties?.defaultPageIndex ?? 1);
 
@@ -62,25 +70,34 @@ export const Pagination = ({ height, properties, styles, exposedVariables, setEx
           currentPage={currentPage}
           totalPages={properties.numberOfPages}
           handleOnClick={gotoFirstPage}
+          darkMode={darkMode}
         />
         <Pagination.Operator
           operator="<"
           currentPage={currentPage}
           totalPages={properties.numberOfPages}
           handleOnClick={gotoPreviousPage}
+          darkMode={darkMode}
         />
-        <Pagination.PageLinks currentPage={currentPage} totalPages={properties.numberOfPages} callback={gotoPage} />
+        <Pagination.PageLinks
+          currentPage={currentPage}
+          totalPages={properties.numberOfPages}
+          callback={gotoPage}
+          darkMode={darkMode}
+        />
         <Pagination.Operator
           operator=">"
           currentPage={currentPage}
           totalPages={properties.numberOfPages}
           handleOnClick={gotoNextPage}
+          darkMode={darkMode}
         />
         <Pagination.Operator
           operator=">>"
           currentPage={currentPage}
           totalPages={properties.numberOfPages}
           handleOnClick={gotoLastPage}
+          darkMode={darkMode}
         />
       </ul>
     </div>
@@ -180,7 +197,7 @@ function getOperator(operator) {
   }
 }
 
-const Operator = ({ operator, currentPage, totalPages, handleOnClick }) => {
+const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }) => {
   const getDisableCls = (operator, currentPage, totalPages) => {
     if (operator == '<<' || operator == '<') {
       return currentPage === 1 ? 'disabled' : '';
@@ -191,7 +208,7 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick }) => {
   return (
     <React.Fragment>
       <li className={`page-item ${getDisableCls(operator, currentPage, totalPages)}`}>
-        <a style={{ cursor: 'pointer' }} className="page-link" onClick={handleOnClick}>
+        <a style={{ cursor: 'pointer' }} className={`page-link ${darkMode && 'text-light'}`} onClick={handleOnClick}>
           {getOperator(operator)}
         </a>
       </li>
@@ -199,7 +216,7 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick }) => {
   );
 };
 
-const PageLinks = ({ currentPage, totalPages, callback }) => {
+const PageLinks = ({ currentPage, totalPages, callback, darkMode }) => {
   return Array.from(Array(totalPages).keys()).map((index) => {
     const pageNumber = index + 1;
     return (
@@ -208,7 +225,7 @@ const PageLinks = ({ currentPage, totalPages, callback }) => {
         onClick={() => callback(pageNumber)}
         className={`page-item ${currentPage === pageNumber ? 'active' : ''}`}
       >
-        <a className="page-link">{pageNumber}</a>
+        <a className={`page-link ${darkMode && 'text-light'}`}>{pageNumber}</a>
       </li>
     );
   });

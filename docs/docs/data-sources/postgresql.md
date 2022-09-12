@@ -22,11 +22,9 @@ ToolJet requires the following to connect to your PostgreSQL database.
 
 It is recommended to create a new PostgreSQL database user so that you can control the access levels of ToolJet.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - PostgreSQL](/img/datasource-reference/postgresql/pgconnect.png)
+<img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnect.png" alt="ppg connect" />
 
-</div>
 
 Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
 
@@ -40,11 +38,9 @@ Select SQL mode from the dropdown and enter the query in the editor. Click on th
 
 **NOTE**: Query should be saved before running.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - PostgreSQL](/img/datasource-reference/postgresql/pg-sql.png)
+<img className="screenshot-full" src="/img/datasource-reference/postgresql/pg-sql.png" alt="ppg sql" />
 
-</div>
 
 #### GUI mode
 
@@ -52,11 +48,9 @@ Select GUI mode from the dropdown and then choose the operation **Bulk update us
 
 Click on the `run` button to run the query. **NOTE**: Query should be saved before running.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - PostgreSQL](/img/datasource-reference/postgresql/pg-gui.png)
+<img className="screenshot-full" src="/img/datasource-reference/postgresql/pg-gui.png" alt="ppg gui" />
 
-</div>
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
