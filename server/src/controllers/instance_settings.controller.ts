@@ -19,7 +19,7 @@ export class InstanceSettingsController {
   @Post()
   async create(@Body() body: CreateInstanceSettingsDto) {
     const result = await this.instanceSettingsService.create(body);
-    return decamelizeKeys({ variable: result });
+    return decamelizeKeys({ setting: result });
   }
 
   @UseGuards(JwtAuthGuard)
