@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export const ButtonGroup = function Button({ height, properties, styles, fireEvent, setExposedVariable }) {
+export const ButtonGroup = function Button({ height, properties, styles, fireEvent, setExposedVariable, darkMode }) {
   const { values, labels, label, defaultSelected, multiSelection } = properties;
   const {
     backgroundColor,
@@ -61,7 +61,7 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
   };
   return (
     <div className="widget-buttongroup" style={{ height }}>
-      {label && <p className="widget-buttongroup-label">{label}</p>}
+      {label && <p className={`widget-buttongroup-label ${darkMode && 'text-light'}`}>{label}</p>}
       <div>
         {data?.map((item, index) => (
           <button

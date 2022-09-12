@@ -19,14 +19,16 @@ ToolJet requires the following to connect to your Elasticsearch cluster:
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - Elasticsearch](/img/datasource-reference/elasticsearch/connect.png)
+<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/connect.png" alt="Elastic connect" />
+
 
 </div>
 
 Elastic search datasource is also providing an option for connecting services with ssl certificates. 
 - You can either use CA / Client certificates option. 
   
-![ToolJet - Data Source - Elasticsearch - SSL](/img/datasource-reference/elasticsearch/ssl.png)
+<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/ssl.png" alt="Elastic ssl" />
+
 
 
 ## Querying Elasticsearch 
@@ -36,7 +38,8 @@ Select the operation that you want to perform on your Elasticsearch cluster and 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - Elasticsearch](/img/datasource-reference/elasticsearch/query.png)
+<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/query.png" alt="Elastic query" />
+
 
 </div>
 
@@ -50,38 +53,28 @@ Query results can be transformed using transformations. Read our transformations
 
 This operation allows you to execute a search query and get back search hits that match the query. Read the Elasticsearch's `Search` guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html)**.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - Elasticsearch](/img/datasource-reference/elasticsearch/elastic-search.png)
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/elastic-search.png" alt="Elastic search" />
 
 #### Index a document
 
 This operation allows you to add a JSON document to the specified data stream or index. Read the Elasticsearch's `Index` guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html)**.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - Elasticsearch](/img/datasource-reference/elasticsearch/index.png)
+<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/index.png" alt="Elastic index"/>
 
-</div>
 
 #### Get a document
 
 This operation allows you to retrieve the specified JSON document from the index. Read the Elasticsearch's `Get` guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html)**.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - Elasticsearch](/img/datasource-reference/elasticsearch/get.png)
+<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/get.png"  alt="Elastic get"/>
 
-</div>
 
 #### Update a document
 
 This operation allows to update a document using the specified script. Read the Elasticsearch's `Update` guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html)**.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data Source - Elasticsearch](/img/datasource-reference/elasticsearch/update.png)
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/elasticsearch/update.png" alt="Elastic update" />
