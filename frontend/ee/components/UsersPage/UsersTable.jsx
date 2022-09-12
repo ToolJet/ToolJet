@@ -2,6 +2,7 @@ import React from 'react';
 import { Pagination } from '@/_components';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Avatar from '../../../src/_ui/Avatar';
+import Skeleton from 'react-loading-skeleton';
 
 const UsersTable = ({
   isLoading,
@@ -52,7 +53,7 @@ const UsersTable = ({
               <tr>
                 <th data-cy="name-title">Name</th>
                 <th data-cy="email-title">Email</th>
-                {users && users[0]?.status && <th data-cy="status-title">Status</th>}
+                {users && users[0]?.status ? <th data-cy="status-title">Status</th> : <th className="w-1"></th>}
                 <th className="w-1"></th>
               </tr>
             </thead>
@@ -61,24 +62,24 @@ const UsersTable = ({
                 {Array.from(Array(4)).map((_item, index) => (
                   <tr key={index}>
                     <td className="col-2 p-3">
-                      <div className="row">
-                        <div className="skeleton-image col-auto" style={{ width: '25px', height: '25px' }}></div>
-                        <div className="skeleton-line w-10 col mx-3"></div>
+                      <div className="d-flex align-items-center">
+                        <Skeleton circle="15%" className="col-auto" style={{ width: '35px', height: '35px' }} />
+                        <Skeleton className="mx-3" width={100} />
                       </div>
                     </td>
                     <td className="col-4 p-3">
-                      <div className="skeleton-line w-10"></div>
+                      <Skeleton />
                     </td>
                     {users && users[0]?.status && (
                       <td className="col-2 p-3">
-                        <div className="skeleton-line"></div>
+                        <Skeleton />
                       </td>
                     )}
                     <td className="text-muted col-auto col-1 pt-3">
-                      <div className="skeleton-line"></div>
+                      <Skeleton />
                     </td>
                     <td className="text-muted col-auto col-1 pt-3">
-                      <div className="skeleton-line"></div>
+                      <Skeleton />
                     </td>
                   </tr>
                 ))}
