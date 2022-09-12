@@ -5,9 +5,9 @@
   "type": "api",
   "defaults": {},
   "properties": {
-    "mode": {
-      "label": "",
-      "key": "mode",
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for mode",
       "list": [
