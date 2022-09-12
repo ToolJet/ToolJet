@@ -134,9 +134,9 @@ export class OrganizationsService {
     return organizationUsers?.map((orgUser) => {
       return {
         email: orgUser.user.email,
-        firstName: orgUser.user.firstName,
-        lastName: orgUser.user.lastName,
-        name: `${orgUser.user.firstName} ${orgUser.user.lastName}`,
+        firstName: orgUser.user?.firstName,
+        lastName: orgUser.user?.lastName,
+        name: `${orgUser.user?.firstName} ${orgUser.user?.lastName}`,
         id: orgUser.id,
         userId: orgUser.user.id,
       };
@@ -181,6 +181,7 @@ export class OrganizationsService {
         userId: orgUser.user.id,
         role: orgUser.role,
         status: orgUser.status,
+        avatarId: orgUser.user.avatarId,
         ...(isAdmin && orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
         ...(this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
         this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' &&

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pagination } from '@/_components';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import Avatar from '../../../src/_ui/Avatar';
 
 const UsersTable = ({
   isLoading,
@@ -28,7 +29,7 @@ const UsersTable = ({
   React.useEffect(() => {
     window.addEventListener('resize', setWidth);
     return () => window.removeEventListener('resize', setWidth);
-  });
+  },[]);
 
   React.useEffect(() => {
     setWidth();
@@ -86,10 +87,7 @@ const UsersTable = ({
                 {users.map((user) => (
                   <tr key={user.id}>
                     <td>
-                      <span className="avatar bg-azure-lt avatar-sm" data-cy="user-avatar">
-                        {user.first_name ? user.first_name[0] : ''}
-                        {user.last_name ? user.last_name[0] : ''}
-                      </span>
+                      <Avatar text={`${user.first_name ? user.first_name[0] : ''}${user.last_name ? user.last_name[0] : ''}`} bgColorClass='bg-azure-lt'/>
                       <span
                         className="mx-3"
                         style={{

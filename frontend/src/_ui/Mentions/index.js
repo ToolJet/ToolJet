@@ -18,7 +18,7 @@ const Mentions = ({ searchUser, value = '', setValue, setMentionedUsers, placeho
     return () => {
       debouncedResults.cancel();
     };
-  });
+  }, []);
 
   return (
     <MentionsInput
