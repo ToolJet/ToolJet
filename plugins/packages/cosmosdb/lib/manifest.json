@@ -1,0 +1,48 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "CosmosDB datasource",
+  "description": "A schema defining CosmosDB datasource",
+  "type": "database",
+  "source": {
+    "name": "CosmosDB",
+    "kind": "cosmosdb",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "endpoint": {
+        "type": "string"
+      },
+      "key": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "endpoint": {
+      "value": ""
+    },
+    "key": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "endPoint": {
+      "label": "End point",
+      "key": "endpoint",
+      "type": "text",
+      "description": "https://your-account.documents.azure.com"
+    },
+    "key": {
+      "label": "Key",
+      "key": "key",
+      "type": "password",
+      "description": "Enter your key"
+    }
+  },
+  "required": ["endpoint", "key"]
+}

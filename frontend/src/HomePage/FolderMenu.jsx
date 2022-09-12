@@ -48,7 +48,7 @@ export const FolderMenu = function FolderMenu({
       }
     >
       <div className={`d-grid menu-ico menu-ico`}>
-        <img className="svg-icon" src="/assets/images/icons/three-dots.svg" data-cy="folder-card-menu-icon" />
+        <img className="svg-icon" src="assets/images/icons/three-dots.svg" data-cy="folder-card-menu-icon" />
       </div>
     </OverlayTrigger>
   );

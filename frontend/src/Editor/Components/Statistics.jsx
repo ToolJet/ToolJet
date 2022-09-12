@@ -96,12 +96,12 @@ export const Statistics = function Statistics({ width, height, properties, style
               <div className="d-flex flex-row justify-content-center align-items-baseline">
                 {secondarySignDisplay !== 'negative' ? (
                   <img
-                    src="/assets/images/icons/widgets/upstatistics.svg"
+                    src="assets/images/icons/widgets/upstatistics.svg"
                     style={{ ...marginStyle, marginRight: '6.5px' }}
                   />
                 ) : (
                   <img
-                    src="/assets/images/icons/widgets/downstatistics.svg"
+                    src="assets/images/icons/widgets/downstatistics.svg"
                     style={{ ...marginStyle, marginRight: '6.5px' }}
                   />
                 )}

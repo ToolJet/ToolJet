@@ -322,7 +322,7 @@ export const FilePicker = ({
                       clearSelectedFiles(index);
                     }}
                   >
-                    <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
+                    <img src="assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
                   </button>
                 </div>
               </>

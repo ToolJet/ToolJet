@@ -9,8 +9,9 @@ import {
 import { Server } from 'ws';
 import { AuthService } from 'src/services/auth.service';
 import { isEmpty } from 'lodash';
+import { maybeSetSubPath } from '../helpers/utils.helper';
 
-@WebSocketGateway({ path: '/ws' })
+@WebSocketGateway({ path: maybeSetSubPath('/ws') })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private authService: AuthService) {}
   @WebSocketServer()
