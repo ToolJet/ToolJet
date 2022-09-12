@@ -40,6 +40,10 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
           event.stopPropagation();
           fireEvent('onClick');
         }}
+        onMouseMove={(event) => {
+          event.stopPropagation();
+          fireEvent('onHover');
+        }}
         data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       >
         {label}

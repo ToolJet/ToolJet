@@ -406,6 +406,7 @@ export const widgets = [
     },
     events: {
       onClick: { displayName: 'On click' },
+      onHover: { displayName: 'On hover' },
     },
     styles: {
       backgroundColor: {
