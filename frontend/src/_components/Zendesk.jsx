@@ -9,7 +9,7 @@ const Zendesk = ({ optionchanged, createDataSource, options, isSaving, selectedD
 
   const { subdomain, client_secret, client_id } = options;
 
-  function authGoogle() {
+  function authZendesk() {
     const provider = 'zendesk';
     setAuthStatus('waiting_for_url');
 
@@ -118,7 +118,7 @@ const Zendesk = ({ optionchanged, createDataSource, options, isSaving, selectedD
             <Button
               className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
               disabled={isSaving}
-              onClick={() => authGoogle()}
+              onClick={() => authZendesk()}
             >
               {selectedDataSource.id ? 'Reconnect' : 'Connect'} to Zendesk
             </Button>
