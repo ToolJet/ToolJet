@@ -29,7 +29,8 @@ const UsersTable = ({
   React.useEffect(() => {
     window.addEventListener('resize', setWidth);
     return () => window.removeEventListener('resize', setWidth);
-  },[]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   React.useEffect(() => {
     setWidth();
@@ -87,7 +88,10 @@ const UsersTable = ({
                 {users.map((user) => (
                   <tr key={user.id}>
                     <td>
-                      <Avatar text={`${user.first_name ? user.first_name[0] : ''}${user.last_name ? user.last_name[0] : ''}`} bgColorClass='bg-azure-lt'/>
+                      <Avatar
+                        avatarId={user.avatar_id}
+                        text={`${user.first_name ? user.first_name[0] : ''}${user.last_name ? user.last_name[0] : ''}`}
+                      />
                       <span
                         className="mx-3"
                         style={{

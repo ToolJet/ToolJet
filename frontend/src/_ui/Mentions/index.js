@@ -18,6 +18,7 @@ const Mentions = ({ searchUser, value = '', setValue, setMentionedUsers, placeho
     return () => {
       debouncedResults.cancel();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
