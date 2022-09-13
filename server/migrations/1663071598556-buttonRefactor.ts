@@ -17,6 +17,7 @@ export class buttonRefactor1663071598556 implements MigrationInterface {
           if (component.component.component === 'Button') {
             component.component.definition.properties.disabledState = { value: false, fxActive: true };
             component.component.definition.properties.visibility = { value: true, fxActive: true };
+            component.component.definition.properties.loadingState = { value: false, fxActive: true };
             components[componentId] = {
               ...component,
               component: {
