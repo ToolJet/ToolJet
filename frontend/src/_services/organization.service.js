@@ -15,9 +15,9 @@ export const organizationService = {
 function getUsers(page, options) {
   const requestOptions = { method: 'GET', headers: authHeader() };
   return fetch(
-    `${config.apiUrl}/organizations/users?page=${page}&${options?.email ? `email=${options.email}` : ''}&${
-      options?.firstName ? `firstName=${options.firstName}` : ''
-    }&${options?.lastName ? `lastName=${options.lastName}` : ''}`,
+    `${config.apiUrl}/organizations/users?page=${page}${options?.email ? `&email=${options.email}` : ''}${
+      options?.firstName ? `&firstName=${options.firstName}` : ''
+    }${options?.lastName ? `&lastName=${options.lastName}` : ''}`,
     requestOptions
   ).then(handleResponse);
 }

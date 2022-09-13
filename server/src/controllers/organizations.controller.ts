@@ -41,8 +41,9 @@ export class OrganizationsController {
       ...(firstName && { firstName }),
       ...(lastName && { lastName }),
     };
-    const users = await this.organizationsService.fetchUsers(user, page, filterOptions);
     const usersCount = await this.organizationsService.usersCount(user, filterOptions);
+    let users = [];
+    if (usersCount > 0) users = await this.organizationsService.fetchUsers(user, page, filterOptions);
 
     const meta = {
       total_pages: Math.ceil(usersCount / 10),

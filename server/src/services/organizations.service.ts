@@ -143,8 +143,8 @@ export class OrganizationsService {
     });
   }
 
-  async fetchUsers(user: any, page: number, options: any): Promise<FetchUserResponse[]> {
-    const organizationUsers = await createQueryBuilder(OrganizationUser, 'organization_user')
+  organizationUsersQuery(user: any, options: any) {
+    return createQueryBuilder(OrganizationUser, 'organization_user')
       .innerJoinAndSelect('organization_user.user', 'user')
       .where('organization_user.organization_id = :organizationId', {
         organizationId: user.organizationId,
@@ -164,7 +164,11 @@ export class OrganizationsService {
               lastName: `%${options?.lastName.toLowerCase()}%`,
             });
         })
-      )
+      );
+  }
+
+  async fetchUsers(user: any, page: number, options: any): Promise<FetchUserResponse[]> {
+    const organizationUsers = await this.organizationUsersQuery(user, options)
       .take(10)
       .skip(10 * (page - 1))
       .getMany();
@@ -193,28 +197,7 @@ export class OrganizationsService {
   }
 
   async usersCount(user: any, options: any): Promise<number> {
-    return await createQueryBuilder(OrganizationUser, 'organization_user')
-      .innerJoinAndSelect('organization_user.user', 'user')
-      .where('organization_user.organization_id = :organizationId', {
-        organizationId: user.organizationId,
-      })
-      .andWhere(
-        new Brackets((qb) => {
-          if (options?.email)
-            qb.where('lower(user.email) like :email', {
-              email: `%${options?.email.toLowerCase()}%`,
-            });
-          if (options?.firstName)
-            qb.where('lower(user.firstName) like :firstName', {
-              firstName: `%${options?.firstName.toLowerCase()}%`,
-            });
-          if (options?.lastName)
-            qb.where('lower(user.lastName) like :lastName', {
-              lastName: `%${options?.lastName.toLowerCase()}%`,
-            });
-        })
-      )
-      .getCount();
+    return await this.organizationUsersQuery(user, options).getCount();
   }
 
   async fetchOrganizations(user: any): Promise<Organization[]> {
