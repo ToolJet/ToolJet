@@ -130,8 +130,8 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
       <div className="input-icon">
         <input
           type="text"
-          className="form-control mt-3 mb-2"
-          placeholder={t('globals.search') + '...'}
+          className={`form-control mt-3 mb-2 ${darkMode && 'dark-theme-placeholder'}`}
+          placeholder={t('globals.search', 'Search') + '...'}
           value={searchQuery}
           onChange={(e) => handleSearchQueryChange(e)}
           data-cy="widget-search-box"

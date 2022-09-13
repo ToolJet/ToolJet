@@ -4,10 +4,10 @@ import CheckboxTree from 'react-checkbox-tree';
 // eslint-disable-next-line import/no-unresolved
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 
-export const TreeSelect = ({ height, properties, styles, setExposedVariable, fireEvent }) => {
+export const TreeSelect = ({ height, properties, styles, setExposedVariable, fireEvent, darkMode }) => {
   const { label, data, checkedData, expandedData } = properties;
-  const { visibility, disabledState, textColor, checkboxColor } = styles;
-
+  const { visibility, disabledState, checkboxColor } = styles;
+  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checked, setChecked] = useState(checkedData);
   const [expanded, setExpanded] = useState(expandedData);
 
