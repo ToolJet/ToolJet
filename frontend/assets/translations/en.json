@@ -183,7 +183,7 @@
                 "component": "Component",
                 "addHandler": "+ Add handler",
                 "addEventHandler": "+ Add event handler",
-                "emptyMessage": "This {{componentName}} doesn't have any event handlersss"
+                "emptyMessage": "This {{componentName}} doesn't have any event handlers"
             }
         }
     },
@@ -480,7 +480,7 @@
             "showOnDesktop": "Show on desktop",
             "showOnMobile": "Show on mobile",
             "showLoadingState": "Show loading state",
-            "backgroundColor": "Background color",
+            "backgroundColor": "Background Color",
             "textColor": "Text color",
             "loaderColor": "Loader color",
             "defaultValue": "Default Value",
@@ -510,7 +510,7 @@
             "buttonText": "Button Text", 
             "click": "Click", 
             "setText": "Set text", 
-            "text": "text", 
+            "text": "Text", 
             "markerColor": "Marker color", 
             "showAxes": "Show axes", 
             "showGridLines": "Show grid lines", 
@@ -615,7 +615,7 @@
             "numberOfPages": "Number of pages", 
             "defaultPageIndex": "Default page index", 
             "progress": "Progress", 
-            "color": "color", 
+            "color": "Color", 
             "strokeWidth": "Stroke Width", 
             "counterClockwise": "Counter Clockwise", 
             "circleRatio": "Circle Ratio", 
