@@ -13,6 +13,10 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
     clearIconPressed();
   };
 
+  const handleEnterKey = (e) => {
+    if (e.key === 'Enter') filterList(options);
+  };
+
   return (
     <div className="container-xl">
       <div className="row mb-3">
@@ -22,6 +26,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             className="form-control"
             placeholder="Email"
             name="email"
+            onKeyPress={handleEnterKey}
             onChange={valuesChanged}
             value={options.email}
           />
@@ -32,6 +37,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             className="form-control"
             placeholder="First Name"
             name="firstName"
+            onKeyPress={handleEnterKey}
             onChange={valuesChanged}
             value={options.firstName}
           />
@@ -42,6 +48,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
             className="form-control"
             placeholder="Last Name"
             name="lastName"
+            onKeyPress={handleEnterKey}
             onChange={valuesChanged}
             value={options.lastName}
           />
