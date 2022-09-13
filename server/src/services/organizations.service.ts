@@ -164,7 +164,8 @@ export class OrganizationsService {
               lastName: `%${options?.lastName.toLowerCase()}%`,
             });
         })
-      );
+      )
+      .orderBy('user.createdAt', 'ASC');
   }
 
   async fetchUsers(user: any, page: number, options: any): Promise<FetchUserResponse[]> {
