@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
+import queryString from 'query-string';
 
 export const organizationService = {
   getUsers,
@@ -14,12 +15,10 @@ export const organizationService = {
 
 function getUsers(page, options) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(
-    `${config.apiUrl}/organizations/users?page=${page}${options?.email ? `&email=${options.email}` : ''}${
-      options?.firstName ? `&firstName=${options.firstName}` : ''
-    }${options?.lastName ? `&lastName=${options.lastName}` : ''}`,
-    requestOptions
-  ).then(handleResponse);
+  const { firstName, lastName, email } = options;
+  const query = queryString.stringify({ page, firstName, lastName, email });
+
+  return fetch(`${config.apiUrl}/organizations/users?${query}`, requestOptions).then(handleResponse);
 }
 
 function getUsersByValue(searchInput) {
