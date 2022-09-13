@@ -476,7 +476,6 @@ export const widgets = [
       },
       properties: {
         text: { value: `Button` },
-        visible: { value: '{{true}}' },
         loadingState: { value: `{{false}}`, fxActive: true },
         visibility: { value: '{{true}}', fxActive: true },
         disabledState: { value: '{{false}}', fxActive: true },
