@@ -3399,6 +3399,12 @@ input:focus-visible {
       color: #656d77;
     }
   }
+
+  .page-item {
+    a.page-link {
+      color: white;
+    }
+  }
 }
 
 .main-wrapper {
