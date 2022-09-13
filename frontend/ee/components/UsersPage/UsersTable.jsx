@@ -24,8 +24,10 @@ const UsersTable = ({
     return window.innerHeight - elementHeight;
   }
 
-  const setWidth = () =>
-    (document.querySelector('.users-pagination').style.width = `${tableRef.current.offsetWidth}px`);
+  const setWidth = () => {
+    const tableCardWidth = document.getElementById('users-table-card')?.offsetWidth;
+    document.querySelector('.users-pagination').style.width = `${tableCardWidth}px`;
+  };
 
   React.useEffect(() => {
     window.addEventListener('resize', setWidth);
@@ -40,7 +42,7 @@ const UsersTable = ({
 
   return (
     <div className="container-xl" style={{ marginBottom: '2rem' }}>
-      <div className="card">
+      <div className="card" id="users-table-card">
         <div
           className="card-table fixedHeader table-responsive table-bordered"
           ref={tableRef}
