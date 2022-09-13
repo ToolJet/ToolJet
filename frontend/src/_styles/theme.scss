@@ -44,6 +44,13 @@ button {
   }
 }
 
+.rc-slider-track {
+  background-color: $primary;
+}
+.rc-slider-handle {
+  border-color: $primary;
+}
+
 .auth-main {
   height: 1000px;
   padding-top: calc(0.25 * 100vh);
