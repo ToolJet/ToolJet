@@ -336,8 +336,11 @@ button {
         border-width: 0px 0px 1px 0px;
       }
     }
-    .card-body {
-      padding: 1rem 0rem
+
+    .left-sidebar-inspector {
+      .card-body {
+        padding: 1rem 0rem 1rem 1rem;
+      }
     }
   }
 
