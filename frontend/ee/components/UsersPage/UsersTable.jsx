@@ -17,7 +17,7 @@ const UsersTable = ({
   pageChanged,
   darkMode,
 }) => {
-  const tableRef = React.createRef(null);
+  const tableRef = React.useRef(null);
 
   function calculateOffset() {
     const elementHeight = tableRef.current.getBoundingClientRect().top;

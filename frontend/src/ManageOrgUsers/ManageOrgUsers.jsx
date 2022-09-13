@@ -24,6 +24,7 @@ class ManageOrgUsers extends React.Component {
         total_count: 0,
       },
       currentPage: 1,
+      options: {},
     };
   }
 
@@ -60,6 +61,7 @@ class ManageOrgUsers extends React.Component {
 
   fetchUsers = (page = 1, options = {}) => {
     this.setState({
+      options,
       isLoading: true,
       currentPage: page,
     });
@@ -175,7 +177,7 @@ class ManageOrgUsers extends React.Component {
   };
 
   pageChanged = (page) => {
-    this.fetchUsers(page);
+    this.fetchUsers(page, this.state.options);
   };
 
   filterList = (options) => {
