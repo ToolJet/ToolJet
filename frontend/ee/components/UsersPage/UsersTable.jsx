@@ -39,7 +39,7 @@ const UsersTable = ({
   }, [tableRef]);
 
   return (
-    <div className="container-xl">
+    <div className="container-xl" style={{ marginBottom: '2rem' }}>
       <div className="card">
         <div
           className="card-table fixedHeader table-responsive table-bordered"
@@ -48,7 +48,7 @@ const UsersTable = ({
             maxHeight: tableRef.current && calculateOffset(),
           }}
         >
-          <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
+          <table data-testid="usersTable" className="table table-vcenter" disabled={true} style={{ height: '100%' }}>
             <thead>
               <tr>
                 <th data-cy="name-title">Name</th>
