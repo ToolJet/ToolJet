@@ -1,6 +1,6 @@
 import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
-import { Header } from '@/_components';
+import { Header, Pagination } from '@/_components';
 import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
 import urlJoin from 'url-join';
@@ -324,19 +324,34 @@ class ManageOrgUsers extends React.Component {
             )}
 
             {!showNewUserForm && users?.length !== 0 && (
-              <UsersTable
-                isLoading={isLoading}
-                users={users}
-                unarchivingUser={unarchivingUser}
-                archivingUser={archivingUser}
-                meta={meta}
-                generateInvitationURL={this.generateInvitationURL}
-                invitationLinkCopyHandler={this.invitationLinkCopyHandler}
-                unarchiveOrgUser={this.unarchiveOrgUser}
-                archiveOrgUser={this.archiveOrgUser}
-                pageChanged={this.pageChanged}
-                darkMode={this.props.darkMode}
-              />
+              <>
+                <UsersTable
+                  isLoading={isLoading}
+                  users={users}
+                  unarchivingUser={unarchivingUser}
+                  archivingUser={archivingUser}
+                  meta={meta}
+                  generateInvitationURL={this.generateInvitationURL}
+                  invitationLinkCopyHandler={this.invitationLinkCopyHandler}
+                  unarchiveOrgUser={this.unarchiveOrgUser}
+                  archiveOrgUser={this.archiveOrgUser}
+                  pageChanged={this.pageChanged}
+                  darkMode={this.props.darkMode}
+                />
+                <div className="users-pagination">
+                  <div className="container-xl">
+                    {meta.total_count > 10 && (
+                      <Pagination
+                        currentPage={meta.current_page}
+                        count={meta.total_count}
+                        pageChanged={this.pageChanged}
+                        itemsPerPage={10}
+                        darkMode={this.props.darkMode}
+                      />
+                    )}
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>

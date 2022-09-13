@@ -50,7 +50,7 @@ const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
           <button type="submit" className="btn btn-primary" onClick={() => filterList(options)}>
             Filter
           </button>
-          <div className="d-flex align-items-center" style={{ cursor: 'pointer' }} onClick={clearTextAndResult}>
+          <div className="d-flex align-items-center cursor-pointer" onClick={clearTextAndResult}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon icon-tabler icon-tabler-x"

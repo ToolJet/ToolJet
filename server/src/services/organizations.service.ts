@@ -174,8 +174,6 @@ export class OrganizationsService {
       .skip(10 * (page - 1))
       .getMany();
 
-    const isAdmin = await this.usersService.hasGroup(user, 'admin');
-
     return organizationUsers?.map((orgUser) => {
       return {
         email: orgUser.user.email,
@@ -187,7 +185,7 @@ export class OrganizationsService {
         role: orgUser.role,
         status: orgUser.status,
         avatarId: orgUser.user.avatarId,
-        ...(isAdmin && orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
+        ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
         ...(this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
         this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' &&
         orgUser.user.invitationToken

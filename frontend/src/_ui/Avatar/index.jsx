@@ -1,5 +1,6 @@
 import React from 'react';
 import { userService } from '@/_services';
+import cx from 'classnames';
 
 const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderShape }) => {
   const [avatar, setAvatar] = React.useState();
@@ -22,7 +23,10 @@ const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderSha
         border: borderColor ? `1.5px solid ${borderColor}` : 'none',
         ...(image || avatar ? { backgroundImage: `url(${avatar ?? image})` } : {}),
       }}
-      className={`avatar avatar-sm ${borderShape === 'rounded' ? 'avatar-rounded' : ''} animation-fade`}
+      // className={`avatar avatar-sm ${borderShape === 'rounded' ? 'avatar-rounded' : ''} animation-fade`}
+      className={cx('avatar avatar-sm animation-fade', {
+        'avatar-rounded': borderShape === 'rounded',
+      })}
     >
       {!image && !avatarId && text}
     </span>
