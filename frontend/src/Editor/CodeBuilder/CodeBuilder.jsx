@@ -5,6 +5,7 @@ import { componentTypes } from '../WidgetManager/components';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import { debounce } from 'lodash';
 import Fuse from 'fuse.js';
+import { useTranslation } from 'react-i18next';
 
 export function CodeBuilder({ initialValue, onChange, components, dataQueries }) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -12,6 +13,7 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
   const [currentValue, setCurrentValue] = useState(initialValue);
   const [codeMirrorInstance, setCodeMirrorInstance] = useState(null);
   const [currentWord, setCurrentWord] = useState('');
+  const { t } = useTranslation();
 
   function computeCurrentWord(value, _cursorPosition) {
     const sliced = value
@@ -134,7 +136,7 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
       {showDropdown && (
         <div className="variables-dropdown">
           <div className="card">
-            <div className="group-header p-2">components</div>
+            <div className="group-header p-2">{t('globals.components', 'components')}</div>
             <div className="group-body p-2">
               {Object.keys(components).map((component) => renderComponentVariables(components[component]))}
             </div>

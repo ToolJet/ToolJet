@@ -15,6 +15,7 @@ import { CustomComponent } from './Components/CustomComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
+import { useTranslation } from 'react-i18next';
 
 export const Inspector = ({
   selectedComponentId,
@@ -42,6 +43,7 @@ export const Inspector = ({
   const componentNameRef = useRef(null);
   const [newComponentName, setNewComponentName] = useState(component.component.name);
   const [inputRef, setInputFocus] = useFocus();
+  const { t } = useTranslation();
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
   useHotkeys('escape', () => switchSidebarTab(2));
@@ -79,12 +81,12 @@ export const Inspector = ({
   function handleComponentNameChange(newName) {
     if (component.component.name === newName) return;
     if (newName.length === 0) {
-      toast.error('Widget name cannot be empty');
+      toast.error(t('widget.common.widgetNameEmptyError', 'Widget name cannot be empty'));
       return setInputFocus();
     }
 
     if (!validateComponentName(newName)) {
-      toast.error('Component name already exists');
+      toast.error(t('widget.common.componentNameExistsError', 'Component name already exists'));
       return setInputFocus();
     }
 
@@ -93,7 +95,12 @@ export const Inspector = ({
       newComponent.component.name = newName;
       componentDefinitionChanged(newComponent);
     } else {
-      toast.error('Invalid widget name. Should be unique and only include letters, numbers and underscore.');
+      toast.error(
+        t(
+          'widget.common.invalidWidgetName',
+          'Invalid widget name. Should be unique and only include letters, numbers and underscore.'
+        )
+      );
       setInputFocus();
     }
   }
@@ -335,7 +342,7 @@ export const Inspector = ({
     const items = [];
 
     items.push({
-      title: 'General',
+      title: `${t('widget.common.general', 'General')}`,
       isOpen: false,
       children: (
         <>
@@ -376,7 +383,7 @@ export const Inspector = ({
       />
       <div ref={tabsRef}>
         <Tabs activeKey={key} onSelect={(k) => handleTabSelect(k)} className={`tabs-inspector ${darkMode && 'dark'}`}>
-          <Tab style={{ marginBottom: 100 }} eventKey="properties" title="Properties">
+          <Tab style={{ marginBottom: 100 }} eventKey="properties" title={t('widget.common.properties', 'Properties')}>
             <div className="header py-1 row">
               <div>
                 <div className="input-icon">
@@ -405,7 +412,7 @@ export const Inspector = ({
             </div>
             {getAccordion(componentMeta.component)}
           </Tab>
-          <Tab eventKey="styles" title="Styles">
+          <Tab eventKey="styles" title={t('widget.common.styles', 'Styles')}>
             <div style={{ marginBottom: '6rem' }}>
               <div className="p-3">
                 {Object.keys(componentMeta.styles).map((style) =>
@@ -457,7 +464,9 @@ export const Inspector = ({
           rel="noreferrer"
           data-cy="widget-documentation-link"
         >
-          <small>{componentMeta.name} documentation</small>
+          <small>
+            {t('widget.common.documentation', '{{componentMeta}} documentation', { componentMeta: componentMeta.name })}
+          </small>
         </a>
       </div>
     </div>

@@ -29,6 +29,8 @@ import FxButton from './Elements/FxButton';
 import { ToolTip } from '../Inspector/Elements/Components/ToolTip';
 import { toast } from 'react-hot-toast';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
+import { camelCase } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
 const AllElements = {
   Color,
@@ -92,6 +94,7 @@ export function CodeHinter({
       height: isFocused ? currentHeight : 0,
     },
   });
+  const { t } = useTranslation();
 
   const { variablesExposedForPreview } = useContext(EditorContext);
 
@@ -263,7 +266,11 @@ export function CodeHinter({
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
-            <ToolTip label={paramLabel} meta={fieldMeta} />
+            <ToolTip
+              label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
+              meta={fieldMeta}
+              labelClass={`form-label ${darkMode && 'color-whitish-darkmode'}`}
+            />
           </div>
         )}
         <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>

@@ -2,6 +2,8 @@ import React from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
+// eslint-disable-next-line import/no-unresolved
+import i18next from 'i18next';
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -64,7 +66,7 @@ export const baseComponentProperties = (
   let items = [];
   if (properties.length > 0) {
     items.push({
-      title: 'Properties',
+      title: `${i18next.t('widget.common.properties', 'Properties')}`,
       children: properties.map((property) =>
         renderElement(
           component,
@@ -83,7 +85,7 @@ export const baseComponentProperties = (
 
   if (events.length > 0) {
     items.push({
-      title: 'Events',
+      title: `${i18next.t('widget.common.events', 'Events')}`,
       isOpen: false,
       children: (
         <EventManager
@@ -102,7 +104,7 @@ export const baseComponentProperties = (
 
   if (validations.length > 0) {
     items.push({
-      title: 'Validation',
+      title: `${i18next.t('widget.common.validation', 'Validation')}`,
       children: validations.map((property) =>
         renderElement(
           component,
@@ -120,7 +122,7 @@ export const baseComponentProperties = (
   }
 
   items.push({
-    title: 'General',
+    title: `${i18next.t('widget.common.general', 'General')}`,
     isOpen: false,
     children: (
       <>
@@ -139,7 +141,7 @@ export const baseComponentProperties = (
   });
 
   items.push({
-    title: 'Layout',
+    title: `${i18next.t('widget.common.layout', 'Layout')}`,
     isOpen: false,
     children: (
       <>

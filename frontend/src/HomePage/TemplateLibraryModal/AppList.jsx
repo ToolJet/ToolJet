@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ListGroup } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 
 export default function AppList(props) {
   const { apps, selectedApp, selectApp } = props;
@@ -31,6 +32,7 @@ export default function AppList(props) {
 
 const SearchBoxContainer = ({ onChange, queryString }) => {
   const [searchText, setSearchText] = React.useState(queryString ?? '');
+  const { t } = useTranslation();
 
   const handleChange = (e) => {
     setSearchText(e.target.value);
@@ -103,7 +105,13 @@ const SearchBoxContainer = ({ onChange, queryString }) => {
             </svg>
           </span>
         )}
-        <input type="text" value={searchText} onChange={handleChange} className="form-control" placeholder="Search" />
+        <input
+          type="text"
+          value={searchText}
+          onChange={handleChange}
+          className="form-control"
+          placeholder={t('globals.search', 'Search')}
+        />
       </div>
     </div>
   );

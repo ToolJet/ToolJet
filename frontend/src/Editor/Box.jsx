@@ -61,6 +61,7 @@ import {
 } from './component-properties-resolution';
 import _ from 'lodash';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
+import { useTranslation } from 'react-i18next';
 
 const AllComponents = {
   Button,
@@ -139,6 +140,7 @@ export const Box = function Box({
   dataQueries,
   readOnly,
 }) {
+  const { t } = useTranslation();
   const backgroundColor = yellow ? 'yellow' : '';
 
   let styles = {
@@ -251,7 +253,12 @@ export const Box = function Box({
       delay={{ show: 500, hide: 0 }}
       trigger={inCanvas && !validatedGeneralProperties.tooltip?.trim() ? null : ['hover', 'focus']}
       overlay={(props) =>
-        renderTooltip({ props, text: inCanvas ? `${validatedGeneralProperties.tooltip}` : `${component.description}` })
+        renderTooltip({
+          props,
+          text: inCanvas
+            ? `${validatedGeneralProperties.tooltip}`
+            : `${t(`widget.${component.name}.description`, component.description)}`,
+        })
       }
     >
       <div
@@ -316,7 +323,9 @@ export const Box = function Box({
                   }}
                 ></div>
               </center>
-              <span className="component-title">{component.displayName}</span>
+              <span className="component-title">
+                {t(`widget.${component.name}.displayName`, component.displayName)}
+              </span>
             </div>
           </div>
         )}
