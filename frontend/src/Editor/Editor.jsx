@@ -863,7 +863,7 @@ class Editor extends React.Component {
         onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col-auto" style={{ width: '28px' }}>
-          {sourceMeta.kind === 'runjs' ? (
+          {(sourceMeta.kind === 'runjs' || sourceMeta.kind === 'tooljetdb') ? (
             <RunjsIcon style={{ height: 25, width: 25 }} />
           ) : (
             getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)

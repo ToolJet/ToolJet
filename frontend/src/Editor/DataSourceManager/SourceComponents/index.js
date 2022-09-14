@@ -18,7 +18,9 @@ export const CloudStorageSources = Object.keys(allManifests).reduce((accumulator
   return accumulator;
 }, []);
 
-export const OtherSources = [RunjsSchema.source];
+const tooljetDbSource = DataBaseSources.find((source) => source.kind === 'postgresql')
+export const OtherSources = [RunjsSchema.source, { ...tooljetDbSource, name: 'ToolJet Db', kind: 'tooljetdb' }];
+console.log({ OtherSources })
 export const DataSourceTypes = [...DataBaseSources, ...ApiSources, ...CloudStorageSources, ...OtherSources];
 
 export const SourceComponents = Object.keys(allManifests).reduce((accumulator, currentValue) => {

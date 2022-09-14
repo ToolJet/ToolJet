@@ -22,6 +22,11 @@ import { GroupPermissionsService } from '@services/group_permissions.service';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
+import { WorkspaceDbSetupService } from '@services/workspace_db_setup.service';
+import { DataSourcesService } from '@services/data_sources.service';
+import { CredentialsService } from '@services/credentials.service';
+import { DataSource } from 'src/entities/data_source.entity';
+import { Credential } from 'src/entities/credential.entity';
 
 @Module({
   imports: [
@@ -35,6 +40,8 @@ import { EncryptionService } from '@services/encryption.service';
       SSOConfigs,
       AppGroupPermission,
       UserGroupPermission,
+      DataSource,
+      Credential,
     ]),
     CaslModule,
     JwtModule.registerAsync({
@@ -58,6 +65,9 @@ import { EncryptionService } from '@services/encryption.service';
     AuthService,
     GroupPermissionsService,
     EncryptionService,
+    WorkspaceDbSetupService,
+    DataSourcesService,
+    CredentialsService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
 })

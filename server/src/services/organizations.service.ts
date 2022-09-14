@@ -5,7 +5,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
-import { createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
+import { createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
@@ -14,6 +14,7 @@ import { OrganizationUsersService } from './organization_users.service';
 import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
+import { WorkspaceDbSetupService } from "./workspace_db_setup.service";
 
 type FetchUserResponse = {
   email: string;
@@ -42,12 +43,14 @@ export class OrganizationsService {
     private groupPermissionService: GroupPermissionsService,
     private encryptionService: EncryptionService,
     private emailService: EmailService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private workspaceDbSetupService: WorkspaceDbSetupService
   ) {}
 
   async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const organization: Organization = await manager.save(
+    let organization: Organization
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      organization = await manager.save(
         manager.create(Organization, {
           ssoConfigs: [
             {
@@ -73,9 +76,11 @@ export class OrganizationsService {
           await this.groupPermissionService.createUserGroupPermission(user.id, groupPermission.id, manager);
         }
       }
-
-      return organization;
     }, manager);
+
+    console.log({ organization })
+    await this.workspaceDbSetupService.perform(getManager(), organization.id);
+    return organization;
   }
 
   async get(id: string): Promise<Organization> {

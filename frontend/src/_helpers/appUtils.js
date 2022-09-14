@@ -897,7 +897,7 @@ export function computeComponentState(_ref, components = {}) {
 }
 
 export const getSvgIcon = (key, height = 50, width = 50) => {
-  const Icon = allSvgs[key];
+  const Icon = (key === 'tooljetdb') ? allSvgs['postgresql'] : allSvgs[key];
 
   return <Icon style={{ height, width }} />;
 };

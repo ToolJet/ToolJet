@@ -73,7 +73,7 @@ export const LeftSidebarInspector = ({
   }, [currentState]);
 
   const queryIcons = Object.entries(currentState['queries']).map(([key, value]) => {
-    if (value.kind === 'runjs') {
+    if (value.kind === 'runjs' || value.kind == 'tooljetdb') {
       return { iconName: key, jsx: () => <RunjsIcon style={{ height: 16, width: 16, marginRight: 12 }} /> };
     }
     const Icon = allSvgs[value.kind];

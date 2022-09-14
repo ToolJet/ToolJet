@@ -485,6 +485,7 @@ let QueryManager = class QueryManager extends React.Component {
                     options: _options,
                     kind: selectedDataSource.kind,
                   };
+
                   previewQuery(this, query, this.props.editorState)
                     .then(() => {
                       this.previewPanelRef.current.scrollIntoView();
@@ -590,7 +591,7 @@ let QueryManager = class QueryManager extends React.Component {
                               color: this.props.darkMode ? 'white' : '#3e525b',
                             }}
                           >
-                            {this.state?.selectedDataSource?.kind === 'runjs' ? (
+                            {['tooljetdb', 'runjs'].includes(this.state?.selectedDataSource?.kind) ? (
                               <RunjsIcon style={{ height: 18, width: 18, marginTop: '-3px' }} />
                             ) : (
                               Icon && <Icon style={{ height: 18, width: 18, marginLeft: 7 }} />
