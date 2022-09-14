@@ -112,24 +112,13 @@ export class OrganizationsService {
     }, manager);
   }
 
-  async fetchUsersByValue(user: any, searchInput: string): Promise<any> {
-    const organizationUsers = await createQueryBuilder(OrganizationUser, 'organization_user')
-      .innerJoinAndSelect('organization_user.user', 'user')
-      .where('organization_user.organization_id = :organizationId', {
-        organizationId: user.organizationId,
-      })
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('lower(user.email) like :email', {
-            email: `%${searchInput.toLowerCase()}%`,
-          })
-            .orWhere('lower(user.firstName) like :firstName', {
-              firstName: `%${searchInput.toLowerCase()}%`,
-            })
-            .orWhere('lower(user.lastName) like :lastName', { lastName: `%${searchInput.toLowerCase()}%` });
-        })
-      )
-      .getMany();
+  async fetchUsersByValue(user: User, searchInput: string): Promise<any> {
+    const options = {
+      email: searchInput,
+      firstName: searchInput,
+      lastName: searchInput,
+    };
+    const organizationUsers = await this.organizationUsersQuery(user, options).getMany();
 
     return organizationUsers?.map((orgUser) => {
       return {
@@ -143,7 +132,7 @@ export class OrganizationsService {
     });
   }
 
-  organizationUsersQuery(user: any, options: any) {
+  organizationUsersQuery(user: User, options: { email?: string; firstName?: string; lastName?: string }) {
     return createQueryBuilder(OrganizationUser, 'organization_user')
       .innerJoinAndSelect('organization_user.user', 'user')
       .where('organization_user.organization_id = :organizationId', {

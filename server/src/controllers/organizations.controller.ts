@@ -7,7 +7,6 @@ import {
   Param,
   Patch,
   Post,
-  Request,
   UseGuards,
   Query,
 } from '@nestjs/common';
@@ -61,9 +60,9 @@ export class OrganizationsController {
 
   @UseGuards(JwtAuthGuard)
   @Get('users/suggest')
-  async getUser(@Request() req, @Query() query) {
+  async getUser(@User() user, @Query() query) {
     const searchInput = query.input;
-    const users = await this.organizationsService.fetchUsersByValue(req.user, searchInput);
+    const users = await this.organizationsService.fetchUsersByValue(user, searchInput);
     const response = {
       users,
     };
