@@ -2,6 +2,7 @@ import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@to
 import { SourceOptions, QueryOptions } from './types';
 import { BigQuery } from '@google-cloud/bigquery';
 const JSON5 = require('json5');
+const _ = require('lodash');
 
 export default class Bigquery implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -13,13 +14,14 @@ export default class Bigquery implements QueryService {
       switch (operation) {
         case 'list_datasets': {
           const [datasets] = await client.getDatasets();
-          result = datasets;
+
+          result = this.sanitizeResponse(datasets, ['metadata.datasetReference']);
           break;
         }
 
         case 'list_tables': {
           const [tables] = await client.dataset(queryOptions.datasetId).getTables();
-          result = tables;
+          result = this.sanitizeResponse(tables, ['metadata.tableReference']);
           break;
         }
 
@@ -165,5 +167,21 @@ export default class Bigquery implements QueryService {
     private_key?: string;
   } {
     return this.parseJSON(configs);
+  }
+
+  private sanitizeResponse(response: object | [], pickFields: string[]): object | [] {
+    if (!response) return response;
+
+    if (Array.isArray(response)) {
+      return response.map((item) => this.sanitizeResponse(item, pickFields));
+    }
+
+    const pickedKeyValue = pickFields.map((field) => _.result(response, field));
+
+    if (pickedKeyValue.length === 1) {
+      return pickedKeyValue[0];
+    }
+
+    return pickedKeyValue;
   }
 }
