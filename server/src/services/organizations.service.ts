@@ -26,6 +26,8 @@ type FetchUserResponse = {
   accountSetupToken?: string;
 };
 
+type UserFilterOptions = { email?: string; firstName?: string; lastName?: string };
+
 @Injectable()
 export class OrganizationsService {
   constructor(
@@ -118,7 +120,7 @@ export class OrganizationsService {
       firstName: searchInput,
       lastName: searchInput,
     };
-    const organizationUsers = await this.organizationUsersQuery(user, options).getMany();
+    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options).getMany();
 
     return organizationUsers?.map((orgUser) => {
       return {
@@ -132,11 +134,11 @@ export class OrganizationsService {
     });
   }
 
-  organizationUsersQuery(user: User, options: { email?: string; firstName?: string; lastName?: string }) {
+  organizationUsersQuery(organizationId: string, options: UserFilterOptions) {
     return createQueryBuilder(OrganizationUser, 'organization_user')
       .innerJoinAndSelect('organization_user.user', 'user')
       .where('organization_user.organization_id = :organizationId', {
-        organizationId: user.organizationId,
+        organizationId,
       })
       .andWhere(
         new Brackets((qb) => {
@@ -157,8 +159,8 @@ export class OrganizationsService {
       .orderBy('user.createdAt', 'ASC');
   }
 
-  async fetchUsers(user: any, page: number, options: any): Promise<FetchUserResponse[]> {
-    const organizationUsers = await this.organizationUsersQuery(user, options)
+  async fetchUsers(user: User, page: number, options: UserFilterOptions): Promise<FetchUserResponse[]> {
+    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options)
       .take(10)
       .skip(10 * (page - 1))
       .getMany();
@@ -184,8 +186,8 @@ export class OrganizationsService {
     });
   }
 
-  async usersCount(user: any, options: any): Promise<number> {
-    return await this.organizationUsersQuery(user, options).getCount();
+  async usersCount(user: User, options: UserFilterOptions): Promise<number> {
+    return await this.organizationUsersQuery(user.organizationId, options).getCount();
   }
 
   async fetchOrganizations(user: any): Promise<Organization[]> {
