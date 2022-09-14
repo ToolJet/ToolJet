@@ -13,6 +13,8 @@ export const TextInput = function TextInput({
 }) {
   const textInputRef = useRef();
 
+  const textColor = darkMode === false && styles.textColor === '#fff' ? '#000' : styles.textColor;
+
   const [loading, setLoading] = useState(properties.loading);
   useEffect(() => setLoading(properties.loading), [properties.loading]);
 
@@ -71,7 +73,6 @@ export const TextInput = function TextInput({
         <React.Fragment>
           <input
             ref={textInputRef}
-            disabled={styles.disabledState}
             onKeyUp={(e) => {
               if (e.key == 'Enter') {
                 setValue(e.target.value);
@@ -100,7 +101,7 @@ export const TextInput = function TextInput({
               darkMode && 'dark-theme-placeholder'
             }`}
             placeholder={properties.placeholder}
-            style={{ height, display: styles.visibility ? '' : 'none', borderRadius: `${styles.borderRadius}px` }}
+            style={{ height, borderRadius: `${styles.borderRadius}px`, color: textColor }}
             value={value}
             data-cy={`draggable-widget-${component.name}`}
           />

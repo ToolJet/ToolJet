@@ -780,6 +780,11 @@ export const widgets = [
       unFocus: { displayName: 'Un focus' },
     },
     styles: {
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: { schema: { type: 'string' } },
+      },
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',
@@ -843,6 +848,7 @@ export const widgets = [
       },
       events: [],
       styles: {
+        textColor: { value: '#fff' },
         borderRadius: { value: '{{0}}' },
       },
     },
