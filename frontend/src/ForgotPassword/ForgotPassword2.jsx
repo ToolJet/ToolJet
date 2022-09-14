@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { validateEmail } from '../_helpers/utils';
 import { authenticationService } from '@/_services';
-import CheckMailInfoScreen from '../successInfoScreen/CheckMailInfoScreen';
+import ForgotPasswordInfoScreen from '../successInfoScreen/ForgotPasswordInfoScreen';
 
 class ForgotPassword2 extends React.Component {
   constructor(props) {
@@ -99,7 +99,7 @@ class ForgotPassword2 extends React.Component {
                       </div>
                     </>
                   ) : (
-                    <CheckMailInfoScreen props={this.props} email={this.state.email} />
+                    <ForgotPasswordInfoScreen props={this.props} email={this.state.email} />
                   )}
                 </div>
               </form>

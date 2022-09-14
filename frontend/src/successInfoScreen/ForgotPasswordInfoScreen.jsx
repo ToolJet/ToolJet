@@ -1,6 +1,6 @@
 import React from 'react';
 // forgot password
-function CheckMailInfoScreen({ props, email }) {
+function ForgotPasswordInfoScreen({ props, email }) {
   return (
     <div>
       <div className="email-verification-wrapper">
@@ -35,4 +35,4 @@ function CheckMailInfoScreen({ props, email }) {
   );
 }
 
-export default CheckMailInfoScreen;
+export default ForgotPasswordInfoScreen;

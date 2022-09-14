@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 
-function SuccessinfoScreen({ props, email }) {
+function SignupInfoScreen({ props, email, signup }) {
   const [show, setShow] = useState(false);
   const [resendBtn, setResetBtn] = useState(true);
 
   useEffect(() => {
-    let timeLeft = 30;
+    let timeLeft = 10;
     let elem = document.getElementById('resend');
 
-    let timerId = setInterval(countdown, 1000);
+    let timerId = resendBtn && setInterval(countdown, 1000);
     function countdown() {
       if (timeLeft == -1) {
         clearTimeout(timerId);
         setResetBtn(false);
+        elem.innerHTML = 'Resend verification mail ';
       } else {
         elem.innerHTML = 'Resend verification mail in ' + timeLeft + ' s';
         timeLeft--;
@@ -23,7 +24,7 @@ function SuccessinfoScreen({ props, email }) {
   return (
     <div>
       <div className="email-verification-wrapper">
-        <div className="email-verification-card">
+        <div className="email-verification-card signup-info-card">
           <img
             className="onboarding-page-email-img"
             src={'assets/images/onboarding assets /02 Illustrations /verify email.svg'}
@@ -31,7 +32,7 @@ function SuccessinfoScreen({ props, email }) {
           />
           <h1 className="common-auth-section-header">Check your mail.</h1>
           <p className="onboarding-page-verify--subheading">
-            We’ve sent an email to <span className="singup-email-name">{email} </span>with a verification link. Please
+            We’ve sent an email to <span className="signup-email-name">{email} </span>with a verification link. Please
             use that to verify your email address
           </p>
           <p className="onboarding-page-verify-spam">Did not receive an email? Check your spam folder</p>
@@ -46,16 +47,19 @@ function SuccessinfoScreen({ props, email }) {
           {!show && (
             <>
               <button
-                className="verify-page-continue-btn  "
+                className="verify-page-continue-btn"
                 style={{ marginTop: '26px' }}
-                onClick={() => setResetBtn(true)}
+                onClick={(e) => {
+                  setResetBtn(true);
+                  signup(e);
+                }}
                 disabled={resendBtn}
               >
                 <p className="mb-0 " id="resend">
                   Resend verification mail in 30s
                 </p>
               </button>
-              <button className="verify-page-continue-btn " style={{ marginTop: '12px' }} onClick={() => setShow(true)}>
+              <button className="verify-page-continue-btn" style={{ marginTop: '12px' }} onClick={() => setShow(true)}>
                 <p className="mb-0">Edit email address</p>
               </button>
             </>
@@ -73,11 +77,16 @@ function SuccessinfoScreen({ props, email }) {
               <button
                 className="verify-page-continue-btn "
                 style={{ marginTop: '12px' }}
-                // onClick={() => setShow(true)}
+                onClick={(e) => {
+                  //setResetBtn(true);
+                  signup(e);
+                }}
               >
                 <p className="mb-0">Verify new email</p>
               </button>
-              <p className="cancel-verification">Cancel</p>
+              <p className="cancel-verification" onClick={() => {}}>
+                Cancel
+              </p>
             </>
           )}
         </div>
@@ -86,4 +95,4 @@ function SuccessinfoScreen({ props, email }) {
   );
 }
 
-export default SuccessinfoScreen;
+export default SignupInfoScreen;

@@ -77,7 +77,7 @@ class ResetPassword2 extends React.Component {
                           autoComplete="off"
                           className="common-input-auth-section reset-password-input"
                         />
-                        <span className="common-input-warning-text">Password must be atleast 8 charectors</span>
+                        <span className="common-input-warning-text">Password must be atleast 8 charactors</span>
 
                         <span></span>
                       </div>
@@ -93,7 +93,7 @@ class ResetPassword2 extends React.Component {
                           autoComplete="off"
                           className="common-input-auth-section reset-password-input"
                         />
-                        <span className="common-input-warning-text">Password must be atleast 8 charectors</span>
+                        <span className="common-input-warning-text">Password must be atleast 8 charactors</span>
 
                         <span></span>
                       </div>

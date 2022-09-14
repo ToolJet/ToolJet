@@ -5,8 +5,7 @@ import { Link } from 'react-router-dom';
 import { validateEmail } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import SuccessinfoScreen from '../successInfoScreen/SuccessinfoScreen';
-// import SuccessinfoScreen from '../../successinfoScreen/successinfoScreen';
+import SignupInfoScreen from '../successInfoScreen/SignupInfoScreen';
 
 class SignupPage2 extends React.Component {
   constructor(props) {
@@ -14,6 +13,7 @@ class SignupPage2 extends React.Component {
 
     this.state = {
       isLoading: false,
+      showPassword: false,
     };
 
     this.ssoConfigs = {
@@ -40,7 +40,9 @@ class SignupPage2 extends React.Component {
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
-
+  handleOnCheck = () => {
+    this.setState((prev) => ({ showPassword: !prev.showPassword }));
+  };
   signup = (e) => {
     e.preventDefault();
 
@@ -141,17 +143,27 @@ class SignupPage2 extends React.Component {
                       className="common-input-auth-section"
                       placeholder="Enter your business email"
                     />
-                    <label className=" common-auth-sub-label" data-cy="password-label">
-                      Password
-                    </label>
+                    <label className=" common-auth-sub-label">Password</label>
+                    <div className="login-password singup-password-wrapper">
+                      <input
+                        onChange={this.handleChange}
+                        name="password"
+                        type={this.state.showPassword ? 'text' : 'password'}
+                        className="common-input-auth-section"
+                        placeholder="Enter new password"
+                      />
+                      <img
+                        src={`${
+                          this.state.showPassword
+                            ? 'assets/images/onboarding assets /01 Icons /Eye_hide.svg'
+                            : 'assets/images/onboarding assets /01 Icons /Eye_show.svg'
+                        }`}
+                        onClick={this.handleOnCheck}
+                        className="login-password-hide-img "
+                      ></img>
+                      <span className="common-input-warning-text">Password must be atleast 8 charectors</span>
+                    </div>
 
-                    <input
-                      onChange={this.handleChange}
-                      name="password"
-                      type="password"
-                      className="common-input-auth-section"
-                      placeholder="Enter new password"
-                    />
                     {/* <label className=" common-auth-sub-label" data-cy="password-label">
                       Confirm Password
                     </label>
@@ -171,7 +183,7 @@ class SignupPage2 extends React.Component {
                         isLoading ? 'btn-loading' : ''
                       }`}
                       onClick={this.signup}
-                      disabled={isLoading || !this.state.email || !this.state.password || !this.state.name}
+                      // disabled={isLoading || !this.state.email || !this.state.password || !this.state.name}
                     >
                       Get started for free
                       <img
@@ -191,7 +203,7 @@ class SignupPage2 extends React.Component {
               )}
               {signupSuccess && (
                 <div className=" ">
-                  <SuccessinfoScreen props={this.props} email={this.state.email} />
+                  <SignupInfoScreen props={this.props} email={this.state.email} signup={this.signup} />
                 </div>
               )}
             </form>

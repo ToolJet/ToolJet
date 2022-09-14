@@ -6126,7 +6126,7 @@ input.hide-input-arrows {
   height: 208px;
   width: 202.69px;
   display: flex;
-  margin: 0 auto;
+  margin: 0 auto 32px auto;
 }
 
 .onboarding-page-sub-header {
@@ -6611,6 +6611,7 @@ input.hide-input-arrows {
   align-items: center;
   color: #6B7787;
   margin-bottom: 16px;
+  caret-color: #466BF2;
 
   p {
     margin-bottom: 0 !important;
@@ -6749,6 +6750,7 @@ input.hide-input-arrows {
   line-height: 24px;
   margin-top: 12px;
   color: #1F2937;
+  line-break: anywhere;
 
   span {
     color: #466BF2;
@@ -6764,8 +6766,8 @@ input.hide-input-arrows {
 }
 
 .email-verification-card {
-  width: 392px;
-  height: 482.69px;
+  width: 352px;
+  height: 572.69px;
 }
 
 .onboarding-testimonial-img {
@@ -6789,7 +6791,9 @@ input.hide-input-arrows {
   }
 }
 
-.login-password {
+.login-password,
+.singup-password-wrapper {
+
   position: relative;
 
   input {
@@ -6798,10 +6802,14 @@ input.hide-input-arrows {
   }
 }
 
+.singup-password-wrapper {
+  margin-bottom: 16px !important;
+}
+
 .login-password-hide-img {
   position: absolute;
   right: 16px;
-  top: 34.92%;
+  top: 25%;
   width: 16px;
   height: 10.67px;
   cursor: pointer;
@@ -6861,11 +6869,6 @@ input.hide-input-arrows {
   height: 64px;
   position: sticky;
   top: 0;
-
-  img {
-    margin-top: 24px;
-  }
-
 }
 
 .singup-page-signin-redirect {
@@ -6892,7 +6895,9 @@ input.hide-input-arrows {
 }
 
 .onboarding-form {
-  margin-top: 108px;
+  width: 392px;
+  height: 336px;
+  margin: 96px auto;
 }
 
 .check-mail-info-card {
@@ -6901,13 +6906,13 @@ input.hide-input-arrows {
   height: 578.69px;
 }
 
-.singup-email-name {
+.signup-email-name {
   font-weight: 700;
 }
 
 .cancel-verification {
-  width: 43px;
-  height: 24px;
+  width: 352px;
+  height: 40px;
   font-weight: 600;
   font-size: 14px;
   line-height: 24px;
@@ -6915,7 +6920,7 @@ input.hide-input-arrows {
   align-items: center;
   text-align: center;
   color: #466BF2;
-  margin: 32px auto;
+  margin-top: 16px;
   justify-content: center;
   cursor: pointer;
 }
@@ -6936,4 +6941,65 @@ input.hide-input-arrows {
 
 .sucess-info-card {
   margin-top: 132px !important;
+}
+
+.verification-success-page-continue-btn {
+  width: 392px !important;
+
+}
+
+.verification-success-page-email-img {
+  margin-bottom: 32px !important;
+}
+
+.signup-info-card {
+  margin-top: 132px;
+}
+
+// verification-navbar styles
+.onboarding-navbar-layout {
+  display: grid;
+  grid-template-columns: 1fr 3fr 392px 3fr 1fr;
+  align-items: center;
+  border-bottom: 1px solid #E4E7EB;
+}
+
+.onboarding-account-name {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  text-align: center;
+  color: #172531;
+  width: 32px;
+  height: 33px;
+  background: #F3F4F6;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  gap: 10px;
+}
+
+.onboarding-checkpoints {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+  p {
+    margin-bottom: 0 !important;
+    // width: 92px;
+    height: 20px;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+    color: #4B5563;
+  }
+
+  img {
+    margin-right: 10.78px;
+
+  }
 }

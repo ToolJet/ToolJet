@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import VerificationSuccessInfoScreen from '../successInfoScreen/VerificationSuccessInfoScreen';
 
 function OnBoardingForm() {
   const [buttonState, setButtonState] = useState(true);
 
   const [page, setPage] = useState(0);
+  const [showQuestions, setShowQuestions] = useState(false);
+
   const [formData, setFormData] = useState({
     companyName: '',
     role: '',
@@ -36,33 +39,58 @@ function OnBoardingForm() {
   };
 
   return (
-    <div className="onboarding-form">
-      <div className={`${page !== 0 ? 'onboarding-progress' : 'onboarding-progress-2'}`}>
-        {page !== 0 && (
-          <div
-            className="onboarding-back-button"
-            disabled={page == 0}
-            onClick={() => {
-              setPage((currPage) => currPage - 1);
-              setButtonState(false);
-            }}
-            style={{ cursor: 'pointer' }}
-          >
-            <img src="/assets/images/onboarding assets /01 Icons /Arrow_Back.svg" />
-            <p>Back</p>
-          </div>
-        )}
-        <div className="onboarding-bubbles-container">{onBoardingBubbles({ formData, page })}</div>
-        <div></div>
-      </div>
-      <div className="form-container">
-        <div className="onboarding-header-wrapper">
-          <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
-          <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
+    <div className="page">
+      <div className="onboarding-navbar onboarding-navbar-layout">
+        <div>
+          <img src="assets/images/logo-color.svg" height="17.5" alt="" data-cy="page-logo" />
         </div>
-        {PageShift()}
-        <div className="">{continueButton({ buttonState, setButtonState, setPage, page, formData })}</div>
+        <div></div>
+        <div className="onboarding-checkpoints">
+          <p>
+            <img src={'assets/images/onboarding assets /01 Icons /Cheveron_Right.svg'}></img>Create account
+          </p>
+          <p>
+            <img src={'assets/images/onboarding assets /01 Icons /Cheveron_Right.svg'}></img>Verify email
+          </p>
+          <p>
+            <img src={'assets/images/onboarding assets /01 Icons /Cheveron_Right.svg'}></img>Set up org
+          </p>
+        </div>
+        <div></div>
+        <div className="onboarding-account-name">JA</div>
       </div>
+      {showQuestions ? (
+        <VerificationSuccessInfoScreen />
+      ) : (
+        <div className="onboarding-form">
+          <div className={`${page !== 0 ? 'onboarding-progress' : 'onboarding-progress-2'}`}>
+            {page !== 0 && (
+              <div
+                className="onboarding-back-button"
+                disabled={page == 0}
+                onClick={() => {
+                  setPage((currPage) => currPage - 1);
+                  setButtonState(false);
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                <img src="/assets/images/onboarding assets /01 Icons /Arrow_Back.svg" />
+                <p>Back</p>
+              </div>
+            )}
+            <div className="onboarding-bubbles-container">{onBoardingBubbles({ formData, page })}</div>
+            <div></div>
+          </div>
+          <div className="form-container">
+            <div className="onboarding-header-wrapper">
+              <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
+              <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
+            </div>
+            {PageShift()}
+            <div className="">{continueButton({ buttonState, setButtonState, setPage, page, formData })}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
