@@ -3,28 +3,25 @@ import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
 export const Button = function Button({ height, properties, styles, fireEvent, registerAction, component }) {
-  const { loadingState, text, visibility, disabledState } = properties;
   const { backgroundColor, textColor, borderRadius, loaderColor } = styles;
-  console.log(disabledState, 'disabledState');
-  const [label, setLabel] = useState(text);
-  useEffect(() => setLabel(text), [text]);
 
-  const [disable, setDisable] = useState(disabledState);
-  useEffect(() => {
-    console.log('inside use effect');
-    console.log(disabledState, 'disabledState inside useEffect');
-    setDisable(disabledState);
-  }, [disabledState]);
+  const [label, setLabel] = useState(properties.label);
+  useEffect(() => setLabel(properties.label), [properties.label]);
 
-  const [visible, setVisible] = useState(visibility);
+  const [disable, setDisable] = useState(properties.disable);
   useEffect(() => {
-    setVisible(visibility);
-  }, [visibility]);
+    setDisable(properties.disable);
+  }, [properties.disable]);
 
-  const [loading, setLoading] = useState(loadingState);
+  const [hidden, setHidden] = useState(properties.hidden);
   useEffect(() => {
-    setLoading(loadingState);
-  }, [loadingState]);
+    setHidden(properties.hidden);
+  }, [properties.hidden]);
+
+  const [loading, setLoading] = useState(properties.loading);
+  useEffect(() => {
+    setLoading(properties.loading);
+  }, [properties.loading]);
 
   const computedStyles = {
     backgroundColor,
@@ -32,7 +29,7 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
     width: '100%',
     borderRadius: `${borderRadius}px`,
     height,
-    display: visible ? '' : 'none',
+    display: hidden ? 'none' : 'flex',
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
   };
@@ -41,7 +38,7 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
     fireEvent('onClick');
   });
 
-  registerAction('setText', async function (text) {
+  registerAction('setLabel', async function (text) {
     setLabel(text);
   });
 
@@ -49,8 +46,8 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
     setDisable(value);
   });
 
-  registerAction('visible', async function (value) {
-    setVisible(value);
+  registerAction('hide', async function (value) {
+    setHidden(value);
   });
 
   registerAction('loading', async function (value) {

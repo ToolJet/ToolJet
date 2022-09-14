@@ -373,21 +373,21 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      text: {
+      label: {
         type: 'code',
         displayName: 'Button Text',
         validation: {
           schema: { type: 'string' },
         },
       },
-      loadingState: {
+      loading: {
         type: 'toggle',
         displayName: 'Loading State',
         validation: {
           schema: { type: 'boolean' },
         },
       },
-      visibility: {
+      hidden: {
         type: 'toggle',
         displayName: 'Visibility',
         validation: {
@@ -395,7 +395,7 @@ export const widgets = [
           defaultValue: false,
         },
       },
-      disabledState: {
+      disable: {
         type: 'toggle',
         displayName: 'Disable',
         validation: {
@@ -449,24 +449,24 @@ export const widgets = [
         displayName: 'Click',
       },
       {
-        handle: 'setText',
-        displayName: 'Set Text',
-        params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
+        handle: 'setLabel',
+        displayName: 'Set Label',
+        params: [{ handle: 'setLabel', displayName: 'Label', defaultValue: 'New Label' }],
       },
       {
         handle: 'disable',
         displayName: 'Disabled',
-        params: [{ handle: 'disable', displayName: 'Disabled', defaultValue: `{{false}}` }],
+        params: [{ handle: 'disable', displayName: 'Boolean', defaultValue: `{{false}}` }],
       },
       {
-        handle: 'visible',
-        displayName: 'Visibility',
-        params: [{ handle: 'visible', displayName: 'Visibility', defaultValue: `{{false}}` }],
+        handle: 'hide',
+        displayName: 'Hide',
+        params: [{ handle: 'hide', displayName: 'Boolean', defaultValue: `{{false}}` }],
       },
       {
         handle: 'loading',
         displayName: 'Loading',
-        params: [{ handle: 'loading', displayName: 'Loading', defaultValue: `{{false}}` }],
+        params: [{ handle: 'loading', displayName: 'Boolean', defaultValue: `{{false}}` }],
       },
     ],
     definition: {
@@ -475,10 +475,10 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        text: { value: `Button` },
-        loadingState: { value: `{{false}}`, fxActive: true },
-        visibility: { value: '{{true}}', fxActive: true },
-        disabledState: { value: '{{false}}', fxActive: true },
+        label: { value: `Button` },
+        loading: { value: `{{false}}`, fxActive: true },
+        hidden: { value: '{{false}}', fxActive: true },
+        disable: { value: '{{false}}', fxActive: true },
       },
       events: [],
       styles: {
