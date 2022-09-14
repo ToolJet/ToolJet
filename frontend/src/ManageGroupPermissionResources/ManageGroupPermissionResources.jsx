@@ -5,8 +5,9 @@ import { groupPermissionService } from '../_services/groupPermission.service';
 import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import { withTranslation } from 'react-i18next';
 
-class ManageGroupPermissionResources extends React.Component {
+class ManageGroupPermissionResourcesComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -118,7 +119,16 @@ class ManageGroupPermissionResources extends React.Component {
       (permission) => permission.group_permission_id === groupPermissionId
     );
 
-    let actionParams = { read: true, update: action === 'edit' };
+    let actionParams = {
+      read: true,
+      update: action === 'edit',
+    };
+
+    if (action === 'readOnDashboard') {
+      actionParams['readOnDashboard'] = !this.canAppGroupPermission(app, groupPermissionId, 'readOnDashboard');
+    }
+
+    if (action === 'edit') actionParams['readOnDashboard'] = false;
 
     groupPermissionService
       .updateAppGroupPermission(groupPermissionId, appGroupPermission.id, actionParams)
@@ -144,6 +154,9 @@ class ManageGroupPermissionResources extends React.Component {
         appGroupPermission = this.findAppGroupPermission(app, groupPermissionId);
 
         return appGroupPermission['read'] && !appGroupPermission['update'];
+      case 'readOnDashboard':
+        appGroupPermission = this.findAppGroupPermission(app, groupPermissionId);
+        return appGroupPermission['read'] && appGroupPermission['read_on_dashboard'];
       default:
         return false;
     }
@@ -310,14 +323,22 @@ class ManageGroupPermissionResources extends React.Component {
                   {isLoadingGroup ? (
                     <ol className="breadcrumb" aria-label="breadcrumbs">
                       <li className="breadcrumb-item">
-                        <a href="#">User groups</a>
+                        <a href="#">
+                          {this.props.t(
+                            'header.organization.menus.manageGroups.permissionResources.userGroup',
+                            'User group'
+                          )}
+                        </a>
                       </li>
                     </ol>
                   ) : (
                     <ol className="breadcrumb" aria-label="breadcrumbs">
                       <li className="breadcrumb-item">
                         <Link to="/groups" data-cy="user-groups">
-                          User groups
+                          {this.props.t(
+                            'header.organization.menus.manageGroups.permissionResources.userGroup',
+                            'User group'
+                          )}
                         </Link>
                       </li>
                       <li className="breadcrumb-item">
@@ -341,21 +362,24 @@ class ManageGroupPermissionResources extends React.Component {
                     className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
                     data-cy="apps-link"
                   >
-                    Apps
+                    {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
                   </a>
                   <a
                     onClick={() => this.setState({ currentTab: 'users' })}
                     className={cx('nav-item nav-link', { active: currentTab === 'users' })}
                     data-cy="users-link"
                   >
-                    Users
+                    {this.props.t('header.organization.menus.manageGroups.permissionResources.users', 'Users')}
                   </a>
                   <a
                     onClick={() => this.setState({ currentTab: 'permissions' })}
                     className={cx('nav-item nav-link', { active: currentTab === 'permissions' })}
                     data-cy="permissions-link"
                   >
-                    Permissions
+                    {this.props.t(
+                      'header.organization.menus.manageGroups.permissionResources.permissions',
+                      'Permissions'
+                    )}
                   </a>
                 </nav>
                 <div className="card-body">
@@ -374,7 +398,10 @@ class ManageGroupPermissionResources extends React.Component {
                             filterOptions={fuzzySearch}
                             onChange={(value) => this.setSelectedApps(value)}
                             printOptions="on-focus"
-                            placeholder="Select apps to add to the group"
+                            placeholder={this.props.t(
+                              'header.organization.menus.manageGroups.permissionResources.addAppsToGroup',
+                              'Select apps to add to the group'
+                            )}
                           />
                         </div>
                         <div className="col-auto">
@@ -385,7 +412,7 @@ class ManageGroupPermissionResources extends React.Component {
                             onClick={() => this.addSelectedAppsToGroup(groupPermission.id, selectedAppIds)}
                             data-cy="add-button"
                           >
-                            Add
+                            {this.props.t('globals.add', 'Add')}
                           </div>
                         </div>
                       </div>
@@ -395,8 +422,18 @@ class ManageGroupPermissionResources extends React.Component {
                           <table className="table table-vcenter">
                             <thead>
                               <tr>
-                                <th data-cy="name-header">Name</th>
-                                <th data-cy="permissions-header">Permissions</th>
+                                <th data-cy="name-header">
+                                  {this.props.t(
+                                    'header.organization.menus.manageGroups.permissionResources.name',
+                                    'Name'
+                                  )}
+                                </th>
+                                <th data-cy="permissions-header">
+                                  {this.props.t(
+                                    'header.organization.menus.manageGroups.permissionResources.permissions',
+                                    'Permissions'
+                                  )}
+                                </th>
                                 <th></th>
                               </tr>
                             </thead>
@@ -431,7 +468,9 @@ class ManageGroupPermissionResources extends React.Component {
                                             disabled={groupPermission.group === 'admin'}
                                             checked={this.canAppGroupPermission(app, groupPermission.id, 'view')}
                                           />
-                                          <span className="form-check-label">View</span>
+                                          <span className="form-check-label">
+                                            {this.props.t('globals.view', 'view')}
+                                          </span>
                                         </label>
                                         <label className="form-check form-check-inline">
                                           <input
@@ -443,9 +482,35 @@ class ManageGroupPermissionResources extends React.Component {
                                             disabled={groupPermission.group === 'admin'}
                                             checked={this.canAppGroupPermission(app, groupPermission.id, 'edit')}
                                           />
-                                          <span className="form-check-label">Edit</span>
+                                          <span className="form-check-label">
+                                            {this.props.t('globals.edit', 'Edit')}
+                                          </span>
                                         </label>
                                       </div>
+                                      {this.canAppGroupPermission(app, groupPermission.id, 'view') && (
+                                        <div>
+                                          <label className="form-check form-check-inline">
+                                            <input
+                                              className="form-check-input"
+                                              type="checkbox"
+                                              onChange={() => {
+                                                this.updateAppGroupPermission(
+                                                  app,
+                                                  groupPermission.id,
+                                                  'readOnDashboard'
+                                                );
+                                              }}
+                                              disabled={groupPermission.group === 'admin'}
+                                              checked={this.canAppGroupPermission(
+                                                app,
+                                                groupPermission.id,
+                                                'readOnDashboard'
+                                              )}
+                                            />
+                                            <span className="form-check-label">Hide from dashboard</span>
+                                          </label>
+                                        </div>
+                                      )}
                                     </td>
                                     <td>
                                       {groupPermission.group !== 'admin' && (
@@ -456,7 +521,7 @@ class ManageGroupPermissionResources extends React.Component {
                                           }}
                                           data-cy="delete-link"
                                         >
-                                          Delete
+                                          {this.props.t('globals.delete', 'Delete')}
                                         </Link>
                                       )}
                                     </td>
@@ -483,7 +548,10 @@ class ManageGroupPermissionResources extends React.Component {
                             value={selectedUserIds}
                             onChange={(value) => this.setSelectedUsers(value)}
                             printOptions="on-focus"
-                            placeholder="Select users to add to the group"
+                            placeholder={this.props.t(
+                              'header.organization.menus.manageGroups.permissionResources.addUsersToGroup',
+                              'Select users to add to the group'
+                            )}
                           />
                         </div>
                         <div className="col-auto">
@@ -493,7 +561,7 @@ class ManageGroupPermissionResources extends React.Component {
                             }`}
                             onClick={() => this.addSelectedUsersToGroup(groupPermission.id, selectedUserIds)}
                           >
-                            Add
+                            {this.props.t('globals.add', 'Add')}
                           </div>
                         </div>
                       </div>
@@ -503,8 +571,18 @@ class ManageGroupPermissionResources extends React.Component {
                           <table className="table table-vcenter">
                             <thead>
                               <tr>
-                                <th data-cy="name-header">Name</th>
-                                <th data-cy="email-header">Email</th>
+                                <th data-cy="name-header">
+                                  {this.props.t(
+                                    'header.organization.menus.manageGroups.permissionResources.name',
+                                    'name'
+                                  )}
+                                </th>
+                                <th data-cy="email-header">
+                                  {this.props.t(
+                                    'header.organization.menus.manageGroups.permissionResources.email',
+                                    'email'
+                                  )}
+                                </th>
                                 <th></th>
                               </tr>
                             </thead>
@@ -536,7 +614,7 @@ class ManageGroupPermissionResources extends React.Component {
                                             this.removeUserFromGroup(groupPermission.id, user.id);
                                           }}
                                         >
-                                          Delete
+                                          {this.props.t('globals.delete', 'Delete')}
                                         </Link>
                                       )}
                                     </td>
@@ -556,8 +634,18 @@ class ManageGroupPermissionResources extends React.Component {
                           <table className="table table-vcenter">
                             <thead>
                               <tr>
-                                <th data-cy="resource-header">Resource</th>
-                                <th data-cy="permissions-header">Permissions</th>
+                                <th data-cy="resource-header">
+                                  {this.props.t(
+                                    'header.organization.menus.manageGroups.permissionResources.resource',
+                                    'Resource'
+                                  )}
+                                </th>
+                                <th data-cy="permissions-header">
+                                  {this.props.t(
+                                    'header.organization.menus.manageGroups.permissionResources.permissions',
+                                    'Permissions'
+                                  )}
+                                </th>
                                 <th></th>
                               </tr>
                             </thead>
@@ -579,7 +667,12 @@ class ManageGroupPermissionResources extends React.Component {
                               ) : (
                                 <>
                                   <tr>
-                                    <td data-cy="resource-apps">Apps</td>
+                                    <td data-cy="resource-apps">
+                                      {this.props.t(
+                                        'header.organization.menus.manageGroups.permissionResources.apps',
+                                        'Apps'
+                                      )}
+                                    </td>
                                     <td className="text-muted">
                                       <div>
                                         <label className="form-check form-check-inline">
@@ -596,7 +689,7 @@ class ManageGroupPermissionResources extends React.Component {
                                             data-cy="app-create-checkbox"
                                           />
                                           <span className="form-check-label" data-cy="app-create-label">
-                                            Create
+                                            {this.props.t('globals.create', 'Create')}
                                           </span>
                                         </label>
                                         <label className="form-check form-check-inline">
@@ -613,7 +706,7 @@ class ManageGroupPermissionResources extends React.Component {
                                             data-cy="app-delete-checkbox"
                                           />
                                           <span className="form-check-label" data-cy="app-delete-label">
-                                            Delete
+                                            {this.props.t('globals.delete', 'Delete')}
                                           </span>
                                         </label>
                                       </div>
@@ -622,7 +715,12 @@ class ManageGroupPermissionResources extends React.Component {
                                   </tr>
 
                                   <tr>
-                                    <td data-cy="resource-folders">Folders</td>
+                                    <td data-cy="resource-folders">
+                                      {this.props.t(
+                                        'header.organization.menus.manageGroups.permissionResources.folder',
+                                        'Folder'
+                                      )}
+                                    </td>
                                     <td className="text-muted">
                                       <div>
                                         <label className="form-check form-check-inline">
@@ -641,7 +739,10 @@ class ManageGroupPermissionResources extends React.Component {
                                             data-cy="folder-create-checkbox"
                                           />
                                           <span className="form-check-label" data-cy="folder-create-label">
-                                            Create/Update/Delete
+                                            {this.props.t(
+                                              'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
+                                              'Create/Update/Delete'
+                                            )}
                                           </span>
                                         </label>
                                       </div>
@@ -649,7 +750,7 @@ class ManageGroupPermissionResources extends React.Component {
                                     <td></td>
                                   </tr>
                                   <tr>
-                                    <td>Environment variables</td>
+                                    <td>{this.props.t('globals.environmentVar', 'Environment variables')}</td>
                                     <td className="text-muted">
                                       <div>
                                         <label className="form-check form-check-inline">
@@ -666,7 +767,12 @@ class ManageGroupPermissionResources extends React.Component {
                                             checked={orgEnvironmentPermission}
                                             disabled={groupPermission.group === 'admin'}
                                           />
-                                          <span className="form-check-label">Create/Update/Delete</span>
+                                          <span className="form-check-label">
+                                            {this.props.t(
+                                              'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
+                                              'Create/Update/Delete'
+                                            )}
+                                          </span>
                                         </label>
                                       </div>
                                     </td>
@@ -690,4 +796,4 @@ class ManageGroupPermissionResources extends React.Component {
   }
 }
 
-export { ManageGroupPermissionResources };
+export const ManageGroupPermissionResources = withTranslation()(ManageGroupPermissionResourcesComponent);

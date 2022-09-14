@@ -1,7 +1,7 @@
 import React from 'react';
 import Select from '@/_ui/Select';
-
-export default class VariableForm extends React.Component {
+import { withTranslation } from 'react-i18next';
+class VariableForm extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -11,18 +11,33 @@ export default class VariableForm extends React.Component {
       <div className="container-xl">
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">{!this.props.selectedVariableId ? 'Add new variable' : 'Update variable'}</h3>
+            <h3 className="card-title">
+              {!this.props.selectedVariableId
+                ? this.props.t(
+                    'header.organization.menus.manageSSO.environmentVar.variableForm.addNewVariable',
+                    'Add new variable'
+                  )
+                : this.props.t(
+                    'header.organization.menus.manageSSO.environmentVar.variableForm.updatevariable',
+                    'Update variable'
+                  )}
+            </h3>
           </div>
           <div className="card-body">
             <form onSubmit={this.props.createOrUpdate} noValidate>
               <div className="form-group mb-3 ">
                 <div className="row">
                   <div className="col">
-                    <label className="form-label">Name</label>
+                    <label className="form-label">
+                      {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.name', 'Name')}
+                    </label>
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="Enter Variable Name"
+                      placeholder={this.props.t(
+                        'header.organization.menus.manageSSO.environmentVar.variableForm.enterVariableName',
+                        'Enter Variable Name'
+                      )}
                       name="variable_name"
                       onChange={this.props.changeNewVariableOption.bind(this, 'variable_name')}
                       value={this.props.fields['variable_name']}
@@ -30,11 +45,17 @@ export default class VariableForm extends React.Component {
                     <span className="text-danger">{this.props.errors['variable_name']}</span>
                   </div>
                   <div className="col">
-                    <label className="form-label">Value</label>
+                    <label className="form-label">
+                      {' '}
+                      {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.value', 'Value')}
+                    </label>
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="Enter Value"
+                      placeholder={this.props.t(
+                        'header.organization.menus.manageSSO.environmentVar.variableForm.enterValue',
+                        'Enter Value'
+                      )}
                       name="value"
                       onChange={this.props.changeNewVariableOption.bind(this, 'value')}
                       value={this.props.fields['value']}
@@ -46,7 +67,9 @@ export default class VariableForm extends React.Component {
               <div className="form-group mb-3 ">
                 <div className="row">
                   <div className="col">
-                    <label className="form-label">Type</label>
+                    <label className="form-label">
+                      {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.type', 'Type')}
+                    </label>
                     {this.props.selectedVariableId ? (
                       <span>{this.props.fields['variable_type']}</span>
                     ) : (
@@ -63,7 +86,12 @@ export default class VariableForm extends React.Component {
                     )}
                   </div>
                   <div className="col">
-                    <label className="form-label">Enable encryption</label>
+                    <label className="form-label">
+                      {this.props.t(
+                        'header.organization.menus.manageSSO.environmentVar.variableForm.enableEncryption',
+                        ' Enable encryption'
+                      )}
+                    </label>
                     <div className="form-check form-switch encryption-input">
                       <input
                         className="form-check-input"
@@ -84,14 +112,19 @@ export default class VariableForm extends React.Component {
               </div>
               <div className="form-footer">
                 <button type="button" className="btn btn-light mr-2" onClick={() => this.props.onCancelBtnClicked()}>
-                  Cancel
+                  {this.props.t('globals.cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   className={`btn mx-2 btn-primary ${this.props.addingVar ? 'btn-loading' : ''}`}
                   disabled={this.props.addingVar}
                 >
-                  {!this.props.selectedVariableId ? 'Add variable' : 'Save'}
+                  {!this.props.selectedVariableId
+                    ? this.props.t(
+                        'header.organization.menus.manageSSO.environmentVar.variableForm.addVariable',
+                        'Add variable'
+                      )
+                    : this.props.t('globals.save', 'Save')}
                 </button>
               </div>
             </form>
@@ -101,3 +134,4 @@ export default class VariableForm extends React.Component {
     );
   }
 }
+export default withTranslation()(VariableForm);

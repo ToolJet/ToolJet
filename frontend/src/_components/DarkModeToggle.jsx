@@ -2,6 +2,7 @@ import React from 'react';
 import { useSpring, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
+import { useTranslation } from 'react-i18next';
 
 export const DarkModeToggle = function DarkModeToggle({
   darkMode = false,
@@ -11,7 +12,7 @@ export const DarkModeToggle = function DarkModeToggle({
   const toggleDarkMode = () => {
     switchDarkMode(!darkMode);
   };
-
+  const { t } = useTranslation();
   const properties = {
     sun: {
       r: 9,
@@ -49,7 +50,13 @@ export const DarkModeToggle = function DarkModeToggle({
     <OverlayTrigger
       placement={tooltipPlacement}
       delay={{ show: 250, hide: 400 }}
-      overlay={<Tooltip id="button-tooltip">{darkMode ? 'Activate light mode' : 'Activate dark mode'}</Tooltip>}
+      overlay={
+        <Tooltip id="button-tooltip">
+          {darkMode
+            ? t('header.darkModeToggle.activateLightMode', 'Activate light mode')
+            : t('header.darkModeToggle.activateDarkMode', 'Activate dark mode')}
+        </Tooltip>
+      }
     >
       <animated.svg
         xmlns="http://www.w3.org/2000/svg"

@@ -7,7 +7,7 @@ import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
 import { Link } from 'react-router-dom';
 import urlJoin from 'url-join';
-
+import { useTranslation } from 'react-i18next';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -25,6 +25,7 @@ export default function AppCard({
   const [hoverRef, isHovered] = useHover();
   const [focused, setFocused] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   const onMenuToggle = useCallback(
     (status) => {
@@ -115,7 +116,7 @@ export default function AppCard({
                 <ToolTip message="Open in app builder">
                   <Link to={`/apps/${app.id}`}>
                     <button type="button" className="btn btn-sm btn-light edit-button" data-cy="edit-button">
-                      Edit
+                      {t('globals.edit', 'Edit')}
                     </button>
                   </Link>
                 </ToolTip>
@@ -124,7 +125,9 @@ export default function AppCard({
             <div className={`col-${canUpdate ? '6' : '12'} ps-1`}>
               <ToolTip
                 message={
-                  app?.current_version_id === null ? 'App does not have a deployed version' : 'Open in app viewer'
+                  app?.current_version_id === null
+                    ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
+                    : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
                 }
               >
                 <span>
@@ -141,7 +144,9 @@ export default function AppCard({
                     }}
                     data-cy="launch-button"
                   >
-                    {app?.is_maintenance_on ? 'Maintenance' : 'Launch'}
+                    {app?.is_maintenance_on
+                      ? t('homePage.appCard.maintenance', 'Maintenance')
+                      : t('homePage.appCard.launch', 'Launch')}
                   </button>
                 </span>
               </ToolTip>
