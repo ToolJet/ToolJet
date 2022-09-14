@@ -21,7 +21,6 @@ import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
-import { IsAdminGuard } from 'src/modules/auth/is-admin.guard';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -31,7 +30,8 @@ export class OrganizationsController {
     private readonly configService: ConfigService
   ) {}
 
-  @UseGuards(JwtAuthGuard, IsAdminGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('viewAllUsers', UserEntity))
   @Get('users')
   async getUsers(@User() user, @Query() query) {
     const { page, email, firstName, lastName } = query;
