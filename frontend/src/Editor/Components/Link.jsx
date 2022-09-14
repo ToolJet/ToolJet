@@ -2,16 +2,15 @@ import React, { useRef } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const Link = ({ height, properties, styles, fireEvent, registerAction, currentState }) => {
-  const { linkTarget, linkText, targetType, visibility } = properties;
+  const { linkTarget, linkText, targetType, hidden } = properties;
   const { textColor, textSize, underline } = styles;
   const clickRef = useRef();
 
-  const parsedVisibility =
-    typeof visibility !== 'boolean' ? resolveWidgetFieldValue(visibility, currentState) : visibility;
+  const parsedHidden = typeof hidden !== 'boolean' ? resolveWidgetFieldValue(hidden, currentState) : hidden;
 
   const computedStyles = {
     fontSize: textSize,
-    display: parsedVisibility ? '' : 'none',
+    display: parsedHidden ? 'none' : '',
     height,
   };
 
