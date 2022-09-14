@@ -322,8 +322,6 @@
         "height": "150px"
       }
     },
-    "list_datasets": {
-    },
     "list_tables": {
       "datasetId": {
         "label": "Dataset id",

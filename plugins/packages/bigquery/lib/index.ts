@@ -29,12 +29,13 @@ export default class Bigquery implements QueryService {
           const [table] = await client
             .dataset(queryOptions.datasetId)
             .createTable(queryOptions.tableId, this.parseJSON(queryOptions.options));
-          result = table;
+          result = { tableId: table.id };
           break;
         }
 
         case 'delete_table': {
-          result = await client.dataset(queryOptions.datasetId).table(queryOptions.tableId).delete();
+          await client.dataset(queryOptions.datasetId).table(queryOptions.tableId).delete();
+          result = `Table ${queryOptions.tableId} deleted.`;
           break;
         }
 
