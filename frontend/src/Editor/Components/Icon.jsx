@@ -2,20 +2,19 @@ import React, { useState, useEffect } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import * as Icons from '@tabler/icons';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import cx from 'classnames';
 
 export const Icon = ({ properties, styles, fireEvent, width, height, currentState, registerAction }) => {
-  const { icon, visibility } = properties;
+  const { icon, hidden } = properties;
   const { iconColor } = styles;
   const IconElement = Icons[icon];
 
   const [hideIcon, setIconVisibility] = useState(false);
 
   useEffect(() => {
-    setIconVisibility(
-      typeof visibility !== 'boolean' ? !resolveWidgetFieldValue(visibility, currentState) : !visibility
-    );
+    setIconVisibility(typeof hidden !== 'boolean' ? !resolveWidgetFieldValue(hidden, currentState) : hidden);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibility]);
+  }, [hidden]);
 
   registerAction('click', async function () {
     fireEvent('onClick');
@@ -26,10 +25,10 @@ export const Icon = ({ properties, styles, fireEvent, width, height, currentStat
   });
 
   return (
-    <div className={`icon-widget`} style={{ display: hideIcon ? 'none' : '' }}>
+    <div className={cx('icon-widget', { 'd-none': hideIcon })}>
       <IconElement
         color={iconColor}
-        style={{ width: width, height: height }}
+        style={{ width, height }}
         onClick={(event) => {
           event.stopPropagation();
           fireEvent('onClick');

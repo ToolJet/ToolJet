@@ -4684,9 +4684,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           schema: { type: 'string' },
         },
       },
-      visibility: {
+      hidden: {
         type: 'toggle',
-        displayName: 'Visibility',
+        displayName: 'Hidden',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -4724,7 +4724,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       properties: {
         icon: { value: 'IconHome2' },
-        visibility: { value: '{{true}}', fxActive: true },
+        hidden: { value: '{{false}}', fxActive: true },
       },
       events: [],
       styles: {

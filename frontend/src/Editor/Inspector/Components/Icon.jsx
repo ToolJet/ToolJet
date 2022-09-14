@@ -113,7 +113,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
     const propertyList = [];
     propertyList.push(renderIconPicker());
     propertyList.push(
-      renderElement(component, componentMeta, paramUpdated, dataQueries, 'visibility', 'properties', currentState)
+      renderElement(component, componentMeta, paramUpdated, dataQueries, 'hidden', 'properties', currentState)
     );
     return propertyList;
   };
