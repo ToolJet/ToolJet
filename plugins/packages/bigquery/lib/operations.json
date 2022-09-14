@@ -325,6 +325,17 @@
     "list_datasets": {
     },
     "list_tables": {
+      "datasetId": {
+        "label": "Dataset id",
+        "key": "datasetId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter dataset id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter dataset"
+      }
     },
     "query": {
       "query": {
