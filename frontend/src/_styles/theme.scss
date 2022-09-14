@@ -843,14 +843,6 @@ button {
   }
 }
 
-@media (max-height: 608px) {
-  .org-users-page{
-    .page-body {
-      height: 100vh;
-    }
-  }
-}
-
 .homepage-body {
   overflow-y: hidden;
 
@@ -3320,6 +3312,13 @@ input:focus-visible {
     .user-email,
     .user-status {
       filter: brightness(0) invert(1);
+    }
+  }
+
+  .org-users-page {
+    min-height: 100vh;
+    .page-body {
+      height: 100%;
     }
   }
 
