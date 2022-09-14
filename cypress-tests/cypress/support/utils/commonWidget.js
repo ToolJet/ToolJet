@@ -7,6 +7,7 @@ import {
 
 export const openAccordion = (accordionName, index = "0") => {
   cy.get(commonWidgetSelector.accordion(accordionName, index))
+    .scrollIntoView()
     .should("be.visible")
     .and("have.text", accordionName)
     .then(($accordion) => {

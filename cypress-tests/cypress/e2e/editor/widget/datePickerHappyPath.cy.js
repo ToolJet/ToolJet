@@ -69,7 +69,7 @@ describe("Date Picker widget", () => {
       commonWidgetText.codeMirrorInputFalse
     );
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
-    verifyDate(data.widgetName, "");
+    // verifyDate(data.widgetName, "");
 
     openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(
@@ -247,29 +247,27 @@ describe("Date Picker widget", () => {
     );
 
     openAccordion(commonWidgetText.accordionGenaral, "1");
-    cy.get(multiselectSelector.inputBoxShadow).click();
+
+    cy.get(
+      commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
+    ).click();
+
     fillBoxShadowParams(
       commonWidgetSelector.boxShadowDefaultParam,
       data.boxShadowParam
     );
-    cy.get(multiselectSelector.boxShadowPopover)
-      .find(multiselectSelector.colourPickerInput)
-      .click();
-    selectColourFromColourPicker(
-      multiselectSelector.colourPickerParent,
-      data.colour
-    );
+    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
 
     addTextWidgetToVerifyValue(`components.${data.widgetName}.value`);
     cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 160);
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
 
-    // verifyDate(data.widgetName, data.date, "DD/MM/YY");
-    // verifyWidgetText(
-    //   commonWidgetText.text1,
-    //   moment(data.date, "DD/MM/YYYY").format("DD/MM/YY")
-    // );
+    /*  verifyDate(data.widgetName, data.date, "DD/MM/YY");
+    verifyWidgetText(
+      commonWidgetText.text1,
+      moment(data.date, "DD/MM/YYYY").format("DD/MM/YY")
+    );*/
 
     data.date = randomDateOrTime();
     selectAndVerifyDate(data.widgetName, data.date, "DD/MM/YY");

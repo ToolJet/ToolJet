@@ -285,19 +285,16 @@ describe("Multiselect widget", () => {
     openEditorSidebar(data.widgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     openAccordion(commonWidgetText.accordionGenaral, "1");
-    cy.get(multiselectSelector.inputBoxShadow).click();
+
+    cy.get(
+      commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
+    ).click();
 
     fillBoxShadowParams(
       commonWidgetSelector.boxShadowDefaultParam,
       data.boxShadowParam
     );
-    cy.get(multiselectSelector.boxShadowPopover)
-      .find(multiselectSelector.colourPickerInput)
-      .click();
-    selectColourFromColourPicker(
-      multiselectSelector.colourPickerParent,
-      data.colour
-    );
+    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
     verifyAndModifyParameter(
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput

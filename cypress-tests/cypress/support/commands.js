@@ -71,6 +71,13 @@ Cypress.Commands.add("appLogin", () => {
   cy.visit("/");
 });
 
+Cypress.Commands.add("waitForAutoSave", () => {
+  cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
+    "have.text",
+    commonText.autoSave
+  );
+});
+
 Cypress.Commands.add("createApp", (appName) => {
   cy.get("body").then(($title) => {
     if ($title.text().includes(commonText.introductionMessage)) {
@@ -184,23 +191,14 @@ Cypress.Commands.add("openInCurrentTab", (selector) => {
   cy.get(selector).invoke("removeAttr", "target").click();
 });
 
-<<<<<<< HEAD
-Cypress.Commands.add("waitForAutoSave", () => {
-  cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
-    "have.text",
-    commonText.autoSave
-  );
-});
-
-Cypress.Commands.add("renameApp", (appName) =>{
-  cy.clearAndType(commonSelectors.appNameInput, appName);
-  cy.waitForAutoSave();
-})
-=======
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {
   cy.get("[data-cy='left-sidebar-settings-button']").click();
   cy.clearAndType("[data-cy='maximum-canvas-width-input-field']", x);
   cy.clearAndType("[data-cy='maximum-canvas-height-input-field']", y);
   cy.forceClickOnCanvas();
 });
->>>>>>> b872a8aa ( Add preview for datePicker)
+
+Cypress.Commands.add("renameApp", (appName) => {
+  cy.clearAndType(commonSelectors.appNameInput, appName);
+  cy.waitForAutoSave();
+});
