@@ -83,6 +83,15 @@ export const commonWidgetText = {
   componentValueLabel: "Value",
   labelDefaultValue: "Default value",
   parameterLabel: "Label",
+  labelPlaceHolder: "Placeholder",
+  labelRegex: "Regex",
+  labelMinLength: "Min length",
+  labelMaxLength: "Max length",
+  labelcustomValidadtion: "Custom validation",
+
+  regexValidationError: "The input should match pattern",
+  minLengthValidationError: "Minimum 4 characters is needed",
+  maxLengthValidationError: "Maximum 10 characters is allowed",
 
   datepickerDocumentationLink: "Datepicker documentation",
 };
