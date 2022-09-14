@@ -60,6 +60,16 @@ export const TextInput = function TextInput({
               setExposedVariable('value', e.target.value);
               fireEvent('onChange');
             }}
+            onMouseEnter={(e) => {
+              e.target.focus();
+              e.stopPropagation();
+              fireEvent('onFocus');
+            }}
+            onMouseLeave={(e) => {
+              e.target.blur();
+              e.stopPropagation();
+              fireEvent('unFocus');
+            }}
             type="text"
             className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
               darkMode && 'dark-theme-placeholder'

@@ -776,6 +776,8 @@ export const widgets = [
     events: {
       onChange: { displayName: 'On change' },
       onEnterPressed: { displayName: 'On Enter Pressed' },
+      onFocus: { displayName: 'On focus' },
+      unFocus: { displayName: 'Un focus' },
     },
     styles: {
       borderRadius: {

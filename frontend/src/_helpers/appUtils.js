@@ -534,6 +534,8 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCardSelected',
       'onCardUpdated',
       'onTabSwitch',
+      'onFocus',
+      'unFocus',
     ].includes(eventName)
   ) {
     const { component } = options;
