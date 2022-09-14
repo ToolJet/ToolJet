@@ -15,7 +15,7 @@ const UsersTable = ({
   archiveOrgUser,
 }) => {
   return (
-    <div className="container-xl mb-4">
+    <div className="container-xl mb-4 pb-4">
       <div className="card">
         <div className="card-table fixedHeader table-responsive table-bordered">
           <table data-testid="usersTable" className="table table-vcenter h-100">

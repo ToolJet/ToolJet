@@ -843,6 +843,14 @@ button {
   }
 }
 
+@media (max-height: 608px) {
+  .org-users-page{
+    .page-body {
+      height: fit-content;
+    }
+  }
+}
+
 .homepage-body {
   overflow-y: hidden;
 
@@ -6117,3 +6125,4 @@ input.hide-input-arrows{
   bottom: 0;
   width: 100%;
 }
+
