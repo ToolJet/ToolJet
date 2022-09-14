@@ -3,6 +3,7 @@ import RunjsIcon from '../Icons/runjs.svg';
 import AddIcon from '../../../assets/images/icons/add-source.svg';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
+import { useTranslation } from 'react-i18next';
 
 function DataSourceLister({
   dataSources,
@@ -13,7 +14,7 @@ function DataSourceLister({
   dataSourceModalHandler,
 }) {
   const [allSources] = useState([...dataSources, ...staticDataSources]);
-
+  const { t } = useTranslation();
   const computedStyles = {
     background: darkMode ? '#2f3c4c' : 'white',
     color: darkMode ? 'white' : '#1f2936',
@@ -45,7 +46,7 @@ function DataSourceLister({
       })}
       <div className="query-datasource-card" style={computedStyles} onClick={dataSourceModalHandler}>
         <AddIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
-        <p> Add datasource</p>
+        <p>{t('editor.queryManager.addDatasource', 'Add datasource')}</p>
       </div>
     </div>
   );

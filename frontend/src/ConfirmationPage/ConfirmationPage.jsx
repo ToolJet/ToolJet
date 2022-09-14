@@ -4,8 +4,9 @@ import { toast } from 'react-hot-toast';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { ShowLoading } from '@/_components';
+import { withTranslation } from 'react-i18next';
 
-class ConfirmationPage extends React.Component {
+class ConfirmationPageComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -150,30 +151,33 @@ class ConfirmationPage extends React.Component {
             ) : (
               <div className="card-body">
                 <h2 className="card-title text-center mb-4" data-cy="card-title">
-                  Set up your account
+                  {this.props.t('confirmationPage.setupAccount', 'Set up your account')}
                 </h2>
                 {this.state.configs?.enable_sign_up && (
                   <div className="d-flex flex-column align-items-center separator-bottom">
                     {this.state.configs?.google?.enabled && (
                       <GoogleSSOLoginButton
-                        text="Sign up with Google"
+                        text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
                         configs={this.state.configs?.google?.configs}
                         configId={this.state.configs?.google?.config_id}
                       />
                     )}
                     {this.state.configs?.git?.enabled && (
-                      <GitSSOLoginButton text="Sign up with GitHub" configs={this.state.configs?.git?.configs} />
+                      <GitSSOLoginButton
+                        text={this.props.t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
+                        configs={this.state.configs?.git?.configs}
+                      />
                     )}
                     <div className="mt-2 separator">
                       <h2>
-                        <span>OR</span>
+                        <span>{this.props.t('confirmationPage.or', 'OR')}</span>
                       </h2>
                     </div>
                   </div>
                 )}
                 <div className="mb-3">
                   <label className="form-label" data-cy="first-name-label">
-                    First name
+                    {this.props.t('confirmationPage.firstName', 'First name')}
                   </label>
                   <div className="input-group input-group-flat">
                     <input
@@ -189,7 +193,7 @@ class ConfirmationPage extends React.Component {
                 </div>
                 <div className="mb-3">
                   <label className="form-label" data-cy="last-name-label">
-                    Last name
+                    {this.props.t('confirmationPage.lastName', 'Last name')}
                   </label>
                   <div className="input-group input-group-flat">
                     <input
@@ -205,7 +209,7 @@ class ConfirmationPage extends React.Component {
                 </div>
                 <div className="mb-3">
                   <label className="form-label" data-cy="company-label">
-                    Company
+                    {this.props.t('confirmationPage.company', 'Company')}
                   </label>
                   <div className="input-group input-group-flat">
                     <input
@@ -221,7 +225,7 @@ class ConfirmationPage extends React.Component {
                 </div>
                 <div className="mb-3">
                   <div className="form-label" data-cy="role-label">
-                    Role
+                    {this.props.t('confirmationPage.role', 'Role')}
                   </div>
                   <select
                     className="form-select"
@@ -231,14 +235,14 @@ class ConfirmationPage extends React.Component {
                     data-cy="role-options"
                   >
                     <option value="" disabled>
-                      Please select
+                      {this.props.t('confirmationPage.pleaseSelect', 'Please select')}
                     </option>
                     {roleOptions}
                   </select>
                 </div>
                 <div className="mb-3">
                   <label className="form-label" data-cy="password-label">
-                    Password
+                    {this.props.t('confirmationPage.password', 'Password')}
                   </label>
                   <div className="input-group input-group-flat">
                     <input
@@ -254,7 +258,7 @@ class ConfirmationPage extends React.Component {
                 </div>
                 <div className="mb-3">
                   <label className="form-label" data-cy="confirm-password-label">
-                    Confirm Password
+                    {this.props.t('confirmationPage.confirmPassword', 'Confirm Password')}
                   </label>
                   <div className="input-group input-group-flat">
                     <input
@@ -270,8 +274,11 @@ class ConfirmationPage extends React.Component {
                 </div>
                 <div className="form-footer">
                   <p data-cy="terms-and-condition-info">
-                    By clicking the button below, you agree to our{' '}
-                    <a href="https://tooljet.io/terms">Terms and Conditions</a>.
+                    {this.props.t('confirmationPage.clickAndAgree', 'By clicking the button below, you agree to our')}{' '}
+                    <a href="https://tooljet.io/terms">
+                      {this.props.t('confirmationPage.termsAndConditions', 'Terms and Conditions')}
+                    </a>
+                    .
                   </p>
                   <button
                     className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}
@@ -279,7 +286,7 @@ class ConfirmationPage extends React.Component {
                     disabled={isLoading}
                     data-cy="finish-setup-button"
                   >
-                    Finish account setup
+                    {this.props.t('confirmationPage.finishAccountSetup', 'Finish account setup')}
                   </button>
                 </div>
               </div>
@@ -291,4 +298,4 @@ class ConfirmationPage extends React.Component {
   }
 }
 
-export { ConfirmationPage };
+export const ConfirmationPage = withTranslation()(ConfirmationPageComponent);

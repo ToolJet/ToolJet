@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { useTranslation } from 'react-i18next';
 
 export function GotoApp({ getAllApps, currentState, event, handlerChanged, eventIndex, darkMode }) {
   const queryParamChangeHandler = (index, key, value) => {
     event.queryParams[index][key] = value;
     handlerChanged(eventIndex, 'queryParams', event.queryParams);
   };
+  const { t } = useTranslation();
 
   const addQueryParam = () => {
     if (!event.queryParams) {
@@ -53,7 +55,7 @@ export function GotoApp({ getAllApps, currentState, event, handlerChanged, event
         onChange={(value) => {
           handlerChanged(eventIndex, 'slug', value);
         }}
-        placeholder="Select.."
+        placeholder={t('globals.select', 'Select') + '...'}
         styles={styles}
         useMenuPortal={false}
         className={`${darkMode ? 'select-search-dark' : 'select-search'}`}

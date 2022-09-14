@@ -1,10 +1,12 @@
 import React from 'react';
 import FxButton from './FxButton';
+import { useTranslation } from 'react-i18next';
 
 export const AlignButtons = ({ value, onChange, forceCodeBox, meta }) => {
   function handleOptionChanged(event) {
     onChange(event.currentTarget.value);
   }
+  const { t } = useTranslation();
 
   return (
     <div className="row fx-container">
@@ -29,7 +31,7 @@ export const AlignButtons = ({ value, onChange, forceCodeBox, meta }) => {
                   />
                 </svg>
               </div>
-              <span className="tooltiptext">Left</span>
+              <span className="tooltiptext">{t('globals.left', 'Left')}</span>
             </label>
 
             <label className="radio-img">
@@ -50,7 +52,7 @@ export const AlignButtons = ({ value, onChange, forceCodeBox, meta }) => {
                   />
                 </svg>
               </div>
-              <span className="tooltiptext">Center</span>
+              <span className="tooltiptext">{t('globals.center', 'Center')}</span>
             </label>
 
             <label className="radio-img">
@@ -71,7 +73,7 @@ export const AlignButtons = ({ value, onChange, forceCodeBox, meta }) => {
                   />
                 </svg>
               </div>
-              <span className="tooltiptext">Right</span>
+              <span className="tooltiptext">{t('globals.right', 'Right')}</span>
             </label>
 
             <label className="radio-img">
@@ -93,7 +95,7 @@ export const AlignButtons = ({ value, onChange, forceCodeBox, meta }) => {
                   />
                 </svg>
               </div>
-              <span className="tooltiptext">Justified</span>
+              <span className="tooltiptext">{t('globals.justified', 'Justified')}</span>
             </label>
           </div>
         </div>

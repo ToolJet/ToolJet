@@ -7,6 +7,7 @@ import { LeftSidebarItem } from './SidebarItem';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { resolveReferences } from '@/_helpers/utils';
+import { useTranslation } from 'react-i18next';
 
 export const LeftSidebarGlobalSettings = ({
   globalSettings,
@@ -16,6 +17,7 @@ export const LeftSidebarGlobalSettings = ({
   is_maintenance_on,
   currentState,
 }) => {
+  const { t } = useTranslation();
   const [open, trigger, content] = usePopover(false);
   const { hideHeader, canvasMaxWidth, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } = globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
@@ -65,7 +67,7 @@ export const LeftSidebarGlobalSettings = ({
         <div style={{ marginTop: '1rem' }} className="card-body">
           <div>
             <div className="d-flex mb-3">
-              <span>Hide header for launched apps</span>
+              <span>{t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}</span>
               <div className="ms-auto form-check form-switch position-relative">
                 <input
                   className="form-check-input"
@@ -76,7 +78,7 @@ export const LeftSidebarGlobalSettings = ({
               </div>
             </div>
             <div className="d-flex mb-3">
-              <span>Maintenance mode</span>
+              <span>{t('leftSidebar.Settings.maintenanceMode', 'Maintenance mode')}</span>
               <div className="ms-auto form-check form-switch position-relative">
                 <input
                   className="form-check-input"
@@ -87,7 +89,7 @@ export const LeftSidebarGlobalSettings = ({
               </div>
             </div>
             <div className="d-flex mb-3">
-              <span className="w-full m-auto">Max width of canvas</span>
+              <span className="w-full m-auto">{t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}</span>
               <div className="position-relative">
                 <div className="input-with-icon">
                   <input
@@ -104,7 +106,9 @@ export const LeftSidebarGlobalSettings = ({
               </div>
             </div>
             <div className="d-flex mb-3">
-              <span className="w-full m-auto">Max height of canvas</span>
+              <span className="w-full m-auto">
+                {t('leftSidebar.Settings.maxHeightOfCanvas', 'Max height of canvas')}
+              </span>
               <div className="position-relative">
                 <div className="input-with-icon">
                   <input
@@ -122,7 +126,9 @@ export const LeftSidebarGlobalSettings = ({
               </div>
             </div>
             <div className="d-flex">
-              <span className="w-full">Background color of canvas</span>
+              <span className="w-full">
+                {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Background color of canvas')}
+              </span>
               <div className="canvas-codehinter-container">
                 {showPicker && (
                   <div>

@@ -5,6 +5,7 @@ import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
 import useHover from '@/_hooks/useHover';
 import { ConfirmDialog } from '@/_components';
+import { useTranslation } from 'react-i18next';
 
 export const Folders = function Folders({
   folders,
@@ -21,7 +22,7 @@ export const Folders = function Folders({
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [hoverRef, isHovered] = useHover();
   const [focused, setFocused] = useState(false);
-
+  const { t } = useTranslation();
   const onMenuToggle = useCallback(
     (status) => {
       setMenuOpen(!!status);
@@ -141,7 +142,10 @@ export const Folders = function Folders({
     <div className="w-100 px-3 pe-lg-4 folder-list">
       <ConfirmDialog
         show={showDeleteConfirmation}
-        message={`Are you sure you want to delete the folder? Apps within the folder will not be deleted.`}
+        message={t(
+          'homePage.foldersSection.wishToDeleteFolder',
+          `Are you sure you want to delete the folder? Apps within the folder will not be deleted.`
+        )}
         confirmButtonLoading={isDeleting}
         onConfirm={() => executeDeletion()}
         onCancel={() => cancelDeleteDialog()}
@@ -159,12 +163,12 @@ export const Folders = function Folders({
           onClick={() => handleFolderChange({})}
           data-cy="all-applications-link"
         >
-          All applications
+          {t('homePage.foldersSection.allApplications', 'All applications')}
         </a>
         <hr></hr>
         <div className="d-flex justify-content-between mb-3">
           <div className="folder-info" data-cy="folder-info">
-            Folders
+            {t('homePage.foldersSection.folders', 'Folders')}
           </div>
           {canCreateFolder && (
             <div
@@ -175,7 +179,7 @@ export const Folders = function Folders({
               }}
               data-cy="create-new-folder-button"
             >
-              + Create new folder
+              {t('homePage.foldersSection.createNewFolder', '+ Create new folder')}
             </div>
           )}
         </div>
@@ -235,14 +239,21 @@ export const Folders = function Folders({
             ))
           : !isLoading && (
               <div className="folder-info" data-cy="folder-info-text">
-                You haven&apos;t created any folders. Use folders to organize your apps
+                {t(
+                  'homePage.foldersSection.noFolders',
+                  `You haven't created any folders. Use folders to organize your apps`
+                )}
               </div>
             )}
 
         <Modal
           show={showForm || showUpdateForm}
           closeModal={() => (showUpdateForm ? setShowUpdateForm(false) : setShowForm(false))}
-          title={showUpdateForm ? 'Update Folder' : 'Create folder'}
+          title={
+            showUpdateForm
+              ? t('homePage.foldersSection.updateFolder', 'Update Folder')
+              : t('homePage.foldersSection.createFolder', 'Create folder')
+          }
         >
           <div className="row">
             <div className="col modal-main">
@@ -250,7 +261,7 @@ export const Folders = function Folders({
                 type="text"
                 onChange={(e) => setNewFolderName(e.target.value)}
                 className="form-control"
-                placeholder="folder name"
+                placeholder={t('homePage.foldersSection.folderName', 'folder name')}
                 disabled={isCreating || isUpdating}
                 value={newFolderName}
                 maxLength={25}
@@ -265,14 +276,16 @@ export const Folders = function Folders({
                 onClick={() => (showUpdateForm ? setShowUpdateForm(false) : setShowForm(false))}
                 data-cy="cancel-button"
               >
-                Cancel
+                {t('globals.cancel', 'Cancel')}
               </button>
               <button
                 className={`btn btn-primary ${isCreating || isUpdating ? 'btn-loading' : ''}`}
                 onClick={showUpdateForm ? executeEditFolder : saveFolder}
                 data-cy={`${showUpdateForm ? 'update-folder' : 'create-folder'}-button`}
               >
-                {showUpdateForm ? 'Update folder' : 'Create folder'}
+                {showUpdateForm
+                  ? t('homePage.foldersSection.updateFolder', 'Update Folder')
+                  : t('homePage.foldersSection.createFolder', 'Create folder')}
               </button>
             </div>
           </div>

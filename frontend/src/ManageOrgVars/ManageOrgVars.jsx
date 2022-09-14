@@ -5,8 +5,8 @@ import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
 import VariableForm from './VariableForm';
 import VariablesTable from './VariablesTable';
-
-class ManageOrgVars extends React.Component {
+import { withTranslation } from 'react-i18next';
+class ManageOrgVarsComponent extends React.Component {
   constructor(props) {
     super(props);
     this.currentUser = authenticationService.currentUserValue;
@@ -241,7 +241,10 @@ class ManageOrgVars extends React.Component {
 
         <ConfirmDialog
           show={this.state.showVariableDeleteConfirmation}
-          message={'Variable will be deleted, do you want to continue?'}
+          message={this.props.t(
+            'header.organization.menus.manageSSO.environmentVar.envWillBeDeleted',
+            'Variable will be deleted, do you want to continue?'
+          )}
           onConfirm={() => {
             this.deleteVariable(this.state.selectedVariableId);
           }}
@@ -259,7 +262,7 @@ class ManageOrgVars extends React.Component {
               <div className="row align-items-center">
                 <div className="col">
                   <div className="page-pretitle"></div>
-                  <h2 className="page-title">Environment Variables</h2>
+                  <h2 className="page-title">{this.props.t('globals.environmentVar', 'Environment Variables')}</h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
                   {!showVariableForm && this.canCreateVariable() && (
@@ -267,7 +270,10 @@ class ManageOrgVars extends React.Component {
                       className="btn btn-primary"
                       onClick={() => this.setState({ showVariableForm: true, errors: {} })}
                     >
-                      Add new variable
+                      {this.props.t(
+                        'header.organization.menus.manageSSO.environmentVar.addNewVariable',
+                        'Add new variable'
+                      )}
                     </div>
                   )}
                 </div>
@@ -302,8 +308,10 @@ class ManageOrgVars extends React.Component {
                   />
                 ) : (
                   <span className="no-vars-text">
-                    You haven&apos;t configured any environment variables, press the &apos;<b>Add new variable</b>&apos;
-                    button to create one
+                    {this.props.t(
+                      'header.organization.menus.manageSSO.environmentVar.noEnvConfig',
+                      `You haven't configured any environment variables, press the 'Add new variable' button to create one`
+                    )}
                   </span>
                 )}
               </>
@@ -315,4 +323,4 @@ class ManageOrgVars extends React.Component {
   }
 }
 
-export { ManageOrgVars };
+export const ManageOrgVars = withTranslation()(ManageOrgVarsComponent);

@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import Select from '@/_ui/Select';
 import { openapiService } from '@/_services';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { withTranslation } from 'react-i18next';
 
 const operationColorMapping = {
   get: 'azure',
@@ -12,7 +13,7 @@ const operationColorMapping = {
   put: 'yellow',
 };
 
-class Stripe extends React.Component {
+class StripeComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -178,7 +179,7 @@ class Stripe extends React.Component {
         {loadingSpec && (
           <div className="p-3">
             <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
-            Please wait whle we load the OpenAPI specification for Stripe.
+            {this.props.t('stripe', 'Please wait whle we load the OpenAPI specification for Stripe.')}
           </div>
         )}
 
@@ -186,7 +187,7 @@ class Stripe extends React.Component {
           <div className="mb-3 mt-2">
             <div className="row g-2">
               <div className="col-12">
-                <label className="form-label pt-2">Operation</label>
+                <label className="form-label pt-2">{this.props.t('globals.operation', 'Operation')}</label>
               </div>
               <div className="col stripe-operation-options" style={{ width: '90px', marginTop: 0 }}>
                 <Select
@@ -212,7 +213,7 @@ class Stripe extends React.Component {
               <div className="row mt-2">
                 {pathParams.length > 0 && (
                   <div className="mt-2">
-                    <h5 className="text-muted">PATH</h5>
+                    <h5 className="text-muted">{this.props.t('globals.path', 'PATH')}</h5>
                     {pathParams.map((param) => (
                       <div className="row input-group my-1" key={param.name}>
                         <div className="col-4 field field-width-268">
@@ -258,7 +259,7 @@ class Stripe extends React.Component {
 
                 {queryParams.length > 0 && (
                   <div className="mt-2">
-                    <h5 className="text-muted">QUERY</h5>
+                    <h5 className="text-muted">{this.props.t('globals.query', 'QUERY')}</h5>
                     {queryParams.map((param) => (
                       <div className="row input-group my-1" key={param.name}>
                         <div className="col-4 field field-width-268">
@@ -304,7 +305,7 @@ class Stripe extends React.Component {
 
                 {requestBody.schema.properties && (
                   <div className="mt-2">
-                    <h5 className="text-muted">REQUEST BODY</h5>
+                    <h5 className="text-muted">{this.props.t('globals.requestBody', 'REQUEST BODY')}</h5>
                     {Object.keys(requestBody.schema.properties).map((param) => (
                       <div className="row input-group my-1" key={param.name}>
                         <div className="col-4 field field-width-268">
@@ -356,4 +357,4 @@ class Stripe extends React.Component {
   }
 }
 
-export { Stripe };
+export const Stripe = withTranslation()(StripeComponent);

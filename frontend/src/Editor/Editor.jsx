@@ -62,11 +62,12 @@ import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
 // eslint-disable-next-line import/no-unresolved
 import Selecto from 'react-selecto';
+import { withTranslation } from 'react-i18next';
 
 setAutoFreeze(false);
 enablePatches();
 
-class Editor extends React.Component {
+class EditorComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -1258,7 +1259,7 @@ class Editor extends React.Component {
                     rel="noreferrer"
                     data-cy="preview-button"
                   >
-                    Preview
+                    {this.props.t('editor.preview', 'Preview')}
                   </Link>
                 </div>
                 <div className="nav-item dropdown d-none d-md-flex me-2">
@@ -1451,7 +1452,7 @@ class Editor extends React.Component {
                                 <SearchBoxComponent
                                   onChange={this.filterQueries}
                                   callback={this.toggleQuerySearch}
-                                  placeholder={'Search queries'}
+                                  placeholder={this.props.t('editor.searchQueries', 'Search queries')}
                                 />
                               </div>
                             </div>
@@ -1464,7 +1465,7 @@ class Editor extends React.Component {
                                   style={{ fontSize: '14px', marginLeft: ' 6px' }}
                                   className="py-1 px-3 mt-2 text-muted"
                                 >
-                                  Queries
+                                  {this.props.t('editor.queries', 'Queries')}
                                 </h5>
                               </div>
 
@@ -1529,7 +1530,7 @@ class Editor extends React.Component {
                                       })
                                     }
                                   >
-                                    {'Create query'}
+                                    {this.props.t('editor.createQuery', 'Create query')}
                                   </button>
                                 </center>
                               </div>
@@ -1658,7 +1659,9 @@ class Editor extends React.Component {
                         handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
                       ></Inspector>
                     ) : (
-                      <center className="mt-5 p-2">Please select a component to inspect</center>
+                      <center className="mt-5 p-2">
+                        {this.props.t('editor.inspectComponent', 'Please select a component to inspect')}
+                      </center>
                     )}
                   </div>
                 )}
@@ -1687,4 +1690,4 @@ class Editor extends React.Component {
   }
 }
 
-export { Editor };
+export const Editor = withTranslation()(EditorComponent);
