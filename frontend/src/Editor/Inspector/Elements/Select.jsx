@@ -1,12 +1,14 @@
 import React from 'react';
 import { ToolTip } from './Components/ToolTip';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { useTranslation } from 'react-i18next';
 
 export const Select = ({ param, definition, onChange, paramType, componentMeta }) => {
   const paramMeta = componentMeta[paramType][param.name];
   const displayName = paramMeta.displayName || param.name;
   const options = paramMeta.options;
   const value = definition ? definition.value : '';
+  const { t } = useTranslation();
 
   return (
     <div className="field mb-3">
@@ -17,7 +19,7 @@ export const Select = ({ param, definition, onChange, paramType, componentMeta }
         search={true}
         onChange={(newVal) => onChange(param, 'value', newVal, paramType)}
         filterOptions={fuzzySearch}
-        placeholder="Select.."
+        placeholder={t('globals.select', 'Select') + '...'}
       />
     </div>
   );

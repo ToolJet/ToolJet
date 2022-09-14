@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import useDebounce from '@/_hooks/useDebounce';
 
-export function SearchBox({ width = '200px', onSubmit, debounceDelay = 300, darkMode = false }) {
+export function SearchBox({
+  width = '200px',
+  onSubmit,
+  debounceDelay = 300,
+  darkMode = false,
+  placeholder = 'Search',
+}) {
   const [searchText, setSearchText] = useState('');
   const debouncedSearchTerm = useDebounce(searchText, debounceDelay);
   const [isFocused, setFocussed] = useState(false);
@@ -48,7 +54,7 @@ export function SearchBox({ width = '200px', onSubmit, debounceDelay = 300, dark
           value={searchText}
           onChange={handleChange}
           className={`form-control ${darkMode && 'dark-theme-placeholder'}`}
-          placeholder="Search"
+          placeholder={placeholder}
           onFocus={() => setFocussed(true)}
           onBlur={() => setFocussed(false)}
           data-cy="home-page-search-bar"

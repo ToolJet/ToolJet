@@ -19,8 +19,10 @@ import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import LogoIcon from './Icons/logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { resolveReferences } from '@/_helpers/utils';
+import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-class Viewer extends React.Component {
+
+class ViewerComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -231,7 +233,7 @@ class Viewer extends React.Component {
         <div className="maintenance_container">
           <div className="card">
             <div className="card-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <h3>Sorry!. This app is under maintenance</h3>
+              <h3>{this.props.t('viewer', 'Sorry!. This app is under maintenance')}</h3>
             </div>
           </div>
         </div>
@@ -327,4 +329,4 @@ class Viewer extends React.Component {
   }
 }
 
-export { Viewer };
+export const Viewer = withTranslation()(ViewerComponent);

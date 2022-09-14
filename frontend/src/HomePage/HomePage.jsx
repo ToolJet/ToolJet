@@ -11,10 +11,10 @@ import Modal from './Modal';
 import SelectSearch from 'react-select-search';
 import Fuse from 'fuse.js';
 import configs from './Configs/AppIcon.json';
-
+import { withTranslation } from 'react-i18next';
 const { iconList, defaultIcon } = configs;
 
-class HomePage extends React.Component {
+class HomePageComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -505,7 +505,10 @@ class HomePage extends React.Component {
       <div className="wrapper home-page">
         <ConfirmDialog
           show={showAppDeletionConfirmation}
-          message={'The app and the associated data will be permanently deleted, do you want to continue?'}
+          message={this.props.t(
+            'homePage.deleteAppAndData',
+            'The app and the associated data will be permanently deleted, do you want to continue?'
+          )}
           confirmButtonLoading={isDeletingApp}
           onConfirm={() => this.executeAppDeletion()}
           onCancel={() => this.cancelDeleteAppDialog()}
@@ -514,7 +517,10 @@ class HomePage extends React.Component {
 
         <ConfirmDialog
           show={showRemoveAppFromFolderConfirmation}
-          message={'The app will be removed from this folder, do you want to continue?'}
+          message={this.props.t(
+            'homePage.removeAppFromFolder',
+            'The app will be removed from this folder, do you want to continue?'
+          )}
           confirmButtonLoading={isDeletingAppFromFolder}
           onConfirm={() => this.removeAppFromFolder()}
           onCancel={() =>
@@ -529,14 +535,14 @@ class HomePage extends React.Component {
         <Modal
           show={showAddToFolderModal && !!appOperations.selectedApp}
           closeModal={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
-          title="Add to folder"
+          title={this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
         >
           <div className="row">
             <div className="col modal-main">
               <div className="mb-3" data-cy="move-selected-app-to-text">
-                <span>Move</span>
+                <span>{this.props.t('homePage.appCard.move', 'Move')}</span>
                 <strong>{` "${appOperations?.selectedApp?.name}" `}</strong>
-                <span>to</span>
+                <span>{this.props.t('homePage.appCard.to', 'to')}</span>
               </div>
               <div data-cy="select-folder">
                 <SelectSearch
@@ -552,7 +558,7 @@ class HomePage extends React.Component {
                   value={appOperations?.selectedFolder}
                   emptyMessage={this.state.folders === 0 ? 'No folders present' : 'Not found'}
                   filterOptions={this.customFuzzySearch}
-                  placeholder="Select folder"
+                  placeholder={this.props.t('homePage.appCard.selectFolder', 'Select folder')}
                 />
               </div>
             </div>
@@ -564,14 +570,14 @@ class HomePage extends React.Component {
                 onClick={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
                 data-cy="cancel-button"
               >
-                Cancel
+                {this.props.t('globals.cancel', 'Cancel')}
               </button>
               <button
                 className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
                 onClick={this.addAppToFolder}
                 data-cy="add-to-folder-button"
               >
-                Add to folder
+                {this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
               </button>
             </div>
           </div>
@@ -580,7 +586,7 @@ class HomePage extends React.Component {
         <Modal
           show={showChangeIconModal && !!appOperations.selectedApp}
           closeModal={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
-          title="Change Icon"
+          title={this.props.t('homePage.appCard.changeIcon', 'Change Icon')}
         >
           <div className="row">
             <div className="col modal-main icon-change-modal">
@@ -594,14 +600,14 @@ class HomePage extends React.Component {
                 onClick={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
                 data-cy="cancel-button"
               >
-                Cancel
+                {this.props.t('globals.cancel', 'Cancel')}
               </button>
               <button
                 className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
                 onClick={this.changeIcon}
                 data-cy="change-button"
               >
-                Change
+                {this.props.t('homePage.change', 'Change')}
               </button>
             </div>
           </div>
@@ -697,4 +703,4 @@ class HomePage extends React.Component {
   }
 }
 
-export { HomePage };
+export const HomePage = withTranslation()(HomePageComponent);

@@ -26,6 +26,7 @@ import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
+import { useTranslation } from 'react-i18next';
 
 export function Table({
   id,
@@ -45,6 +46,8 @@ export function Table({
   registerAction,
   properties,
 }) {
+  const { t } = useTranslation();
+
   const color =
     component.definition.styles.textColor.value !== '#000'
       ? component.definition.styles.textColor.value
@@ -498,7 +501,7 @@ export function Table({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   filterOptions={fuzzySearch}
-                  placeholder="Select.."
+                  placeholder={t('globals.select', 'Select') + '...'}
                   disabled={!column.isEditable}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
@@ -512,7 +515,7 @@ export function Table({
                   printOptions="on-focus"
                   multiple
                   search={true}
-                  placeholder="Select.."
+                  placeholder={t('globals.select', 'Select') + '...'}
                   options={columnOptions.selectOptions}
                   value={cellValue}
                   onChange={(value) => {
@@ -1133,7 +1136,7 @@ export function Table({
                       filterColumnChanged(index, value);
                     }}
                     filterOptions={fuzzySearch}
-                    placeholder="Select.."
+                    placeholder={t('globals.select', 'Select') + '...'}
                   />
                 </div>
                 <div className="col" style={{ maxWidth: '180px' }}>
@@ -1155,7 +1158,7 @@ export function Table({
                       filterOperationChanged(index, value);
                     }}
                     filterOptions={fuzzySearch}
-                    placeholder="Select.."
+                    placeholder={t('globals.select', 'Select') + '...'}
                   />
                 </div>
                 <div className="col">

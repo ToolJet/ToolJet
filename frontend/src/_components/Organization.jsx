@@ -4,6 +4,7 @@ import { authenticationService, organizationService } from '@/_services';
 import Modal from '../HomePage/Modal';
 import { toast } from 'react-hot-toast';
 import { SearchBox } from './SearchBox';
+import { useTranslation } from 'react-i18next';
 
 export const Organization = function Organization({ darkMode }) {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
@@ -17,6 +18,7 @@ export const Organization = function Organization({ darkMode }) {
   const [getOrgStatus, setGetOrgStatus] = useState('loading');
   const [isListOrganizations, setIsListOrganizations] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
+  const { t } = useTranslation();
 
   const getAvatar = (organization) => {
     if (!organization) return;
@@ -210,11 +212,16 @@ export const Organization = function Organization({ darkMode }) {
               </svg>
             </div>
             <div className="back-btn" onClick={() => setIsListOrganizations(false)}>
-              Back
+              {t('globals.back', 'Back')}
             </div>
           </div>
           <div className="search-box">
-            <SearchBox onSubmit={searchOrganizations} debounceDelay={100} width="14rem" />
+            <SearchBox
+              onSubmit={searchOrganizations}
+              debounceDelay={100}
+              width="14rem"
+              placeholder={t('globals.search', 'Search')}
+            />
           </div>
         </div>
         <div className="org-list">
@@ -227,7 +234,7 @@ export const Organization = function Organization({ darkMode }) {
                 href="#"
                 className={`btn btn-primary mb-2 ${getOrgStatus === 'loading' ? 'btn-loading' : ''}`}
               >
-                Load Organizations
+                {t('header.organization.loadOrganizations', 'Load Organizations')}
               </a>
             </div>
           )}
@@ -251,7 +258,7 @@ export const Organization = function Organization({ darkMode }) {
               {admin && (
                 <div className="org-edit">
                   <span onClick={showEditModal} data-cy="edit-workspace-name">
-                    Edit
+                    {t('globals.edit', 'Edit')}
                   </span>
                 </div>
               )}
@@ -282,25 +289,27 @@ export const Organization = function Organization({ darkMode }) {
         </div>
         {!isSingleOrganization && (
           <div className="dropdown-item org-actions">
-            <div onClick={showCreateModal}>Add workspace</div>
+            <div onClick={showCreateModal}>{t('header.organization.menus.addWorkspace', 'Add workspace')}</div>
           </div>
         )}
         <div className="dropdown-divider"></div>
         {admin && (
           <>
             <Link data-testid="settingsBtn" to="/users" className="dropdown-item" data-cy="manage-users">
-              Manage Users
+              {t('header.organization.menus.menusList.manageUsers', 'Manage Users')}
             </Link>
             <Link data-tesid="settingsBtn" to="/groups" className="dropdown-item" data-cy="manage-groups">
-              Manage Groups
+              {t('header.organization.menus.menusList.manageGroups', 'Manage Groups')}
             </Link>
             <Link data-tesid="settingsBtn" to="/manage-sso" className="dropdown-item" data-cy="manage-sso">
-              Manage SSO
+              {t('header.organization.menus.menusList.manageSso', 'Manage SSO')}
             </Link>
           </>
         )}
         <Link data-tesid="settingsBtn" to="/manage-environment-vars" className="dropdown-item">
-          {admin ? 'Manage Environment Variables' : 'Environment Variables'}
+          {admin
+            ? t('header.organization.menus.menusList.manageEnv', 'Manage Environment Variables')
+            : t('globals.environmentVar', 'Environment Variables')}
         </Link>
       </div>
     );
@@ -322,14 +331,18 @@ export const Organization = function Organization({ darkMode }) {
           </div>
         )}
       </div>
-      <Modal show={showCreateOrg} closeModal={() => setShowCreateOrg(false)} title="Create workspace">
+      <Modal
+        show={showCreateOrg}
+        closeModal={() => setShowCreateOrg(false)}
+        title={t('header.organization.createWorkspace', 'Create workspace')}
+      >
         <div className="row">
           <div className="col modal-main">
             <input
               type="text"
               onChange={(e) => setNewOrgName(e.target.value)}
               className="form-control"
-              placeholder="workspace name"
+              placeholder={t('header.organization.workspaceName', 'workspace name')}
               disabled={isCreating}
               maxLength={25}
             />
@@ -338,26 +351,30 @@ export const Organization = function Organization({ darkMode }) {
         <div className="row">
           <div className="col d-flex modal-footer-btn">
             <button className="btn btn-light" onClick={() => setShowCreateOrg(false)}>
-              Cancel
+              {t('globals.cancel', 'Cancel')}
             </button>
             <button
               disabled={isCreating}
               className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`}
               onClick={createOrganization}
             >
-              Create workspace
+              {t('header.organization.createWorkspace', 'Create workspace')}
             </button>
           </div>
         </div>
       </Modal>
-      <Modal show={showEditOrg} closeModal={() => setShowEditOrg(false)} title="Edit workspace">
+      <Modal
+        show={showEditOrg}
+        closeModal={() => setShowEditOrg(false)}
+        title={t('header.organization.editWorkspace', 'Edit workspace')}
+      >
         <div className="row">
           <div className="col modal-main">
             <input
               type="text"
               onChange={(e) => setNewOrgName(e.target.value)}
               className="form-control"
-              placeholder="workspace name"
+              placeholder={t('header.organization.workspaceName', 'workspace name')}
               disabled={isCreating}
               value={newOrgName}
               maxLength={25}
@@ -367,10 +384,10 @@ export const Organization = function Organization({ darkMode }) {
         <div className="row">
           <div className="col d-flex modal-footer-btn">
             <button className="btn btn-light" onClick={() => setShowEditOrg(false)}>
-              Cancel
+              {t('globals.cancel', 'Cancel')}
             </button>
             <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={editOrganization}>
-              Save
+              {t('globals.save', 'Save')}
             </button>
           </div>
         </div>
