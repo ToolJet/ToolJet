@@ -102,6 +102,9 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
   const searchUser = (query, callback) => {
+    if (!query) {
+      return;
+    }
     organizationService
       .getUsersByValue(query)
       .then((data) =>

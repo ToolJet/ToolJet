@@ -60,8 +60,7 @@ export class OrganizationsController {
 
   @UseGuards(JwtAuthGuard)
   @Get('users/suggest')
-  async getUser(@User() user, @Query() query) {
-    const searchInput = query.input;
+  async getUserSuggestions(@User() user, @Query('input') searchInput) {
     const users = await this.organizationsService.fetchUsersByValue(user, searchInput);
     const response = {
       users,

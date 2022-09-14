@@ -114,8 +114,8 @@ const UsersTable = ({
                           type="button"
                           style={{ minWidth: '100px' }}
                           className={cx('btn btn-sm', {
-                            'btn-outline-danger': user.status === 'archived',
-                            'btn-outline-success': user.status === 'active',
+                            'btn-outline-success': user.status === 'archived',
+                            'btn-outline-danger': user.status === 'active' || user.status === 'invited',
                             'btn-loading': unarchivingUser === user.id || archivingUser === user.id,
                           })}
                           disabled={unarchivingUser === user.id || archivingUser === user.id}

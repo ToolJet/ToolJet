@@ -115,12 +115,17 @@ export class OrganizationsService {
   }
 
   async fetchUsersByValue(user: User, searchInput: string): Promise<any> {
+    if (!searchInput) {
+      return [];
+    }
     const options = {
       email: searchInput,
       firstName: searchInput,
       lastName: searchInput,
     };
-    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options).getMany();
+    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'or')
+      .orderBy('user.firstName', 'ASC')
+      .getMany();
 
     return organizationUsers?.map((orgUser) => {
       return {
@@ -134,33 +139,51 @@ export class OrganizationsService {
     });
   }
 
-  organizationUsersQuery(organizationId: string, options: UserFilterOptions) {
-    return createQueryBuilder(OrganizationUser, 'organization_user')
+  organizationUsersQuery(organizationId: string, options: UserFilterOptions, condition?: 'and' | 'or') {
+    const getOrConditions = () => {
+      return new Brackets((qb) => {
+        if (options?.email)
+          qb.orWhere('lower(user.email) like :email', {
+            email: `%${options?.email.toLowerCase()}%`,
+          });
+        if (options?.firstName)
+          qb.orWhere('lower(user.firstName) like :firstName', {
+            firstName: `%${options?.firstName.toLowerCase()}%`,
+          });
+        if (options?.lastName)
+          qb.orWhere('lower(user.lastName) like :lastName', {
+            lastName: `%${options?.lastName.toLowerCase()}%`,
+          });
+      });
+    };
+    const getAndConditions = () => {
+      return new Brackets((qb) => {
+        if (options?.email)
+          qb.andWhere('lower(user.email) like :email', {
+            email: `%${options?.email.toLowerCase()}%`,
+          });
+        if (options?.firstName)
+          qb.andWhere('lower(user.firstName) like :firstName', {
+            firstName: `%${options?.firstName.toLowerCase()}%`,
+          });
+        if (options?.lastName)
+          qb.andWhere('lower(user.lastName) like :lastName', {
+            lastName: `%${options?.lastName.toLowerCase()}%`,
+          });
+      });
+    };
+    const query = createQueryBuilder(OrganizationUser, 'organization_user')
       .innerJoinAndSelect('organization_user.user', 'user')
       .where('organization_user.organization_id = :organizationId', {
         organizationId,
-      })
-      .andWhere(
-        new Brackets((qb) => {
-          if (options?.email)
-            qb.where('lower(user.email) like :email', {
-              email: `%${options?.email.toLowerCase()}%`,
-            });
-          if (options?.firstName)
-            qb.where('lower(user.firstName) like :firstName', {
-              firstName: `%${options?.firstName.toLowerCase()}%`,
-            });
-          if (options?.lastName)
-            qb.where('lower(user.lastName) like :lastName', {
-              lastName: `%${options?.lastName.toLowerCase()}%`,
-            });
-        })
-      )
-      .orderBy('user.createdAt', 'ASC');
+      });
+    query.andWhere(condition === 'and' ? getAndConditions() : getOrConditions());
+    return query;
   }
 
   async fetchUsers(user: User, page: number, options: UserFilterOptions): Promise<FetchUserResponse[]> {
-    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options)
+    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'and')
+      .orderBy('user.createdAt', 'ASC')
       .take(10)
       .skip(10 * (page - 1))
       .getMany();
@@ -187,7 +210,7 @@ export class OrganizationsService {
   }
 
   async usersCount(user: User, options: UserFilterOptions): Promise<number> {
-    return await this.organizationUsersQuery(user.organizationId, options).getCount();
+    return await this.organizationUsersQuery(user.organizationId, options, 'and').getCount();
   }
 
   async fetchOrganizations(user: any): Promise<Organization[]> {

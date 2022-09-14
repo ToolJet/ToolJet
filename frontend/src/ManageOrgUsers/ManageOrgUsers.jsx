@@ -94,7 +94,7 @@ class ManageOrgUsers extends React.Component {
           position: 'top-center',
         });
         this.setState({ archivingUser: null });
-        this.fetchUsers(this.state.currentPage);
+        this.fetchUsers(this.state.currentPage, this.state.options);
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
@@ -112,7 +112,7 @@ class ManageOrgUsers extends React.Component {
           position: 'top-center',
         });
         this.setState({ unarchivingUser: null });
-        this.fetchUsers(this.state.currentPage);
+        this.fetchUsers(this.state.currentPage, this.state.options);
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
