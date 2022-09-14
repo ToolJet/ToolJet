@@ -841,7 +841,7 @@ export const widgets = [
       },
       properties: {
         value: { value: '' },
-        placeholder: { value: 'Placeholder text' },
+        placeholder: { value: 'Enter your text' },
         hidden: { value: '{{false}}', fxActive: true },
         disable: { value: '{{false}}', fxActive: true },
         loading: { value: '{{false}}', fxActive: true },
