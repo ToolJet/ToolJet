@@ -3,6 +3,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Avatar from '../../../src/_ui/Avatar';
 import Skeleton from 'react-loading-skeleton';
 import cx from 'classnames';
+import { Pagination } from '@/_components';
 
 const UsersTable = ({
   isLoading,
@@ -13,6 +14,9 @@ const UsersTable = ({
   invitationLinkCopyHandler,
   unarchiveOrgUser,
   archiveOrgUser,
+  meta,
+  pageChanged,
+  darkMode,
 }) => {
   return (
     <div className="container-xl mb-4 pb-4">
@@ -129,6 +133,15 @@ const UsersTable = ({
             )}
           </table>
         </div>
+        {meta.total_count > 10 && (
+          <Pagination
+            currentPage={meta.current_page}
+            count={meta.total_count}
+            pageChanged={pageChanged}
+            itemsPerPage={10}
+            darkMode={darkMode}
+          />
+        )}
       </div>
     </div>
   );

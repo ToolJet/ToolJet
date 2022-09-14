@@ -846,7 +846,7 @@ button {
 @media (max-height: 608px) {
   .org-users-page{
     .page-body {
-      height: fit-content;
+      height: 100vh;
     }
   }
 }
@@ -6119,10 +6119,3 @@ input.hide-input-arrows{
     }
   }
 }
-
-.users-pagination {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-}
-
