@@ -11,6 +11,7 @@ export const TextInput = function TextInput({
   component,
   darkMode,
 }) {
+  const { loading, hidden, disable } = properties;
   const [value, setValue] = useState(properties.value);
   const { isValid, validationError } = validate(value);
 
@@ -34,32 +35,43 @@ export const TextInput = function TextInput({
   });
 
   return (
-    <div className="text-input">
-      <input
-        disabled={styles.disabledState}
-        onKeyUp={(e) => {
-          if (e.key == 'Enter') {
-            setValue(e.target.value);
-            setExposedVariable('value', e.target.value).then(() => {
-              fireEvent('onEnterPressed');
-            });
-          }
-        }}
-        onChange={(e) => {
-          setValue(e.target.value);
-          setExposedVariable('value', e.target.value);
-          fireEvent('onChange');
-        }}
-        type="text"
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
-          darkMode && 'dark-theme-placeholder'
-        }`}
-        placeholder={properties.placeholder}
-        style={{ height, display: styles.visibility ? '' : 'none', borderRadius: `${styles.borderRadius}px` }}
-        value={value}
-        data-cy={`draggable-widget-${component.name}`}
-      />
-      <div className="invalid-feedback">{validationError}</div>
+    <div data-disabled={disable} className={`text-input ${hidden && 'invisible'}`}>
+      {loading === true && (
+        <div style={{ width: '100%' }}>
+          <center>
+            <div className="spinner-border" role="status"></div>
+          </center>
+        </div>
+      )}
+      {loading || (
+        <React.Fragment>
+          <input
+            disabled={styles.disabledState}
+            onKeyUp={(e) => {
+              if (e.key == 'Enter') {
+                setValue(e.target.value);
+                setExposedVariable('value', e.target.value).then(() => {
+                  fireEvent('onEnterPressed');
+                });
+              }
+            }}
+            onChange={(e) => {
+              setValue(e.target.value);
+              setExposedVariable('value', e.target.value);
+              fireEvent('onChange');
+            }}
+            type="text"
+            className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+              darkMode && 'dark-theme-placeholder'
+            }`}
+            placeholder={properties.placeholder}
+            style={{ height, display: styles.visibility ? '' : 'none', borderRadius: `${styles.borderRadius}px` }}
+            value={value}
+            data-cy={`draggable-widget-${component.name}`}
+          />
+          <div className="invalid-feedback">{validationError}</div>
+        </React.Fragment>
+      )}
     </div>
   );
 };
