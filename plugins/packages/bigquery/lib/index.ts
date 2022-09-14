@@ -40,10 +40,13 @@ export default class Bigquery implements QueryService {
         }
 
         case 'create_view': {
-          const query = `CREATE VIEW ${queryOptions.datasetId}.${queryOptions.view_name} AS
+          let query = `CREATE VIEW ${queryOptions.datasetId}.${queryOptions.view_name} AS
           SELECT ${queryOptions.viewcolumns}
-          FROM ${queryOptions.datasetId}.${queryOptions.tableId}
-          WHERE ${queryOptions.condition};`;
+          FROM ${queryOptions.datasetId}.${queryOptions.tableId}`;
+
+          if (queryOptions.condition) {
+            query += ` WHERE ${queryOptions.condition};`;
+          }
 
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
