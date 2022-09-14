@@ -85,7 +85,7 @@ export default class Bigquery implements QueryService {
             .dataset(queryOptions.datasetId)
             .table(queryOptions.tableId)
             .insert(this.parseJSON(queryOptions.rows));
-          result = rows;
+          result = { ...rows[0], records: (this.parseJSON(queryOptions.rows) as []).length };
           break;
         }
 
