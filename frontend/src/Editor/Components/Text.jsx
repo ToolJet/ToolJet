@@ -6,8 +6,7 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     textSize,
     textColor,
     textAlign,
-    visibility,
-    disabledState,
+    backgroundColor,
     fontWeight,
     decoration,
     transformation,
@@ -18,8 +17,12 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     wordSpacing,
     fontVariant,
   } = styles;
+  const { disabledState } = properties;
   const [loadingState, setLoadingState] = useState(false);
   const [text, setText] = useState(() => computeText());
+
+  const [visibility, setVisibility] = useState(properties.visibility);
+  useEffect(() => setVisibility(properties.visibility), [properties.visibility]);
 
   const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
 
@@ -34,12 +37,16 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
   registerAction('setText', async function (text) {
     setText(text);
   });
+  registerAction('hide', async function (value) {
+    setVisibility(!value);
+  });
 
   function computeText() {
     return properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
   }
 
   const computedStyles = {
+    backgroundColor: darkMode && backgroundColor === '#fff' ? '#232E3C' : backgroundColor,
     color,
     height,
     display: visibility ? 'flex' : 'none',

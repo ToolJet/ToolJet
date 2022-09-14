@@ -1583,6 +1583,20 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     defaultSize: {
       width: 6,
@@ -1651,7 +1665,13 @@ export const widgets = [
           schema: { type: 'number' },
         },
       },
-
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       textColor: {
         type: 'color',
         displayName: 'Text Color',
@@ -1666,20 +1686,6 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
     },
     exposedVariables: {},
     actions: [
@@ -1687,6 +1693,11 @@ export const widgets = [
         handle: 'setText',
         displayName: 'Set Text',
         params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
+      },
+      {
+        handle: 'hide',
+        displayName: 'Hide',
+        params: [{ handle: 'hide', displayName: 'Value', defaultValue: `{{false}}` }],
       },
     ],
     definition: {
@@ -1697,15 +1708,16 @@ export const widgets = [
       properties: {
         text: { value: 'Text goes here !' },
         visible: { value: '{{true}}' },
-        loadingState: { value: `{{false}}` },
+        loadingState: { value: `{{false}}`, fxActive: true },
+        visibility: { value: '{{true}}', fxActive: true },
+        disabledState: { value: '{{false}}', fxActive: true },
       },
       events: [],
       styles: {
-        textSize: { value: 14 },
+        backgroundColor: { value: '#fff' },
         textColor: { value: '#000' },
+        textSize: { value: 14 },
         textAlign: { value: 'left' },
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
         fontWeight: { value: 'normal' },
         decoration: { value: 'none' },
         transformation: { value: 'none' },
