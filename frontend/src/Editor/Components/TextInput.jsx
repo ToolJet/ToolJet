@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 export const TextInput = function TextInput({
   height,
@@ -11,10 +11,19 @@ export const TextInput = function TextInput({
   component,
   darkMode,
 }) {
-  const { loading, hidden, disable } = properties;
+  const textInputRef = useRef();
+
+  const [loading, setLoading] = useState(properties.loading);
+  useEffect(() => setLoading(properties.loading), [properties.loading]);
+
+  const [disable, setDisable] = useState(properties.disable);
+  useEffect(() => setDisable(properties.disable), [properties.disable]);
+
+  const [hidden, setHidden] = useState(properties.hidden);
+  useEffect(() => setHidden(properties.hidden), [properties.hidden]);
+
   const [value, setValue] = useState(properties.value);
   const { isValid, validationError } = validate(value);
-
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -33,6 +42,21 @@ export const TextInput = function TextInput({
     setValue('');
     setExposedVariable('value', '').then(fireEvent('onChange'));
   });
+  registerAction('setFocus', async function () {
+    textInputRef.current.focus();
+  });
+  registerAction('setBlur', async function () {
+    textInputRef.current.blur();
+  });
+  registerAction('loading', async function (value) {
+    setLoading(value);
+  });
+  registerAction('disable', async function (value) {
+    setDisable(value);
+  });
+  registerAction('hide', async function (value) {
+    setHidden(value);
+  });
 
   return (
     <div data-disabled={disable} className={`text-input ${hidden && 'invisible'}`}>
@@ -46,6 +70,7 @@ export const TextInput = function TextInput({
       {loading || (
         <React.Fragment>
           <input
+            ref={textInputRef}
             disabled={styles.disabledState}
             onKeyUp={(e) => {
               if (e.key == 'Enter') {

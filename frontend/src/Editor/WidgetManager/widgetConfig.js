@@ -799,6 +799,29 @@ export const widgets = [
         handle: 'clear',
         displayName: 'Clear',
       },
+      {
+        handle: 'setFocus',
+        displayName: 'Set focus',
+      },
+      {
+        handle: 'setBlur',
+        displayName: 'Set blur',
+      },
+      {
+        handle: 'disable',
+        displayName: 'Disable',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}' }],
+      },
+      {
+        handle: 'loading',
+        displayName: 'Loading',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}' }],
+      },
+      {
+        handle: 'hide',
+        displayName: 'Hide',
+        params: [{ handle: 'hide', displayName: 'Value', defaultValue: '{{false}}' }],
+      },
     ],
     definition: {
       validation: {
