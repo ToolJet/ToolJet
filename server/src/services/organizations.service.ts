@@ -14,7 +14,7 @@ import { OrganizationUsersService } from './organization_users.service';
 import { UsersService } from './users.service';
 import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
-import { WorkspaceDbSetupService } from "./workspace_db_setup.service";
+import { WorkspaceDbSetupService } from './workspace_db_setup.service';
 
 type FetchUserResponse = {
   email: string;
@@ -48,7 +48,7 @@ export class OrganizationsService {
   ) {}
 
   async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
-    let organization: Organization
+    let organization: Organization;
     await dbTransactionWrap(async (manager: EntityManager) => {
       organization = await manager.save(
         manager.create(Organization, {
@@ -78,7 +78,6 @@ export class OrganizationsService {
       }
     }, manager);
 
-    console.log({ organization })
     await this.workspaceDbSetupService.perform(getManager(), organization.id);
     return organization;
   }
