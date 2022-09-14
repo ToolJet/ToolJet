@@ -17,28 +17,23 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     wordSpacing,
     fontVariant,
   } = styles;
-  const { disabledState } = properties;
-  const [loadingState, setLoadingState] = useState(false);
+  const { disable, loading } = properties;
+  // const [loadingState, setLoadingState] = useState(false);
   const [text, setText] = useState(() => computeText());
 
-  const [visibility, setVisibility] = useState(properties.visibility);
-  useEffect(() => setVisibility(properties.visibility), [properties.visibility]);
+  const [hidden, setHidden] = useState(properties.hidden);
+  useEffect(() => setHidden(properties.hidden), [properties.hidden]);
 
   const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => setText(() => computeText()), [properties.text]);
-  useEffect(() => {
-    const loadingStateProperty = properties.loadingState;
-    setLoadingState(loadingStateProperty);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.loadingState]);
 
   registerAction('setText', async function (text) {
     setText(text);
   });
   registerAction('hide', async function (value) {
-    setVisibility(!value);
+    setHidden(value);
   });
 
   function computeText() {
@@ -49,7 +44,7 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     backgroundColor: darkMode && backgroundColor === '#fff' ? '#232E3C' : backgroundColor,
     color,
     height,
-    display: visibility ? 'flex' : 'none',
+    display: hidden ? 'none' : 'flex',
     alignItems: 'center',
     textAlign,
     fontWeight: fontWeight ? fontWeight : fontWeight === '0' ? 0 : 'normal',
@@ -64,14 +59,14 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
   };
 
   return (
-    <div data-disabled={disabledState} className="text-widget" style={computedStyles}>
-      {!loadingState && (
+    <div data-disabled={disable} className="text-widget" style={computedStyles}>
+      {!loading && (
         <div
           style={{ width: '100%', fontSize: textSize }}
           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
         />
       )}
-      {loadingState === true && (
+      {loading === true && (
         <div style={{ width: '100%' }}>
           <center>
             <div className="spinner-border" role="status"></div>

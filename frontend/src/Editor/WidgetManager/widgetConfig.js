@@ -1576,21 +1576,21 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
-      loadingState: {
+      loading: {
         type: 'toggle',
-        displayName: 'Show loading state',
+        displayName: 'Loading',
         validation: {
           schema: { type: 'boolean' },
         },
       },
-      visibility: {
+      hidden: {
         type: 'toggle',
-        displayName: 'Visibility',
+        displayName: 'Hidden',
         validation: {
           schema: { type: 'boolean' },
         },
       },
-      disabledState: {
+      disable: {
         type: 'toggle',
         displayName: 'Disable',
         validation: {
@@ -1706,11 +1706,11 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        text: { value: 'Text goes here !' },
+        text: { value: 'Hello, there!' },
         visible: { value: '{{true}}' },
-        loadingState: { value: `{{false}}`, fxActive: true },
-        visibility: { value: '{{true}}', fxActive: true },
-        disabledState: { value: '{{false}}', fxActive: true },
+        loading: { value: `{{false}}`, fxActive: true },
+        hidden: { value: '{{false}}', fxActive: true },
+        disable: { value: '{{false}}', fxActive: true },
       },
       events: [],
       styles: {
