@@ -3,25 +3,25 @@ import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
 export const Button = function Button({ height, properties, styles, fireEvent, registerAction, component }) {
-  const { backgroundColor, textColor, borderRadius, loaderColor } = styles;
+  const { backgroundColor, textColor, borderRadius, loaderColor, disabledState } = styles;
 
-  const [label, setLabel] = useState(properties.label);
-  useEffect(() => setLabel(properties.label), [properties.label]);
+  const [label, setLabel] = useState(properties.text);
+  useEffect(() => setLabel(properties.text), [properties.text]);
 
-  const [disable, setDisable] = useState(properties.disable);
+  const [disable, setDisable] = useState(properties.disabledState);
   useEffect(() => {
-    setDisable(properties.disable);
-  }, [properties.disable]);
+    setDisable(properties.disabledState);
+  }, [properties.disabledState]);
 
-  const [hidden, setHidden] = useState(properties.hidden);
+  const [visibility, setVisibility] = useState(properties.visibility);
   useEffect(() => {
-    setHidden(properties.hidden);
-  }, [properties.hidden]);
+    setVisibility(properties.visibility);
+  }, [properties.visibility]);
 
-  const [loading, setLoading] = useState(properties.loading);
+  const [loading, setLoading] = useState(properties.loadingState);
   useEffect(() => {
-    setLoading(properties.loading);
-  }, [properties.loading]);
+    setLoading(properties.loadingState);
+  }, [properties.loadingState]);
 
   const computedStyles = {
     backgroundColor,
@@ -29,7 +29,7 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
     width: '100%',
     borderRadius: `${borderRadius}px`,
     height,
-    display: hidden ? 'none' : 'flex',
+    display: visibility ? 'flex' : 'none',
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
   };
@@ -46,8 +46,8 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
     setDisable(value);
   });
 
-  registerAction('hide', async function (value) {
-    setHidden(value);
+  registerAction('visibility', async function (value) {
+    setVisibility(value);
   });
 
   registerAction('loading', async function (value) {

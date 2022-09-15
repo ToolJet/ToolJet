@@ -373,34 +373,18 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      label: {
+      text: {
         type: 'code',
         displayName: 'Button Text',
         validation: {
           schema: { type: 'string' },
         },
       },
-      loading: {
+      loadingState: {
         type: 'toggle',
         displayName: 'Loading State',
         validation: {
           schema: { type: 'boolean' },
-        },
-      },
-      hidden: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schema: { type: 'boolean' },
-          defaultValue: false,
-        },
-      },
-      disable: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schema: { type: 'boolean' },
-          defaultValue: false,
         },
       },
     },
@@ -433,6 +417,22 @@ export const widgets = [
           defaultValue: false,
         },
       },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
       borderRadius: {
         type: 'number',
         displayName: 'Border radius',
@@ -449,9 +449,9 @@ export const widgets = [
         displayName: 'Click',
       },
       {
-        handle: 'setLabel',
-        displayName: 'Set Label',
-        params: [{ handle: 'setLabel', displayName: 'Label', defaultValue: 'New Label' }],
+        handle: 'setText',
+        displayName: 'Set Text',
+        params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
       },
       {
         handle: 'disable',
@@ -459,9 +459,9 @@ export const widgets = [
         params: [{ handle: 'disable', displayName: 'Boolean', defaultValue: `{{false}}` }],
       },
       {
-        handle: 'hide',
-        displayName: 'Hide',
-        params: [{ handle: 'hide', displayName: 'Boolean', defaultValue: `{{false}}` }],
+        handle: 'visibility',
+        displayName: 'Visibility',
+        params: [{ handle: 'visible', displayName: 'Boolean', defaultValue: `{{false}}` }],
       },
       {
         handle: 'loading',
@@ -475,17 +475,17 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        label: { value: `Button` },
-        loading: { value: `{{false}}`, fxActive: true },
-        hidden: { value: '{{false}}', fxActive: true },
-        disable: { value: '{{false}}', fxActive: true },
+        text: { value: `Button` },
+        loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
         backgroundColor: { value: '#375FCF' },
         textColor: { value: '#fff' },
         loaderColor: { value: '#fff' },
+        visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
+        disabledState: { value: '{{false}}' },
       },
     },
   },
