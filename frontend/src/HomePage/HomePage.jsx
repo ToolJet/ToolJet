@@ -11,7 +11,6 @@ import Modal from './Modal';
 import SelectSearch from 'react-select-search';
 import Fuse from 'fuse.js';
 import configs from './Configs/AppIcon.json';
-import VerificationSuccessInfoScreen from '../successInfoScreen/VerificationSuccessInfoScreen';
 import { withTranslation } from 'react-i18next';
 const { iconList, defaultIcon } = configs;
 
@@ -616,18 +615,17 @@ class HomePageComponent extends React.Component {
 
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
         {!isLoading && meta.total_count === 0 && !currentFolder.id && !appSearchKey && (
-          <VerificationSuccessInfoScreen />
-          // <BlankPage
-          //   createApp={this.createApp}
-          //   isImportingApp={isImportingApp}
-          //   fileInput={this.fileInput}
-          //   handleImportApp={this.handleImportApp}
-          //   creatingApp={creatingApp}
-          //   darkMode={this.props.darkMode}
-          //   showTemplateLibraryModal={this.state.showTemplateLibraryModal}
-          //   viewTemplateLibraryModal={this.showTemplateLibraryModal}
-          //   hideTemplateLibraryModal={this.hideTemplateLibraryModal}
-          // />
+          <BlankPage
+            createApp={this.createApp}
+            isImportingApp={isImportingApp}
+            fileInput={this.fileInput}
+            handleImportApp={this.handleImportApp}
+            creatingApp={creatingApp}
+            darkMode={this.props.darkMode}
+            showTemplateLibraryModal={this.state.showTemplateLibraryModal}
+            viewTemplateLibraryModal={this.showTemplateLibraryModal}
+            hideTemplateLibraryModal={this.hideTemplateLibraryModal}
+          />
         )}
 
         {(isLoading || meta.total_count > 0 || currentFolder.id || appSearchKey) && (
