@@ -14,13 +14,11 @@ export const Icon = ({ properties, styles, fireEvent, width, height, currentStat
   const [showIcon, setIconVisibility] = useState(true);
 
   useEffect(() => {
-    setIconVisibility(
-      typeof visibility !== 'boolean' ? !resolveWidgetFieldValue(visibility, currentState) : visibility
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibility]);
+    showIcon !== visibility &&
+      setIconVisibility(
+        typeof visibility !== 'boolean' ? resolveWidgetFieldValue(visibility, currentState) : visibility
+      );
 
-  useEffect(() => {
     registerAction('click', async function () {
       fireEvent('onClick');
     });
