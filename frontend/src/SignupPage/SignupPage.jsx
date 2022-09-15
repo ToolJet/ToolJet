@@ -98,7 +98,9 @@ class SignupPageComponent extends React.Component {
             {!signupSuccess && (
               <div className="card-body">
                 <h2 className="card-title text-center mb-4">
-                  {this.props.t('loginSignupPage.createToolJetAccount', `Create a ${label_text} account`)}
+                  {this.props.t('loginSignupPage.createToolJetAccount', `Create a ${label_text} account`, {
+                    whiteLabelText: label_text,
+                  })}
                 </h2>
                 {this.ssoConfigs.enableSignUp && (
                   <div className="d-flex flex-column align-items-center separator-bottom">

@@ -75,7 +75,8 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
                 text={t('googleSheets.readWrite', 'Read and write')}
                 helpText={t(
                   'googleSheets.readModifySheets',
-                  'Your ToolJet apps can read data from sheets, modify sheets, and more.'
+                  `Your ${retrieveWhiteLabelText()} apps can read data from sheets, modify sheets, and more.`,
+                  { whiteLabelText: retrieveWhiteLabelText() }
                 )}
               />
             </div>
