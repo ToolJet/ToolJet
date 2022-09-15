@@ -6135,15 +6135,19 @@ input.hide-input-arrows {
   font-size: 14px;
   line-height: 20px;
   font-family: 'Roboto';
+  text-align: center;
+  margin-bottom: 32px;
 
 }
 
 .onboarding-page-header {
-  margin-bottom: 4px;
-  font-weight: 700;
-  font-size: 22px;
-  line-height: 40px;
   color: #111827;
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 48px;
+  margin-bottom: 4px;
+  text-align: center;
+
 }
 
 .onboarding-page-continue-button {
@@ -6255,6 +6259,9 @@ input.hide-input-arrows {
   align-items: center;
   color: #6B7787;
   margin-bottom: 12px;
+  cursor: pointer;
+
+
 
   p {
     margin-bottom: 0 !important;
@@ -6277,6 +6284,7 @@ input.hide-input-arrows {
   }
 
 }
+
 
 .onboarding-radio-checked {
   border: 1px solid #466BF2 !important;
@@ -6323,15 +6331,15 @@ input.hide-input-arrows {
 }
 
 .onboarding-progress {
-  margin-bottom: 60px;
+  margin-bottom: 40px;
   display: grid;
   grid-template-columns: 3fr 6fr 3fr;
 }
 
-.onboarding-progress-2 {
-  margin-bottom: 60px;
-  display: grid;
+.onboarding-progress-layout {
   grid-template-columns: 12fr;
+  margin-bottom: 40px;
+  display: grid;
 }
 
 .onboarding-bubbles-container {
@@ -6806,10 +6814,19 @@ input.hide-input-arrows {
   margin-bottom: 16px !important;
 }
 
-.login-password-hide-img {
+.singup-password-hide-img {
   position: absolute;
   right: 16px;
   top: 25%;
+  width: 16px;
+  height: 10.67px;
+  cursor: pointer;
+}
+
+.login-password-hide-img {
+  position: absolute;
+  right: 16px;
+  top: 36%;
   width: 16px;
   height: 10.67px;
   cursor: pointer;

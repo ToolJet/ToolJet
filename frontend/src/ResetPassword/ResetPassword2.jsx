@@ -13,9 +13,12 @@ class ResetPassword2 extends React.Component {
       email: '',
       password: '',
       showResponseScreen: false,
+      showPassword: false,
     };
   }
-
+  handleOnCheck = () => {
+    this.setState((prev) => ({ showPassword: !prev.showPassword }));
+  };
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value?.trim() });
   };
@@ -68,15 +71,24 @@ class ResetPassword2 extends React.Component {
                     <h2 className="common-auth-section-header reset-password-header">Reset Password</h2>
                     <div className="reset-password-input-container">
                       <label className="common-auth-sub-label">New Password</label>
-                      <div>
+                      <div className="login-password">
                         <input
                           onChange={this.handleChange}
                           name="password"
-                          type="password"
+                          type={this.state.showPassword ? 'text' : 'password'}
                           placeholder="Password"
                           autoComplete="off"
                           className="common-input-auth-section reset-password-input"
                         />
+                        <img
+                          src={`${
+                            this.state.showPassword
+                              ? 'assets/images/onboarding assets /01 Icons /Eye_hide.svg'
+                              : 'assets/images/onboarding assets /01 Icons /Eye_show.svg'
+                          }`}
+                          onClick={this.handleOnCheck}
+                          className="singup-password-hide-img "
+                        ></img>
                         <span className="common-input-warning-text">Password must be atleast 8 charactors</span>
 
                         <span></span>
@@ -84,15 +96,24 @@ class ResetPassword2 extends React.Component {
                     </div>
                     <div className="reset-password-input-container">
                       <label className="common-auth-sub-label">Re-enter the password</label>
-                      <div>
+                      <div className="login-password">
                         <input
                           onChange={this.handleChange}
                           name="password_confirmation"
-                          type="password"
+                          type={this.state.showPassword ? 'text' : 'password'}
                           placeholder="Re-enter the password"
                           autoComplete="off"
                           className="common-input-auth-section reset-password-input"
                         />
+                        <img
+                          src={`${
+                            this.state.showPassword
+                              ? 'assets/images/onboarding assets /01 Icons /Eye_hide.svg'
+                              : 'assets/images/onboarding assets /01 Icons /Eye_show.svg'
+                          }`}
+                          onClick={this.handleOnCheck}
+                          className="singup-password-hide-img "
+                        ></img>
                         <span className="common-input-warning-text">Password must be atleast 8 charactors</span>
 
                         <span></span>

@@ -159,7 +159,7 @@ class SignupPage2 extends React.Component {
                             : 'assets/images/onboarding assets /01 Icons /Eye_show.svg'
                         }`}
                         onClick={this.handleOnCheck}
-                        className="login-password-hide-img "
+                        className="singup-password-hide-img "
                       ></img>
                       <span className="common-input-warning-text">Password must be atleast 8 charectors</span>
                     </div>

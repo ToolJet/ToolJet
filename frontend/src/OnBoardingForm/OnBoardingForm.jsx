@@ -8,7 +8,7 @@ function OnBoardingForm() {
   const [showQuestions, setShowQuestions] = useState(false);
 
   const [formData, setFormData] = useState({
-    companyName: '',
+    organization: '',
     role: '',
     companySize: '',
     employeeNo: '',
@@ -24,7 +24,9 @@ function OnBoardingForm() {
     'What is the size of your company',
     'Where do you work John?',
   ];
-  const FormSubTitles = ['ToolJet will not share your information with anyone'];
+  const FormSubTitles = [
+    'ToolJet will not share your information with anyone. This information will help us tailor tooljet to you.',
+  ];
 
   const PageShift = () => {
     if (page === 0) {
@@ -63,7 +65,7 @@ function OnBoardingForm() {
         <VerificationSuccessInfoScreen />
       ) : (
         <div className="onboarding-form">
-          <div className={`${page !== 0 ? 'onboarding-progress' : 'onboarding-progress-2'}`}>
+          <div className={`${page !== 0 ? 'onboarding-progress' : 'onboarding-progress-layout'}`}>
             {page !== 0 && (
               <div
                 className="onboarding-back-button"
@@ -101,7 +103,7 @@ export function onBoardingBubbles({ formData, page }) {
   return (
     <div className="onboarding-bubbles-wrapper">
       <div
-        className={`onboarding-bubbles ${formData.companyName !== '' && 'onboarding-bubbles-selected'} ${
+        className={`onboarding-bubbles ${formData.organization !== '' && 'onboarding-bubbles-selected'} ${
           page === 0 && 'onboarding-bubbles-active'
         }`}
       ></div>
@@ -144,11 +146,11 @@ export function continueButton({ buttonState, setPage, setButtonState, formData,
 export function onBoardingInput({ formData, setFormData, setButtonState }) {
   return (
     <input
-      value={formData.companyName}
+      value={formData.organization}
       placeholder="Enter your company name"
       className="onboarding-input"
       onChange={(e) => {
-        setFormData({ ...formData, companyName: e.target.value });
+        setFormData({ ...formData, organization: e.target.value });
         if (e.target.value !== '') setButtonState(false);
         else setButtonState(true);
       }}
@@ -159,7 +161,7 @@ export function onBoardingInput({ formData, setFormData, setButtonState }) {
 export function onBoardingRadioInput(props) {
   const { formData, setFormData, setButtonState, field, key } = props;
   return (
-    <div className={`onboarding-input ${formData[key] === field && 'onboarding-radio-checked'}`}>
+    <label className={`onboarding-input ${formData[key] === field && 'onboarding-radio-checked'}`}>
       <input
         type="radio"
         name={field}
@@ -172,7 +174,7 @@ export function onBoardingRadioInput(props) {
         }}
       />
       <p>{field}</p>
-    </div>
+    </label>
   );
 }
 

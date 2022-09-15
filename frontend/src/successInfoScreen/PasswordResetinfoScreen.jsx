@@ -10,7 +10,7 @@ function PasswordResetinfoScreen({ props }) {
             src={'assets/images/onboarding assets /02 Illustrations /Reset password successfull.svg'}
             alt="email image"
           />
-          <h1 className="common-auth-section-header">Passwrod has been reset.</h1>
+          <h1 className="common-auth-section-header">Passwrod has been reset</h1>
           <p className="onboarding-page-verify--subheading">
             Your password has been reset sucecessfully, log into ToolJet to to continue your session
           </p>
