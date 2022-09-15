@@ -190,16 +190,31 @@ export class DataSourcesService {
     return parsedOptions;
   }
 
-  async updateOAuthAccessToken(accessTokenDetails: object, dataSourceOptions: object, dataSourceId: string) {
+  private updateCurrentToken = (tokenData: any, userId: string, accessTokenDetails: any) => {
+    return tokenData?.value.map((token: any) => {
+      if (token.userId === userId) {
+        return { ...token, ...accessTokenDetails };
+      }
+      return token;
+    });
+  };
+
+  async updateOAuthAccessToken(
+    accessTokenDetails: object,
+    dataSourceOptions: object,
+    dataSourceId: string,
+    userId: string
+  ) {
     const existingCredentialId =
       dataSourceOptions['access_token'] && dataSourceOptions['access_token']['credential_id'];
     if (existingCredentialId) {
       await this.credentialsService.update(existingCredentialId, accessTokenDetails['access_token']);
     } else if (dataSourceId) {
+      const updatedTokenData = this.updateCurrentToken(dataSourceOptions['tokenData'], userId, accessTokenDetails);
       const tokenOptions = [
         {
           key: 'tokenData',
-          value: accessTokenDetails,
+          value: updatedTokenData,
           encrypted: false,
         },
       ];

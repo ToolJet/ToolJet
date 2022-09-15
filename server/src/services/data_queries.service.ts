@@ -117,7 +117,12 @@ export class DataQueriesService {
         console.log('Access token expired. Attempting refresh token flow.');
 
         const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user.id);
-        await this.dataSourcesService.updateOAuthAccessToken(accessTokenDetails, dataSource.options, dataSource.id);
+        await this.dataSourcesService.updateOAuthAccessToken(
+          accessTokenDetails,
+          dataSource.options,
+          dataSource.id,
+          user.id
+        );
         await dataSource.reload();
 
         ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
@@ -127,7 +132,7 @@ export class DataQueriesService {
           organizationId
         ));
 
-        result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
+        result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, { user });
       } else {
         throw error;
       }
