@@ -85,6 +85,9 @@ export const commonWidgetText = {
   parameterLabel: "Label",
 
   datepickerDocumentationLink: "Datepicker documentation",
+  text1: "text1",
+  toggleswitch1: "toggleswitch1",
+  toggleSwitch: "Toggle Switch",
 };
 
 export const createBackspaceText = (text) => {
