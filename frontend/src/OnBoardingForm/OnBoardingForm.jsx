@@ -54,9 +54,8 @@ function OnBoardingForm() {
           <p>
             <img src={'assets/images/onboarding assets /01 Icons /Cheveron_Right.svg'}></img>Verify email
           </p>
-          <p>
-            <img src={'assets/images/onboarding assets /01 Icons /Cheveron_Right.svg'}></img>Set up org
-          </p>
+          <p>Set up org</p>
+          <div className="onboarding-divider"></div>
         </div>
         <div></div>
         <div className="onboarding-account-name">JA</div>

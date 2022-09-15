@@ -7007,6 +7007,14 @@ input.hide-input-arrows {
   gap: 10px;
 }
 
+.onboarding-divider {
+  height: 2px;
+  background-color: #D1D5DB;
+  width: 390px;
+  position: absolute;
+  bottom: 0;
+}
+
 .onboarding-checkpoints {
   display: flex;
   justify-content: space-around;
@@ -7020,11 +7028,13 @@ input.hide-input-arrows {
     font-size: 12px;
     line-height: 20px;
     text-align: center;
-    color: #4B5563;
+
   }
 
   img {
     margin-right: 10.78px;
+    height: 16px;
+    width: 16px;
 
   }
 }
