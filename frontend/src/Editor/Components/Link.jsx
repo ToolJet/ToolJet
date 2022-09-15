@@ -3,8 +3,8 @@ import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import cx from 'classnames';
 
 export const Link = ({ height, properties, styles, fireEvent, registerAction, currentState }) => {
-  const { linkTarget, linkText, targetType, visibility } = properties;
-  const { textColor, textSize, underline } = styles;
+  const { linkTarget, linkText, targetType } = properties;
+  const { textColor, textSize, underline, visibility } = styles;
   const clickRef = useRef();
 
   const parsedVisibility =
