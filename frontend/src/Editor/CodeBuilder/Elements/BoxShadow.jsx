@@ -5,7 +5,7 @@ import Slider from 'rc-slider';
 import { Color } from './Color';
 import FxButton from './FxButton';
 
-export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
+export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
   const defaultValue = { X: 0, Y: 0, Blur: 0, Spread: 0, Color: '#00000040' };
 
   const popoverLabelstyle = {
@@ -132,6 +132,7 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
               value={boxShadow.Color}
               hideFx
               pickerStyle={colorPickerStyle}
+              cyLabel={'box-shadow-color'}
             />
             <button
               data-cy={'box-shadow-clear-button'}
@@ -151,7 +152,7 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
       <div className="col">
         <div className="field mb-2">
           <OverlayTrigger trigger="click" placement={'left'} rootClose={true} overlay={eventPopover()}>
-            <div className="row mx-0 form-control color-picker-input" data-cy="input-box-shadow">
+            <div className="row mx-0 form-control color-picker-input" data-cy={`${cyLabel}-picker`}>
               <div
                 className="col-auto"
                 style={{
@@ -161,8 +162,11 @@ export const BoxShadow = ({ value, onChange, forceCodeBox }) => {
                   backgroundColor: boxShadow.Color,
                   border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(boxShadow.Color) && '#c5c8c9'}`,
                 }}
+                data-cy={`${cyLabel}-picker-icon`}
               ></div>
-              <small className="col p-0">{value}</small>
+              <small className="col p-0" data-cy={`${cyLabel}-value`}>
+                {value}
+              </small>
             </div>
           </OverlayTrigger>
         </div>

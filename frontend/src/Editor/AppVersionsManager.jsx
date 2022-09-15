@@ -5,6 +5,8 @@ import { appVersionService } from '@/_services';
 import { Confirm } from './Viewer/Confirm';
 import Select from '../_ui/Select';
 import defaultStyle from '../_ui/Select/styles';
+import { useTranslation } from 'react-i18next';
+
 export const AppVersionsManager = function AppVersionsManager({
   appId,
   editingVersion,
@@ -13,6 +15,7 @@ export const AppVersionsManager = function AppVersionsManager({
   showCreateVersionModalPrompt,
   closeCreateVersionModalPrompt,
 }) {
+  const { t } = useTranslation();
   const [showDropDown, setShowDropDown] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
@@ -173,7 +176,7 @@ export const AppVersionsManager = function AppVersionsManager({
 
   return (
     <div ref={wrapperRef} className="input-group app-version-menu">
-      <span className="input-group-text app-version-menu-sm">Version</span>
+      <span className="input-group-text app-version-menu-sm">{t('editor.appVersionManager.version', 'Version')}</span>
       <span
         className={`app-version-name form-select app-version-menu-sm ${appVersions ? '' : 'disabled'}`}
         onClick={() => {
@@ -198,8 +201,10 @@ export const AppVersionsManager = function AppVersionsManager({
                       >
                         <div className="col-md-4">{version.name}</div>
                         <div className="released-subtext">
-                          <img src={'assets/images/icons/editor/deploy-rocket.svg'} />
-                          <span className="px-1">Currently Released</span>
+                          <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
+                          <span className="px-1">
+                            {t('editor.appVersionManager.currentlyReleased', 'Currently Released')}
+                          </span>
                         </div>
                       </div>
                       <div className="dropdown-divider m-0"></div>
@@ -271,11 +276,13 @@ export const AppVersionsManager = function AppVersionsManager({
                   setShowModal(true);
                 }}
               >
-                <span className="color-primary create-link">Create Version</span>
+                <span className="color-primary create-link">
+                  {t('editor.appVersionManager.createVersion', 'Create Version')}
+                </span>
               </div>
               <Confirm
                 show={showVersionDeletionConfirmation}
-                message={'Do you really want to delete this version?'}
+                message={t('editor.appVersionManager.deleteVersion', 'Do you really want to delete this version?')}
                 confirmButtonLoading={isDeletingVersion}
                 onConfirm={(versionId) => deleteAppVersion(versionId)}
                 queryConfirmationData={deletingVersionId}
@@ -297,14 +304,18 @@ export const AppVersionsManager = function AppVersionsManager({
           showCreateVersionModalPrompt={showCreateVersionModalPrompt}
         />
       </span>
-      <Modal show={showVersionUpdateModal} closeModal={() => setShowVersionUpdateModal(false)} title="Edit version">
+      <Modal
+        show={showVersionUpdateModal}
+        closeModal={() => setShowVersionUpdateModal(false)}
+        title={t('editor.appVersionManager.editVersion', 'Edit Version')}
+      >
         <div className="row">
           <div className="col modal-main">
             <input
               type="text"
               onChange={(e) => setVersionName(e.target.value)}
               className="form-control"
-              placeholder="version name"
+              placeholder={t('editor.appVersionManager.versionName', 'Version name')}
               disabled={isEditingVersion}
               value={versionName}
               maxLength={25}
@@ -314,10 +325,10 @@ export const AppVersionsManager = function AppVersionsManager({
         <div className="row">
           <div className="col d-flex modal-footer-btn">
             <button className="btn btn-light" onClick={() => setShowVersionUpdateModal(false)}>
-              Cancel
+              {t('globals.cancel', 'Cancel')}
             </button>
             <button className={`btn btn-primary ${isEditingVersion ? 'btn-loading' : ''}`} onClick={editVersionName}>
-              Save
+              {t('globals.save', 'Save')}
             </button>
           </div>
         </div>
@@ -338,6 +349,7 @@ const CreateVersionModal = function CreateVersionModal({
   appVersions,
   showCreateVersionModalPrompt,
 }) {
+  const { t } = useTranslation();
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
       // eslint-disable-next-line no-undef
@@ -379,18 +391,18 @@ const CreateVersionModal = function CreateVersionModal({
     <Modal
       show={showModal || showCreateVersionModalPrompt}
       setShow={setShowModal}
-      title="Create Version"
+      title={t('editor.appVersionManager.createVersion', 'Create Version')}
       autoFocus={false}
       closeModal={() => setShowModal(false)}
     >
       <div className="mb-3">
         <div className="col">
-          <label className="form-label">Version Name</label>
+          <label className="form-label">{t('editor.appVersionManager.versionName', 'Version Name')}</label>
           <input
             type="text"
             onChange={(e) => setVersionName(e.target.value)}
             className="form-control"
-            placeholder="Enter version name"
+            placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
             disabled={isCreatingVersion}
             value={versionName}
             autoFocus={true}
@@ -400,7 +412,7 @@ const CreateVersionModal = function CreateVersionModal({
       </div>
 
       <div className="mb-3" style={{ padding: '2rem 0' }}>
-        <label className="form-label">Create version from</label>
+        <label className="form-label">{t('editor.appVersionManager.createVersionFrom', 'Create version from')}</label>
         <div className="ts-control">
           <Select
             options={options}
@@ -428,8 +440,11 @@ const CreateVersionModal = function CreateVersionModal({
                 </div>
                 <div className="col">
                   <span>
-                    Version already released. Kindly create a new version or switch to a different version to continue
-                    making changes.
+                    {t(
+                      'editor.appVersionManager.versionAlreadyReleased',
+                      `Version already released. Kindly create a new version or switch to a different version to continue
+                      making changes.`
+                    )}
                   </span>
                 </div>
               </div>
@@ -441,13 +456,13 @@ const CreateVersionModal = function CreateVersionModal({
       <div className="mb-3">
         <div className="col d-flex modal-footer-btn">
           <button className="btn btn-light" onClick={() => setShowModal(false)}>
-            Cancel
+            {t('globals.cancel', 'Cancel')}
           </button>
           <button
             className={`btn btn-primary ${isCreatingVersion ? 'btn-loading' : ''}`}
             onClick={() => createVersion(versionName, createAppVersionFrom)}
           >
-            Create Version
+            {t('editor.appVersionManager.createVersion', 'Create Version')}
           </button>
         </div>
       </div>
