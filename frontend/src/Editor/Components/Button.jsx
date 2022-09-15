@@ -8,12 +8,12 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
   const [label, setLabel] = useState(properties.text);
   useEffect(() => setLabel(properties.text), [properties.text]);
 
-  const [disable, setDisable] = useState(properties.disabledState);
+  const [disable, setDisable] = useState(styles.disabledState);
   useEffect(() => {
     setDisable(properties.disabledState);
   }, [properties.disabledState]);
 
-  const [visibility, setVisibility] = useState(properties.visibility);
+  const [visibility, setVisibility] = useState(styles.visibility);
   useEffect(() => {
     setVisibility(properties.visibility);
   }, [properties.visibility]);
