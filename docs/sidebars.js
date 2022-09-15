@@ -283,6 +283,7 @@ const sidebars = {
             'contributing-guide/tutorials/creating-a-plugin',
           ],
         },
+        'contributing-guide/l10n',
         {
           type: 'category',
           label: 'Troubleshooting',
