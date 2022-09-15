@@ -455,7 +455,7 @@ export const widgets = [
       },
       {
         handle: 'disable',
-        displayName: 'Disabled',
+        displayName: 'Disable',
         params: [{ handle: 'disable', displayName: 'Boolean', defaultValue: `{{false}}` }],
       },
       {
