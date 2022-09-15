@@ -52,7 +52,8 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
             <p>
               {t(
                 'googleSheets.enableReadAndWrite',
-                `If you want your ${retrieveWhiteLabelText()} apps to modify your Google sheets, make sure to select read and write access`
+                `If you want your ${retrieveWhiteLabelText()} apps to modify your Google sheets, make sure to select read and write access`,
+                { whiteLabelText: retrieveWhiteLabelText() }
               )}
             </p>
             <div>
@@ -63,7 +64,8 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
                 text={t('googleSheets.readOnly', 'Read only')}
                 helpText={t(
                   'googleSheets.readDataFromSheets',
-                  `Your ${retrieveWhiteLabelText()} apps can only read data from Google sheets`
+                  `Your ${retrieveWhiteLabelText()} apps can only read data from Google sheets`,
+                  { whiteLabelText: retrieveWhiteLabelText() }
                 )}
               />
               <Radio

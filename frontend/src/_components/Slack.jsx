@@ -46,7 +46,8 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
               {t(
                 'slack.connectToolJetToSlack',
                 `${retrieveWhiteLabelText()} can connect to Slack and list users, send messages, etc. Please select appropriate permission
-              scopes.`
+              scopes.`,
+                { whiteLabelText: retrieveWhiteLabelText() }
               )}
             </p>
             <div>
@@ -63,7 +64,8 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
                   <small className="text-muted">
                     {t(
                       'slack.listUsersAndSendMessage',
-                      `Your ${retrieveWhiteLabelText()} app will be able to list users and send messages to users & channels.`
+                      `Your ${retrieveWhiteLabelText()} app will be able to list users and send messages to users & channels.`,
+                      { whiteLabelText: retrieveWhiteLabelText() }
                     )}
                   </small>
                 </span>

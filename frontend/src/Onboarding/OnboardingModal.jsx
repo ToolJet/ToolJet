@@ -56,7 +56,9 @@ class OnboardingModalComponent extends React.Component {
       >
         <Modal.Header>
           <Modal.Title className="text-center">
-            {this.props.t('onBoarding.finishToolJetInstallation', `Finish ${retrieveWhiteLabelText()} installation`)}
+            {this.props.t('onBoarding.finishToolJetInstallation', `Finish ${retrieveWhiteLabelText()} installation`, {
+              whiteLabelText: retrieveWhiteLabelText(),
+            })}
           </Modal.Title>
           <br />
         </Modal.Header>
@@ -106,7 +108,8 @@ class OnboardingModalComponent extends React.Component {
           <small>
             {this.props.t(
               'onBoarding.receiveUpdatesFromToolJet',
-              `You will receive updates from the ${retrieveWhiteLabelText()} team ( 1-2 emails every month, we do not spam )`
+              `You will receive updates from the ${retrieveWhiteLabelText()} team ( 1-2 emails every month, we do not spam )`,
+              { whiteLabelText: retrieveWhiteLabelText() }
             )}
           </small>
         </Modal.Body>
