@@ -3319,13 +3319,6 @@ input:focus-visible {
   }
 
   .org-users-page {
-    min-height: 100vh;
-    .page-body {
-      height: 100%;
-    }
-  }
-
-  .org-users-page {
     .select-search__option.is-selected {
       background: $primary;
       color: $white;
@@ -6350,3 +6343,9 @@ input.hide-input-arrows{
   }
 }
 
+.org-users-page {
+  min-height: 100vh;
+  .page-body {
+    height: 100%;
+  }
+}
