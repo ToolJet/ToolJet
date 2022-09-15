@@ -22,6 +22,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
   } = restProps;
 
   const [searchText, setSearchText] = useState('');
+  const [showPopOver, setPopOverVisibility] = useState(false);
   const iconList = useRef(Object.keys(Icons));
 
   const searchIcon = (text) => {
@@ -60,9 +61,15 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
                   if (filteredIcons[index] === undefined) return null;
                   const IconElement = Icons[filteredIcons[index]];
                   return (
-                    <div className="icon-element p-2" onClick={() => onIconSelect(filteredIcons[index])}>
+                    <div
+                      className="icon-element p-2"
+                      onClick={() => {
+                        onIconSelect(filteredIcons[index]);
+                        setPopOverVisibility(false);
+                      }}
+                    >
                       <IconElement
-                        color="black"
+                        color={`${darkMode ? '#fff' : '#000'}`}
                         stroke={3}
                         strokeLinejoin="miter"
                         style={{ width: '24px', height: '24px' }}
@@ -89,11 +96,18 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
         <div className="card mb-3">
           <div className="card-body p-0">
             <div className="field">
-              <OverlayTrigger trigger="click" placement={'left'} rootClose={true} overlay={eventPopover()}>
+              <OverlayTrigger
+                trigger="click"
+                placement={'left'}
+                show={showPopOver}
+                onToggle={(showing) => setPopOverVisibility(showing)}
+                rootClose={true}
+                overlay={eventPopover()}
+              >
                 <div className="row p-2" role="button">
                   <div className="col-auto">
                     <IconElement
-                      color="black"
+                      color={`${darkMode ? '#fff' : '#000'}`}
                       stroke={2}
                       strokeLinejoin="miter"
                       style={{ width: '20px', height: '20px' }}
@@ -109,20 +123,11 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
     );
   }
 
-  const renderProperties = () => {
-    const propertyList = [];
-    propertyList.push(renderIconPicker());
-    propertyList.push(
-      renderElement(component, componentMeta, paramUpdated, dataQueries, 'hidden', 'properties', currentState)
-    );
-    return propertyList;
-  };
-
   let items = [];
 
   items.push({
     title: 'Properties',
-    children: renderProperties(),
+    children: renderIconPicker(),
   });
 
   items.push({

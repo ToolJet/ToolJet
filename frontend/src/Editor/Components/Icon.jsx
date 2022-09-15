@@ -4,30 +4,38 @@ import * as Icons from '@tabler/icons';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import cx from 'classnames';
 
-export const Icon = ({ properties, styles, fireEvent, width, height, currentState, registerAction }) => {
-  const { icon, hidden } = properties;
-  const { iconColor } = styles;
+export const Icon = ({ properties, styles, fireEvent, width, height, currentState, registerAction, darkMode }) => {
+  const { icon } = properties;
+  const { iconColor, visibility } = styles;
   const IconElement = Icons[icon];
 
-  const [hideIcon, setIconVisibility] = useState(false);
+  const color = iconColor === '#000' ? (darkMode ? '#fff' : '#000') : iconColor;
+
+  const [showIcon, setIconVisibility] = useState(true);
 
   useEffect(() => {
-    setIconVisibility(typeof hidden !== 'boolean' ? !resolveWidgetFieldValue(hidden, currentState) : hidden);
+    setIconVisibility(
+      typeof visibility !== 'boolean' ? !resolveWidgetFieldValue(visibility, currentState) : visibility
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hidden]);
+  }, [visibility]);
 
-  registerAction('click', async function () {
-    fireEvent('onClick');
-  });
+  useEffect(() => {
+    registerAction('click', async function () {
+      fireEvent('onClick');
+    });
 
-  registerAction('hide', async function (hide) {
-    setIconVisibility(typeof hide !== 'boolean' ? resolveWidgetFieldValue(hide, currentState) : hide);
-  });
+    registerAction('visibility', async function (visibility) {
+      setIconVisibility(
+        typeof visibility !== 'boolean' ? resolveWidgetFieldValue(visibility, currentState) : visibility
+      );
+    });
+  }, [currentState, visibility]);
 
   return (
-    <div className={cx('icon-widget', { 'd-none': hideIcon })}>
+    <div className={cx('icon-widget', { 'd-none': !showIcon })}>
       <IconElement
-        color={iconColor}
+        color={color}
         style={{ width, height }}
         onClick={(event) => {
           event.stopPropagation();

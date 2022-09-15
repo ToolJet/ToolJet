@@ -6110,6 +6110,12 @@ input.hide-input-arrows{
 }
 
 .icon-widget-popover{
+  &.theme-dark{
+    .popover-header{
+      background-color: #232e3c;
+      border-bottom: 1px solid #324156;;
+    }
+  }
   .popover-header{
     padding-bottom: 0;
     background-color: #fff;
@@ -6131,7 +6137,7 @@ input.hide-input-arrows{
     }
     .icon-element{
       cursor: pointer;
-      border: 1px solid #fff;
+      border: 1px solid transparent;
       border-radius: $border-radius;
       &:hover{
         border: 1px solid $primary;
