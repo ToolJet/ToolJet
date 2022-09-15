@@ -1,8 +1,8 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
-
-class ResetPassword extends React.Component {
+import { withTranslation } from 'react-i18next';
+class ResetPasswordComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -59,30 +59,34 @@ class ResetPassword extends React.Component {
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
             <div className="card-body">
-              <h2 className="card-title text-center mb-4">Reset Password</h2>
+              <h2 className="card-title text-center mb-4">
+                {this.props.t('loginSignupPage.resetPassword', 'Reset Password')}
+              </h2>
               <div className="mb-2">
-                <label className="form-label">New Password</label>
+                <label className="form-label">{this.props.t('loginSignupPage.newPassword', 'New Password')}</label>
                 <div className="input-group input-group-flat">
                   <input
                     onChange={this.handleChange}
                     name="password"
                     type="password"
                     className="form-control"
-                    placeholder="Password"
+                    placeholder={this.props.t('loginSignupPage.password', 'Password')}
                     autoComplete="off"
                   />
                   <span className="input-group-text"></span>
                 </div>
               </div>
               <div className="mb-2">
-                <label className="form-label">Password Confirmation</label>
+                <label className="form-label">
+                  {this.props.t('loginSignupPage.passwordConfirmation', 'Password Confirmation')}
+                </label>
                 <div className="input-group input-group-flat">
                   <input
                     onChange={this.handleChange}
                     name="password_confirmation"
                     type="password"
                     className="form-control"
-                    placeholder="Password Confirmation"
+                    placeholder={this.props.t('loginSignupPage.passwordConfirmation', 'Password Confirmation')}
                     autoComplete="off"
                   />
                   <span className="input-group-text"></span>
@@ -93,7 +97,7 @@ class ResetPassword extends React.Component {
                   className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
                   onClick={this.handleClick}
                 >
-                  Submit
+                  {this.props.t('globals.submit', 'Submit')}
                 </button>
               </div>
             </div>
@@ -104,4 +108,4 @@ class ResetPassword extends React.Component {
   }
 }
 
-export { ResetPassword };
+export const ResetPassword = withTranslation()(ResetPasswordComponent);

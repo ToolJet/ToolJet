@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { datasourceService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
 
 const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource }) => {
   const [authStatus, setAuthStatus] = useState(null);
+  const { t } = useTranslation();
 
   function authGoogle() {
     const provider = 'googlesheets';
@@ -45,22 +47,33 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
       <div className="row">
         <div className="col-md-12">
           <div className="mb-3">
-            <div className="form-label">Authorize</div>
-            <p>If you want your ToolJet apps to modify your Google sheets, make sure to select read and write access</p>
+            <div className="form-label">{t('globals.authorize', 'Authorize')}</div>
+            <p>
+              {t(
+                'googleSheets.enableReadAndWrite',
+                'If you want your ToolJet apps to modify your Google sheets, make sure to select read and write access'
+              )}
+            </p>
             <div>
               <Radio
                 checked={options.access_type?.value === 'read'}
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'read')}
-                text="Read only"
-                helpText="Your ToolJet apps can only read data from Google sheets"
+                text={t('googleSheets.readOnly', 'Read only')}
+                helpText={t(
+                  'googleSheets.readDataFromSheets',
+                  'Your ToolJet apps can only read data from Google sheets'
+                )}
               />
               <Radio
                 checked={options.access_type?.value === 'write'}
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'write')}
-                text="Read and write"
-                helpText="Your ToolJet apps can read data from sheets, modify sheets, and more."
+                text={t('googleSheets.readWrite', 'Read and write')}
+                helpText={t(
+                  'googleSheets.readModifySheets',
+                  'Your ToolJet apps can read data from sheets, modify sheets, and more.'
+                )}
               />
             </div>
           </div>
@@ -75,7 +88,7 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
                 disabled={isSaving}
                 onClick={() => saveDataSource()}
               >
-                {isSaving ? 'Saving...' : 'Save data source'}
+                {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
               </Button>
             </div>
           )}
@@ -86,7 +99,8 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
               disabled={isSaving}
               onClick={() => authGoogle()}
             >
-              {selectedDataSource.id ? 'Reconnect' : 'Connect'} to Google Sheets
+              {selectedDataSource.id ? t('globals.reconnect', 'Reconnect') : t('globals.connect', 'Connect')}{' '}
+              {t('googleSheets.toGoogleSheets', 'to Google Sheets')}
             </Button>
           )}
         </center>
