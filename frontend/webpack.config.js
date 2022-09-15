@@ -7,11 +7,15 @@ const TerserPlugin = require('terser-webpack-plugin');
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
 const API_URL = {
-  production: process.env.TOOLJET_SERVER_URL || '',
+  production: process.env.TOOLJET_SERVER_URL || (process.env.SERVE_CLIENT !== 'false' ? '__REPLACE_SUB_PATH__' : ''),
   development: `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
 };
 
-const ASSET_PATH = process.env.ASSET_PATH || '/';
+const ASSET_PATH = process.env.ASSET_PATH || '';
+
+function stripTrailingSlash(str) {
+  return str.replace(/[/]+$/, '');
+}
 
 module.exports = {
   mode: environment,
@@ -112,7 +116,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './src/index.html',
+      template: './src/index.ejs',
       favicon: './assets/images/logo.svg',
     }),
     new CompressionPlugin({
@@ -122,6 +126,7 @@ module.exports = {
     new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
     new webpack.DefinePlugin({
       'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
+      'process.env.SERVE_CLIENT': JSON.stringify(process.env.SERVE_CLIENT),
     }),
   ],
   devServer: {
@@ -138,7 +143,7 @@ module.exports = {
   externals: {
     // global app config object
     config: JSON.stringify({
-      apiUrl: `${API_URL[environment] || ''}/api`,
+      apiUrl: `${stripTrailingSlash(API_URL[environment]) || ''}/api`,
       SERVER_IP: process.env.SERVER_IP,
       COMMENT_FEATURE_ENABLE: true,
       ENABLE_MULTIPLAYER_EDITING: true,

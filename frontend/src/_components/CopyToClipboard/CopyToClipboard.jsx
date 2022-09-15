@@ -31,7 +31,7 @@ export const CopyToClipboardComponent = ({ data, callback }) => {
         }}
       >
         <span style={{ height: '13px', width: '13px', marginBottom: '2px' }} className="mx-1 copy-to-clipboard">
-          <img src={`/assets/images/icons/copy.svg`} width="12" height="12" />
+          <img src={`assets/images/icons/copy.svg`} width="12" height="12" />
         </span>
       </CopyToClipboard>
     </ToolTip>

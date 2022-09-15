@@ -5,7 +5,14 @@ import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
 import moment from 'moment';
 
-export const DaterangePicker = function DaterangePicker({ height, properties, styles, setExposedVariable, width }) {
+export const DaterangePicker = function DaterangePicker({
+  height,
+  properties,
+  styles,
+  setExposedVariable,
+  width,
+  darkMode,
+}) {
   const { borderRadius, visibility, disabledState } = styles;
   const { defaultStartDate, defaultEndDate } = properties;
   const formatProp = typeof properties.format === 'string' ? properties.format : '';
@@ -54,7 +61,10 @@ export const DaterangePicker = function DaterangePicker({ height, properties, st
   }
 
   return (
-    <div className="daterange-picker-widget p-0" style={{ height, display: visibility ? '' : 'none' }}>
+    <div
+      className={`daterange-picker-widget ${darkMode && 'theme-dark'} p-0`}
+      style={{ height, display: visibility ? '' : 'none' }}
+    >
       <DateRangePicker
         disabled={disabledState}
         startDate={startDate}

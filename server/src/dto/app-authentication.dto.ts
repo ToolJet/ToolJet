@@ -29,6 +29,7 @@ export class AppForgotPasswordDto {
 
 export class AppPasswordResetDto {
   @IsString()
+  @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
   password: string;
 

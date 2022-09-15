@@ -86,7 +86,7 @@ export const LeftSidebarInspector = ({
     if (!_.isEmpty(component) && component.name === key) {
       return {
         iconName: key,
-        iconPath: `/assets/images/icons/widgets/${
+        iconPath: `assets/images/icons/widgets/${
           component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
         }.svg`,
         className: 'component-icon',
@@ -128,7 +128,7 @@ export const LeftSidebarInspector = ({
           name: 'Run Query',
           dispatchAction: handleRunQuery,
           icon: true,
-          src: '/assets/images/icons/editor/play.svg',
+          src: 'assets/images/icons/editor/play.svg',
           width: 8,
           height: 8,
         },

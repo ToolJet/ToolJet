@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import config from 'config';
-import { Router, Route, Redirect } from 'react-router-dom';
+import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute } from '@/_components';
@@ -86,8 +86,8 @@ class App extends React.Component {
     }
 
     return (
-      <>
-        <Router history={history}>
+      <Suspense fallback={null}>
+        <BrowserRouter history={history} basename={window.public_config?.SUB_PATH || '/'}>
           <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
             {updateAvailable && (
               <div className="alert alert-info alert-dismissible" role="alert">
@@ -259,9 +259,9 @@ class App extends React.Component {
               darkMode={darkMode}
             />
           </div>
-        </Router>
+        </BrowserRouter>
         <Toast toastOptions={toastOptions} />
-      </>
+      </Suspense>
     );
   }
 }

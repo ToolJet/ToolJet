@@ -311,7 +311,7 @@ export const FilePicker = ({
                   <FilePicker.Signifiers
                     signifier={selectedFiles.length > 0}
                     feedback={acceptedFile.name}
-                    cls="text-secondary d-flex justify-content-start file-list mb-2"
+                    cls={`${darkMode ? 'text-light' : 'text-secondary'} d-flex justify-content-start file-list mb-2`}
                   />
                 </div>
                 <div className="col-2 mt-0">
@@ -322,7 +322,7 @@ export const FilePicker = ({
                       clearSelectedFiles(index);
                     }}
                   >
-                    <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
+                    <img src="assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
                   </button>
                 </div>
               </>
@@ -332,7 +332,7 @@ export const FilePicker = ({
           <FilePicker.Signifiers
             signifier={!isDragAccept && !accepted & !isDragReject}
             feedback={instructionText}
-            cls={`${darkMode ? 'text-secondary' : 'text-dark'} mt-3`}
+            cls={`${darkMode ? 'text-light' : 'text-dark'} mt-3`}
           />
         )}
 

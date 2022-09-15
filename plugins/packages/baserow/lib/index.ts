@@ -19,10 +19,13 @@ export default class Baserow implements QueryService {
     const operation = queryOptions.operation;
     const tableId = queryOptions.table_id;
     const apiToken = sourceOptions.api_token;
+    const host = sourceOptions.baserow_host;
+    const baseURL = host === 'baserow_cloud' ? 'https://api.baserow.io' : sourceOptions.base_url;
+
     try {
       switch (operation) {
         case 'list_rows': {
-          response = await got(`https://api.baserow.io/api/database/rows/table/${tableId}/?user_field_names=true`, {
+          response = await got(`${baseURL}/api/database/rows/table/${tableId}/?user_field_names=true`, {
             method: 'get',
             headers: this.authHeader(apiToken),
           });
@@ -32,7 +35,7 @@ export default class Baserow implements QueryService {
         }
 
         case 'list_fields': {
-          response = await got(`https://api.baserow.io/api/database/fields/table/${tableId}/?user_field_names=true`, {
+          response = await got(`${baseURL}/api/database/fields/table/${tableId}/?user_field_names=true`, {
             method: 'get',
             headers: this.authHeader(apiToken),
           });
@@ -43,20 +46,17 @@ export default class Baserow implements QueryService {
 
         case 'get_row': {
           const row_id = queryOptions.row_id;
-          response = await got(
-            `https://api.baserow.io/api/database/rows/table/${tableId}/${row_id}/?user_field_names=true`,
-            {
-              method: 'get',
-              headers: this.authHeader(apiToken),
-            }
-          );
+          response = await got(`${baseURL}/api/database/rows/table/${tableId}/${row_id}/?user_field_names=true`, {
+            method: 'get',
+            headers: this.authHeader(apiToken),
+          });
 
           result = this.parseJSON(response.body);
           break;
         }
 
         case 'create_row': {
-          response = await got(`https://api.baserow.io/api/database/rows/table/${tableId}/?user_field_names=true`, {
+          response = await got(`${baseURL}/api/database/rows/table/${tableId}/?user_field_names=true`, {
             method: 'post',
             headers: this.authHeader(apiToken),
             json: this.parseJSON(queryOptions.body),
@@ -68,14 +68,11 @@ export default class Baserow implements QueryService {
 
         case 'update_row': {
           const row_id = queryOptions.row_id;
-          response = await got(
-            `https://api.baserow.io/api/database/rows/table/${tableId}/${row_id}/?user_field_names=true`,
-            {
-              method: 'patch',
-              headers: this.authHeader(apiToken),
-              json: this.parseJSON(queryOptions.body),
-            }
-          );
+          response = await got(`${baseURL}/api/database/rows/table/${tableId}/${row_id}/?user_field_names=true`, {
+            method: 'patch',
+            headers: this.authHeader(apiToken),
+            json: this.parseJSON(queryOptions.body),
+          });
 
           result = this.parseJSON(response.body);
           break;
@@ -85,7 +82,7 @@ export default class Baserow implements QueryService {
           const row_id = queryOptions.row_id;
           const before_id = queryOptions.before_id;
           response = await got(
-            `https://api.baserow.io/api/database/rows/table/${tableId}/${row_id}/move/?user_field_names=true&before_id=${before_id}`,
+            `${baseURL}/api/database/rows/table/${tableId}/${row_id}/move/?user_field_names=true&before_id=${before_id}`,
             {
               method: 'patch',
               headers: this.authHeader(apiToken),
@@ -98,7 +95,7 @@ export default class Baserow implements QueryService {
 
         case 'delete_row': {
           const row_id = queryOptions.row_id;
-          response = await got(`https://api.baserow.io/api/database/rows/table/${tableId}/${row_id}`, {
+          response = await got(`${baseURL}/api/database/rows/table/${tableId}/${row_id}`, {
             method: 'delete',
             headers: this.authHeader(apiToken),
           });

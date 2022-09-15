@@ -6,11 +6,9 @@ title: Dropdown
 
 The Dropdown widget can be used to collect user input from a list of options.
 
-<div style={{textAlign: 'center'}}>
+## How To Use Dropdown Widget
 
-![ToolJet - Widget Reference - Dropdown](/img/widgets/dropdown/drop.png)
-
-</div>
+<iframe height="500" src="https://www.youtube.com/embed/PKlkD2rtlP8" title="Dropdown widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
 :::tip
 Dropdown options can be referred to your query data with dynamic variables.

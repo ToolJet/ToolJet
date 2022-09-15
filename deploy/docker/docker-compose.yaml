@@ -1,37 +1,15 @@
 version: '3'
 
 services:
-  client:
+  server:
     tty: true
     stdin_open: true
-    image: tooljet/tooljet-client-ce:latest
+    image: tooljet/tooljet-ce:latest
     restart: always
     env_file: .env
-    depends_on:
-      - server
-    volumes:
-      - logs:/var/log/openresty/
-      - certs:/etc/resty-auto-ssl/
-      - fallbackcerts:/etc/fallback-certs
-      # - /replace_path_here/nginx.conf.template:/etc/openresty/nginx.conf.template
     ports:
       - 80:80
-      - 443:443
-    command: openresty -g "daemon off;"
-
-  server:
-    image: tooljet/tooljet-server-ce:latest
-    tty: true
-    stdin_open: true
-    restart: always
-    ports:
-      - 3000
-    env_file: .env
     environment:
-      SERVE_CLIENT: "false"
+      SERVE_CLIENT: "true"
+      PORT: "80"
     command: npm run start:prod
-
-volumes:
-  certs:
-  logs:
-  fallbackcerts:

@@ -1,6 +1,7 @@
 import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
+import { useTranslation } from 'react-i18next';
 
 export const FolderMenu = function FolderMenu({
   deleteFolder,
@@ -29,7 +30,7 @@ export const FolderMenu = function FolderMenu({
       </div>
     );
   };
-
+  const { t } = useTranslation();
   return (
     <OverlayTrigger
       trigger="click"
@@ -40,15 +41,23 @@ export const FolderMenu = function FolderMenu({
         <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'} data-cy="folder-card">
           <Popover.Content bsPrefix="popover-body">
             <div>
-              {canUpdateFolder && <Field text="Edit folder" onClick={editFolder} />}
-              {canDeleteFolder && <Field text="Delete folder" customClass="field__danger" onClick={deleteFolder} />}
+              {canUpdateFolder && (
+                <Field text={t('homePage.foldersSection.editFolder', 'Edit folder')} onClick={editFolder} />
+              )}
+              {canDeleteFolder && (
+                <Field
+                  text={t('homePage.foldersSection.deleteFolder', 'Delete folder')}
+                  customClass="field__danger"
+                  onClick={deleteFolder}
+                />
+              )}
             </div>
           </Popover.Content>
         </Popover>
       }
     >
       <div className={`d-grid menu-ico menu-ico`}>
-        <img className="svg-icon" src="/assets/images/icons/three-dots.svg" data-cy="folder-card-menu-icon" />
+        <img className="svg-icon" src="assets/images/icons/three-dots.svg" data-cy="folder-card-menu-icon" />
       </div>
     </OverlayTrigger>
   );

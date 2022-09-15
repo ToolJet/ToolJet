@@ -38,7 +38,8 @@ const Content = ({ notifications, loading }) => {
               })}
               onClick={() => {
                 router.push({
-                  pathname: window.location.pathname,
+                  // react router updates the url with the set basename resulting invalid url unless replaced
+                  pathname: window.location.pathname.replace(window.public_config?.SUB_PATH, '/'),
                   search: `?threadId=${comment.thread.id}&commentId=${comment.id}`,
                 });
               }}

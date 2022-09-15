@@ -208,7 +208,7 @@ const DynamicForm = ({
                     <small className="text-green mx-2">
                       <img
                         className="mx-2 encrypted-icon"
-                        src="/assets/images/icons/padlock.svg"
+                        src="assets/images/icons/padlock.svg"
                         width="12"
                         height="12"
                       />

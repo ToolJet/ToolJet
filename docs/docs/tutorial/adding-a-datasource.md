@@ -9,13 +9,11 @@ title: Adding a data source
 The data sources are created on app level and not on workspace level.
 :::
 
-**Datasource manager** is on the left-sidebar of the app builder. To add a new data source, click on the `Add datasource` button.
+**Datasource manager** is on the left-sidebar of the app builder. To add a new data source, click on the <br/> `Add datasource` button.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Adding a data source](/img/tutorial/adding-datasource/add-datasource.png)
+<img className="screenshot-full" src="/img/tutorial/adding-datasource/add-datasource.png" alt="adding datasource" />
 
-</div>
 
 You will be prompted to select the data source that you wish to add. Let's select PostgreSQL for this tutorial. You will then need to provide the credentials of your PostgreSQL database. The fields that are marked as `encrypted` will be encrypted before saving to ToolJet's database. 
 
@@ -33,6 +31,6 @@ If you are using ToolJet cloud and if your data source is not publicly accessibl
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Tutorial - Adding a data source](/img/tutorial/adding-datasource/postgres.png)
+<img className="screenshot-full" src="/img/tutorial/adding-datasource/postgres.png" alt="postgre add datasource" />
 
 </div>

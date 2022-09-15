@@ -26,6 +26,7 @@ import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
+import { useTranslation } from 'react-i18next';
 
 export function Table({
   id,
@@ -43,7 +44,10 @@ export function Table({
   fireEvent,
   setExposedVariable,
   registerAction,
+  properties,
 }) {
+  const { t } = useTranslation();
+
   const color =
     component.definition.styles.textColor.value !== '#000'
       ? component.definition.styles.textColor.value
@@ -497,7 +501,7 @@ export function Table({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   filterOptions={fuzzySearch}
-                  placeholder="Select.."
+                  placeholder={t('globals.select', 'Select') + '...'}
                   disabled={!column.isEditable}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
@@ -511,7 +515,7 @@ export function Table({
                   printOptions="on-focus"
                   multiple
                   search={true}
-                  placeholder="Select.."
+                  placeholder={t('globals.select', 'Select') + '...'}
                   options={columnOptions.selectOptions}
                   value={cellValue}
                   onChange={(value) => {
@@ -751,7 +755,12 @@ export function Table({
 
   const data = useMemo(
     () => tableData,
-    [tableData.length, componentState.changeSet, component.definition.properties.data.value]
+    [
+      tableData.length,
+      componentState.changeSet,
+      component.definition.properties.data.value,
+      JSON.stringify(properties.data),
+    ]
   );
 
   const computedStyles = {
@@ -777,12 +786,15 @@ export function Table({
     setAllFilters,
     preGlobalFilteredRows,
     setGlobalFilter,
-    state: { pageIndex, pageSize },
+    state: { pageIndex, globalFilter },
     exportData,
     selectedFlatRows,
+    globalFilteredRows,
   } = useTable(
     {
       autoResetPage: false,
+      autoResetGlobalFilter: false,
+      autoResetFilters: false,
       columns,
       data,
       defaultColumn,
@@ -874,6 +886,13 @@ export function Table({
 
   const tableRef = React.useRef();
 
+  useEffect(() => {
+    setExposedVariable(
+      'filteredData',
+      globalFilteredRows.map((row) => row.original)
+    );
+  }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
+
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -913,7 +932,7 @@ export function Table({
             <div>
               {showFilterButton && (
                 <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
-                  <img src="/assets/images/icons/filter.svg" width="15" height="15" />
+                  <img src="assets/images/icons/filter.svg" width="15" height="15" />
                   {filters.length > 0 && (
                     <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
                   )}
@@ -925,7 +944,7 @@ export function Table({
                   className="btn btn-light btn-sm p-1"
                   onClick={() => exportData('csv', true)}
                 >
-                  <img src="/assets/images/icons/download.svg" width="15" height="15" />
+                  <img src="assets/images/icons/download.svg" width="15" height="15" />
                 </span>
               )}
             </div>
@@ -1082,7 +1101,7 @@ export function Table({
                   </button>
                 </>
               ) : (
-                <span>{`${preGlobalFilteredRows.length} Records`}</span>
+                <span>{`${globalFilteredRows.length} Records`}</span>
               )}
             </div>
           </div>
@@ -1117,7 +1136,7 @@ export function Table({
                       filterColumnChanged(index, value);
                     }}
                     filterOptions={fuzzySearch}
-                    placeholder="Select.."
+                    placeholder={t('globals.select', 'Select') + '...'}
                   />
                 </div>
                 <div className="col" style={{ maxWidth: '180px' }}>
@@ -1139,7 +1158,7 @@ export function Table({
                       filterOperationChanged(index, value);
                     }}
                     filterOptions={fuzzySearch}
-                    placeholder="Select.."
+                    placeholder={t('globals.select', 'Select') + '...'}
                   />
                 </div>
                 <div className="col">

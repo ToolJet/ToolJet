@@ -1,5 +1,6 @@
 import config from 'config';
 import { authenticationService } from '@/_services';
+import urlJoin from 'url-join';
 
 const HttpVerb = {
   Get: 'GET',
@@ -28,7 +29,7 @@ class HttpClient {
   }
 
   async request(method, url, data) {
-    const endpoint = this.host + this.namespace + url;
+    const endpoint = urlJoin(this.host, this.namespace, url);
     const options = {
       method,
       headers: this.headers,

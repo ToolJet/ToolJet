@@ -1,0 +1,191 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "CosmosDB datasource",
+  "description": "A schema defining CosmosDB datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "list_databases",
+          "name": "List Databases"
+        },
+        {
+          "value": "list_containers",
+          "name": "List Containers"
+        },
+        {
+          "value": "read_item",
+          "name": "Read Item"
+        },
+        {
+          "value": "insert_items",
+          "name": "Insert Items"
+        },
+        {
+          "value": "delete_item",
+          "name": "Delete Item"
+        },
+        {
+          "value": "query_database",
+          "name": "Query Database"
+        }
+      ]
+    },
+    "list_containers": {
+      "database": {
+        "label": "Database",
+        "key": "database",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter database",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter database"
+      }
+    },
+    "insert_items": {
+      "database": {
+        "label": "Database",
+        "key": "database",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter database",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter database"
+      },
+      "container": {
+        "label": "Container",
+        "key": "container",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter container",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter container"
+      },
+      "items": {
+        "label": "Items",
+        "key": "items",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter items",
+        "className": "codehinter-plugins",
+        "placeholder": "{{[ { 'name': 'Olympia', 'state': 'WA'},{  'name': 'Redmond', 'state': 'WA']}}"
+      }
+    },
+    "read_item": {
+      "database": {
+        "label": "Database",
+        "key": "database",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter database",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter database"
+      },
+      "container": {
+        "label": "Container",
+        "key": "container",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter container",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter container"
+      },
+      "itemId": {
+        "label": "Item ID",
+        "key": "itemId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter item ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "item_id"
+      }
+    },
+    "delete_item": {
+      "database": {
+        "label": "Database",
+        "key": "database",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter database",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter database"
+      },
+      "container": {
+        "label": "Container",
+        "key": "container",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter container",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter container"
+      },
+      "itemId": {
+        "label": "Item ID",
+        "key": "itemId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter item ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "item_id"
+      }
+    },
+    "query_database": {
+      "database": {
+        "label": "Database",
+        "key": "database",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter database",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter database"
+      },
+      "container": {
+        "label": "Container",
+        "key": "container",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter container",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter container"
+      },
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter query",
+        "className": "codehinter-plugins",
+        "placeholder": "SELECT * from c WHERE c.isCapitol = true"
+      }
+    }
+  }
+}

@@ -3107,6 +3107,15 @@ export const widgets = [
           },
         },
       },
+      renderOnlyActiveTab: {
+        type: 'toggle',
+        displayName: 'Render only active tab',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
     },
     events: { onTabSwitch: { displayName: 'On tab switch' } },
     styles: {
@@ -3169,6 +3178,7 @@ export const widgets = [
         },
         defaultTab: { value: '0' },
         hideTabs: { value: false },
+        renderOnlyActiveTab: { value: true },
       },
       events: [],
       styles: {
@@ -3345,7 +3355,13 @@ export const widgets = [
       onRowClicked: { displayName: 'Row clicked' },
     },
     styles: {
-      backgroundColor: { type: 'color' },
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
@@ -4456,7 +4472,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         visibility: { value: '{{true}}' },
         theme: { value: 'titles' },
         color: { value: '#4d72fa' },
-        textColor: { value: '#3e525b' },
+        textColor: { value: '#000' },
       },
     },
   },

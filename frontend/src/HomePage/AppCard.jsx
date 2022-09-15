@@ -5,7 +5,9 @@ import moment from 'moment';
 import { ToolTip } from '@/_components';
 import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
-
+import { Link } from 'react-router-dom';
+import urlJoin from 'url-join';
+import { useTranslation } from 'react-i18next';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -23,6 +25,7 @@ export default function AppCard({
   const [hoverRef, isHovered] = useHover();
   const [focused, setFocused] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   const onMenuToggle = useCallback(
     (status) => {
@@ -60,7 +63,7 @@ export default function AppCard({
             <div className="app-icon-main p-1">
               <div className="app-icon p-1 d-flex">
                 <img
-                  src={`/assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`}
+                  src={`assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`}
                   alt="Application Icon"
                   data-cy={`app-card-${app.icon || defaultIcon}-icon`}
                 />
@@ -111,21 +114,20 @@ export default function AppCard({
             {canUpdate && (
               <div className="col-6 pe-1">
                 <ToolTip message="Open in app builder">
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-light edit-button"
-                    onClick={() => history.push(`/apps/${app.id}`)}
-                    data-cy="edit-button"
-                  >
-                    Edit
-                  </button>
+                  <Link to={`/apps/${app.id}`}>
+                    <button type="button" className="btn btn-sm btn-light edit-button" data-cy="edit-button">
+                      {t('globals.edit', 'Edit')}
+                    </button>
+                  </Link>
                 </ToolTip>
               </div>
             )}
             <div className={`col-${canUpdate ? '6' : '12'} ps-1`}>
               <ToolTip
                 message={
-                  app?.current_version_id === null ? 'App does not have a deployed version' : 'Open in app viewer'
+                  app?.current_version_id === null
+                    ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
+                    : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
                 }
               >
                 <span>
@@ -135,14 +137,16 @@ export default function AppCard({
                     disabled={app?.current_version_id === null || app?.is_maintenance_on}
                     onClick={() => {
                       if (app?.current_version_id) {
-                        window.open(`/applications/${app.slug}`);
+                        window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
                       } else {
                         history.push(app?.current_version_id ? `/applications/${app.slug}` : '');
                       }
                     }}
                     data-cy="launch-button"
                   >
-                    {app?.is_maintenance_on ? 'Maintenance' : 'Launch'}
+                    {app?.is_maintenance_on
+                      ? t('homePage.appCard.maintenance', 'Maintenance')
+                      : t('homePage.appCard.launch', 'Launch')}
                   </button>
                 </span>
               </ToolTip>
