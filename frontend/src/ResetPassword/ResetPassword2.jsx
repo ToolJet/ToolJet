@@ -59,7 +59,7 @@ class ResetPassword2 extends React.Component {
       <div className="common-auth-section-whole-wrapper page">
         <div className="common-auth-section-left-wrapper">
           <div className="onboarding-navbar container-xl">
-            <img src="assets/images/logo-color.svg" height="17.5" alt="" data-cy="page-logo" />
+            <img src="assets/images/logo-color.svg" height="17.5" alt="tooljet logo" data-cy="page-logo" />
           </div>
           <div className="common-auth-section-left-wrapper-grid">
             <div></div>
@@ -133,7 +133,7 @@ class ResetPassword2 extends React.Component {
                           className="onboarding-enter-icon"
                         ></img>
                       </button>
-                    </div>{' '}
+                    </div>
                   </>
                 ) : (
                   <PasswordResetinfoScreen props={this.props} />

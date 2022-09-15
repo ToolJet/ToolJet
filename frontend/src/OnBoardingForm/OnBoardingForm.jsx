@@ -44,7 +44,7 @@ function OnBoardingForm() {
     <div className="page">
       <div className="onboarding-navbar container-xl onboarding-navbar-layout">
         <div>
-          <img src="assets/images/logo-color.svg" height="17.5" alt="" data-cy="page-logo" />
+          <img src="assets/images/logo-color.svg" height="17.5" alt="tooljet-logo" data-cy="page-logo" />
         </div>
         <div></div>
         <div className="onboarding-checkpoints">
@@ -88,7 +88,7 @@ function OnBoardingForm() {
               <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
             </div>
             {PageShift()}
-            <div className="">{continueButton({ buttonState, setButtonState, setPage, page, formData })}</div>
+            <div>{continueButton({ buttonState, setButtonState, setPage, page, formData })}</div>
           </div>
         </div>
       )}

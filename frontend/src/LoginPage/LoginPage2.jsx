@@ -142,12 +142,12 @@ class LoginPage2 extends React.Component {
         <div className="common-auth-section-whole-wrapper page">
           <div className="common-auth-section-left-wrapper">
             <div className="onboarding-navbar container-xl">
-              <img src="assets/images/logo-color.svg" height="17.5" alt="" data-cy="page-logo" />
+              <img src="assets/images/logo-color.svg" height="17.5" alt="tooljet logo" />
             </div>
 
             <div className="common-auth-section-left-wrapper-grid">
               <div></div>
-              <form className="" action="." method="get" autoComplete="off">
+              <form action="." method="get" autoComplete="off">
                 {isGettingConfigs ? (
                   <ShowLoading />
                 ) : (
@@ -188,7 +188,7 @@ class LoginPage2 extends React.Component {
                           </div>
                         </div>
 
-                        <div className="">
+                        <div>
                           <label className="common-auth-sub-label">Work email</label>
                           <input
                             onChange={this.handleChange}
@@ -199,7 +199,7 @@ class LoginPage2 extends React.Component {
                             style={{ backgroundColor: '#fff' }}
                           />
                         </div>
-                        <div className="">
+                        <div>
                           <label className="common-auth-sub-label">
                             Password
                             <span style={{ marginLeft: '4px' }}>

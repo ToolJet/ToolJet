@@ -57,7 +57,7 @@ class ForgotPassword2 extends React.Component {
         <div className="common-auth-section-whole-wrapper page">
           <div className="common-auth-section-left-wrapper">
             <div className="onboarding-navbar container-xl">
-              <img src="assets/images/logo-color.svg" height="17.5" alt="" data-cy="page-logo" />
+              <img src="assets/images/logo-color.svg" height="17.5" alt="tooljet logo" data-cy="page-logo" />
             </div>
             <div className="common-auth-section-left-wrapper-grid">
               <div></div>
@@ -79,14 +79,12 @@ class ForgotPassword2 extends React.Component {
                           name="email"
                           type="email"
                           placeholder="Enter email address"
-                          data-testid="emailField"
                           className="common-input-auth-section "
                         />
                       </div>
                       <div>
                         <button
                           className="common-continue-btn-auth-section forgot-password-btn "
-                          data-testid="submitButton"
                           onClick={this.handleClick}
                           disabled={isLoading || !this.state.email}
                         >

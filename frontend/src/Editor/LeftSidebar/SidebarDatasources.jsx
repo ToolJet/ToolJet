@@ -140,7 +140,7 @@ const LeftSidebarDataSourcesContainer = ({ renderDataSource, dataSources = [], t
               overlay={<Tooltip id="button-tooltip">{'Add datasource'}</Tooltip>}
             >
               <button onClick={() => toggleDataSourceManagerModal(true)} className="btn btn-sm add-btn">
-                <img className="" src="assets/images/icons/plus.svg" width="12" height="12" />
+                <img src="assets/images/icons/plus.svg" width="12" height="12" />
               </button>
             </OverlayTrigger>
           </div>

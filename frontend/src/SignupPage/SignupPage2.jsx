@@ -82,13 +82,13 @@ class SignupPage2 extends React.Component {
       <div className="page common-auth-section-whole-wrapper ">
         <div className="common-auth-section-left-wrapper">
           <div className="onboarding-navbar container-xl">
-            <img src="assets/images/logo-color.svg" height="17.5" alt="" data-cy="page-logo" />{' '}
+            <img src="assets/images/logo-color.svg" height="17.5" alt="tooljet logo" data-cy="page-logo" />
           </div>
 
           <div className="common-auth-section-left-wrapper-grid">
             <div></div>
 
-            <form className="" action="." method="get" autoComplete="off">
+            <form action="." method="get" autoComplete="off">
               {!signupSuccess && (
                 <div className="common-auth-container-wrapper ">
                   <h2 className="common-auth-section-header ">Join ToolJet</h2>
@@ -101,7 +101,7 @@ class SignupPage2 extends React.Component {
                     </div>
                   )}
                   {this.ssoConfigs.enableSignUp && (
-                    <div className="">
+                    <div>
                       {!this.state.configs?.git?.enabled && (
                         <div className="login-sso-wrapper">
                           <GitSSOLoginButton configs={this.state.configs?.git?.configs} />
@@ -127,7 +127,7 @@ class SignupPage2 extends React.Component {
                     </div>
                   )}
                   <div className=" common-auth-inputs-wrapper">
-                    <label className=" common-auth-sub-label">Name</label>
+                    <label className="common-auth-sub-label">Name</label>
                     <input
                       onChange={this.handleChange}
                       name="name"
@@ -135,7 +135,7 @@ class SignupPage2 extends React.Component {
                       className="common-input-auth-section "
                       placeholder="Enter your business name"
                     />
-                    <label className=" common-auth-sub-label">Email address</label>
+                    <label className="common-auth-sub-label">Email address</label>
                     <input
                       onChange={this.handleChange}
                       name="email"
@@ -143,7 +143,7 @@ class SignupPage2 extends React.Component {
                       className="common-input-auth-section"
                       placeholder="Enter your business email"
                     />
-                    <label className=" common-auth-sub-label">Password</label>
+                    <label className="common-auth-sub-label">Password</label>
                     <div className="login-password singup-password-wrapper">
                       <input
                         onChange={this.handleChange}
@@ -164,7 +164,7 @@ class SignupPage2 extends React.Component {
                       <span className="common-input-warning-text">Password must be atleast 8 charectors</span>
                     </div>
 
-                    {/* <label className=" common-auth-sub-label" data-cy="password-label">
+                    {/* <label className=" common-auth-sub-label">
                       Confirm Password
                     </label>
 
@@ -177,7 +177,7 @@ class SignupPage2 extends React.Component {
                     /> */}
                   </div>
 
-                  <div className=" ">
+                  <div>
                     <button
                       className={`common-continue-btn-auth-section  singup-continue-btn ${
                         isLoading ? 'btn-loading' : ''
@@ -202,7 +202,7 @@ class SignupPage2 extends React.Component {
                 </div>
               )}
               {signupSuccess && (
-                <div className=" ">
+                <div>
                   <SignupInfoScreen props={this.props} email={this.state.email} signup={this.signup} />
                 </div>
               )}

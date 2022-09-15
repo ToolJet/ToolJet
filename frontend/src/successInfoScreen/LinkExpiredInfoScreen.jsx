@@ -13,7 +13,7 @@ function LinkExpiredInfoScreen() {
           <h1 className="common-auth-section-header">The verification link has expierd</h1>
           <p className="onboarding-page-verify--subheading">
             The verification link sent your email has been expierd. Please resend the email to get a new verification
-            link{' '}
+            link
           </p>
 
           <button

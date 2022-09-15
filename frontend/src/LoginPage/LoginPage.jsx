@@ -162,7 +162,7 @@ class LoginPageComponent extends React.Component {
                 {configs?.form?.enabled && (
                   <div>
                     <h2 className="card-title text-center mb-4" data-cy="login-page-header">
-                      {this.props.t('loginSignupPage.loginTo', 'Login to')}{' '}
+                      {this.props.t('loginSignupPage.loginTo', 'Login to')}
                       {this.single_organization
                         ? this.props.t('loginSignupPage.yourAccount', 'your account')
                         : configs?.name || this.props.t('loginSignupPage.yourAccount', 'your account')}

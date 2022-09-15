@@ -8,7 +8,7 @@ function PasswordResetinfoScreen({ props }) {
           <img
             className="onboarding-page-email-img"
             src={'assets/images/onboarding assets /02 Illustrations /Reset password successfull.svg'}
-            alt="email image"
+            alt="password lock"
           />
           <h1 className="common-auth-section-header">Passwrod has been reset</h1>
           <p className="onboarding-page-verify--subheading">

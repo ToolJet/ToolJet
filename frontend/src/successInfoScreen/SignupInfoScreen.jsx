@@ -37,7 +37,7 @@ function SignupInfoScreen({ props, email, signup }) {
           </p>
           <p className="onboarding-page-verify-spam">Did not receive an email? Check your spam folder</p>
           <div className="separator-onboarding">
-            <div className=" separator">
+            <div className="separator">
               <h2>
                 <span>OR</span>
               </h2>
@@ -66,7 +66,7 @@ function SignupInfoScreen({ props, email, signup }) {
           )}
           {show && (
             <>
-              <label className=" common-auth-sub-label">Email address</label>
+              <label className="common-auth-sub-label">Email address</label>
               <input
                 // onChange={this.handleChange}
                 name="email"

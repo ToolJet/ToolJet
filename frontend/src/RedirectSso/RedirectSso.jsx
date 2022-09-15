@@ -36,7 +36,7 @@ export const RedirectSso = function RedirectSso() {
   return (
     <div>
       <div className="page page-center">
-        <div className=" py-2">
+        <div className="py-2">
           <div className="text-center mb-4">
             <a href="." className="navbar-brand-autodark">
               <img src="assets/images/logo-color.svg" height="26" alt="" />
@@ -52,7 +52,6 @@ export const RedirectSso = function RedirectSso() {
               <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/tutorial/multiworkspace">
                 {t('redirectSso.multiWorkspace', 'Multi-Workspace')}
               </a>
-              .{' '}
               {t(
                 'redirectSso.singleSignOnConfig',
                 'The Single Sign-On related configurations are moved from environment variables to database. Please refer this'
@@ -107,7 +106,6 @@ export const RedirectSso = function RedirectSso() {
                 <>
                   <div>
                     <p className="workspace-status">
-                      {' '}
                       <span className="gg-border-all"></span>
                       {t('redirectSso.youHaveDisabled', 'You have Disabled')}
                       <a style={{ marginLeft: '4px' }} href="https://docs.tooljet.com/docs/tutorial/multiworkspace">
@@ -142,8 +140,8 @@ export const RedirectSso = function RedirectSso() {
                       {googlessoEnabled && (
                         <>
                           <p className="sso-type">
-                            <span className="">-</span>
-                            {t('redirectSso.google', 'Google')} :{' '}
+                            <span>-</span>
+                            {t('redirectSso.google', 'Google')} :
                             <a href="https://docs.tooljet.com/docs/sso/google"> {t('redirectSso.link', 'Link')}</a>
                           </p>
                           <div className="flexer">
@@ -165,8 +163,8 @@ export const RedirectSso = function RedirectSso() {
                       {gitSsoEnabled && (
                         <>
                           <p className="sso-type ">
-                            <span className="">-</span>
-                            {t('redirectSso.gitHub', 'GitHub')} :{' '}
+                            <span>-</span>
+                            {t('redirectSso.gitHub', 'GitHub')} :
                             <a href="https://docs.tooljet.com/docs/sso/github"> {t('redirectSso.link', 'Link')}</a>
                           </p>
 

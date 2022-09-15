@@ -12,11 +12,11 @@ function ForgotPasswordInfoScreen({ props, email }) {
           />
           <h1 className="common-auth-section-header">Check your mail</h1>
           <p className="onboarding-page-verify--subheading">
-            We’ve sent an email to {email} with a Password reset link. Please click on that link to reset your password{' '}
+            We’ve sent an email to {email} with a Password reset link. Please click on that link to reset your password
           </p>
           <p className="onboarding-page-verify-spam">Did not receive an email? Check your spam folder</p>
           <div className="separator-onboarding">
-            <div className=" separator">
+            <div className="separator">
               <h2>
                 <span>OR</span>
               </h2>
