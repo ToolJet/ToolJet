@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { datasourceService } from '@/_services';
+import { useTranslation } from 'react-i18next';
 
 import Button from '@/_ui/Button';
 
 const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource }) => {
   const [authStatus, setAuthStatus] = useState(null);
+  const { t } = useTranslation();
 
   function authGoogle() {
     const provider = 'slack';
@@ -38,10 +40,12 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
       <div className="row">
         <div className="col-md-12">
           <div className="mb-3">
-            <div className="form-label">Authorize</div>
+            <div className="form-label">{t('slack.authorize', 'Authorize')}</div>
             <p>
-              ToolJet can connect to Slack and list users, send messages, etc. Please select appropriate permission
-              scopes.
+              {t(
+                'slack.connectToolJetToSlack',
+                'ToolJet can connect to Slack and list users, send messages, etc. Please select appropriate permission scopes.'
+              )}
             </p>
             <div>
               <label className="form-check mt-3">
@@ -53,9 +57,12 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
                   disabled={authStatus === 'waiting_for_token'}
                 />
                 <span className="form-check-label">
-                  chat:write <br />
+                  {t('slack.chatWrite', 'chat:write')} <br />
                   <small className="text-muted">
-                    Your ToolJet app will be able to list users and send messages to users & channels.
+                    {t(
+                      'slack.listUsersAndSendMessage',
+                      'Your ToolJet app will be able to list users and send messages to users & channels.'
+                    )}
                   </small>
                 </span>
               </label>
@@ -72,7 +79,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
                 disabled={isSaving}
                 onClick={() => saveDataSource()}
               >
-                {isSaving ? 'Saving...' : 'Save data source'}
+                {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
               </Button>
             </div>
           )}
@@ -83,7 +90,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
               disabled={isSaving}
               onClick={() => authGoogle()}
             >
-              Connect to Slack
+              {t('slack.connectSlack', 'Connect to Slack')}
             </Button>
           )}
         </center>

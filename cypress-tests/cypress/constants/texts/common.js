@@ -70,6 +70,8 @@ export const commonWidgetText = {
   parameterBoxShadow: "Box Shadow",
   boxShadowDefaultValue: "0px 0px 0px 0px #00000040",
   parameterOptionvalues: "Option values",
+  boxShadowColor: "Box Shadow Color",
+  boxShadowFxValue: "-5px 6px 5px 8px #ee121240",
 
   codeMirrorLabelTrue: "{{true}}",
   codeMirrorLabelFalse: "{{false}}",
@@ -83,6 +85,9 @@ export const commonWidgetText = {
   parameterLabel: "Label",
 
   datepickerDocumentationLink: "Datepicker documentation",
+  text1: "text1",
+  toggleswitch1: "toggleswitch1",
+  toggleSwitch: "Toggle Switch",
 };
 
 export const createBackspaceText = (text) => {
