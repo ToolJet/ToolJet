@@ -7,12 +7,17 @@ title: Deploying ToolJet client
 
 ToolJet client is a standalone application and can be deployed on static website hosting services such as Netlify, Firebase, S3/Cloudfront, etc.
 
+You can build standalone client with the below command:
+```bash
+SERVE_CLIENT=false npm run build
+```
+
 ## Deploying ToolJet client on Firebase
 
 :::tip
-You should set the environment variable `TOOLJET_SERVER_URL` ( URL of the server ) while building the frontend.
+You should set the environment variable `TOOLJET_SERVER_URL` ( URL of the server ) while building the frontend and also set `SERVE_CLIENT` to `false`` for standalone client build.
 
-For example: `NODE_ENV=production TOOLJET_SERVER_URL=https://server.tooljet.com npm run build && firebase deploy`
+For example: `SERVE_CLIENT=false TOOLJET_SERVER_URL=https://server.tooljet.com npm run build && firebase deploy`
 :::
 
 1. Initialize firebase project
@@ -31,7 +36,7 @@ For example: `NODE_ENV=production TOOLJET_SERVER_URL=https://server.tooljet.com 
 You should set the environment variable `TOOLJET_SERVER_URL` ( URL of the server ) while building the frontend.
 
 
-For example: `NODE_ENV=production TOOLJET_SERVER_URL=https://server.tooljet.io npm run build`
+For example: `SERVE_CLIENT=false TOOLJET_SERVER_URL=https://server.tooljet.io npm run build`
 :::
 
 #### Using Load balancer

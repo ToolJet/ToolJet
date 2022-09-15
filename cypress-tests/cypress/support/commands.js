@@ -71,6 +71,13 @@ Cypress.Commands.add("appLogin", () => {
   cy.visit("/");
 });
 
+Cypress.Commands.add("waitForAutoSave", () => {
+  cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
+    "have.text",
+    commonText.autoSave
+  );
+});
+
 Cypress.Commands.add("createApp", (appName) => {
   cy.get("body").then(($title) => {
     if ($title.text().includes(commonText.introductionMessage)) {
@@ -88,10 +95,6 @@ Cypress.Commands.add("createApp", (appName) => {
       }
     });
   });
-  if (appName) {
-    cy.clearAndType(commonSelectors.appNameInput, appName);
-    cy.get(commonSelectors.backButton).click();
-  }
 });
 
 Cypress.Commands.add(
@@ -99,7 +102,7 @@ Cypress.Commands.add(
   (widgetName, positionX = 190, positionY = 80) => {
     const dataTransfer = new DataTransfer();
 
-    cy.get(commonSelectors.searchField).type(widgetName);
+    cy.clearAndType(commonSelectors.searchField, widgetName);
     cy.get(commonWidgetSelector.widgetBox(widgetName)).trigger(
       "dragstart",
       { dataTransfer },
@@ -109,10 +112,7 @@ Cypress.Commands.add(
       dataTransfer,
       force: true,
     });
-    cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
-      "have.text",
-      commonText.autoSave
-    );
+    cy.waitForAutoSave();
   }
 );
 
@@ -186,3 +186,19 @@ Cypress.Commands.add(
       .and(assertion, value, ...arg);
   }
 );
+
+Cypress.Commands.add("openInCurrentTab", (selector) => {
+  cy.get(selector).invoke("removeAttr", "target").click();
+});
+
+Cypress.Commands.add("modifyCanvasSize", (x, y) => {
+  cy.get("[data-cy='left-sidebar-settings-button']").click();
+  cy.clearAndType("[data-cy='maximum-canvas-width-input-field']", x);
+  cy.clearAndType("[data-cy='maximum-canvas-height-input-field']", y);
+  cy.forceClickOnCanvas();
+});
+
+Cypress.Commands.add("renameApp", (appName) => {
+  cy.clearAndType(commonSelectors.appNameInput, appName);
+  cy.waitForAutoSave();
+});

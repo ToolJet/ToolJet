@@ -33,9 +33,10 @@ async function bootstrap() {
   // Exclude these endpoints from prefix. These endpoints are required for health checks.
   const pathsToExclude = [];
   if (hasSubPath) {
-    pathsToExclude.push({ path: 'health', method: RequestMethod.GET });
     pathsToExclude.push({ path: '/', method: RequestMethod.GET });
   }
+  pathsToExclude.push({ path: '/health', method: RequestMethod.GET });
+  pathsToExclude.push({ path: '/api/health', method: RequestMethod.GET });
 
   app.setGlobalPrefix(UrlPrefix + 'api', {
     exclude: pathsToExclude,

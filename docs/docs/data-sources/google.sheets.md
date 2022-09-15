@@ -28,11 +28,9 @@ You can create a Google Sheets data source with one of either of the two permiss
   1. **Read Only**
   2. **Read and Write**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Data source Google Sheets](/img/datasource-reference/google-sheets/googlesheets.gif)
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/googlesheets.gif" alt="google sheets" />
 
-</div>
 
 ## Operations
 
@@ -55,11 +53,9 @@ This operation returns the table data from the spreadsheet in the form of json o
 | Sheet | This is optional. You can specify `sheet name` if it has more than 1 sheets, else it will automatically choose the first sheet. |
 
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet- Data source - Google Sheets](/img/datasource-reference/google-sheets/read-data-op.png)
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/read-data-op.png" alt="google sheets read"/>
 
-</div>
 
 ### Append data to a sheet
 
@@ -71,11 +67,9 @@ You can add more rows to the table using the append operation.
 | Sheet | This is optional. You can specify `sheet name` if it has more than 1 sheets, else it will automatically choose the first sheet. |
 | Rows  | Enter the row data in the json array form. Each object in an array will represent a single row. Example: `[ {"name":"John", "email":"John@tooljet.com"},{...},{...} ]` In each object, the `key` represents the **column name** and the `value` represents the **cell data**.   |
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Data source Google Sheets](/img/datasource-reference/google-sheets/append-data-op.png)
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/append-data-op.png" alt="google sheets append" />
 
-</div>
 
 ### Update single row of a sheet
 
@@ -89,11 +83,9 @@ You can update the existing data in sheet using this operation.
 | Value | Enter the any `id` number/name that you want to update. |
 | Rows  | Enter the row data. Example: `{{({id: components.textinput4.value, company: components.textinput1.value, position: components.textinput2.value, url: components.textinput3.value, 'date-applied': components.datepicker1.value, status: components.dropdown1.value})}}`  |
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Data source - Google Sheets](/img/datasource-reference/google-sheets/update-data-op.png)
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/update-data-op.png" alt="google sheets update" />
 
-</div>
 
 ### Delete row from a sheet
 
@@ -106,11 +98,9 @@ Use this operation delete a specific row from the sheet.
 | Delete row number |  Just enter the row number that you want to delete.  |
 
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Data source Google Sheets](/img/datasource-reference/google-sheets/delete-row-op.png)
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/delete-row-op.png" alt="google sheets delete"/>
 
-</div>
 
 ### Get spreadsheet info
 
@@ -118,8 +108,5 @@ This operation can be used to get some basic information of the spreadsheet such
 
 Here is the `Preview` of the query that used the get spreadsheet info operation.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - ToolJet - Data source Google Sheets](/img/datasource-reference/google-sheets/get-info2.png)
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/get-info2.png" alt="google sheets get info" />
