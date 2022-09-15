@@ -127,29 +127,29 @@ class SignupPage2 extends React.Component {
                     </div>
                   )}
                   <div className=" common-auth-inputs-wrapper">
-                    <label className="common-auth-sub-label">Name</label>
+                    <label className="tj-text-input-label">Name</label>
                     <input
                       onChange={this.handleChange}
                       name="name"
                       type="name"
-                      className="common-input-auth-section "
+                      className="tj-text-input "
                       placeholder="Enter your business name"
                     />
-                    <label className="common-auth-sub-label">Email address</label>
+                    <label className="tj-text-input-label">Email address</label>
                     <input
                       onChange={this.handleChange}
                       name="email"
                       type="email"
-                      className="common-input-auth-section"
+                      className="tj-text-input"
                       placeholder="Enter your business email"
                     />
-                    <label className="common-auth-sub-label">Password</label>
+                    <label className="tj-text-input-label">Password</label>
                     <div className="login-password singup-password-wrapper">
                       <input
                         onChange={this.handleChange}
                         name="password"
                         type={this.state.showPassword ? 'text' : 'password'}
-                        className="common-input-auth-section"
+                        className="tj-text-input"
                         placeholder="Enter new password"
                       />
                       <img
@@ -164,7 +164,7 @@ class SignupPage2 extends React.Component {
                       <span className="common-input-warning-text">Password must be atleast 8 charectors</span>
                     </div>
 
-                    {/* <label className=" common-auth-sub-label">
+                    {/* <label className=" tj-text-input-label">
                       Confirm Password
                     </label>
 
@@ -172,7 +172,7 @@ class SignupPage2 extends React.Component {
                       onChange={this.handleChange}
                       name="password"
                       type="password"
-                      className="common-input-auth-section"
+                      className="tj-text-input"
                       placeholder="Enter new password"
                     /> */}
                   </div>

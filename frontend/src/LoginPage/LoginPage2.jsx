@@ -156,7 +156,7 @@ class LoginPage2 extends React.Component {
                     {configs?.form?.enabled && (
                       <div>
                         <h2 className="common-auth-section-header">Sign in</h2>
-                        <div className="common-auth-sub-label">
+                        <div className="tj-text-input-label">
                           {/* Login to {this.single_organization ? 'your account' : configs?.name || 'your account'} */}
                           {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
                             <div className="common-sub-header">
@@ -189,7 +189,7 @@ class LoginPage2 extends React.Component {
                         </div>
 
                         <div>
-                          <label className="common-auth-sub-label">Work email</label>
+                          <label className="tj-text-input-label">Work email</label>
                           <input
                             onChange={this.handleChange}
                             name="email"
@@ -200,7 +200,7 @@ class LoginPage2 extends React.Component {
                           />
                         </div>
                         <div>
-                          <label className="common-auth-sub-label">
+                          <label className="tj-text-input-label">
                             Password
                             <span style={{ marginLeft: '4px' }}>
                               <Link to={'/forgot-password'} tabIndex="-1" className="login-forgot-password">

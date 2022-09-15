@@ -6109,6 +6109,8 @@ input.hide-input-arrows {
   }
 }
 
+//ONBOARD START
+
 .onboarding-page-wrapper {
   display: flex !important;
   flex-direction: column !important;
@@ -6128,7 +6130,7 @@ input.hide-input-arrows {
 
 }
 
-.onboarding-page-email-img {
+.info-screen-email-img {
   height: 208px;
   width: 202.69px;
   display: flex;
@@ -6245,7 +6247,7 @@ input.hide-input-arrows {
 
 }
 
-.onboarding-input {
+.tj-text-input {
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -6385,29 +6387,8 @@ input.hide-input-arrows {
   background-color: rgb(96, 40, 40);
 }
 
-// verify
-.onboarding-page-verify-header {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 400;
-  font-size: 45px;
-  line-height: 68px;
-  margin-bottom: 4px;
-  text-align: center;
-  color: #111827;
-  line-height: 68px;
-}
 
-.onboarding-page-verify-spam {
-  font-style: normal;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 24px;
-  margin-top: 32px;
-  color: #4B5563;
-}
-
-.onboarding-page-verify--subheading {
+.info-screen-description {
   margin-bottom: 0px !important;
   font-family: 'Roboto';
   font-style: normal;
@@ -6431,7 +6412,7 @@ input.hide-input-arrows {
       border-bottom: 1px solid #E4E7EB;
       line-height: 0.1em;
       font-size: 14px;
-      margin: 36px 0 36px;
+      margin: 26px 0 26px;
     }
 
     h2 span {
@@ -6548,7 +6529,7 @@ input.hide-input-arrows {
   }
 }
 
-.common-auth-sub-label {
+.tj-text-input-label {
   font-weight: 500;
   font-size: 12px;
   line-height: 20px;
@@ -6571,12 +6552,8 @@ input.hide-input-arrows {
   font-weight: 500;
   font-size: 11px;
   line-height: 16px;
-  /* identical to box height, or 145% */
-
   display: flex;
   align-items: center;
-
-  /* Blue/60* */
   margin-left: 4px;
   color: #466BF2;
 }
@@ -6585,7 +6562,6 @@ input.hide-input-arrows {
   margin-top: 130px;
   margin-left: 64px;
   margin-bottom: 18px;
-  // margin-right: 108px;
   font-family: 'Inter';
   font-style: normal;
   font-weight: 400;
@@ -6605,14 +6581,23 @@ input.hide-input-arrows {
   margin-bottom: 4px;
 }
 
-.common-input-auth-section {
+.onboard-input {
+  width: 392px !important;
+  cursor: pointer;
+}
+
+.tj-text-input {
+  width: 352px !important;
+}
+
+.tj-text-input,
+.onboard-input {
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
   align-items: center;
   padding: 8px 16px;
   gap: 10px;
-  width: 352px;
   height: 44px;
   background: #FFFFFF;
   border: 1px solid #D1D5DB;
@@ -6731,20 +6716,6 @@ input.hide-input-arrows {
   }
 }
 
-// RESET PASSWORD
-
-// .reset-password-card-wrapper {
-//   display: flex;
-//   flex-direction: column;
-//   align-items: center;
-//   width: 352px;
-//   height: 352px;
-//   margin-left: 336px;
-//   margin-top: 98px;
-
-// }
-
-
 .reset-password-input {
   margin-bottom: 0px !important;
 }
@@ -6773,15 +6744,20 @@ input.hide-input-arrows {
 
 // SUCCESS INFO
 
-.email-verification-wrapper {
+.info-screen-wrapper {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
 
-.email-verification-card {
+.signup-info-card {
   width: 352px;
   height: 572.69px;
+}
+
+.link-expired-card {
+  width: 392px;
+  height: 482.69px;
 }
 
 .onboarding-testimonial-img {
@@ -6913,7 +6889,7 @@ input.hide-input-arrows {
   margin-bottom: 32px !important;
 }
 
-.info-screen-container {
+.info-screen-outer-wrap {
   margin: 0 auto;
   display: flex;
   justify-content: center;
@@ -6925,10 +6901,10 @@ input.hide-input-arrows {
   margin: 96px auto;
 }
 
-.check-mail-info-card {
+.forget-password-info-card {
   margin-top: 34px !important;
   width: 352px;
-  height: 578.69px;
+  height: 520.69px;
 }
 
 .signup-email-name {
@@ -6952,16 +6928,17 @@ input.hide-input-arrows {
 
 .verification-success-card {
   display: flex;
-  margin-top: 127px !important;
   flex-direction: column;
   text-align: center;
+  width: 392px;
+  height: 482.69px;
+  margin-top: 34px;
 }
 
 .password-reset-card {
   width: 352px;
   height: 482.69px;
   margin-top: 34px;
-
 }
 
 .sucess-info-card {
@@ -6971,14 +6948,6 @@ input.hide-input-arrows {
 .verification-success-page-continue-btn {
   width: 392px !important;
 
-}
-
-.verification-success-page-email-img {
-  margin-bottom: 32px !important;
-}
-
-.signup-info-card {
-  margin-top: 132px;
 }
 
 // verification-navbar styles
@@ -7038,6 +7007,17 @@ input.hide-input-arrows {
 
   }
 }
+
+.info-screen-spam-msg {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  margin-top: 32px;
+  color: #4B5563;
+}
+
+// ------ONBOARD END----------------------
 
 .dark-theme-placeholder::placeholder {
   color: #C8C6C6;

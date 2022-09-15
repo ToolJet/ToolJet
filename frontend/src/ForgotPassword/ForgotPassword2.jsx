@@ -73,13 +73,13 @@ class ForgotPassword2 extends React.Component {
                         </Link>
                       </p>
                       <div>
-                        <p className="common-auth-sub-label">Email address</p>
+                        <p className="tj-text-input-label">Email address</p>
                         <input
                           onChange={this.handleChange}
                           name="email"
                           type="email"
                           placeholder="Enter email address"
-                          className="common-input-auth-section "
+                          className="tj-text-input "
                         />
                       </div>
                       <div>

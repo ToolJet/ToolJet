@@ -5,17 +5,17 @@ function VerificationSuccessInfoScreen() {
   const [show, setShow] = useState(false);
 
   return (
-    <div className="info-screen-container">
+    <div className="info-screen-outer-wrap">
       {!show ? (
-        <div className="email-verification-wrapper">
-          <div className="email-verification-card verification-success-card">
+        <div className="info-screen-wrapper">
+          <div className="verification-success-card">
             <img
-              className="onboarding-page-email-img verification-success-page-email-img"
+              className="info-screen-email-img"
               src={'assets/images/onboarding assets /02 Illustrations /Verification successfull.svg'}
               alt="email image"
             />
             <h1 className="common-auth-section-header">Successfully verified email</h1>
-            <p className="onboarding-page-verify--subheading">
+            <p className="info-screen-description">
               Your email has been verified successfully. Continue to set up your workspace to start using ToolJet.
             </p>
 

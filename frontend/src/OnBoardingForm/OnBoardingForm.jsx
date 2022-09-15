@@ -147,7 +147,7 @@ export function onBoardingInput({ formData, setFormData, setButtonState }) {
     <input
       value={formData.organization}
       placeholder="Enter your company name"
-      className="onboarding-input"
+      className="onboard-input"
       onChange={(e) => {
         setFormData({ ...formData, organization: e.target.value });
         if (e.target.value !== '') setButtonState(false);
@@ -160,7 +160,7 @@ export function onBoardingInput({ formData, setFormData, setButtonState }) {
 export function onBoardingRadioInput(props) {
   const { formData, setFormData, setButtonState, field, key } = props;
   return (
-    <label className={`onboarding-input ${formData[key] === field && 'onboarding-radio-checked'}`}>
+    <label className={`onboard-input ${formData[key] === field && 'onboarding-radio-checked'}`}>
       <input
         type="radio"
         name={field}

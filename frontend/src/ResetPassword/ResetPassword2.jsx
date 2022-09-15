@@ -70,7 +70,7 @@ class ResetPassword2 extends React.Component {
                   <>
                     <h2 className="common-auth-section-header reset-password-header">Reset Password</h2>
                     <div className="reset-password-input-container">
-                      <label className="common-auth-sub-label">New Password</label>
+                      <label className="tj-text-input-label">New Password</label>
                       <div className="login-password">
                         <input
                           onChange={this.handleChange}
@@ -78,7 +78,7 @@ class ResetPassword2 extends React.Component {
                           type={this.state.showPassword ? 'text' : 'password'}
                           placeholder="Password"
                           autoComplete="off"
-                          className="common-input-auth-section reset-password-input"
+                          className="tj-text-input reset-password-input"
                         />
                         <img
                           src={`${
@@ -95,7 +95,7 @@ class ResetPassword2 extends React.Component {
                       </div>
                     </div>
                     <div className="reset-password-input-container">
-                      <label className="common-auth-sub-label">Re-enter the password</label>
+                      <label className="tj-text-input-label">Re-enter the password</label>
                       <div className="login-password">
                         <input
                           onChange={this.handleChange}
@@ -103,7 +103,7 @@ class ResetPassword2 extends React.Component {
                           type={this.state.showPassword ? 'text' : 'password'}
                           placeholder="Re-enter the password"
                           autoComplete="off"
-                          className="common-input-auth-section reset-password-input"
+                          className="tj-text-input reset-password-input"
                         />
                         <img
                           src={`${
