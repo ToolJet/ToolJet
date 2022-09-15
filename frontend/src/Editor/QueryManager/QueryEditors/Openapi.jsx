@@ -2,6 +2,7 @@ import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import DOMPurify from 'dompurify';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { withTranslation } from 'react-i18next';
 
 const operationColorMapping = {
   get: 'azure',
@@ -12,7 +13,7 @@ const operationColorMapping = {
   head: 'blue',
 };
 
-class Openapi extends React.Component {
+class OpenapiComponent extends React.Component {
   constructor(props) {
     super(props);
     const { selectedDataSource } = props;
@@ -196,14 +197,16 @@ class Openapi extends React.Component {
 
     return (
       <div>
-        {!spec && <div className="p-3">Valid OpenAPI Spec is not available!.</div>}
+        {!spec && (
+          <div className="p-3">{this.props.t('openApi.noValidOpenApi', 'Valid OpenAPI Spec is not available!.')}</div>
+        )}
 
         {options && spec && (
           <div className="mb-3 mt-2">
             {baseUrls.length > 0 && (
               <div className="row g-2">
                 <div className="col-12">
-                  <label className="form-label pt-2">Host</label>
+                  <label className="form-label pt-2">{this.props.t('globals.host', 'Host')}</label>
                 </div>
                 <div className="col openapi-operation-options">
                   <SelectSearch
@@ -213,14 +216,14 @@ class Openapi extends React.Component {
                     onChange={(value) => this.changeHost(value)}
                     filterOptions={fuzzySearch}
                     renderOption={this.renderHostOptions}
-                    placeholder="Select a host"
+                    placeholder={this.props.t('openApi.selectHost', 'Select a host')}
                   />
                 </div>
               </div>
             )}
             <div className="row g-2">
               <div className="col-12">
-                <label className="form-label pt-2">Operation</label>
+                <label className="form-label pt-2">{this.props.t('globals.operation', 'Operation')}</label>
               </div>
               <div className="col openapi-operation-options">
                 <SelectSearch
@@ -230,7 +233,7 @@ class Openapi extends React.Component {
                   onChange={(value) => this.changeOperation(value)}
                   filterOptions={fuzzySearch}
                   renderOption={this.renderOperationOption}
-                  placeholder="Select an operation"
+                  placeholder={this.props.t('openApi.selectOperation', 'Select an operation')}
                 />
 
                 {selectedOperation && (
@@ -250,7 +253,7 @@ class Openapi extends React.Component {
           <div className="row mt-2">
             {headerParams.length > 0 && (
               <div className="mt-2">
-                <h5 className="text-muted">HEADER</h5>
+                <h5 className="text-muted">{this.props.t('globals.header', 'HEADER')}</h5>
                 {headerParams.map((param) => (
                   <div className="row input-group my-1" key={param.name}>
                     <div className="col-4 field field-width-268">
@@ -286,7 +289,7 @@ class Openapi extends React.Component {
 
             {pathParams.length > 0 && (
               <div className="mt-2">
-                <h5 className="text-muted">PATH</h5>
+                <h5 className="text-muted">{this.props.t('globals.path', 'PATH')}</h5>
                 {pathParams.map((param) => (
                   <div className="row input-group my-1" key={param.name}>
                     <div className="col-4 field field-width-268">
@@ -322,7 +325,7 @@ class Openapi extends React.Component {
 
             {queryParams.length > 0 && (
               <div className="mt-2">
-                <h5 className="text-muted">QUERY</h5>
+                <h5 className="text-muted">{this.props.t('globals.query', 'QUERY')}</h5>
                 {queryParams.map((param) => (
                   <div className="row input-group my-1" key={param.name}>
                     <div className="col-4 field field-width-268">
@@ -358,7 +361,7 @@ class Openapi extends React.Component {
 
             {requestBody?.schema?.properties && (
               <div className="mt-2">
-                <h5 className="text-muted">REQUEST BODY</h5>
+                <h5 className="text-muted">{this.props.t('globals.requestBody', 'REQUEST BODY')}</h5>
                 {Object.keys(requestBody.schema.properties).map((param) => (
                   <div className="row input-group my-1" key={param}>
                     <div className="col-4 field field-width-268">
@@ -398,4 +401,4 @@ class Openapi extends React.Component {
   }
 }
 
-export { Openapi };
+export const Openapi = withTranslation()(OpenapiComponent);

@@ -1,14 +1,14 @@
 import React from 'react';
 import cx from 'classnames';
 
-import { useSpring, animated } from 'react-spring';
+import { useSpring, animated, useTransition } from 'react-spring';
 import usePopover from '@/_hooks/use-popover';
-
 import OptionsIcon from './icons/options.svg';
 // import OptionsSelectedIcon from './icons/options-selected.svg';
 import useRouter from '@/_hooks/use-router';
 
 import { commentsService } from '@/_services';
+import { useTranslation } from 'react-i18next';
 
 const CommentActions = ({
   socket,
@@ -22,6 +22,7 @@ const CommentActions = ({
   const [open, trigger, content, setOpen] = usePopover(false);
   const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 });
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleDelete = async () => {
     await commentsService.deleteComment(commentId);
@@ -58,11 +59,11 @@ const CommentActions = ({
           >
             <div>
               <div className="comment-action" onClick={handleEdit}>
-                Edit
+                {t('globals.edit', 'Edit')}
               </div>
               {/* TODO: Add a popup confirmation on delete */}
               <div className="comment-action border-top" onClick={handleDelete}>
-                Delete
+                {t('globals.delete', 'Delete')}
               </div>
             </div>
           </animated.div>

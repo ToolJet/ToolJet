@@ -24,7 +24,7 @@ It is recommended to create a new MySQL database user so that you can control th
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - MySQL](/img/datasource-reference/mysql/mysql.png)
+<img className="screenshot-full" src="/img/datasource-reference/mysql/mysql.png" alt="mysql"/>
 
 </div>
 
@@ -43,11 +43,9 @@ SQL mode can be used to write raw SQL queries. Select SQL mode from the dropdown
 
 **NOTE**: Query should be saved before running.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - MySQL](/img/datasource-reference/mysql/mysql-sqlmode.png)
+<img className="screenshot-full" src="/img/datasource-reference/mysql/mysql-sqlmode.png" alt="mysql mode" />
 
-</div>
 
 
 #### GUI mode
@@ -56,11 +54,9 @@ GUI mode can be used to query MySQL database without writing queries. Select GUI
 
 **Example**: `{{ [ {id: 1, channel: 33}, {id:2, channel:24} ] }}`
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - MySQL](/img/datasource-reference/mysql/mysql-guimode.png)
+<img className="screenshot-full" src="/img/datasource-reference/mysql/mysql-guimode.png" alt="mysql gui mode" />
 
-</div>
 
 Click on the **run** button to run the query. **NOTE**: Query should be saved before running.
 

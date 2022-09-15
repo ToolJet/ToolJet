@@ -10,7 +10,7 @@ import { getSvgIcon } from '@/_helpers/appUtils';
 import { datasourceService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
-
+import { useTranslation } from 'react-i18next';
 export const LeftSidebarDataSources = ({
   appId,
   editingVersionId,
@@ -124,12 +124,13 @@ export const LeftSidebarDataSources = ({
 };
 
 const LeftSidebarDataSourcesContainer = ({ renderDataSource, dataSources = [], toggleDataSourceManagerModal }) => {
+  const { t } = useTranslation();
   return (
     <div className="card-body">
       <div>
         <div className="row">
           <div className="col">
-            <h5 className="text-muted">Data sources</h5>
+            <h5 className="text-muted">{t('leftSidebar.Sources.dataSources', 'Data sources')}</h5>
           </div>
           <div className="col-auto">
             <OverlayTrigger
@@ -147,7 +148,7 @@ const LeftSidebarDataSourcesContainer = ({ renderDataSource, dataSources = [], t
         <div className="d-flex w-100">
           {dataSources.length === 0 ? (
             <center onClick={() => toggleDataSourceManagerModal(true)} className="p-2 color-primary cursor-pointer">
-              + add data source
+              {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
             </center>
           ) : (
             <div className="mt-2 w-100">{dataSources?.map((source, idx) => renderDataSource(source, idx))}</div>
