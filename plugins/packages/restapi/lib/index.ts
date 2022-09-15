@@ -86,10 +86,9 @@ export default class RestapiQueryService implements QueryService {
   }
 
   private getCurrentToken = (tokenData: any, userId: string) => {
+    if (!tokenData || !Array.isArray(tokenData)) return null;
     const tokenArray = tokenData?.filter((token: any) => token.userId === userId);
-    if (!tokenArray || tokenArray.length == 0) {
-      return null;
-    }
+    if (tokenArray.length == 0) return null;
     return tokenArray[0];
   };
 
