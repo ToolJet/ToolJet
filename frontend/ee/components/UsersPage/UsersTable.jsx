@@ -17,6 +17,7 @@ const UsersTable = ({
   meta,
   pageChanged,
   darkMode,
+  translator,
 }) => {
   return (
     <div className="container-xl mb-4">
@@ -25,9 +26,13 @@ const UsersTable = ({
           <table data-testid="usersTable" className="table table-vcenter h-100">
             <thead>
               <tr>
-                <th data-cy="name-title">Name</th>
-                <th data-cy="email-title">Email</th>
-                {users && users[0]?.status ? <th data-cy="status-title">Status</th> : <th className="w-1"></th>}
+                <th data-cy="name-title">{translator('header.organization.menus.manageUsers.name', 'Name')}</th>
+                <th data-cy="email-title">{translator('header.organization.menus.manageUsers.email', 'Email')}</th>
+                {users && users[0]?.status ? (
+                  <th data-cy="status-title">{translator('header.organization.menus.manageUsers.status', 'Status')}</th>
+                ) : (
+                  <th className="w-1"></th>
+                )}
                 <th className="w-1"></th>
               </tr>
             </thead>
@@ -124,7 +129,9 @@ const UsersTable = ({
                           }}
                           data-cy="user-state"
                         >
-                          {user.status === 'archived' ? 'Unarchive' : 'Archive'}
+                          {user.status === 'archived'
+                            ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')
+                            : translator('header.organization.menus.manageUsers.archive', 'Archive')}
                         </button>
                       </td>
                     </tr>

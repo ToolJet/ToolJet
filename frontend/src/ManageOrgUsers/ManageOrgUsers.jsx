@@ -320,7 +320,6 @@ class ManageOrgUsersComponent extends React.Component {
             )}
 
             {!showNewUserForm && (
-
               <UsersFilter
                 filterList={this.filterList}
                 darkMode={this.props.darkMode}
@@ -332,147 +331,6 @@ class ManageOrgUsersComponent extends React.Component {
               <div className="d-flex justify-content-center flex-column">
                 <span className="text-center pt-5 font-weight-bold">No result found</span>
                 <small className="text-center text-muted">Try changing the filters</small>
-
-              <div className="container-xl">
-                <div className="card">
-                  <div
-                    className="card-table fixedHeader table-responsive table-bordered"
-                    ref={this.tableRef}
-                    style={{
-                      maxHeight: this.tableRef.current && this.calculateOffset(),
-                    }}
-                  >
-                    <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
-                      <thead>
-                        <tr>
-                          <th data-cy="name-title">
-                            {this.props.t('header.organization.menus.manageUsers.name', 'Name')}
-                          </th>
-                          <th data-cy="email-title">
-                            {this.props.t('header.organization.menus.manageUsers.email', 'Email')}
-                          </th>
-                          <th data-cy="status-title">
-                            {this.props.t('header.organization.menus.manageUsers.status', 'Status')}
-                          </th>
-                          <th className="w-1"></th>
-                        </tr>
-                      </thead>
-                      {isLoading ? (
-                        <tbody className="w-100" style={{ minHeight: '300px' }}>
-                          {Array.from(Array(4)).map((_item, index) => (
-                            <tr key={index}>
-                              <td className="col-2 p-3">
-                                <div className="row">
-                                  <div
-                                    className="skeleton-image col-auto"
-                                    style={{ width: '25px', height: '25px' }}
-                                  ></div>
-                                  <div className="skeleton-line w-10 col mx-3"></div>
-                                </div>
-                              </td>
-                              <td className="col-4 p-3">
-                                <div className="skeleton-line w-10"></div>
-                              </td>
-                              <td className="col-2 p-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                              <td className="text-muted col-auto col-1 pt-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                              <td className="text-muted col-auto col-1 pt-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      ) : (
-                        <tbody>
-                          {users.map((user) => (
-                            <tr key={user.id}>
-                              <td>
-                                <span className="avatar bg-azure-lt avatar-sm" data-cy="user-avatar">
-                                  {user.first_name ? user.first_name[0] : ''}
-                                  {user.last_name ? user.last_name[0] : ''}
-                                </span>
-                                <span
-                                  className="mx-3"
-                                  style={{
-                                    display: 'inline-flex',
-                                    marginBottom: '7px',
-                                  }}
-                                  data-cy="user-name"
-                                >
-                                  {user.name}
-                                </span>
-                              </td>
-                              <td className="text-muted">
-                                <a className="text-reset user-email" data-cy="user-email">
-                                  {user.email}
-                                </a>
-                              </td>
-                              <td className="text-muted">
-                                <span
-                                  className={`badge bg-${
-                                    user.status === 'invited'
-                                      ? 'warning'
-                                      : user.status === 'archived'
-                                      ? 'danger'
-                                      : 'success'
-                                  } me-1 m-1`}
-                                  data-cy="status-badge"
-                                ></span>
-                                <small className="user-status" data-cy="user-status">
-                                  {user.status}
-                                </small>
-                                {user.status === 'invited' && 'invitation_token' in user ? (
-                                  <CopyToClipboard
-                                    text={this.generateInvitationURL(user)}
-                                    onCopy={this.invitationLinkCopyHandler}
-                                  >
-                                    <img
-                                      data-tip="Copy invitation link"
-                                      className="svg-icon"
-                                      src="assets/images/icons/copy.svg"
-                                      width="15"
-                                      height="15"
-                                      style={{
-                                        cursor: 'pointer',
-                                      }}
-                                      data-cy="copy-invitation-link"
-                                    ></img>
-                                  </CopyToClipboard>
-                                ) : (
-                                  ''
-                                )}
-                              </td>
-                              <td>
-                                <button
-                                  type="button"
-                                  style={{ minWidth: '100px' }}
-                                  className={`btn btn-sm btn-outline-${
-                                    user.status === 'archived' ? 'success' : 'danger'
-                                  } ${unarchivingUser === user.id || archivingUser === user.id ? 'btn-loading' : ''}`}
-                                  disabled={unarchivingUser === user.id || archivingUser === user.id}
-                                  onClick={() => {
-                                    user.status === 'archived'
-                                      ? this.unarchiveOrgUser(user.id)
-                                      : this.archiveOrgUser(user.id);
-                                  }}
-                                  data-cy="user-state"
-                                >
-                                  {user.status === 'archived'
-                                    ? this.props.t('header.organization.menus.manageUsers.unarchive', 'Unarchive')
-                                    : this.props.t('header.organization.menus.manageUsers.archive', 'Archive')}
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      )}
-                    </table>
-                  </div>
-                </div>
-
               </div>
             )}
 
@@ -489,6 +347,7 @@ class ManageOrgUsersComponent extends React.Component {
                 archiveOrgUser={this.archiveOrgUser}
                 pageChanged={this.pageChanged}
                 darkMode={this.props.darkMode}
+                translator={this.props.t}
               />
             )}
           </div>
