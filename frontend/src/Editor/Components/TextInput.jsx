@@ -15,14 +15,14 @@ export const TextInput = function TextInput({
 
   const textColor = darkMode === false && styles.textColor === '#fff' ? '#000' : styles.textColor;
 
-  const [loading, setLoading] = useState(properties.loading);
-  useEffect(() => setLoading(properties.loading), [properties.loading]);
+  const [loading, setLoading] = useState(properties.loadingState);
+  useEffect(() => setLoading(properties.loadingState), [properties.loadingState]);
 
-  const [disable, setDisable] = useState(properties.disable);
-  useEffect(() => setDisable(properties.disable), [properties.disable]);
+  const [disable, setDisable] = useState(styles.disabledState);
+  useEffect(() => setDisable(styles.disabledState), [styles.disabledState]);
 
-  const [hidden, setHidden] = useState(properties.hidden);
-  useEffect(() => setHidden(properties.hidden), [properties.hidden]);
+  const [visibility, setVisibility] = useState(styles.visibility);
+  useEffect(() => setVisibility(styles.visibility), [styles.visibility]);
 
   const [value, setValue] = useState(properties.value);
   const { isValid, validationError } = validate(value);
@@ -56,12 +56,12 @@ export const TextInput = function TextInput({
   registerAction('disable', async function (value) {
     setDisable(value);
   });
-  registerAction('hide', async function (value) {
-    setHidden(value);
+  registerAction('visibility', async function (value) {
+    setVisibility(value);
   });
 
   return (
-    <div data-disabled={disable} className={`text-input ${hidden && 'invisible'}`}>
+    <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`}>
       {loading === true && (
         <div style={{ width: '100%' }}>
           <center>
@@ -94,7 +94,7 @@ export const TextInput = function TextInput({
             onMouseLeave={(e) => {
               e.target.blur();
               e.stopPropagation();
-              fireEvent('unFocus');
+              fireEvent('onBlur');
             }}
             type="text"
             className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${

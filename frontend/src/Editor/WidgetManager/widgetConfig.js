@@ -763,9 +763,7 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
-      loading: { type: 'toggle', displayName: 'Loading', validation: { schema: { type: 'boolean' } } },
-      hidden: { type: 'toggle', displayName: 'Hidden', validation: { schema: { type: 'boolean' } } },
-      disable: { type: 'toggle', displayName: 'Disable', validation: { schema: { type: 'boolean' } } },
+      loadingState: { type: 'toggle', displayName: 'Loading', validation: { schema: { type: 'boolean' } } },
     },
     validation: {
       regex: { type: 'code', displayName: 'Regex' },
@@ -777,7 +775,7 @@ export const widgets = [
       onChange: { displayName: 'On change' },
       onEnterPressed: { displayName: 'On Enter Pressed' },
       onFocus: { displayName: 'On focus' },
-      unFocus: { displayName: 'Un focus' },
+      onBlur: { displayName: 'On blur' },
     },
     styles: {
       textColor: {
@@ -790,6 +788,8 @@ export const widgets = [
         displayName: 'Border radius',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
       },
+      visibility: { type: 'toggle', displayName: 'Visibility', validation: { schema: { type: 'boolean' } } },
+      disabledState: { type: 'toggle', displayName: 'Disable', validation: { schema: { type: 'boolean' } } },
     },
     exposedVariables: {
       value: '',
@@ -815,17 +815,17 @@ export const widgets = [
       {
         handle: 'disable',
         displayName: 'Disable',
-        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}' }],
+        params: [{ handle: 'disable', displayName: 'Boolean', defaultValue: '{{false}}' }],
       },
       {
         handle: 'loading',
         displayName: 'Loading',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}' }],
+        params: [{ handle: 'loading', displayName: 'Boolean', defaultValue: '{{false}}' }],
       },
       {
-        handle: 'hide',
-        displayName: 'Hide',
-        params: [{ handle: 'hide', displayName: 'Value', defaultValue: '{{false}}' }],
+        handle: 'visibility',
+        displayName: 'Visibility',
+        params: [{ handle: 'hide', displayName: 'Boolean', defaultValue: '{{false}}' }],
       },
     ],
     definition: {
