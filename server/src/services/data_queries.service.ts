@@ -106,7 +106,7 @@ export class DataQueriesService {
     let result;
 
     try {
-      return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
+      return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, { user });
     } catch (error) {
       const statusCode = error?.data?.responseObject?.statusCode;
 
@@ -116,7 +116,7 @@ export class DataQueriesService {
       ) {
         console.log('Access token expired. Attempting refresh token flow.');
 
-        const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id);
+        const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user.id);
         await this.dataSourcesService.updateOAuthAccessToken(accessTokenDetails, dataSource.options, dataSource.id);
         await dataSource.reload();
 
@@ -149,7 +149,7 @@ export class DataQueriesService {
   }
 
   /* This function fetches the access token from the token url set in REST API (oauth) datasource */
-  async fetchOAuthToken(sourceOptions: any, code: string): Promise<any> {
+  async fetchOAuthToken(sourceOptions: any, code: string, userId: any): Promise<any> {
     const tooljetHost = process.env.TOOLJET_HOST;
     const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['access_token_custom_headers']);
     const accessTokenUrl = sourceOptions['access_token_url'];
@@ -177,7 +177,7 @@ export class DataQueriesService {
       });
 
       const result = JSON.parse(response.body);
-      return { access_token: result['access_token'], refresh_token: result['refresh_token'] };
+      return { userId, access_token: result['access_token'], refresh_token: result['refresh_token'] };
     } catch (err) {
       throw new BadRequestException(this.parseErrorResponse(err?.response?.body, err?.response?.statusCode));
     }
@@ -196,14 +196,22 @@ export class DataQueriesService {
   }
 
   /* This function fetches access token from authorization code */
-  async authorizeOauth2(dataSource: DataSource, code: string): Promise<any> {
+  async authorizeOauth2(dataSource: DataSource, code: string, userId: string): Promise<any> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
-    const tokenData = await this.fetchOAuthToken(sourceOptions, code);
+    const tokenData = await this.fetchOAuthToken(sourceOptions, code, userId);
+
+    let tokensArray = [];
+    // check if there is tokenData key existed or not
+    if (dataSource.options['tokenData']) {
+      tokensArray = [...dataSource.options['tokenData'].value, tokenData];
+    } else {
+      tokensArray.push(tokenData);
+    }
 
     const tokenOptions = [
       {
         key: 'tokenData',
-        value: tokenData,
+        value: tokensArray,
         encrypted: false,
       },
     ];

@@ -85,7 +85,21 @@ export default class RestapiQueryService implements QueryService {
     return true;
   }
 
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<RestAPIResult> {
+  private getCurrentToken = (tokenData: any, userId: string) => {
+    const tokenArray = tokenData?.filter((token: any) => token.userId === userId);
+    if (!tokenArray || tokenArray.length == 0) {
+      return null;
+    }
+    return tokenArray[0];
+  };
+
+  async run(
+    sourceOptions: any,
+    queryOptions: any,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string,
+    context?: { user?: any }
+  ): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
     const authType = sourceOptions['auth_type'];
@@ -98,8 +112,9 @@ export default class RestapiQueryService implements QueryService {
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
       const tokenData = sourceOptions['tokenData'];
+      const currentToken = this.getCurrentToken(tokenData, context.user.id);
 
-      if (!tokenData) {
+      if (!currentToken) {
         const tooljetHost = process.env.TOOLJET_HOST;
         const authUrl = new URL(
           `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
@@ -111,7 +126,7 @@ export default class RestapiQueryService implements QueryService {
           data: { auth_url: authUrl },
         };
       } else {
-        const accessToken = tokenData['access_token'];
+        const accessToken = currentToken['access_token'];
         if (sourceOptions['add_token_to'] === 'header') {
           const headerPrefix = sourceOptions['header_prefix'];
           headers['Authorization'] = `${headerPrefix}${accessToken}`;
@@ -214,8 +229,9 @@ export default class RestapiQueryService implements QueryService {
     return contentType === 'application/x-www-form-urlencoded';
   }
 
-  async refreshToken(sourceOptions, error) {
-    const refreshToken = sourceOptions['tokenData']['refresh_token'];
+  async refreshToken(sourceOptions: any, error: any, userId: string) {
+    const currentToken = this.getCurrentToken(sourceOptions['tokenData'], userId);
+    const refreshToken = currentToken['refresh_token'];
     if (!refreshToken) {
       throw new QueryError('Refresh token not found', error.response, {});
     }
