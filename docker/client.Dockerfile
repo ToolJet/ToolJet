@@ -39,4 +39,6 @@ COPY --from=builder /app/frontend/build /var/www
 
 COPY ./frontend/config/nginx.conf.template /etc/openresty/nginx.conf.template
 COPY ./frontend/config/entrypoint.sh /entrypoint.sh
+
+RUN chgrp -R 0 /var/www && chmod -R g=u /var/www
 ENTRYPOINT ["./entrypoint.sh"]

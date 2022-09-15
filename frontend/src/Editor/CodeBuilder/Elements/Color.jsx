@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
 import FxButton from './FxButton';
 
-export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerStyle = {} }) => {
+export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerStyle = {}, cyLabel }) => {
   const [showPicker, setShowPicker] = useState(false);
 
   const coverStyles = {
@@ -43,7 +43,7 @@ export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerSty
           <div
             className="row mx-0 form-control color-picker-input"
             onClick={() => setShowPicker(true)}
-            data-cy="color-picker-input"
+            data-cy={`${String(cyLabel)}-picker`}
           >
             <div
               className="col-auto"
@@ -54,14 +54,17 @@ export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerSty
                 backgroundColor: value,
                 border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(value) && '#c5c8c9'}`,
               }}
+              data-cy={`${String(cyLabel)}-picker-icon`}
             ></div>
-            <div className="col">{value}</div>
+            <div className="col" data-cy={`${String(cyLabel)}-value`}>
+              {value}
+            </div>
           </div>
         </div>
       </div>
       {!hideFx && (
         <div className="col-auto pt-0 style-fx fx-common">
-          <FxButton active={false} onPress={forceCodeBox} />
+          <FxButton active={false} onPress={forceCodeBox} dataCy={String(cyLabel)} />
         </div>
       )}
     </div>

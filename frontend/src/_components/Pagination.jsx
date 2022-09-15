@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const Pagination = function Pagination({
   currentPage,
@@ -8,6 +9,7 @@ export const Pagination = function Pagination({
   queryParams = {},
   darkMode,
 }) {
+  const { t } = useTranslation();
   const totalPages = useMemo(() => {
     return Math.floor((count - 1) / itemsPerPage) + 1;
   }, [count, itemsPerPage]);
@@ -60,8 +62,9 @@ export const Pagination = function Pagination({
 
   return (
     <div className={`card-footer d-flex align-items-center px-1 ${darkMode ? ' bg-transparent' : ''}`}>
-      <p className={`m-0 ${darkMode ? 'text-white-50' : 'text-muted'}`}>
-        Showing <span>{startingCount()}</span> to <span>{endingCount()}</span> of <span>{count}</span>
+      <p className={`m-0 ${darkMode ? 'text-light' : 'text-muted'}`}>
+        {t('homePage.pagination.showing', 'Showing')} <span>{startingCount()}</span> {t('homePage.pagination.to', 'to')}{' '}
+        <span>{endingCount()}</span> {t('homePage.pagination.of', 'of')} <span>{count}</span>
       </p>
       <ul className="pagination m-0 ms-auto">
         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
