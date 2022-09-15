@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { useTranslation } from 'react-i18next';
 
 export function Confirm({ show, message, onConfirm, onCancel, queryConfirmationData, darkMode }) {
   const [showModal, setShow] = useState(show);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setShow(show);
@@ -32,10 +34,10 @@ export function Confirm({ show, message, onConfirm, onCancel, queryConfirmationD
         <Modal.Body>{message}</Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
-            Cancel
+            {t('globals.cancel', 'Cancel')}
           </Button>
           <Button variant="primary" onClick={handleConfirm}>
-            Yes
+            {t('globals.yes', 'Yes')}
           </Button>
         </Modal.Footer>
       </Modal>

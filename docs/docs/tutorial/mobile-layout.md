@@ -12,11 +12,8 @@ Widgets can be shown on desktop, mobile, or both.
 :::
 
 
-<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/tutorial/mobile-layout/mobile-layout.gif" alt="mobile layout" />
 
-![ToolJet - widgets list](/img/tutorial/mobile-layout/mobile-layout.gif)
-
-</div>
 
 ## Adding existing widget to mobile layout
 Click on the widget to open inspector. Scroll down to the `layout` section and enable mobile layout. The width of the widget will be adjusted to fit the mobile layout.

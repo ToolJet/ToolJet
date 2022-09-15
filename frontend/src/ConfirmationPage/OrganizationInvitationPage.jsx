@@ -5,8 +5,9 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { ShowLoading } from '@/_components';
 import AppLogo from '../_components/AppLogo';
+import { withTranslation } from 'react-i18next';
 
-class OrganizationInvitationPage extends React.Component {
+class OrganizationInvitationPageComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -102,7 +103,7 @@ class OrganizationInvitationPage extends React.Component {
                 {!this.single_organization ? (
                   <>
                     <h2 className="card-title text-center mb-2" data-cy="card-title">
-                      Already have an account?
+                      {this.props.t('confirmationPage.accountExists', 'Already have an account?')}
                     </h2>
                     <div className="mb-3">
                       <button
@@ -111,37 +112,40 @@ class OrganizationInvitationPage extends React.Component {
                         disabled={isLoading}
                         data-cy="accept-invite-button"
                       >
-                        Accept invite
+                        {this.props.t('confirmationPage.acceptInvite', 'Accept invite')}
                       </button>
                     </div>
                   </>
                 ) : (
                   <>
                     <h2 className="card-title text-center mb-4" data-cy="card-title">
-                      Set up your account
+                      {this.props.t('confirmationPage.setupAccount', 'Set up your account')}
                     </h2>
                     {this.state.configs?.enable_sign_up && (
                       <div className="d-flex flex-column align-items-center separator-bottom">
                         {this.state.configs?.google?.enabled && (
                           <GoogleSSOLoginButton
-                            text="Sign up with Google"
+                            text={this.props.t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
                             configs={this.state.configs?.google?.configs}
                             configId={this.state.configs?.google?.config_id}
                           />
                         )}
                         {this.state.configs?.git?.enabled && (
-                          <GitSSOLoginButton text="Sign up with GitHub" configs={this.state.configs?.git?.configs} />
+                          <GitSSOLoginButton
+                            text={this.props.t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
+                            configs={this.state.configs?.git?.configs}
+                          />
                         )}
                         <div className="mt-2 separator">
                           <h2>
-                            <span>OR</span>
+                            <span>{this.props.t('confirmationPage.or', 'OR')}</span>
                           </h2>
                         </div>
                       </div>
                     )}
                     <div className="mb-3">
                       <label className="form-label" data-cy="password-label">
-                        Password
+                        {this.props.t('confirmationPage.password', 'Password')}
                       </label>
                       <div className="input-group input-group-flat">
                         <input
@@ -157,7 +161,7 @@ class OrganizationInvitationPage extends React.Component {
                     </div>
                     <div className="mb-3">
                       <label className="form-label" data-cy="confirm-password-label">
-                        Confirm Password
+                        {this.props.t('confirmationPage.confirmPassword', 'Confirm Password')}
                       </label>
                       <div className="input-group input-group-flat">
                         <input
@@ -173,8 +177,14 @@ class OrganizationInvitationPage extends React.Component {
                     </div>
                     <div className="form-footer">
                       <p data-cy="terms-and-condition-info">
-                        By clicking the button below, you agree to our{' '}
-                        <a href="https://tooljet.io/terms">Terms and Conditions</a>.
+                        {this.props.t(
+                          'confirmationPage.clickAndAgree',
+                          'By clicking the button below, you agree to our'
+                        )}{' '}
+                        <a href="https://tooljet.io/terms">
+                          {this.props.t('confirmationPage.termsAndConditions', 'Terms and Conditions')}
+                        </a>
+                        .
                       </p>
                       <button
                         className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}
@@ -182,7 +192,9 @@ class OrganizationInvitationPage extends React.Component {
                         disabled={isLoading}
                         data-cy="finish-setup-button"
                       >
-                        Finish account setup and accept invite
+                        {this.props.t('confirmationPage.finishAccountSetup', 'Finish account setup')}{' '}
+                        {this.props.t('confirmationPage.and', 'and')}{' '}
+                        {this.props.t('confirmationPage.acceptInvite', 'accept invite')}
                       </button>
                     </div>
                   </>
@@ -196,4 +208,4 @@ class OrganizationInvitationPage extends React.Component {
   }
 }
 
-export { OrganizationInvitationPage };
+export const OrganizationInvitationPage = withTranslation()(OrganizationInvitationPageComponent);

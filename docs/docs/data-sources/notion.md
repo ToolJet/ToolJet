@@ -11,7 +11,7 @@ For integrating Notion with ToolJet we will need the API token. The API token ca
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/api.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/api.png" alt="notion api" />
 
 </div>
 
@@ -23,21 +23,17 @@ Notion API provides support for:
 - **[Block](#blocks)**
 - **[User](#user)**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/querying.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/querying.png" alt="notion querying"/>
 
-</div>
 
 :::tip
 
 Before querying Notion, you must share the database with your integration. Click the share button in your database view, find your integration name select it.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/share.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/share.png" alt="notion share"/>
 
-</div>
 
 :::
 
@@ -49,11 +45,9 @@ On database resource you can perform the following operations:
 - **[Create a database](#3-create-a-database)**
 - **[Update a database](#4-update-a-database)**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/db_q.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/db_q.png" alt="notion db" />
 
-</div>
 
 #### 1. Retrieve a database
 
@@ -63,11 +57,9 @@ This operations retreives a Database object using the ID specified.
 
 - **Database ID**: You'll find the Database ID in the url. Suppose this is the example url: `https://www.notion.so/workspace/XXX?v=YYY&p=ZZZ` then `XXX` is the database ID, `YYY` is the view ID and `ZZZ` is the page ID.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/db_retrieve.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/db_retrieve.png" alt="notion db retreieve" />
 
-</div>
 
 #### 2. Query a database
 
@@ -126,11 +118,9 @@ On page resource you can perform the following operations:
 - **[Retrieve a page property](#4-retrieve-a-page-property-item)**
 - **[Archive a page](#5-archive-delete-a-page)**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/page_q.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/page_q.png" alt="notion page" />
 
-</div>
 
 #### 1. Retrieve a page
 This operation retrieves a **Page** object using the ID specified.
@@ -180,11 +170,9 @@ The following operations can be performed on the block resource:
 - **[Update a block](#4-update-a-block)**
 - **[Delete a block](#5-delete-a-block)**
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/block_q.png)
+<img className="screenshot-full" src="/img/datasource-reference/notion/block_q.png" alt="notion block" />
 
-</div>
 
 :::info
 To get the id for blocks, simply click on the menu icon for the block and click "Copy link". Afterwards, paste the link in the browser and it should look like this: `https://www.notion.so/Creating-Page-Sample-ee18b8779ae54f358b09221d6665ee15#7fcb3940a1264aadb2ad4ee9ffe11b0e` the string after **#** is the block id i.e. `7fcb3940a1264aadb2ad4ee9ffe11b0e`.
@@ -229,11 +217,8 @@ The following operations can be performed on the user notion resource:
 #### 1. Retrieve a user from current workspace
 This operation retrieves a User using the ID specified.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Notion](/img/datasource-reference/notion/user_q.png)
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/notion/user_q.png" alt="notion user" />
 
 ##### Required parameters:
 - **User ID**
