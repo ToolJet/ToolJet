@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import config from 'config';
 import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { history } from '@/_helpers';
@@ -160,7 +160,7 @@ class App extends React.Component {
     }
 
     return (
-      <>
+      <Suspense fallback={null}>
         <BrowserRouter history={history} basename={window.public_config?.SUB_PATH || '/'}>
           <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
             {updateAvailable && (
@@ -354,7 +354,7 @@ class App extends React.Component {
         </BrowserRouter>
         <div id="modal-div"></div>
         <Toast toastOptions={toastOptions} />
-      </>
+      </Suspense>
     );
   }
 }

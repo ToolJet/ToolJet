@@ -9,9 +9,10 @@ import { debounce } from 'lodash';
 import Textarea from '@/_ui/Textarea';
 import posthog from 'posthog-js';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
-
+import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-class ManageAppUsers extends React.Component {
+
+class ManageAppUsersComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -144,7 +145,7 @@ class ManageAppUsers extends React.Component {
             this.setState({ showModal: true });
           }}
         >
-          Share
+          {this.props.t('editor.share', 'Share')}
         </button>
 
         <Modal
@@ -159,7 +160,7 @@ class ManageAppUsers extends React.Component {
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
         >
           <Modal.Header>
-            <Modal.Title>Share</Modal.Title>
+            <Modal.Title>{this.props.t('editor.share', 'Share')}</Modal.Title>
             <div>
               <Button variant={this.props.darkMode ? 'secondary' : 'light'} size="sm" onClick={() => this.hideModal()}>
                 x
@@ -183,12 +184,16 @@ class ManageAppUsers extends React.Component {
                       checked={this.state.app.is_public}
                       disabled={this.state.ischangingVisibility}
                     />
-                    <span className="form-check-label">Make application public ?</span>
+                    <span className="form-check-label">
+                      {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public ?')}
+                    </span>
                   </div>
                 </div>
                 <div className="shareable-link mb-3">
                   <label className="form-label">
-                    <small>Get shareable link for this application</small>
+                    <small>
+                      {this.props.t('editor.shareModal.shareableLink', 'Get shareable link for this application')}
+                    </small>
                   </label>
                   <div className="input-group">
                     <span className="input-group-text">{appLink}</span>
@@ -211,7 +216,9 @@ class ManageAppUsers extends React.Component {
                     </div>
                     <span className="input-group-text">
                       <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
-                        <button className="btn btn-secondary btn-sm">Copy</button>
+                        <button className="btn btn-secondary btn-sm">
+                          {this.props.t('editor.shareModal.copy', 'copy')}
+                        </button>
                       </CopyToClipboard>
                     </span>
                     <div className="invalid-feedback">{slugError}</div>
@@ -220,10 +227,17 @@ class ManageAppUsers extends React.Component {
                 <hr />
                 <div className="shareable-link mb-3">
                   <label className="form-label">
-                    <small>Get embeddable link for this application</small>
+                    <small>
+                      {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
+                    </small>
                   </label>
                   <div className="input-group">
-                    <Textarea disabled className="input-with-icon" rows={5} value={embeddableLink} />
+                    <Textarea
+                      disabled
+                      className={`input-with-icon ${this.props.darkMode && 'text-light'}`}
+                      rows={5}
+                      value={embeddableLink}
+                    />
                     <span className="input-group-text">
                       <CopyToClipboard
                         text={embeddableLink}
@@ -234,7 +248,9 @@ class ManageAppUsers extends React.Component {
                           })
                         }
                       >
-                        <button className="btn btn-secondary btn-sm">Copy</button>
+                        <button className="btn btn-secondary btn-sm">
+                          {this.props.t('editor.shareModal.copy', 'copy')}
+                        </button>
                       </CopyToClipboard>
                     </span>
                   </div>
@@ -317,7 +333,7 @@ class ManageAppUsers extends React.Component {
 
           <Modal.Footer>
             <Link to="/users" target="_blank" className="btn color-primary mt-3">
-              Manage Users
+              {this.props.t('editor.shareModal.manageUsers', 'Manage Users')}
             </Link>
           </Modal.Footer>
         </Modal>
@@ -326,4 +342,4 @@ class ManageAppUsers extends React.Component {
   }
 }
 
-export { ManageAppUsers };
+export const ManageAppUsers = withTranslation()(ManageAppUsersComponent);

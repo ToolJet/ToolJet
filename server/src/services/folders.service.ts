@@ -59,6 +59,9 @@ export class FoldersService {
       )
       .where('user_group_permissions.user_id = :userId', { userId: user.id })
       .andWhere('app_group_permissions.read = :value', { value: true })
+      .andWhere('app_group_permissions.read_on_dashboard = :readOnDashboard', {
+        readOnDashboard: false,
+      })
       .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
         value: true,
         organizationId: user.organizationId,
@@ -191,6 +194,9 @@ export class FoldersService {
             userId: user.id,
           })
             .andWhere('app_group_permissions.read = :value', { value: true })
+            .andWhere('app_group_permissions.read_on_dashboard = :readOnDashboard', {
+              readOnDashboard: false,
+            })
             .orWhere(
               '(viewable_apps.is_public = :value AND viewable_apps.organization_id = :organizationId) ' +
                 'OR viewable_apps.user_id = :userId',
@@ -256,6 +262,9 @@ export class FoldersService {
             userId: user.id,
           })
             .andWhere('app_group_permissions.read = :value', { value: true })
+            .andWhere('app_group_permissions.read_on_dashboard = :readOnDashboard', {
+              readOnDashboard: false,
+            })
             .orWhere(
               '(viewable_apps.is_public = :value AND viewable_apps.organization_id = :organizationId) ' +
                 'OR viewable_apps.user_id = :userId',

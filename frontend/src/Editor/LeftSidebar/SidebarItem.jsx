@@ -2,6 +2,7 @@ import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import posthog from 'posthog-js';
+import { useTranslation } from 'react-i18next';
 
 export const LeftSidebarItem = ({
   tip = '',
@@ -14,12 +15,13 @@ export const LeftSidebarItem = ({
   count,
   ...rest
 }) => {
+  const { t } = useTranslation();
   return (
     <OverlayTrigger
       trigger={['click', 'hover', 'focus']}
       placement="right"
       delay={{ show: 800, hide: 100 }}
-      overlay={<Tooltip id="button-tooltip">{tip}</Tooltip>}
+      overlay={<Tooltip id="button-tooltip">{t(`leftSidebar.${text}.tip`, tip)}</Tooltip>}
     >
       <div>
         <div
@@ -45,7 +47,7 @@ export const LeftSidebarItem = ({
             </div>
           )}
           {badge && <LeftSidebarItem.Badge count={count} />}
-          <p>{text && text}</p>
+          <p>{text && t(`leftSidebar.${text}.text`, text)}</p>
         </div>
       </div>
     </OverlayTrigger>
