@@ -89,7 +89,7 @@ class ResetPassword2 extends React.Component {
                           onClick={this.handleOnCheck}
                           className="singup-password-hide-img "
                         ></img>
-                        <span className="common-input-warning-text">Password must be atleast 8 charactors</span>
+                        <span className="tj-input-helper-text">Password must be atleast 8 charactors</span>
 
                         <span></span>
                       </div>
@@ -114,7 +114,7 @@ class ResetPassword2 extends React.Component {
                           onClick={this.handleOnCheck}
                           className="singup-password-hide-img "
                         ></img>
-                        <span className="common-input-warning-text">Password must be atleast 8 charactors</span>
+                        <span className="tj-input-helper-text">Password must be atleast 8 charactors</span>
 
                         <span></span>
                       </div>
@@ -145,7 +145,7 @@ class ResetPassword2 extends React.Component {
         </div>
         <div className="common-auth-section-right-wrapper">
           <img src="assets/images/onboarding assets /02 Illustrations /cta.png" className="onboarding-cta-image"></img>
-          <p className="login-testimonial">
+          <p className="common-auth-testimonial">
             “We definitely wanted to invest in low-code technology to ensure our razor focus is on bringing feature
             richness, experience and proven scale -
           </p>

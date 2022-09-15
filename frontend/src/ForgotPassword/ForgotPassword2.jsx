@@ -66,7 +66,7 @@ class ForgotPassword2 extends React.Component {
                   {!this.state.responseShow ? (
                     <>
                       <h2 className="common-auth-section-header">Forgot password</h2>
-                      <p className="common-sub-header">
+                      <p className="common-auth-sub-header">
                         New to toolJet? &nbsp;
                         <Link to={'/signup'} tabIndex="-1">
                           Create an account
@@ -109,7 +109,7 @@ class ForgotPassword2 extends React.Component {
               src="assets/images/onboarding assets /02 Illustrations /cta.png"
               className="onboarding-cta-image"
             ></img>
-            <p className="login-testimonial">
+            <p className="common-auth-testimonial">
               “We definitely wanted to invest in low-code technology to ensure our razor focus is on bringing feature
               richness, experience and proven scale -
             </p>

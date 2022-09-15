@@ -6456,13 +6456,6 @@ input.hide-input-arrows {
     align-items: flex-start;
   }
 
-  .login-header {
-    font-weight: 400;
-    font-size: 45px;
-    line-height: 68px;
-    color: #111827;
-  }
-
   .login-sso-wrapper {
     padding: 6px 16px;
     gap: 5px;
@@ -6494,40 +6487,6 @@ input.hide-input-arrows {
   }
 }
 
-.login-input {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 8px 12px;
-  gap: 8px;
-  width: 352px;
-  height: 40px;
-  background-color: #FFFFFF !important;
-  border: 1px solid #D1D5DB;
-  border-radius: 4px;
-
-  margin-bottom: 12px;
-
-  p {
-    margin-bottom: 0 !important;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 24px;
-    color: #000000;
-
-  }
-
-  &:hover {
-    border: 1px solid #D1D5DB;
-    box-shadow: 0px 0px 0px 4px #E4E7EB;
-  }
-
-  &:focus {
-    border: 1px solid #466BF2;
-    box-shadow: none;
-
-  }
-}
 
 .tj-text-input-label {
   font-weight: 500;
@@ -6539,7 +6498,7 @@ input.hide-input-arrows {
   color: #172531;
 }
 
-.common-sub-header {
+.common-auth-sub-header {
   font-weight: 400;
   font-size: 14px;
   line-height: 24px;
@@ -6548,17 +6507,8 @@ input.hide-input-arrows {
   color: #111827;
 }
 
-.login-firgot-password {
-  font-weight: 500;
-  font-size: 11px;
-  line-height: 16px;
-  display: flex;
-  align-items: center;
-  margin-left: 4px;
-  color: #466BF2;
-}
 
-.login-testimonial {
+.common-auth-testimonial {
   margin-top: 130px;
   margin-left: 64px;
   margin-bottom: 18px;
@@ -6634,7 +6584,7 @@ input.hide-input-arrows {
 
 }
 
-.common-input-warning-text {
+.tj-input-helper-text {
   font-weight: 400;
   font-size: 11px;
   line-height: 16px;
@@ -6724,7 +6674,7 @@ input.hide-input-arrows {
   margin-bottom: 24px !important;
 }
 
-.common-auth-inputs-wrapper {
+.singup-page-inputs-wrapper {
   display: flex;
   flex-direction: column;
 }
@@ -6939,15 +6889,6 @@ input.hide-input-arrows {
   width: 352px;
   height: 482.69px;
   margin-top: 34px;
-}
-
-.sucess-info-card {
-  margin-top: 132px !important;
-}
-
-.verification-success-page-continue-btn {
-  width: 392px !important;
-
 }
 
 // verification-navbar styles

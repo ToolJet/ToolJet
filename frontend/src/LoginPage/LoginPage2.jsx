@@ -159,7 +159,7 @@ class LoginPage2 extends React.Component {
                         <div className="tj-text-input-label">
                           {/* Login to {this.single_organization ? 'your account' : configs?.name || 'your account'} */}
                           {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
-                            <div className="common-sub-header">
+                            <div className="common-auth-sub-header">
                               New to toolJet?
                               <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
                                 Create an account
@@ -194,9 +194,8 @@ class LoginPage2 extends React.Component {
                             onChange={this.handleChange}
                             name="email"
                             type="email"
-                            className="login-input"
+                            className="tj-text-input"
                             placeholder="Enter your Work email"
-                            style={{ backgroundColor: '#fff' }}
                           />
                         </div>
                         <div>
@@ -213,10 +212,9 @@ class LoginPage2 extends React.Component {
                               onChange={this.handleChange}
                               name="password"
                               type={this.state.showPassword ? 'text' : 'password'}
-                              className="login-input"
+                              className="tj-text-input"
                               placeholder="Enter new password"
                               autoComplete="off"
-                              style={{ backgroundColor: '#fff' }}
                             />
                             <img
                               src={`${
@@ -280,7 +278,7 @@ class LoginPage2 extends React.Component {
               src="assets/images/onboarding assets /02 Illustrations /cta.png"
               className="onboarding-cta-image"
             ></img>
-            <p className="login-testimonial">
+            <p className="common-auth-testimonial">
               “We definitely wanted to invest in low-code technology to ensure our razor focus is on bringing feature
               richness, experience and proven scale -
             </p>

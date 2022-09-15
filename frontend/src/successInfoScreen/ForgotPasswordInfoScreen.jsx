@@ -1,5 +1,4 @@
 import React from 'react';
-// forgot password
 function ForgotPasswordInfoScreen({ props, email }) {
   return (
     <div className="info-screen-wrapper">
