@@ -16,13 +16,14 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     letterSpacing,
     wordSpacing,
     fontVariant,
+    disabledState: disable,
   } = styles;
-  const { disable, loading } = properties;
+  const { loadingState: loading } = properties;
   // const [loadingState, setLoadingState] = useState(false);
   const [text, setText] = useState(() => computeText());
 
-  const [hidden, setHidden] = useState(properties.hidden);
-  useEffect(() => setHidden(properties.hidden), [properties.hidden]);
+  const [visibility, setVisibility] = useState(styles.visibility);
+  useEffect(() => setVisibility(styles.visibility), [styles.visibility]);
 
   const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
 
@@ -32,8 +33,8 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
   registerAction('setText', async function (text) {
     setText(text);
   });
-  registerAction('hide', async function (value) {
-    setHidden(value);
+  registerAction('visibility', async function (value) {
+    setVisibility(value);
   });
 
   function computeText() {
@@ -44,7 +45,7 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     backgroundColor: darkMode && backgroundColor === '#fff' ? '#232E3C' : backgroundColor,
     color,
     height,
-    display: hidden ? 'none' : 'flex',
+    display: visibility ? 'flex' : 'none',
     alignItems: 'center',
     textAlign,
     fontWeight: fontWeight ? fontWeight : fontWeight === '0' ? 0 : 'normal',

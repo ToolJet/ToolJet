@@ -1576,23 +1576,9 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
-      loading: {
+      loadingState: {
         type: 'toggle',
-        displayName: 'Loading',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-      hidden: {
-        type: 'toggle',
-        displayName: 'Hidden',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-      disable: {
-        type: 'toggle',
-        displayName: 'Disable',
+        displayName: 'Show loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -1686,6 +1672,20 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     exposedVariables: {},
     actions: [
@@ -1695,9 +1695,9 @@ export const widgets = [
         params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
       },
       {
-        handle: 'hide',
-        displayName: 'Hide',
-        params: [{ handle: 'hide', displayName: 'Value', defaultValue: `{{false}}` }],
+        handle: 'visibility',
+        displayName: 'Set Visibility',
+        params: [{ handle: 'visibility', displayName: 'Boolean', defaultValue: `{{false}}` }],
       },
     ],
     definition: {
@@ -1707,10 +1707,7 @@ export const widgets = [
       },
       properties: {
         text: { value: 'Hello, there!' },
-        visible: { value: '{{true}}' },
-        loading: { value: `{{false}}`, fxActive: true },
-        hidden: { value: '{{false}}', fxActive: true },
-        disable: { value: '{{false}}', fxActive: true },
+        loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
@@ -1727,6 +1724,8 @@ export const widgets = [
         letterSpacing: { value: 0 },
         wordSpacing: { value: 0 },
         fontVariant: { value: 'normal' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
       },
     },
   },
