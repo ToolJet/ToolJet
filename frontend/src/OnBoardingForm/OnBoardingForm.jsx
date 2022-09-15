@@ -42,7 +42,7 @@ function OnBoardingForm() {
 
   return (
     <div className="page">
-      <div className="onboarding-navbar onboarding-navbar-layout">
+      <div className="onboarding-navbar container-xl onboarding-navbar-layout">
         <div>
           <img src="assets/images/logo-color.svg" height="17.5" alt="" data-cy="page-logo" />
         </div>

@@ -6235,8 +6235,8 @@ input.hide-input-arrows {
 }
 
 .onboarding-enter-icon {
-  width: 13.32px;
-  height: 10.67px;
+  width: 12px;
+  height: 12px;
 }
 
 .onboarding-cta-image {
@@ -6824,8 +6824,8 @@ input.hide-input-arrows {
   position: absolute;
   right: 16px;
   top: 25%;
-  width: 16px;
-  height: 10.67px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
 }
 
@@ -6833,8 +6833,8 @@ input.hide-input-arrows {
   position: absolute;
   right: 16px;
   top: 36%;
-  width: 16px;
-  height: 10.67px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
 }
 
@@ -6892,6 +6892,8 @@ input.hide-input-arrows {
   height: 64px;
   position: sticky;
   top: 0;
+  display: flex;
+  align-items: center;
 }
 
 .singup-page-signin-redirect {

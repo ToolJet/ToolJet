@@ -58,7 +58,7 @@ class ResetPassword2 extends React.Component {
     return (
       <div className="common-auth-section-whole-wrapper page">
         <div className="common-auth-section-left-wrapper">
-          <div className="onboarding-navbar">
+          <div className="onboarding-navbar container-xl">
             <img src="assets/images/logo-color.svg" height="17.5" alt="" data-cy="page-logo" />
           </div>
           <div className="common-auth-section-left-wrapper-grid">

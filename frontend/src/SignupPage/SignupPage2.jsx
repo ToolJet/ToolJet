@@ -81,7 +81,7 @@ class SignupPage2 extends React.Component {
     return (
       <div className="page common-auth-section-whole-wrapper ">
         <div className="common-auth-section-left-wrapper">
-          <div className="onboarding-navbar">
+          <div className="onboarding-navbar container-xl">
             <img src="assets/images/logo-color.svg" height="17.5" alt="" data-cy="page-logo" />{' '}
           </div>
 
