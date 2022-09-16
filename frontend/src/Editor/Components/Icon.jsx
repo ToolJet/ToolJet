@@ -23,7 +23,7 @@ export const Icon = ({ properties, styles, fireEvent, width, height, currentStat
       fireEvent('onClick');
     });
 
-    registerAction('visibility', async function (visibility) {
+    registerAction('setVisibility', async function (visibility) {
       setIconVisibility(
         typeof visibility !== 'boolean' ? resolveWidgetFieldValue(visibility, currentState) : visibility
       );
