@@ -14,6 +14,19 @@ Custom Component can be used to do create your own React component when the need
 </div>
 
 ## Properties
+### Event: On update data
+
+Custom components can interact with the outer application through `updateData()` calls, those changes will trigger the `onUpdate` event.
+
+To add an event to a custom component, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
+
+**On update data** event is triggered when the component's data is updated. Just like any other event on ToolJet, you can set multiple handlers for this event.
+
+:::info
+Check [Action Reference](/docs/actions/show-alert) docs to get the detailed information about all the **Actions**.
+:::
+
+## Properties
 
 ### Data
 

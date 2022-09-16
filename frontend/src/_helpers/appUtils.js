@@ -516,6 +516,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onSelectionChange',
       'onSelect',
       'onClick',
+      'onUpdate',
       'onFileSelected',
       'onFileLoaded',
       'onFileDeselected',

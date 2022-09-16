@@ -1,18 +1,20 @@
 import React from 'react';
 import { renderElement } from '../Utils';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { EventManager } from '../EventManager';
 import Accordion from '@/_ui/Accordion';
 
-export const CustomComponent = function CustomComponent({
-  dataQueries,
-  component,
-  paramUpdated,
-  componentMeta,
-  components,
-  darkMode,
-  currentState,
-  layoutPropertyChanged,
-}) {
+export const CustomComponent = function CustomComponent(props) {
+  const {
+    dataQueries,
+    component,
+    paramUpdated,
+    componentMeta,
+    components,
+    darkMode,
+    currentState,
+    layoutPropertyChanged,
+  } = props;
   const code = component.component.definition.properties.code;
   const args = component.component.definition.properties.data;
 
@@ -46,6 +48,22 @@ export const CustomComponent = function CustomComponent({
         enablePreview={false}
         height={400}
         hideSuggestion
+      />
+    ),
+  });
+
+  items.push({
+    title: 'Events',
+    isOpen: false,
+    children: (
+      <EventManager
+        component={component}
+        componentMeta={componentMeta}
+        currentState={currentState}
+        dataQueries={dataQueries}
+        components={components}
+        eventsChanged={props.eventsChanged}
+        apps={props.apps}
       />
     ),
   });
