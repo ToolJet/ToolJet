@@ -87,7 +87,7 @@ export default class RestapiQueryService implements QueryService {
 
   private getCurrentToken = (tokenData: any, userId: string) => {
     if (!tokenData || !Array.isArray(tokenData)) return null;
-    const tokenArray = tokenData?.filter((token: any) => token.userId === userId);
+    const tokenArray = tokenData?.filter((token: any) => token.user_id === userId);
     if (tokenArray.length == 0) return null;
     return tokenArray[0];
   };
@@ -110,7 +110,7 @@ export default class RestapiQueryService implements QueryService {
 
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
-      const tokenData = sourceOptions['tokenData'];
+      const tokenData = sourceOptions['token_data'];
       const currentToken = this.getCurrentToken(tokenData, context.user.id);
 
       if (!currentToken) {
@@ -229,7 +229,7 @@ export default class RestapiQueryService implements QueryService {
   }
 
   async refreshToken(sourceOptions: any, error: any, userId: string) {
-    const currentToken = this.getCurrentToken(sourceOptions['tokenData'], userId);
+    const currentToken = this.getCurrentToken(sourceOptions['token_data'], userId);
     const refreshToken = currentToken['refresh_token'];
     if (!refreshToken) {
       throw new QueryError('Refresh token not found', error.response, {});

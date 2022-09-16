@@ -112,7 +112,7 @@ export class DataQueriesService {
 
       if (
         error.constructor.name === 'OAuthUnauthorizedClientError' ||
-        (statusCode == 401 && sourceOptions['tokenData'])
+        (statusCode == 401 && sourceOptions['token_data'])
       ) {
         console.log('Access token expired. Attempting refresh token flow.');
 
@@ -182,7 +182,7 @@ export class DataQueriesService {
       });
 
       const result = JSON.parse(response.body);
-      return { userId, access_token: result['access_token'], refresh_token: result['refresh_token'] };
+      return { user_id: userId, access_token: result['access_token'], refresh_token: result['refresh_token'] };
     } catch (err) {
       throw new BadRequestException(this.parseErrorResponse(err?.response?.body, err?.response?.statusCode));
     }
@@ -200,6 +200,19 @@ export class DataQueriesService {
     return JSON.stringify(errorObj);
   }
 
+  replaceOrAppend = (array: [any], newData: any) => {
+    let isReplaced = false;
+    const newArray = array.map((item: any) => {
+      if (item.user_id === newData.user_id) {
+        isReplaced = true;
+        return newData;
+      }
+      return item;
+    });
+    if (!isReplaced) newArray.push(newData);
+    return newArray;
+  };
+
   /* This function fetches access token from authorization code */
   async authorizeOauth2(dataSource: DataSource, code: string, userId: string): Promise<any> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
@@ -207,15 +220,16 @@ export class DataQueriesService {
 
     let tokensArray = [];
     // check if there is tokenData key existed or not
-    if (dataSource.options['tokenData']) {
-      tokensArray = [...dataSource.options['tokenData'].value, tokenData];
+    if (dataSource.options['token_data'] && Array.isArray(dataSource.options['token_data'].value)) {
+      //replace the existed one or add to the end
+      tokensArray = this.replaceOrAppend(dataSource.options['token_data'].value, tokenData);
     } else {
       tokensArray.push(tokenData);
     }
 
     const tokenOptions = [
       {
-        key: 'tokenData',
+        key: 'token_data',
         value: tokensArray,
         encrypted: false,
       },

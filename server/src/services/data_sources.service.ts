@@ -210,10 +210,10 @@ export class DataSourcesService {
     if (existingCredentialId) {
       await this.credentialsService.update(existingCredentialId, accessTokenDetails['access_token']);
     } else if (dataSourceId) {
-      const updatedTokenData = this.updateCurrentToken(dataSourceOptions['tokenData'], userId, accessTokenDetails);
+      const updatedTokenData = this.updateCurrentToken(dataSourceOptions['token_data'], userId, accessTokenDetails);
       const tokenOptions = [
         {
-          key: 'tokenData',
+          key: 'token_data',
           value: updatedTokenData,
           encrypted: false,
         },
