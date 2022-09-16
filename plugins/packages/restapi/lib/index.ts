@@ -1,7 +1,7 @@
 const urrl = require('url');
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
-import { QueryError, QueryResult, QueryService, cleanSensitiveData } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, cleanSensitiveData, User } from '@tooljet-plugins/common';
 const JSON5 = require('json5');
 import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
 
@@ -97,7 +97,7 @@ export default class RestapiQueryService implements QueryService {
     queryOptions: any,
     dataSourceId: string,
     dataSourceUpdatedAt: string,
-    context?: { user?: any }
+    context?: { user?: User }
   ): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;

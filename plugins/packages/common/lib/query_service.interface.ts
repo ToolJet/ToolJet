@@ -1,5 +1,6 @@
 import { ConnectionTestResult } from './connection_test_result.type';
 import { QueryResult } from './query_result.type';
+import { User } from './user.type';
 export interface QueryService {
   run(
     sourceOptions: object,
@@ -11,7 +12,3 @@ export interface QueryService {
   getConnection?(queryOptions: object, options: any, checkCache: boolean, dataSourceId: string): Promise<object>;
   testConnection?(sourceOptions: object): Promise<ConnectionTestResult>;
 }
-
-type User = {
-  id: string;
-};

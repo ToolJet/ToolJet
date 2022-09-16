@@ -1,4 +1,4 @@
-import { QueryError, QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryService, User } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, RestAPIResult } from './types';
 import got, { HTTPError } from 'got';
 import urrl from 'url';
@@ -63,7 +63,7 @@ export default class Openapi implements QueryService {
     queryOptions: QueryOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string,
-    context?: { user?: any }
+    context?: { user?: User }
   ): Promise<RestAPIResult> {
     const { host, path, operation, params } = queryOptions;
     const { request } = params;
