@@ -84,7 +84,7 @@ export const baseComponentProperties = (
   if (events.length > 0) {
     items.push({
       title: 'Events',
-      isOpen: false,
+      isOpen: true,
       children: (
         <EventManager
           component={component}
