@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({ height, properties, styles, darkMode, registerAction }) {
+export const Text = function Text({ height, properties, styles, darkMode, registerAction, component }) {
   let {
     textSize,
     textColor,
@@ -16,9 +16,9 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     letterSpacing,
     wordSpacing,
     fontVariant,
-    disabledState: disable,
+    disabledState,
   } = styles;
-  const { loadingState: loading } = properties;
+  const { loadingState } = properties;
   // const [loadingState, setLoadingState] = useState(false);
   const [text, setText] = useState(() => computeText());
 
@@ -60,14 +60,19 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
   };
 
   return (
-    <div data-disabled={disable} className="text-widget" style={computedStyles}>
-      {!loading && (
+    <div
+      data-disabled={disabledState}
+      className="text-widget"
+      style={computedStyles}
+      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+    >
+      {!loadingState && (
         <div
           style={{ width: '100%', fontSize: textSize }}
           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
         />
       )}
-      {loading === true && (
+      {loadingState === true && (
         <div style={{ width: '100%' }}>
           <center>
             <div className="spinner-border" role="status"></div>

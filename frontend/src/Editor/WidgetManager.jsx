@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { DraggableBox } from './DraggableBox';
 import Fuse from 'fuse.js';
 import { isEmpty } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
 export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, currentLayout, darkMode }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
   const [searchQuery, setSearchQuery] = useState('');
+  const { t } = useTranslation();
 
   function handleSearchQueryChange(e) {
     const { value } = e.target;
@@ -53,9 +55,12 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
           {/* <div class="empty-img">
             <img src="./static/illustrations/undraw_printing_invoices_5r4r.svg" height="128" alt="" />
           </div> */}
-          <p className="empty-title">No results found</p>
+          <p className="empty-title">{t('widgetManager.noResults', 'No results found')}</p>
           <p className={`empty-subtitle ${darkMode ? 'text-white-50' : 'text-secondary'}`}>
-            Try adjusting your search or filter to find what you&apos;re looking for.
+            {t(
+              'widgetManager.tryAdjustingFilterMessage',
+              "Try adjusting your search or filter to find what you're looking for."
+            )}
           </p>
           <button
             className="btn btn-sm btn-outline-azure mt-3"
@@ -64,16 +69,16 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
               setSearchQuery('');
             }}
           >
-            clear query
+            {t('widgetManager.clearQuery', 'clear query')}
           </button>
         </div>
       );
     }
-    const commonSection = { title: 'commonly used', items: [] };
-    const layoutsSection = { title: 'layouts', items: [] };
-    const formSection = { title: 'forms', items: [] };
-    const integrationSection = { title: 'integrations', items: [] };
-    const otherSection = { title: 'others', items: [] };
+    const commonSection = { title: t('widgetManager.commonlyUsed', 'commonly used'), items: [] };
+    const layoutsSection = { title: t('widgetManager.layouts', 'layouts'), items: [] };
+    const formSection = { title: t('widgetManager.forms', 'forms'), items: [] };
+    const integrationSection = { title: t('widgetManager.integrations', 'integrations'), items: [] };
+    const otherSection = { title: t('widgetManager.others', 'others'), items: [] };
     const allWidgets = [];
 
     const commonItems = ['Table', 'Chart', 'Button', 'Text', 'Datepicker'];
@@ -126,7 +131,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
         <input
           type="text"
           className={`form-control mt-3 mb-2 ${darkMode && 'dark-theme-placeholder'}`}
-          placeholder="Search…"
+          placeholder={t('globals.search', 'Search') + '...'}
           value={searchQuery}
           onChange={(e) => handleSearchQueryChange(e)}
           data-cy="widget-search-box"
