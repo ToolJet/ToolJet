@@ -711,6 +711,14 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: true,
+        },
+      },
     },
     exposedVariables: {
       show: false,
@@ -741,6 +749,7 @@ export const widgets = [
       events: [],
       styles: {
         disabledState: { value: '{{false}}' },
+        visibility: { value: '{{true}}' },
       },
     },
   },

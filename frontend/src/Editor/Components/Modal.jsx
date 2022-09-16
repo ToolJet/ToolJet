@@ -20,12 +20,11 @@ export const Modal = function Modal({
 }) {
   const [showModal, setShowModal] = useState(false);
   const { hideOnEsc, hideCloseButton, hideTitleBar, loadingState } = properties;
+  const { disabledState, visibility } = styles;
   const parentRef = useRef(null);
 
   const title = properties.title ?? '';
   const size = properties.size ?? 'lg';
-
-  const { disabledState } = styles;
 
   registerAction('open', async function () {
     setExposedVariable('show', true);
@@ -37,17 +36,17 @@ export const Modal = function Modal({
   });
 
   useEffect(() => {
+    setExposedVariable('show', showModal).then(() => fireEvent(showModal ? 'onOpen' : 'onClose'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal]);
+
+  useEffect(() => {
     const canShowModal = exposedVariables.show ?? false;
     if (canShowModal !== showModal) {
       setShowModal(canShowModal);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
-
-  useEffect(() => {
-    setExposedVariable('show', showModal).then(() => fireEvent(showModal ? 'onOpen' : 'onClose'));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal]);
 
   function hideModal() {
     setExposedVariable('show', false);
@@ -56,7 +55,7 @@ export const Modal = function Modal({
 
   return (
     <div className="container" data-disabled={disabledState}>
-      <Button variant="primary" onClick={() => setShowModal(true)}>
+      <Button style={{ display: visibility ? '' : 'none' }} variant="primary" onClick={() => setShowModal(true)}>
         Show Modal
       </Button>
       <Modal.Component
