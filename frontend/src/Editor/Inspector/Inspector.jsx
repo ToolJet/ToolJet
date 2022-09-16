@@ -484,10 +484,12 @@ const widgetsWithStyleConditions = {
 
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
   return Object.keys(componentMeta.styles).map((style) => {
-    const conditionWidget = widgetsWithStyleConditions[component.component.component];
+    const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
+    const condition = conditionWidget.conditions.find((condition) => condition.property) ?? {};
+
     if (conditionWidget && conditionWidget.conditions.find((condition) => condition.conditionStyles.includes(style))) {
-      const propertyConditon = conditionWidget.conditions.find((condition) => condition.property).property;
-      const widgetPropertyDefinition = conditionWidget.conditions.find((condition) => condition.property).definition;
+      const propertyConditon = condition?.property;
+      const widgetPropertyDefinition = condition?.definition;
 
       return handleRenderingConditionalStyles(
         component,
@@ -498,7 +500,7 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
         allComponents,
         style,
         propertyConditon,
-        component.component.definition[widgetPropertyDefinition]
+        component.component?.definition[widgetPropertyDefinition]
       );
     }
 
@@ -515,10 +517,10 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
   });
 };
 
-const resolveConditionalStyle = (defination, condition, currentState) => {
-  const conditionExitsInDefinition = defination[condition] ?? false;
-  if (conditionExitsInDefinition) {
-    return resolveReferences(defination[condition]?.value ?? false, currentState);
+const resolveConditionalStyle = (definition, condition, currentState) => {
+  const conditionExistsInDefinition = definition[condition] ?? false;
+  if (conditionExistsInDefinition) {
+    return resolveReferences(definition[condition]?.value ?? false, currentState);
   }
 };
 
@@ -530,10 +532,10 @@ const handleRenderingConditionalStyles = (
   currentState,
   allComponents,
   style,
-  renderingPropertyCondtion,
+  renderingPropertyCondition,
   definition
 ) => {
-  return resolveConditionalStyle(definition, renderingPropertyCondtion, currentState)
+  return resolveConditionalStyle(definition, renderingPropertyCondition, currentState)
     ? renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, allComponents)
     : null;
 };
