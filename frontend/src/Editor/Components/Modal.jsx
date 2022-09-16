@@ -20,7 +20,7 @@ export const Modal = function Modal({
 }) {
   const [showModal, setShowModal] = useState(false);
   const { hideOnEsc, hideCloseButton, hideTitleBar, loadingState } = properties;
-  const { disabledState, visibility } = styles;
+  const { headerBackgroundColor, headerTextColor, bodyBackgroundColor, disabledState, visibility } = styles;
   const parentRef = useRef(null);
 
   const title = properties.title ?? '';
@@ -53,6 +53,17 @@ export const Modal = function Modal({
     setShowModal(false);
   }
 
+  const customStyles = {
+    modalBody: {
+      height,
+      backgroundColor: bodyBackgroundColor,
+    },
+    modalHeader: {
+      backgroundColor: headerBackgroundColor,
+      color: headerTextColor,
+    },
+  };
+
   return (
     <div className="container" data-disabled={disabledState}>
       <Button style={{ display: visibility ? '' : 'none' }} variant="primary" onClick={() => setShowModal(true)}>
@@ -72,7 +83,7 @@ export const Modal = function Modal({
         backdrop={containerProps.mode === 'edit' ? 'static' : true}
         scrollable={true}
         modalProps={{
-          height,
+          customStyles,
           parentRef,
           id,
           title,
@@ -110,7 +121,7 @@ export const Modal = function Modal({
 
 const Component = ({ children, ...restProps }) => {
   const {
-    height,
+    customStyles,
     parentRef,
     id,
     title,
@@ -136,7 +147,7 @@ const Component = ({ children, ...restProps }) => {
         />
       )}
       {!hideTitleBar && (
-        <BootstrapModal.Header>
+        <BootstrapModal.Header style={{ ...customStyles.modalHeader }}>
           <BootstrapModal.Title id="contained-modal-title-vcenter">{title}</BootstrapModal.Title>
           {!hideCloseButton && (
             <div>
@@ -147,7 +158,7 @@ const Component = ({ children, ...restProps }) => {
           )}
         </BootstrapModal.Header>
       )}
-      <BootstrapModal.Body style={{ height }} ref={parentRef} id={id}>
+      <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id}>
         {children}
       </BootstrapModal.Body>
       <BootstrapModal.Footer></BootstrapModal.Footer>

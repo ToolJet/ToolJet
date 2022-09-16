@@ -704,6 +704,27 @@ export const widgets = [
       onClose: { displayName: 'On close' },
     },
     styles: {
+      headerBackgroundColor: {
+        type: 'color',
+        displayName: 'Header background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      headerTextColor: {
+        type: 'color',
+        displayName: 'Header text color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      bodyBackgroundColor: {
+        type: 'color',
+        displayName: 'Body background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       disabledState: {
         type: 'toggle',
         displayName: 'Disable',
@@ -748,6 +769,9 @@ export const widgets = [
       },
       events: [],
       styles: {
+        headerBackgroundColor: { value: '#FFFFFF' },
+        headerTextColor: { value: '#000000' },
+        bodyBackgroundColor: { value: '#FFFFFF' },
         disabledState: { value: '{{false}}' },
         visibility: { value: '{{true}}' },
       },
