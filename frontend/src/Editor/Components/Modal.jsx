@@ -65,7 +65,7 @@ export const Modal = function Modal({
         onEscapeKeyDown={() => hideOnEsc && hideModal()}
         id="modal-container"
         backdrop={containerProps.mode === 'edit' ? 'static' : true}
-        // scrollable={true}
+        scrollable={true}
         modalProps={{
           height,
           parentRef,
@@ -117,7 +117,7 @@ const Component = ({ children, ...restProps }) => {
           component={component}
           removeComponent={removeComponent}
           setSelectedComponent={setSelected} //! Only Modal uses setSelectedComponent instead of selecto lib
-          customClassName="modalWidget-config-handle"
+          customClassName={hideTitleBar ? 'modalWidget-config-handle' : ''}
         />
       )}
       {!hideTitleBar && (
