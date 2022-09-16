@@ -848,7 +848,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '#fff' },
+        textColor: { value: '#000' },
         borderRadius: { value: '{{0}}' },
       },
     },

@@ -13,7 +13,7 @@ export const TextInput = function TextInput({
 }) {
   const textInputRef = useRef();
 
-  const textColor = darkMode === false && styles.textColor === '#fff' ? '#000' : styles.textColor;
+  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
 
   const [loading, setLoading] = useState(properties.loadingState);
   useEffect(() => setLoading(properties.loadingState), [properties.loadingState]);
