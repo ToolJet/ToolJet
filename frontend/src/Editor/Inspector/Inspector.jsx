@@ -484,15 +484,10 @@ const widgetsWithStyleConditions = {
 
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
   return Object.keys(componentMeta.styles).map((style) => {
-    if (
-      widgetsWithStyleConditions[component.component.component] &&
-      widgetsWithStyleConditions[component.component.component].conditions.find((condition) =>
-        condition.conditionStyles.includes(style)
-      )
-    ) {
-      const propertyConditon = widgetsWithStyleConditions[component.component.component].conditions.find(
-        (condition) => condition.property
-      ).property;
+    const conditionWidget = widgetsWithStyleConditions[component.component.component];
+    if (conditionWidget && conditionWidget.conditions.find((condition) => condition.conditionStyles.includes(style))) {
+      const propertyConditon = conditionWidget.conditions.find((condition) => condition.property).property;
+      const widgetPropertyDefinition = conditionWidget.conditions.find((condition) => condition.property).definition;
 
       return handleRenderingConditionalStyles(
         component,
@@ -502,7 +497,8 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
         currentState,
         allComponents,
         style,
-        propertyConditon
+        propertyConditon,
+        component.component.definition[widgetPropertyDefinition]
       );
     }
 
@@ -534,9 +530,10 @@ const handleRenderingConditionalStyles = (
   currentState,
   allComponents,
   style,
-  renderingPropertyCondtion
+  renderingPropertyCondtion,
+  definition
 ) => {
-  return resolveConditionalStyle(component.component.definition.properties, renderingPropertyCondtion, currentState)
+  return resolveConditionalStyle(definition, renderingPropertyCondtion, currentState)
     ? renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, allComponents)
     : null;
 };
