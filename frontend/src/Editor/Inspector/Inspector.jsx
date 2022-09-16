@@ -6,11 +6,12 @@ import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
-import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
+import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
 import { ConfirmDialog } from '@/_components';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
+import { Modal } from './Components/Modal';
 import { CustomComponent } from './Components/CustomComponent';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
@@ -286,6 +287,22 @@ export const Inspector = ({
           />
         );
 
+      case 'Modal':
+        return (
+          <Modal
+            layoutPropertyChanged={layoutPropertyChanged}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            darkMode={darkMode}
+            eventsChanged={eventsChanged}
+            apps={apps}
+            allComponents={allComponents}
+          />
+        );
+
       case 'CustomComponent':
         return (
           <CustomComponent
@@ -353,6 +370,7 @@ export const Inspector = ({
       handleEditorEscapeKeyPress();
     }
   };
+
   return (
     <div className="inspector">
       <ConfirmDialog
@@ -398,18 +416,14 @@ export const Inspector = ({
           <Tab eventKey="styles" title={t('widget.common.styles', 'Styles')}>
             <div style={{ marginBottom: '6rem' }}>
               <div className="p-3">
-                {Object.keys(componentMeta.styles).map((style) =>
-                  renderElement(
-                    component,
-                    componentMeta,
-                    paramUpdated,
-                    dataQueries,
-                    style,
-                    'styles',
-                    currentState,
-                    allComponents
-                  )
-                )}
+                <Inspector.RenderStyleAccordion
+                  componentMeta={componentMeta}
+                  component={component}
+                  paramUpdated={paramUpdated}
+                  dataQueries={dataQueries}
+                  currentState={currentState}
+                  allComponents={allComponents}
+                />
               </div>
               {buildGeneralStyle()}
             </div>
@@ -455,3 +469,64 @@ export const Inspector = ({
     </div>
   );
 };
+
+const RenderStyleAccordion = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
+  return Object.keys(componentMeta.styles).map((style) => {
+    if (
+      component.component.component === 'Modal' &&
+      ['showButtonBackgroundColor', 'showButtonTextColor'].includes(style)
+    ) {
+      return handleRenderingConditionalStyles(
+        component,
+        componentMeta,
+        dataQueries,
+        paramUpdated,
+        currentState,
+        allComponents,
+        style,
+        'Modal',
+        'useDefaultButton',
+        ['showButtonBackgroundColor', 'showButtonTextColor']
+      );
+    }
+
+    return renderElement(
+      component,
+      componentMeta,
+      paramUpdated,
+      dataQueries,
+      style,
+      'styles',
+      currentState,
+      allComponents
+    );
+  });
+};
+
+const handleRenderingConditionalStyles = (
+  component,
+  componentMeta,
+  dataQueries,
+  paramUpdated,
+  currentState,
+  allComponents,
+  style,
+  componentType,
+  renderingPropertyCondtion,
+  conditionalStyles = []
+) => {
+  if (componentType === component.component.component && conditionalStyles.includes(style)) {
+    const propertyCondition = resolveReferences(
+      component.component.definition.properties[renderingPropertyCondtion]?.value ?? false,
+      currentState
+    );
+
+    return propertyCondition
+      ? renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, allComponents)
+      : null;
+  }
+
+  return null;
+};
+
+Inspector.RenderStyleAccordion = RenderStyleAccordion;

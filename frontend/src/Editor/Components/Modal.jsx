@@ -4,6 +4,7 @@ import Button from 'react-bootstrap/Button';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
+var tinycolor = require('tinycolor2');
 
 export const Modal = function Modal({
   id,
@@ -19,8 +20,16 @@ export const Modal = function Modal({
   fireEvent,
 }) {
   const [showModal, setShowModal] = useState(false);
-  const { hideOnEsc, hideCloseButton, hideTitleBar, loadingState } = properties;
-  const { headerBackgroundColor, headerTextColor, bodyBackgroundColor, disabledState, visibility } = styles;
+  const { hideOnEsc, hideCloseButton, hideTitleBar, loadingState, useDefaultButton, showButtonLabel } = properties;
+  const {
+    headerBackgroundColor,
+    headerTextColor,
+    bodyBackgroundColor,
+    disabledState,
+    visibility,
+    showButtonBackgroundColor,
+    showButtonTextColor,
+  } = styles;
   const parentRef = useRef(null);
 
   const title = properties.title ?? '';
@@ -62,13 +71,31 @@ export const Modal = function Modal({
       backgroundColor: headerBackgroundColor,
       color: headerTextColor,
     },
+    buttonStyles: {
+      backgroundColor: showButtonBackgroundColor,
+      color: showButtonTextColor,
+      width: '100%',
+      display: visibility ? '' : 'none',
+      '--tblr-btn-color-darker': tinycolor(showButtonBackgroundColor).darken(8).toString(),
+    },
   };
 
   return (
     <div className="container" data-disabled={disabledState}>
-      <Button style={{ display: visibility ? '' : 'none' }} variant="primary" onClick={() => setShowModal(true)}>
-        Show Modal
-      </Button>
+      {useDefaultButton && (
+        <button
+          disabled={disabledState}
+          className="jet-button btn btn-primary p-1 overflow-hidden"
+          style={customStyles.buttonStyles}
+          onClick={(event) => {
+            event.stopPropagation();
+            setShowModal(true);
+          }}
+        >
+          {showButtonLabel ?? 'Show Modal'}
+        </button>
+      )}
+
       <Modal.Component
         show={showModal}
         onHide={hideModal}

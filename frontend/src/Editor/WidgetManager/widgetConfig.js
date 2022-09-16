@@ -682,6 +682,24 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      useDefaultButton: {
+        type: 'toggle',
+        displayName: 'Use default show button',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      showButtonLabel: {
+        type: 'code',
+        displayName: 'Show button label',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
       hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
       hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
       hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
@@ -740,6 +758,22 @@ export const widgets = [
           defaultValue: true,
         },
       },
+      showButtonBackgroundColor: {
+        type: 'color',
+        displayName: 'Show button background color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
+      showButtonTextColor: {
+        type: 'color',
+        displayName: 'Show button text color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
     },
     exposedVariables: {
       show: false,
@@ -762,6 +796,8 @@ export const widgets = [
       properties: {
         title: { value: 'This title can be changed' },
         loadingState: { value: `{{false}}` },
+        useDefaultButton: { value: `{{true}}` },
+        showButtonLabel: { value: `Show Modal` },
         size: { value: 'md' },
         hideTitleBar: { value: '{{false}}' },
         hideCloseButton: { value: '{{false}}' },
@@ -774,6 +810,8 @@ export const widgets = [
         bodyBackgroundColor: { value: '#FFFFFF' },
         disabledState: { value: '{{false}}' },
         visibility: { value: '{{true}}' },
+        showButtonBackgroundColor: { value: '#4D72FA' },
+        showButtonTextColor: { value: '#FFFFFF' },
       },
     },
   },
