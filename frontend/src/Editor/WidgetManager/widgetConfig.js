@@ -456,17 +456,17 @@ export const widgets = [
       {
         handle: 'disable',
         displayName: 'Disable',
-        params: [{ handle: 'disable', displayName: 'Boolean', defaultValue: `{{false}}` }],
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
       {
         handle: 'visibility',
         displayName: 'Visibility',
-        params: [{ handle: 'visible', displayName: 'Boolean', defaultValue: `{{false}}` }],
+        params: [{ handle: 'visible', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
       {
         handle: 'loading',
         displayName: 'Loading',
-        params: [{ handle: 'loading', displayName: 'Boolean', defaultValue: `{{false}}` }],
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
     ],
     definition: {
