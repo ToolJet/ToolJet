@@ -6,6 +6,8 @@ import { validateEmail } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import SignupInfoScreen from '../successInfoScreen/SignupInfoScreen';
+import OnboardingNavbar from '../_components/OnboardingNavbar';
+import OnboardingCta from '../_components/OnboardingCta';
 
 class SignupPage2 extends React.Component {
   constructor(props) {
@@ -81,9 +83,7 @@ class SignupPage2 extends React.Component {
     return (
       <div className="page common-auth-section-whole-wrapper ">
         <div className="common-auth-section-left-wrapper">
-          <div className="onboarding-navbar container-xl">
-            <img src="assets/images/logo-color.svg" height="17.5" alt="tooljet logo" data-cy="page-logo" />
-          </div>
+          <OnboardingNavbar />
 
           <div className="common-auth-section-left-wrapper-grid">
             <div></div>
@@ -212,23 +212,7 @@ class SignupPage2 extends React.Component {
         </div>
 
         <div className="common-auth-section-right-wrapper">
-          <img src="assets/images/onboarding assets /02 Illustrations /cta.png" className="onboarding-cta-image"></img>
-          <p className="common-auth-testimonial">
-            “We definitely wanted to invest in low-code technology to ensure our razor focus is on bringing feature
-            richness, experience and proven scale -
-          </p>
-          <div className="onboarding-testimonial-container">
-            <img className="onboarding-testimonial-img"></img>
-            <div>
-              <p className="py-0 testimonial-name">Ritesh Dhoot</p>
-              <p className="testimonial-position">VP of Engineering, Byju’s</p>
-            </div>
-          </div>
-          <div className="onboarding-clients">
-            <img className="byjus-img" src="/assets/images/clients/Byju.png"></img>
-            <img className="orange-img" src="/assets/images/clients/orange.png"></img>
-            <img className="sequoia-img" src="/assets/images/clients/Sequoia.png"></img>
-          </div>
+          <OnboardingCta />
         </div>
       </div>
     );

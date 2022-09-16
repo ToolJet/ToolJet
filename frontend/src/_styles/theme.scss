@@ -6164,7 +6164,7 @@ input.hide-input-arrows {
   height: 48px;
   width: 392px;
   border-radius: 4px;
-  padding: 12px 16px 12px 16px;
+  padding: 8px 24px;
   background-color: #466BF2;
   display: flex;
   flex-direction: row;
@@ -6632,7 +6632,7 @@ input.hide-input-arrows {
   height: 48px;
   width: 352px;
   border-radius: 4px;
-  padding: 12px 16px 12px 16px;
+  padding: 8px 24px;
   background: #E9EEFF;
   display: flex;
   flex-direction: row;
@@ -6882,7 +6882,7 @@ input.hide-input-arrows {
   text-align: center;
   width: 392px;
   height: 482.69px;
-  margin-top: 34px;
+  margin-top: 132px;
 }
 
 .password-reset-card {
@@ -6932,7 +6932,6 @@ input.hide-input-arrows {
 
   p {
     margin-bottom: 0 !important;
-    // width: 92px;
     height: 20px;
     font-weight: 500;
     font-size: 12px;
@@ -6957,6 +6956,7 @@ input.hide-input-arrows {
   margin-top: 32px;
   color: #4B5563;
 }
+
 
 // ------ONBOARD END----------------------
 

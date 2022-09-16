@@ -7,6 +7,8 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
+import OnboardingNavbar from '../_components/OnboardingNavbar';
+import OnboardingCta from '../_components/OnboardingCta';
 class LoginPage2 extends React.Component {
   constructor(props) {
     super(props);
@@ -141,9 +143,7 @@ class LoginPage2 extends React.Component {
       <>
         <div className="common-auth-section-whole-wrapper page">
           <div className="common-auth-section-left-wrapper">
-            <div className="onboarding-navbar container-xl">
-              <img src="assets/images/logo-color.svg" height="17.5" alt="tooljet logo" />
-            </div>
+            <OnboardingNavbar />
 
             <div className="common-auth-section-left-wrapper-grid">
               <div></div>
@@ -282,18 +282,7 @@ class LoginPage2 extends React.Component {
               “We definitely wanted to invest in low-code technology to ensure our razor focus is on bringing feature
               richness, experience and proven scale -
             </p>
-            <div className="onboarding-testimonial-container">
-              <img className="onboarding-testimonial-img"></img>
-              <div>
-                <p className="py-0 testimonial-name">Ritesh Dhoot</p>
-                <p className="testimonial-position">VP of Engineering, Byju’s</p>
-              </div>
-            </div>
-            <div className="onboarding-clients">
-              <img className="byjus-img" src="/assets/images/clients/Byju.png"></img>
-              <img className="orange-img" src="/assets/images/clients/orange.png"></img>
-              <img className="sequoia-img" src="/assets/images/clients/Sequoia.png"></img>
-            </div>
+            <OnboardingCta />
           </div>
         </div>
       </>

@@ -60,38 +60,35 @@ function OnBoardingForm() {
         <div></div>
         <div className="onboarding-account-name">JA</div>
       </div>
-      {showQuestions ? (
-        <VerificationSuccessInfoScreen />
-      ) : (
-        <div className="onboarding-form">
-          <div className={`${page !== 0 ? 'onboarding-progress' : 'onboarding-progress-layout'}`}>
-            {page !== 0 && (
-              <div
-                className="onboarding-back-button"
-                disabled={page == 0}
-                onClick={() => {
-                  setPage((currPage) => currPage - 1);
-                  setButtonState(false);
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                <img src="/assets/images/onboarding assets /01 Icons /Arrow_Back.svg" />
-                <p>Back</p>
-              </div>
-            )}
-            <div className="onboarding-bubbles-container">{onBoardingBubbles({ formData, page })}</div>
-            <div></div>
-          </div>
-          <div className="form-container">
-            <div className="onboarding-header-wrapper">
-              <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
-              <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
+
+      <div className="onboarding-form">
+        <div className={`${page !== 0 ? 'onboarding-progress' : 'onboarding-progress-layout'}`}>
+          {page !== 0 && (
+            <div
+              className="onboarding-back-button"
+              disabled={page == 0}
+              onClick={() => {
+                setPage((currPage) => currPage - 1);
+                setButtonState(false);
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              <img src="/assets/images/onboarding assets /01 Icons /Arrow_Back.svg" />
+              <p>Back</p>
             </div>
-            {PageShift()}
-            <div>{continueButton({ buttonState, setButtonState, setPage, page, formData })}</div>
-          </div>
+          )}
+          <div className="onboarding-bubbles-container">{onBoardingBubbles({ formData, page })}</div>
+          <div></div>
         </div>
-      )}
+        <div className="form-container">
+          <div className="onboarding-header-wrapper">
+            <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
+            <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
+          </div>
+          {PageShift()}
+          <div>{continueButton({ buttonState, setButtonState, setPage, page, formData })}</div>
+        </div>
+      </div>
     </div>
   );
 }

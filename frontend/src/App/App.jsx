@@ -32,6 +32,7 @@ import { LoginPage2 } from '../LoginPage/LoginPage2';
 import { ForgotPassword2 } from '../ForgotPassword/ForgotPassword2';
 import { SignupPage2 } from '../SignupPage/SignupPage2';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
+import VerificationSuccessInfoScreen from '../successInfoScreen/VerificationSuccessInfoScreen';
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -176,7 +177,7 @@ class App extends React.Component {
                 />
               )}
             />
-            <Route path="/confirm" component={OnBoardingForm} />
+            <Route path="/confirm" component={VerificationSuccessInfoScreen} />
             <Route
               path="/organization-invitations/:token"
               render={(props) => (
