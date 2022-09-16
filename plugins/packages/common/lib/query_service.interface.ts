@@ -6,8 +6,12 @@ export interface QueryService {
     queryOptions: object,
     dataSourceId?: string,
     dataSourceUpdatedAt?: string,
-    context?: { user?: any }
+    context?: { user?: User }
   ): Promise<QueryResult>;
   getConnection?(queryOptions: object, options: any, checkCache: boolean, dataSourceId: string): Promise<object>;
   testConnection?(sourceOptions: object): Promise<ConnectionTestResult>;
 }
+
+type User = {
+  id: string;
+};

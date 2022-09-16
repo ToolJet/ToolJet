@@ -106,7 +106,9 @@ export class DataQueriesService {
     let result;
 
     try {
-      return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, { user });
+      return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
+        user: { id: user.id },
+      });
     } catch (error) {
       const statusCode = error?.data?.responseObject?.statusCode;
 
@@ -132,7 +134,9 @@ export class DataQueriesService {
           organizationId
         ));
 
-        result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, { user });
+        result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
+          user: { id: user.id },
+        });
       } else {
         throw error;
       }
