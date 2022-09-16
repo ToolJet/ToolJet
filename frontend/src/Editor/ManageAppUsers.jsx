@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, organizationService } from '@/_services';
+import { appService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { toast } from 'react-hot-toast';
@@ -21,22 +21,13 @@ class ManageAppUsersComponent extends React.Component {
       isLoading: true,
       isSlugVerificationInProgress: false,
       addingUser: false,
-      organizationUsers: [],
       newUser: {},
     };
   }
 
   componentDidMount() {
     const appId = this.props.app.id;
-
     this.fetchAppUsers();
-
-    organizationService.getUsers(null).then((data) =>
-      this.setState({
-        organizationUsers: data.users,
-      })
-    );
-
     this.setState({ appId });
   }
 
@@ -245,78 +236,6 @@ class ManageAppUsersComponent extends React.Component {
                     </span>
                   </div>
                 </div>
-                {/* <div className="add-user mb-3">
-                  <div className="row">
-                    <div className="col">
-                      <SelectSearch
-                        options={organizationUsers.map((user) => {
-                          return {
-                            name: `${user.name} ( ${user.email} )`,
-                            value: user.id
-                          };
-                        })}
-                        value={newUser.organizationUserId}
-                        search={true}
-                        onChange={(value) => {
-                          this.setState({ newUser: { ...newUser, organizationUserId: value } });
-                        }}
-                        filterOptions={fuzzySearch}
-                        placeholder="Select organization user"
-                      />
-                    </div>
-                    <div style={{ width: '160px' }}>
-                      <SelectSearch
-                        options={[
-                          { name: 'Admin', value: 'admin' },
-                          { name: 'Developer', value: 'developer' },
-                          { name: 'Viewer', value: 'role' }
-                        ]}
-                        value={newUser.role}
-                        search={false}
-                        onChange={(value) => {
-                          this.setState({ newUser: { ...newUser, role: value } });
-                        }}
-                        filterOptions={fuzzySearch}
-                        placeholder="Select role"
-                      />
-                    </div>
-                    <div className="col-auto">
-                      <button
-                        className={`btn btn-primary + ${addingUser ? ' btn-loading' : ''}`}
-                        onClick={this.addUser}
-                        disabled={addingUser}
-                      >
-                        Add User
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="table-responsive">
-                  <table className="table table-vcenter app-users-list">
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th className="w-1"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {users.map((user) => (
-                        <tr key={user.email}>
-                          <td>{user.name}</td>
-                          <td className="text-muted">
-                            <span lass="text-reset">{user.email}</span>
-                          </td>
-                          <td className="text-muted">{user.role}</td>
-                          <td>
-                            <a>Remove</a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div> */}
               </div>
             )}
           </Modal.Body>
