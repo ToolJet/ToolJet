@@ -1697,7 +1697,7 @@ export const widgets = [
       {
         handle: 'visibility',
         displayName: 'Set Visibility',
-        params: [{ handle: 'visibility', displayName: 'Boolean', defaultValue: `{{false}}` }],
+        params: [{ handle: 'visibility', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
     ],
     definition: {
