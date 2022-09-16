@@ -1505,7 +1505,9 @@ export const widgets = [
         },
       },
     },
-    events: {},
+    events: {
+      onSelect: { displayName: 'On select' },
+    },
     styles: {
       borderRadius: {
         type: 'code',
