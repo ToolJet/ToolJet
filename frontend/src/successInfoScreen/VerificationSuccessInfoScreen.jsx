@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
 
-function VerificationSuccessInfoScreen() {
+export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [show, setShow] = useState(false);
 
   return (
@@ -36,6 +36,4 @@ function VerificationSuccessInfoScreen() {
       </div>
     </div>
   );
-}
-
-export default VerificationSuccessInfoScreen;
+};

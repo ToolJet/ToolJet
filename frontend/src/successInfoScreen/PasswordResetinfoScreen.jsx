@@ -1,6 +1,6 @@
 import React from 'react';
 
-function PasswordResetinfoScreen({ props }) {
+export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props }) {
   return (
     <div className="info-screen-wrapper">
       <div className="password-reset-card">
@@ -24,6 +24,4 @@ function PasswordResetinfoScreen({ props }) {
       </div>
     </div>
   );
-}
-
-export default PasswordResetinfoScreen;
+};

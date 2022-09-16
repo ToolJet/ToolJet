@@ -1,8 +1,9 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
-import PasswordResetinfoScreen from '../successInfoScreen/PasswordResetinfoScreen';
+import { PasswordResetinfoScreen } from '@/successInfoScreen';
 import OnboardingNavbar from '../_components/OnboardingNavbar';
+import OnboardingCta from '../_components/OnboardingCta';
 
 class ResetPassword2 extends React.Component {
   constructor(props) {
@@ -143,7 +144,7 @@ class ResetPassword2 extends React.Component {
           </div>
         </div>
         <div className="common-auth-section-right-wrapper">
-          <OnboardingNavbar />
+          <OnboardingCta />
         </div>
       </div>
     );

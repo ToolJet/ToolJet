@@ -1,6 +1,6 @@
 import React from 'react';
 
-function LinkExpiredInfoScreen() {
+export const LinkExpiredInfoScreen = function LinkExpiredInfoScreen() {
   return (
     <div className="info-screen-wrapper">
       <div className="link-expired-card">
@@ -24,6 +24,4 @@ function LinkExpiredInfoScreen() {
       </div>
     </div>
   );
-}
-
-export default LinkExpiredInfoScreen;
+};

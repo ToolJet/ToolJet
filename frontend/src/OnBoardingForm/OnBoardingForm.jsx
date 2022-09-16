@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import VerificationSuccessInfoScreen from '../successInfoScreen/VerificationSuccessInfoScreen';
 
 function OnBoardingForm() {
   const [buttonState, setButtonState] = useState(true);
 
   const [page, setPage] = useState(0);
-  const [showQuestions, setShowQuestions] = useState(false);
 
   const [formData, setFormData] = useState({
     organization: '',

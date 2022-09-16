@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-function SignupInfoScreen({ props, email, signup }) {
+export const SignupInfoScreen = function SignupInfoScreen({ props, email, signup }) {
   const [show, setShow] = useState(false);
   const [resendBtn, setResetBtn] = useState(true);
 
@@ -91,6 +91,4 @@ function SignupInfoScreen({ props, email, signup }) {
       </div>
     </div>
   );
-}
-
-export default SignupInfoScreen;
+};

@@ -1,5 +1,5 @@
 import React from 'react';
-function ForgotPasswordInfoScreen({ props, email }) {
+export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ props, email }) {
   return (
     <div className="info-screen-wrapper">
       <div className="forget-password-info-card">
@@ -26,6 +26,4 @@ function ForgotPasswordInfoScreen({ props, email }) {
       </div>
     </div>
   );
-}
-
-export default ForgotPasswordInfoScreen;
+};

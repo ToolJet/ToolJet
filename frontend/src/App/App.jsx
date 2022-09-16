@@ -25,14 +25,13 @@ import Toast from '@/_ui/Toast';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import { Editor } from '@/Editor/Editor';
 import { RedirectSso } from '@/RedirectSso/RedirectSso';
-
-import '@/_styles/theme.scss';
-import 'emoji-mart/css/emoji-mart.css';
 import { LoginPage2 } from '../LoginPage/LoginPage2';
 import { ForgotPassword2 } from '../ForgotPassword/ForgotPassword2';
 import { SignupPage2 } from '../SignupPage/SignupPage2';
-import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
-import VerificationSuccessInfoScreen from '../successInfoScreen/VerificationSuccessInfoScreen';
+import { VerificationSuccessInfoScreen } from '@/successInfoScreen';
+import '@/_styles/theme.scss';
+import 'emoji-mart/css/emoji-mart.css';
+
 class App extends React.Component {
   constructor(props) {
     super(props);
