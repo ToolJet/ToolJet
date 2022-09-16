@@ -2,10 +2,12 @@ import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
 import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ReactTooltip from 'react-tooltip';
 import { withTranslation } from 'react-i18next';
 import urlJoin from 'url-join';
+import UsersTable from '../../ee/components/UsersPage/UsersTable';
+import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
+
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -20,9 +22,12 @@ class ManageOrgUsersComponent extends React.Component {
       unarchivingUser: null,
       fields: {},
       errors: {},
+      meta: {
+        total_count: 0,
+      },
+      currentPage: 1,
+      options: {},
     };
-
-    this.tableRef = React.createRef(null);
   }
 
   validateEmail(email) {
@@ -53,25 +58,23 @@ class ManageOrgUsersComponent extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchUsers();
+    this.fetchUsers(1);
   }
 
-  calculateOffset() {
-    const elementHeight = this.tableRef.current.getBoundingClientRect().top;
-    return window.innerHeight - elementHeight;
-  }
-
-  fetchUsers = () => {
+  fetchUsers = (page = 1, options = {}) => {
     this.setState({
+      options,
       isLoading: true,
+      currentPage: page,
     });
 
-    organizationService.getUsers(null).then((data) =>
+    organizationService.getUsers(page, options).then((data) => {
       this.setState({
         users: data.users,
+        meta: data.meta,
         isLoading: false,
-      })
-    );
+      });
+    });
   };
 
   changeNewUserOption = (name, e) => {
@@ -93,7 +96,7 @@ class ManageOrgUsersComponent extends React.Component {
           position: 'top-center',
         });
         this.setState({ archivingUser: null });
-        this.fetchUsers();
+        this.fetchUsers(this.state.currentPage, this.state.options);
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
@@ -111,7 +114,7 @@ class ManageOrgUsersComponent extends React.Component {
           position: 'top-center',
         });
         this.setState({ unarchivingUser: null });
-        this.fetchUsers();
+        this.fetchUsers(this.state.currentPage, this.state.options);
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
@@ -175,8 +178,16 @@ class ManageOrgUsersComponent extends React.Component {
     });
   };
 
+  pageChanged = (page) => {
+    this.fetchUsers(page, this.state.options);
+  };
+
+  filterList = (options) => {
+    this.fetchUsers(1, options);
+  };
+
   render() {
-    const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser } = this.state;
+    const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser, meta } = this.state;
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -309,146 +320,35 @@ class ManageOrgUsersComponent extends React.Component {
             )}
 
             {!showNewUserForm && (
-              <div className="container-xl">
-                <div className="card">
-                  <div
-                    className="card-table fixedHeader table-responsive table-bordered"
-                    ref={this.tableRef}
-                    style={{
-                      maxHeight: this.tableRef.current && this.calculateOffset(),
-                    }}
-                  >
-                    <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
-                      <thead>
-                        <tr>
-                          <th data-cy="name-title">
-                            {this.props.t('header.organization.menus.manageUsers.name', 'Name')}
-                          </th>
-                          <th data-cy="email-title">
-                            {this.props.t('header.organization.menus.manageUsers.email', 'Email')}
-                          </th>
-                          <th data-cy="status-title">
-                            {this.props.t('header.organization.menus.manageUsers.status', 'Status')}
-                          </th>
-                          <th className="w-1"></th>
-                        </tr>
-                      </thead>
-                      {isLoading ? (
-                        <tbody className="w-100" style={{ minHeight: '300px' }}>
-                          {Array.from(Array(4)).map((_item, index) => (
-                            <tr key={index}>
-                              <td className="col-2 p-3">
-                                <div className="row">
-                                  <div
-                                    className="skeleton-image col-auto"
-                                    style={{ width: '25px', height: '25px' }}
-                                  ></div>
-                                  <div className="skeleton-line w-10 col mx-3"></div>
-                                </div>
-                              </td>
-                              <td className="col-4 p-3">
-                                <div className="skeleton-line w-10"></div>
-                              </td>
-                              <td className="col-2 p-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                              <td className="text-muted col-auto col-1 pt-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                              <td className="text-muted col-auto col-1 pt-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      ) : (
-                        <tbody>
-                          {users.map((user) => (
-                            <tr key={user.id}>
-                              <td>
-                                <span className="avatar bg-azure-lt avatar-sm" data-cy="user-avatar">
-                                  {user.first_name ? user.first_name[0] : ''}
-                                  {user.last_name ? user.last_name[0] : ''}
-                                </span>
-                                <span
-                                  className="mx-3"
-                                  style={{
-                                    display: 'inline-flex',
-                                    marginBottom: '7px',
-                                  }}
-                                  data-cy="user-name"
-                                >
-                                  {user.name}
-                                </span>
-                              </td>
-                              <td className="text-muted">
-                                <a className="text-reset user-email" data-cy="user-email">
-                                  {user.email}
-                                </a>
-                              </td>
-                              <td className="text-muted">
-                                <span
-                                  className={`badge bg-${
-                                    user.status === 'invited'
-                                      ? 'warning'
-                                      : user.status === 'archived'
-                                      ? 'danger'
-                                      : 'success'
-                                  } me-1 m-1`}
-                                  data-cy="status-badge"
-                                ></span>
-                                <small className="user-status" data-cy="user-status">
-                                  {user.status}
-                                </small>
-                                {user.status === 'invited' && 'invitation_token' in user ? (
-                                  <CopyToClipboard
-                                    text={this.generateInvitationURL(user)}
-                                    onCopy={this.invitationLinkCopyHandler}
-                                  >
-                                    <img
-                                      data-tip="Copy invitation link"
-                                      className="svg-icon"
-                                      src="assets/images/icons/copy.svg"
-                                      width="15"
-                                      height="15"
-                                      style={{
-                                        cursor: 'pointer',
-                                      }}
-                                      data-cy="copy-invitation-link"
-                                    ></img>
-                                  </CopyToClipboard>
-                                ) : (
-                                  ''
-                                )}
-                              </td>
-                              <td>
-                                <button
-                                  type="button"
-                                  style={{ minWidth: '100px' }}
-                                  className={`btn btn-sm btn-outline-${
-                                    user.status === 'archived' ? 'success' : 'danger'
-                                  } ${unarchivingUser === user.id || archivingUser === user.id ? 'btn-loading' : ''}`}
-                                  disabled={unarchivingUser === user.id || archivingUser === user.id}
-                                  onClick={() => {
-                                    user.status === 'archived'
-                                      ? this.unarchiveOrgUser(user.id)
-                                      : this.archiveOrgUser(user.id);
-                                  }}
-                                  data-cy="user-state"
-                                >
-                                  {user.status === 'archived'
-                                    ? this.props.t('header.organization.menus.manageUsers.unarchive', 'Unarchive')
-                                    : this.props.t('header.organization.menus.manageUsers.archive', 'Archive')}
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      )}
-                    </table>
-                  </div>
-                </div>
+              <UsersFilter
+                filterList={this.filterList}
+                darkMode={this.props.darkMode}
+                clearIconPressed={() => this.fetchUsers()}
+              />
+            )}
+
+            {users?.length === 0 && (
+              <div className="d-flex justify-content-center flex-column">
+                <span className="text-center pt-5 font-weight-bold">No result found</span>
+                <small className="text-center text-muted">Try changing the filters</small>
               </div>
+            )}
+
+            {!showNewUserForm && users?.length !== 0 && (
+              <UsersTable
+                isLoading={isLoading}
+                users={users}
+                unarchivingUser={unarchivingUser}
+                archivingUser={archivingUser}
+                meta={meta}
+                generateInvitationURL={this.generateInvitationURL}
+                invitationLinkCopyHandler={this.invitationLinkCopyHandler}
+                unarchiveOrgUser={this.unarchiveOrgUser}
+                archiveOrgUser={this.archiveOrgUser}
+                pageChanged={this.pageChanged}
+                darkMode={this.props.darkMode}
+                translator={this.props.t}
+              />
             )}
           </div>
         </div>

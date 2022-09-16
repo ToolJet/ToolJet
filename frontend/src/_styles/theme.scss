@@ -3402,6 +3402,12 @@ input:focus-visible {
       color: #656d77;
     }
   }
+
+  .page-item {
+    a.page-link {
+      color: white;
+    }
+  }
 }
 
 .main-wrapper {
@@ -6108,6 +6114,7 @@ input.hide-input-arrows{
     }
   }
 }
+
 .dark-theme-placeholder::placeholder{
   color: #C8C6C6;
 }
@@ -6333,5 +6340,12 @@ input.hide-input-arrows{
     background-color: #2b394a;
     border-color: #232e3c;
     color: white;
+  }
+}
+
+.org-users-page {
+  min-height: 100vh;
+  .page-body {
+    height: 100%;
   }
 }
