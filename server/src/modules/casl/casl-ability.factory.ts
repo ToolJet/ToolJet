@@ -12,6 +12,7 @@ type Actions =
   | 'accessGroupPermission'
   | 'accessAuditLogs'
   | 'fetchAllUsers'
+  | 'viewAllUsers'
   | 'updateOrganizations';
 
 type Subjects = InferSubjects<typeof OrganizationUser | typeof User> | 'all';
@@ -33,6 +34,7 @@ export class CaslAbilityFactory {
       can('accessGroupPermission', User);
       can('fetchAllUsers', User);
       can('updateOrganizations', User);
+      can('viewAllUsers', User);
 
       if (License.Instance.auditLog) {
         can('accessAuditLogs', User);

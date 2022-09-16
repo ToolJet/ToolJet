@@ -3408,6 +3408,12 @@ input:focus-visible {
       color: $white;
     }
   }
+
+  .page-item {
+    a.page-link {
+      color: white;
+    }
+  }
 }
 
 .main-wrapper {
@@ -6354,5 +6360,12 @@ input.hide-input-arrows{
     background-color: #2b394a;
     border-color: #232e3c;
     color: white;
+  }
+}
+
+.org-users-page {
+  min-height: 100vh;
+  .page-body {
+    height: 100%;
   }
 }
