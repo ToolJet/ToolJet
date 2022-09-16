@@ -1,4 +1,13 @@
 import * as Joi from 'joi';
+import * as path from 'path';
+
+export function filePathForEnvVars(env: string | undefined): string {
+  if (env === 'test') {
+    return path.resolve(process.cwd(), '../.env.test');
+  } else {
+    return path.resolve(process.cwd(), '../.env');
+  }
+}
 
 function buildDatabaseConfig(): any {
   return {
