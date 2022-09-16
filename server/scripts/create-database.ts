@@ -35,6 +35,11 @@ function createDatabase(): void {
     }
   });
 
+  if (envVars.PG_DB_OWNER === 'false') {
+    console.log('Skipping database creation');
+    return;
+  }
+
   const createdb =
     `PGPASSWORD=${envVars.PG_PASS} createdb ` +
     `-h ${envVars.PG_HOST} ` +
