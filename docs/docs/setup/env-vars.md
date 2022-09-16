@@ -13,7 +13,7 @@ Both the ToolJet server and client requires some environment variables to start 
 
 | variable     | description                                                     |
 | ------------ | --------------------------------------------------------------- |
-| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com )  |
+| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com ) |
 
 #### Lockbox configuration ( required )
 
@@ -44,6 +44,11 @@ ToolJet server uses PostgreSQL as the database.
 :::tip
 If you are using docker-compose setup, you can set PG_HOST as `postgres` which will be DNS resolved by docker
 :::
+
+#### Disable database and extension creation (optional)
+
+ToolJet by default tries to create database based on `PG_DB` variable set and additionally my try to create postgres extensions. This requires the postgres user to have CREATEDB permission. If this cannot be granted you can disable this behaviour by setting `PG_DB_OWNER` as `false` and will have to manually run them.
+
 
 #### Check for updates ( optional )
 
@@ -91,13 +96,8 @@ You will still be able to see the signup page but won't be able to successfully 
 
 #### Serve client as a server end-point ( optional )
 
-By default, the `SERVE_CLIENT` variable will be unset and the server will serve the client at its `/` end-point.
-You can set `SERVE_CLIENT` to `false` to disable this behaviour.
-
-#### Serve client at subpath
-
-If ToolJet is hosted on a domain subpath, you can set the environment variable `SUB_PATH` to support it.
-Please note the subpath is to be set with trailing `/` and is applicable only when the server is serving the frontend client.
+By default, the `SERVE_CLIENT` variable will be set to `false` and the server won't serve the client at its `/` end-point.
+You can set `SERVE_CLIENT` to `true` and the server will attempt to serve the client at its root end-point (`/`).
 
 #### SMTP configuration ( optional )
 
@@ -232,9 +232,3 @@ This can be an absolute path, or relative to main HTML file.
 | variable           | description                                                   |
 | ------------------ | -----------------------------------------------------------   |
 | ASSET_PATH         | the asset path for the website ( eg: https://app.tooljet.com/) |
-
-
-#### Serve client as a server end-point ( optional )
-
-By default the client build will be done to be served with ToolJet server.
-If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
