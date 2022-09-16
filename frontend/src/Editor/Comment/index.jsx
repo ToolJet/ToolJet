@@ -7,22 +7,12 @@ import CommentHeader from '@/Editor/Comment/CommentHeader';
 import CommentBody from '@/Editor/Comment/CommentBody';
 import CommentFooter from '@/Editor/Comment/CommentFooter';
 import usePopover from '@/_hooks/use-popover';
-import { commentsService } from '@/_services';
+import { commentsService, organizationService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
 import DOMPurify from 'dompurify';
+import { capitalize } from 'lodash';
 
-const Comment = ({
-  socket,
-  x,
-  y,
-  threadId,
-  user = {},
-  isResolved,
-  fetchThreads,
-  appVersionsId,
-  canvasWidth,
-  users,
-}) => {
+const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, appVersionsId, canvasWidth }) => {
   const [loading, setLoading] = React.useState(true);
   const [editComment, setEditComment] = React.useState('');
   const [editCommentId, setEditCommentId] = React.useState('');
@@ -111,6 +101,24 @@ const Comment = ({
 
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
+  const searchUser = (query, callback) => {
+    if (!query) {
+      return;
+    }
+    organizationService
+      .getUsersByValue(query)
+      .then((data) =>
+        data.users.map((u) => ({
+          id: u.user_id,
+          display: `${capitalize(u.first_name)} ${capitalize(u.last_name)}`,
+          email: u.email,
+          first_name: u.first_name,
+          last_name: u.last_name,
+        }))
+      )
+      .then(callback);
+  };
+
   return (
     <>
       <div
@@ -166,7 +174,7 @@ const Comment = ({
             thread={thread}
           />
           <CommentFooter
-            users={users}
+            searchUser={searchUser}
             setMentionedUsers={setMentionedUsers}
             editComment={editComment}
             editCommentId={editCommentId}

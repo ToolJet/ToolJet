@@ -22,7 +22,7 @@ class Switch extends React.Component {
   }
 }
 
-export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposedVariable, darkMode }) => {
+export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposedVariable, darkMode, component }) => {
   // definition props
   const defaultValue = properties.defaultValue ?? false;
   const [on, setOn] = React.useState(defaultValue);
@@ -48,7 +48,11 @@ export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposed
   const toggle = () => setOn(!on);
 
   return (
-    <div className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>
+    <div
+      className="row py-1"
+      style={{ height, display: visibility ? '' : 'none' }}
+      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+    >
       <span className="form-check-label form-check-label col-auto my-auto" style={{ color: textColor }}>
         {label}
       </span>
