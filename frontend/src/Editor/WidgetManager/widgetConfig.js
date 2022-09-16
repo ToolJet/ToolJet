@@ -763,7 +763,6 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
-      loadingState: { type: 'toggle', displayName: 'Loading', validation: { schema: { type: 'boolean' } } },
     },
     validation: {
       regex: { type: 'code', displayName: 'Regex' },
@@ -841,15 +840,14 @@ export const widgets = [
       },
       properties: {
         value: { value: '' },
-        placeholder: { value: 'Enter your text' },
-        hidden: { value: '{{false}}', fxActive: true },
-        disable: { value: '{{false}}', fxActive: true },
-        loading: { value: '{{false}}', fxActive: true },
+        placeholder: { value: 'Enter your input' },
       },
       events: [],
       styles: {
         textColor: { value: '#000' },
         borderRadius: { value: '{{0}}' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
       },
     },
   },
