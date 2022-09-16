@@ -16,6 +16,7 @@ export const Modal = function Modal({
   exposedVariables,
   setExposedVariable,
   registerAction,
+  fireEvent,
 }) {
   const [showModal, setShowModal] = useState(false);
   const { hideOnEsc, hideCloseButton, hideTitleBar, loadingState } = properties;
@@ -37,9 +38,16 @@ export const Modal = function Modal({
 
   useEffect(() => {
     const canShowModal = exposedVariables.show ?? false;
-    setShowModal(canShowModal);
+    if (canShowModal !== showModal) {
+      setShowModal(canShowModal);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
+
+  useEffect(() => {
+    setExposedVariable('show', showModal).then(() => fireEvent(showModal ? 'onOpen' : 'onClose'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal]);
 
   function hideModal() {
     setExposedVariable('show', false);

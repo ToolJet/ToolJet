@@ -699,7 +699,10 @@ export const widgets = [
         },
       },
     },
-    events: {},
+    events: {
+      onOpen: { displayName: 'On open' },
+      onClose: { displayName: 'On close' },
+    },
     styles: {
       disabledState: {
         type: 'toggle',
