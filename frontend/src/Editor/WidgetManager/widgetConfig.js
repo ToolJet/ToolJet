@@ -1711,7 +1711,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '#fff' },
+        backgroundColor: { value: '#ffffff00' },
         textColor: { value: '#000' },
         textSize: { value: 14 },
         textAlign: { value: 'left' },

@@ -42,7 +42,7 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
   }
 
   const computedStyles = {
-    backgroundColor: darkMode && backgroundColor === '#fff' ? '#232E3C' : backgroundColor,
+    backgroundColor,
     color,
     height,
     display: visibility ? 'flex' : 'none',
