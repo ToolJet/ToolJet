@@ -416,7 +416,7 @@ export const Inspector = ({
           <Tab eventKey="styles" title={t('widget.common.styles', 'Styles')}>
             <div style={{ marginBottom: '6rem' }}>
               <div className="p-3">
-                <Inspector.RenderStyleAccordion
+                <Inspector.RenderStyleOptions
                   componentMeta={componentMeta}
                   component={component}
                   paramUpdated={paramUpdated}
@@ -470,12 +470,30 @@ export const Inspector = ({
   );
 };
 
-const RenderStyleAccordion = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
+const widgetsWithStyleConditions = {
+  Modal: {
+    conditions: [
+      {
+        definition: 'properties',
+        property: 'useDefaultButton',
+        conditionStyles: ['showButtonBackgroundColor', 'showButtonTextColor'],
+      },
+    ],
+  },
+};
+
+const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
   return Object.keys(componentMeta.styles).map((style) => {
     if (
-      component.component.component === 'Modal' &&
-      ['showButtonBackgroundColor', 'showButtonTextColor'].includes(style)
+      widgetsWithStyleConditions[component.component.component] &&
+      widgetsWithStyleConditions[component.component.component].conditions.find((condition) =>
+        condition.conditionStyles.includes(style)
+      )
     ) {
+      const propertyConditon = widgetsWithStyleConditions[component.component.component].conditions.find(
+        (condition) => condition.property
+      ).property;
+
       return handleRenderingConditionalStyles(
         component,
         componentMeta,
@@ -484,9 +502,7 @@ const RenderStyleAccordion = ({ componentMeta, component, paramUpdated, dataQuer
         currentState,
         allComponents,
         style,
-        'Modal',
-        'useDefaultButton',
-        ['showButtonBackgroundColor', 'showButtonTextColor']
+        propertyConditon
       );
     }
 
@@ -503,6 +519,13 @@ const RenderStyleAccordion = ({ componentMeta, component, paramUpdated, dataQuer
   });
 };
 
+const resolveConditionalStyle = (defination, condition, currentState) => {
+  const conditionExitsInDefinition = defination[condition] ?? false;
+  if (conditionExitsInDefinition) {
+    return resolveReferences(defination[condition]?.value ?? false, currentState);
+  }
+};
+
 const handleRenderingConditionalStyles = (
   component,
   componentMeta,
@@ -511,22 +534,11 @@ const handleRenderingConditionalStyles = (
   currentState,
   allComponents,
   style,
-  componentType,
-  renderingPropertyCondtion,
-  conditionalStyles = []
+  renderingPropertyCondtion
 ) => {
-  if (componentType === component.component.component && conditionalStyles.includes(style)) {
-    const propertyCondition = resolveReferences(
-      component.component.definition.properties[renderingPropertyCondtion]?.value ?? false,
-      currentState
-    );
-
-    return propertyCondition
-      ? renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, allComponents)
-      : null;
-  }
-
-  return null;
+  return resolveConditionalStyle(component.component.definition.properties, renderingPropertyCondtion, currentState)
+    ? renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, allComponents)
+    : null;
 };
 
-Inspector.RenderStyleAccordion = RenderStyleAccordion;
+Inspector.RenderStyleOptions = RenderStyleOptions;
