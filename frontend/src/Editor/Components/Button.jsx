@@ -66,7 +66,7 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
           event.stopPropagation();
           fireEvent('onClick');
         }}
-        onMouseMove={(event) => {
+        onMouseOver={(event) => {
           event.stopPropagation();
           fireEvent('onHover');
         }}
