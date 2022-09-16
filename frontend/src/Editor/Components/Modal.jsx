@@ -3,9 +3,11 @@ import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
+import { ConfigHandle } from '../ConfigHandle';
 
 export const Modal = function Modal({
   id,
+  component,
   height,
   containerProps,
   darkMode,
@@ -44,6 +46,8 @@ export const Modal = function Modal({
     setShowModal(false);
   }
 
+  console.log('config ==>', containerProps);
+
   return (
     <div className="container" data-disabled={disabledState}>
       <Button variant="primary" onClick={() => setShowModal(true)}>
@@ -61,7 +65,21 @@ export const Modal = function Modal({
         onEscapeKeyDown={() => hideOnEsc && hideModal()}
         id="modal-container"
         backdrop={containerProps.mode === 'edit' ? 'static' : true}
-        modalBodyProps={{ height, parentRef, id, title, hideTitleBar, hideCloseButton, hideModal, darkMode }}
+        // scrollable={true}
+        modalProps={{
+          height,
+          parentRef,
+          id,
+          title,
+          hideTitleBar,
+          hideCloseButton,
+          hideModal,
+          darkMode,
+          component,
+          showConfigHandler: containerProps.mode === 'edit',
+          removeComponent: containerProps.removeComponent,
+          setSelected: containerProps.setSelectedComponent,
+        }}
       >
         <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
         <SubCustomDragLayer
@@ -76,11 +94,31 @@ export const Modal = function Modal({
 };
 
 const Component = ({ children, ...restProps }) => {
-  const { height, parentRef, id, title, hideTitleBar, hideCloseButton, hideModal, darkMode } =
-    restProps['modalBodyProps'];
+  const {
+    height,
+    parentRef,
+    id,
+    title,
+    hideTitleBar,
+    hideCloseButton,
+    hideModal,
+    darkMode,
+    component,
+    showConfigHandler,
+    removeComponent,
+    setSelected,
+  } = restProps['modalProps'];
 
   return (
     <BootstrapModal {...restProps}>
+      {showConfigHandler && (
+        <ConfigHandle
+          id={id}
+          component={component}
+          removeComponent={removeComponent}
+          setSelectedComponent={setSelected} //! Only Modal uses setSelectedComponent instead of selecto lib
+        />
+      )}
       {!hideTitleBar && (
         <BootstrapModal.Header>
           <BootstrapModal.Title id="contained-modal-title-vcenter">{title}</BootstrapModal.Title>

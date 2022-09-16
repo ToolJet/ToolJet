@@ -9,6 +9,7 @@ export const ConfigHandle = function ConfigHandle({
   widgetTop,
   widgetHeight,
   isMultipleComponentsSelected = false,
+  setSelectedComponent = () => null, //! Only Modal widget passes this uses props down. All other widgets use selecto lib
 }) {
   return (
     <div
@@ -24,6 +25,7 @@ export const ConfigHandle = function ConfigHandle({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            setSelectedComponent(id, component, e.shiftKey);
           }}
           role="button"
           data-cy={`${component.name.toLowerCase()}-config-handle`}
