@@ -18,7 +18,7 @@ export const Modal = function Modal({
   registerAction,
 }) {
   const [showModal, setShowModal] = useState(false);
-  const { hideOnEsc, hideCloseButton, hideTitleBar } = properties;
+  const { hideOnEsc, hideCloseButton, hideTitleBar, loadingState } = properties;
   const parentRef = useRef(null);
 
   const title = properties.title ?? '';
@@ -45,8 +45,6 @@ export const Modal = function Modal({
     setExposedVariable('show', false);
     setShowModal(false);
   }
-
-  console.log('config ==>', containerProps);
 
   return (
     <div className="container" data-disabled={disabledState}>
@@ -81,13 +79,23 @@ export const Modal = function Modal({
           setSelected: containerProps.setSelectedComponent,
         }}
       >
-        <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
-        <SubCustomDragLayer
-          snapToGrid={true}
-          parentRef={parentRef}
-          parent={id}
-          currentLayout={containerProps.currentLayout}
-        />
+        {!loadingState ? (
+          <>
+            <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
+            <SubCustomDragLayer
+              snapToGrid={true}
+              parentRef={parentRef}
+              parent={id}
+              currentLayout={containerProps.currentLayout}
+            />
+          </>
+        ) : (
+          <div className="p-2">
+            <center>
+              <div className="spinner-border mt-5" role="status"></div>
+            </center>
+          </div>
+        )}
       </Modal.Component>
     </div>
   );
