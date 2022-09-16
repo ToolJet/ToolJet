@@ -7,11 +7,6 @@ import { buildAndValidateDatabaseConfig } from './database-config-utils';
 function createDatabaseFromFile(envPath: string): void {
   const result = dotenv.config({ path: envPath });
 
-  if (process.env.PG_DB_OWNER === 'false') {
-    console.log('Skipping database creation');
-    return;
-  }
-
   if (result.error) {
     throw result.error;
   }
@@ -34,6 +29,11 @@ function createDatabase(): void {
       process.exit(1);
     }
   });
+
+  if (envVars.PG_DB_OWNER === 'false') {
+    console.log('Skipping database creation');
+    return;
+  }
 
   const createdb =
     `PGPASSWORD=${envVars.PG_PASS} createdb ` +
