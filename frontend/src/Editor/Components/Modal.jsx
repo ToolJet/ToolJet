@@ -117,6 +117,7 @@ const Component = ({ children, ...restProps }) => {
           component={component}
           removeComponent={removeComponent}
           setSelectedComponent={setSelected} //! Only Modal uses setSelectedComponent instead of selecto lib
+          customClassName="modalWidget-config-handle"
         />
       )}
       {!hideTitleBar && (
