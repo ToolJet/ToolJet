@@ -123,7 +123,7 @@ class DataSourceManagerComponent extends React.Component {
       const keyMeta = selectedDataSource.options[key];
       return {
         key: key,
-        value: options[key].value,
+        value: kind === 'restapi' && key === 'token_data' ? undefined : options[key].value,
         encrypted: keyMeta ? keyMeta.encrypted : false,
       };
     });

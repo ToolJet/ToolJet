@@ -190,13 +190,22 @@ export class DataSourcesService {
     return parsedOptions;
   }
 
-  private updateCurrentToken = (tokenData: any, userId: string, accessTokenDetails: any) => {
-    return tokenData?.value.map((token: any) => {
-      if (token.userId === userId) {
-        return { ...token, ...accessTokenDetails };
-      }
-      return token;
-    });
+  private changeCurrentToken = (
+    tokenData: any,
+    userId: string,
+    accessTokenDetails: any,
+    isMultiAuthEnabled: boolean
+  ) => {
+    if (isMultiAuthEnabled) {
+      return tokenData?.value.map((token: any) => {
+        if (token.userId === userId) {
+          return { ...token, ...accessTokenDetails };
+        }
+        return token;
+      });
+    } else {
+      return accessTokenDetails;
+    }
   };
 
   async updateOAuthAccessToken(
@@ -210,7 +219,13 @@ export class DataSourcesService {
     if (existingCredentialId) {
       await this.credentialsService.update(existingCredentialId, accessTokenDetails['access_token']);
     } else if (dataSourceId) {
-      const updatedTokenData = this.updateCurrentToken(dataSourceOptions['token_data'], userId, accessTokenDetails);
+      const isMultiAuthEnabled = dataSourceOptions['multiple_auth_enabled']?.value;
+      const updatedTokenData = this.changeCurrentToken(
+        dataSourceOptions['token_data'],
+        userId,
+        accessTokenDetails,
+        isMultiAuthEnabled
+      );
       const tokenOptions = [
         {
           key: 'token_data',

@@ -158,7 +158,7 @@ export class DataQueriesService {
   }
 
   /* This function fetches the access token from the token url set in REST API (oauth) datasource */
-  async fetchOAuthToken(sourceOptions: any, code: string, userId: any): Promise<any> {
+  async fetchOAuthToken(sourceOptions: any, code: string, userId: any, isMultiAuthEnabled: boolean): Promise<any> {
     const tooljetHost = process.env.TOOLJET_HOST;
     const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['access_token_custom_headers']);
     const accessTokenUrl = sourceOptions['access_token_url'];
@@ -186,7 +186,11 @@ export class DataQueriesService {
       });
 
       const result = JSON.parse(response.body);
-      return { user_id: userId, access_token: result['access_token'], refresh_token: result['refresh_token'] };
+      return {
+        ...(isMultiAuthEnabled ? { user_id: userId } : {}),
+        access_token: result['access_token'],
+        refresh_token: result['refresh_token'],
+      };
     } catch (err) {
       throw new BadRequestException(this.parseErrorResponse(err?.response?.body, err?.response?.statusCode));
     }
@@ -204,9 +208,11 @@ export class DataQueriesService {
     return JSON.stringify(errorObj);
   }
 
-  replaceOrAppend = (array: [any], newData: any) => {
+  /* replace the existed one or add to the end */
+  private replaceOrAppend = (array: any, newData: any) => {
     let isReplaced = false;
     const newArray = array.map((item: any) => {
+      // incase if user decided to get refresh token from the oauth service after the datasource created
       if (item.user_id === newData.user_id) {
         isReplaced = true;
         return newData;
@@ -217,24 +223,32 @@ export class DataQueriesService {
     return newArray;
   };
 
+  private getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, newToken: any) => {
+    if (isMultiAuthEnabled) {
+      let tokensArray = [];
+      if (tokenData && Array.isArray(tokenData)) {
+        // tokensArray = this.replaceOrAppend(tokenData, newToken);
+        tokensArray = [...tokenData, newToken];
+      } else {
+        tokensArray.push(newToken);
+      }
+      return tokensArray;
+    } else {
+      return newToken;
+    }
+  };
+
   /* This function fetches access token from authorization code */
   async authorizeOauth2(dataSource: DataSource, code: string, userId: string): Promise<any> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
-    const tokenData = await this.fetchOAuthToken(sourceOptions, code, userId);
-
-    let tokensArray = [];
-    // check if there is tokenData key existed or not
-    if (dataSource.options['token_data'] && Array.isArray(dataSource.options['token_data'].value)) {
-      //replace the existed one or add to the end
-      tokensArray = this.replaceOrAppend(dataSource.options['token_data'].value, tokenData);
-    } else {
-      tokensArray.push(tokenData);
-    }
+    const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
+    const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
+    const tokenData = this.getCurrentToken(isMultiAuthEnabled, dataSource.options['token_data']?.value, newToken);
 
     const tokenOptions = [
       {
         key: 'token_data',
-        value: tokensArray,
+        value: tokenData,
         encrypted: false,
       },
     ];

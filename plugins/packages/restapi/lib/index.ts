@@ -85,11 +85,13 @@ export default class RestapiQueryService implements QueryService {
     return true;
   }
 
-  private getCurrentToken = (tokenData: any, userId: string) => {
-    if (!tokenData || !Array.isArray(tokenData)) return null;
-    const tokenArray = tokenData?.filter((token: any) => token.user_id === userId);
-    if (tokenArray.length == 0) return null;
-    return tokenArray[0];
+  private getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string) => {
+    if (isMultiAuthEnabled) {
+      if (!tokenData || !Array.isArray(tokenData)) return null;
+      return tokenData.find((token: any) => token.user_id === userId);
+    } else {
+      return tokenData;
+    }
   };
 
   async run(
@@ -107,11 +109,12 @@ export default class RestapiQueryService implements QueryService {
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
     const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
     const isUrlEncoded = this.checkIfContentTypeIsURLenc(queryOptions['headers']);
+    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
 
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
       const tokenData = sourceOptions['token_data'];
-      const currentToken = this.getCurrentToken(tokenData, context.user.id);
+      const currentToken = this.getCurrentToken(isMultiAuthEnabled, tokenData, context?.user.id);
 
       if (!currentToken) {
         const tooljetHost = process.env.TOOLJET_HOST;
@@ -229,7 +232,8 @@ export default class RestapiQueryService implements QueryService {
   }
 
   async refreshToken(sourceOptions: any, error: any, userId: string) {
-    const currentToken = this.getCurrentToken(sourceOptions['token_data'], userId);
+    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
+    const currentToken = this.getCurrentToken(isMultiAuthEnabled, sourceOptions['token_data'], userId);
     const refreshToken = currentToken['refresh_token'];
     if (!refreshToken) {
       throw new QueryError('Refresh token not found', error.response, {});
