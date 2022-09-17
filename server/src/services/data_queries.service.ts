@@ -96,6 +96,7 @@ export class DataQueriesService {
 
   async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
     const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
+    const app = dataQuery?.app;
     const organizationId = user ? user.organizationId : await this.getOrgIdfromApp(dataQuery.appId);
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,
@@ -107,7 +108,8 @@ export class DataQueriesService {
 
     try {
       return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
-        user: { id: user.id },
+        user: { id: user?.id },
+        app: { id: app?.id, isPublic: app?.isPublic },
       });
     } catch (error) {
       const statusCode = error?.data?.responseObject?.statusCode;
@@ -118,12 +120,12 @@ export class DataQueriesService {
       ) {
         console.log('Access token expired. Attempting refresh token flow.');
 
-        const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user.id);
+        const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, app?.isPublic);
         await this.dataSourcesService.updateOAuthAccessToken(
           accessTokenDetails,
           dataSource.options,
           dataSource.id,
-          user.id
+          user?.id
         );
         await dataSource.reload();
 
@@ -135,7 +137,8 @@ export class DataQueriesService {
         ));
 
         result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
-          user: { id: user.id },
+          user: { id: user?.id },
+          app: { id: app?.id, isPublic: app?.isPublic },
         });
       } else {
         throw error;
