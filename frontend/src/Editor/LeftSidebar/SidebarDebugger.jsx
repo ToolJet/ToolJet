@@ -4,9 +4,11 @@ import { LeftSidebarItem } from './SidebarItem';
 import _ from 'lodash';
 import moment from 'moment';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
+import { useTranslation } from 'react-i18next';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 
 export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
+  const { t } = useTranslation();
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
   const [errorLogs, setErrorLogs] = React.useState([]);
   const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
@@ -84,7 +86,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
           <div className="nav-header">
             <ul className="nav nav-tabs d-flex justify-content-between" data-bs-toggle="tabs">
               <li className="nav-item">
-                <a className="nav-link active">Errors</a>
+                <a className="nav-link active">{t(`leftSidebar.Debugger.errors`, 'Errors')}</a>
               </li>
               <li className="btn-group">
                 {errorLogs.length > 0 && (
@@ -94,7 +96,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
                     className="btn btn-light btn-sm m-1 py-1"
                     aria-label="clear button"
                   >
-                    <span className="text-muted">clear</span>
+                    <span className="text-muted">{t(`leftSidebar.Debugger.clear`, 'clear')}</span>
                   </button>
                 )}
                 <SidebarPinnedButton
@@ -109,7 +111,9 @@ export const LeftSidebarDebugger = ({ darkMode, errors, debuggerActions }) => {
         </div>
 
         <div className="card-body">
-          {errorLogs.length === 0 && <center className="p-2 text-muted">No errors found.</center>}
+          {errorLogs.length === 0 && (
+            <center className="p-2 text-muted">{t(`leftSidebar.Debugger.noErrors`, 'No errors found.')}</center>
+          )}
 
           <div className="tab-content">
             {errorLogs.map((error, index) => (

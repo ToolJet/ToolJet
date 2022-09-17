@@ -2,8 +2,8 @@ import React from 'react';
 import { tooljetService } from '@/_services';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import Modal from 'react-bootstrap/Modal';
-
-class OnboardingModal extends React.Component {
+import { withTranslation } from 'react-i18next';
+class OnboardingModalComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -55,13 +55,17 @@ class OnboardingModal extends React.Component {
         className={`${this.props.darkMode && 'dark'} onboarding-modal`}
       >
         <Modal.Header>
-          <Modal.Title className="text-center">{`Finish ${retrieveWhiteLabelText()} installation`}</Modal.Title>
+          <Modal.Title className="text-center">
+            {this.props.t('onBoarding.finishToolJetInstallation', `Finish ${retrieveWhiteLabelText()} installation`, {
+              whiteLabelText: retrieveWhiteLabelText(),
+            })}
+          </Modal.Title>
           <br />
         </Modal.Header>
 
         <Modal.Body>
           <div className="mb-3 mt-2">
-            <label className="form-label">Organization</label>
+            <label className="form-label">{this.props.t('onBoarding.organization', 'Organization')}</label>
             <div className="input-group input-group-flat">
               <input
                 type="text"
@@ -75,7 +79,7 @@ class OnboardingModal extends React.Component {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Name</label>
+            <label className="form-label">{this.props.t('onBoarding.name', 'Name')}</label>
             <div className="input-group input-group-flat">
               <input
                 type="text"
@@ -89,7 +93,7 @@ class OnboardingModal extends React.Component {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Email</label>
+            <label className="form-label">{this.props.t('onBoarding.email', 'Email')}</label>
             <div className="input-group input-group-flat">
               <input
                 type="text"
@@ -102,7 +106,11 @@ class OnboardingModal extends React.Component {
             </div>
           </div>
           <small>
-            {`You will receive updates from the ${retrieveWhiteLabelText()} team ( 1-2 emails every month, we do not spam )`}
+            {this.props.t(
+              'onBoarding.receiveUpdatesFromToolJet',
+              `You will receive updates from the ${retrieveWhiteLabelText()} team ( 1-2 emails every month, we do not spam )`,
+              { whiteLabelText: retrieveWhiteLabelText() }
+            )}
           </small>
         </Modal.Body>
 
@@ -110,12 +118,12 @@ class OnboardingModal extends React.Component {
           <div className="row w-100 gx-0">
             <div className="col">
               <button className={`btn btn-primary`} onClick={this.finishOnboarding}>
-                Finish setup
+                {this.props.t('onBoarding.finishSetup', 'Finish setup')}
               </button>
             </div>
             <div className="col-auto">
               <a onClick={this.skipOnboard} className="mt-3 text-muted" data-cy="skip-button">
-                Skip
+                {this.props.t('onBoarding.skip', 'Skip')}
               </a>
             </div>
           </div>
@@ -125,4 +133,4 @@ class OnboardingModal extends React.Component {
   }
 }
 
-export { OnboardingModal };
+export const OnboardingModal = withTranslation()(OnboardingModalComponent);

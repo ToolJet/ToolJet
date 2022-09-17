@@ -2,6 +2,7 @@ import React from 'react';
 import { authenticationService, userService } from '@/_services';
 import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 function SettingsPage(props) {
   const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
@@ -15,6 +16,7 @@ function SettingsPage(props) {
   const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState(null);
   const focusRef = React.useRef(null);
+  const { t } = useTranslation();
 
   const updateDetails = async () => {
     const firstNameMatch = firstName.match(/^ *$/);
@@ -118,7 +120,7 @@ function SettingsPage(props) {
               <div className="col">
                 <div className="page-pretitle"></div>
                 <h2 className="page-title" data-cy="page-title">
-                  Profile Settings
+                  {t('header.profileSettingPage.profileSettings', 'Profile Settings')}
                 </h2>
               </div>
             </div>
@@ -130,7 +132,7 @@ function SettingsPage(props) {
             <div className="card">
               <div className="card-header">
                 <h3 className="card-title" data-cy="card-title-profile">
-                  Profile
+                  {t('header.profileSettingPage.profile', 'Profile')}
                 </h3>
               </div>
               <div className="card-body">
@@ -138,13 +140,13 @@ function SettingsPage(props) {
                   <div className="col">
                     <div className="mb-3">
                       <label className="form-label" data-cy="first-name-label">
-                        First name{' '}
+                        {t('header.profileSettingPage.firstName', 'First name')}
                       </label>
                       <input
                         type="text"
                         className="form-control"
                         name="first-name"
-                        placeholder="Enter first name"
+                        placeholder={t('header.profileSettingPage.enterFirstName', 'Enter first name')}
                         value={firstName}
                         onChange={(event) => setFirstName(event.target.value)}
                         data-cy="first-name-input"
@@ -154,13 +156,13 @@ function SettingsPage(props) {
                   <div className="col">
                     <div className="mb-3">
                       <label className="form-label" data-cy="last-name-label">
-                        Last name
+                        {t('header.profileSettingPage.lastName', 'Last name')}
                       </label>
                       <input
                         type="text"
                         className="form-control"
                         name="last-name"
-                        placeholder="Enter last name"
+                        placeholder={t('header.profileSettingPage.enterLastName', 'Enter last name')}
                         value={lastName}
                         onChange={(event) => setLastName(event.target.value)}
                         data-cy="last-name-input"
@@ -172,7 +174,7 @@ function SettingsPage(props) {
                   <div className="col">
                     <div className="mb-3">
                       <label className="form-label" data-cy="email-label">
-                        Email{' '}
+                        {t('header.profileSettingPage.email', 'Email')}
                       </label>
                       <input
                         type="text"
@@ -187,7 +189,7 @@ function SettingsPage(props) {
                   </div>
                   <div className="col">
                     <div className="mb-3">
-                      <div className="form-label">Avatar</div>
+                      <div className="form-label">{t('header.profileSettingPage.avatar', 'Avatar')}</div>
                       <input
                         onChange={(e) => {
                           const file = e.target.files[0];
@@ -210,7 +212,7 @@ function SettingsPage(props) {
                   onClick={updateDetails}
                   data-cy="update-button"
                 >
-                  Update
+                  {t('header.profileSettingPage.update', 'Update')}
                 </button>
                 {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
                 {/* The div below is a placeholder to prevent it from affecting the button above.  */}
@@ -221,7 +223,7 @@ function SettingsPage(props) {
             <div className="card">
               <div className="card-header">
                 <h3 className="card-title" data-cy="card-title-change-password">
-                  Change password
+                  {t('header.profileSettingPage.changePassword', 'Change password')}
                 </h3>
               </div>
               <div className="card-body">
@@ -229,13 +231,13 @@ function SettingsPage(props) {
                   <div className="col">
                     <div className="mb-3">
                       <label className="form-label" data-cy="current-password-label">
-                        Current password
+                        {t('header.profileSettingPage.currentPassword', 'Current password')}
                       </label>
                       <input
                         type="password"
                         className="form-control"
                         name="last-name"
-                        placeholder="Enter current password"
+                        placeholder={t('header.profileSettingPage.enterCurrentPassword', 'Enter current password')}
                         value={currentpassword}
                         onChange={(event) => setCurrentPassword(event.target.value)}
                         data-cy="current-password-input"
@@ -245,13 +247,13 @@ function SettingsPage(props) {
                   <div className="col">
                     <div className="mb-3">
                       <label className="form-label" data-cy="new-password-label">
-                        New password
+                        {t('header.profileSettingPage.newPassword', 'New password')}
                       </label>
                       <input
                         type="password"
                         className="form-control"
                         name="last-name"
-                        placeholder="Enter new password"
+                        placeholder={t('header.profileSettingPage.enterNewPassword', 'Enter new password')}
                         value={newPassword}
                         onChange={(event) => setNewPassword(event.target.value)}
                         onKeyPress={newPasswordKeyPressHandler}
@@ -263,13 +265,13 @@ function SettingsPage(props) {
                 <div className="w-50 confirm-input">
                   <div className="mb-3">
                     <label className="form-label" data-cy="new-password-label">
-                      Confirm new password
+                      {t('header.profileSettingPage.confirmNewPassword', 'Confirm new password')}
                     </label>
                     <input
                       type="password"
                       className="form-control"
                       name="last-name"
-                      placeholder="Confirm new password"
+                      placeholder={t('header.profileSettingPage.confirmNewPassword', 'Confirm new password')}
                       value={confirmPassword}
                       ref={focusRef}
                       onChange={(event) => setConfirmPassword(event.target.value)}
@@ -283,7 +285,7 @@ function SettingsPage(props) {
                   onClick={changePassword}
                   data-cy="change-password-button"
                 >
-                  Change password
+                  {t('header.profileSettingPage.changePassword', 'Change password')}
                 </button>
                 {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
                 {/* The div below is a placeholder to prevent it from affecting the button above.  */}

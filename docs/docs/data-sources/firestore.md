@@ -11,21 +11,17 @@ To generate a new key, check out [Firestore's official documentation](https://cl
 
 Once the key is downloaded, click on `+` button of data sources panel at the left-bottom corner of the app editor. Select Firestore from the modal that pops up. Paste the key in the field for GCP key. Click on **Test connection** button to verify if the service account can access Firestore from ToolJet server. Click on **Save** button to save the datasource.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/add-ds-firestore.gif)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/add-ds-firestore.gif"  alt="firestore add ds"/>
 
-</div>
 
 ## Querying Firestore 
 
 Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/firestore-query.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/firestore-query.png" alt="firestore QUERY" />
 
-</div>
 
 Select the operation that you want to perform on Firestore and click **Save** to save the query. 
 
@@ -50,11 +46,9 @@ Use this operation to get the data in a document.
 
 - **Path**: Enter the path of the document. Path format: `collection name/document id`. ex: `books/23e2wsds32`
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/get.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/get.png" alt="firestore get" />
 
-</div>
 
 ### Query collection
 
@@ -72,11 +66,9 @@ Use this operation to query all the documents in a collection. Check firestore d
 
 - **Field, Operator, and Value**: For filtering the results, you can enter a document field name, use appropriate operator from the dropdown and set a value.
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/query-collection.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/query-collection.png" alt="firestore collection"/>
 
-</div>
 
 ### Add Document to Collection
 
@@ -93,11 +85,9 @@ Use this operation for creating a new document in a collection.
 }
 ```
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/add-document.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/add-document.png" alt="firestore document" />
 
-</div>
 
 ### Update document
 
@@ -114,11 +104,9 @@ Use this operation for updating the existing document in a collection. Also, it 
 }
 ```
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/update.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/update.png" alt="firestore update" />
 
-</div>
 
 ### Set document
 
@@ -135,11 +123,9 @@ This operation replaces your chosen object with the value that you provide. So i
 }
 ```
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/set.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/set.png" alt="firestore set" />
 
-</div>
 
 ### Bulk update using document id
 
@@ -152,11 +138,9 @@ Use this operation for bulk updating documents.
 - **Records**:
 
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/bulk.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/bulk.png" alt="firestore bulk" />
 
-</div>
 
 ### Delete document
 
@@ -166,11 +150,9 @@ Use this operation for deleting a document in a collection.
 
 - **Path**: Enter the path of the document to be deleted in a collection. Path format: `collection name/document id`. ex: `books/33243dwe2332`
 
-<div style={{textAlign: 'center'}}>
 
-![ToolJet - Data source - Firestore](/img/datasource-reference/firestore/delete.png)
+<img className="screenshot-full" src="/img/datasource-reference/firestore/delete.png" alt="firestore delete"/>
 
-</div>
 
 ## Transforming firestore query result for Table widget
 
