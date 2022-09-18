@@ -1,4 +1,4 @@
-import { QueryError, QueryService, User } from '@tooljet-plugins/common';
+import { QueryError, QueryService } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, RestAPIResult } from './types';
 import got, { HTTPError } from 'got';
 import urrl from 'url';
@@ -51,20 +51,7 @@ export default class Openapi implements QueryService {
     return { header, query, cookieJar };
   };
 
-  private getCurrentToken = (tokenData: any, userId: string) => {
-    if (!tokenData || !Array.isArray(tokenData)) return null;
-    const tokenArray = tokenData?.filter((token: any) => token.user_id === userId);
-    if (tokenArray.length == 0) return null;
-    return tokenArray[0];
-  };
-
-  async run(
-    sourceOptions: SourceOptions,
-    queryOptions: QueryOptions,
-    dataSourceId: string,
-    dataSourceUpdatedAt: string,
-    context?: { user?: User }
-  ): Promise<RestAPIResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<RestAPIResult> {
     const { host, path, operation, params } = queryOptions;
     const { request } = params;
     let { query, header } = params;
@@ -102,10 +89,9 @@ export default class Openapi implements QueryService {
 
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
-      const tokenData = sourceOptions['token_data'];
-      const currentToken = this.getCurrentToken(tokenData, context.user.id);
+      const tokenData = sourceOptions['tokenData'];
 
-      if (!currentToken) {
+      if (!tokenData) {
         const tooljetHost = process.env.TOOLJET_HOST;
         const authUrl = new URL(
           `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
@@ -117,7 +103,7 @@ export default class Openapi implements QueryService {
           data: { auth_url: authUrl },
         };
       } else {
-        const accessToken = currentToken['access_token'];
+        const accessToken = tokenData['access_token'];
         if (sourceOptions['add_token_to'] === 'header') {
           const headerPrefix = sourceOptions['header_prefix'];
           header['Authorization'] = `${headerPrefix}${accessToken}`;
@@ -187,9 +173,8 @@ export default class Openapi implements QueryService {
     return contentType === 'application/x-www-form-urlencoded';
   }
 
-  private async refreshToken(sourceOptions: any, error: any, userId: string) {
-    const currentToken = this.getCurrentToken(sourceOptions['token_data'], userId);
-    const refreshToken = currentToken['refresh_token'];
+  private async refreshToken(sourceOptions, error) {
+    const refreshToken = sourceOptions['tokenData']['refresh_token'];
     if (!refreshToken) {
       throw new QueryError('Refresh token not found', error.response, {});
     }
