@@ -117,6 +117,10 @@ export default class RestapiQueryService implements QueryService {
       const isAppPublic = context?.app.isPublic;
       const currentToken = this.getCurrentToken(isMultiAuthEnabled, tokenData, context?.user.id, isAppPublic);
 
+      if (!currentToken && isAppPublic) {
+        throw new QueryError('Missing access token', {}, {});
+      }
+
       if (!currentToken) {
         const tooljetHost = process.env.TOOLJET_HOST;
         const authUrl = new URL(
