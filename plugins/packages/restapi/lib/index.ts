@@ -115,9 +115,10 @@ export default class RestapiQueryService implements QueryService {
     if (requiresOauth) {
       const tokenData = sourceOptions['token_data'];
       const isAppPublic = context?.app.isPublic;
-      const currentToken = this.getCurrentToken(isMultiAuthEnabled, tokenData, context?.user.id, isAppPublic);
+      const userData = context?.user;
+      const currentToken = this.getCurrentToken(isMultiAuthEnabled, tokenData, userData?.id, isAppPublic);
 
-      if (!currentToken && isAppPublic) {
+      if (!currentToken && !userData?.id && isAppPublic) {
         throw new QueryError('Missing access token', {}, {});
       }
 
