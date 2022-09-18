@@ -211,26 +211,10 @@ export class DataQueriesService {
     return JSON.stringify(errorObj);
   }
 
-  /* replace the existed one or add to the end */
-  private replaceOrAppend = (array: any, newData: any) => {
-    let isReplaced = false;
-    const newArray = array.map((item: any) => {
-      // incase if user decided to get refresh token from the oauth service after the datasource created
-      if (item.user_id === newData.user_id) {
-        isReplaced = true;
-        return newData;
-      }
-      return item;
-    });
-    if (!isReplaced) newArray.push(newData);
-    return newArray;
-  };
-
   private getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, newToken: any) => {
     if (isMultiAuthEnabled) {
       let tokensArray = [];
       if (tokenData && Array.isArray(tokenData)) {
-        // tokensArray = this.replaceOrAppend(tokenData, newToken);
         tokensArray = [...tokenData, newToken];
       } else {
         tokensArray.push(newToken);
