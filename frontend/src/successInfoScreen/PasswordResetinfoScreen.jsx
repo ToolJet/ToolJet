@@ -1,4 +1,5 @@
 import React from 'react';
+import { ButtonSolid } from '../_components/AppButton';
 
 export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props }) {
   return (
@@ -13,14 +14,13 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props 
         <p className="info-screen-description">
           Your password has been reset sucecessfully, log into ToolJet to to continue your session
         </p>
-
-        <button
-          className="verify-page-continue-btn"
-          style={{ marginTop: '32px' }}
+        <ButtonSolid
+          variant="secondary"
           onClick={() => props.history.push('/login')}
+          className="reset-password-info-btn "
         >
-          <p className="mb-0">Back to log in</p>
-        </button>
+          Back to log in
+        </ButtonSolid>
       </div>
     </div>
   );

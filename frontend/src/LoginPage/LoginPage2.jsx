@@ -9,6 +9,10 @@ import { validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import OnboardingNavbar from '../_components/OnboardingNavbar';
 import OnboardingCta from '../_components/OnboardingCta';
+import { ButtonSolid } from '../_components/AppButton';
+import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
+import EyeHide from '../../assets/images/onboarding assets /01 Icons /EyeHide';
+import EyeShow from '../../assets/images/onboarding assets /01 Icons /EyeShow';
 class LoginPage2 extends React.Component {
   constructor(props) {
     super(props);
@@ -216,49 +220,31 @@ class LoginPage2 extends React.Component {
                               placeholder="Enter new password"
                               autoComplete="off"
                             />
-                            <img
-                              src={`${
-                                this.state.showPassword
-                                  ? 'assets/images/onboarding assets /01 Icons /Eye_hide.svg'
-                                  : 'assets/images/onboarding assets /01 Icons /Eye_show.svg'
-                              }`}
-                              onClick={this.handleOnCheck}
-                              className="login-password-hide-img "
-                            ></img>
-                            {/* <span className="input-group-text"></span> */}
+
+                            <div className="login-password-hide-img" onClick={this.handleOnCheck}>
+                              {this.state.showPassword ? (
+                                <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                              ) : (
+                                <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                              )}
+                            </div>
                           </div>
                         </div>
-                        {/* <div className="form-check show-password-field">
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          id="check-input"
-                          name="check-input"
-                          onChange={this.handleOnCheck}
-                        />
-
-                        <label className="form-check-label show-password-label" htmlFor="check-input">
-                          show password
-                        </label>
-                      </div> */}
                       </div>
                     )}
                     <div className={` d-flex flex-column align-items-center ${!configs?.form?.enabled ? 'mt-0' : ''}`}>
                       {configs?.form?.enabled && (
-                        <button
-                          style={{ width: '352px' }}
-                          className={`onboarding-page-continue-button login-continue-button ${
-                            isLoading ? 'btn-loading' : ''
-                          }`}
+                        <ButtonSolid
+                          className="login-btn"
                           onClick={this.authUser}
                           disabled={isLoading || !this.state.email || !this.state.password}
                         >
-                          Log in
-                          <img
-                            src="assets/images/onboarding assets /01 Icons /Enter.svg"
-                            className="onboarding-enter-icon"
-                          ></img>
-                        </button>
+                          Login
+                          <EnterIcon
+                            className="enter-icon-onboard"
+                            fill={isLoading || !this.state.email || !this.state.password ? ' #D1D5DB' : '#fff'}
+                          ></EnterIcon>
+                        </ButtonSolid>
                       )}
                     </div>
                   </div>
@@ -274,14 +260,6 @@ class LoginPage2 extends React.Component {
             </div>
           </div>
           <div className="common-auth-section-right-wrapper">
-            <img
-              src="assets/images/onboarding assets /02 Illustrations /cta.png"
-              className="onboarding-cta-image"
-            ></img>
-            <p className="common-auth-testimonial">
-              “We definitely wanted to invest in low-code technology to ensure our razor focus is on bringing feature
-              richness, experience and proven scale -
-            </p>
             <OnboardingCta />
           </div>
         </div>

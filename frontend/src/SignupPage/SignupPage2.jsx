@@ -8,6 +8,10 @@ import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { SignupInfoScreen } from '@/successInfoScreen';
 import OnboardingNavbar from '../_components/OnboardingNavbar';
 import OnboardingCta from '../_components/OnboardingCta';
+import { ButtonSolid } from '../_components/AppButton';
+import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
+import EyeHide from '../../assets/images/onboarding assets /01 Icons /EyeHide';
+import EyeShow from '../../assets/images/onboarding assets /01 Icons /EyeShow';
 
 class SignupPage2 extends React.Component {
   constructor(props) {
@@ -116,7 +120,7 @@ class SignupPage2 extends React.Component {
                         </div>
                       )}
                       {(this.ssoConfigs.configs?.git?.enabled || this.ssoConfigs.configs?.google?.enabled) && (
-                        <div className="separator-onboarding">
+                        <div className="separator-singup">
                           <div className="mt-2 separator">
                             <h2>
                               <span>OR</span>
@@ -152,45 +156,33 @@ class SignupPage2 extends React.Component {
                         className="tj-text-input"
                         placeholder="Enter new password"
                       />
-                      <img
-                        src={`${
-                          this.state.showPassword
-                            ? 'assets/images/onboarding assets /01 Icons /Eye_hide.svg'
-                            : 'assets/images/onboarding assets /01 Icons /Eye_show.svg'
-                        }`}
-                        onClick={this.handleOnCheck}
-                        className="singup-password-hide-img "
-                      ></img>
-                      <span className="tj-input-helper-text">Password must be atleast 8 charectors</span>
+                      <div className="singup-password-hide-img" onClick={this.handleOnCheck}>
+                        {this.state.showPassword ? (
+                          <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                        ) : (
+                          <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                        )}
+                      </div>
+                      <span className="tj-input-helper-text">Password must be atleast 8 charactor</span>
                     </div>
-
-                    {/* <label className=" tj-text-input-label">
-                      Confirm Password
-                    </label>
-
-                    <input
-                      onChange={this.handleChange}
-                      name="password"
-                      type="password"
-                      className="tj-text-input"
-                      placeholder="Enter new password"
-                    /> */}
                   </div>
 
                   <div>
-                    <button
-                      className={`common-continue-btn-auth-section  singup-continue-btn ${
-                        isLoading ? 'btn-loading' : ''
-                      }`}
+                    <ButtonSolid
+                      className="singup-btn"
                       onClick={this.signup}
-                      // disabled={isLoading || !this.state.email || !this.state.password || !this.state.name}
+                      disabled={isLoading || !this.state.email || !this.state.password || !this.state.name}
                     >
                       Get started for free
-                      <img
-                        src="assets/images/onboarding assets /01 Icons /Enter.svg"
-                        className="onboarding-enter-icon"
-                      ></img>
-                    </button>
+                      <EnterIcon
+                        className="enter-icon-onboard"
+                        fill={
+                          isLoading || !this.state.email || !this.state.password || !this.state.name
+                            ? ' #D1D5DB'
+                            : '#fff'
+                        }
+                      />
+                    </ButtonSolid>
                   </div>
                   <p className="singup-terms">
                     By Signing up you are agreeing to the

@@ -1,4 +1,5 @@
 import React from 'react';
+import { ButtonSolid } from '../_components/AppButton';
 
 export const LinkExpiredInfoScreen = function LinkExpiredInfoScreen() {
   return (
@@ -13,14 +14,7 @@ export const LinkExpiredInfoScreen = function LinkExpiredInfoScreen() {
         <p className="info-screen-description">
           The verification link sent your email has been expierd. Please resend the email to get a new verification link
         </p>
-
-        <button
-          className="verify-page-continue-btn"
-          style={{ marginTop: '26px' }}
-          // onClick={() => setShow(true)}
-        >
-          <p className="mb-0">Resend verification email</p>
-        </button>
+        <ButtonSolid>Resend verification email</ButtonSolid>
       </div>
     </div>
   );

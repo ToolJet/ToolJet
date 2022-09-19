@@ -6,6 +6,8 @@ import { authenticationService } from '@/_services';
 import { ForgotPasswordInfoScreen } from '@/successInfoScreen';
 import OnboardingNavbar from '../_components/OnboardingNavbar';
 import OnboardingCta from '../_components/OnboardingCta';
+import { ButtonSolid } from '../_components/AppButton';
+import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
 
 class ForgotPassword2 extends React.Component {
   constructor(props) {
@@ -84,17 +86,17 @@ class ForgotPassword2 extends React.Component {
                         />
                       </div>
                       <div>
-                        <button
-                          className="common-continue-btn-auth-section forgot-password-btn "
+                        <ButtonSolid
                           onClick={this.handleClick}
                           disabled={isLoading || !this.state.email}
+                          className="forget-password-btn"
                         >
                           Send a reset links
-                          <img
-                            src="assets/images/onboarding assets /01 Icons /Enter.svg"
-                            className="onboarding-enter-icon"
-                          ></img>
-                        </button>
+                          <EnterIcon
+                            className="enter-icon-onboard"
+                            fill={isLoading || !this.state.email ? ' #D1D5DB' : '#fff'}
+                          />
+                        </ButtonSolid>
                       </div>
                     </>
                   ) : (

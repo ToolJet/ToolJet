@@ -4,6 +4,10 @@ import { authenticationService } from '@/_services';
 import { PasswordResetinfoScreen } from '@/successInfoScreen';
 import OnboardingNavbar from '../_components/OnboardingNavbar';
 import OnboardingCta from '../_components/OnboardingCta';
+import { ButtonSolid } from '../_components/AppButton';
+import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
+import EyeHide from '../../assets/images/onboarding assets /01 Icons /EyeHide';
+import EyeShow from '../../assets/images/onboarding assets /01 Icons /EyeShow';
 
 class ResetPassword2 extends React.Component {
   constructor(props) {
@@ -80,15 +84,13 @@ class ResetPassword2 extends React.Component {
                           autoComplete="off"
                           className="tj-text-input reset-password-input"
                         />
-                        <img
-                          src={`${
-                            this.state.showPassword
-                              ? 'assets/images/onboarding assets /01 Icons /Eye_hide.svg'
-                              : 'assets/images/onboarding assets /01 Icons /Eye_show.svg'
-                          }`}
-                          onClick={this.handleOnCheck}
-                          className="singup-password-hide-img "
-                        ></img>
+                        <div className="singup-password-hide-img" onClick={this.handleOnCheck}>
+                          {this.state.showPassword ? (
+                            <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                          ) : (
+                            <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                          )}
+                        </div>
                         <span className="tj-input-helper-text">Password must be atleast 8 charactors</span>
 
                         <span></span>
@@ -105,34 +107,29 @@ class ResetPassword2 extends React.Component {
                           autoComplete="off"
                           className="tj-text-input reset-password-input"
                         />
-                        <img
-                          src={`${
-                            this.state.showPassword
-                              ? 'assets/images/onboarding assets /01 Icons /Eye_hide.svg'
-                              : 'assets/images/onboarding assets /01 Icons /Eye_show.svg'
-                          }`}
-                          onClick={this.handleOnCheck}
-                          className="singup-password-hide-img "
-                        ></img>
+                        <div className="singup-password-hide-img" onClick={this.handleOnCheck}>
+                          {this.state.showPassword ? (
+                            <EyeHide fill={this.state.password_confirmation?.length ? '#384151' : '#D1D5DB'} />
+                          ) : (
+                            <EyeShow fill={this.state.password_confirmation?.length ? '#384151' : '#D1D5DB'} />
+                          )}
+                        </div>
                         <span className="tj-input-helper-text">Password must be atleast 8 charactors</span>
 
                         <span></span>
                       </div>
                     </div>
                     <div>
-                      <button
-                        className={`common-continue-btn-auth-section reset-password-continue-btn ${
-                          isLoading ? 'btn-loading' : ''
-                        }`}
-                        onClick={this.handleClick}
+                      <ButtonSolid
                         disabled={!this.state.password || !this.state.password_confirmation}
+                        onClick={this.handleClick}
+                        className="reset-password-btn"
                       >
                         Reset password
-                        <img
-                          src="assets/images/onboarding assets /01 Icons /Enter.svg"
-                          className="onboarding-enter-icon"
-                        ></img>
-                      </button>
+                        <EnterIcon
+                          fill={!this.state.password || !this.state.password_confirmation ? ' #D1D5DB' : '#fff'}
+                        ></EnterIcon>
+                      </ButtonSolid>
                     </div>
                   </>
                 ) : (

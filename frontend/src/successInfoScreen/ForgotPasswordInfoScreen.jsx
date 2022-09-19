@@ -1,4 +1,5 @@
 import React from 'react';
+import { ButtonSolid } from '../_components/AppButton';
 export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ props, email }) {
   return (
     <div className="info-screen-wrapper">
@@ -20,9 +21,13 @@ export const ForgotPasswordInfoScreen = function ForgotPasswordInfoScreen({ prop
             </h2>
           </div>
         </div>
-        <button className="verify-page-continue-btn" onClick={() => props.history.push('/login')}>
-          <p className="mb-0">Back to log in</p>
-        </button>
+        <ButtonSolid
+          variant="secondary"
+          className="forgot-password-info-btn"
+          onClick={() => props.history.push('/login')}
+        >
+          Back to log in
+        </ButtonSolid>
       </div>
     </div>
   );

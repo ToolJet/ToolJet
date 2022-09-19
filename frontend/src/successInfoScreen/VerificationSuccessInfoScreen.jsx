@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
+import { ButtonSolid } from '../_components/AppButton';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [show, setShow] = useState(false);
@@ -19,15 +21,10 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
               <p className="info-screen-description">
                 Your email has been verified successfully. Continue to set up your workspace to start using ToolJet.
               </p>
-
-              <button
-                className="onboarding-page-continue-button"
-                style={{ margin: '32px auto' }}
-                onClick={() => setShow(true)}
-              >
-                <p className="mb-0">Set up ToolJet</p>
-                <img src="assets/images/onboarding assets /01 Icons /Enter.svg" className="onboarding-enter-icon"></img>
-              </button>
+              <ButtonSolid className="verification-success-info-btn" onClick={() => setShow(true)}>
+                Set up ToolJet
+                <EnterIcon fill={'#fff'}></EnterIcon>
+              </ButtonSolid>
             </div>
           </div>
         ) : (

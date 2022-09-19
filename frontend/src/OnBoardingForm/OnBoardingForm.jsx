@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
 
 function OnBoardingForm() {
   const [buttonState, setButtonState] = useState(true);
@@ -128,11 +129,13 @@ export function continueButton({ buttonState, setPage, setButtonState, formData,
       onClick={() => {
         setPage((currPage) => currPage + 1);
         setButtonState(true);
-        console.log('hecker', Object.values(formData)[page]);
       }}
     >
       <p className="mb-0">Continue</p>
-      <img src="assets/images/onboarding assets /01 Icons /Enter.svg" className="onboarding-enter-icon"></img>
+      <EnterIcon
+        className="enter-icon-onboard"
+        fill={buttonState && Object.values(formData)[page] == '' ? ' #D1D5DB' : '#fff'}
+      />
     </button>
   );
 }

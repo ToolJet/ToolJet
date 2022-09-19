@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ButtonSolid } from '../_components/AppButton';
 
 export const SignupInfoScreen = function SignupInfoScreen({ props, email, signup }) {
   const [show, setShow] = useState(false);
@@ -29,7 +30,7 @@ export const SignupInfoScreen = function SignupInfoScreen({ props, email, signup
           src={'assets/images/onboarding assets /02 Illustrations /verify email.svg'}
           alt="email image"
         />
-        <h1 className="common-auth-section-header">Check your mail.</h1>
+        <h1 className="common-auth-section-header">Check your mail</h1>
         <p className="info-screen-description">
           We’ve sent an email to <span className="signup-email-name">{email} </span>with a verification link. Please use
           that to verify your email address
@@ -45,22 +46,26 @@ export const SignupInfoScreen = function SignupInfoScreen({ props, email, signup
 
         {!show && (
           <>
-            <button
-              className="verify-page-continue-btn"
-              style={{ marginTop: '26px' }}
+            <ButtonSolid
+              variant="secondary"
               onClick={(e) => {
                 setResetBtn(true);
                 signup(e);
               }}
+              id="resend"
+              className="singup-info-resend-btn singup-info-btn"
               disabled={resendBtn}
             >
-              <p className="mb-0 " id="resend">
-                Resend verification mail in 30s
-              </p>
-            </button>
-            <button className="verify-page-continue-btn" style={{ marginTop: '12px' }} onClick={() => setShow(true)}>
-              <p className="mb-0">Edit email address</p>
-            </button>
+              Resend verification mail in 30s
+            </ButtonSolid>
+            <ButtonSolid
+              variant="tirtiary"
+              type
+              onClick={() => setShow(true)}
+              className="singup-info-edit-btn singup-info-btn"
+            >
+              Edit email address
+            </ButtonSolid>
           </>
         )}
         {show && (
@@ -73,19 +78,19 @@ export const SignupInfoScreen = function SignupInfoScreen({ props, email, signup
               className="tj-text-input"
               placeholder="Enter your business email"
             />
-            <button
-              className="verify-page-continue-btn"
-              style={{ marginTop: '12px' }}
+            <ButtonSolid
+              variant="secondary"
               onClick={(e) => {
                 //setResetBtn(true);
                 signup(e);
               }}
+              className="signup-info-verify-btn"
             >
-              <p className="mb-0">Verify new email</p>
-            </button>
-            <p className="cancel-verification" onClick={() => {}}>
+              Verify new email
+            </ButtonSolid>
+            <ButtonSolid variant="ghost" className="singup-info-btn singup-info-cancel-btn">
               Cancel
-            </p>
+            </ButtonSolid>
           </>
         )}
       </div>
