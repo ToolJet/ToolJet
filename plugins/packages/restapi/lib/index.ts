@@ -112,7 +112,8 @@ export default class RestapiQueryService implements QueryService {
 
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
-      const tokenData = sourceOptions['token_data'];
+      const tokenData = sourceOptions['tokenData'];
+      console.log(sourceOptions);
       const isAppPublic = context?.app.isPublic;
       const userData = context?.user;
       const currentToken = getCurrentToken(isMultiAuthEnabled, tokenData, userData?.id, isAppPublic);
@@ -238,7 +239,7 @@ export default class RestapiQueryService implements QueryService {
 
   async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {
     const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
-    const currentToken = getCurrentToken(isMultiAuthEnabled, sourceOptions['token_data'], userId, isAppPublic);
+    const currentToken = getCurrentToken(isMultiAuthEnabled, sourceOptions['tokenData'], userId, isAppPublic);
     const refreshToken = currentToken['refresh_token'];
     if (!refreshToken) {
       throw new QueryError('Refresh token not found', error.response, {});

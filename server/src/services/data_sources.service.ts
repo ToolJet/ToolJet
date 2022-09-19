@@ -221,14 +221,14 @@ export class DataSourcesService {
     } else if (dataSourceId) {
       const isMultiAuthEnabled = dataSourceOptions['multiple_auth_enabled']?.value;
       const updatedTokenData = this.changeCurrentToken(
-        dataSourceOptions['token_data'],
+        dataSourceOptions['tokenData'],
         userId,
         accessTokenDetails,
         isMultiAuthEnabled
       );
       const tokenOptions = [
         {
-          key: 'token_data',
+          key: 'tokenData',
           value: updatedTokenData,
           encrypted: false,
         },
