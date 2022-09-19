@@ -13,9 +13,16 @@ export class InstanceSettingsService {
   ) {}
 
   async getSettings(key?: string | string[]) {
-    return await this.instanceSettingsRepository.find(
+    const settings = await this.instanceSettingsRepository.find(
       key ? { where: { key: Array.isArray(key) ? In(key) : key } } : {}
     );
+
+    const instanceConfigs = {};
+    settings?.forEach((config) => {
+      instanceConfigs[config.key] = config.value;
+    });
+
+    return Array.isArray(key) ? instanceConfigs : instanceConfigs[key];
   }
 
   async create(params: CreateInstanceSettingsDto) {

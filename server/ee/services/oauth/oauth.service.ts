@@ -10,12 +10,13 @@ import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
 import UserResponse from './models/user_response';
 import License from '@ee/licensing/configs/License';
+import { InstanceSettingsService } from '@services/instance_settings.service';
 
 @Injectable()
 export class OauthService {
@@ -27,6 +28,7 @@ export class OauthService {
     private readonly googleOAuthService: GoogleOAuthService,
     private readonly gitOAuthService: GitOAuthService,
     private readonly oidcOAuthService: OidcOAuthService,
+    private readonly instanceSettingsService: InstanceSettingsService,
     private configService: ConfigService
   ) {}
 
@@ -247,7 +249,11 @@ export class OauthService {
         // Login from main login page - Multi-Workspace enabled
         userDetails = await this.usersService.findByEmail(userResponse.email);
 
-        if (!userDetails && enableSignUp) {
+        const allowPersonalWorkspace =
+          isSuperAdmin(userDetails) ||
+          (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+
+        if (!userDetails && enableSignUp && allowPersonalWorkspace) {
           // Create new user
           let defaultOrganization: DeepPartial<Organization> = organization;
 
@@ -295,9 +301,11 @@ export class OauthService {
           } else if (organizationList?.length > 0) {
             // default organization SSO login not enabled, picking first one from SSO enabled list
             organizationDetails = organizationList[0];
-          } else {
+          } else if (allowPersonalWorkspace) {
             // no SSO login enabled organization available for user - creating new one
             organizationDetails = await this.organizationService.create('Untitled workspace', userDetails, manager);
+          } else {
+            throw new UnauthorizedException('User not included in any workspace');
           }
         }
       } else {

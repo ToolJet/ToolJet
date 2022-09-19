@@ -23,6 +23,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
+import { InstanceSettingsService } from './instance_settings.service';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -48,6 +49,7 @@ export class AuthService {
     private organizationUsersService: OrganizationUsersService,
     private emailService: EmailService,
     private auditLoggerService: AuditLoggerService,
+    private instanceSettingsService: InstanceSettingsService,
     private configService: ConfigService
   ) {}
 
@@ -91,89 +93,105 @@ export class AuthService {
 
     const user = await this.validateUser(email, password, organizationId);
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    if (!organizationId) {
-      // Global login
-      // Determine the organization to be loaded
-      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
-        // Single organization
-        if (user?.organizationUsers?.[0].status !== 'active') {
-          throw new UnauthorizedException('Your account is not active');
-        }
-        organization = await this.organizationsService.getSingleOrganization();
-        if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
-          throw new UnauthorizedException();
-        }
-      } else {
-        // Multi organization
-        const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
-          user,
-          'form'
-        );
+    const allowPersonalWorkspace =
+      isSuperAdmin(user) || (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
 
-        const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
-        if (defaultOrgDetails) {
-          // default organization form login enabled
-          organization = defaultOrgDetails;
-        } else if (organizationList?.length > 0) {
-          // default organization form login not enabled, picking first one from form enabled list
-          organization = organizationList[0];
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      if (!organizationId) {
+        // Global login
+        // Determine the organization to be loaded
+        if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
+          // Single organization
+          if (user?.organizationUsers?.[0].status !== 'active') {
+            throw new UnauthorizedException('Your account is not active');
+          }
+          organization = await this.organizationsService.getSingleOrganization();
+          if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
+            throw new UnauthorizedException();
+          }
         } else {
-          // no form login enabled organization available for user - creating new one
-          organization = await this.organizationsService.create('Untitled workspace', user);
+          // Multi organization
+          const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
+            user,
+            'form'
+          );
+
+          const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
+          if (defaultOrgDetails) {
+            // default organization form login enabled
+            organization = defaultOrgDetails;
+          } else if (organizationList?.length > 0) {
+            // default organization form login not enabled, picking first one from form enabled list
+            organization = organizationList[0];
+          } else if (allowPersonalWorkspace) {
+            // no form login enabled organization available for user - creating new one
+            organization = await this.organizationsService.create('Untitled workspace', user, manager);
+          } else {
+            throw new UnauthorizedException('User not included in any workspace');
+          }
+        }
+        user.organizationId = organization.id;
+      } else {
+        // organization specific login
+        // No need to validate user status, validateUser() already covers it
+        user.organizationId = organizationId;
+
+        organization = await this.organizationsService.get(user.organizationId);
+        const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+
+        if (!formConfigs?.enabled) {
+          // no configurations in organization side or Form login disabled for the organization
+          throw new UnauthorizedException('Password login is disabled for the organization');
         }
       }
-      user.organizationId = organization.id;
-    } else {
-      // organization specific login
-      // No need to validate user status, validateUser() already covers it
-      user.organizationId = organizationId;
 
-      organization = await this.organizationsService.get(user.organizationId);
-      const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
+      await this.usersService.validateLicense(manager);
 
-      if (!formConfigs?.enabled) {
-        // no configurations in organization side or Form login disabled for the organization
-        throw new UnauthorizedException('Password login is disabled for the organization');
-      }
-    }
+      await this.usersService.updateUser(
+        user.id,
+        {
+          ...(user.defaultOrganizationId !== user.organizationId && { defaultOrganizationId: organization.id }),
+          passwordRetryCount: 0,
+        },
+        manager
+      );
 
-    await this.usersService.updateUser(user.id, {
-      ...(user.defaultOrganizationId !== user.organizationId && { defaultOrganizationId: organization.id }),
-      passwordRetryCount: 0,
-    });
+      await this.auditLoggerService.perform(
+        {
+          userId: user.id,
+          organizationId: organization.id,
+          resourceId: user.id,
+          resourceType: ResourceTypes.USER,
+          resourceName: user.email,
+          actionType: ActionTypes.USER_LOGIN,
+        },
+        manager
+      );
 
-    await this.auditLoggerService.perform({
-      userId: user.id,
-      organizationId: organization.id,
-      resourceId: user.id,
-      resourceType: ResourceTypes.USER,
-      resourceName: user.email,
-      actionType: ActionTypes.USER_LOGIN,
-    });
+      const payload: JWTPayload = {
+        username: user.id,
+        sub: user.email,
+        organizationId: user.organizationId,
+        isPasswordLogin: true,
+      };
 
-    const payload: JWTPayload = {
-      username: user.id,
-      sub: user.email,
-      organizationId: user.organizationId,
-      isPasswordLogin: true,
-    };
-
-    return decamelizeKeys({
-      id: user.id,
-      auth_token: this.jwtService.sign(payload),
-      email: user.email,
-      first_name: user.firstName,
-      last_name: user.lastName,
-      avatar_id: user.avatarId,
-      organizationId: user.organizationId,
-      organization: organization.name,
-      superAdmin: isSuperAdmin(user),
-      admin: await this.usersService.hasGroup(user, 'admin'),
-      group_permissions: await this.usersService.groupPermissions(user),
-      app_group_permissions: await this.usersService.appGroupPermissions(user),
+      return decamelizeKeys({
+        id: user.id,
+        auth_token: this.jwtService.sign(payload),
+        email: user.email,
+        first_name: user.firstName,
+        last_name: user.lastName,
+        avatar_id: user.avatarId,
+        organizationId: user.organizationId,
+        organization: organization.name,
+        superAdmin: isSuperAdmin(user),
+        admin: await this.usersService.hasGroup(user, 'admin'),
+        group_permissions: await this.usersService.groupPermissions(user),
+        app_group_permissions: await this.usersService.appGroupPermissions(user),
+      });
     });
   }
 

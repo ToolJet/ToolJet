@@ -27,11 +27,13 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
 import { OidcOAuthService } from '@ee/services/oauth/oidc_auth.service';
+import { InstanceSettingsModule } from '../instance_settings/instance_settings.module';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
+    InstanceSettingsModule,
     TypeOrmModule.forFeature([
       User,
       File,

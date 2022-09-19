@@ -8,6 +8,7 @@ import { CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { UserCountGuard } from '@ee/licensing/guards/user.guard';
 import { EditorUserCountGuard } from '@ee/licensing/guards/editorUser.guard';
+import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 
 @Controller()
 export class AppController {
@@ -39,7 +40,7 @@ export class AppController {
     return {};
   }
 
-  @UseGuards(SignupDisableGuard, UserCountGuard, EditorUserCountGuard)
+  @UseGuards(SignupDisableGuard, UserCountGuard, EditorUserCountGuard, AllowPersonalWorkspaceGuard)
   @Post('signup')
   async signup(@Body() appAuthDto: AppAuthenticationDto) {
     return this.authService.signup(appAuthDto.email);

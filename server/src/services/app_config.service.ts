@@ -13,13 +13,7 @@ export class AppConfigService {
       whitelistedConfigVars.map((envVar) => [envVar, process.env[envVar]] as [string, string])
     );
 
-    const instanceConfigs = {};
-    (await this.instanceSettingsService.getSettings(this.fetchDefaultInstanceConfig()))?.forEach((config) => {
-      instanceConfigs[config.key] = config.value;
-    });
-
-    console.log(instanceConfigs);
-
+    const instanceConfigs = await this.instanceSettingsService.getSettings(this.fetchDefaultInstanceConfig());
     return { ...instanceConfigs, ...Object.fromEntries(mapEntries) };
   }
 

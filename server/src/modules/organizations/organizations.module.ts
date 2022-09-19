@@ -24,6 +24,7 @@ import { GroupPermissionsService } from '@services/group_permissions.service';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
+import { InstanceSettingsModule } from '../instance_settings/instance_settings.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { EncryptionService } from '@services/encryption.service';
       UserGroupPermission,
       AuditLog,
     ]),
+    InstanceSettingsModule,
     CaslModule,
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {

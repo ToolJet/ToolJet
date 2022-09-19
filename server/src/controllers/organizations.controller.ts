@@ -22,6 +22,7 @@ import { User as UserEntity } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 import { OIDCGuard } from '@ee/licensing/guards/oidc.guard';
+import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -77,7 +78,7 @@ export class OrganizationsController {
     return decamelizeKeys({ organizations: result });
   }
 
-  @UseGuards(JwtAuthGuard, MultiOrganizationGuard)
+  @UseGuards(JwtAuthGuard, MultiOrganizationGuard, AllowPersonalWorkspaceGuard)
   @Post()
   async create(@Body('name') name, @User() user) {
     if (!name) {

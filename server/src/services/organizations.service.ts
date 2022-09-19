@@ -17,6 +17,7 @@ import { ConfigService } from '@nestjs/config';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from './audit_logger.service';
 import License from '@ee/licensing/configs/License';
+import { InstanceSettingsService } from './instance_settings.service';
 
 type FetchUserResponse = {
   email: string;
@@ -47,6 +48,7 @@ export class OrganizationsService {
     private groupPermissionService: GroupPermissionsService,
     private encryptionService: EncryptionService,
     private emailService: EmailService,
+    private instanceSettingsService: InstanceSettingsService,
     private configService: ConfigService,
     private auditLoggerService: AuditLoggerService
   ) {}
@@ -534,8 +536,11 @@ export class OrganizationsService {
       if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
         // User not exist
         shouldSendWelcomeMail = true;
-        // Create default organization
-        defaultOrganization = await this.create('Untitled workspace', null, manager);
+
+        if ((await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true') {
+          // Create default organization
+          defaultOrganization = await this.create('Untitled workspace', null, manager);
+        }
       }
       user = await this.usersService.create(
         userParams,
