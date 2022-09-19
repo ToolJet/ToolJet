@@ -798,7 +798,7 @@ export const widgets = [
         loadingState: { value: `{{false}}` },
         useDefaultButton: { value: `{{true}}` },
         triggerButtonLabel: { value: `Launch Modal` },
-        size: { value: 'md' },
+        size: { value: 'lg' },
         hideTitleBar: { value: '{{false}}' },
         hideCloseButton: { value: '{{false}}' },
         hideOnEsc: { value: '{{true}}' },
