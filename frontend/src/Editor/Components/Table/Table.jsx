@@ -118,7 +118,7 @@ export function Table({
       [index]: { ...obj },
     };
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
-    mergeToFilterDetails(changesToBeSavedAndExposed);
+    mergeToTableDetails(changesToBeSavedAndExposed);
     return setExposedVariables(changesToBeSavedAndExposed);
   }
 
