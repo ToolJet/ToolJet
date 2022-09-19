@@ -188,7 +188,6 @@ const Component = ({ children, ...restProps }) => {
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id}>
         {children}
       </BootstrapModal.Body>
-      <BootstrapModal.Footer></BootstrapModal.Footer>
     </BootstrapModal>
   );
 };

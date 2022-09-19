@@ -485,7 +485,7 @@ const widgetsWithStyleConditions = {
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
   return Object.keys(componentMeta.styles).map((style) => {
     const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
-    const condition = conditionWidget.conditions.find((condition) => condition.property) ?? {};
+    const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
 
     if (conditionWidget && conditionWidget.conditions.find((condition) => condition.conditionStyles.includes(style))) {
       const propertyConditon = condition?.property;
