@@ -709,8 +709,8 @@ export const widgets = [
         displayName: 'Modal size',
         options: [
           { name: 'small', value: 'sm' },
-          { name: 'medium', value: 'md' },
-          { name: 'large', value: 'lg' },
+          { name: 'medium', value: 'lg' },
+          { name: 'large', value: 'xl' },
         ],
         validation: {
           schema: { type: 'string' },
