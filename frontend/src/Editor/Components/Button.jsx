@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 var tinycolor = require('tinycolor2');
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
-export const Button = function Button({ height, properties, styles, fireEvent, registerAction, component }) {
+export const Button = function Button({
+  height,
+  properties,
+  styles,
+  fireEvent,
+  registerAction,
+  component,
+  currentState,
+}) {
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState } = styles;
 
   const [label, setLabel] = useState(properties.text);
@@ -12,11 +21,15 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
   useEffect(() => {
     setDisable(disabledState);
   }, [disabledState]);
-
   const [visibility, setVisibility] = useState(styles.visibility);
   useEffect(() => {
-    setVisibility(styles.visibility);
-  }, [styles.visibility]);
+    visibility !== styles.visibility &&
+      setVisibility(
+        typeof styles.visibility !== 'boolean'
+          ? resolveWidgetFieldValue(styles.visibility, currentState)
+          : styles.visibility
+      );
+  }, [currentState, styles.visibility]);
 
   const [loading, setLoading] = useState(properties.loadingState);
   useEffect(() => {
@@ -34,25 +47,28 @@ export const Button = function Button({ height, properties, styles, fireEvent, r
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
   };
 
-  registerAction('click', async function () {
-    fireEvent('onClick');
-  });
+  useEffect(() => {
+    registerAction('click', async function () {
+      fireEvent('onClick');
+    });
 
-  registerAction('setText', async function (text) {
-    setLabel(text);
-  });
+    registerAction('setText', async function (text) {
+      setLabel(text);
+    });
 
-  registerAction('disable', async function (value) {
-    setDisable(value);
-  });
+    registerAction('disable', async function (value) {
+      setDisable(value);
+    });
 
-  registerAction('visibility', async function (value) {
-    setVisibility(value);
-  });
+    registerAction('visibility', async function (value) {
+      console.log(typeof value, value, 'resolve', 'csa');
+      setVisibility(value);
+    });
 
-  registerAction('loading', async function (value) {
-    setLoading(value);
-  });
+    registerAction('loading', async function (value) {
+      setLoading(value);
+    });
+  }, []);
 
   return (
     <div className="widget-button">
