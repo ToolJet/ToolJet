@@ -50,7 +50,7 @@ module.exports = {
       '@ee': path.resolve(__dirname, 'ee/'),
     },
   },
-  devtool: environment === 'development' ? 'inline-source-map' : 'source-map',
+  devtool: environment === 'development' ? 'inline-source-map' : false,
   module: {
     rules: [
       {
@@ -116,7 +116,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './src/index.ejs',
+      template: './index.ejs',
       favicon: './assets/images/logo.svg',
     }),
     new CompressionPlugin({
