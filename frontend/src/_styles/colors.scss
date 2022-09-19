@@ -16,7 +16,7 @@ $bg-dark-light: #232e3c;
 $primary-rgb: 77, 114, 250;
 $primary-rgb-darker: 77, 94, 240;
 $primary: unquote("rgb(#{$primary-rgb})");
-$primary-light: unquote("rgb(#{$primary-rgb})");
+$primary-light: unquote("rgb(#{$primary-rgb-darker})");
 
 .color-primary {
   color: $primary !important;
