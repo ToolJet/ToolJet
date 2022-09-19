@@ -45,6 +45,10 @@ ToolJet server uses PostgreSQL as the database.
 If you are using docker-compose setup, you can set PG_HOST as `postgres` which will be DNS resolved by docker
 :::
 
+### Disable database and extension creation (optional)
+
+ToolJet by default tries to create database based on `PG_DB` variable set and additionally my try to create postgres extensions. This requires the postgres user to have CREATEDB permission. If this cannot be granted you can disable this behaviour by setting `PG_DB_OWNER` as `false` and will have to manually run them.
+
 #### Redis configuration ( optional )
 
 ToolJet server uses Redis as a message broker. This is currently being used only for realtime multiplayer edit feature.
