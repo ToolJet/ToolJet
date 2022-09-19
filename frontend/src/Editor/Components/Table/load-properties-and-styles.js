@@ -27,7 +27,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
 
   const tableType = styles.tableType ?? 'table-bordered';
 
-  const cellSizeType = styles?.cellSizeType;
+  const cellSize = styles?.cellSize;
 
   const borderRadius = styles.borderRadius?.value;
 
@@ -39,7 +39,10 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
 
   const actionButtonRadius = styles.actionButtonRadius ? parseFloat(styles.actionButtonRadius) : 0;
 
-  const actions = (component.definition.properties.actions.value ?? []).map((action) => ({ ...action, actionButtonRadius }));
+  const actions = (component.definition.properties.actions.value ?? []).map((action) => ({
+    ...action,
+    actionButtonRadius,
+  }));
 
   return {
     color,
@@ -54,7 +57,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     highlightSelectedRow,
     columnSizes,
     tableType,
-    cellSizeType,
+    cellSize,
     borderRadius,
     parsedWidgetVisibility,
     parsedDisabledState,

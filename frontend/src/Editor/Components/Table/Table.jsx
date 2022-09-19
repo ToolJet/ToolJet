@@ -63,7 +63,7 @@ export function Table({
     loadingState,
     columnSizes,
     tableType,
-    cellSizeType,
+    cellSize,
     borderRadius,
     parsedWidgetVisibility,
     parsedDisabledState,
@@ -501,7 +501,7 @@ export function Table({
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
                             'align-items-center flex-column': cell.column.columnType === 'selector',
-                            [cellSizeType]: true,
+                            [cellSize]: true,
                           })}
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
