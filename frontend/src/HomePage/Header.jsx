@@ -1,7 +1,6 @@
 import React from 'react';
 import { SearchBox } from '@/_components/SearchBox';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
-import { appService } from '@/_services';
 import { useTranslation } from 'react-i18next';
 
 export default function Header({
@@ -16,9 +15,6 @@ export default function Header({
   fileInput,
   darkMode,
 }) {
-  const openFilePicker = () => {
-    appService.getLicenseTerms().then(() => fileInput.current.click());
-  };
   const { t } = useTranslation();
   return (
     <div className="row">
@@ -46,7 +42,7 @@ export default function Header({
                   <Dropdown.Item onClick={showTemplateLibraryModal}>
                     {t('homePage.header.chooseFromTemplate', 'Choose from template')}
                   </Dropdown.Item>
-                  <label className="homepage-dropdown-style" onClick={openFilePicker} onChange={handleImportApp}>
+                  <label className="homepage-dropdown-style" onChange={handleImportApp}>
                     {t('homePage.header.import', 'Import')}
                     <input type="file" accept=".json" ref={fileInput} style={{ display: 'none' }} />
                   </label>

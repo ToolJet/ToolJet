@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
-import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User } from 'src/decorators/user.decorator';
 import { CreateEnvironmentVariableDto, UpdateEnvironmentVariableDto } from '@dto/environment-variable.dto';
 import { OrgEnvironmentVariablesService } from '@services/org_environment_variables.service';
@@ -43,7 +42,7 @@ export class OrgEnvironmentVariablesController {
   }
 
   // Endpoint for adding new env vars
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(@User() user, @Body() createEnvironmentVariableDto: CreateEnvironmentVariableDto) {
     const ability = await this.orgEnvironmentVariablesAbilityFactory.orgEnvironmentVariableActions(user, {});
@@ -56,7 +55,7 @@ export class OrgEnvironmentVariablesController {
     return decamelizeKeys({ variable: result });
   }
 
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(@Body() body: UpdateEnvironmentVariableDto, @User() user, @Param('id') variableId) {
     const ability = await this.orgEnvironmentVariablesAbilityFactory.orgEnvironmentVariableActions(user, {});
@@ -69,7 +68,7 @@ export class OrgEnvironmentVariablesController {
     return {};
   }
 
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async delete(@User() user, @Param('id') variableId) {
     const ability = await this.orgEnvironmentVariablesAbilityFactory.orgEnvironmentVariableActions(user, {});
