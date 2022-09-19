@@ -113,7 +113,6 @@ export default class RestapiQueryService implements QueryService {
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
       const tokenData = sourceOptions['tokenData'];
-      console.log(sourceOptions);
       const isAppPublic = context?.app.isPublic;
       const userData = context?.user;
       const currentToken = getCurrentToken(isMultiAuthEnabled, tokenData, userData?.id, isAppPublic);
