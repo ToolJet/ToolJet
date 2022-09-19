@@ -7,8 +7,8 @@ import {
   Param,
   Patch,
   Post,
-  Request,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
 import { decamelizeKeys } from 'humps';
@@ -30,11 +30,43 @@ export class OrganizationsController {
     private readonly configService: ConfigService
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('viewAllUsers', UserEntity))
   @Get('users')
-  async getUsers(@Request() req) {
-    const result = await this.organizationsService.fetchUsers(req.user);
-    return decamelizeKeys({ users: result });
+  async getUsers(@User() user, @Query() query) {
+    const { page, email, firstName, lastName } = query;
+    const filterOptions = {
+      ...(email && { email }),
+      ...(firstName && { firstName }),
+      ...(lastName && { lastName }),
+    };
+    const usersCount = await this.organizationsService.usersCount(user, filterOptions);
+    let users = [];
+    if (usersCount > 0) users = await this.organizationsService.fetchUsers(user, page, filterOptions);
+
+    const meta = {
+      total_pages: Math.ceil(usersCount / 10),
+      total_count: usersCount,
+      current_page: parseInt(page || 1),
+    };
+
+    const response = {
+      meta,
+      users,
+    };
+
+    return decamelizeKeys(response);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('users/suggest')
+  async getUserSuggestions(@User() user, @Query('input') searchInput) {
+    const users = await this.organizationsService.fetchUsersByValue(user, searchInput);
+    const response = {
+      users,
+    };
+
+    return decamelizeKeys(response);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -3410,6 +3410,12 @@ input:focus-visible {
       color: #656d77;
     }
   }
+
+  .page-item {
+    a.page-link {
+      color: white;
+    }
+  }
 }
 
 .main-wrapper {
@@ -7191,8 +7197,6 @@ input.hide-input-arrows {
     box-shadow: none;
     color: #D1D5DB;
   }
-
-
 }
 
 // DESIGN SYSTEM BUTTOM END-------------->>
@@ -7250,4 +7254,12 @@ input.hide-input-arrows {
 #eye-svg {
   height: 20px !important;
   width: 20px !important;
+}
+
+.org-users-page {
+  min-height: 100vh;
+
+  .page-body {
+    height: 100%;
+  }
 }
