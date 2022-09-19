@@ -120,10 +120,12 @@ class DataSourceManagerComponent extends React.Component {
     const appVersionId = this.props.editingVersionId;
 
     const parsedOptions = Object.keys(options).map((key) => {
+      //some how token_data key enters into options when we are trying to update the restapi datasource
+      if (kind === 'restapi' && key === 'token_data') delete options['token_data'];
       const keyMeta = selectedDataSource.options[key];
       return {
         key: key,
-        value: kind === 'restapi' && key === 'token_data' ? undefined : options[key].value,
+        value: kind === 'restapi' && key === 'tokenData' ? undefined : options[key].value,
         encrypted: keyMeta ? keyMeta.encrypted : false,
       };
     });

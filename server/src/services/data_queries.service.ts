@@ -116,7 +116,7 @@ export class DataQueriesService {
 
       if (
         error.constructor.name === 'OAuthUnauthorizedClientError' ||
-        (statusCode == 401 && sourceOptions['token_data'])
+        (statusCode == 401 && sourceOptions['tokenData'])
       ) {
         console.log('Access token expired. Attempting refresh token flow.');
 
@@ -230,11 +230,11 @@ export class DataQueriesService {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
     const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
-    const tokenData = this.getCurrentToken(isMultiAuthEnabled, dataSource.options['token_data']?.value, newToken);
+    const tokenData = this.getCurrentToken(isMultiAuthEnabled, dataSource.options['tokenData']?.value, newToken);
 
     const tokenOptions = [
       {
-        key: 'token_data',
+        key: 'tokenData',
         value: tokenData,
         encrypted: false,
       },
