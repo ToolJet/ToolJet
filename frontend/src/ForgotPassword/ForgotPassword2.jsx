@@ -61,7 +61,6 @@ class ForgotPassword2 extends React.Component {
         <div className="common-auth-section-whole-wrapper page">
           <div className="common-auth-section-left-wrapper">
             <OnboardingNavbar />
-
             <div className="common-auth-section-left-wrapper-grid">
               <div></div>
               <form>
@@ -82,7 +81,7 @@ class ForgotPassword2 extends React.Component {
                           name="email"
                           type="email"
                           placeholder="Enter email address"
-                          className="tj-text-input "
+                          className="tj-text-input"
                         />
                       </div>
                       <div>

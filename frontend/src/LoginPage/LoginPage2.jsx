@@ -148,7 +148,6 @@ class LoginPage2 extends React.Component {
         <div className="common-auth-section-whole-wrapper page">
           <div className="common-auth-section-left-wrapper">
             <OnboardingNavbar />
-
             <div className="common-auth-section-left-wrapper-grid">
               <div></div>
               <form action="." method="get" autoComplete="off">
@@ -161,7 +160,6 @@ class LoginPage2 extends React.Component {
                       <div>
                         <h2 className="common-auth-section-header">Sign in</h2>
                         <div className="tj-text-input-label">
-                          {/* Login to {this.single_organization ? 'your account' : configs?.name || 'your account'} */}
                           {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
                             <div className="common-auth-sub-header">
                               New to toolJet?
