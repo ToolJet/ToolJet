@@ -15,7 +15,7 @@ export class AppController {
 
   @Post(['authenticate', 'authenticate/:organizationId'])
   async login(@Request() req, @Body() appAuthDto: AppAuthenticationDto, @Param('organizationId') organizationId) {
-    return this.authService.login(req, appAuthDto.email, appAuthDto.password, organizationId);
+    return this.authService.login(appAuthDto.email, appAuthDto.password, organizationId);
   }
 
   @UseGuards(JwtAuthGuard)

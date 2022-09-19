@@ -7,7 +7,7 @@ import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
 const createSettings = async (app: INestApplication, adminUserData: any, body: any) => {
   return await request(app.getHttpServer())
-    .post(`/api/instance_settings`)
+    .post(`/api/instance-settings`)
     .set('Authorization', authHeaderForUser(adminUserData.user))
     .send(body);
 };
@@ -23,9 +23,9 @@ describe('instance settings controller', () => {
     app = await createNestAppInstance();
   });
 
-  describe('GET /api/instance_settings', () => {
+  describe('GET /api/instance-settings', () => {
     it('should allow only authenticated users to list instance settings', async () => {
-      await request(app.getHttpServer()).get('/api/instance_settings').expect(401);
+      await request(app.getHttpServer()).get('/api/instance-settings').expect(401);
     });
 
     it('should list instance settings', async () => {
@@ -55,7 +55,7 @@ describe('instance settings controller', () => {
       );
 
       const listResponse = await request(app.getHttpServer())
-        .get(`/api/instance_settings`)
+        .get(`/api/instance-settings`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send()
         .expect(200);
@@ -70,7 +70,7 @@ describe('instance settings controller', () => {
     });
   });
 
-  describe('POST /api/instance_settings', () => {
+  describe('POST /api/instance-settings', () => {
     it('should be able to create a new settings', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -78,7 +78,7 @@ describe('instance settings controller', () => {
       });
 
       await request(app.getHttpServer())
-        .post(`/api/instance_settings`)
+        .post(`/api/instance-settings`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({
           key: 'ALLOW_PLUGIN_INTEGRATION',
@@ -88,7 +88,7 @@ describe('instance settings controller', () => {
     });
   });
 
-  describe('PATCH /api/instance_settings/:id', () => {
+  describe('PATCH /api/instance-settings/:id', () => {
     it('should be able to update an existing setting', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -101,7 +101,7 @@ describe('instance settings controller', () => {
       });
 
       await request(app.getHttpServer())
-        .patch(`/api/instance_settings/${response.body.setting.id}`)
+        .patch(`/api/instance-settings/${response.body.setting.id}`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({ value: 'true' })
         .expect(200);
@@ -112,7 +112,7 @@ describe('instance settings controller', () => {
     });
   });
 
-  describe('DELETE /api/instance_settings/:id', () => {
+  describe('DELETE /api/instance-settings/:id', () => {
     it('should be able to delete an existing setting', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -127,7 +127,7 @@ describe('instance settings controller', () => {
       const preCount = await getManager().count(InstanceSettings);
 
       await request(app.getHttpServer())
-        .delete(`/api/instance_settings/${response.body.setting.id}`)
+        .delete(`/api/instance-settings/${response.body.setting.id}`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send()
         .expect(200);

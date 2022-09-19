@@ -7,6 +7,7 @@ import { InstanceSettings } from 'src/entities/instance_settings.entity';
 @Module({
   controllers: [InstanceSettingsController],
   imports: [TypeOrmModule.forFeature([InstanceSettings])],
-  providers: [InstanceSettingsService],
+  providers: [InstanceSettingsService, InstanceSettings],
+  exports: [InstanceSettingsService, InstanceSettings],
 })
 export class InstanceSettingsModule {}

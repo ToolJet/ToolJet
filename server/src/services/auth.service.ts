@@ -22,7 +22,7 @@ import { EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -86,7 +86,7 @@ export class AuthService {
     return user;
   }
 
-  async login(request: any, email: string, password: string, organizationId?: string) {
+  async login(email: string, password: string, organizationId?: string) {
     let organization: Organization;
 
     const user = await this.validateUser(email, password, organizationId);
@@ -170,6 +170,7 @@ export class AuthService {
       avatar_id: user.avatarId,
       organizationId: user.organizationId,
       organization: organization.name,
+      superAdmin: isSuperAdmin(user),
       admin: await this.usersService.hasGroup(user, 'admin'),
       group_permissions: await this.usersService.groupPermissions(user),
       app_group_permissions: await this.usersService.appGroupPermissions(user),
@@ -220,6 +221,7 @@ export class AuthService {
       last_name: newUser.lastName,
       organizationId: newUser.organizationId,
       organization: organization.name,
+      superAdmin: isSuperAdmin(user),
       admin: await this.usersService.hasGroup(newUser, 'admin'),
       group_permissions: await this.usersService.groupPermissions(newUser),
       app_group_permissions: await this.usersService.appGroupPermissions(newUser),

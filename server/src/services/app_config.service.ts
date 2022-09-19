@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { InstanceSettingsService } from './instance_settings.service';
 
 @Injectable()
 export class AppConfigService {
+  constructor(private instanceSettingsService: InstanceSettingsService) {}
   async public_config() {
     const whitelistedConfigVars = process.env.ALLOWED_CLIENT_CONFIG_VARS
       ? this.fetchAllowedConfigFromEnv()
@@ -11,7 +13,14 @@ export class AppConfigService {
       whitelistedConfigVars.map((envVar) => [envVar, process.env[envVar]] as [string, string])
     );
 
-    return Object.fromEntries(mapEntries);
+    const instanceConfigs = {};
+    (await this.instanceSettingsService.getSettings(this.fetchDefaultInstanceConfig()))?.forEach((config) => {
+      instanceConfigs[config.key] = config.value;
+    });
+
+    console.log(instanceConfigs);
+
+    return { ...instanceConfigs, ...Object.fromEntries(mapEntries) };
   }
 
   fetchDefaultConfig() {
@@ -35,6 +44,10 @@ export class AppConfigService {
       'TOOLJET_HOST',
       'SUB_PATH',
     ];
+  }
+
+  fetchDefaultInstanceConfig() {
+    return ['ALLOW_PERSONAL_WORKSPACE'];
   }
 
   fetchAllowedConfigFromEnv() {

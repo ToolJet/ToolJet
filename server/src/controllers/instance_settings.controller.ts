@@ -1,16 +1,16 @@
-import { Controller, Get, Post, Request, UseGuards, Body, Delete, Param, Patch } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards, Body, Delete, Param, Patch } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { InstanceSettingsService } from '@services/instance_settings.service';
 import { CreateInstanceSettingsDto, UpdateInstanceSettingsDto } from '@dto/create_instance_settings.dto';
 
-@Controller('instance_settings')
+@Controller('instance-settings')
 export class InstanceSettingsController {
   constructor(private instanceSettingsService: InstanceSettingsService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async index(@Request() req) {
+  async index() {
     const settings = await this.instanceSettingsService.getSettings();
     return decamelizeKeys({ settings });
   }

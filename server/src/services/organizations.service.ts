@@ -4,7 +4,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { Brackets, createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
@@ -220,20 +220,24 @@ export class OrganizationsService {
   }
 
   async fetchOrganizations(user: any): Promise<Organization[]> {
-    return await createQueryBuilder(Organization, 'organization')
-      .innerJoin(
-        'organization.organizationUsers',
-        'organization_users',
-        'organization_users.status IN(:...statusList)',
-        {
-          statusList: ['active'],
-        }
-      )
-      .andWhere('organization_users.userId = :userId', {
-        userId: user.id,
-      })
-      .orderBy('name', 'ASC')
-      .getMany();
+    if (isSuperAdmin(user)) {
+      return await this.organizationsRepository.find({ order: { name: 'ASC' } });
+    } else {
+      return await createQueryBuilder(Organization, 'organization')
+        .innerJoin(
+          'organization.organizationUsers',
+          'organization_users',
+          'organization_users.status IN(:...statusList)',
+          {
+            statusList: ['active'],
+          }
+        )
+        .andWhere('organization_users.userId = :userId', {
+          userId: user.id,
+        })
+        .orderBy('name', 'ASC')
+        .getMany();
+    }
   }
 
   async findOrganizationWithLoginSupport(user: User, loginType: string): Promise<Organization[]> {
@@ -262,12 +266,13 @@ export class OrganizationsService {
       return;
     }
 
-    return await query
-      .andWhere('organization_users.userId = :userId', {
+    if (!isSuperAdmin(user)) {
+      query.andWhere('organization_users.userId = :userId', {
         userId: user.id,
-      })
-      .orderBy('name', 'ASC')
-      .getMany();
+      });
+    }
+
+    return await query.orderBy('name', 'ASC').getMany();
   }
 
   async getSSOConfigs(organizationId: string, sso: string): Promise<Organization> {

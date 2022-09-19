@@ -8,10 +8,12 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
-import { cleanObject, createDefaultInstanceSettings, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject, createDefaultInstanceSettings, dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { ConfigService } from '@nestjs/config';
 import License from '@ee/licensing/configs/License';
+import { Organization } from 'src/entities/organization.entity';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -24,7 +26,9 @@ export class UsersService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(App)
-    private appsRepository: Repository<App>
+    private appsRepository: Repository<App>,
+    @InjectRepository(Organization)
+    private organizationRepository: Repository<Organization>
   ) {}
 
   async findAll(organizationId: string): Promise<User[]> {
@@ -53,12 +57,17 @@ export class UsersService {
 
   async findByEmail(email: string, organizationId?: string, status?: string | Array<string>): Promise<User> {
     if (!organizationId) {
-      return this.usersRepository.findOne({
+      const user: User = await this.usersRepository.findOne({
         where: { email },
       });
+
+      if (isSuperAdmin(user)) {
+        await this.setupSuperAdmin(user);
+      }
+      return user;
     } else {
       const statusList = status ? (typeof status === 'object' ? status : [status]) : ['active', 'invited', 'archived'];
-      return await createQueryBuilder(User, 'users')
+      let user: User = await createQueryBuilder(User, 'users')
         .innerJoinAndSelect(
           'users.organizationUsers',
           'organization_users',
@@ -70,7 +79,44 @@ export class UsersService {
         })
         .andWhere('users.email = :email', { email })
         .getOne();
+
+      if (!user) {
+        user = await this.usersRepository.findOne({
+          where: { email },
+        });
+
+        if (isSuperAdmin(user)) {
+          await this.setupSuperAdmin(user, organizationId);
+        }
+      }
+      return user;
     }
+  }
+
+  async setupSuperAdmin(user: User, organizationId?: string): Promise<void> {
+    const organizations: Organization[] = await this.organizationRepository.find(
+      organizationId ? { where: { id: organizationId } } : {}
+    );
+    user.organizationUsers = organizations?.map((organization): OrganizationUser => {
+      return {
+        id: uuid.v4(),
+        userId: user.id,
+        organizationId: organization.id,
+        organization: organization,
+        status: 'active',
+        role: null,
+        invitationToken: null,
+        createdAt: null,
+        updatedAt: null,
+        user,
+        hasId: null,
+        save: null,
+        remove: null,
+        softRemove: null,
+        recover: null,
+        reload: null,
+      };
+    });
   }
 
   async findByPasswordResetToken(token: string): Promise<User> {

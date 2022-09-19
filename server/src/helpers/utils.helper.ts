@@ -97,3 +97,7 @@ export const createDefaultInstanceSettings = async (manager: EntityManager) => {
   const entries = settings.map((setting) => manager.create(InstanceSettings, setting));
   return manager.save(entries);
 };
+
+export const isSuperAdmin = (user) => {
+  return !!(user?.userType === 'instance');
+};
