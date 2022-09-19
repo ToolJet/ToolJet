@@ -2,8 +2,8 @@ import React from 'react';
 import queryString from 'query-string';
 import { datasourceService } from '@/_services';
 import { RedirectLoader } from '@/_components';
-
-class Authorize extends React.Component {
+import { withTranslation } from 'react-i18next';
+class AuthorizeComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -113,4 +113,4 @@ class Authorize extends React.Component {
   }
 }
 
-export { Authorize };
+export const Authorize = withTranslation()(AuthorizeComponent);
