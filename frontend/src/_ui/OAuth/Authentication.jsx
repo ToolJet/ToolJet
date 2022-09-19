@@ -161,7 +161,7 @@ const Authentication = ({
                 checked={multiple_auth_enabled}
                 onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
               />
-              <span className="form-check-label">Allow multiple user authentication</span>
+              <span className="form-check-label">Authentication Required for All Users</span>
             </label>
           </div>
         )}
