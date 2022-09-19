@@ -684,16 +684,16 @@ export const widgets = [
       },
       useDefaultButton: {
         type: 'toggle',
-        displayName: 'Use default show button',
+        displayName: 'Use default trigger button',
         validation: {
           schema: {
             type: 'boolean',
           },
         },
       },
-      showButtonLabel: {
+      triggerButtonLabel: {
         type: 'code',
-        displayName: 'Show button label',
+        displayName: 'Trigger button label',
         validation: {
           schema: {
             type: 'string',
@@ -758,17 +758,17 @@ export const widgets = [
           defaultValue: true,
         },
       },
-      showButtonBackgroundColor: {
+      triggerButtonBackgroundColor: {
         type: 'color',
-        displayName: 'Show button background color',
+        displayName: 'Trigger button background color',
         validation: {
           schema: { type: 'string' },
           defaultValue: false,
         },
       },
-      showButtonTextColor: {
+      triggerButtonTextColor: {
         type: 'color',
-        displayName: 'Show button text color',
+        displayName: 'Trigger button text color',
         validation: {
           schema: { type: 'string' },
           defaultValue: false,
@@ -797,7 +797,7 @@ export const widgets = [
         title: { value: 'This title can be changed' },
         loadingState: { value: `{{false}}` },
         useDefaultButton: { value: `{{true}}` },
-        showButtonLabel: { value: `Show Modal` },
+        triggerButtonLabel: { value: `Launch Modal` },
         size: { value: 'md' },
         hideTitleBar: { value: '{{false}}' },
         hideCloseButton: { value: '{{false}}' },
@@ -810,8 +810,8 @@ export const widgets = [
         bodyBackgroundColor: { value: '#ffffffff' },
         disabledState: { value: '{{false}}' },
         visibility: { value: '{{true}}' },
-        showButtonBackgroundColor: { value: '#4D72FA' },
-        showButtonTextColor: { value: '#ffffffff' },
+        triggerButtonBackgroundColor: { value: '#4D72FA' },
+        triggerButtonTextColor: { value: '#ffffffff' },
       },
     },
   },

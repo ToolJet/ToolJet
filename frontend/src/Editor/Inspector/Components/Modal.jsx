@@ -31,7 +31,7 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
 
     options.map((option) => renderOptions.push(renderCustomElement(option)));
 
-    const conditionalOptions = [{ name: 'showButtonLabel', condition: useDefaultButton }];
+    const conditionalOptions = [{ name: 'triggerButtonLabel', condition: useDefaultButton }];
 
     conditionalOptions.map(({ name, condition }) => {
       if (condition) renderOptions.push(renderCustomElement(name));
@@ -49,7 +49,7 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   const validations = Object.keys(componentMeta.validation || {});
 
   const filteredProperties = properties.filter(
-    (property) => property !== 'useDefaultButton' && property !== 'showButtonLabel'
+    (property) => property !== 'useDefaultButton' && property !== 'triggerButtonLabel'
   );
 
   const accordionItems = baseComponentProperties(

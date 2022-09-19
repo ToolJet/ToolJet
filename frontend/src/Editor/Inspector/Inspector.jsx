@@ -476,7 +476,7 @@ const widgetsWithStyleConditions = {
       {
         definition: 'properties',
         property: 'useDefaultButton',
-        conditionStyles: ['showButtonBackgroundColor', 'showButtonTextColor'],
+        conditionStyles: ['triggerButtonBackgroundColor', 'triggerButtonTextColor'],
       },
     ],
   },
