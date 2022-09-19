@@ -65,11 +65,13 @@ export const Modal = function Modal({
   const customStyles = {
     modalBody: {
       height,
-      backgroundColor: bodyBackgroundColor,
+      backgroundColor:
+        ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
     },
     modalHeader: {
-      backgroundColor: headerBackgroundColor,
-      color: headerTextColor,
+      backgroundColor:
+        ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
+      color: ['#000', '#000000', '#000000ff'].includes(headerTextColor) && darkMode ? '#fff' : headerTextColor,
     },
     buttonStyles: {
       backgroundColor: showButtonBackgroundColor,
