@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
@@ -20,15 +19,15 @@ export const Modal = function Modal({
   fireEvent,
 }) {
   const [showModal, setShowModal] = useState(false);
-  const { hideOnEsc, hideCloseButton, hideTitleBar, loadingState, useDefaultButton, showButtonLabel } = properties;
+  const { hideOnEsc, hideCloseButton, hideTitleBar, loadingState, useDefaultButton, triggerButtonLabel } = properties;
   const {
     headerBackgroundColor,
     headerTextColor,
     bodyBackgroundColor,
     disabledState,
     visibility,
-    showButtonBackgroundColor,
-    showButtonTextColor,
+    triggerButtonBackgroundColor,
+    triggerButtonTextColor,
   } = styles;
   const parentRef = useRef(null);
 
@@ -76,11 +75,11 @@ export const Modal = function Modal({
       color: ['#000', '#000000', '#000000ff'].includes(headerTextColor) && darkMode ? '#fff' : headerTextColor,
     },
     buttonStyles: {
-      backgroundColor: showButtonBackgroundColor,
-      color: showButtonTextColor,
+      backgroundColor: triggerButtonBackgroundColor,
+      color: triggerButtonTextColor,
       width: '100%',
       display: visibility ? '' : 'none',
-      '--tblr-btn-color-darker': tinycolor(showButtonBackgroundColor).darken(8).toString(),
+      '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
     },
   };
 
@@ -96,7 +95,7 @@ export const Modal = function Modal({
             setShowModal(true);
           }}
         >
-          {showButtonLabel ?? 'Show Modal'}
+          {triggerButtonLabel ?? 'Show Modal'}
         </button>
       )}
 

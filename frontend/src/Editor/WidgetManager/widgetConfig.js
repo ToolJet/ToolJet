@@ -731,7 +731,7 @@ export const widgets = [
       },
       headerTextColor: {
         type: 'color',
-        displayName: 'Header text color',
+        displayName: 'Header title color',
         validation: {
           schema: { type: 'string' },
         },
