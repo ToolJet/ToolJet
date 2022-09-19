@@ -195,6 +195,7 @@ class HomePageComponent extends React.Component {
             toast.error(`Could not import the app: ${error}`, {
               position: 'top-center',
             });
+            appService.getLicenseTerms().then(() => this.fileInput.current.click());
             this.setState({
               isImportingApp: false,
             });
