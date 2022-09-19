@@ -474,9 +474,9 @@ const widgetsWithStyleConditions = {
   Modal: {
     conditions: [
       {
-        definition: 'properties',
-        property: 'useDefaultButton',
-        conditionStyles: ['triggerButtonBackgroundColor', 'triggerButtonTextColor'],
+        definition: 'properties', //expecting properties or styles
+        property: 'useDefaultButton', //expecting a property name
+        conditionStyles: ['triggerButtonBackgroundColor', 'triggerButtonTextColor'], //expecting an array of style definitions names
       },
     ],
   },
