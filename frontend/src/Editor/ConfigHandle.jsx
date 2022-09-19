@@ -11,6 +11,7 @@ export const ConfigHandle = function ConfigHandle({
   isMultipleComponentsSelected = false,
   setSelectedComponent = () => null, //! Only Modal widget passes this uses props down. All other widgets use selecto lib
   customClassName = '',
+  configWidgetHandlerForModalComponent = false,
 }) {
   return (
     <div
@@ -20,7 +21,12 @@ export const ConfigHandle = function ConfigHandle({
         top: position === 'top' ? '-22px' : widgetTop + widgetHeight - 10,
       }}
     >
-      <span className="badge handle-content">
+      <span
+        style={{
+          background: configWidgetHandlerForModalComponent && '#c6cad0',
+        }}
+        className="badge handle-content"
+      >
         <div
           style={{ display: 'flex', alignItems: 'center' }}
           onClick={(e) => {
