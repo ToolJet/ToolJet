@@ -51,3 +51,16 @@ function clearData(data, keys) {
     }
   }
 }
+
+export const getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string, isAppPublic: boolean) => {
+  if (isMultiAuthEnabled) {
+    if (!tokenData || !Array.isArray(tokenData)) return null;
+    return !isAppPublic
+      ? tokenData.find((token: any) => token.user_id === userId)
+      : userId
+      ? tokenData.find((token: any) => token.user_id === userId)
+      : tokenData[0];
+  } else {
+    return tokenData;
+  }
+};
