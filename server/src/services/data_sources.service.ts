@@ -21,6 +21,7 @@ export class DataSourcesService {
 
     const result = await this.dataSourcesRepository.find({ where: whereClause });
 
+    //remove tokenData from restapi datasources
     const dataSources = result?.map((ds) => {
       if (ds.kind === 'restapi') {
         const options = {};
