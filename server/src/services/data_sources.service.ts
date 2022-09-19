@@ -19,7 +19,22 @@ export class DataSourcesService {
     const { app_id: appId, app_version_id: appVersionId }: any = query;
     const whereClause = { appId, ...(appVersionId && { appVersionId }) };
 
-    return await this.dataSourcesRepository.find({ where: whereClause });
+    const result = await this.dataSourcesRepository.find({ where: whereClause });
+
+    const dataSources = result?.map((ds) => {
+      if (ds.kind === 'restapi') {
+        const options = {};
+        Object.keys(ds.options).filter((key) => {
+          if (key !== 'tokenData') {
+            return (options[key] = ds.options[key]);
+          }
+        });
+        ds.options = options;
+      }
+      return ds;
+    });
+
+    return dataSources;
   }
 
   async findOne(dataSourceId: string): Promise<DataSource> {
@@ -51,6 +66,14 @@ export class DataSourcesService {
 
   async update(dataSourceId: string, name: string, options: Array<object>): Promise<DataSource> {
     const dataSource = await this.findOne(dataSourceId);
+
+    // if datasource is restapi then reset the token data
+    if (dataSource.kind === 'restapi')
+      options.push({
+        key: 'tokenData',
+        value: undefined,
+        encrypted: false,
+      });
 
     const updateableParams = {
       id: dataSourceId,
