@@ -1,7 +1,15 @@
 const urrl = require('url');
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
-import { QueryError, QueryResult, QueryService, cleanSensitiveData, User, App } from '@tooljet-plugins/common';
+import {
+  QueryError,
+  QueryResult,
+  QueryService,
+  cleanSensitiveData,
+  User,
+  App,
+  getCurrentToken,
+} from '@tooljet-plugins/common';
 const JSON5 = require('json5');
 import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
 
@@ -85,19 +93,6 @@ export default class RestapiQueryService implements QueryService {
     return true;
   }
 
-  private getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string, isAppPublic: boolean) => {
-    if (isMultiAuthEnabled) {
-      if (!tokenData || !Array.isArray(tokenData)) return null;
-      return !isAppPublic
-        ? tokenData.find((token: any) => token.user_id === userId)
-        : userId
-        ? tokenData.find((token: any) => token.user_id === userId)
-        : tokenData[0];
-    } else {
-      return tokenData;
-    }
-  };
-
   async run(
     sourceOptions: any,
     queryOptions: any,
@@ -120,7 +115,7 @@ export default class RestapiQueryService implements QueryService {
       const tokenData = sourceOptions['token_data'];
       const isAppPublic = context?.app.isPublic;
       const userData = context?.user;
-      const currentToken = this.getCurrentToken(isMultiAuthEnabled, tokenData, userData?.id, isAppPublic);
+      const currentToken = getCurrentToken(isMultiAuthEnabled, tokenData, userData?.id, isAppPublic);
 
       if (!currentToken && !userData?.id && isAppPublic) {
         throw new QueryError('Missing access token', {}, {});
@@ -243,7 +238,7 @@ export default class RestapiQueryService implements QueryService {
 
   async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {
     const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
-    const currentToken = this.getCurrentToken(isMultiAuthEnabled, sourceOptions['token_data'], userId, isAppPublic);
+    const currentToken = getCurrentToken(isMultiAuthEnabled, sourceOptions['token_data'], userId, isAppPublic);
     const refreshToken = currentToken['refresh_token'];
     if (!refreshToken) {
       throw new QueryError('Refresh token not found', error.response, {});

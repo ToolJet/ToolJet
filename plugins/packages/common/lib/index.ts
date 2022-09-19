@@ -3,7 +3,7 @@ import { QueryResult } from './query_result.type';
 import { User } from './user.type';
 import { App } from './app.type';
 import { QueryService } from './query_service.interface';
-import { cacheConnection, getCachedConnection, parseJson, cleanSensitiveData } from './utils.helper';
+import { cacheConnection, getCachedConnection, parseJson, cleanSensitiveData, getCurrentToken } from './utils.helper';
 import { ConnectionTestResult } from './connection_test_result.type';
 
 export {
@@ -18,4 +18,5 @@ export {
   parseJson,
   ConnectionTestResult,
   cleanSensitiveData,
+  getCurrentToken,
 };
