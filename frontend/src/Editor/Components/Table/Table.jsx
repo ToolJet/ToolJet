@@ -456,7 +456,7 @@ export function Table({
                     {...row.getRowProps()}
                     onClick={(e) => {
                       e.stopPropagation();
-                      const selectedRowDetails = { selectedRowId: row.id, selectedRowData: row.original };
+                      const selectedRowDetails = { selectedRowId: row.id, selectedRow: row.original };
                       mergeToTableDetails(selectedRowDetails);
                       setExposedVariables(selectedRowDetails).then(() => {
                         fireEvent('onRowClicked');
