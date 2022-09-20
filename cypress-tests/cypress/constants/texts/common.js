@@ -81,8 +81,10 @@ export const commonWidgetText = {
   addEventHandlerLink: "+ Add event handler",
   inspectorComponentLabel: "components",
   componentValueLabel: "Value",
-  labelDefaultValue: "Default value",
+  labelDefaultValue: "Default Value",
   parameterLabel: "Label",
+  labelMinimumValue: "Minimum value",
+  labelMaximumValue: "Maximum value",
 
   datepickerDocumentationLink: "Datepicker documentation",
   text1: "text1",
