@@ -44,7 +44,9 @@ export const Modal = function Modal({
   });
 
   useEffect(() => {
-    setExposedVariable('show', showModal).then(() => fireEvent(showModal ? 'onOpen' : 'onClose'));
+    if (exposedVariables.show !== showModal) {
+      setExposedVariable('show', showModal).then(() => fireEvent(showModal ? 'onOpen' : 'onClose'));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
 
@@ -52,12 +54,12 @@ export const Modal = function Modal({
     const canShowModal = exposedVariables.show ?? false;
     if (canShowModal !== showModal) {
       setShowModal(canShowModal);
+      fireEvent(canShowModal ? 'onOpen' : 'onClose');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
 
   function hideModal() {
-    setExposedVariable('show', false);
     setShowModal(false);
   }
 
