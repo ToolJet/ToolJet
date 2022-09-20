@@ -126,7 +126,8 @@ export function Table({
     return setExposedVariables(changesToBeSavedAndExposed);
   }
 
-  function getExportFileBlob({ columns, data }) {
+  function getExportFileBlob({ columns }) {
+    const data = globalFilteredRows.map((row) => row.original);
     const headerNames = columns.map((col) => col.exportValue);
     const csvString = Papa.unparse({ fields: headerNames, data });
     return new Blob([csvString], { type: 'text/csv' });
