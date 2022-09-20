@@ -94,7 +94,7 @@ describe("List view widget", () => {
     );
     cy.forceClickOnCanvas();
     openEditorSidebar(data.widgetName);
-    verifyAndModifyParameter("Row height", "127");
+    verifyAndModifyParameter("Row height", "99");
 
     openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(
@@ -102,53 +102,51 @@ describe("List view widget", () => {
       codeMirrorInputLabel("false")
     );
 
-    // inspector
-    //edit list data
-    // edit elements
-    //row height
-    //bottom border
+    cy.forceClickOnCanvas();
+    cy.get(`[data-cy=${data.widgetName.toLowerCase()}-row-1]`)
+      .should("have.css", "height", "99px")
+      .invoke("attr", "class")
+      .and("not.contain", "border-bottom");
 
-    cy.pause();
+    openEditorSidebar(data.widgetName);
+    openAccordion(commonWidgetText.accordionEvents);
+    cy.get(commonWidgetSelector.noEventHandlerMessage).should(
+      "have.text",
+      "This listview doesn't have any event handlers"
+    );
+    addDefaultEventHandler(data.alertMessage);
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
 
-    // openEditorSidebar(data.widgetName);
-    // openAccordion(commonWidgetText.accordionEvents);
-    // cy.get(commonWidgetSelector.noEventHandlerMessage).should(
-    //   "have.text",
-    //   "This listview doesn't have any event handlers"
-    // );
-    // addDefaultEventHandler(data.alertMessage);
-    // cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    // cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage); //do something else.
 
-    // // cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage); //do something else.
+    openEditorSidebar(data.widgetName);
+    openAccordion(commonWidgetText.accordionGenaral);
+    addAndVerifyTooltip(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      fake.randomSentence
+    );
 
-    // openEditorSidebar(data.widgetName);
-    // openAccordion(commonWidgetText.accordionGenaral);
-    // addAndVerifyTooltip(
-    //   commonWidgetSelector.draggableWidget(data.widgetName),
-    //   fake.randomSentence
-    // );
+    openEditorSidebar(data.widgetName);
+    openAccordion(commonWidgetText.accordionLayout);
+    verifyAndModifyToggleFx(
+      commonWidgetText.parameterShowOnDesktop,
+      commonWidgetText.codeMirrorLabelTrue
+    );
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+      "not.exist"
+    );
 
-    // openEditorSidebar(data.widgetName);
-    // openAccordion(commonWidgetText.accordionLayout);
-    // verifyAndModifyToggleFx(
-    //   commonWidgetText.parameterShowOnDesktop,
-    //   commonWidgetText.codeMirrorLabelTrue
-    // );
-    // cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
-    //   "not.exist"
-    // );
-
-    // verifyAndModifyToggleFx(
-    //   commonWidgetText.parameterShowOnMobile,
-    //   commonWidgetText.codeMirrorLabelFalse
-    // );
-    // cy.get(commonWidgetSelector.changeLayoutButton).click();
-    // cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
-    //   "exist"
-    // );
+    verifyAndModifyToggleFx(
+      commonWidgetText.parameterShowOnMobile,
+      commonWidgetText.codeMirrorLabelFalse
+    );
+    cy.get(commonWidgetSelector.changeLayoutButton).click();
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+      "exist"
+    );
   });
 
-  it.skip("should verify the styles of the list view widget", () => {
+  it("should verify the styles of the list view widget", () => {
     const data = {};
     data.colour = fake.randomRgba;
     data.boxShadowParam = fake.boxShadowParam;
