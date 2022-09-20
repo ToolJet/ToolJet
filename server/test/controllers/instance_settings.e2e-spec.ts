@@ -37,11 +37,11 @@ describe('instance settings controller', () => {
       const bodyArray = [
         {
           key: 'ALLOW_PERSONAL_WORKSPACE',
-          value: 'false',
+          value: 'true',
         },
         {
           key: 'ALLOW_PLUGIN_INTEGRATION',
-          value: 'false',
+          value: 'true',
         },
       ];
 

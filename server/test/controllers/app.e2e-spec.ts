@@ -111,7 +111,7 @@ describe('Authentication', () => {
       });
       it('should not create new users since organization already exist', async () => {
         const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
-        expect(response.statusCode).toBe(403);
+        expect(response.statusCode).toBe(406);
       });
       it('authenticate if valid credentials', async () => {
         await request(app.getHttpServer())
@@ -493,6 +493,7 @@ describe('Authentication', () => {
             'organization',
             'group_permissions',
             'app_group_permissions',
+            'super_admin',
           ].sort()
         );
 
@@ -560,6 +561,7 @@ describe('Authentication', () => {
             'organization',
             'group_permissions',
             'app_group_permissions',
+            'super_admin',
           ].sort()
         );
 
