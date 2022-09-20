@@ -337,7 +337,7 @@ export function Table({
       setPageSize(rows?.length || 10);
     }
     if (!serverSidePagination && clientSidePagination) {
-      setPageSize(resultsPerPage);
+      setPageSize(resultsPerPage || 10);
     }
   }, [clientSidePagination, serverSidePagination, rows, resultsPerPage]);
 
