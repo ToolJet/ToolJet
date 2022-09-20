@@ -6253,49 +6253,13 @@ input.hide-input-arrows {
   filter: drop-shadow(0px 25px 50px rgba(40, 57, 72, 0.16));
 }
 
-.tj-text-input {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 8px 16px;
-  gap: 10px;
-  width: 392px;
-  height: 44px;
-  background: #FFFFFF;
-  border: 1px solid #D1D5DB;
-  border-radius: 4px;
-  font-style: normal;
+.tj-text-input-error-state {
   font-weight: 400;
-  font-size: 14px;
-  line-height: 24px;
-  display: flex;
-  align-items: center;
-  color: #6B7787;
-  margin-bottom: 12px;
-  cursor: pointer;
-
-  p {
-    margin-bottom: 0 !important;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 24px;
-    color: #000000;
-
-  }
-
-  &:hover {
-    border: 1px solid #D1D5DB;
-    box-shadow: 0px 0px 0px 4px #E4E7EB;
-  }
-
-  &:focus {
-    border: 1px solid #466BF2;
-    box-shadow: none;
-  }
-
+  font-size: 11px;
+  line-height: 16px;
+  margin-top: 2px !important;
+  color: #EB1414;
 }
-
 
 .onboarding-radio-checked {
   border: 1px solid #466BF2 !important;
@@ -6620,6 +6584,10 @@ input.hide-input-arrows {
   span {
     color: #466BF2;
   }
+}
+
+.signup-password-wrap {
+  margin-bottom: 16px;
 }
 
 .info-screen-wrapper {

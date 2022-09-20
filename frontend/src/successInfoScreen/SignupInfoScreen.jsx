@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ButtonSolid } from '../_components/AppButton';
 
-export const SignupInfoScreen = function SignupInfoScreen({ props, email, signup }) {
+export const SignupInfoScreen = function SignupInfoScreen({ email, signup }) {
   const [show, setShow] = useState(false);
   const [resendBtn, setResetBtn] = useState(true);
 
@@ -81,7 +81,6 @@ export const SignupInfoScreen = function SignupInfoScreen({ props, email, signup
             <ButtonSolid
               variant="secondary"
               onClick={(e) => {
-                //setResetBtn(true);
                 signup(e);
               }}
               className="signup-info-verify-btn"

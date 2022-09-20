@@ -21,6 +21,7 @@ class SignupPageComponent extends React.Component {
     this.state = {
       isLoading: false,
       showPassword: false,
+      emailError: '',
     };
 
     this.ssoConfigs = {
@@ -58,11 +59,12 @@ class SignupPageComponent extends React.Component {
     const { email, name, password } = this.state;
 
     if (!validateEmail(email)) {
-      toast.error('Invalid email', {
-        id: 'toast-login-auth-error',
-        position: 'top-center',
-      });
-      this.setState({ isLoading: false });
+      // toast.error('Invalid email', {
+      //   id: 'toast-login-auth-error',
+      //   position: 'top-center',
+      // });
+
+      this.setState({ isLoading: false, emailError: 'Invalid email' });
       return;
     }
 
@@ -140,14 +142,20 @@ class SignupPageComponent extends React.Component {
                       className="tj-text-input "
                       placeholder="Enter your business name"
                     />
-                    <label className="tj-text-input-label">Email address</label>
-                    <input
-                      onChange={this.handleChange}
-                      name="email"
-                      type="email"
-                      className="tj-text-input"
-                      placeholder="Enter your business email"
-                    />
+                    <div className="signup-password-wrap">
+                      <label className="tj-text-input-label">Email address</label>
+                      <input
+                        onChange={this.handleChange}
+                        name="email"
+                        type="email"
+                        className="tj-text-input"
+                        placeholder="Enter your business email"
+                        style={{ marginBottom: '0px' }}
+                      />
+                      {this.state.emailError && (
+                        <span className="tj-text-input-error-state">{this.state.emailError}</span>
+                      )}
+                    </div>
                     <label className="tj-text-input-label">Password</label>
                     <div className="login-password singup-password-wrapper">
                       <input
