@@ -141,10 +141,10 @@ export class UsersService {
     const { email, firstName, lastName } = userParams;
     let user: User;
 
-    const usersCount = await manager.count(User);
-    const userType = usersCount == 0 ? 'instance' : 'workspace';
-
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const usersCount = await manager.count(User);
+      const userType = usersCount === 0 ? 'instance' : 'workspace';
+
       if (!existingUser) {
         user = manager.create(User, {
           email,
