@@ -27,7 +27,9 @@ export const verifyAndModifyParameter = (paramName, value) => {
 };
 
 export const openEditorSidebar = (widgetName = "") => {
-  cy.get(commonWidgetSelector.draggableWidget(widgetName)).trigger("mouseover");
+  cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).trigger(
+    "mouseover"
+  );
   cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click();
 };
 
