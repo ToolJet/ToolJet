@@ -29,12 +29,12 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
 
   const cellSize = styles?.cellSize;
 
-  const borderRadius = styles.borderRadius?.value;
+  const borderRadius = styles.borderRadius ?? 0;
 
-  const widgetVisibility = styles?.visibility?.value ?? true;
+  const widgetVisibility = styles?.visibility ?? true;
   const parsedWidgetVisibility = widgetVisibility;
 
-  const disabledState = styles?.disabledState?.value ?? false;
+  const disabledState = styles?.disabledState ?? false;
   const parsedDisabledState = disabledState;
 
   const actionButtonRadius = styles.actionButtonRadius ? parseFloat(styles.actionButtonRadius) : 0;
