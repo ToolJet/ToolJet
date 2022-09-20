@@ -16,6 +16,7 @@ export class CreateInstanceSettings1662542808902 implements MigrationInterface {
           {
             name: 'key',
             type: 'varchar',
+            isUnique: true,
             isNullable: false,
           },
           {
