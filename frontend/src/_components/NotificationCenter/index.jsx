@@ -91,7 +91,7 @@ export const NotificationCenter = () => {
                 </p>
                 <p className="empty-subtitle text-muted">
                   {`${t('header.notificationCenter.youDontHaveany', `You don't have any`)} ${
-                    !isRead && t('header.notificationCenter.un', 'un')
+                    !isRead ? t('header.notificationCenter.un', 'un') : ''
                   }${t('header.notificationCenter.read', 'read')} ${t(
                     `header.notificationCenter.notifications`,
                     'notifications'
@@ -108,10 +108,12 @@ export const NotificationCenter = () => {
           </div>
           <div className="card-footer text-center margin-auto">
             <a href="#" className="text-muted text-decoration-none" onClick={() => setIsRead(!isRead)}>
-              {`${t('header.notificationCenter.view', 'View')} ${isRead && t('header.notificationCenter.un', 'un')}${t(
-                'header.notificationCenter.read',
-                'read'
-              )} ${t(`header.notificationCenter.notifications`, 'notifications').toLowerCase()}`}
+              {`${t('header.notificationCenter.view', 'View')} ${
+                isRead ? t('header.notificationCenter.un', 'un') : ''
+              }${t('header.notificationCenter.read', 'read')} ${t(
+                `header.notificationCenter.notifications`,
+                'notifications'
+              ).toLowerCase()}`}
             </a>
           </div>
         </div>
