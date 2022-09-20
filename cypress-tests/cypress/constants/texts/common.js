@@ -94,6 +94,9 @@ export const commonWidgetText = {
   maxLengthValidationError: "Maximum 10 characters is allowed",
 
   datepickerDocumentationLink: "Datepicker documentation",
+  text1: "text1",
+  toggleswitch1: "toggleswitch1",
+  toggleSwitch: "Toggle Switch",
 };
 
 export const createBackspaceText = (text) => {
