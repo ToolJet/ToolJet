@@ -111,7 +111,7 @@ describe('Authentication', () => {
       });
       it('should not create new users since organization already exist', async () => {
         const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
-        expect(response.statusCode).toBe(406);
+        expect(response.statusCode).toBe(403);
       });
       it('authenticate if valid credentials', async () => {
         await request(app.getHttpServer())
@@ -131,7 +131,7 @@ describe('Authentication', () => {
           .send({ email: 'admin@tooljet.io', password: 'password' })
           .expect(401);
       });
-      it('throw 401 if user is archived', async () => {
+      it.only('throw 401 if user is archived', async () => {
         await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
 
         await request(app.getHttpServer())

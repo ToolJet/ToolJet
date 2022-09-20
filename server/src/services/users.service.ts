@@ -87,6 +87,8 @@ export class UsersService {
 
         if (isSuperAdmin(user)) {
           await this.setupSuperAdmin(user, organizationId);
+        } else {
+          return;
         }
       }
       return user;

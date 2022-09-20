@@ -11,7 +11,7 @@ export class InstanceSettingsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async index() {
-    const settings = await this.instanceSettingsService.getSettings();
+    const settings = await this.instanceSettingsService.listSettings();
     return decamelizeKeys({ settings });
   }
 

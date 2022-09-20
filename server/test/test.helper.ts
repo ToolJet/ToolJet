@@ -146,6 +146,7 @@ export async function createUser(
     email,
     groups,
     organization,
+    userType = 'workspace',
     status,
     invitationToken,
     formLoginStatus = true,
@@ -159,6 +160,7 @@ export async function createUser(
     groups?: Array<string>;
     organization?: Organization;
     status?: string;
+    userType?: string;
     invitationToken?: string;
     formLoginStatus?: boolean;
     organizationName?: string;
@@ -202,6 +204,7 @@ export async function createUser(
         lastName: lastName || 'test',
         email: email || 'dev@tooljet.io',
         password: 'password',
+        userType,
         invitationToken,
         defaultOrganizationId: organization.id,
         createdAt: new Date(),
