@@ -26,6 +26,8 @@ import customFilter from './custom-filter';
 import generateColumnsData from './columns';
 import generateActionsData from './columns/actions';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
+import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
+import { useTranslation } from 'react-i18next';
 
 export function Table({
   id,
@@ -70,6 +72,8 @@ export function Table({
     actionButtonRadius,
     actions,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
+
+  const { t } = useTranslation();
 
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
 
@@ -189,6 +193,7 @@ export function Table({
     id,
     fireEvent,
     tableRef,
+    t,
   });
 
   const [leftActionsCellData, rightActionsCellData] = useMemo(
@@ -231,7 +236,12 @@ export function Table({
 
   const data = useMemo(
     () => tableData,
-    [tableData.length, tableDetails.changeSet, component.definition.properties.data.value]
+    [
+      tableData.length,
+      tableDetails.changeSet,
+      component.definition.properties.data.value,
+      JSON.stringify(properties.data),
+    ]
   );
 
   const computedStyles = {
@@ -257,12 +267,15 @@ export function Table({
     setAllFilters,
     preGlobalFilteredRows,
     setGlobalFilter,
-    state: { pageIndex, pageSize },
+    state: { pageIndex, globalFilter },
     exportData,
     selectedFlatRows,
+    globalFilteredRows,
   } = useTable(
     {
       autoResetPage: false,
+      autoResetGlobalFilter: false,
+      autoResetFilters: false,
       columns,
       data,
       defaultColumn,
@@ -354,6 +367,13 @@ export function Table({
   useEffect(() => {
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
   }, [pageCount]);
+
+  useEffect(() => {
+    setExposedVariable(
+      'filteredData',
+      globalFilteredRows.map((row) => row.original)
+    );
+  }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
 
   return (
     <div
@@ -565,7 +585,7 @@ export function Table({
                   </button>
                 </>
               ) : (
-                <span>{`${preGlobalFilteredRows.length} Records`}</span>
+                <span>{`${globalFilteredRows.length} Records`}</span>
               )}
             </div>
           </div>

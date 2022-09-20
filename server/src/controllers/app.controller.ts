@@ -25,7 +25,6 @@ export class AppController {
     return await this.authService.switchOrganization(organizationId, user);
   }
 
-  @UseGuards(SignupDisableGuard)
   @Post('set-password-from-token')
   async create(@Body() userCreateDto: CreateUserDto) {
     await this.authService.setupAccountFromInvitationToken(userCreateDto);

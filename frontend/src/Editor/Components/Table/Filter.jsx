@@ -1,7 +1,10 @@
 import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { useTranslation } from 'react-i18next';
 
 export function Filter(props) {
+  const { t } = useTranslation();
+
   const { mergeToFilterDetails, filterDetails, setAllFilters } = props;
   const { filters } = filterDetails;
 
@@ -85,7 +88,7 @@ export function Filter(props) {
                   filterColumnChanged(index, value);
                 }}
                 filterOptions={fuzzySearch}
-                placeholder="Select.."
+                placeholder={t('globals.select', 'Select') + '...'}
               />
             </div>
             <div className="col" style={{ maxWidth: '180px' }}>

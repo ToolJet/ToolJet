@@ -20,6 +20,10 @@
           "name": "Upload object"
         },
         {
+          "value": "remove_object",
+          "name": "Remove object"
+        },
+        {
           "value": "list_buckets",
           "name": "List buckets"
         },
@@ -217,6 +221,30 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins"
+      }
+    },
+    "remove_object": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket"
+      },
+      "key": {
+        "label": "Key",
+        "key": "key",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter key"
       }
     }
   }

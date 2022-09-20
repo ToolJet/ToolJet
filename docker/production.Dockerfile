@@ -15,15 +15,17 @@ COPY ./package.json ./package.json
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
-ENV NODE_ENV=production
-RUN npm --prefix plugins run build
+RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
 COPY ./frontend/ ./frontend/
-RUN npm --prefix frontend run build
+RUN npm --prefix frontend run build --production
+RUN npm --prefix frontend prune --production
+
+ENV NODE_ENV=production
 
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
@@ -70,6 +72,7 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
+RUN chgrp -R 0 /app && chmod -R g=u /app
 WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1

@@ -57,10 +57,11 @@ Let's create the query that will be getting the data from the database:
 We will create a new Custom JS query(**runjs1**) that will generate SQL query for updating multiple rows.
 
 ```js
+const uniqueIdentifier = "id"
 const cols = Object.values(components.table1.changeSet).map((col, index) => {
   return {
     col: Object.keys(col),
-    id: components.table1.dataUpdates[index].id,
+    [uniqueIdentifier]: Object.values(components.table1.dataUpdates)[index][uniqueIdentifier],
     values: Object.values(col),
   };
 });
@@ -73,6 +74,10 @@ const sql = cols.map((column) => {
 
 return sql
 ```
+:::info
+Here the **Unique identifier** is **id**, this is the column name that is used to identify the row in the database.
+Update the **Unique identifier** if you are using a different column name.
+:::
 <div style={{textAlign: 'center'}}>
 
 ![ToolJet - How To - Bulk update multiple rows in table](/img/how-to/bulk-update-multiple/runjs1.png)

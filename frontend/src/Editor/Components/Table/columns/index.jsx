@@ -22,6 +22,7 @@ export default function generateColumnsData({
   id,
   fireEvent,
   tableRef,
+  t,
 }) {
   return columnProperties.map((column) => {
     const columnSize = columnSizes[column.id] || columnSizes[column.name];
@@ -205,7 +206,7 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   filterOptions={fuzzySearch}
-                  placeholder="Select.."
+                  placeholder={t('globals.select', 'Select') + '...'}
                   disabled={!column.isEditable}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
@@ -219,7 +220,7 @@ export default function generateColumnsData({
                   printOptions="on-focus"
                   multiple
                   search={true}
-                  placeholder="Select.."
+                  placeholder={t('globals.select', 'Select') + '...'}
                   options={columnOptions.selectOptions}
                   value={cellValue}
                   onChange={(value) => {
