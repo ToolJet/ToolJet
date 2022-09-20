@@ -93,7 +93,6 @@ export const Calendar = function ({
 
   useEffect(() => {
     if (!_.isEqual(exposedVariables.currentDate, properties.defaultDate)) {
-      console.log('currentDate || calendar', defaultDate);
       setExposedVariable('currentDate', moment(defaultDate).format(properties.dateFormat));
     }
 
