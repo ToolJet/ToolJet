@@ -12,6 +12,13 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      resultsPerPage: {
+        type: 'code',
+        displayName: 'No of results per page',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       data: {
         type: 'code',
         displayName: 'Table data',
@@ -323,6 +330,7 @@ export const widgets = [
             "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
         },
         serverSidePagination: { value: '{{false}}' },
+        resultsPerPage: { value: 10 },
         clientSidePagination: { value: '{{true}}' },
         displaySearchBox: { value: '{{true}}' },
         showDownloadButton: { value: '{{true}}' },
