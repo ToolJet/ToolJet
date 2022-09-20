@@ -313,6 +313,9 @@ export class UsersService {
   }
 
   async hasGroup(user: User, group: string, organizationId?: string): Promise<boolean> {
+    if (isSuperAdmin(user)) {
+      return true;
+    }
     const orgId = organizationId || user.organizationId;
 
     const result = await createQueryBuilder(GroupPermission, 'group_permissions')

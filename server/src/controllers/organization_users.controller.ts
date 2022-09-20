@@ -9,6 +9,7 @@ import { User as UserEntity } from 'src/entities/user.entity';
 import { User } from 'src/decorators/user.decorator';
 import { InviteNewUserDto } from '../dto/invite-new-user.dto';
 import { OrganizationsService } from '@services/organizations.service';
+import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 
 @Controller('organization_users')
 export class OrganizationUsersController {
@@ -31,6 +32,13 @@ export class OrganizationUsersController {
   @Post(':id/archive')
   async archive(@User() user, @Param('id') id: string) {
     await this.organizationUsersService.archive(id, user.organizationId);
+    return;
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Post(':userId/archive-all')
+  async archiveAll(@Param('userId') userId: string) {
+    await this.organizationUsersService.archiveFromAll(userId);
     return;
   }
 

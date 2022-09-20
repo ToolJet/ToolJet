@@ -65,6 +65,10 @@ export class OrganizationUsersService {
     await this.organizationUsersRepository.update(id, { status: 'archived', invitationToken: null });
   }
 
+  async archiveFromAll(userId: string): Promise<void> {
+    await this.organizationUsersRepository.update({ userId }, { status: 'archived', invitationToken: null });
+  }
+
   async unarchive(user: User, id: string, manager?: EntityManager): Promise<void> {
     const organizationUser = await this.organizationUsersRepository.findOne({
       where: { id, organizationId: user.organizationId },
