@@ -31,6 +31,15 @@ export class UsersService {
     private organizationRepository: Repository<Organization>
   ) {}
 
+  async findInstanceUsers(): Promise<User[]> {
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.organizationUsers', 'organizationUsers')
+      .leftJoinAndSelect('organizationUsers.organization', 'organization')
+      .select(['user.id', 'user.email', 'user.firstName', 'user.lastName', 'organizationUsers', 'organization'])
+      .getMany();
+  }
+
   async findAll(organizationId: string): Promise<User[]> {
     return this.usersRepository.find({
       where: { defaultOrganizationId: organizationId },

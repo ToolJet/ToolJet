@@ -19,6 +19,13 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @UseGuards(JwtAuthGuard)
+  @Get('all')
+  async getAllUsers(@Request() req) {
+    const result = await this.usersService.findInstanceUsers();
+    return decamelizeKeys({ users: result });
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Patch('update')
   async update(@User() user, @Body() updateUserDto: UpdateUserDto) {
     const { first_name: firstName, last_name: lastName } = updateUserDto;
