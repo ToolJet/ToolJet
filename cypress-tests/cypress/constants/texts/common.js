@@ -64,7 +64,7 @@ export const commonWidgetText = {
   parameterShowOnMobile: "Show on mobile",
   parameterVisibility: "Visibility",
   parameterDisable: "Disable",
-  parameterBorderRadius: "Border radius",
+  parameterBorderRadius: "Border Radius",
   borderRadiusInput: ["{{", "20}}"],
   parameterOptionLabels: "Option labels",
   parameterBoxShadow: "Box Shadow",
@@ -92,6 +92,8 @@ export const commonWidgetText = {
 
 export const createBackspaceText = (text) => {
   let backspace = "{end}";
-  [...text].forEach((c) => (backspace += "{backspace}"));
+  [...text].forEach((c) => {
+    backspace += "{backspace}{del}";
+  });
   return backspace;
 };
