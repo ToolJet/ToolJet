@@ -131,7 +131,7 @@ describe('Authentication', () => {
           .send({ email: 'admin@tooljet.io', password: 'password' })
           .expect(401);
       });
-      it.only('throw 401 if user is archived', async () => {
+      it('throw 401 if user is archived', async () => {
         await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
 
         await request(app.getHttpServer())
