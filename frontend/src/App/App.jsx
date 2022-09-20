@@ -21,6 +21,7 @@ import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
+import { ManageAllUsers } from '@/ManageAllUsers';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
@@ -235,6 +236,13 @@ class App extends React.Component {
               exact
               path="/users"
               component={ManageOrgUsers}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/all-users"
+              component={ManageAllUsers}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
