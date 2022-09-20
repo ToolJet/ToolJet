@@ -9,6 +9,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { DataSourcesService } from './data_sources.service';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class AppImportExportService {
@@ -66,13 +67,13 @@ export class AppImportExportService {
 
     let importedApp: App;
 
-    await this.entityManager.transaction(async (manager) => {
+    await dbTransactionWrap(async (manager) => {
       importedApp = await this.createImportedAppForUser(manager, appParams, user);
       await this.buildImportedAppAssociations(manager, importedApp, appParams);
       await this.createAdminGroupPermissions(manager, importedApp);
     });
 
-    // FIXME: App slug updation callback doesnt work while wrapped in transaction
+    // NOTE: App slug updation callback doesnt work while wrapped in transaction
     // hence updating slug explicitly
     await importedApp.reload();
     importedApp.slug = importedApp.id;
@@ -85,7 +86,7 @@ export class AppImportExportService {
     const importedApp = manager.create(App, {
       name: appParams.name,
       organizationId: user.organizationId,
-      user: user,
+      userId: user.id,
       slug: null, // Prevent db unique constraint error.
       isPublic: false,
       createdAt: new Date(),
@@ -107,7 +108,7 @@ export class AppImportExportService {
     // create new app versions
     for (const appVersion of appVersions) {
       const version = manager.create(AppVersion, {
-        app: importedApp,
+        appId: importedApp.id,
         definition: appVersion.definition,
         name: appVersion.name,
         createdAt: new Date(),
@@ -141,7 +142,7 @@ export class AppImportExportService {
           appVersionId = appVersionMapping[appVersion.id];
         }
         const newSource = manager.create(DataSource, {
-          app: importedApp,
+          appId: importedApp.id,
           name: source.name,
           kind: source.kind,
           appVersionId,
@@ -165,7 +166,7 @@ export class AppImportExportService {
         }
 
         const newQuery = manager.create(DataQuery, {
-          app: importedApp,
+          appId: importedApp.id,
           name: query.name,
           options: query.options,
           kind: query.kind,
