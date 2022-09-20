@@ -5,7 +5,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
-import { createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
+import { Brackets, createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
 import { EncryptionService } from './encryption.service';
@@ -25,6 +25,8 @@ type FetchUserResponse = {
   invitationToken?: string;
   accountSetupToken?: string;
 };
+
+type UserFilterOptions = { email?: string; firstName?: string; lastName?: string };
 
 @Injectable()
 export class OrganizationsService {
@@ -112,13 +114,79 @@ export class OrganizationsService {
     }, manager);
   }
 
-  async fetchUsers(user: any): Promise<FetchUserResponse[]> {
-    const organizationUsers = await this.organizationUsersRepository.find({
-      where: { organizationId: user.organizationId },
-      relations: ['user'],
-    });
+  async fetchUsersByValue(user: User, searchInput: string): Promise<any> {
+    if (!searchInput) {
+      return [];
+    }
+    const options = {
+      email: searchInput,
+      firstName: searchInput,
+      lastName: searchInput,
+    };
+    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'or')
+      .orderBy('user.firstName', 'ASC')
+      .getMany();
 
-    const isAdmin = await this.usersService.hasGroup(user, 'admin');
+    return organizationUsers?.map((orgUser) => {
+      return {
+        email: orgUser.user.email,
+        firstName: orgUser.user?.firstName,
+        lastName: orgUser.user?.lastName,
+        name: `${orgUser.user?.firstName} ${orgUser.user?.lastName}`,
+        id: orgUser.id,
+        userId: orgUser.user.id,
+      };
+    });
+  }
+
+  organizationUsersQuery(organizationId: string, options: UserFilterOptions, condition?: 'and' | 'or') {
+    const getOrConditions = () => {
+      return new Brackets((qb) => {
+        if (options?.email)
+          qb.orWhere('lower(user.email) like :email', {
+            email: `%${options?.email.toLowerCase()}%`,
+          });
+        if (options?.firstName)
+          qb.orWhere('lower(user.firstName) like :firstName', {
+            firstName: `%${options?.firstName.toLowerCase()}%`,
+          });
+        if (options?.lastName)
+          qb.orWhere('lower(user.lastName) like :lastName', {
+            lastName: `%${options?.lastName.toLowerCase()}%`,
+          });
+      });
+    };
+    const getAndConditions = () => {
+      return new Brackets((qb) => {
+        if (options?.email)
+          qb.andWhere('lower(user.email) like :email', {
+            email: `%${options?.email.toLowerCase()}%`,
+          });
+        if (options?.firstName)
+          qb.andWhere('lower(user.firstName) like :firstName', {
+            firstName: `%${options?.firstName.toLowerCase()}%`,
+          });
+        if (options?.lastName)
+          qb.andWhere('lower(user.lastName) like :lastName', {
+            lastName: `%${options?.lastName.toLowerCase()}%`,
+          });
+      });
+    };
+    const query = createQueryBuilder(OrganizationUser, 'organization_user')
+      .innerJoinAndSelect('organization_user.user', 'user')
+      .where('organization_user.organization_id = :organizationId', {
+        organizationId,
+      });
+    query.andWhere(condition === 'and' ? getAndConditions() : getOrConditions());
+    return query;
+  }
+
+  async fetchUsers(user: User, page: number, options: UserFilterOptions): Promise<FetchUserResponse[]> {
+    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'and')
+      .orderBy('user.createdAt', 'ASC')
+      .take(10)
+      .skip(10 * (page - 1))
+      .getMany();
 
     return organizationUsers?.map((orgUser) => {
       return {
@@ -130,7 +198,8 @@ export class OrganizationsService {
         userId: orgUser.user.id,
         role: orgUser.role,
         status: orgUser.status,
-        ...(isAdmin && orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
+        avatarId: orgUser.user.avatarId,
+        ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
         ...(this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
         this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' &&
         orgUser.user.invitationToken
@@ -138,6 +207,10 @@ export class OrganizationsService {
           : {}),
       };
     });
+  }
+
+  async usersCount(user: User, options: UserFilterOptions): Promise<number> {
+    return await this.organizationUsersQuery(user.organizationId, options, 'and').getCount();
   }
 
   async fetchOrganizations(user: any): Promise<Organization[]> {

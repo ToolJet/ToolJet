@@ -35,6 +35,7 @@ import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
+import * as path from 'path';
 import * as fs from 'fs';
 
 const imports = [
@@ -104,7 +105,9 @@ if (process.env.SERVE_CLIENT !== 'false') {
       if (err) {
         return console.log(err);
       }
-      const result = data.replace(/__REPLACE_SUB_PATH__/g, newValue);
+      const result = data
+        .replace(/__REPLACE_SUB_PATH__\/api/g, path.join(newValue, '/api'))
+        .replace(/__REPLACE_SUB_PATH__/g, newValue);
       fs.writeFile(file, result, 'utf8', function (err) {
         if (err) return console.log(err);
       });
@@ -113,6 +116,8 @@ if (process.env.SERVE_CLIENT !== 'false') {
 
   imports.unshift(
     ServeStaticModule.forRoot({
+      // Have to remove trailing slash of SUB_PATH.
+      serveRoot: process.env.SUB_PATH === undefined ? '' : process.env.SUB_PATH.replace(/\/$/, ''),
       rootPath: join(__dirname, '../../../', 'frontend/build'),
     })
   );

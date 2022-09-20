@@ -4,8 +4,9 @@ import { Server } from 'ws';
 import { AuthService } from 'src/services/auth.service';
 import { isEmpty } from 'lodash';
 import { setupWSConnection } from 'y-websocket/bin/utils';
+import { maybeSetSubPath } from '../helpers/utils.helper';
 
-@WebSocketGateway({ path: '/yjs' })
+@WebSocketGateway({ path: maybeSetSubPath('/yjs') })
 export class YjsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private authService: AuthService) {}
   @WebSocketServer()

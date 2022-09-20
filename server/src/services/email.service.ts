@@ -3,7 +3,6 @@ import handlebars from 'handlebars';
 const path = require('path');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
-const previewEmail = require('preview-email');
 
 handlebars.registerHelper('capitalize', function (value) {
   return value.charAt(0);
@@ -53,6 +52,7 @@ export class EmailService {
       console.log('to: ', to);
       console.log('Subject: ', subject);
       console.log('content: ', html);
+      const previewEmail = require('preview-email');
 
       previewEmail(message).then(console.log).catch(console.error);
     } else {

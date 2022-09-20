@@ -25,7 +25,6 @@ export class AppController {
     return await this.authService.switchOrganization(organizationId, user);
   }
 
-  @UseGuards(SignupDisableGuard)
   @Post('set-password-from-token')
   async create(@Body() userCreateDto: CreateUserDto) {
     await this.authService.setupAccountFromInvitationToken(userCreateDto);
@@ -57,8 +56,13 @@ export class AppController {
     return {};
   }
 
-  @Get('/health')
+  @Get(['/health', '/api/health'])
   async healthCheck(@Request() req) {
     return { works: 'yeah' };
+  }
+
+  @Get('/')
+  async rootPage(@Request() req) {
+    return { message: 'Instance seems healthy but this is probably not the right URL to access.' };
   }
 }

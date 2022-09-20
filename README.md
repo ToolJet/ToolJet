@@ -82,6 +82,7 @@ Want to give ToolJet a quick spin on your local machine? You can run the followi
 ```bash
 docker run \
   --name tooljet \
+  --user root \
   --restart unless-stopped \
   -p 3000:3000 \
   -v tooljet_data:/var/lib/postgresql/13/main \
