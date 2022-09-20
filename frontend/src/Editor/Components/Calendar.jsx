@@ -3,6 +3,7 @@ import { Calendar as ReactCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { CalendarEventPopover } from './CalendarPopover';
+import _ from 'lodash';
 
 const localizer = momentLocalizer(moment);
 
@@ -82,9 +83,13 @@ export const Calendar = function ({
     : allowedCalendarViews[0];
 
   useEffect(() => {
-    setExposedVariable('currentView', defaultView);
+    if (!_.isEqual(exposedVariables.currentDate, properties.defaultDate)) {
+      console.log('currentDate || calendar', defaultDate);
+      setExposedVariable('currentDate', moment(defaultDate).format(properties.dateFormat));
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultView]);
+  }, [JSON.stringify(defaultDate)]);
 
   const components = {
     timeGutterHeader: () => <div style={{ height: '100%', display: 'flex', alignItems: 'flex-end' }}>All day</div>,
@@ -92,8 +97,6 @@ export const Calendar = function ({
       header: (props) => <div>{moment(props.date).format(styles.weekDateFormat)}</div>,
     },
   };
-
-  if (exposedVariables.currentDate === undefined) setExposedVariable('currentDate', properties.defaultDate);
 
   return (
     <div id={id} style={{ display: styles.visibility ? 'block' : 'none' }}>
@@ -105,7 +108,7 @@ export const Calendar = function ({
         ${exposedVariables.currentView === 'week' ? 'resources-week-cls' : ''}
         ${properties.displayViewSwitcher ? '' : 'hide-view-switcher'}`}
         localizer={localizer}
-        defaultDate={defaultDate}
+        date={defaultDate}
         events={events}
         startAccessor="start"
         endAccessor="end"
