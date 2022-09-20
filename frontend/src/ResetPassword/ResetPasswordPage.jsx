@@ -1,7 +1,15 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
+import { PasswordResetinfoScreen } from '@/successInfoScreen';
+import OnboardingNavbar from '../_components/OnboardingNavbar';
+import OnboardingCta from '../_components/OnboardingCta';
+import { ButtonSolid } from '../_components/AppButton';
+import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
+import EyeHide from '../../assets/images/onboarding assets /01 Icons /EyeHide';
+import EyeShow from '../../assets/images/onboarding assets /01 Icons /EyeShow';
 import { withTranslation } from 'react-i18next';
+
 class ResetPasswordComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -11,9 +19,13 @@ class ResetPasswordComponent extends React.Component {
       token: '',
       email: '',
       password: '',
+      showResponseScreen: false,
+      showPassword: false,
     };
   }
-
+  handleOnCheck = () => {
+    this.setState((prev) => ({ showPassword: !prev.showPassword }));
+  };
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value?.trim() });
   };
@@ -36,7 +48,7 @@ class ResetPasswordComponent extends React.Component {
         .resetPassword({ ...this.state, token })
         .then(() => {
           toast.success('Password reset successfully');
-          this.props.history.push('/login');
+          this.setState({ showResponseScreen: true });
         })
         .catch((res) => {
           this.setState({
@@ -50,58 +62,86 @@ class ResetPasswordComponent extends React.Component {
     const { isLoading } = this.state;
 
     return (
-      <div className="page page-center">
-        <div className="container-tight py-2">
-          <div className="text-center mb-4">
-            <a href="." className="navbar-brand-autodark">
-              <img src="assets/images/logo-color.svg" height="30" alt="" />
-            </a>
+      <div className="common-auth-section-whole-wrapper page">
+        <div className="common-auth-section-left-wrapper">
+          <OnboardingNavbar />
+          <div className="common-auth-section-left-wrapper-grid">
+            <div></div>
+
+            <form action="." method="get" autoComplete="off">
+              <div className="common-auth-container-wrapper ">
+                {!this.state.showResponseScreen ? (
+                  <>
+                    <h2 className="common-auth-section-header reset-password-header">Reset Password</h2>
+                    <div className="reset-password-input-container">
+                      <label className="tj-text-input-label">New Password</label>
+                      <div className="login-password">
+                        <input
+                          onChange={this.handleChange}
+                          name="password"
+                          type={this.state.showPassword ? 'text' : 'password'}
+                          placeholder="Password"
+                          autoComplete="off"
+                          className="tj-text-input reset-password-input"
+                        />
+                        <div className="singup-password-hide-img" onClick={this.handleOnCheck}>
+                          {this.state.showPassword ? (
+                            <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                          ) : (
+                            <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                          )}
+                        </div>
+                        <span className="tj-input-helper-text">Password must be atleast 8 charactors</span>
+
+                        <span></span>
+                      </div>
+                    </div>
+                    <div className="reset-password-input-container">
+                      <label className="tj-text-input-label">Re-enter the password</label>
+                      <div className="login-password">
+                        <input
+                          onChange={this.handleChange}
+                          name="password_confirmation"
+                          type={this.state.showPassword ? 'text' : 'password'}
+                          placeholder="Re-enter the password"
+                          autoComplete="off"
+                          className="tj-text-input reset-password-input"
+                        />
+                        <div className="singup-password-hide-img" onClick={this.handleOnCheck}>
+                          {this.state.showPassword ? (
+                            <EyeHide fill={this.state.password_confirmation?.length ? '#384151' : '#D1D5DB'} />
+                          ) : (
+                            <EyeShow fill={this.state.password_confirmation?.length ? '#384151' : '#D1D5DB'} />
+                          )}
+                        </div>
+                        <span className="tj-input-helper-text">Password must be atleast 8 charactors</span>
+
+                        <span></span>
+                      </div>
+                    </div>
+                    <div>
+                      <ButtonSolid
+                        disabled={!this.state.password || !this.state.password_confirmation}
+                        onClick={this.handleClick}
+                        className="reset-password-btn"
+                      >
+                        Reset password
+                        <EnterIcon
+                          fill={!this.state.password || !this.state.password_confirmation ? ' #D1D5DB' : '#fff'}
+                        ></EnterIcon>
+                      </ButtonSolid>
+                    </div>
+                  </>
+                ) : (
+                  <PasswordResetinfoScreen props={this.props} />
+                )}
+              </div>
+              <div></div>
+            </form>
           </div>
-          <form className="card card-md" action="." method="get" autoComplete="off">
-            <div className="card-body">
-              <h2 className="card-title text-center mb-4">
-                {this.props.t('loginSignupPage.resetPassword', 'Reset Password')}
-              </h2>
-              <div className="mb-2">
-                <label className="form-label">{this.props.t('loginSignupPage.newPassword', 'New Password')}</label>
-                <div className="input-group input-group-flat">
-                  <input
-                    onChange={this.handleChange}
-                    name="password"
-                    type="password"
-                    className="form-control"
-                    placeholder={this.props.t('loginSignupPage.password', 'Password')}
-                    autoComplete="off"
-                  />
-                  <span className="input-group-text"></span>
-                </div>
-              </div>
-              <div className="mb-2">
-                <label className="form-label">
-                  {this.props.t('loginSignupPage.passwordConfirmation', 'Password Confirmation')}
-                </label>
-                <div className="input-group input-group-flat">
-                  <input
-                    onChange={this.handleChange}
-                    name="password_confirmation"
-                    type="password"
-                    className="form-control"
-                    placeholder={this.props.t('loginSignupPage.passwordConfirmation', 'Password Confirmation')}
-                    autoComplete="off"
-                  />
-                  <span className="input-group-text"></span>
-                </div>
-              </div>
-              <div className="form-footer">
-                <button
-                  className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
-                  onClick={this.handleClick}
-                >
-                  {this.props.t('globals.submit', 'Submit')}
-                </button>
-              </div>
-            </div>
-          </form>
+        </div>
+        <div className="common-auth-section-right-wrapper">
+          <OnboardingCta />
         </div>
       </div>
     );

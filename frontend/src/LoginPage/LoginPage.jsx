@@ -8,6 +8,12 @@ import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
+import OnboardingNavbar from '../_components/OnboardingNavbar';
+import OnboardingCta from '../_components/OnboardingCta';
+import { ButtonSolid } from '../_components/AppButton';
+import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
+import EyeHide from '../../assets/images/onboarding assets /01 Icons /EyeHide';
+import EyeShow from '../../assets/images/onboarding assets /01 Icons /EyeShow';
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -139,131 +145,124 @@ class LoginPageComponent extends React.Component {
   render() {
     const { isLoading, configs, isGettingConfigs } = this.state;
     return (
-      <div className="page page-center">
-        <div className="container-tight py-2">
-          <div className="text-center mb-4">
-            <a href="." className="navbar-brand-autodark" data-cy="login-page-logo">
-              <img src="assets/images/logo-color.svg" height="26" alt="" />
-            </a>
-          </div>
-          <form className="card card-md" action="." method="get" autoComplete="off">
-            {isGettingConfigs ? (
-              <ShowLoading />
-            ) : (
-              <div className="card-body">
-                {!configs && (
-                  <div className="text-center">
-                    {this.props.t(
-                      'loginSignupPage.noLoginMethodsEnabled',
-                      'No login methods enabled for this workspace'
-                    )}
-                  </div>
-                )}
-                {configs?.form?.enabled && (
-                  <div>
-                    <h2 className="card-title text-center mb-4" data-cy="login-page-header">
-                      {this.props.t('loginSignupPage.loginTo', 'Login to')}
-                      {this.single_organization
-                        ? this.props.t('loginSignupPage.yourAccount', 'your account')
-                        : configs?.name || this.props.t('loginSignupPage.yourAccount', 'your account')}
-                    </h2>
-                    <div className="mb-3">
-                      <label className="form-label" data-cy="email-label">
-                        {this.props.t('loginSignupPage.emailAddress', 'Email address')}
-                      </label>
-                      <input
-                        onChange={this.handleChange}
-                        name="email"
-                        type="email"
-                        className="form-control"
-                        placeholder={this.props.t('loginSignupPage.enterEmail', 'Enter email')}
-                        data-testid="emailField"
-                        data-cy="email-text-field"
-                      />
-                    </div>
-                    <div className="mb-2">
-                      <label className="form-label" data-cy="password-label">
-                        {this.props.t('loginSignupPage.password', 'Password')}
-                        <span className="form-label-description">
-                          <Link to={'/forgot-password'} tabIndex="-1" data-cy="forgot-password-link">
-                            {this.props.t('loginSignupPage.forgotPassword', 'Forgot Password')}
-                          </Link>
-                        </span>
-                      </label>
-                      <div className="input-group input-group-flat">
-                        <input
-                          onChange={this.handleChange}
-                          name="password"
-                          type={this.state.showPassword ? 'text' : 'password'}
-                          className="form-control"
-                          placeholder={this.props.t('loginSignupPage.password', 'Password')}
-                          autoComplete="off"
-                          data-testid="passwordField"
-                          data-cy="password-text-field"
-                        />
-                        <span className="input-group-text"></span>
+      <>
+        <div className="common-auth-section-whole-wrapper page">
+          <div className="common-auth-section-left-wrapper">
+            <OnboardingNavbar />
+            <div className="common-auth-section-left-wrapper-grid">
+              <div></div>
+              <form action="." method="get" autoComplete="off">
+                {isGettingConfigs ? (
+                  <ShowLoading />
+                ) : (
+                  <div className="common-auth-container-wrapper ">
+                    {!configs && <div className="text-center">No login methods enabled for this workspace</div>}
+                    {configs?.form?.enabled && (
+                      <div>
+                        <h2 className="common-auth-section-header">Sign in</h2>
+                        <div className="tj-text-input-label">
+                          {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
+                            <div className="common-auth-sub-header">
+                              New to toolJet?
+                              <Link to={'/signup'} tabIndex="-1" style={{ marginLeft: '4px' }}>
+                                Create an account
+                              </Link>
+                            </div>
+                          )}
+                        </div>
+                        {this.state.configs?.git?.enabled && (
+                          <div className="login-sso-wrapper">
+                            <GitSSOLoginButton configs={this.state.configs?.git?.configs} />
+                          </div>
+                        )}
+                        {this.state.configs?.google?.enabled && (
+                          <div className="login-sso-wrapper">
+                            <GoogleSSOLoginButton
+                              configs={this.state.configs?.google?.configs}
+                              configId={this.state.configs?.google?.config_id}
+                            />
+                          </div>
+                        )}
+                        <div className="separator-onboarding ">
+                          <div className="mt-2 separator">
+                            <h2>
+                              <span>OR</span>
+                            </h2>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="tj-text-input-label">Work email</label>
+                          <input
+                            onChange={this.handleChange}
+                            name="email"
+                            type="email"
+                            className="tj-text-input"
+                            placeholder="Enter your Work email"
+                          />
+                        </div>
+                        <div>
+                          <label className="tj-text-input-label">
+                            Password
+                            <span style={{ marginLeft: '4px' }}>
+                              <Link to={'/forgot-password'} tabIndex="-1" className="login-forgot-password">
+                                Forgot?
+                              </Link>
+                            </span>
+                          </label>
+                          <div className="login-password">
+                            <input
+                              onChange={this.handleChange}
+                              name="password"
+                              type={this.state.showPassword ? 'text' : 'password'}
+                              className="tj-text-input"
+                              placeholder="Enter new password"
+                              autoComplete="off"
+                            />
+
+                            <div className="login-password-hide-img" onClick={this.handleOnCheck}>
+                              {this.state.showPassword ? (
+                                <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                              ) : (
+                                <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="form-check show-password-field">
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        id="check-input"
-                        name="check-input"
-                        onChange={this.handleOnCheck}
-                        data-cy="checkbox-input"
-                      />
-                      <label
-                        className="form-check-label show-password-label"
-                        htmlFor="check-input"
-                        data-cy="show-password-label"
-                      >
-                        {this.props.t('loginSignupPage.showPassword', 'show password')}
-                      </label>
+                    )}
+                    <div className={` d-flex flex-column align-items-center ${!configs?.form?.enabled ? 'mt-0' : ''}`}>
+                      {configs?.form?.enabled && (
+                        <ButtonSolid
+                          className="login-btn"
+                          onClick={this.authUser}
+                          disabled={isLoading || !this.state.email || !this.state.password}
+                        >
+                          Login
+                          <EnterIcon
+                            className="enter-icon-onboard"
+                            fill={isLoading || !this.state.email || !this.state.password ? ' #D1D5DB' : '#fff'}
+                          ></EnterIcon>
+                        </ButtonSolid>
+                      )}
                     </div>
                   </div>
                 )}
-                <div
-                  className={`form-footer d-flex flex-column align-items-center ${
-                    !configs?.form?.enabled ? 'mt-0' : ''
-                  }`}
-                >
-                  {configs?.form?.enabled && (
-                    <button
-                      data-testid="loginButton"
-                      className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
-                      onClick={this.authUser}
-                      data-cy="login-button"
-                    >
-                      {this.props.t('loginSignupPage.signIn', 'Sign in')}
-                    </button>
-                  )}
-                  {this.state.configs?.google?.enabled && (
-                    <GoogleSSOLoginButton
-                      configs={this.state.configs?.google?.configs}
-                      configId={this.state.configs?.google?.config_id}
-                    />
-                  )}
-                  {this.state.configs?.git?.enabled && <GitSSOLoginButton configs={this.state.configs?.git?.configs} />}
+              </form>
+              <div></div>
+
+              {authenticationService?.currentUserValue?.organization && (
+                <div className="text-center mt-3">
+                  back to <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
                 </div>
-              </div>
-            )}
-          </form>
-          {!this.organizationId && configs?.form?.enabled && configs?.form?.enable_sign_up && (
-            <div className="text-center text-secondary mt-3" data-cy="sign-up-message">
-              {this.props.t('loginSignupPage.dontHaveAccount', `Don't have account yet?`)}
-              <Link to={'/signup'} tabIndex="-1" data-cy="sign-up-link">
-                {this.props.t('loginSignupPage.signUp', `Sign up`)}
-              </Link>
+              )}
             </div>
-          )}
-          {authenticationService?.currentUserValue?.organization && (
-            <div className="text-center mt-3">
-              back to <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
-            </div>
-          )}
+          </div>
+          <div className="common-auth-section-right-wrapper">
+            <OnboardingCta />
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 }

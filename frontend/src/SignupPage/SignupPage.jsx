@@ -5,6 +5,13 @@ import { Link } from 'react-router-dom';
 import { validateEmail } from '../_helpers/utils';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import { SignupInfoScreen } from '@/successInfoScreen';
+import OnboardingNavbar from '../_components/OnboardingNavbar';
+import OnboardingCta from '../_components/OnboardingCta';
+import { ButtonSolid } from '../_components/AppButton';
+import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
+import EyeHide from '../../assets/images/onboarding assets /01 Icons /EyeHide';
+import EyeShow from '../../assets/images/onboarding assets /01 Icons /EyeShow';
 import { withTranslation } from 'react-i18next';
 
 class SignupPageComponent extends React.Component {
@@ -13,9 +20,8 @@ class SignupPageComponent extends React.Component {
 
     this.state = {
       isLoading: false,
+      showPassword: false,
     };
-
-    console.log('window.public_config?.SSO_DISABLE_SIGNUPS--- ', window.public_config?.SSO_DISABLE_SIGNUPS != true);
 
     this.ssoConfigs = {
       enableSignUp:
@@ -41,13 +47,15 @@ class SignupPageComponent extends React.Component {
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
-
+  handleOnCheck = () => {
+    this.setState((prev) => ({ showPassword: !prev.showPassword }));
+  };
   signup = (e) => {
     e.preventDefault();
 
     this.setState({ isLoading: true });
 
-    const { email } = this.state;
+    const { email, name, password } = this.state;
 
     if (!validateEmail(email)) {
       toast.error('Invalid email', {
@@ -78,71 +86,126 @@ class SignupPageComponent extends React.Component {
     const { isLoading, signupSuccess } = this.state;
 
     return (
-      <div className="page page-center">
-        <div className="container-tight py-2">
-          <div className="text-center mb-4">
-            <a href="." className="navbar-brand-autodark">
-              <img src="assets/images/logo-color.svg" height="26" alt="" />
-            </a>
-          </div>
-          <form className="card card-md" action="." method="get" autoComplete="off">
-            {!signupSuccess && (
-              <div className="card-body">
-                <h2 className="card-title text-center mb-4">
-                  {this.props.t('loginSignupPage.createToolJetAccount', 'Create a ToolJet account')}
-                </h2>
-                {this.ssoConfigs.enableSignUp && (
-                  <div className="d-flex flex-column align-items-center separator-bottom">
-                    {this.ssoConfigs.configs?.google?.enabled && (
-                      <GoogleSSOLoginButton
-                        text="Sign up with Google"
-                        configs={this.ssoConfigs.configs?.google?.configs}
-                        configId={this.ssoConfigs.configs?.google?.config_id}
+      <div className="page common-auth-section-whole-wrapper ">
+        <div className="common-auth-section-left-wrapper">
+          <OnboardingNavbar />
+
+          <div className="common-auth-section-left-wrapper-grid">
+            <div></div>
+
+            <form action="." method="get" autoComplete="off">
+              {!signupSuccess && (
+                <div className="common-auth-container-wrapper ">
+                  <h2 className="common-auth-section-header ">Join ToolJet</h2>
+                  {!signupSuccess && (
+                    <div className="singup-page-signin-redirect">
+                      Already have an account? &nbsp;
+                      <Link to={'/login'} tabIndex="-1">
+                        Sign in
+                      </Link>
+                    </div>
+                  )}
+                  {this.ssoConfigs.enableSignUp && (
+                    <div>
+                      {!this.state.configs?.git?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <GitSSOLoginButton configs={this.state.configs?.git?.configs} />
+                        </div>
+                      )}
+                      {!this.state.configs?.google?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <GoogleSSOLoginButton
+                            configs={this.state.configs?.google?.configs}
+                            configId={this.state.configs?.google?.config_id}
+                          />
+                        </div>
+                      )}
+                      {(this.ssoConfigs.configs?.git?.enabled || this.ssoConfigs.configs?.google?.enabled) && (
+                        <div className="separator-singup">
+                          <div className="mt-2 separator">
+                            <h2>
+                              <span>OR</span>
+                            </h2>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="singup-page-inputs-wrapper">
+                    <label className="tj-text-input-label">Name</label>
+                    <input
+                      onChange={this.handleChange}
+                      name="name"
+                      type="name"
+                      className="tj-text-input "
+                      placeholder="Enter your business name"
+                    />
+                    <label className="tj-text-input-label">Email address</label>
+                    <input
+                      onChange={this.handleChange}
+                      name="email"
+                      type="email"
+                      className="tj-text-input"
+                      placeholder="Enter your business email"
+                    />
+                    <label className="tj-text-input-label">Password</label>
+                    <div className="login-password singup-password-wrapper">
+                      <input
+                        onChange={this.handleChange}
+                        name="password"
+                        type={this.state.showPassword ? 'text' : 'password'}
+                        className="tj-text-input"
+                        placeholder="Enter new password"
                       />
-                    )}
-                    {this.ssoConfigs.configs?.git?.enabled && (
-                      <GitSSOLoginButton text="Sign up with GitHub" configs={this.ssoConfigs.configs?.git?.configs} />
-                    )}
-                    {(this.ssoConfigs.configs?.git?.enabled || this.ssoConfigs.configs?.google?.enabled) && (
-                      <div className="mt-2 separator">
-                        <h2>
-                          <span>OR</span>
-                        </h2>
+                      <div className="singup-password-hide-img" onClick={this.handleOnCheck}>
+                        {this.state.showPassword ? (
+                          <EyeHide fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                        ) : (
+                          <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
+                        )}
                       </div>
-                    )}
+                      <span className="tj-input-helper-text">Password must be atleast 8 charactor</span>
+                    </div>
                   </div>
-                )}
-                <div className="mb-3">
-                  <label className="form-label">{this.props.t('loginSignupPage.emailAddress', 'Email address')}</label>
-                  <input
-                    onChange={this.handleChange}
-                    name="email"
-                    type="email"
-                    className="form-control"
-                    placeholder={this.props.t('loginSignupPage.enterBusinessEmail', 'Enter your business email')}
-                  />
+
+                  <div>
+                    <ButtonSolid
+                      className="singup-btn"
+                      onClick={this.signup}
+                      disabled={isLoading || !this.state.email || !this.state.password || !this.state.name}
+                    >
+                      Get started for free
+                      <EnterIcon
+                        className="enter-icon-onboard"
+                        fill={
+                          isLoading || !this.state.email || !this.state.password || !this.state.name
+                            ? ' #D1D5DB'
+                            : '#fff'
+                        }
+                      />
+                    </ButtonSolid>
+                  </div>
+                  <p className="singup-terms">
+                    By Signing up you are agreeing to the
+                    <span>
+                      <a href="https://www.tooljet.com/privacy">Terms of Service &</a>
+                      <a href="https://www.tooljet.com/terms">Privacy Policy.</a>
+                    </span>
+                  </p>
                 </div>
-                <div className="form-footer">
-                  <button className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`} onClick={this.signup}>
-                    {this.props.t('loginSignupPage.signUp', 'Sign up')}
-                  </button>
+              )}
+              {signupSuccess && (
+                <div>
+                  <SignupInfoScreen props={this.props} email={this.state.email} signup={this.signup} />
                 </div>
-              </div>
-            )}
-            {signupSuccess && (
-              <div className="card-body">
-                {this.props.t('loginSignupPage.emailConfirmLink', 'Please check your email for confirmation link')}
-              </div>
-            )}
-          </form>
-          {!signupSuccess && (
-            <div className="text-center text-muted mt-3">
-              {this.props.t('loginSignupPage.alreadyHaveAnAccount', 'Already have an account?')}
-              <Link to={'/login'} tabIndex="-1">
-                {this.props.t('loginSignupPage.signIn', 'Sign in')}
-              </Link>
-            </div>
-          )}
+              )}
+            </form>
+            <div></div>
+          </div>
+        </div>
+
+        <div className="common-auth-section-right-wrapper">
+          <OnboardingCta />
         </div>
       </div>
     );

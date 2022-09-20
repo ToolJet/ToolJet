@@ -17,7 +17,7 @@ import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources
 import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
-import { ResetPassword, ResetPassword2 } from '@/ResetPassword';
+import { ResetPassword } from '@/ResetPassword';
 import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { lt } from 'semver';
@@ -25,12 +25,9 @@ import Toast from '@/_ui/Toast';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import { Editor } from '@/Editor/Editor';
 import { RedirectSso } from '@/RedirectSso/RedirectSso';
-import { LoginPage2 } from '../LoginPage/LoginPage2';
-import { ForgotPassword2 } from '../ForgotPassword/ForgotPassword2';
-import { SignupPage2 } from '../SignupPage/SignupPage2';
-import { VerificationSuccessInfoScreen } from '@/successInfoScreen';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
+import { VerificationSuccessInfoScreen } from '@/successInfoScreen';
 
 class App extends React.Component {
   constructor(props) {
@@ -127,12 +124,12 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
-            <Route path="/login/:organizationId" exact component={LoginPage2} />
-            <Route path="/login" exact component={LoginPage2} />
+            <Route path="/login/:organizationId" exact component={LoginPage} />
+            <Route path="/login" exact component={LoginPage} />
             <Route path="/sso/:origin/:configId" exact component={Oauth} />
             <Route path="/sso/:origin" exact component={Oauth} />
-            <Route path="/signup" component={SignupPage2} />
-            <Route path="/forgot-password" component={ForgotPassword2} />
+            <Route path="/signup" component={SignupPage} />
+            <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/multiworkspace" component={RedirectSso} />
             <Route
               path="/reset-password/:token"
@@ -147,7 +144,7 @@ class App extends React.Component {
                 />
               )}
             />
-            <Route path="/reset-password" component={ResetPassword2} />
+            <Route path="/reset-password" component={ResetPassword} />
             <Route
               path="/invitations/:token"
               render={(props) => (
