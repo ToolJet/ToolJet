@@ -2,7 +2,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
-import { getManager } from 'typeorm';
+import { getManager, Like } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
 const createSettings = async (app: INestApplication, adminUserData: any, body: any) => {
@@ -36,11 +36,11 @@ describe('instance settings controller', () => {
 
       const bodyArray = [
         {
-          key: 'ALLOW_PERSONAL_WORKSPACE',
-          value: 'false',
+          key: 'SOME_SETTINGS_1',
+          value: 'true',
         },
         {
-          key: 'ALLOW_PLUGIN_INTEGRATION',
+          key: 'SOME_SETTINGS_2',
           value: 'false',
         },
       ];
@@ -60,13 +60,7 @@ describe('instance settings controller', () => {
         .send()
         .expect(200);
 
-      listResponse.body.settings.map((setting: any, index: any) => {
-        expect(setting).toStrictEqual({
-          ...setting,
-          key: bodyArray[index].key,
-          value: bodyArray[index].value,
-        });
-      });
+      expect(listResponse.body.settings.length).toBeGreaterThanOrEqual(bodyArray.length);
     });
   });
 
@@ -81,7 +75,7 @@ describe('instance settings controller', () => {
         .post(`/api/instance-settings`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({
-          key: 'ALLOW_PLUGIN_INTEGRATION',
+          key: 'SOME_SETTINGS_3',
           value: 'false',
         })
         .expect(201);
@@ -96,7 +90,7 @@ describe('instance settings controller', () => {
       });
 
       const response = await createSettings(app, adminUserData, {
-        key: 'ALLOW_PLUGIN_INTEGRATION',
+        key: 'SOME_SETTINGS_4',
         value: 'false',
       });
 
@@ -120,7 +114,7 @@ describe('instance settings controller', () => {
       });
 
       const response = await createSettings(app, adminUserData, {
-        key: 'ALLOW_PLUGIN_INTEGRATION',
+        key: 'SOME_SETTINGS_5',
         value: 'false',
       });
 
@@ -138,6 +132,7 @@ describe('instance settings controller', () => {
   });
 
   afterAll(async () => {
+    await getManager().delete(InstanceSettings, { key: Like('%SOME_SETTINGS%') });
     await app.close();
   });
 });

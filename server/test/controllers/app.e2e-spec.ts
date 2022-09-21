@@ -493,6 +493,7 @@ describe('Authentication', () => {
             'organization',
             'group_permissions',
             'app_group_permissions',
+            'super_admin',
           ].sort()
         );
 
@@ -560,6 +561,7 @@ describe('Authentication', () => {
             'organization',
             'group_permissions',
             'app_group_permissions',
+            'super_admin',
           ].sort()
         );
 

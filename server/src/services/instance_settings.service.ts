@@ -25,6 +25,10 @@ export class InstanceSettingsService {
     return Array.isArray(key) ? instanceConfigs : instanceConfigs[key];
   }
 
+  async listSettings() {
+    return await this.instanceSettingsRepository.find();
+  }
+
   async create(params: CreateInstanceSettingsDto) {
     return await this.instanceSettingsRepository.save(
       this.instanceSettingsRepository.create({

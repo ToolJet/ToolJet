@@ -8,7 +8,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
-import { cleanObject, createDefaultInstanceSettings, dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { ConfigService } from '@nestjs/config';
 import License from '@ee/licensing/configs/License';
@@ -144,6 +144,8 @@ export class UsersService {
 
         if (isSuperAdmin(user)) {
           await this.setupSuperAdmin(user, organizationId);
+        } else {
+          return;
         }
       }
       return user;
@@ -196,10 +198,12 @@ export class UsersService {
     const { email, firstName, lastName } = userParams;
     let user: User;
 
-    const usersCount = await manager.count(User);
-    const userType = usersCount == 0 ? 'instance' : 'workspace';
-
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const userType =
+        this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && (await manager.count(User)) === 0
+          ? 'instance'
+          : 'workspace';
+
       if (!existingUser) {
         user = manager.create(User, {
           email,
@@ -217,7 +221,6 @@ export class UsersService {
         user = existingUser;
       }
       await this.attachUserGroup(groups, organizationId, user.id, manager);
-      if (userType === 'instance') await createDefaultInstanceSettings(manager);
     }, manager);
 
     return user;
@@ -369,6 +372,9 @@ export class UsersService {
   }
 
   async hasGroup(user: User, group: string, organizationId?: string): Promise<boolean> {
+    if (isSuperAdmin(user)) {
+      return true;
+    }
     const orgId = organizationId || user.organizationId;
 
     const result = await createQueryBuilder(GroupPermission, 'group_permissions')
