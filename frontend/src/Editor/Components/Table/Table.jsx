@@ -70,6 +70,7 @@ export function Table({
     parsedDisabledState,
     actionButtonRadius,
     actions,
+    resultsPerPage,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const { t } = useTranslation();
@@ -335,9 +336,9 @@ export function Table({
       setPageSize(rows?.length || 10);
     }
     if (!serverSidePagination && clientSidePagination) {
-      setPageSize(10);
+      setPageSize(resultsPerPage || 10);
     }
-  }, [clientSidePagination, serverSidePagination, rows]);
+  }, [clientSidePagination, serverSidePagination, rows, resultsPerPage]);
 
   useEffect(() => {
     const pageData = page.map((row) => row.original);
