@@ -26,7 +26,6 @@ import customFilter from './custom-filter';
 import generateColumnsData from './columns';
 import generateActionsData from './columns/actions';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
-import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 
 export function Table({
