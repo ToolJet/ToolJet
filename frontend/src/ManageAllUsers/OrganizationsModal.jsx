@@ -13,6 +13,7 @@ const OrganizationsModal = ({
   archiveOrgUser,
   unarchiveOrgUser,
   archiveAll,
+  archivingFromAllOrgs,
 }) => {
   const organization_users = selectedUser?.organization_users;
 
@@ -47,7 +48,9 @@ const OrganizationsModal = ({
                   </th>
                   <th className="w-1">
                     <button
-                      className="btn btn-sm w-100 btn-outline-danger"
+                      className={cx('btn btn-sm btn-outline-danger', {
+                        'btn-loading': archivingFromAllOrgs,
+                      })}
                       onClick={archiveAll}
                       style={{ minWidth: '100px' }}
                     >

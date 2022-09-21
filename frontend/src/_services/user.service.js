@@ -5,7 +5,6 @@ import queryString from 'query-string';
 export const userService = {
   getAll,
   getInstanceUsers,
-  archiveAll,
   createUser,
   deleteUser,
   updateCurrentUser,
@@ -18,11 +17,6 @@ export const userService = {
 function getAll() {
   const requestOptions = { method: 'GET', headers: authHeader() };
   return fetch(`${config.apiUrl}/users`, requestOptions).then(handleResponse);
-}
-
-function archiveAll(userId) {
-  const requestOptions = { method: 'POST', headers: authHeader() };
-  return fetch(`${config.apiUrl}/users/${userId}/archive-all`, requestOptions).then(handleResponse);
 }
 
 function getInstanceUsers(page, options) {
