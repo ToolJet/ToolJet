@@ -46,7 +46,8 @@ class QueryManagerComponent extends React.Component {
     };
 
     this.previewPanelRef = React.createRef();
-    this.buttonConfig = JSON.parse(localStorage.getItem('queryManagerButtonConfig'));
+    this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences'));
+    this.buttonConfig = this.queryManagerPreferences?.buttonConfig ?? {};
   }
 
   setStateFromProps = (props) => {
@@ -387,10 +388,16 @@ class QueryManagerComponent extends React.Component {
   updateButtonText = (text, shouldRunQuery) => {
     if (this.state.mode === 'edit') {
       this.buttonConfig = { ...this.buttonConfig, editMode: { text: text, shouldRunQuery: shouldRunQuery } };
-      localStorage.setItem('queryManagerButtonConfig', JSON.stringify(this.buttonConfig));
+      localStorage.setItem(
+        'queryManagerPreferences',
+        JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
+      );
     } else {
       this.buttonConfig = { ...this.buttonConfig, createMode: { text: text, shouldRunQuery: shouldRunQuery } };
-      localStorage.setItem('queryManagerButtonConfig', JSON.stringify(this.buttonConfig));
+      localStorage.setItem(
+        'queryManagerPreferences',
+        JSON.stringify({ ...this.queryManagerPreferences, buttonConfig: this.buttonConfig })
+      );
     }
     this.setState({ buttonText: text, shouldRunQuery: shouldRunQuery });
   };
