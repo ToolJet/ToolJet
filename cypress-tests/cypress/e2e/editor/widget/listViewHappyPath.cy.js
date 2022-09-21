@@ -13,6 +13,9 @@ import {
   dropWidgetToListview,
   verifyMultipleComponentValuesFromInspector,
   addDataToListViewInputs,
+  verifyValuesOnList,
+  verifyExposedValueByToast,
+  textArrayOfLength,
 } from "Support/utils/listviewWidget";
 import {
   openAccordion,
@@ -21,8 +24,9 @@ import {
   verifyAndModifyToggleFx,
   addDefaultEventHandler,
   addAndVerifyTooltip,
+  verifyTooltip,
   editAndVerifyWidgetName,
-  // verifyMultipleComponentValuesFromInspector,
+  pushIntoArrayOfObject,
   selectColourFromColourPicker,
   fillBoxShadowParams,
   verifyBoxShadowCss,
@@ -38,67 +42,82 @@ describe("List view widget", () => {
 
   it("should verify the properties of the list view widget", () => {
     const data = {};
+    data.marks = textArrayOfLength(3);
+    data.names = textArrayOfLength(3);
     data.widgetName = fake.widgetName;
-    // data.label = fake.widgetName;
-    // data.customMessage = fake.randomSentence;
-    data.alertMessage = fake.randomSentence;
-    // data.randomLabels = multiselectSelector.textArrayOfLength(3);
+    data.customMessage = fake.randomSentence;
 
-    openEditorSidebar("listview1");
+    openEditorSidebar(listviewText.defaultWidgetName);
     editAndVerifyWidgetName(data.widgetName);
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionEvents);
-    deleteInnerWidget(data.widgetName, "text1");
-    deleteInnerWidget(data.widgetName, "button1");
-    deleteInnerWidget(data.widgetName, "image1");
+    deleteInnerWidget(data.widgetName, commonWidgetText.text1);
+    deleteInnerWidget(data.widgetName, commonWidgetText.button1);
+    deleteInnerWidget(data.widgetName, commonWidgetText.image1);
 
     dropWidgetToListview("Text", 50, 50, data.widgetName);
 
     dropWidgetToListview("Text Input", 250, 50, data.widgetName);
-    addDataToListViewInputs(data.widgetName, "textinput1", [
-      "one",
-      "two",
-      "three",
-    ]);
-    verifyMultipleComponentValuesFromInspector(data.widgetName, "textinput1", [
-      "one",
-      "two",
-      "three",
-    ]);
+    addDataToListViewInputs(
+      data.widgetName,
+      commonWidgetText.textinput1,
+      data.names
+    );
+    verifyMultipleComponentValuesFromInspector(
+      data.widgetName,
+      commonWidgetText.textinput1,
+      data.names
+    );
 
     openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(
       "List data",
-      codeMirrorInputLabel(
-        `[{name:"name1",mark:10}, {name:"name2", mark: 20},{name:"name3", mark:30}]`
-      )
+      codeMirrorInputLabel(pushIntoArrayOfObject(data.names, data.marks))
     );
 
-    cy.get(`${commonWidgetSelector.draggableWidget("text1")}:eq(0)`).click();
+    cy.get(
+      `${commonWidgetSelector.draggableWidget(commonWidgetText.text1)}:eq(0)`
+    ).click();
     verifyAndModifyParameter("Text", codeMirrorInputLabel("listItem.name"));
     cy.forceClickOnCanvas();
     cy.get(
-      `${commonWidgetSelector.draggableWidget("textinput1")}:eq(0)`
+      `${commonWidgetSelector.draggableWidget(
+        commonWidgetText.textinput1
+      )}:eq(0)`
     ).click();
     verifyAndModifyParameter(
-      "Default Value",
+      commonWidgetText.labelDefaultValue,
       codeMirrorInputLabel("listItem.mark")
+    );
+    cy.forceClickOnCanvas();
+    verifyValuesOnList(
+      data.widgetName,
+      commonWidgetText.text1,
+      "text",
+      data.names
+    );
+    verifyValuesOnList(
+      data.widgetName,
+      commonWidgetText.textinput1,
+      "value",
+      data.marks
     );
 
     verifyMultipleComponentValuesFromInspector(
       data.widgetName,
-      "textinput1",
-      ["10", "20", "30"],
+      commonWidgetText.textinput1,
+      data.marks,
       "open"
     );
+
     cy.forceClickOnCanvas();
     openEditorSidebar(data.widgetName);
-    verifyAndModifyParameter("Row height", "99");
+    verifyAndModifyParameter(listviewText.rowHeight, "99");
 
     openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(
-      "Show bottom border",
+      listviewText.showBottomBorder,
       codeMirrorInputLabel("false")
     );
 
@@ -112,18 +131,22 @@ describe("List view widget", () => {
     openAccordion(commonWidgetText.accordionEvents);
     cy.get(commonWidgetSelector.noEventHandlerMessage).should(
       "have.text",
-      "This listview doesn't have any event handlers"
+      listviewText.noEventHandlerMessage
     );
-    addDefaultEventHandler(data.alertMessage);
+    addDefaultEventHandler(
+      codeMirrorInputLabel(
+        `components.${data.widgetName}.selectedRow.${commonWidgetText.textinput1}.value`
+      )
+    );
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
-
-    // cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage); //do something else.
+    cy.get(`[data-cy=${data.widgetName.toLowerCase()}-row-1]`).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, data.marks[1]);
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionGenaral);
     addAndVerifyTooltip(
       commonWidgetSelector.draggableWidget(data.widgetName),
-      fake.randomSentence
+      data.customMessage
     );
 
     openEditorSidebar(data.widgetName);
@@ -213,5 +236,146 @@ describe("List view widget", () => {
       data.colour,
       data.boxShadowParam
     );
+  });
+
+  it("should verify listview widget in preview", () => {
+    const data = {};
+    data.marks = textArrayOfLength(3);
+    data.names = textArrayOfLength(3);
+    data.widgetName = listviewText.defaultWidgetName;
+    data.customMessage = fake.randomSentence;
+    data.colour = fake.randomRgba;
+    data.boxShadowParam = fake.boxShadowParam;
+
+    openEditorSidebar(data.widgetName);
+    editAndVerifyWidgetName(data.widgetName);
+
+    openEditorSidebar(data.widgetName);
+    openAccordion(commonWidgetText.accordionEvents);
+    deleteInnerWidget(data.widgetName, "button1");
+    deleteInnerWidget(data.widgetName, "image1");
+
+    dropWidgetToListview("Text Input", 250, 50, data.widgetName);
+
+    cy.forceClickOnCanvas();
+    openEditorSidebar(data.widgetName);
+    verifyAndModifyParameter(
+      "List data",
+      codeMirrorInputLabel(pushIntoArrayOfObject(data.names, data.marks))
+    );
+
+    cy.get(
+      `${commonWidgetSelector.draggableWidget(commonWidgetText.text1)}:eq(0)`
+    ).click();
+    verifyAndModifyParameter("Text", codeMirrorInputLabel("listItem.name"));
+    cy.forceClickOnCanvas();
+    cy.get(
+      `${commonWidgetSelector.draggableWidget(
+        commonWidgetText.textinput1
+      )}:eq(0)`
+    ).click();
+    verifyAndModifyParameter(
+      commonWidgetText.labelDefaultValue,
+      codeMirrorInputLabel("listItem.mark")
+    );
+
+    cy.forceClickOnCanvas();
+    openEditorSidebar(data.widgetName);
+    verifyAndModifyParameter("Row height", "99");
+
+    openEditorSidebar(data.widgetName);
+    verifyAndModifyParameter(
+      "Show bottom border",
+      codeMirrorInputLabel("false")
+    );
+
+    cy.forceClickOnCanvas();
+    openEditorSidebar(data.widgetName);
+    openAccordion(commonWidgetText.accordionEvents);
+    addDefaultEventHandler(
+      codeMirrorInputLabel(
+        `components.${data.widgetName}.selectedRow.${commonWidgetText.textinput1}.value`
+      )
+    );
+
+    openEditorSidebar(data.widgetName);
+    openAccordion(commonWidgetText.accordionGenaral);
+    addAndVerifyTooltip(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.customMessage
+    );
+
+    openEditorSidebar(listviewText.defaultWidgetName);
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+
+    verifyAndModifyToggleFx(
+      commonWidgetText.parameterVisibility,
+      commonWidgetText.codeMirrorLabelTrue
+    );
+    cy.get(
+      commonWidgetSelector.draggableWidget(listviewText.defaultWidgetName)
+    ).should("not.be.visible");
+    cy.get(
+      commonWidgetSelector.parameterTogglebutton(
+        commonWidgetText.parameterVisibility
+      )
+    ).click();
+
+    cy.get("[data-cy='border-radius-fx-button']:eq(1)").click();
+    verifyAndModifyParameter(
+      commonWidgetText.parameterBorderRadius,
+      commonWidgetText.borderRadiusInput
+    );
+
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.get(
+      commonWidgetSelector.draggableWidget(listviewText.defaultWidgetName)
+    ).should("have.css", "border-radius", "20px");
+
+    openEditorSidebar(listviewText.defaultWidgetName);
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+    openAccordion(commonWidgetText.accordionGenaral, "1");
+
+    verifyAndModifyToggleFx(
+      commonWidgetText.parameterBoxShadow,
+      commonWidgetText.boxShadowDefaultValue,
+      false
+    );
+
+    cy.get(commonWidgetSelector.boxShadowColorPicker).click();
+    fillBoxShadowParams(
+      commonWidgetSelector.boxShadowDefaultParam,
+      data.boxShadowParam
+    );
+    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
+
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+
+    verifyTooltip(
+      commonWidgetSelector.draggableWidget(data.widgetName),
+      data.customMessage
+    );
+
+    cy.get(`[data-cy=${data.widgetName.toLowerCase()}-row-1]`).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, data.marks[1]);
+
+    verifyBoxShadowCss(
+      listviewText.defaultWidgetName,
+      data.colour,
+      data.boxShadowParam
+    );
+
+    cy.get(`[data-cy=${data.widgetName.toLowerCase()}-row-1]`)
+      .should("have.css", "height", "99px")
+      .invoke("attr", "class")
+      .and("not.contain", "border-bottom");
+
+    data.names = textArrayOfLength(3);
+    addDataToListViewInputs(
+      data.widgetName,
+      commonWidgetText.textinput1,
+      data.names
+    );
+    verifyExposedValueByToast(data.widgetName, data.names);
   });
 });

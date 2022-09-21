@@ -291,3 +291,11 @@ export const verifyWidgetText = (widgetName, text) => {
     text
   );
 };
+
+export const pushIntoArrayOfObject = (arrayOne, arrayTwo) => {
+  let arrayOfObj = "[";
+  arrayOne.forEach((element, index) => {
+    arrayOfObj += `{name: "${element}", mark: "${arrayTwo[index]}" },`;
+  });
+  return arrayOfObj + "]";
+};

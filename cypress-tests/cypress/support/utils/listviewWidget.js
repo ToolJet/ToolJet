@@ -1,5 +1,5 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { listviewSelector } from "Selectors/listview";
+import { fake } from "Fixtures/fake";
 
 export const deleteInnerWidget = (widgetName, innerWidgetName) => {
   cy.get(commonSelectors.canvas).click({ force: true });
@@ -55,11 +55,9 @@ export const verifyMultipleComponentValuesFromInspector = (
 ) => {
   cy.get(commonWidgetSelector.sidebarinspector).click();
   if (openStatus == "closed") {
-    cy.get(commonWidgetSelector.inspectorNodeComponents).click(); //components
-    cy.get(commonWidgetSelector.nodeComponent(listviewName)).click(); //listview
-    cy.get(commonWidgetSelector.nodeComponent("data")).click(); //data
-
-    // cy.get(commonWidgetSelector.nodeComponentValues).click();
+    cy.get(commonWidgetSelector.inspectorNodeComponents).click();
+    cy.get(commonWidgetSelector.nodeComponent(listviewName)).click();
+    cy.get(commonWidgetSelector.nodeComponent("data")).click();
   }
   values.forEach((value, i) => {
     if (openStatus == "closed") {
@@ -80,8 +78,33 @@ export const addDataToListViewInputs = (listviewName, childName, data) => {
   cy.get(commonWidgetSelector.draggableWidget(listviewName)).within(() => {
     cy.get(commonWidgetSelector.draggableWidget(childName)).each(
       ($element, i) => {
-        cy.wrap($element).type(data[i]);
+        cy.wrap($element).type(`{selectAll}${data[i]}`);
       }
     );
   });
+};
+
+export const verifyValuesOnList = (listviewName, childName, type, value) => {
+  cy.get(commonWidgetSelector.draggableWidget(listviewName)).within(() => {
+    cy.get(commonWidgetSelector.draggableWidget(childName)).each(
+      ($element, i) => {
+        cy.wrap($element).should(`have.${type}`, value[i]);
+      }
+    );
+  });
+};
+
+export const verifyExposedValueByToast = (widgetName, datas) => {
+  datas.forEach((data, i) => {
+    cy.get(`[data-cy=${widgetName.toLowerCase()}-row-${i}]`).click();
+    cy.verifyToastMessage(`${commonSelectors.toastMessage}:eq(0)`, data);
+  });
+};
+
+export const textArrayOfLength = (index) => {
+  const labels = [];
+  for (let i = 0; i < index; i++) {
+    labels.push(`${fake.firstName}`);
+  }
+  return labels;
 };
