@@ -13,6 +13,7 @@ describe('oauth controller', () => {
   let app: INestApplication;
   let orgRepository: Repository<Organization>;
   let mockConfig;
+  const crmResponse = jest.fn();
 
   const authResponseKeys = [
     'id',
@@ -45,6 +46,19 @@ describe('oauth controller', () => {
 
   beforeEach(async () => {
     await clearDB();
+    crmResponse.mockImplementation(() => {
+      return {
+        body: JSON.stringify({
+          contacts: {
+            contacts: [
+              {
+                id: '1234',
+              },
+            ],
+          },
+        }),
+      };
+    });
   });
 
   beforeAll(async () => {
@@ -112,6 +126,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
           await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id })
@@ -146,6 +161,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
           await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id })
@@ -193,6 +209,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(401);
         });
 
@@ -237,6 +254,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
 
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(401);
         });
@@ -283,6 +301,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
 
           await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
@@ -332,6 +351,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -392,6 +412,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
@@ -450,6 +471,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -512,6 +534,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
@@ -573,6 +596,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
@@ -640,6 +664,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -704,6 +729,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
@@ -771,6 +797,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -839,6 +866,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
@@ -921,6 +949,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -1004,6 +1033,7 @@ describe('oauth controller', () => {
 
           mockedGot.mockImplementationOnce(gitAuthResponse);
           mockedGot.mockImplementationOnce(gitGetUserResponse);
+          mockedGot.mockImplementationOnce(crmResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')

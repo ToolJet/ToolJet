@@ -26,7 +26,6 @@ import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
-const freshdeskBaseUrl = 'https://tooljet-417912114917301615.myfreshworks.com/crm/sales/api/';
 
 interface JWTPayload {
   username: string;
@@ -368,6 +367,8 @@ export class AuthService {
         })
       );
 
+      void this.usersService.updateCRM(user);
+
       await this.organizationUsersRepository.save(
         Object.assign(organizationUser, {
           invitationToken: null,
@@ -417,42 +418,6 @@ export class AuthService {
     });
   }
 
-  async updateCRM(user: User): Promise<boolean> {
-    const response = await got(`${freshdeskBaseUrl}lookup?q=${user.email}&f=email&entities=contact`, {
-      method: 'get',
-      headers: {
-        Authorization: `Token token=${process.env.FWAPIKey}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const contacts = JSON.parse(response.body)['contacts']['contacts'];
-    let contact = undefined;
-
-    if (contacts) {
-      if (contacts.length > 0) {
-        contact = contacts[0];
-      }
-    }
-
-    await got(`${freshdeskBaseUrl}contacts/${contact.id}`, {
-      method: 'put',
-      headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
-      json: {
-        contact: {
-          email: user.email,
-          first_name: user.firstName,
-          last_name: user.lastName,
-          custom_field: {
-            job_title: user.role,
-          },
-        },
-      },
-    });
-
-    return true;
-  }
-
   async acceptOrganizationInvite(acceptInviteDto: AcceptInviteDto) {
     const { password, token } = acceptInviteDto;
 
@@ -479,8 +444,6 @@ export class AuthService {
           `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`
         )
         .catch((err) => console.error('Error while sending welcome mail', err));
-
-      void this.updateCRM(user);
 
       throw new UnauthorizedException(
         'Please setup your account using account setup link shared via email before accepting the invite'

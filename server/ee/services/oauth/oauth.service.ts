@@ -269,6 +269,8 @@ export class OauthService {
             manager
           );
 
+          void this.usersService.updateCRM(userDetails);
+
           await this.organizationUsersService.create(userDetails, defaultOrganization, false, manager);
           organizationDetails = defaultOrganization;
         } else if (!userDetails) {

@@ -3,7 +3,12 @@ import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../test.helper';
 import { OAuth2Client } from 'google-auth-library';
 import { Organization } from 'src/entities/organization.entity';
+import { mocked } from 'ts-jest/utils';
 import { Repository } from 'typeorm';
+import got from 'got';
+
+jest.mock('got');
+const mockedGot = mocked(got);
 
 describe('oauth controller', () => {
   let app: INestApplication;
@@ -41,6 +46,22 @@ describe('oauth controller', () => {
 
   beforeEach(async () => {
     await clearDB();
+    const crmResponse = jest.fn();
+    crmResponse.mockImplementation(() => {
+      return {
+        body: JSON.stringify({
+          contacts: {
+            contacts: [
+              {
+                id: '1234',
+              },
+            ],
+          },
+        }),
+      };
+    });
+
+    mockedGot.mockImplementation(crmResponse);
   });
 
   beforeAll(async () => {

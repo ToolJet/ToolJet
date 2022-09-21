@@ -12,8 +12,10 @@ import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import { ConfigService } from '@nestjs/config';
 import License from '@ee/licensing/configs/License';
+import got from 'got';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
+const freshDeskBaseUrl = 'https://tooljet-417912114917301615.myfreshworks.com/crm/sales/api/';
 
 @Injectable()
 export class UsersService {
@@ -572,5 +574,41 @@ export class UsersService {
         throw new HttpException('License violation - Number of viewers exceeded', 451);
       }
     }
+  }
+
+  async updateCRM(user: User): Promise<boolean> {
+    const response = await got(`${freshDeskBaseUrl}lookup?q=${user.email}&f=email&entities=contact`, {
+      method: 'get',
+      headers: {
+        Authorization: `Token token=${process.env.FWAPIKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const contacts = JSON.parse(response.body)['contacts']['contacts'];
+    let contact = undefined;
+
+    if (contacts) {
+      if (contacts.length > 0) {
+        contact = contacts[0];
+      }
+    }
+
+    await got(`${freshDeskBaseUrl}contacts/${contact.id}`, {
+      method: 'put',
+      headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
+      json: {
+        contact: {
+          email: user.email,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          custom_field: {
+            job_title: user.role,
+          },
+        },
+      },
+    });
+
+    return true;
   }
 }
