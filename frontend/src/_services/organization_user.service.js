@@ -29,12 +29,20 @@ function changeRole(id, role) {
   return fetch(`${config.apiUrl}/organization_users/${id}/change_role`, requestOptions).then(handleResponse);
 }
 
-function archive(id) {
-  const requestOptions = { method: 'POST', headers: authHeader() };
+function archive(id, organizationId) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify({ ...(organizationId && { organizationId }) }),
+  };
   return fetch(`${config.apiUrl}/organization_users/${id}/archive`, requestOptions).then(handleResponse);
 }
 
-function unarchive(id) {
-  const requestOptions = { method: 'POST', headers: authHeader() };
+function unarchive(id, organizationId) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify({ ...(organizationId && { organizationId }) }),
+  };
   return fetch(`${config.apiUrl}/organization_users/${id}/unarchive`, requestOptions).then(handleResponse);
 }

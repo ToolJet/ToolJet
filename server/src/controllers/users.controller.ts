@@ -1,4 +1,15 @@
-import { Request, Get, Body, Controller, Post, Patch, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Request,
+  Get,
+  Body,
+  Controller,
+  Post,
+  Patch,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  Query,
+} from '@nestjs/common';
 import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
@@ -20,9 +31,28 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get('all')
-  async getAllUsers(@Request() req) {
-    const result = await this.usersService.findInstanceUsers();
-    return decamelizeKeys({ users: result });
+  async getAllUsers(@Query() query) {
+    const { page, email, firstName, lastName } = query;
+    const filterOptions = {
+      ...(email && { email }),
+      ...(firstName && { firstName }),
+      ...(lastName && { lastName }),
+    };
+    const usersCount = await this.usersService.instanceUsersCount(filterOptions);
+    let users = [];
+    if (usersCount > 0) users = await this.usersService.findInstanceUsers(page, filterOptions);
+
+    const meta = {
+      total_pages: Math.ceil(usersCount / 10),
+      total_count: usersCount,
+      current_page: parseInt(page || 1),
+    };
+
+    const response = {
+      meta,
+      users,
+    };
+    return decamelizeKeys(response);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -18,6 +18,8 @@ const UsersTable = ({
   pageChanged,
   darkMode,
   translator,
+  isLoadingAllUsers,
+  openOrganizationModal,
 }) => {
   return (
     <div className="container-xl mb-4">
@@ -31,9 +33,11 @@ const UsersTable = ({
                 {users && users[0]?.status ? (
                   <th data-cy="status-title">{translator('header.organization.menus.manageUsers.status', 'Status')}</th>
                 ) : (
-                  <th className="w-1"></th>
+                  <th data-cy="status-title">
+                    {translator('header.organization.menus.manageUsers.worksapces', 'Worksapces')}
+                  </th>
                 )}
-                <th className="w-1"></th>
+                {!isLoadingAllUsers && <th className="w-1"></th>}
               </tr>
             </thead>
             {isLoading ? (
@@ -57,9 +61,11 @@ const UsersTable = ({
                     <td className="text-muted col-auto col-1 pt-3">
                       <Skeleton />
                     </td>
-                    <td className="text-muted col-auto col-1 pt-3">
-                      <Skeleton />
-                    </td>
+                    {isLoadingAllUsers && (
+                      <td className="text-muted col-auto col-1 pt-3">
+                        <Skeleton />
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -114,26 +120,35 @@ const UsersTable = ({
                           )}
                         </td>
                       )}
-                      <td>
-                        <button
-                          type="button"
-                          style={{ minWidth: '100px' }}
-                          className={cx('btn btn-sm', {
-                            'btn-outline-success': user.status === 'archived',
-                            'btn-outline-danger': user.status === 'active' || user.status === 'invited',
-                            'btn-loading': unarchivingUser === user.id || archivingUser === user.id,
-                          })}
-                          disabled={unarchivingUser === user.id || archivingUser === user.id}
-                          onClick={() => {
-                            user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
-                          }}
-                          data-cy="user-state"
-                        >
-                          {user.status === 'archived'
-                            ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')
-                            : translator('header.organization.menus.manageUsers.archive', 'Archive')}
-                        </button>
-                      </td>
+                      {isLoadingAllUsers && (
+                        <td className="text-muted">
+                          <a className="px-2 text-muted" onClick={() => openOrganizationModal(user)}>
+                            View ({user.total_organizations})
+                          </a>
+                        </td>
+                      )}
+                      {!isLoadingAllUsers && (
+                        <td>
+                          <button
+                            type="button"
+                            style={{ minWidth: '100px' }}
+                            className={cx('btn btn-sm', {
+                              'btn-outline-success': user.status === 'archived',
+                              'btn-outline-danger': user.status === 'active' || user.status === 'invited',
+                              'btn-loading': unarchivingUser === user.id || archivingUser === user.id,
+                            })}
+                            disabled={unarchivingUser === user.id || archivingUser === user.id}
+                            onClick={() => {
+                              user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
+                            }}
+                            data-cy="user-state"
+                          >
+                            {user.status === 'archived'
+                              ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')
+                              : translator('header.organization.menus.manageUsers.archive', 'Archive')}
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
               </tbody>

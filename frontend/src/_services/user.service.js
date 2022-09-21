@@ -1,9 +1,11 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import queryString from 'query-string';
 
 export const userService = {
   getAll,
   getInstanceUsers,
+  archiveAll,
   createUser,
   deleteUser,
   updateCurrentUser,
@@ -18,9 +20,17 @@ function getAll() {
   return fetch(`${config.apiUrl}/users`, requestOptions).then(handleResponse);
 }
 
-function getInstanceUsers() {
+function archiveAll(userId) {
+  const requestOptions = { method: 'POST', headers: authHeader() };
+  return fetch(`${config.apiUrl}/users/${userId}/archive-all`, requestOptions).then(handleResponse);
+}
+
+function getInstanceUsers(page, options) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/users/all`, requestOptions).then(handleResponse);
+  const { firstName, lastName, email } = options;
+  const query = queryString.stringify({ page, firstName, lastName, email });
+
+  return fetch(`${config.apiUrl}/users/all?${query}`, requestOptions).then(handleResponse);
 }
 
 function getAvatar(id) {

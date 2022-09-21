@@ -17,6 +17,16 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
+type FetchInstanceUsersResponse = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  id: string;
+  avatarId: string;
+  organizationUsers: OrganizationUser[];
+  totalOrganizations: number;
+};
 @Injectable()
 export class UsersService {
   constructor(
@@ -31,13 +41,51 @@ export class UsersService {
     private organizationRepository: Repository<Organization>
   ) {}
 
-  async findInstanceUsers(): Promise<User[]> {
+  usersQuery(options: any) {
     return this.usersRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.organizationUsers', 'organizationUsers')
       .leftJoinAndSelect('organizationUsers.organization', 'organization')
-      .select(['user.id', 'user.email', 'user.firstName', 'user.lastName', 'organizationUsers', 'organization'])
+      .where((qb) => {
+        if (options?.email)
+          qb.andWhere('lower(user.email) like :email', {
+            email: `%${options?.email.toLowerCase()}%`,
+          });
+        if (options?.firstName)
+          qb.andWhere('lower(user.firstName) like :firstName', {
+            firstName: `%${options?.firstName.toLowerCase()}%`,
+          });
+        if (options?.lastName)
+          qb.andWhere('lower(user.lastName) like :lastName', {
+            lastName: `%${options?.lastName.toLowerCase()}%`,
+          });
+      });
+  }
+
+  async findInstanceUsers(page: number, options: any): Promise<FetchInstanceUsersResponse[]> {
+    const allUsers = await this.usersQuery(options)
+      .orderBy('user.createdAt', 'ASC')
+      .take(10)
+      .skip(10 * (page - 1))
       .getMany();
+
+    return allUsers?.map((user) => {
+      return {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        name: `${user.firstName} ${user.lastName}`,
+        id: user.id,
+        role: user.role,
+        avatarId: user.avatarId,
+        organizationUsers: user.organizationUsers,
+        totalOrganizations: user.organizationUsers.length,
+      };
+    });
+  }
+
+  async instanceUsersCount(options: any): Promise<number> {
+    return await this.usersQuery(options).getCount();
   }
 
   async findAll(organizationId: string): Promise<User[]> {

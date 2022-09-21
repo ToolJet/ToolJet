@@ -29,16 +29,18 @@ export class OrganizationUsersController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('archiveUser', UserEntity))
   @Post(':id/archive')
-  async archive(@User() user, @Param('id') id: string) {
-    await this.organizationUsersService.archive(id, user.organizationId);
+  async archive(@User() user, @Param('id') id: string, @Body() body) {
+    const organizationId = body.organizationId ? body.organizationId : user.organizationId;
+    await this.organizationUsersService.archive(id, organizationId);
     return;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('archiveUser', UserEntity))
   @Post(':id/unarchive')
-  async unarchive(@User() user, @Param('id') id: string) {
-    await this.organizationUsersService.unarchive(user, id);
+  async unarchive(@User() user, @Param('id') id: string, @Body() body) {
+    const organizationId = body.organizationId ? body.organizationId : user.organizationId;
+    await this.organizationUsersService.unarchive(user, id, organizationId);
     return;
   }
 

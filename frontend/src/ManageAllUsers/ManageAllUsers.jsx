@@ -1,5 +1,5 @@
 import React from 'react';
-import { authenticationService, organizationService, organizationUserService } from '@/_services';
+import { authenticationService, userService, organizationUserService } from '@/_services';
 import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
@@ -7,6 +7,7 @@ import { withTranslation } from 'react-i18next';
 import urlJoin from 'url-join';
 import UsersTable from '../../ee/components/UsersPage/UsersTable';
 import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
+import OrganizationsModal from './OrganizationsModal';
 
 class ManageAllUsersComponent extends React.Component {
   constructor(props) {
@@ -27,6 +28,8 @@ class ManageAllUsersComponent extends React.Component {
       },
       currentPage: 1,
       options: {},
+      showOrganizationsModal: false,
+      selectedUser: null,
     };
   }
 
@@ -68,14 +71,23 @@ class ManageAllUsersComponent extends React.Component {
       currentPage: page,
     });
 
-    organizationService.getUsers(page, options).then((data) => {
+    userService.getInstanceUsers(page, options).then((data) => {
       this.setState({
         users: data.users,
         meta: data.meta,
         isLoading: false,
       });
+      this.updateSelectedUser();
     });
   };
+
+  updateSelectedUser() {
+    const selectedUser = this.state.selectedUser;
+    if (selectedUser) {
+      const updatedUser = this.state.users.find((user) => user.id === selectedUser.id);
+      this.setState({ selectedUser: updatedUser });
+    }
+  }
 
   changeNewUserOption = (name, e) => {
     let fields = this.state.fields;
@@ -86,11 +98,11 @@ class ManageAllUsersComponent extends React.Component {
     });
   };
 
-  archiveOrgUser = (id) => {
+  archiveOrgUser = (id, organizationId) => {
     this.setState({ archivingUser: id });
 
     organizationUserService
-      .archive(id)
+      .archive(id, organizationId)
       .then(() => {
         toast.success('The user has been archived', {
           position: 'top-center',
@@ -104,11 +116,11 @@ class ManageAllUsersComponent extends React.Component {
       });
   };
 
-  unarchiveOrgUser = (id) => {
+  unarchiveOrgUser = (id, organizationId) => {
     this.setState({ unarchivingUser: id });
 
     organizationUserService
-      .unarchive(id)
+      .unarchive(id, organizationId)
       .then(() => {
         toast.success('The user has been unarchived', {
           position: 'top-center',
@@ -186,12 +198,42 @@ class ManageAllUsersComponent extends React.Component {
     this.fetchUsers(1, options);
   };
 
+  openOrganizationModal = (selectedUser) => this.setState({ showOrganizationsModal: true, selectedUser });
+
+  hideModal = () => this.setState({ showOrganizationsModal: false });
+
+  archiveAll = () => {
+    userService
+      .archiveAll(this.state.selectedUser.id)
+      .then(() => {
+        toast.success('All users have been archived', {
+          position: 'top-center',
+        });
+        this.fetchUsers(this.state.currentPage, this.state.options);
+      })
+      .catch(({ error }) => {
+        toast.error(error, { position: 'top-center' });
+      });
+  };
+
   render() {
     const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser, meta } = this.state;
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
+
+        <OrganizationsModal
+          showModal={this.state.showOrganizationsModal}
+          darkMode={this.props.darkMode}
+          hideModal={this.hideModal}
+          translator={this.props.t}
+          selectedUser={this.state.selectedUser}
+          archiveOrgUser={this.archiveOrgUser}
+          unarchiveOrgUser={this.unarchiveOrgUser}
+          archivingUser={this.archivingUser}
+          unarchivingUser={this.unarchivingUser}
+        />
 
         <div className="page-wrapper">
           <div className="container-xl">
@@ -348,6 +390,8 @@ class ManageAllUsersComponent extends React.Component {
                 pageChanged={this.pageChanged}
                 darkMode={this.props.darkMode}
                 translator={this.props.t}
+                isLoadingAllUsers={true}
+                openOrganizationModal={this.openOrganizationModal}
               />
             )}
           </div>
