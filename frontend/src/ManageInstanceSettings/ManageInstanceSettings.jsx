@@ -13,6 +13,7 @@ class ManageInstanceSettingsComponent extends React.Component {
       currentUser: authenticationService.currentUserValue,
       isSaving: false,
       errors: {},
+      settings: [],
       options: {},
     };
   }
@@ -23,21 +24,30 @@ class ManageInstanceSettingsComponent extends React.Component {
 
   fetchSettings = () => {
     instanceSettingsService.fetchSettings().then((data) => {
-      const allow_personal_workspace = data.settings?.find((setting) => setting.key === 'ALLOW_PERSONAL_WORKSPACE');
-      const allow_plugin_integration = data.settings?.find((setting) => setting.key === 'ALLOW_PLUGIN_INTEGRATION');
-      this.setState({
-        options: {
-          allow_personal_workspace: {
-            value: allow_personal_workspace.value,
-            id: allow_personal_workspace.id,
-          },
-          allow_plugin_integration: {
-            value: allow_plugin_integration.value,
-            id: allow_plugin_integration.id,
-          },
-        },
-      });
+      this.setInitialValues(data);
     });
+  };
+
+  setInitialValues = (data) => {
+    const allow_personal_workspace = data.settings?.find((setting) => setting.key === 'ALLOW_PERSONAL_WORKSPACE');
+    const allow_plugin_integration = data.settings?.find((setting) => setting.key === 'ALLOW_PLUGIN_INTEGRATION');
+    this.setState({
+      settings: data,
+      options: {
+        allow_personal_workspace: {
+          value: allow_personal_workspace.value,
+          id: allow_personal_workspace.id,
+        },
+        allow_plugin_integration: {
+          value: allow_plugin_integration.value,
+          id: allow_plugin_integration.id,
+        },
+      },
+    });
+  };
+
+  reset = () => {
+    this.setInitialValues(this.state.settings);
   };
 
   saveSettings = () => {
@@ -56,9 +66,12 @@ class ManageInstanceSettingsComponent extends React.Component {
       });
   };
 
+  returnBooleanValue = (value) => (value === 'true' ? true : false);
+
   optionsChanged = (key) => {
     const options = this.state.options;
-    options[`${key}`].value = !options[`${key}`].value === 'true' ? 'true' : 'false';
+    const newValue = !this.returnBooleanValue(options[`${key}`]?.value);
+    options[`${key}`].value = newValue.toString();
     this.setState({
       options,
     });
