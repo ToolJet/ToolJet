@@ -28,7 +28,7 @@ const OrganizationsModal = ({
         onEscapeKeyDown={hideModal}
         className={`${darkMode && 'dark'} organizations-modal`}
       >
-        <Modal.Header>
+        <Modal.Header closeButton={true} closeLabel="" onHide={hideModal}>
           <Modal.Title className="text-center">
             {translator('header.organization.menus.manageAllUsers.organizations', 'Organizations')}
           </Modal.Title>
