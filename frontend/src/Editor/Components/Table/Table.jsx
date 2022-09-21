@@ -446,6 +446,10 @@ export function Table({
                   >
                     {column.render('Header')}
                     <div
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
                       draggable="true"
                       {...column.getResizerProps()}
                       className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
