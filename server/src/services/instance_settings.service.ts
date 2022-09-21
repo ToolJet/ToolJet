@@ -40,11 +40,19 @@ export class InstanceSettingsService {
   }
 
   async update(params: any) {
-    const { allow_personal_workspace, allow_plugin_integration } = params;
-    const updatableArray = [
-      allow_personal_workspace && { id: allow_personal_workspace.id, value: allow_personal_workspace.value },
-      allow_plugin_integration && { id: allow_plugin_integration.id, value: allow_plugin_integration.value },
-    ];
+    const updatableArray = [];
+
+    params.allow_plugin_integration &&
+      updatableArray.push({
+        id: params.allow_plugin_integration.id,
+        value: params.allow_plugin_integration.value,
+      });
+
+    params.allow_personal_workspace &&
+      updatableArray.push({
+        id: params.allow_personal_workspace.id,
+        value: params.allow_personal_workspace.value,
+      });
 
     return await Promise.all(
       updatableArray.map(async (item) => {

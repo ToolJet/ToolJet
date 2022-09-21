@@ -31,6 +31,7 @@ describe('instance settings controller', () => {
     it('should list instance settings', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
+        userType: 'instance',
         groups: ['admin', 'all_users'],
       });
 
@@ -68,6 +69,7 @@ describe('instance settings controller', () => {
     it('should be able to create a new settings', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
+        userType: 'instance',
         groups: ['all_users', 'admin'],
       });
 
@@ -82,10 +84,11 @@ describe('instance settings controller', () => {
     });
   });
 
-  describe('PATCH /api/instance-settings/:id', () => {
-    it('should be able to update an existing setting', async () => {
+  describe('PATCH /api/instance-settings', () => {
+    it('should be able to update existing settings', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
+        userType: 'instance',
         groups: ['all_users', 'admin'],
       });
 
@@ -95,9 +98,9 @@ describe('instance settings controller', () => {
       });
 
       await request(app.getHttpServer())
-        .patch(`/api/instance-settings/${response.body.setting.id}`)
+        .patch(`/api/instance-settings`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
-        .send({ value: 'true' })
+        .send({ allow_personal_workspace: { value: 'true', id: response.body.setting.id } })
         .expect(200);
 
       const updatedSetting = await getManager().findOne(InstanceSettings, response.body.setting.id);
@@ -110,6 +113,7 @@ describe('instance settings controller', () => {
     it('should be able to delete an existing setting', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
+        userType: 'instance',
         groups: ['all_users', 'admin'],
       });
 

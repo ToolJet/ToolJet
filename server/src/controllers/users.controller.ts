@@ -24,12 +24,13 @@ import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { decamelizeKeys } from 'humps';
 import { UserCountGuard } from '@ee/licensing/guards/user.guard';
 import { getManager } from 'typeorm';
+import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get('all')
   async getAllUsers(@Query() query) {
     const { page, email, firstName, lastName } = query;
