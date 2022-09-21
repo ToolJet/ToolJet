@@ -149,7 +149,7 @@ class ManageAllUsersComponent extends React.Component {
                 <div className="col">
                   <div className="page-pretitle"></div>
                   <h2 className="page-title" data-cy="users-page-title">
-                    {this.props.t('header.organization.menus.manageUsers.usersAndPermission', 'Users & Permissions')}
+                    {this.props.t('header.organization.menus.manageAllUsers.manageAllUsers', 'Manage All Users')}
                   </h2>
                 </div>
               </div>

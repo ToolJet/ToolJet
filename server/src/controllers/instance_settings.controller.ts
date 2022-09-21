@@ -23,9 +23,9 @@ export class InstanceSettingsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
-  async update(@Param('id') id, @Body() body: UpdateInstanceSettingsDto) {
-    await this.instanceSettingsService.update(id, body);
+  @Patch()
+  async update(@Body() body) {
+    await this.instanceSettingsService.update(body);
     return {};
   }
 

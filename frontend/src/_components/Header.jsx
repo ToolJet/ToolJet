@@ -93,7 +93,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
                 </Link>
                 <Link
                   data-testid="settingsBtn"
-                  to="/settings"
+                  to="/instance-settings"
                   className="dropdown-item"
                   data-cy="instance-settings-link"
                 >

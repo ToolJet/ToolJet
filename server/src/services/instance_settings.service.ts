@@ -1,9 +1,8 @@
-import { CreateInstanceSettingsDto, UpdateInstanceSettingsDto } from '@dto/create_instance_settings.dto';
+import { CreateInstanceSettingsDto } from '@dto/create_instance_settings.dto';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 import { In, Repository } from 'typeorm';
-import { cleanObject } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class InstanceSettingsService {
@@ -40,21 +39,22 @@ export class InstanceSettingsService {
     );
   }
 
-  async update(settings_id: string, params: UpdateInstanceSettingsDto) {
-    const { key, value } = params;
-    const updatableParams = {
-      key,
-      value,
-    };
+  async update(params: any) {
+    const { allow_personal_workspace, allow_plugin_integration } = params;
+    const updatableArray = [
+      allow_personal_workspace && { id: allow_personal_workspace.id, value: allow_personal_workspace.value },
+      allow_plugin_integration && { id: allow_plugin_integration.id, value: allow_plugin_integration.value },
+    ];
 
-    // removing keys with undefined values
-    cleanObject(updatableParams);
-
-    return await this.instanceSettingsRepository.update(
-      {
-        id: settings_id,
-      },
-      updatableParams
+    return await Promise.all(
+      updatableArray.map(async (item) => {
+        await this.instanceSettingsRepository.update(
+          {
+            id: item.id,
+          },
+          { value: item.value }
+        );
+      })
     );
   }
 
