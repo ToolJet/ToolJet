@@ -550,7 +550,16 @@ class DataSourceManagerComponent extends React.Component {
           animation={false}
           onExit={this.onExit}
         >
-          <Modal.Header>
+          <Modal.Header className="justify-content-start">
+            {selectedDataSource && (
+              <div
+                className={`back-btn ${this.props.darkMode ? 'dark' : ''}`}
+                style={{ marginRight: '1rem', cursor: 'pointer' }}
+                onClick={() => this.setState({ selectedDataSource: false })}
+              >
+                <img className="m-0" src="assets/images/icons/back.svg" width="40" height="40" />
+              </div>
+            )}
             <Modal.Title>
               {selectedDataSource && (
                 <div className="row">
@@ -580,7 +589,7 @@ class DataSourceManagerComponent extends React.Component {
               className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
               onClick={() => this.hideModal()}
             >
-              <img src="assets/images/icons/close.svg" width="12" height="12" />
+              <img src="assets/images/icons/close.svg" width="20" height="20" />
             </span>
           </Modal.Header>
 
