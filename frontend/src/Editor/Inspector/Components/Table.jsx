@@ -170,6 +170,7 @@ class TableComponent extends React.Component {
               options={[
                 { name: 'Default', value: 'default' },
                 { name: 'String', value: 'string' },
+                { name: 'Number', value: 'number' },
                 { name: 'Text', value: 'text' },
                 { name: 'Badge', value: 'badge' },
                 { name: 'Multiple badges', value: 'badges' },
@@ -306,6 +307,57 @@ class TableComponent extends React.Component {
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
                       componentName={this.getPopoverFieldSource(column.columnType, 'customRule')}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {column.columnType === 'number' && (
+            <div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.textColor', 'Text color')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.textColor}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={'Text color of the cell'}
+                  onChange={(value) => this.onColumnItemChange(index, 'textColor', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'textColor')}
+                  fieldMeta={column}
+                  component={this.state.component}
+                />
+              </div>
+              {column.isEditable && (
+                <div>
+                  <div className="hr-text">{this.props.t('widget.Table.validation', 'Validation')}</div>
+                  <div className="field mb-2">
+                    <label className="form-label">{this.props.t('widget.Table.minValue', 'Min Value')}</label>
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={column.minLength}
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      mode="javascript"
+                      lineNumbers={false}
+                      placeholder={''}
+                      onChange={(value) => this.onColumnItemChange(index, 'minValue', value)}
+                      componentName={this.getPopoverFieldSource(column.columnType, 'minValue')}
+                    />
+                  </div>
+                  <div className="field mb-2">
+                    <label className="form-label">{this.props.t('widget.Table.maxValue', 'Max Value')}</label>
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={column.maxLength}
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      mode="javascript"
+                      lineNumbers={false}
+                      placeholder={''}
+                      onChange={(value) => this.onColumnItemChange(index, 'maxValue', value)}
+                      componentName={this.getPopoverFieldSource(column.columnType, 'maxValue')}
                     />
                   </div>
                 </div>
