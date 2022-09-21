@@ -6,11 +6,11 @@ to: <%= docs_path %>/docs/data-sources/<%= name %>.md
 %>
 # <%= name %>
 
-ToolJet can connect to <%= Display_name %> databases to read and write data. 
+ToolJet can connect to <%= Display_name %> datasource to read and write data. 
 
 - [Connection](#connection)
 - [Getting Started](#querying-<%= name %>)
 
 ## Connection
 
-## Querying <%= Display_name %>
+## Querying <%= Display_name %> operations
