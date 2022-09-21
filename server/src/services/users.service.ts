@@ -142,8 +142,10 @@ export class UsersService {
     let user: User;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const usersCount = await manager.count(User);
-      const userType = usersCount === 0 ? 'instance' : 'workspace';
+      const userType =
+        this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && (await manager.count(User)) === 0
+          ? 'instance'
+          : 'workspace';
 
       if (!existingUser) {
         user = manager.create(User, {
