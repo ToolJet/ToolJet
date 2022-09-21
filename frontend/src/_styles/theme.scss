@@ -6355,3 +6355,30 @@ input.hide-input-arrows{
     height: 100%;
   }
 }
+// Table set to full width
+.jet-data-table thead {
+  display: flex !important;
+
+  tr {
+    width: 99.9% !important;
+
+    th:last-child {
+      flex: 1 1 auto;
+
+
+    }
+  }
+}
+
+tbody {
+  width: 99.9% !important;
+
+  tr {
+    width: 99.9% !important;
+
+    td:last-child {
+      flex: 1 1 auto;
+
+    }
+  }
+}
