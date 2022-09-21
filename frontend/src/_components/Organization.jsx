@@ -304,9 +304,6 @@ export const Organization = function Organization({ darkMode }) {
             <Link data-tesid="settingsBtn" to="/manage-sso" className="dropdown-item" data-cy="manage-sso">
               {t('header.organization.menus.menusList.manageSso', 'Manage SSO')}
             </Link>
-            <Link data-tesid="settingsBtn" to="/all-users" className="dropdown-item" data-cy="manage-superadmins">
-              {t('header.organization.menus.menusList.superadminsettings', 'Super Admin Settings')}
-            </Link>
           </>
         )}
         <Link data-tesid="settingsBtn" to="/manage-environment-vars" className="dropdown-item">

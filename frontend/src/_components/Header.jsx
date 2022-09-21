@@ -15,7 +15,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   // eslint-disable-next-line no-unused-vars
   const [pathName, setPathName] = useState(document.location.pathname);
   const [avatar, setAvatar] = useState();
-  const { first_name, last_name, avatar_id, admin } = authenticationService.currentUserValue;
+  const { first_name, last_name, avatar_id, admin, super_admin } = authenticationService.currentUserValue;
   const currentVersion = localStorage.getItem('currentVersion');
   const newHistory = useHistory();
   const { t } = useTranslation();
@@ -73,6 +73,35 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
           <div>
             <Organization admin={admin} darkMode={darkMode} />
           </div>
+          {super_admin && (
+            <div className="nav-item dropdown">
+              <a
+                href="#"
+                className="nav-link d-flex lh-1 text-reset p-0"
+                data-bs-toggle="dropdown"
+                aria-label="Open super admin menu"
+                data-testid="superAdminHeader"
+              >
+                <div className="d-xl-block" data-cy="superadmin-menu">
+                  <img className="cursor-pointer" src="assets/images/icons/manage.svg" width="20" height="20"></img>
+                </div>
+              </a>
+
+              <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow end-0" data-cy="superadmin-menu">
+                <Link data-tesid="settingsBtn" to="/all-users" className="dropdown-item" data-cy="manage-superadmins">
+                  {t('header.manageAllUsers', 'Manage All Users')}
+                </Link>
+                <Link
+                  data-testid="settingsBtn"
+                  to="/settings"
+                  className="dropdown-item"
+                  data-cy="instance-settings-link"
+                >
+                  {t('header.instanceSettings', 'Manage Instance Settings')}
+                </Link>
+              </div>
+            </div>
+          )}
           <div className="nav-item dropdown ms-2 user-avatar-nav-item">
             <a
               href="#"
