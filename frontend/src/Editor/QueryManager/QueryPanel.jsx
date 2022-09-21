@@ -2,25 +2,25 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
 
 const QueryPanel = ({ queryPanelHeight, children }) => {
-  const queryManagerPreferces = JSON.parse(localStorage.getItem('queryManagerPreferces')) ?? {};
-  const [isExpanded, setExpanded] = useState(queryManagerPreferces?.isExpanded ?? true);
+  const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
+  const [isExpanded, setExpanded] = useState(queryManagerPreferences?.isExpanded ?? true);
   const isComponentMounted = useRef(false);
   const queryPaneRef = useRef(null);
   const [isDragging, setDragging] = useState(false);
-  const [height, setHeight] = useState(queryManagerPreferces?.queryPanelHeight ?? queryPanelHeight);
+  const [height, setHeight] = useState(queryManagerPreferences?.queryPanelHeight ?? queryPanelHeight);
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
 
   useEffect(() => {
+    // using useRef for isExpanded to avoid, useEffect running in the initial rendering
     if (isComponentMounted.current) {
       localStorage.setItem(
-        'queryManagerPreferces',
-        JSON.stringify({ ...queryManagerPreferces, isExpanded: !isExpanded })
+        'queryManagerPreferences',
+        JSON.stringify({ ...queryManagerPreferences, isExpanded: !isExpanded })
       );
       setExpanded(!isExpanded);
     } else {
       isComponentMounted.current = true;
     }
-    // setHeight(queryPanelHeight);
   }, [queryPanelHeight]);
 
   const onMouseUp = () => {
@@ -48,8 +48,8 @@ const QueryPanel = ({ queryPanelHeight, children }) => {
         if (height > 95) height = 100;
         if (height < 4.5) height = 4.5;
         localStorage.setItem(
-          'queryManagerPreferces',
-          JSON.stringify({ ...queryManagerPreferces, queryPanelHeight: height, isExpanded: true })
+          'queryManagerPreferences',
+          JSON.stringify({ ...queryManagerPreferences, queryPanelHeight: height, isExpanded: true })
         );
         setExpanded(true);
         setHeight(height);
