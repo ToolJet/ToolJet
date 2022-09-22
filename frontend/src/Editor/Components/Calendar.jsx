@@ -13,9 +13,8 @@ const prepareEvent = (event, dateFormat) => ({
   end: moment(event.end, dateFormat).toDate(),
 });
 
-const parseDate = (date, dateFormat, forDefaultDateProp = false) => {
-  const format = forDefaultDateProp ? dateFormat.replace(/:ss|:SSS/g, '') : dateFormat;
-  const parsed = moment(date, format).toDate();
+const parseDate = (date, dateFormat) => {
+  const parsed = moment(date, dateFormat).toDate();
 
   //handle invalid dates
   if (isNaN(parsed.getTime())) {
@@ -44,7 +43,7 @@ export const Calendar = function ({
   const events = Array.isArray(properties?.events)
     ? properties?.events?.map((event) => prepareEvent(event, properties.dateFormat))
     : [];
-  const defaultDate = parseDate(properties.defaultDate, properties.dateFormat, true);
+  const defaultDate = parseDate(properties.defaultDate, properties.dateFormat);
 
   const todayStartTime = moment().startOf('day').toDate();
   const todayEndTime = moment().endOf('day').toDate();
