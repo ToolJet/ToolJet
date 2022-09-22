@@ -14,7 +14,6 @@ import { EmailService } from './email.service';
 import { decamelizeKeys } from 'humps';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
-import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
@@ -177,25 +176,6 @@ export class AuthService {
     });
   }
 
-  async createCRMUser(user): Promise<boolean> {
-    await got('https://tooljet-417912114917301615.myfreshworks.com/crm/sales/api/contacts', {
-      method: 'post',
-      headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
-      json: {
-        contact: {
-          email: user.email,
-          first_name: user.firstName,
-          last_name: user.lastName,
-          custom_field: {
-            job_title: user.role,
-          },
-        },
-      },
-    });
-
-    return true;
-  }
-
   async switchOrganization(newOrganizationId: string, user: User, isNewOrganization?: boolean) {
     if (!(isNewOrganization || user.isPasswordLogin || user.isSSOLogin)) {
       throw new UnauthorizedException();
@@ -292,7 +272,7 @@ export class AuthService {
       await this.organizationUsersService.create(user, organization, true, manager);
       await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 
-      void this.createCRMUser(user);
+      void this.usersService.createCRMUser(user);
 
       await this.auditLoggerService.perform(
         {

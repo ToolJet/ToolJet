@@ -576,6 +576,25 @@ export class UsersService {
     }
   }
 
+  async createCRMUser(user): Promise<boolean> {
+    await got(`${freshDeskBaseUrl}contacts`, {
+      method: 'post',
+      headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
+      json: {
+        contact: {
+          email: user.email,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          custom_field: {
+            job_title: user.role,
+          },
+        },
+      },
+    });
+
+    return true;
+  }
+
   async updateCRM(user: User): Promise<boolean> {
     const response = await got(`${freshDeskBaseUrl}lookup?q=${user.email}&f=email&entities=contact`, {
       method: 'get',
