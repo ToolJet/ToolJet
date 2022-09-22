@@ -62,7 +62,7 @@ export class UsersService {
       });
   }
 
-  async findInstanceUsers(page: number, options: any): Promise<FetchInstanceUsersResponse[]> {
+  async findInstanceUsers(page = 1, options: any): Promise<FetchInstanceUsersResponse[]> {
     const allUsers = await this.usersQuery(options)
       .orderBy('user.createdAt', 'ASC')
       .take(10)
