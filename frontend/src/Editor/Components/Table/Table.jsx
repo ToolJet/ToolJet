@@ -14,6 +14,8 @@ import {
 } from 'react-table';
 import cx from 'classnames';
 import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
+import Select from '@/_ui/Select';
+import defaultStyles from '@/_ui/Select/styles';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
@@ -47,6 +49,17 @@ export function Table({
   properties,
 }) {
   const { t } = useTranslation();
+
+  const selectStyles = (width, height) => {
+    return {
+      ...defaultStyles(darkMode, width),
+      menuPortal: (provided) => ({ ...provided, zIndex: 999 }),
+      menuList: (base) => ({
+        ...base,
+        maxHeight: 100,
+      }),
+    };
+  };
 
   const color =
     component.definition.styles.textColor.value !== '#000'
@@ -1119,14 +1132,14 @@ export function Table({
               </button>
             </div>
           </div>
-          <div className="card-body">
+          <div className="card-body overflow-auto">
             {filters.map((filter, index) => (
               <div className="row mb-2" key={index}>
                 <div className="col p-2" style={{ maxWidth: '70px' }}>
                   <small>{index > 0 ? 'and' : 'where'}</small>
                 </div>
                 <div className="col">
-                  <SelectSearch
+                  <Select
                     options={columnData.map((column) => {
                       return { name: column.Header, value: column.id };
                     })}
@@ -1135,12 +1148,13 @@ export function Table({
                     onChange={(value) => {
                       filterColumnChanged(index, value);
                     }}
-                    filterOptions={fuzzySearch}
                     placeholder={t('globals.select', 'Select') + '...'}
+                    styles={selectStyles('100%')}
+                    useMenuPortal={false}
                   />
                 </div>
                 <div className="col" style={{ maxWidth: '180px' }}>
-                  <SelectSearch
+                  <Select
                     options={[
                       { name: 'contains', value: 'contains' },
                       { name: 'matches', value: 'matches' },
@@ -1157,8 +1171,9 @@ export function Table({
                     onChange={(value) => {
                       filterOperationChanged(index, value);
                     }}
-                    filterOptions={fuzzySearch}
                     placeholder={t('globals.select', 'Select') + '...'}
+                    styles={selectStyles('100%', height)}
+                    useMenuPortal={false}
                   />
                 </div>
                 <div className="col">
