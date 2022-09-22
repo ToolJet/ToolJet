@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   commonWidgetText,
@@ -313,3 +314,8 @@ export const verifyWidgetText = (widgetName, text) => {
     text
   );
 };
+
+export const randomNumber = (x,y) => {
+  return faker.datatype.number({ min: x, max: y})
+}
+

@@ -2,6 +2,7 @@ import { commonWidgetSelector } from "Selectors/common";
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
 import { buttonText } from "Texts/button";
 import { commonWidgetText } from "Texts/common";
+import { faker } from "@faker-js/faker";
 
 export const verifyControlComponentAction = (widgetName,value)=>{
   cy.forceClickOnCanvas();
@@ -18,9 +19,15 @@ export const verifyControlComponentAction = (widgetName,value)=>{
   cy.get(commonWidgetSelector.eventComponentActionSelection).type("Set text{Enter}");
   cy.get(commonWidgetSelector.componentTextInput)
   .find('[data-cy*="-input-field"]')
-  .clearAndTypeOnCodeMirror(value);
+  .clearAndTypeOnCodeMirror(["{{",`components.${widgetName}.value}}`]);
 
-  cy.clearAndType(commonWidgetSelector.draggableWidget(widgetName), "T");
+  cy.clearAndType(commonWidgetSelector.draggableWidget(widgetName), value);
   cy.get(commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)).should("have.text", value);
 }
+
+export const randomString = (length) => {
+  let str = faker.lorem.words()
+  return str.replace(/\s/g, '').substr(0, length)
+}
+
 

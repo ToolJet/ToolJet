@@ -1,9 +1,9 @@
 import { fake } from "Fixtures/fake";
 import { textInputText } from "Texts/textInput";
-import { commonWidgetText } from "Texts/common";
+import { commonWidgetText, widgetValue, customValidation } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { buttonText } from "Texts/button";
-import { verifyControlComponentAction } from "Support/utils/textInput";
+import { verifyControlComponentAction, randomString } from "Support/utils/textInput";
 import {
   openAccordion,
   verifyAndModifyParameter,
@@ -17,7 +17,8 @@ import {
   verifyTooltip,
   editAndVerifyWidgetName,
   verifyPropertiesGeneralAccordion,
-  verifyStylesGeneralAccordion
+  verifyStylesGeneralAccordion,
+  randomNumber
 } from "Support/utils/commonWidget";
 
 describe('Text Input', ()=>{
@@ -32,9 +33,10 @@ describe('Text Input', ()=>{
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
-    data.customText = fake.firstName;
-    data.alertMessage = fake.randomSentence;
     data.tooltipText = fake.randomSentence;
+    data.minimumLength = randomNumber(1,4);
+    data.maximumLength = randomNumber(8,10);
+    data.customText = randomString(12)
 
     cy.renameApp(data.appName);
 
@@ -56,43 +58,42 @@ describe('Text Input', ()=>{
     cy.forceClickOnCanvas();
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
     .invoke('attr', 'placeholder').
-    should('contain', data.customText)
+    should('contain', data.customText);
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionEvents);
-    addDefaultEventHandler(data.alertMessage);
+    addDefaultEventHandler(widgetValue(data.widgetName));
     cy.get(commonWidgetSelector.eventSelection).type("On Enter Pressed{Enter}");
 
     cy.clearAndType(commonWidgetSelector.draggableWidget(data.widgetName), `${data.customText}{Enter}`);
-    cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
+    cy.verifyToastMessage(commonSelectors.toastMessage, data.customText);
     cy.forceClickOnCanvas();
 
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear()
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionValidation);
-    verifyAndModifyParameter(commonWidgetText.labelRegex, textInputText.textInputRegex);
+    verifyAndModifyParameter(commonWidgetText.labelRegex, commonWidgetText.regularExpression);
     cy.clearAndType(commonWidgetSelector.draggableWidget(data.widgetName), data.customText);
     cy.forceClickOnCanvas();
     cy.get(commonWidgetSelector.validationFeedbackMessage(data.widgetName)).verifyVisibleElement("have.text", commonWidgetText.regexValidationError);
     
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
     cy.get(commonWidgetSelector.parameterInputField(commonWidgetText.labelRegex)).clearCodeMirror()
-    verifyAndModifyParameter(commonWidgetText.labelMinLength, textInputText.textMinimumLength);
+    verifyAndModifyParameter(commonWidgetText.labelMinLength, data.minimumLength);
     cy.forceClickOnCanvas();
-    cy.get(commonWidgetSelector.validationFeedbackMessage(data.widgetName)).verifyVisibleElement("have.text", commonWidgetText.minLengthValidationError);
+    cy.get(commonWidgetSelector.validationFeedbackMessage(data.widgetName)).verifyVisibleElement("have.text", commonWidgetText.minLengthValidationError(data.minimumLength));
 
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
     cy.get(commonWidgetSelector.parameterInputField(commonWidgetText.labelMinLength)).clearCodeMirror()
-    verifyAndModifyParameter(commonWidgetText.labelMaxLength, textInputText.textMaximumLength);
+    verifyAndModifyParameter(commonWidgetText.labelMaxLength, data.maximumLength);
     cy.forceClickOnCanvas();
     cy.clearAndType(commonWidgetSelector.draggableWidget(data.widgetName), data.customText);
-    cy.get(commonWidgetSelector.validationFeedbackMessage(data.widgetName)).verifyVisibleElement("have.text", commonWidgetText.maxLengthValidationError);
+    cy.get(commonWidgetSelector.validationFeedbackMessage(data.widgetName)).verifyVisibleElement("have.text", commonWidgetText.maxLengthValidationError(data.maximumLength));
 
-    verifyAndModifyParameter(commonWidgetText.labelcustomValidadtion, textInputText.customValidation(data.widgetName, data.alertMessage));
+    verifyAndModifyParameter(commonWidgetText.labelcustomValidadtion, customValidation(data.widgetName, data.customText));
     cy.forceClickOnCanvas();
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
-    cy.get(commonWidgetSelector.validationFeedbackMessage(data.widgetName)).verifyVisibleElement("have.text", data.alertMessage);
-
+    cy.get(commonWidgetSelector.validationFeedbackMessage(data.widgetName)).verifyVisibleElement("have.text", data.customText);
 
     cy.get(commonWidgetSelector.accordion(commonWidgetText.accordionProperties)).click();
     cy.get(commonWidgetSelector.accordion(commonWidgetText.accordionValidation)).click()
@@ -132,13 +133,13 @@ describe('Text Input', ()=>{
     verifyAndModifyToggleFx(commonWidgetText.parameterVisibility, commonWidgetText.codeMirrorLabelTrue);
     cy.get( commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)).should("not.be.visible");
 
-    cy.get(commonWidgetSelector.parameterTogglebutton("Visibility")).click();
+    cy.get(commonWidgetSelector.parameterTogglebutton(commonWidgetText.parameterVisibility)).click();
 
     verifyAndModifyToggleFx(commonWidgetText.parameterDisable, commonWidgetText.codeMirrorLabelFalse);
     cy.waitForAutoSave();
     cy.get( commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)).should("have.attr", "disabled");
 
-    cy.get(commonWidgetSelector.parameterTogglebutton("Disable")).click();
+    cy.get(commonWidgetSelector.parameterTogglebutton(commonWidgetText.parameterDisable)).click();
 
     verifyAndModifyParameter(commonWidgetText.parameterBorderRadius, commonWidgetText.borderRadiusInput);
    
@@ -155,13 +156,15 @@ describe('Text Input', ()=>{
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
-    data.customText = fake.firstName;
-    data.alertMessage = fake.randomSentence;
     data.tooltipText = fake.randomSentence;
     data.maxLengthErrText = fake.randomSentence;
     data.colourHex = fake.randomRgbaHex;
     data.boxShadowColor = fake.randomRgba;
     data.boxShadowParam = fake.boxShadowParam;
+    data.minimumLength = randomNumber(1,4);
+    data.maximumLength = randomNumber(8,10);
+    data.customText = randomString(12)
+    data.maxLengthText = randomString(data.maximumLength)
 
     cy.renameApp(data.appName);
 
@@ -171,14 +174,14 @@ describe('Text Input', ()=>{
     verifyAndModifyParameter(commonWidgetText.labelPlaceHolder, data.customText);
     
     openAccordion(commonWidgetText.accordionEvents);
-    addDefaultEventHandler(data.alertMessage);
+    addDefaultEventHandler(widgetValue(textInputText.defaultWidgetName));
     cy.get(commonWidgetSelector.eventSelection).type("On Enter Pressed{Enter}");
 
     openAccordion(commonWidgetText.accordionValidation);
-    verifyAndModifyParameter(commonWidgetText.labelRegex, textInputText.textInputRegex);
-    verifyAndModifyParameter(commonWidgetText.labelMinLength, textInputText.textMinimumLength);
-    verifyAndModifyParameter(commonWidgetText.labelMaxLength, textInputText.textMaximumLength);
-    verifyAndModifyParameter(commonWidgetText.labelcustomValidadtion, textInputText.customValidation(textInputText.defaultWidgetName, data.alertMessage));
+    verifyAndModifyParameter(commonWidgetText.labelRegex, commonWidgetText.regularExpression);
+    verifyAndModifyParameter(commonWidgetText.labelMinLength, data.minimumLength);
+    verifyAndModifyParameter(commonWidgetText.labelMaxLength, data.maximumLength);
+    verifyAndModifyParameter(commonWidgetText.labelcustomValidadtion, customValidation(textInputText.defaultWidgetName, data.customText));
     verifyPropertiesGeneralAccordion(textInputText.defaultWidgetName, data.tooltipText);
 
     verifyControlComponentAction(textInputText.defaultWidgetName, data.customText);
@@ -196,17 +199,17 @@ describe('Text Input', ()=>{
     cy.get(commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName))
     .invoke('attr', 'placeholder').should('contain', data.customText);
 
-    cy.clearAndType(commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName),"t");
+    cy.clearAndType(commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName), data.customText);
     cy.get(commonWidgetSelector.validationFeedbackMessage(textInputText.defaultWidgetName)).verifyVisibleElement("have.text", commonWidgetText.regexValidationError);
     cy.get(commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)).clear();
-    cy.get(commonWidgetSelector.validationFeedbackMessage(textInputText.defaultWidgetName)).verifyVisibleElement("have.text", commonWidgetText.minLengthValidationError);
+    cy.get(commonWidgetSelector.validationFeedbackMessage(textInputText.defaultWidgetName)).verifyVisibleElement("have.text", commonWidgetText.minLengthValidationError(data.minimumLength));
     
-    cy.clearAndType(commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName), (data.maxLengthErrText).toUpperCase().replace(/[^A-Z]/g, ''));
-    cy.get(commonWidgetSelector.validationFeedbackMessage(textInputText.defaultWidgetName)).verifyVisibleElement("have.text", commonWidgetText.maxLengthValidationError);
+    cy.clearAndType(commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName), data.customText.toUpperCase());
+    cy.get(commonWidgetSelector.validationFeedbackMessage(textInputText.defaultWidgetName)).verifyVisibleElement("have.text", commonWidgetText.maxLengthValidationError(data.maximumLength));
 
-    cy.clearAndType(commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName),"USETOOLJET{Enter}");
-    cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
-    cy.get(commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)).should("have.text", data.customText);
+    cy.clearAndType(commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName),`${data.maxLengthText.toUpperCase()}{Enter}`);
+    cy.verifyToastMessage(commonSelectors.toastMessage, data.maxLengthText.toUpperCase());
+    cy.get(commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)).should("have.text", data.maxLengthText.toUpperCase());
 
     cy.get(commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)).should("have.css", "border-radius", "20px");
 
