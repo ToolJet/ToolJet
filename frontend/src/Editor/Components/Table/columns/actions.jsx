@@ -21,6 +21,7 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                     color: action.textColor,
                     borderRadius: action.actionButtonRadius,
                   }}
+                  disabled={action.buttonDisabled == 'true' ? true : false}
                   onClick={(e) => {
                     e.stopPropagation();
                     setExposedVariables({
@@ -61,6 +62,7 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                     color: action.textColor,
                     borderRadius: action.actionButtonRadius,
                   }}
+                  disabled={action.buttonDisabled == 'true' ? true : false}
                   onClick={(e) => {
                     e.stopPropagation();
                     setExposedVariables({

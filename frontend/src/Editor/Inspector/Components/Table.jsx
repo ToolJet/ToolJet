@@ -549,6 +549,18 @@ class TableComponent extends React.Component {
               placeholder="Select position"
             />
           </div>
+          <div className="field mb-2">
+            <label className="form-label">{this.props.t('widget.Table.buttonDisabled', 'Disabled')}</label>
+            <input
+              type="text"
+              className="form-control text-field"
+              onChange={(e) => {
+                e.stopPropagation();
+                this.onActionButtonPropertyChanged(index, 'buttonDisabled', e.target.value);
+              }}
+              value={action.buttonDisabled ?? false}
+            />
+          </div>
           <Color
             param={{ name: 'actionButtonBackgroundColor' }}
             paramType="properties"
