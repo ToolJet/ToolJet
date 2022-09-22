@@ -44,8 +44,10 @@ export class UsersService {
   usersQuery(options: any) {
     return this.usersRepository
       .createQueryBuilder('user')
-      .leftJoinAndSelect('user.organizationUsers', 'organizationUsers')
-      .leftJoinAndSelect('organizationUsers.organization', 'organization')
+      .leftJoin('user.organizationUsers', 'organizationUsers')
+      .addSelect(['organizationUsers.id', 'organizationUsers.status', 'organizationUsers.organizationId'])
+      .leftJoin('organizationUsers.organization', 'organization')
+      .addSelect(['organization.name'])
       .where((qb) => {
         if (options?.email)
           qb.andWhere('lower(user.email) like :email', {
