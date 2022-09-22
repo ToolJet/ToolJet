@@ -43,12 +43,14 @@ export const Calendar = function ({
   const events = Array.isArray(properties?.events)
     ? properties?.events?.map((event) => prepareEvent(event, properties.dateFormat))
     : [];
-  let defaultDate = parseDate(properties.defaultDate, properties.dateFormat);
+  const defaultDate = parseDate(properties.defaultDate, properties.dateFormat);
+
   const todayStartTime = moment().startOf('day').toDate();
   const todayEndTime = moment().endOf('day').toDate();
   const startTime = properties.startTime ? parseDate(properties.startTime, properties.dateFormat) : todayStartTime;
   const endTime = properties.endTime ? parseDate(properties.endTime, properties.dateFormat) : todayEndTime;
 
+  const [currentDate, setCurrentDate] = useState(defaultDate);
   const [eventPopoverOptions, setEventPopoverOptions] = useState({ show: false });
 
   const eventPropGetter = (event) => {
@@ -116,7 +118,7 @@ export const Calendar = function ({
         ${exposedVariables.currentView === 'week' ? 'resources-week-cls' : ''}
         ${properties.displayViewSwitcher ? '' : 'hide-view-switcher'}`}
         localizer={localizer}
-        date={defaultDate}
+        date={currentDate}
         events={events}
         startAccessor="start"
         endAccessor="end"
@@ -147,7 +149,9 @@ export const Calendar = function ({
             });
         }}
         onNavigate={(date) => {
-          setExposedVariable('currentDate', moment(date).format(properties.dateFormat));
+          const formattedDate = moment(date).format(properties.dateFormat);
+          setExposedVariable('currentDate', formattedDate);
+          setCurrentDate(date);
           fireEvent('onCalendarNavigate');
         }}
         selectable={true}
