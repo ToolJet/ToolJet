@@ -73,35 +73,6 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
           <div>
             <Organization admin={admin} darkMode={darkMode} />
           </div>
-          {super_admin && (
-            <div className="nav-item dropdown">
-              <a
-                href="#"
-                className="nav-link d-flex lh-1 text-reset p-0"
-                data-bs-toggle="dropdown"
-                aria-label="Open super admin menu"
-                data-testid="superAdminHeader"
-              >
-                <div className="d-xl-block" data-cy="superadmin-menu">
-                  <img className="cursor-pointer" src="assets/images/icons/manage.svg" width="20" height="20"></img>
-                </div>
-              </a>
-
-              <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow end-0" data-cy="superadmin-menu">
-                <Link data-tesid="settingsBtn" to="/all-users" className="dropdown-item" data-cy="manage-superadmins">
-                  {t('header.manageAllUsers', 'Manage All Users')}
-                </Link>
-                <Link
-                  data-testid="settingsBtn"
-                  to="/instance-settings"
-                  className="dropdown-item"
-                  data-cy="instance-settings-link"
-                >
-                  {t('header.instanceSettings', 'Manage Instance Settings')}
-                </Link>
-              </div>
-            </div>
-          )}
           <div className="nav-item dropdown ms-2 user-avatar-nav-item">
             <a
               href="#"
@@ -127,6 +98,21 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               </div>
             </a>
             <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow end-0" data-cy="dropdown-menu">
+              {super_admin && (
+                <>
+                  <Link data-tesid="settingsBtn" to="/all-users" className="dropdown-item" data-cy="manage-superadmins">
+                    {t('header.manageAllUsers', 'Manage All Users')}
+                  </Link>
+                  <Link
+                    data-testid="settingsBtn"
+                    to="/instance-settings"
+                    className="dropdown-item"
+                    data-cy="instance-settings-link"
+                  >
+                    {t('header.instanceSettings', 'Manage Instance Settings')}
+                  </Link>
+                </>
+              )}
               {admin && (
                 <Link data-tesid="settingsBtn" to="#" onClick={handleAuditLogClick} className="dropdown-item">
                   Audit Logs
