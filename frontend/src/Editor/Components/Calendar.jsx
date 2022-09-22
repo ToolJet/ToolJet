@@ -14,7 +14,8 @@ const prepareEvent = (event, dateFormat) => ({
 });
 
 const parseDate = (date, dateFormat) => {
-  const parsed = moment(date, dateFormat).toDate();
+  const format = dateFormat.replace(/:ss|:SSS/g, '');
+  const parsed = moment(date, format).toDate();
 
   //handle invalid dates
   if (isNaN(parsed.getTime())) {
