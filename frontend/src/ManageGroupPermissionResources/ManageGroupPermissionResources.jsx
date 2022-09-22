@@ -536,35 +536,37 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
                     {/* Users Tab */}
                     <div className={`tab-pane ${currentTab === 'users' ? 'active show' : ''}`}>
-                      <div className="row">
-                        <div className="col-5">
-                          <SelectSearch
-                            className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
-                            options={userSelectOptions}
-                            closeOnSelect={false}
-                            multiple
-                            search={true}
-                            filterOptions={fuzzySearch}
-                            value={selectedUserIds}
-                            onChange={(value) => this.setSelectedUsers(value)}
-                            printOptions="on-focus"
-                            placeholder={this.props.t(
-                              'header.organization.menus.manageGroups.permissionResources.addUsersToGroup',
-                              'Select users to add to the group'
-                            )}
-                          />
-                        </div>
-                        <div className="col-auto">
-                          <div
-                            className={`btn btn-primary w-100 ${isAddingUsers ? 'btn-loading' : ''} ${
-                              selectedUserIds.length === 0 ? 'disabled' : ''
-                            }`}
-                            onClick={() => this.addSelectedUsersToGroup(groupPermission.id, selectedUserIds)}
-                          >
-                            {this.props.t('globals.add', 'Add')}
+                      {groupPermission?.group === 'admin' && (
+                        <div className="row">
+                          <div className="col-5">
+                            <SelectSearch
+                              className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                              options={userSelectOptions}
+                              closeOnSelect={false}
+                              multiple
+                              search={true}
+                              filterOptions={fuzzySearch}
+                              value={selectedUserIds}
+                              onChange={(value) => this.setSelectedUsers(value)}
+                              printOptions="on-focus"
+                              placeholder={this.props.t(
+                                'header.organization.menus.manageGroups.permissionResources.addUsersToGroup',
+                                'Select users to add to the group'
+                              )}
+                            />
+                          </div>
+                          <div className="col-auto">
+                            <div
+                              className={`btn btn-primary w-100 ${isAddingUsers ? 'btn-loading' : ''} ${
+                                selectedUserIds.length === 0 ? 'disabled' : ''
+                              }`}
+                              onClick={() => this.addSelectedUsersToGroup(groupPermission.id, selectedUserIds)}
+                            >
+                              {this.props.t('globals.add', 'Add')}
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      )}
                       <br />
                       <div>
                         <div className="table-responsive">
