@@ -823,6 +823,8 @@ class TableComponent extends React.Component {
 
     const options = [
       'serverSidePagination',
+      ...(serverSidePagination ? ['disablePaginationButtons'] : []),
+      ...(serverSidePagination ? ['totalRecords'] : []),
       'serverSideSearch',
       'showDownloadButton',
       'showFilterButton',
@@ -830,8 +832,6 @@ class TableComponent extends React.Component {
       'showBulkSelector',
       'highlightSelectedRow',
       'resultsPerPage',
-      'disablePaginationButtons',
-      'totalRecords',
     ];
 
     let renderOptions = [];
