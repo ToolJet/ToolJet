@@ -5,7 +5,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   if (typeof serverSidePagination !== 'boolean') serverSidePagination = false;
 
   const serverSideSearch = properties.serverSideSearch ?? false;
-  const disableNavigatonButtons = properties.disableNavigatonButtons ?? false;
+  const disablePaginationButtons = properties.disablePaginationButtons ?? false;
   const totalRecords = properties.totalRecords ?? '';
 
   const displaySearchBox = properties.displaySearchBox ?? true;
@@ -67,7 +67,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     loadingState,
     actions,
     resultsPerPage,
-    disableNavigatonButtons,
+    disablePaginationButtons,
     totalRecords,
   };
 }

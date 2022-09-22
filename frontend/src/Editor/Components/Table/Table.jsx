@@ -71,7 +71,7 @@ export function Table({
     actionButtonRadius,
     actions,
     resultsPerPage,
-    disableNavigatonButtons,
+    disablePaginationButtons,
     totalRecords,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
@@ -559,7 +559,8 @@ export function Table({
         <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
           <div className="table-footer row gx-0">
             <div className="col">
-              {(clientSidePagination || (serverSidePagination && !disableNavigatonButtons)) && (
+              {((clientSidePagination && !disablePaginationButtons) ||
+                (serverSidePagination && !disablePaginationButtons)) && (
                 <Pagination
                   lastActivePageIndex={pageIndex}
                   serverSide={serverSidePagination}

@@ -830,7 +830,7 @@ class TableComponent extends React.Component {
       'showBulkSelector',
       'highlightSelectedRow',
       'resultsPerPage',
-      'disableNavigatonButtons',
+      'disablePaginationButtons',
       'totalRecords',
     ];
 

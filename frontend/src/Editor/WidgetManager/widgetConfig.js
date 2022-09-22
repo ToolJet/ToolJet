@@ -141,9 +141,9 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
-      disableNavigatonButtons: {
+      disablePaginationButtons: {
         type: 'toggle',
-        displayName: 'Disable navigation arrows',
+        displayName: 'Disable server pagination arrows',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -345,7 +345,7 @@ export const widgets = [
         },
         resultsPerPage: { value: '{{10}}' },
         serverSidePagination: { value: '{{false}}' },
-        disableNavigatonButtons: { value: '{{false}}' },
+        disablePaginationButtons: { value: '{{false}}' },
         totalRecords: { value: '' },
         clientSidePagination: { value: '{{true}}' },
         displaySearchBox: { value: '{{true}}' },
