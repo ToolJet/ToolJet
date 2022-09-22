@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 export function Filter(props) {
   const { t } = useTranslation();
 
-  const { mergeToFilterDetails, filterDetails, setAllFilters } = props;
+  const { mergeToFilterDetails, filterDetails, setAllFilters, darkMode } = props;
   const { filters } = filterDetails;
 
   function filterColumnChanged(index, value) {
@@ -89,6 +89,7 @@ export function Filter(props) {
                 }}
                 filterOptions={fuzzySearch}
                 placeholder={t('globals.select', 'Select') + '...'}
+                className={`${darkMode ? 'select-search-dark' : 'select-search'} mb-0`}
               />
             </div>
             <div className="col" style={{ maxWidth: '180px' }}>
@@ -111,6 +112,7 @@ export function Filter(props) {
                 }}
                 filterOptions={fuzzySearch}
                 placeholder="Select.."
+                className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
               />
             </div>
             <div className="col">
