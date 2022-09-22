@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 
-export const Steps = function Button({ properties, styles, fireEvent, setExposedVariable, height }) {
+export const Steps = function Button({ properties, styles, fireEvent, setExposedVariable, height, darkMode }) {
   const { currentStep, stepsSelectable, steps } = properties;
   const { color, theme, visibility } = styles;
-
+  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [activeStep, setActiveStep] = useState(null);
 
   const dynamicStyle = {
     '--bgColor': styles.color,
-    '--textColor': styles.textColor,
+    '--textColor': textColor,
   };
   const activeStepHandler = (id) => {
     const active = steps.filter((item) => item.id == id);
@@ -24,10 +24,7 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
 
   return (
     visibility && (
-      <div
-        className={`steps ${theme == 'numbers' && 'steps-counter '}`}
-        style={{ color: `${styles.textColor}`, height }}
-      >
+      <div className={`steps ${theme == 'numbers' && 'steps-counter '}`} style={{ color: textColor, height }}>
         {steps?.map((item) => (
           <a
             key={item.id}
