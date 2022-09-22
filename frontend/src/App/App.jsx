@@ -7,6 +7,7 @@ import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
+import { StorageLayer } from '@/StorageLayer';
 import { ConfirmationPage, OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
@@ -255,6 +256,13 @@ class App extends React.Component {
               exact
               path="/settings"
               component={SettingsPage}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/storage-layer"
+              component={StorageLayer}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
