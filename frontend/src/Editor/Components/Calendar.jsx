@@ -94,9 +94,11 @@ export const Calendar = function ({
     : allowedCalendarViews[0];
 
   useEffect(() => {
-    if (!_.isEqual(exposedVariables.currentDate, properties.defaultDate)) {
+    //check if the default date is a valid date
+
+    if (defaultDate !== null && !_.isEqual(exposedVariables.currentDate, properties.defaultDate)) {
       setExposedVariable('currentDate', moment(defaultDate).format(properties.dateFormat));
-      setCurrentDate(moment(defaultDate).format(properties.dateFormat));
+      setCurrentDate(defaultDate);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
