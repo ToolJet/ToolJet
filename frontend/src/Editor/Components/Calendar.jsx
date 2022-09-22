@@ -98,11 +98,7 @@ export const Calendar = function ({
 
     if (defaultDate !== null && !_.isEqual(exposedVariables.currentDate, properties.defaultDate)) {
       setExposedVariable('currentDate', moment(defaultDate).format(properties.dateFormat));
-<<<<<<< HEAD
       setCurrentDate(defaultDate);
-=======
-      setCurrentDate(moment(defaultDate).format(properties.dateFormat));
->>>>>>> 8467d00c (updates the current date when default date is updated)
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
