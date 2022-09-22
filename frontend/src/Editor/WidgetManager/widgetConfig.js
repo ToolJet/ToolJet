@@ -141,6 +141,13 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
+      disabledSort: {
+        type: 'toggle',
+        displayName: 'Disable sorting',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       serverSidePagination: {
         type: 'toggle',
         displayName: 'Server-side pagination',
@@ -333,6 +340,7 @@ export const widgets = [
         serverSidePagination: { value: '{{false}}' },
         clientSidePagination: { value: '{{true}}' },
         displaySearchBox: { value: '{{true}}' },
+        disabledSort: { value: '{{false}}' },
         showDownloadButton: { value: '{{true}}' },
         showFilterButton: { value: '{{true}}' },
         columns: {

@@ -8,6 +8,8 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
 
   const displaySearchBox = properties.displaySearchBox ?? true;
 
+  const disabledSort = properties?.disabledSort ?? false;
+
   const showDownloadButton = properties.showDownloadButton ?? true;
 
   const showFilterButton = properties.showFilterButton ?? true;
@@ -65,5 +67,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     loadingState,
     actions,
     resultsPerPage,
+    disabledSort,
   };
 }
