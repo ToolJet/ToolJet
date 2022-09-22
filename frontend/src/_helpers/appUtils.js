@@ -692,7 +692,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
         .then((data) => {
           if (data.status === 'needs_oauth') {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
-            fetchOAuthToken(url, dataQuery.data_source_id);
+            fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
           }
 
           if (data.status === 'failed') {
