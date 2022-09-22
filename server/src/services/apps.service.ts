@@ -82,7 +82,7 @@ export class AppsService {
         createdAt: new Date(),
         updatedAt: new Date(),
         organizationId: user.organizationId,
-        user: user,
+        userId: user.id,
       })
     );
 
