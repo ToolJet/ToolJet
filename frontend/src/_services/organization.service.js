@@ -7,6 +7,7 @@ export const organizationService = {
   getUsersByValue,
   createOrganization,
   editOrganization,
+  editOrganizationName,
   getOrganizations,
   switchOrganization,
   getSSODetails,
@@ -37,6 +38,11 @@ function createOrganization(name) {
 function editOrganization(params) {
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(params) };
   return fetch(`${config.apiUrl}/organizations/`, requestOptions).then(handleResponse);
+}
+
+function editOrganizationName(name) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify({ name }) };
+  return fetch(`${config.apiUrl}/organizations/name`, requestOptions).then(handleResponse);
 }
 
 function getOrganizations() {

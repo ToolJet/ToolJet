@@ -6369,3 +6369,11 @@ input.hide-input-arrows{
     height: 100%;
   }
 }
+
+.organizations-modal {
+  height: 600px;
+
+  .close-button {
+    cursor: pointer;
+  }
+}

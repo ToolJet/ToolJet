@@ -9,6 +9,7 @@ import {
   Post,
   UseGuards,
   Query,
+  NotAcceptableException,
 } from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
 import { decamelizeKeys } from 'humps';
@@ -119,6 +120,17 @@ export class OrganizationsController {
   @Patch()
   async update(@Body() body, @User() user) {
     await this.organizationsService.updateOrganization(user.organizationId, body);
+    return {};
+  }
+
+  @UseGuards(JwtAuthGuard, AllowPersonalWorkspaceGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
+  @Patch('/name')
+  async updateName(@Body('name') name, @User() user) {
+    if (!name?.trim()) {
+      throw new NotAcceptableException('Workspace name can not be empty');
+    }
+    await this.organizationsService.updateOrganization(user.organizationId, { name });
     return {};
   }
 
