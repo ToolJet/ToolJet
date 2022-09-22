@@ -390,6 +390,9 @@ export class UsersService {
   }
 
   async userCan(user: User, action: string, entityName: string, resourceId?: string): Promise<boolean> {
+    if (isSuperAdmin(user)) {
+      return true;
+    }
     switch (entityName) {
       case 'App':
         return await this.canUserPerformActionOnApp(user, action, resourceId);
