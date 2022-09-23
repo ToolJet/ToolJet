@@ -16,43 +16,50 @@ export const TextInput = function TextInput({
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
 
   const [disable, setDisable] = useState(styles.disabledState);
+  const [value, setValue] = useState(properties.value);
+  const [visibility, setVisibility] = useState(styles.visibility);
+  const { isValid, validationError } = validate(value);
+
   useEffect(() => setDisable(styles.disabledState), [styles.disabledState]);
 
-  const [visibility, setVisibility] = useState(styles.visibility);
   useEffect(() => setVisibility(styles.visibility), [styles.visibility]);
 
-  const [value, setValue] = useState(properties.value);
-  const { isValid, validationError } = validate(value);
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
+
   useEffect(() => {
     setValue(properties.value);
     setExposedVariable('value', properties.value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
-  registerAction('setText', async function (text) {
-    setValue(text);
-    setExposedVariable('value', text).then(fireEvent('onChange'));
-  });
-  registerAction('clear', async function () {
-    setValue('');
-    setExposedVariable('value', '').then(fireEvent('onChange'));
-  });
-  registerAction('setFocus', async function () {
-    textInputRef.current.focus();
-  });
-  registerAction('setBlur', async function () {
-    textInputRef.current.blur();
-  });
-  registerAction('disable', async function (value) {
-    setDisable(value);
-  });
-  registerAction('visibility', async function (value) {
-    setVisibility(value);
-  });
+  useEffect(() => {
+    registerAction('setFocus', async function () {
+      textInputRef.current.focus();
+    });
+    registerAction('setBlur', async function () {
+      textInputRef.current.blur();
+    });
+  }, [textInputRef.current]);
+
+  useEffect(() => {
+    registerAction('setText', async function (text) {
+      setValue(text);
+      setExposedVariable('value', text).then(fireEvent('onChange'));
+    });
+    registerAction('clear', async function () {
+      setValue('');
+      setExposedVariable('value', '').then(fireEvent('onChange'));
+    });
+    registerAction('disable', async function (value) {
+      setDisable(value);
+    });
+    registerAction('visibility', async function (value) {
+      setVisibility(value);
+    });
+  }, []);
 
   return (
     <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`}>
@@ -71,15 +78,13 @@ export const TextInput = function TextInput({
           setExposedVariable('value', e.target.value);
           fireEvent('onChange');
         }}
-        onMouseEnter={(e) => {
-          e.target.focus();
-          e.stopPropagation();
-          fireEvent('onFocus');
-        }}
-        onMouseLeave={(e) => {
-          e.target.blur();
+        onBlur={(e) => {
           e.stopPropagation();
           fireEvent('onBlur');
+        }}
+        onFocus={(e) => {
+          e.stopPropagation();
+          fireEvent('onFocus');
         }}
         type="text"
         className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${

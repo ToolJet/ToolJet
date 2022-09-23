@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, organizationService } from '@/_services';
+import { appService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { toast } from 'react-hot-toast';
@@ -7,8 +7,10 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Skeleton from 'react-loading-skeleton';
 import { debounce } from 'lodash';
 import Textarea from '@/_ui/Textarea';
+import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-class ManageAppUsers extends React.Component {
+
+class ManageAppUsersComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -19,22 +21,13 @@ class ManageAppUsers extends React.Component {
       isLoading: true,
       isSlugVerificationInProgress: false,
       addingUser: false,
-      organizationUsers: [],
       newUser: {},
     };
   }
 
   componentDidMount() {
     const appId = this.props.app.id;
-
     this.fetchAppUsers();
-
-    organizationService.getUsers(null).then((data) =>
-      this.setState({
-        organizationUsers: data.users,
-      })
-    );
-
     this.setState({ appId });
   }
 
@@ -133,7 +126,7 @@ class ManageAppUsers extends React.Component {
     return (
       <div>
         <button className="btn font-500 color-primary btn-sm" onClick={() => this.setState({ showModal: true })}>
-          Share
+          {this.props.t('editor.share', 'Share')}
         </button>
 
         <Modal
@@ -148,7 +141,7 @@ class ManageAppUsers extends React.Component {
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
         >
           <Modal.Header>
-            <Modal.Title>Share</Modal.Title>
+            <Modal.Title>{this.props.t('editor.share', 'Share')}</Modal.Title>
             <div>
               <Button variant={this.props.darkMode ? 'secondary' : 'light'} size="sm" onClick={() => this.hideModal()}>
                 x
@@ -172,12 +165,16 @@ class ManageAppUsers extends React.Component {
                       checked={this.state.app.is_public}
                       disabled={this.state.ischangingVisibility}
                     />
-                    <span className="form-check-label">Make application public ?</span>
+                    <span className="form-check-label">
+                      {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public ?')}
+                    </span>
                   </div>
                 </div>
                 <div className="shareable-link mb-3">
                   <label className="form-label">
-                    <small>Get shareable link for this application</small>
+                    <small>
+                      {this.props.t('editor.shareModal.shareableLink', 'Get shareable link for this application')}
+                    </small>
                   </label>
                   <div className="input-group">
                     <span className="input-group-text">{appLink}</span>
@@ -200,7 +197,9 @@ class ManageAppUsers extends React.Component {
                     </div>
                     <span className="input-group-text">
                       <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
-                        <button className="btn btn-secondary btn-sm">Copy</button>
+                        <button className="btn btn-secondary btn-sm">
+                          {this.props.t('editor.shareModal.copy', 'copy')}
+                        </button>
                       </CopyToClipboard>
                     </span>
                     <div className="invalid-feedback">{slugError}</div>
@@ -209,7 +208,9 @@ class ManageAppUsers extends React.Component {
                 <hr />
                 <div className="shareable-link mb-3">
                   <label className="form-label">
-                    <small>Get embeddable link for this application</small>
+                    <small>
+                      {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
+                    </small>
                   </label>
                   <div className="input-group">
                     <Textarea
@@ -228,90 +229,20 @@ class ManageAppUsers extends React.Component {
                           })
                         }
                       >
-                        <button className="btn btn-secondary btn-sm">Copy</button>
+                        <button className="btn btn-secondary btn-sm">
+                          {this.props.t('editor.shareModal.copy', 'copy')}
+                        </button>
                       </CopyToClipboard>
                     </span>
                   </div>
                 </div>
-                {/* <div className="add-user mb-3">
-                  <div className="row">
-                    <div className="col">
-                      <SelectSearch
-                        options={organizationUsers.map((user) => {
-                          return {
-                            name: `${user.name} ( ${user.email} )`,
-                            value: user.id
-                          };
-                        })}
-                        value={newUser.organizationUserId}
-                        search={true}
-                        onChange={(value) => {
-                          this.setState({ newUser: { ...newUser, organizationUserId: value } });
-                        }}
-                        filterOptions={fuzzySearch}
-                        placeholder="Select organization user"
-                      />
-                    </div>
-                    <div style={{ width: '160px' }}>
-                      <SelectSearch
-                        options={[
-                          { name: 'Admin', value: 'admin' },
-                          { name: 'Developer', value: 'developer' },
-                          { name: 'Viewer', value: 'role' }
-                        ]}
-                        value={newUser.role}
-                        search={false}
-                        onChange={(value) => {
-                          this.setState({ newUser: { ...newUser, role: value } });
-                        }}
-                        filterOptions={fuzzySearch}
-                        placeholder="Select role"
-                      />
-                    </div>
-                    <div className="col-auto">
-                      <button
-                        className={`btn btn-primary + ${addingUser ? ' btn-loading' : ''}`}
-                        onClick={this.addUser}
-                        disabled={addingUser}
-                      >
-                        Add User
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="table-responsive">
-                  <table className="table table-vcenter app-users-list">
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th className="w-1"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {users.map((user) => (
-                        <tr key={user.email}>
-                          <td>{user.name}</td>
-                          <td className="text-muted">
-                            <span lass="text-reset">{user.email}</span>
-                          </td>
-                          <td className="text-muted">{user.role}</td>
-                          <td>
-                            <a>Remove</a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div> */}
               </div>
             )}
           </Modal.Body>
 
           <Modal.Footer>
             <Link to="/users" target="_blank" className="btn color-primary mt-3">
-              Manage Users
+              {this.props.t('editor.shareModal.manageUsers', 'Manage Users')}
             </Link>
           </Modal.Footer>
         </Modal>
@@ -320,4 +251,4 @@ class ManageAppUsers extends React.Component {
   }
 }
 
-export { ManageAppUsers };
+export const ManageAppUsers = withTranslation()(ManageAppUsersComponent);
