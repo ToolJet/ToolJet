@@ -6355,3 +6355,37 @@ input.hide-input-arrows{
     height: 100%;
   }
 }
+.date-picker.dark-theme-date-picker~.react-datepicker__tab-loop *{
+  .react-datepicker__header{
+    background-color: #232e3c;
+    .react-datepicker__current-month,.react-datepicker__day-name,.react-datepicker__month-select,.react-datepicker__year-select{
+      color: white;
+    }
+    .react-datepicker__month-select,.react-datepicker__year-select{
+      background-color: transparent;
+      select *{
+        background-color: #0565ff !important;
+      }
+    }
+  }
+}
+.date-picker.dark-theme-date-picker~.react-datepicker__tab-loop *{
+  .react-datepicker__month{
+    background-color: #232e3c;
+    .react-datepicker__day{
+      color: white !important;
+      &:hover{
+        background-color: #636466;
+      }
+    }
+    .react-datepicker__day--outside-month{
+      opacity: 0.5;
+    }
+  } 
+}
+.date-picker.dark-theme-date-picker~.react-datepicker__tab-loop{
+  .react-datepicker{
+    background-color: #232e3c;
+  }
+  
+}
