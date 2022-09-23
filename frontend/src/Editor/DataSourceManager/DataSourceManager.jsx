@@ -422,9 +422,13 @@ class DataSourceManagerComponent extends React.Component {
 
     if (this.state.queryString && this.state.queryString.length > 0) {
       const filteredDatasources = this.state.filteredDatasources.map((datasource) => {
+        const src = datasource.iconFile?.data
+          ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
+          : datasource.kind.toLowerCase();
+
         return {
           ...datasource,
-          src: datasource.kind.toLowerCase(),
+          src,
           title: datasource.name,
         };
       });
@@ -439,7 +443,7 @@ class DataSourceManagerComponent extends React.Component {
                 title={item.title}
                 src={item.src}
                 handleClick={() => renderSelectedDatasource(item)}
-                usePluginIcon={true}
+                usePluginIcon={isEmpty(item.iconFile?.data)}
                 height="35px"
                 width="35px"
               />
