@@ -83,6 +83,20 @@ export const commonWidgetText = {
   componentValueLabel: "Value",
   labelDefaultValue: "Default Value",
   parameterLabel: "Label",
+  labelPlaceHolder: "Placeholder",
+  labelRegex: "Regex",
+  labelMinLength: "Min length",
+  labelMaxLength: "Max length",
+  labelcustomValidadtion: "Custom validation",
+  regularExpression: "^[A-Z]*$",
+
+  regexValidationError: "The input should match pattern",
+  minLengthValidationError: (value) => { 
+    return `Minimum ${value} characters is needed`
+  },
+  maxLengthValidationError: (value) => { 
+    return `Maximum ${value} characters is allowed`
+  },
 
   datepickerDocumentationLink: "Datepicker documentation",
   text1: "text1",
@@ -100,3 +114,12 @@ export const createBackspaceText = (text) => {
   });
   return backspace;
 };
+
+export const widgetValue = (widgetName) => {
+  return ["{{",`components.${widgetName}.value}}`];
+}
+
+export const customValidation = (name, message) => 
+{
+  return ["{{",`components.${name}.value ? true : '${message}'}}`];
+}
