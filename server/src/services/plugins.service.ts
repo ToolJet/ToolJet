@@ -18,7 +18,7 @@ export class PluginsService {
     @InjectRepository(Plugin)
     private pluginsRepository: Repository<Plugin>,
     private configService: ConfigService
-  ) {}
+  ) { }
   async create(
     createPluginDto: CreatePluginDto,
     files: { index: ArrayBuffer; operations: ArrayBuffer; icon: ArrayBuffer; manifest: ArrayBuffer }
@@ -73,7 +73,10 @@ export class PluginsService {
 
   async fetchPluginFiles(id: string) {
     if (process.env.NODE_ENV === 'production') {
-      const host = this.configService.get<string>('TOOLJET_MARKETPLACE_URL', 'https://integrations.tooljet.com');
+      const host = this.configService.get<string>(
+        'TOOLJET_MARKETPLACE_URL',
+        'https://public-test-tj.s3.ap-south-1.amazonaws.com'
+      );
 
       const promises = await Promise.all([
         fetch(`${host}/marketplace-assets/${id}/dist/index.js`),
