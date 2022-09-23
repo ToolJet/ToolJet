@@ -1,6 +1,6 @@
 import React from 'react';
-import cx from 'classnames';
 import { Header } from '@/_components';
+import { ListGroupItem } from './ListGroupItem';
 import { InstalledPlugins } from './InstalledPlugins';
 import { MarketplacePlugins } from './MarketplacePlugins';
 
@@ -26,24 +26,16 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
               <div className="col-3">
                 <div className="subheader mb-2">Plugins</div>
                 <div className="list-group list-group-transparent mb-3">
-                  <a
-                    className={cx('list-group-item list-group-item-action d-flex align-items-center', {
-                      active: active === 'installed',
-                    })}
-                    onClick={() => setActive('installed')}
-                    href="#"
-                  >
-                    Installed
-                  </a>
-                  <a
-                    className={cx('list-group-item list-group-item-action d-flex align-items-center', {
-                      active: active === 'marketplace',
-                    })}
-                    onClick={() => setActive('marketplace')}
-                    href="#"
-                  >
-                    Marketplace
-                  </a>
+                  <ListGroupItem
+                    active={active === 'installed'}
+                    handleClick={() => setActive('installed')}
+                    text="Installed"
+                  />
+                  <ListGroupItem
+                    active={active === 'marketplace'}
+                    handleClick={() => setActive('marketplace')}
+                    text="Marketplace"
+                  />
                 </div>
               </div>
               {active === 'installed' ? (
