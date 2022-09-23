@@ -488,7 +488,6 @@ export function Table({
                       });
                     }}
                     onMouseEnter={(e) => {
-                      // e.stopPropagation();
                       const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
                       mergeToTableDetails(hoveredRowDetails);
                       setExposedVariables(hoveredRowDetails).then(() => {
