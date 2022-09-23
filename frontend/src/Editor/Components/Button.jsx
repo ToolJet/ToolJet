@@ -21,14 +21,10 @@ export const Button = function Button({
   useEffect(() => {
     setDisable(disabledState);
   }, [disabledState]);
+
   const [visibility, setVisibility] = useState(styles.visibility);
   useEffect(() => {
-    visibility !== styles.visibility &&
-      setVisibility(
-        typeof styles.visibility !== 'boolean'
-          ? resolveWidgetFieldValue(styles.visibility, currentState)
-          : styles.visibility
-      );
+    visibility !== styles.visibility && setVisibility(styles.visibility);
   }, [currentState, styles.visibility]);
 
   const [loading, setLoading] = useState(properties.loadingState);
@@ -47,28 +43,25 @@ export const Button = function Button({
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
   };
 
-  useEffect(() => {
-    registerAction('click', async function () {
-      fireEvent('onClick');
-    });
+  registerAction('click', async function () {
+    fireEvent('onClick');
+  });
 
-    registerAction('setText', async function (text) {
-      setLabel(text);
-    });
+  registerAction('setText', async function (text) {
+    setLabel(text);
+  });
 
-    registerAction('disable', async function (value) {
-      setDisable(value);
-    });
+  registerAction('disable', async function (value) {
+    setDisable(value);
+  });
 
-    registerAction('visibility', async function (value) {
-      console.log(typeof value, value, 'resolve', 'csa');
-      setVisibility(value);
-    });
+  registerAction('visibility', async function (value) {
+    setVisibility(value);
+  });
 
-    registerAction('loading', async function (value) {
-      setLoading(value);
-    });
-  }, []);
+  registerAction('loading', async function (value) {
+    setLoading(value);
+  });
 
   return (
     <div className="widget-button">
