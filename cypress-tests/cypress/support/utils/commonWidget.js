@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   commonWidgetText,
@@ -263,6 +264,30 @@ export const verifyLayout = (widgetName) => {
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("exist");
 };
 
+export const verifyPropertiesGeneralAccordion = (widgetName, tooltipText) =>{
+  openEditorSidebar(widgetName);
+  openAccordion(commonWidgetText.accordionGenaral);
+  addAndVerifyTooltip(
+    commonWidgetSelector.draggableWidget(widgetName),
+    tooltipText
+  );
+};
+
+export const verifyStylesGeneralAccordion = (widgetName,boxShadowParameter,hexColor,boxShadowColor)=>{
+  openEditorSidebar(widgetName);
+  cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+  openAccordion(commonWidgetText.accordionGenaral, "1");
+  verifyAndModifyStylePickerFx(commonWidgetText.parameterBoxShadow, commonWidgetText.boxShadowDefaultValue,
+   `${boxShadowParameter[0]}px ${boxShadowParameter[1]}px ${boxShadowParameter[2]}px ${boxShadowParameter[3]}px ${hexColor}`,);
+  cy.get(commonWidgetSelector.parameterFxButton(commonWidgetText.parameterBoxShadow)).click();
+
+  cy.get(commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)).click();
+
+  fillBoxShadowParams(commonWidgetSelector.boxShadowDefaultParam,boxShadowParameter);
+  selectColourFromColourPicker(commonWidgetText.boxShadowColor, boxShadowColor);
+
+  verifyBoxShadowCss(widgetName, boxShadowColor, boxShadowParameter);
+}
 export const addTextWidgetToVerifyValue = (customfunction) => {
   cy.forceClickOnCanvas();
   cy.dragAndDropWidget("Text", 600, 80);
@@ -291,6 +316,10 @@ export const verifyWidgetText = (widgetName, text) => {
     text
   );
 };
+
+export const randomNumber = (x,y) => {
+  return faker.datatype.number({ min: x, max: y})
+}
 
 export const pushIntoArrayOfObject = (arrayOne, arrayTwo) => {
   let arrayOfObj = "[";
