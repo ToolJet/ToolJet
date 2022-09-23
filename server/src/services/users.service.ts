@@ -80,6 +80,7 @@ export class UsersService {
         avatarId: user.avatarId,
         organizationUsers: user.organizationUsers,
         totalOrganizations: user.organizationUsers.length,
+        userType: user.userType,
       };
     });
   }

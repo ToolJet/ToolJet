@@ -30,6 +30,9 @@ const UsersTable = ({
               <tr>
                 <th data-cy="name-title">{translator('header.organization.menus.manageUsers.name', 'Name')}</th>
                 <th data-cy="email-title">{translator('header.organization.menus.manageUsers.email', 'Email')}</th>
+                {isLoadingAllUsers && (
+                  <th data-cy="status-title">{translator('header.organization.menus.manageUsers.userType', 'Type')}</th>
+                )}
                 {users && users[0]?.status ? (
                   <th data-cy="status-title">{translator('header.organization.menus.manageUsers.status', 'Status')}</th>
                 ) : (
@@ -53,14 +56,16 @@ const UsersTable = ({
                     <td className="col-4 p-3">
                       <Skeleton />
                     </td>
-                    {users && users[0]?.status && (
+                    {users && users[0]?.status ? (
                       <td className="col-2 p-3">
                         <Skeleton />
                       </td>
+                    ) : (
+                      <td className="text-muted col-auto col-1 pt-3">
+                        <Skeleton />
+                      </td>
                     )}
-                    <td className="text-muted col-auto col-1 pt-3">
-                      <Skeleton />
-                    </td>
+
                     {isLoadingAllUsers && (
                       <td className="text-muted col-auto col-1 pt-3">
                         <Skeleton />
@@ -91,7 +96,7 @@ const UsersTable = ({
                           {user.email}
                         </a>
                       </td>
-                      {user.status && (
+                      {user.status ? (
                         <td className="text-muted">
                           <span
                             className={cx('badge me-1 m-1', {
@@ -118,6 +123,10 @@ const UsersTable = ({
                           ) : (
                             ''
                           )}
+                        </td>
+                      ) : (
+                        <td className="text-muted">
+                          <span className="text-muted">{user.user_type}</span>
                         </td>
                       )}
                       {isLoadingAllUsers && (
