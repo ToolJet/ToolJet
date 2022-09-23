@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import cx from 'classnames';
 
 export const Link = ({ height, properties, styles, fireEvent, registerAction }) => {
@@ -11,12 +11,13 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction }) 
     height,
   };
 
-  useEffect(() => {
-    registerAction('click', async function () {
+  registerAction(
+    'click',
+    async function () {
       clickRef.current.click();
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clickRef.current]);
+    },
+    [clickRef.current]
+  );
 
   return (
     <div className={cx('link-widget', { 'd-none': !visibility }, `${underline}`)} style={computedStyles}>
