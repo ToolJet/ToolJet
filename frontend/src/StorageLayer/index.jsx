@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Header } from '@/_components';
+import Drawer from '@/_ui/Drawer';
 
 export const StorageLayer = ({ switchDarkMode, darkMode }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <div className="page-wrapper">
       <Header switchDarkMode={switchDarkMode} darkMode={darkMode} />
@@ -11,6 +14,18 @@ export const StorageLayer = ({ switchDarkMode, darkMode }) => {
           <div className="row g-4">
             <div className="col-3">
               <div className="subheader mb-2">Category</div>
+              <button type="button" onClick={() => setIsOpen(!isOpen)}>
+                Trigger Drawer
+              </button>
+              <Drawer isOpen={isOpen} onClose={() => setIsOpen(false)} position="right">
+                <div className="demo-content">
+                  <button type="button" onClick={() => setIsOpen(false)}>
+                    Close
+                  </button>
+                  <p>The drawer content!</p>
+                  <input type="text" />
+                </div>
+              </Drawer>
               <div className="list-group list-group-transparent mb-3">
                 <a className="list-group-item list-group-item-action d-flex align-items-center active" href="#">
                   Games
