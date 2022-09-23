@@ -64,7 +64,7 @@ export const commonWidgetText = {
   parameterShowOnMobile: "Show on mobile",
   parameterVisibility: "Visibility",
   parameterDisable: "Disable",
-  parameterBorderRadius: "Border radius",
+  parameterBorderRadius: "Border Radius",
   borderRadiusInput: ["{{", "20}}"],
   parameterOptionLabels: "Option labels",
   parameterBoxShadow: "Box Shadow",
@@ -81,17 +81,22 @@ export const commonWidgetText = {
   addEventHandlerLink: "+ Add event handler",
   inspectorComponentLabel: "components",
   componentValueLabel: "Value",
-  labelDefaultValue: "Default value",
+  labelDefaultValue: "Default Value",
   parameterLabel: "Label",
 
   datepickerDocumentationLink: "Datepicker documentation",
   text1: "text1",
+  textinput1: "textinput1",
   toggleswitch1: "toggleswitch1",
   toggleSwitch: "Toggle Switch",
+  button1: "button1",
+  image1: "image1",
 };
 
 export const createBackspaceText = (text) => {
   let backspace = "{end}";
-  [...text].forEach((c) => (backspace += "{backspace}"));
+  [...text].forEach((c) => {
+    backspace += "{backspace}{del}";
+  });
   return backspace;
 };
