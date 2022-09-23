@@ -234,9 +234,17 @@ class EditorComponent extends React.Component {
 
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
-      if (event.data === 'versionReleased') this.fetchApp();
-      else if (event.data === 'dataQueriesChanged') this.fetchDataQueries();
-      else if (event.data === 'dataSourcesChanged') this.fetchDataSources();
+      switch (event.data) {
+        case 'versionReleased':
+          this.fetchApp();
+          break;
+        case 'dataQueriesChanged':
+          this.fetchDataQueries();
+          break;
+        case 'dataSourcesChanged':
+          this.fetchDataSources();
+          break;
+      }
     });
   }
 

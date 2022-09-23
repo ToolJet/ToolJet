@@ -11,18 +11,28 @@ import TabContent from './Content';
 import useRouter from '@/_hooks/use-router';
 
 const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
-  const [notifications, setNotifications] = React.useState([]);
+  const [unresolvedNotifications, setUnresolvedNotifications] = React.useState([]);
+  const [resolvedNotifications, setResolvedNotifications] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [key, setKey] = React.useState('active');
 
   const router = useRouter();
 
-  async function fetchData(k) {
-    const isResolved = k === 'resolved';
+  async function fetchData(k, both = false) {
     setLoading(true);
-    const { data } = await commentsService.getNotifications(router.query.id, isResolved, appVersionsId);
+    if (both) {
+      const [resolved, unresolved] = await Promise.all([
+        commentsService.getNotifications(router.query.id, true, appVersionsId),
+        commentsService.getNotifications(router.query.id, false, appVersionsId),
+      ]);
+      setResolvedNotifications(resolved.data);
+      setUnresolvedNotifications(unresolved.data);
+    } else {
+      const isResolved = k === 'resolved';
+      const data = (await commentsService.getNotifications(router.query.id, isResolved, appVersionsId))?.data;
+      isResolved ? setResolvedNotifications(data) : setUnresolvedNotifications(data);
+    }
     setLoading(false);
-    setNotifications(data);
   }
   React.useEffect(() => {
     fetchData();
@@ -30,9 +40,10 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
   }, []);
 
   React.useEffect(() => {
-    // Listen for messages
+    // Listen for messages. It is not possible to determine which notification collection
+    // should be updated, so we just update both
     socket?.addEventListener('message', function (event) {
-      if (event.data === 'notifications') fetchData();
+      if (event.data === 'notifications') fetchData(null, true);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -72,10 +83,10 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
         className="dflex justify-content-center"
       >
         <Tab className="comment-notification-nav-item" eventKey="active" title="Active">
-          <TabContent notifications={notifications} loading={loading} />
+          <TabContent notifications={unresolvedNotifications} loading={loading} />
         </Tab>
         <Tab className="comment-notification-nav-item" eventKey="resolved" title="Resolved">
-          <TabContent notifications={notifications} loading={loading} />
+          <TabContent notifications={resolvedNotifications} loading={loading} />
         </Tab>
       </Tabs>
     </div>
