@@ -100,13 +100,18 @@ export const commonWidgetText = {
 
   datepickerDocumentationLink: "Datepicker documentation",
   text1: "text1",
+  textinput1: "textinput1",
   toggleswitch1: "toggleswitch1",
   toggleSwitch: "Toggle Switch",
+  button1: "button1",
+  image1: "image1",
 };
 
 export const createBackspaceText = (text) => {
   let backspace = "{end}";
-  [...text].forEach((c) => (backspace += "{backspace}"));
+  [...text].forEach((c) => {
+    backspace += "{backspace}{del}";
+  });
   return backspace;
 };
 
