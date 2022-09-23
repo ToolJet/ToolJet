@@ -35,10 +35,11 @@ export default class StripeQueryService implements QueryService {
           searchParams: queryParams,
         });
       } else {
+        const resolvedBodyParams = this.resolveBodyparams(bodyParams);
         response = await got(url, {
           method: operation,
           headers: this.authHeader(apiKey),
-          form: bodyParams,
+          form: resolvedBodyParams,
           searchParams: queryParams,
         });
       }
@@ -52,5 +53,25 @@ export default class StripeQueryService implements QueryService {
       status: 'ok',
       data: result,
     };
+  }
+
+  private resolveBodyparams(bodyParams: object): object {
+    if (typeof bodyParams === 'string') {
+      return bodyParams;
+    }
+
+    const expectedResult = {};
+
+    for (const key of Object.keys(bodyParams)) {
+      if (typeof bodyParams[key] === 'object') {
+        for (const subKey of Object.keys(bodyParams[key])) {
+          expectedResult[`${key}[${subKey}]`] = bodyParams[key][subKey];
+        }
+      } else {
+        expectedResult[key] = bodyParams[key];
+      }
+    }
+
+    return expectedResult;
   }
 }

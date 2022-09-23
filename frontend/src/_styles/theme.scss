@@ -336,6 +336,12 @@ button {
         border-width: 0px 0px 1px 0px;
       }
     }
+
+    .left-sidebar-inspector {
+      .card-body {
+        padding: 1rem 0rem 1rem 1rem;
+      }
+    }
   }
 
   .editor-sidebar {
@@ -3402,6 +3408,12 @@ input:focus-visible {
       color: #656d77;
     }
   }
+
+  .page-item {
+    a.page-link {
+      color: white;
+    }
+  }
 }
 
 .main-wrapper {
@@ -6370,5 +6382,12 @@ input.hide-input-arrows{
     background-color: #2b394a;
     border-color: #232e3c;
     color: white;
+  }
+}
+
+.org-users-page {
+  min-height: 100vh;
+  .page-body {
+    height: 100%;
   }
 }

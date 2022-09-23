@@ -140,6 +140,6 @@ export class DataSourcesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    return await this.dataQueriesService.authorizeOauth2(dataSource, code);
+    return await this.dataQueriesService.authorizeOauth2(dataSource, code, user.id);
   }
 }
