@@ -25,7 +25,7 @@ export const Button = function Button({
   const [visibility, setVisibility] = useState(styles.visibility);
   useEffect(() => {
     visibility !== styles.visibility && setVisibility(styles.visibility);
-  }, [currentState, styles.visibility]);
+  }, [styles.visibility]);
 
   const [loading, setLoading] = useState(properties.loadingState);
   useEffect(() => {
