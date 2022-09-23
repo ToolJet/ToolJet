@@ -27,7 +27,9 @@ export const verifyAndModifyParameter = (paramName, value) => {
 };
 
 export const openEditorSidebar = (widgetName = "") => {
-  cy.get(commonWidgetSelector.draggableWidget(widgetName)).trigger("mouseover");
+  cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).trigger(
+    "mouseover"
+  );
   cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click();
 };
 
@@ -288,4 +290,12 @@ export const verifyWidgetText = (widgetName, text) => {
     "have.text",
     text
   );
+};
+
+export const pushIntoArrayOfObject = (arrayOne, arrayTwo) => {
+  let arrayOfObj = "[";
+  arrayOne.forEach((element, index) => {
+    arrayOfObj += `{name: "${element}", mark: "${arrayTwo[index]}" },`;
+  });
+  return arrayOfObj + "]";
 };

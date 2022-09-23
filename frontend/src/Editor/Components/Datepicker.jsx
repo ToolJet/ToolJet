@@ -80,7 +80,7 @@ export const Datepicker = function Datepicker({
     <div
       data-disabled={disabledState}
       className="datepicker-widget"
-      data-cy={`draggable-widget-${component.name.toLowerCase()}`}
+      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       style={{
         height,
         display: visibility ? '' : 'none',

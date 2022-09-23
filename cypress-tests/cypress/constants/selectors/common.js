@@ -158,7 +158,7 @@ export const commonWidgetSelector = {
   boxShadowDefaultParam: ["x", "y", "blur", "spread"],
   colourPickerParent: "[data-cy='color-picker-parent']",
   inputBoxShadow: "[data-cy= 'input-box-shadow']",
-  boxShadowColorPicker: "[data-cy='box-shadow-color-picker']",
+  boxShadowColorPicker: "[data-cy='box-shadow-picker']",
   textInputWidget: '[data-cy="draggable-widget-textinput1"]',
   previewButton: `[data-cy="preview-link-button"]`,
 };
