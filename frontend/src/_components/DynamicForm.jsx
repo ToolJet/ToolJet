@@ -132,6 +132,7 @@ const DynamicForm = ({
           auth_key: options.auth_key?.value,
           custom_auth_params: options.custom_auth_params?.value,
           custom_query_params: options.custom_query_params?.value,
+          multiple_auth_enabled: options.multiple_auth_enabled?.value,
           optionchanged,
         };
       case 'react-component-google-sheets':

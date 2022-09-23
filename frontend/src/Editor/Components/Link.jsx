@@ -1,14 +1,10 @@
 import React, { useRef } from 'react';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import cx from 'classnames';
 
-export const Link = ({ height, properties, styles, fireEvent, registerAction, currentState }) => {
+export const Link = ({ height, properties, styles, fireEvent, registerAction }) => {
   const { linkTarget, linkText, targetType } = properties;
   const { textColor, textSize, underline, visibility } = styles;
   const clickRef = useRef();
-
-  const parsedVisibility =
-    typeof visibility !== 'boolean' ? resolveWidgetFieldValue(visibility, currentState) : visibility;
 
   const computedStyles = {
     fontSize: textSize,
@@ -20,7 +16,7 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction, cu
   });
 
   return (
-    <div className={cx('link-widget', { 'd-none': !parsedVisibility }, `${underline}`)} style={computedStyles}>
+    <div className={cx('link-widget', { 'd-none': !visibility }, `${underline}`)} style={computedStyles}>
       <a
         href={linkTarget}
         target={targetType === 'new' && '_blank'}

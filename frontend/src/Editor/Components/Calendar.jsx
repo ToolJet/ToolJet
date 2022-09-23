@@ -3,6 +3,7 @@ import { Calendar as ReactCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { CalendarEventPopover } from './CalendarPopover';
+import _ from 'lodash';
 
 const localizer = momentLocalizer(moment);
 
@@ -12,7 +13,16 @@ const prepareEvent = (event, dateFormat) => ({
   end: moment(event.end, dateFormat).toDate(),
 });
 
-const parseDate = (date, dateFormat) => moment(date, dateFormat).toDate();
+const parseDate = (date, dateFormat) => {
+  const parsed = moment(date, dateFormat).toDate();
+
+  //handle invalid dates
+  if (isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed;
+};
 
 const allowedCalendarViews = ['month', 'week', 'day'];
 
@@ -39,6 +49,7 @@ export const Calendar = function ({
   const startTime = properties.startTime ? parseDate(properties.startTime, properties.dateFormat) : todayStartTime;
   const endTime = properties.endTime ? parseDate(properties.endTime, properties.dateFormat) : todayEndTime;
 
+  const [currentDate, setCurrentDate] = useState(defaultDate);
   const [eventPopoverOptions, setEventPopoverOptions] = useState({ show: false });
 
   const eventPropGetter = (event) => {
@@ -82,9 +93,15 @@ export const Calendar = function ({
     : allowedCalendarViews[0];
 
   useEffect(() => {
-    setExposedVariable('currentView', defaultView);
+    //check if the default date is a valid date
+
+    if (defaultDate !== null && !_.isEqual(exposedVariables.currentDate, properties.defaultDate)) {
+      setExposedVariable('currentDate', moment(defaultDate).format(properties.dateFormat));
+      setCurrentDate(defaultDate);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultView]);
+  }, [JSON.stringify(moment(defaultDate).format('DD-MM-YYYY'))]);
 
   const components = {
     timeGutterHeader: () => <div style={{ height: '100%', display: 'flex', alignItems: 'flex-end' }}>All day</div>,
@@ -93,7 +110,10 @@ export const Calendar = function ({
     },
   };
 
-  if (exposedVariables.currentDate === undefined) setExposedVariable('currentDate', properties.defaultDate);
+  //! hack
+  if (exposedVariables.currentDate === undefined) {
+    setExposedVariable('currentDate', moment(defaultDate).format(properties.dateFormat));
+  }
 
   return (
     <div id={id} style={{ display: styles.visibility ? 'block' : 'none' }}>
@@ -105,7 +125,7 @@ export const Calendar = function ({
         ${exposedVariables.currentView === 'week' ? 'resources-week-cls' : ''}
         ${properties.displayViewSwitcher ? '' : 'hide-view-switcher'}`}
         localizer={localizer}
-        defaultDate={defaultDate}
+        date={currentDate}
         events={events}
         startAccessor="start"
         endAccessor="end"
@@ -136,7 +156,9 @@ export const Calendar = function ({
             });
         }}
         onNavigate={(date) => {
-          setExposedVariable('currentDate', moment(date).format(properties.dateFormat));
+          const formattedDate = moment(date).format(properties.dateFormat);
+          setExposedVariable('currentDate', formattedDate);
+          setCurrentDate(date);
           fireEvent('onCalendarNavigate');
         }}
         selectable={true}

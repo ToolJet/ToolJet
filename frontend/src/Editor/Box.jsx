@@ -188,7 +188,7 @@ export const Box = function Box({
       ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
       : [resolvedGeneralStyles, []];
 
-  const { exposeToCodeHinter } = useContext(EditorContext) || {};
+  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
   useEffect(() => {
     const componentName = getComponentName(currentState, id);
@@ -286,6 +286,7 @@ export const Box = function Box({
             exposedVariables={exposedVariables}
             styles={validatedStyles}
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
+            setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
             registerAction={(actionName, func, dependencies = []) => {
               if (Object.keys(currentState?.components ?? {}).includes(component.name)) {
                 if (!Object.keys(exposedVariables).includes(actionName)) {
@@ -304,6 +305,8 @@ export const Box = function Box({
             parentId={parentId}
             customResolvables={customResolvables}
             dataQueries={dataQueries}
+            variablesExposedForPreview={variablesExposedForPreview}
+            exposeToCodeHinter={exposeToCodeHinter}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
