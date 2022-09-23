@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import * as Icons from '@tabler/icons';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import cx from 'classnames';
 
-export const Icon = ({ properties, styles, fireEvent, width, height, currentState, registerAction, darkMode }) => {
+export const Icon = ({ properties, styles, fireEvent, width, height, registerAction, darkMode }) => {
   const { icon } = properties;
   const { iconColor, visibility } = styles;
   const IconElement = Icons[icon];
@@ -14,21 +13,21 @@ export const Icon = ({ properties, styles, fireEvent, width, height, currentStat
   const [showIcon, setIconVisibility] = useState(true);
 
   useEffect(() => {
-    showIcon !== visibility &&
-      setIconVisibility(
-        typeof visibility !== 'boolean' ? resolveWidgetFieldValue(visibility, currentState) : visibility
-      );
+    showIcon !== visibility && setIconVisibility(visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
 
-    registerAction('click', async function () {
-      fireEvent('onClick');
-    });
+  registerAction('click', async function () {
+    fireEvent('onClick');
+  });
 
-    registerAction('setVisibility', async function (visibility) {
-      setIconVisibility(
-        typeof visibility !== 'boolean' ? resolveWidgetFieldValue(visibility, currentState) : visibility
-      );
-    });
-  }, [currentState, visibility]);
+  registerAction(
+    'setVisibility',
+    async function (visibility) {
+      setIconVisibility(visibility);
+    },
+    [visibility]
+  );
 
   return (
     <div className={cx('icon-widget', { 'd-none': !showIcon })}>
