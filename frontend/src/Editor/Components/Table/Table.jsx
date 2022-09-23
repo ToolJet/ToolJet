@@ -487,6 +487,14 @@ export function Table({
                         fireEvent('onRowClicked');
                       });
                     }}
+                    onMouseEnter={(e) => {
+                      // e.stopPropagation();
+                      const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
+                      mergeToTableDetails(hoveredRowDetails);
+                      setExposedVariables(hoveredRowDetails).then(() => {
+                        fireEvent('onRowHovered');
+                      });
+                    }}
                   >
                     {row.cells.map((cell, index) => {
                       let cellProps = cell.getCellProps();
