@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useMemo, useState, useEffect, useCallback, useContext } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useContext, useReducer, useRef } from 'react';
 import {
   useTable,
   useFilters,
@@ -13,19 +13,19 @@ import {
   useRowSelect,
 } from 'react-table';
 import cx from 'classnames';
-import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { resolveReferences, validateWidget } from '@/_helpers/utils';
 import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
 import { Pagination } from './Pagination';
-import { CustomSelect } from './CustomSelect';
-import { Tags } from './Tags';
-import { Radio } from './Radio';
-import { Toggle } from './Toggle';
-import { Datepicker } from './Datepicker';
+import { Filter } from './Filter';
 import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
-import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
+import loadPropertiesAndStyles from './load-properties-and-styles';
+import { reducer, reducerActions, initialState } from './reducer';
+import customFilter from './custom-filter';
+import generateColumnsData from './columns';
+import generateActionsData from './columns/actions';
+import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
 
 export function Table({
@@ -43,150 +43,53 @@ export function Table({
   darkMode,
   fireEvent,
   setExposedVariable,
+  setExposedVariables,
   registerAction,
+  styles,
   properties,
+  variablesExposedForPreview,
+  exposeToCodeHinter,
 }) {
+  const {
+    color,
+    serverSidePagination,
+    clientSidePagination,
+    serverSideSearch,
+    displaySearchBox,
+    showDownloadButton,
+    showFilterButton,
+    showBulkUpdateActions,
+    showBulkSelector,
+    highlightSelectedRow,
+    loadingState,
+    columnSizes,
+    tableType,
+    cellSize,
+    borderRadius,
+    parsedWidgetVisibility,
+    parsedDisabledState,
+    actionButtonRadius,
+    actions,
+  } = loadPropertiesAndStyles(properties, styles, darkMode, component);
+
   const { t } = useTranslation();
 
-  const color =
-    component.definition.styles.textColor.value !== '#000'
-      ? component.definition.styles.textColor.value
-      : darkMode && '#fff';
+  const [tableDetails, dispatch] = useReducer(reducer, initialState());
 
-  const actions = component.definition.properties.actions || { value: [] };
-  const serverSidePaginationProperty = component.definition.properties.serverSidePagination;
-  let serverSidePagination = serverSidePaginationProperty
-    ? resolveWidgetFieldValue(serverSidePaginationProperty.value, currentState)
-    : false;
+  const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
+  const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
 
-  if (typeof serverSidePagination !== 'boolean') serverSidePagination = false;
-
-  const serverSideSearchProperty = component.definition.properties.serverSideSearch;
-  const serverSideSearch = serverSideSearchProperty
-    ? resolveWidgetFieldValue(serverSideSearchProperty.value, currentState)
-    : false;
-
-  const displaySearchBoxProperty = component.definition.properties.displaySearchBox;
-  const displaySearchBox = displaySearchBoxProperty
-    ? resolveWidgetFieldValue(displaySearchBoxProperty.value, currentState)
-    : true;
-
-  const showDownloadButtonProperty = component.definition.properties.showDownloadButton?.value;
-  const showDownloadButton = resolveWidgetFieldValue(showDownloadButtonProperty, currentState) ?? true; // default is true for backward compatibility
-
-  const showFilterButtonProperty = component.definition.properties.showFilterButton?.value;
-  const showFilterButton = resolveWidgetFieldValue(showFilterButtonProperty, currentState) ?? true; // default is true for backward compatibility
-
-  const showBulkUpdateActionsProperty = component.definition.properties.showBulkUpdateActions?.value;
-  const showBulkUpdateActions = resolveWidgetFieldValue(showBulkUpdateActionsProperty, currentState) ?? true; // default is true for backward compatibility
-
-  const showBulkSelectorProperty = component.definition.properties.showBulkSelector?.value;
-  const showBulkSelector = resolveWidgetFieldValue(showBulkSelectorProperty, currentState) ?? false; // default is false for backward compatibility
-
-  const highlightSelectedRowProperty = component.definition.properties.highlightSelectedRow?.value;
-  const highlightSelectedRow = resolveWidgetFieldValue(highlightSelectedRowProperty, currentState) ?? false; // default is false for backward compatibility
-
-  const clientSidePaginationProperty = component.definition.properties.clientSidePagination?.value;
-  let clientSidePagination =
-    resolveWidgetFieldValue(clientSidePaginationProperty, currentState) ?? !serverSidePagination; // default is true for backward compatibility
-
-  if (typeof clientSidePagination !== 'boolean') clientSidePagination = true;
-
-  const tableTypeProperty = component.definition.styles.tableType;
-  let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
-  tableType = tableType === '' ? 'table-bordered' : tableType;
-
-  const cellSizeType = component.definition.styles.cellSize?.value;
-  const borderRadius = component.definition.styles.borderRadius?.value;
-
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-  let parsedWidgetVisibility = widgetVisibility;
-
-  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
-
-  const [loadingState, setLoadingState] = useState(false);
-  const [columnProperties, setColumnProperties] = useState();
-
-  useEffect(() => {
-    setColumnProperties(component?.definition?.properties?.columns?.value);
-  }, [component?.definition?.properties]);
-
-  useEffect(() => {
-    const loadingStateProperty = component.definition.properties.loadingState;
-    if (loadingStateProperty && currentState) {
-      const newState = resolveReferences(loadingStateProperty.value, currentState, false);
-      setLoadingState(newState);
-    }
-  }, [currentState]);
-
-  const [componentState, setcomponentState] = useState(currentState.components[component.component] || {});
-
-  useEffect(() => {
-    setcomponentState(currentState.components[component.name] || {});
-  }, [currentState.components[component.name]]);
-
-  const [isFiltersVisible, setFiltersVisibility] = useState(false);
-  const [filters, setFilters] = useState([]);
+  useEffect(
+    () => mergeToTableDetails({ columnProperties: component?.definition?.properties?.columns?.value }),
+    [component?.definition?.properties]
+  );
 
   function showFilters() {
-    setFiltersVisibility(true);
+    mergeToFilterDetails({ filtersVisible: true });
   }
 
   function hideFilters() {
-    setFiltersVisibility(false);
-  }
-
-  function filterColumnChanged(index, value) {
-    const newFilters = filters;
-    newFilters[index].id = value;
-    setFilters(newFilters);
-    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
-  }
-
-  function filterOperationChanged(index, value) {
-    const newFilters = filters;
-    newFilters[index].value = {
-      ...newFilters[index].value,
-      operation: value,
-    };
-    setFilters(newFilters);
-    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
-  }
-
-  function filterValueChanged(index, value) {
-    const newFilters = filters;
-    newFilters[index].value = {
-      ...newFilters[index].value,
-      value: value,
-    };
-    setFilters(newFilters);
-    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
-  }
-
-  function addFilter() {
-    setFilters([...filters, { id: '', value: { operation: 'contains', value: '' } }]);
-  }
-
-  function removeFilter(index) {
-    let newFilters = filters;
-    newFilters.splice(index, 1);
-    setFilters(newFilters);
-    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
-  }
-
-  function clearFilters() {
-    setFilters([]);
-    setAllFilters([]);
+    mergeToFilterDetails({ filtersVisible: false });
   }
 
   const defaultColumn = React.useMemo(
@@ -197,11 +100,9 @@ export function Table({
     []
   );
 
-  const columnSizes = component.definition.properties.columnSizes || {};
-
   function handleCellValueChange(index, key, value, rowData) {
-    const changeSet = componentState.changeSet;
-    const dataUpdates = componentState.dataUpdates || [];
+    const changeSet = tableDetails.changeSet;
+    const dataUpdates = tableDetails.dataUpdates || [];
 
     let obj = changeSet ? changeSet[index] || {} : {};
     obj = _.set(obj, key, value);
@@ -219,11 +120,9 @@ export function Table({
       ...dataUpdates,
       [index]: { ...obj },
     };
-
-    return onComponentOptionsChanged(component, [
-      ['dataUpdates', newDataUpdates],
-      ['changeSet', newChangeset],
-    ]);
+    const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
+    mergeToTableDetails(changesToBeSavedAndExposed);
+    return setExposedVariables(changesToBeSavedAndExposed);
   }
 
   function getExportFileBlob({ columns, data }) {
@@ -245,71 +144,20 @@ export function Table({
       };
     });
 
-    onComponentOptionChanged(component, 'changeSet', {});
-    onComponentOptionChanged(component, 'dataUpdates', []);
+    setExposedVariables({
+      changeSet: {},
+      dataUpdates: [],
+    });
   }
 
   function handleChangesDiscarded() {
-    onComponentOptionChanged(component, 'changeSet', {});
-    onComponentOptionChanged(component, 'dataUpdates', []);
+    setExposedVariables({
+      changeSet: {},
+      dataUpdates: [],
+    });
   }
 
-  function customFilter(rows, columnIds, filterValue) {
-    try {
-      if (filterValue.operation === 'equals') {
-        return rows.filter((row) => row.values[columnIds[0]] === filterValue.value);
-      }
-
-      if (filterValue.operation === 'ne') {
-        return rows.filter((row) => row.values[columnIds[0]] !== filterValue.value);
-      }
-
-      if (filterValue.operation === 'matches') {
-        return rows.filter((row) =>
-          row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
-        );
-      }
-
-      if (filterValue.operation === 'nl') {
-        return rows.filter(
-          (row) => !row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
-        );
-      }
-
-      if (filterValue.operation === 'gt') {
-        return rows.filter((row) => row.values[columnIds[0]] > filterValue.value);
-      }
-
-      if (filterValue.operation === 'lt') {
-        return rows.filter((row) => row.values[columnIds[0]] < filterValue.value);
-      }
-
-      if (filterValue.operation === 'gte') {
-        return rows.filter((row) => row.values[columnIds[0]] >= filterValue.value);
-      }
-
-      if (filterValue.operation === 'lte') {
-        return rows.filter((row) => row.values[columnIds[0]] <= filterValue.value);
-      }
-
-      let value = filterValue.value;
-      if (typeof value === 'string') {
-        value = value.toLowerCase();
-      }
-
-      return rows.filter((row) => {
-        let rowValue = row.values[columnIds[0]];
-        if (typeof rowValue === 'string') {
-          rowValue = rowValue.toLowerCase();
-        }
-        return rowValue.includes(value);
-      });
-    } catch {
-      return rows;
-    }
-  }
-
-  const changeSet = componentState ? componentState.changeSet : {};
+  const changeSet = tableDetails?.changeSet ?? {};
 
   const computeFontColor = useCallback(() => {
     if (color !== undefined) {
@@ -318,301 +166,6 @@ export function Table({
       return darkMode ? '#ffffff' : '#000000';
     }
   }, [color, darkMode]);
-
-  const columnData = component.definition.properties.columns.value.map((column) => {
-    const columnSize = columnSizes[column.id] || columnSizes[column.name];
-    const columnType = column.columnType;
-
-    const columnOptions = {};
-    if (
-      columnType === 'dropdown' ||
-      columnType === 'multiselect' ||
-      columnType === 'badge' ||
-      columnType === 'badges' ||
-      columnType === 'radio'
-    ) {
-      columnOptions.selectOptions = [];
-      const values = resolveReferences(column.values, currentState, []);
-      const labels = resolveReferences(column.labels, currentState, []);
-
-      if (Array.isArray(labels) && Array.isArray(values)) {
-        columnOptions.selectOptions = labels.map((label, index) => {
-          return { name: label, value: values[index] };
-        });
-      }
-    }
-    if (columnType === 'datepicker') {
-      column.isTimeChecked = column.isTimeChecked ? column.isTimeChecked : false;
-      column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
-      column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
-    }
-
-    const width = columnSize || defaultColumn.width;
-
-    return {
-      id: column.id,
-      Header: column.name,
-      accessor: column.key || column.name,
-      filter: customFilter,
-      width: width,
-      columnOptions,
-      cellBackgroundColor: column.cellBackgroundColor,
-      columnType,
-      isEditable: column.isEditable,
-      Cell: function (cell) {
-        const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
-        const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
-        const rowData = tableData[cell.row.index];
-
-        if (
-          cell.row.index === 0 &&
-          variablesExposedForPreview &&
-          !_.isEqual(variablesExposedForPreview[id]?.rowData, rowData)
-        ) {
-          const customResolvables = {};
-          customResolvables[id] = { ...variablesExposedForPreview[id], rowData };
-          exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
-        }
-
-        switch (columnType) {
-          case 'string':
-          case undefined:
-          case 'default': {
-            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
-
-            const cellStyles = {
-              color: textColor ?? '',
-            };
-
-            if (column.isEditable) {
-              const validationData = validateWidget({
-                validationObject: {
-                  regex: {
-                    value: column.regex,
-                  },
-                  minLength: {
-                    value: column.minLength,
-                  },
-                  maxLength: {
-                    value: column.maxLength,
-                  },
-                  customRule: {
-                    value: column.customRule,
-                  },
-                },
-                widgetValue: cellValue,
-                currentState,
-                customResolveObjects: { cellValue },
-              });
-
-              const { isValid, validationError } = validationData;
-              const cellStyles = {
-                color: textColor ?? '',
-              };
-
-              return (
-                <div>
-                  <input
-                    type="text"
-                    style={{ ...cellStyles, maxWidth: width, minWidth: width - 10 }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        if (e.target.defaultValue !== e.target.value) {
-                          handleCellValueChange(
-                            cell.row.index,
-                            column.key || column.name,
-                            e.target.value,
-                            cell.row.original
-                          );
-                        }
-                      }
-                    }}
-                    onBlur={(e) => {
-                      if (e.target.defaultValue !== e.target.value) {
-                        handleCellValueChange(
-                          cell.row.index,
-                          column.key || column.name,
-                          e.target.value,
-                          cell.row.original
-                        );
-                      }
-                    }}
-                    className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
-                    defaultValue={cellValue}
-                  />
-                  <div className="invalid-feedback">{validationError}</div>
-                </div>
-              );
-            }
-            return <span style={cellStyles}>{cellValue}</span>;
-          }
-          case 'text': {
-            return (
-              <textarea
-                rows="1"
-                className="form-control-plaintext text-container text-muted"
-                readOnly={!column.isEditable}
-                style={{ maxWidth: width, minWidth: width - 10 }}
-                onBlur={(e) => {
-                  if (column.isEditable) {
-                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
-                  }
-                }}
-                onChange={(e) => {
-                  if (column.isEditable) {
-                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
-                  }
-                }}
-                value={cellValue}
-                defaultValue={cellValue}
-              ></textarea>
-            );
-          }
-          case 'dropdown': {
-            const validationData = validateWidget({
-              validationObject: {
-                regex: {
-                  value: column.regex,
-                },
-                minLength: {
-                  value: column.minLength,
-                },
-                maxLength: {
-                  value: column.maxLength,
-                },
-                customRule: {
-                  value: column.customRule,
-                },
-              },
-              widgetValue: cellValue,
-              currentState,
-              customResolveObjects: { cellValue },
-            });
-
-            const { isValid, validationError } = validationData;
-
-            return (
-              <div>
-                <SelectSearch
-                  options={columnOptions.selectOptions}
-                  value={cellValue}
-                  search={true}
-                  onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                  }}
-                  filterOptions={fuzzySearch}
-                  placeholder={t('globals.select', 'Select') + '...'}
-                  disabled={!column.isEditable}
-                />
-                <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
-              </div>
-            );
-          }
-          case 'multiselect': {
-            return (
-              <div>
-                <SelectSearch
-                  printOptions="on-focus"
-                  multiple
-                  search={true}
-                  placeholder={t('globals.select', 'Select') + '...'}
-                  options={columnOptions.selectOptions}
-                  value={cellValue}
-                  onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                  }}
-                  disabled={!column.isEditable}
-                />
-              </div>
-            );
-          }
-          case 'badge':
-          case 'badges': {
-            return (
-              <div>
-                <CustomSelect
-                  options={columnOptions.selectOptions}
-                  value={cellValue}
-                  multiple={columnType === 'badges'}
-                  onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                  }}
-                />
-              </div>
-            );
-          }
-          case 'tags': {
-            return (
-              <div>
-                <Tags
-                  value={cellValue}
-                  onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                  }}
-                />
-              </div>
-            );
-          }
-          case 'radio': {
-            return (
-              <div>
-                <Radio
-                  options={columnOptions.selectOptions}
-                  value={cellValue}
-                  readOnly={!column.isEditable}
-                  onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                  }}
-                />
-              </div>
-            );
-          }
-          case 'toggle': {
-            return (
-              <div>
-                <Toggle
-                  value={cellValue}
-                  readOnly={!column.isEditable}
-                  activeColor={column.activeColor}
-                  onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original).then(
-                      () => {
-                        fireEvent('OnTableToggleCellChanged', {
-                          column: column,
-                          rowId: cell.row.id,
-                          row: cell.row.original,
-                        });
-                      }
-                    );
-                  }}
-                />
-              </div>
-            );
-          }
-          case 'datepicker': {
-            return (
-              <div>
-                <Datepicker
-                  timeZoneValue={column.timeZoneValue}
-                  timeZoneDisplay={column.timeZoneDisplay}
-                  dateDisplayFormat={column.dateFormat}
-                  isTimeChecked={column.isTimeChecked}
-                  value={cellValue}
-                  readOnly={column.isEditable}
-                  parseDateFormat={column.parseDateFormat}
-                  onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                  }}
-                  tableRef={tableRef}
-                />
-              </div>
-            );
-          }
-        }
-        return cellValue || '';
-      },
-    };
-  });
 
   let tableData = [];
   if (currentState) {
@@ -623,117 +176,44 @@ export function Table({
 
   tableData = tableData || [];
 
-  const leftActions = () => actions.value.filter((action) => action.position === 'left');
-  const rightActions = () => actions.value.filter((action) => [undefined, 'right'].includes(action.position));
+  const tableRef = useRef();
+
+  const columnData = generateColumnsData({
+    columnProperties: component.definition.properties.columns.value,
+    columnSizes,
+    currentState,
+    handleCellValueChange,
+    customFilter,
+    defaultColumn,
+    changeSet: tableDetails.changeSet,
+    tableData,
+    variablesExposedForPreview,
+    exposeToCodeHinter,
+    id,
+    fireEvent,
+    tableRef,
+    t,
+  });
+
+  const [leftActionsCellData, rightActionsCellData] = useMemo(
+    () =>
+      generateActionsData({
+        actions,
+        columnSizes,
+        defaultColumn,
+        actionButtonRadius,
+        fireEvent,
+        setExposedVariables,
+      }),
+    [JSON.stringify(actions)]
+  );
 
   const textWrapActions = (id) => {
-    let wrapOption = columnProperties?.find((item) => {
+    let wrapOption = tableDetails.columnProperties?.find((item) => {
       return item?.id == id;
     });
     return wrapOption?.textWrap;
   };
-
-  const leftActionsCellData =
-    leftActions().length > 0
-      ? [
-          {
-            id: 'leftActions',
-            Header: 'Actions',
-            accessor: 'edit',
-            width: columnSizes.leftActions || defaultColumn.width,
-            Cell: (cell) => {
-              return leftActions().map((action) => (
-                <button
-                  key={action.name}
-                  className="btn btn-sm m-1 btn-light"
-                  style={{
-                    background: action.backgroundColor,
-                    color: action.textColor,
-                    borderRadius: component.definition.styles.actionButtonRadius?.value
-                      ? parseFloat(component.definition.styles.actionButtonRadius?.value)
-                      : 0,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEvent('onTableActionButtonClicked', {
-                      component,
-                      data: cell.row.original,
-                      rowId: cell.row.id,
-                      action,
-                    });
-                  }}
-                >
-                  {action.buttonText}
-                </button>
-              ));
-            },
-          },
-        ]
-      : [];
-
-  const rightActionsCellData =
-    rightActions().length > 0
-      ? [
-          {
-            id: 'rightActions',
-            Header: 'Actions',
-            accessor: 'edit',
-            width: columnSizes.rightActions || defaultColumn.width,
-            Cell: (cell) => {
-              return rightActions().map((action) => (
-                <button
-                  key={action.name}
-                  className="btn btn-sm m-1 btn-light"
-                  style={{
-                    background: action.backgroundColor,
-                    color: action.textColor,
-                    borderRadius: component.definition.styles.actionButtonRadius?.value
-                      ? parseFloat(component.definition.styles.actionButtonRadius?.value)
-                      : 0,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEvent('onTableActionButtonClicked', {
-                      component,
-                      data: cell.row.original,
-                      rowId: cell.row.id,
-                      action,
-                    });
-                  }}
-                >
-                  {action.buttonText}
-                </button>
-              ));
-            },
-          },
-        ]
-      : [];
-
-  const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
-    const defaultRef = React.useRef();
-    const resolvedRef = ref || defaultRef;
-
-    React.useEffect(() => {
-      resolvedRef.current.indeterminate = indeterminate;
-    }, [resolvedRef, indeterminate]);
-
-    return (
-      <>
-        <input
-          type="checkbox"
-          ref={resolvedRef}
-          style={{
-            width: 15,
-            height: 15,
-            marginTop: 8,
-            marginLeft: 10,
-          }}
-          onClick={(event) => event.stopPropagation()}
-          {...rest}
-        />
-      </>
-    );
-  });
 
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
 
@@ -745,7 +225,7 @@ export function Table({
       JSON.stringify(actions),
       leftActionsCellData.length,
       rightActionsCellData.length,
-      componentState.changeSet,
+      tableDetails.changeSet,
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
@@ -757,7 +237,7 @@ export function Table({
     () => tableData,
     [
       tableData.length,
-      componentState.changeSet,
+      tableDetails.changeSet,
       component.definition.properties.data.value,
       JSON.stringify(properties.data),
     ]
@@ -867,12 +347,15 @@ export function Table({
       ['selectedRow', []],
       ['selectedRowId', null],
     ]);
-  }, [tableData.length, componentState.changeSet]);
+  }, [tableData.length, tableDetails.changeSet]);
 
   useEffect(() => {
-    if (!state.columnResizing.isResizingColumn) {
+    const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
+    if (!state.columnResizing.isResizingColumn && !_.isEmpty(newColumnSizes)) {
       changeCanDrag(true);
-      paramUpdated(id, 'columnSizes', { ...columnSizes, ...state.columnResizing.columnWidths });
+      paramUpdated(id, 'columnSizes', {
+        value: newColumnSizes,
+      });
     } else {
       changeCanDrag(false);
     }
@@ -883,8 +366,6 @@ export function Table({
   useEffect(() => {
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
   }, [pageCount]);
-
-  const tableRef = React.useRef();
 
   useEffect(() => {
     setExposedVariable(
@@ -932,8 +413,8 @@ export function Table({
             <div>
               {showFilterButton && (
                 <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
-                  <img src="assets/images/icons/filter.svg" width="15" height="15" />
-                  {filters.length > 0 && (
+                  <img src="/assets/images/icons/filter.svg" width="15" height="15" />
+                  {tableDetails.filterDetails.filters.length > 0 && (
                     <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
                   )}
                 </span>
@@ -983,31 +464,33 @@ export function Table({
 
           {!loadingState && (
             <tbody {...getTableBodyProps()} style={{ color: computeFontColor() }}>
-              {console.log('page', page)}
               {page.map((row, index) => {
                 prepareRow(row);
                 return (
                   <tr
                     key={index}
                     className={`table-row ${
-                      highlightSelectedRow && row.id === componentState.selectedRowId ? 'selected' : ''
+                      highlightSelectedRow && row.id === tableDetails.selectedRowId ? 'selected' : ''
                     }`}
                     {...row.getRowProps()}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onEvent('onRowClicked', { component, data: row.original, rowId: row.id });
+                      const selectedRowDetails = { selectedRowId: row.id, selectedRow: row.original };
+                      mergeToTableDetails(selectedRowDetails);
+                      setExposedVariables(selectedRowDetails).then(() => {
+                        fireEvent('onRowClicked');
+                      });
                     }}
                   >
                     {row.cells.map((cell, index) => {
                       let cellProps = cell.getCellProps();
-                      if (componentState.changeSet) {
-                        if (componentState.changeSet[cell.row.index]) {
+                      if (tableDetails.changeSet) {
+                        if (tableDetails.changeSet[cell.row.index]) {
                           const currentColumn = columnData.find((column) => column.id === cell.column.id);
                           if (
-                            _.get(componentState.changeSet[cell.row.index], currentColumn?.accessor, undefined) !==
+                            _.get(tableDetails.changeSet[cell.row.index], currentColumn?.accessor, undefined) !==
                             undefined
                           ) {
-                            console.log('componentState.changeSet', componentState.changeSet);
                             cellProps.style.backgroundColor = darkMode ? '#1c252f' : '#ffffde';
                             cellProps.style['--tblr-table-accent-bg'] = darkMode ? '#1c252f' : '#ffffde';
                           }
@@ -1037,7 +520,7 @@ export function Table({
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
                             'align-items-center flex-column': cell.column.columnType === 'selector',
-                            [cellSizeType]: true,
+                            [cellSize]: true,
                           })}
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
@@ -1062,7 +545,7 @@ export function Table({
       </div>
       {(clientSidePagination ||
         serverSidePagination ||
-        Object.keys(componentState.changeSet || {}).length > 0 ||
+        Object.keys(tableDetails.changeSet || {}).length > 0 ||
         showFilterButton ||
         showDownloadButton) && (
         <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
@@ -1084,10 +567,10 @@ export function Table({
             </div>
 
             <div className="col d-flex justify-content-end">
-              {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 ? (
+              {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
                 <>
                   <button
-                    className={`btn btn-primary btn-sm mx-2 ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
+                    className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
                     onClick={() =>
                       onEvent('onBulkUpdate', { component }).then(() => {
                         handleChangesSaved();
@@ -1107,96 +590,18 @@ export function Table({
           </div>
         </div>
       )}
-      {isFiltersVisible && (
-        <div className="table-filters card">
-          <div className="card-header row">
-            <div className="col">
-              <h4 className="font-weight-normal">Filters</h4>
-            </div>
-            <div className="col-auto">
-              <button onClick={() => hideFilters()} className="btn btn-light btn-sm">
-                x
-              </button>
-            </div>
-          </div>
-          <div className="card-body">
-            {filters.map((filter, index) => (
-              <div className="row mb-2" key={index}>
-                <div className="col p-2" style={{ maxWidth: '70px' }}>
-                  <small>{index > 0 ? 'and' : 'where'}</small>
-                </div>
-                <div className="col">
-                  <SelectSearch
-                    options={columnData.map((column) => {
-                      return { name: column.Header, value: column.id };
-                    })}
-                    value={filter.id}
-                    search={true}
-                    onChange={(value) => {
-                      filterColumnChanged(index, value);
-                    }}
-                    filterOptions={fuzzySearch}
-                    placeholder={t('globals.select', 'Select') + '...'}
-                  />
-                </div>
-                <div className="col" style={{ maxWidth: '180px' }}>
-                  <SelectSearch
-                    options={[
-                      { name: 'contains', value: 'contains' },
-                      { name: 'matches', value: 'matches' },
-                      { name: 'does not match', value: 'nl' },
-                      { name: 'equals', value: 'equals' },
-                      { name: 'does not equal', value: 'ne' },
-                      { name: 'greater than', value: 'gt' },
-                      { name: 'less than', value: 'lt' },
-                      { name: 'greater than or equals', value: 'gte' },
-                      { name: 'less than or equals', value: 'lte' },
-                    ]}
-                    value={filter.value.operation}
-                    search={true}
-                    onChange={(value) => {
-                      filterOperationChanged(index, value);
-                    }}
-                    filterOptions={fuzzySearch}
-                    placeholder={t('globals.select', 'Select') + '...'}
-                  />
-                </div>
-                <div className="col">
-                  <input
-                    type="text"
-                    value={filter.value.value}
-                    placeholder="value"
-                    className="form-control"
-                    onChange={(e) => filterValueChanged(index, e.target.value)}
-                  />
-                </div>
-                <div className="col-auto">
-                  <button
-                    onClick={() => removeFilter(index)}
-                    className={`btn ${darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
-                  >
-                    x
-                  </button>
-                </div>
-              </div>
-            ))}
-            {filters.length === 0 && (
-              <div>
-                <center>
-                  <span>no filters yet.</span>
-                </center>
-              </div>
-            )}
-          </div>
-          <div className="card-footer">
-            <button onClick={addFilter} className="btn btn-light btn-sm">
-              + add filter
-            </button>
-            <button onClick={() => clearFilters()} className="btn btn-light btn-sm mx-2">
-              clear filters
-            </button>
-          </div>
-        </div>
+      {tableDetails.filterDetails.filtersVisible && (
+        <Filter
+          hideFilters={hideFilters}
+          filters={tableDetails.filterDetails.filters}
+          columns={columnData.map((column) => {
+            return { name: column.Header, value: column.id };
+          })}
+          mergeToFilterDetails={mergeToFilterDetails}
+          filterDetails={tableDetails.filterDetails}
+          darkMode={darkMode}
+          setAllFilters={setAllFilters}
+        />
       )}
     </div>
   );
