@@ -147,10 +147,11 @@ export class UsersService {
         if (isSuperAdmin(user)) {
           await this.setupSuperAdmin(user, organizationId);
         } else {
-          user = null;
+          return;
         }
       }
     }
+    if (!user) return;
     if (user.status !== 'active') {
       throw new UnauthorizedException('User archived');
     }
