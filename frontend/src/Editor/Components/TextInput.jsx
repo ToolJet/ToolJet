@@ -35,31 +35,34 @@ export const TextInput = function TextInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
-  useEffect(() => {
-    registerAction('setFocus', async function () {
+  registerAction(
+    'setFocus',
+    async function () {
       textInputRef.current.focus();
-    });
-    registerAction('setBlur', async function () {
+    },
+    [textInputRef.current]
+  );
+  registerAction(
+    'setBlur',
+    async function () {
       textInputRef.current.blur();
-    });
-  }, [textInputRef.current]);
-
-  useEffect(() => {
-    registerAction('setText', async function (text) {
-      setValue(text);
-      setExposedVariable('value', text).then(fireEvent('onChange'));
-    });
-    registerAction('clear', async function () {
-      setValue('');
-      setExposedVariable('value', '').then(fireEvent('onChange'));
-    });
-    registerAction('disable', async function (value) {
-      setDisable(value);
-    });
-    registerAction('visibility', async function (value) {
-      setVisibility(value);
-    });
-  }, []);
+    },
+    [textInputRef.current]
+  );
+  registerAction('setText', async function (text) {
+    setValue(text);
+    setExposedVariable('value', text).then(fireEvent('onChange'));
+  });
+  registerAction('clear', async function () {
+    setValue('');
+    setExposedVariable('value', '').then(fireEvent('onChange'));
+  });
+  registerAction('disable', async function (value) {
+    setDisable(value);
+  });
+  registerAction('visibility', async function (value) {
+    setVisibility(value);
+  });
 
   return (
     <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`}>
