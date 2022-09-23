@@ -13,19 +13,17 @@ export const Icon = ({ properties, styles, fireEvent, width, height, registerAct
   const [showIcon, setIconVisibility] = useState(true);
 
   useEffect(() => {
-    registerAction('click', async function () {
-      fireEvent('onClick');
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     showIcon !== visibility && setIconVisibility(visibility);
-    registerAction('setVisibility', async function (visibility) {
-      setIconVisibility(visibility);
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility]);
+
+  registerAction('setVisibility', async function (visibility) {
+    setIconVisibility(visibility);
+  });
+
+  registerAction('click', async function () {
+    fireEvent('onClick');
+  });
 
   return (
     <div className={cx('icon-widget', { 'd-none': !showIcon })}>
