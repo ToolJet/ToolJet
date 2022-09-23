@@ -48,7 +48,7 @@ export const InstalledPlugins = ({ isActive, darkMode }) => {
                 <div className="card-body">
                   <div className="row align-items-center">
                     <div className="col-auto">
-                      <span className="bg-blue text-white avatar">
+                      <span className="text-white avatar">
                         <img height="32" width="32" src={`data:image/svg+xml;base64,${plugin.iconFile.data}`} />
                       </span>
                     </div>
@@ -63,9 +63,9 @@ export const InstalledPlugins = ({ isActive, darkMode }) => {
                         <sub>v{plugin.version}</sub>
                       </div>
                       <div className="col-auto">
-                        <a href="#" onClick={() => deletePlugin(plugin.id)}>
+                        <div className="cursor-pointer link-primary" onClick={() => deletePlugin(plugin.id)}>
                           Remove
-                        </a>
+                        </div>
                       </div>
                     </div>
                   </div>

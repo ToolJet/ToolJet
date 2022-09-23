@@ -37,7 +37,7 @@ export const MarketplaceCard = ({ id, name, description, version, isInstalled = 
         <div className="card-body">
           <div className="row align-items-center">
             <div className="col-auto">
-              <span className="bg-blue text-white avatar">
+              <span className="text-white avatar">
                 <img
                   height="40"
                   width="40"
@@ -56,7 +56,7 @@ export const MarketplaceCard = ({ id, name, description, version, isInstalled = 
                 <sub>v{version}</sub>
               </div>
               <div className={cx('col-auto', { disabled: installing || installed })} onClick={installPlugin}>
-                <a href="#">Install{installed && 'ed'}</a>
+                <div className="link-primary cursor-pointer">Install{installed && 'ed'}</div>
               </div>
             </div>
           </div>
