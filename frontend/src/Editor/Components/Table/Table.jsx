@@ -50,13 +50,12 @@ export function Table({
 }) {
   const { t } = useTranslation();
 
-  const selectStyles = (width, height) => {
+  const selectStyles = (width) => {
     return {
       ...defaultStyles(darkMode, width),
       menuPortal: (provided) => ({ ...provided, zIndex: 999 }),
       menuList: (base) => ({
         ...base,
-        maxHeight: 100,
       }),
     };
   };
@@ -1150,7 +1149,6 @@ export function Table({
                     }}
                     placeholder={t('globals.select', 'Select') + '...'}
                     styles={selectStyles('100%')}
-                    useMenuPortal={false}
                   />
                 </div>
                 <div className="col" style={{ maxWidth: '180px' }}>
@@ -1172,8 +1170,7 @@ export function Table({
                       filterOperationChanged(index, value);
                     }}
                     placeholder={t('globals.select', 'Select') + '...'}
-                    styles={selectStyles('100%', height)}
-                    useMenuPortal={false}
+                    styles={selectStyles('100%')}
                   />
                 </div>
                 <div className="col">
