@@ -1,4 +1,4 @@
-import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
@@ -44,6 +44,7 @@ export class UsersService {
   usersQuery(options: any) {
     return this.usersRepository
       .createQueryBuilder('user')
+      .addSelect(['user.id, user.email, user.firstName, user.lastName, user.avatarId', 'user.status', 'user.userType'])
       .leftJoin('user.organizationUsers', 'organizationUsers')
       .addSelect(['organizationUsers.id', 'organizationUsers.status', 'organizationUsers.organizationId'])
       .leftJoin('organizationUsers.organization', 'organization')
@@ -78,7 +79,6 @@ export class UsersService {
         lastName: user.lastName,
         name: `${user.firstName} ${user.lastName}`,
         id: user.id,
-        role: user.role,
         avatarId: user.avatarId,
         organizationUsers: user.organizationUsers,
         totalOrganizations: user.organizationUsers.length,
@@ -115,18 +115,18 @@ export class UsersService {
   }
 
   async findByEmail(email: string, organizationId?: string, status?: string | Array<string>): Promise<User> {
+    let user: User;
     if (!organizationId) {
-      const user: User = await this.usersRepository.findOne({
+      user = await this.usersRepository.findOne({
         where: { email },
       });
 
       if (isSuperAdmin(user)) {
         await this.setupSuperAdmin(user);
       }
-      return user;
     } else {
       const statusList = status ? (typeof status === 'object' ? status : [status]) : ['active', 'invited', 'archived'];
-      let user: User = await createQueryBuilder(User, 'users')
+      user = await createQueryBuilder(User, 'users')
         .innerJoinAndSelect(
           'users.organizationUsers',
           'organization_users',
@@ -147,11 +147,14 @@ export class UsersService {
         if (isSuperAdmin(user)) {
           await this.setupSuperAdmin(user, organizationId);
         } else {
-          return;
+          user = null;
         }
       }
-      return user;
     }
+    if (user.status !== 'active') {
+      throw new UnauthorizedException('User archived');
+    }
+    return user;
   }
 
   async setupSuperAdmin(user: User, organizationId?: string): Promise<void> {

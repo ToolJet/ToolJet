@@ -13,9 +13,22 @@ export class AddUserTypeToUsers1662540114954 implements MigrationInterface {
         isNullable: false,
       })
     );
+
+    await queryRunner.addColumn(
+      'users',
+      new TableColumn({
+        name: 'status',
+        type: 'enum',
+        enumName: 'status',
+        enum: ['active', 'archived'],
+        default: `'active'`,
+        isNullable: false,
+      })
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropColumn('users', 'user_type');
+    await queryRunner.dropColumn('users', 'status');
   }
 }

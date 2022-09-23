@@ -66,7 +66,10 @@ export class OrganizationUsersService {
   }
 
   async archiveFromAll(userId: string): Promise<void> {
-    await this.organizationUsersRepository.update({ userId }, { status: 'archived', invitationToken: null });
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(OrganizationUser, { userId }, { status: 'archived', invitationToken: null });
+      await this.usersService.updateUser(userId, { status: 'archived' }, manager);
+    });
   }
 
   async unarchive(user: User, id: string, organizationId: string, manager?: EntityManager): Promise<void> {
@@ -91,7 +94,7 @@ export class OrganizationUsersService {
         // Resetting password if single organization
         await this.usersService.updateUser(id, { password: uuid.v4() }, manager);
       }
-
+      await this.usersService.updateUser(organizationUser.userId, { status: 'active' }, manager);
       await this.usersService.validateLicense(manager);
     }, manager);
 
