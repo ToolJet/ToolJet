@@ -167,6 +167,7 @@ class ManageAllUsersComponent extends React.Component {
           unarchivingUser={this.unarchivingUser}
           archiveAll={this.archiveAll}
           archivingFromAllOrgs={this.state.archivingFromAllOrgs}
+          openEditModal={this.openEditModal}
         />
 
         <UserEditModal

@@ -20,6 +20,7 @@ const UsersTable = ({
   translator,
   isLoadingAllUsers,
   openOrganizationModal,
+  openEditModal,
 }) => {
   return (
     <div className="container-xl mb-4">
@@ -33,14 +34,15 @@ const UsersTable = ({
                 {isLoadingAllUsers && (
                   <th data-cy="status-title">{translator('header.organization.menus.manageUsers.userType', 'Type')}</th>
                 )}
-                {users && users[0]?.status ? (
+                {users && users[0]?.status && (
                   <th data-cy="status-title">{translator('header.organization.menus.manageUsers.status', 'Status')}</th>
-                ) : (
+                )}
+                {isLoadingAllUsers && (
                   <th data-cy="status-title">
                     {translator('header.organization.menus.manageUsers.worksapces', 'Worksapces')}
                   </th>
                 )}
-                {!isLoadingAllUsers && <th className="w-1"></th>}
+                <th className="w-1"></th>
               </tr>
             </thead>
             {isLoading ? (
@@ -71,6 +73,10 @@ const UsersTable = ({
                         <Skeleton />
                       </td>
                     )}
+
+                    <td className="text-muted col-auto col-1 pt-3">
+                      <Skeleton />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -96,7 +102,7 @@ const UsersTable = ({
                           {user.email}
                         </a>
                       </td>
-                      {user.status ? (
+                      {user.status && (
                         <td className="text-muted">
                           <span
                             className={cx('badge me-1 m-1', {
@@ -109,7 +115,7 @@ const UsersTable = ({
                           <small className="user-status" data-cy="user-status">
                             {user.status}
                           </small>
-                          {user.status === 'invited' && 'invitation_token' in user ? (
+                          {!isLoadingAllUsers && user.status === 'invited' && 'invitation_token' in user ? (
                             <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
                               <img
                                 data-tip="Copy invitation link"
@@ -124,19 +130,20 @@ const UsersTable = ({
                             ''
                           )}
                         </td>
-                      ) : (
-                        <td className="text-muted">
-                          <span className="text-muted">{user.user_type}</span>
-                        </td>
                       )}
                       {isLoadingAllUsers && (
-                        <td className="text-muted">
-                          <a className="px-2 text-muted" onClick={() => openOrganizationModal(user)}>
-                            View ({user.total_organizations})
-                          </a>
-                        </td>
+                        <>
+                          <td className="text-muted">
+                            <span className="text-muted">{user.user_type}</span>
+                          </td>
+                          <td className="text-muted">
+                            <a className="px-2 text-muted" onClick={() => openOrganizationModal(user)}>
+                              View ({user.total_organizations})
+                            </a>
+                          </td>
+                        </>
                       )}
-                      {!isLoadingAllUsers && (
+                      {!isLoadingAllUsers ? (
                         <td>
                           <button
                             type="button"
@@ -155,6 +162,18 @@ const UsersTable = ({
                             {user.status === 'archived'
                               ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')
                               : translator('header.organization.menus.manageUsers.archive', 'Archive')}
+                          </button>
+                        </td>
+                      ) : (
+                        <td>
+                          <button
+                            type="button"
+                            style={{ minWidth: '100px' }}
+                            className={'btn btn-sm'}
+                            onClick={() => openEditModal(user)}
+                            data-cy="edit-user"
+                          >
+                            {translator('header.organization.menus.manageUsers.edit', 'Edit')}
                           </button>
                         </td>
                       )}

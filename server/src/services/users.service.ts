@@ -83,6 +83,7 @@ export class UsersService {
         organizationUsers: user.organizationUsers,
         totalOrganizations: user.organizationUsers.length,
         userType: user.userType,
+        status: user.status,
       };
     });
   }
