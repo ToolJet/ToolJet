@@ -30,7 +30,7 @@ const OrganizationsModal = ({
       >
         <Modal.Header>
           <Modal.Title className="text-center ">
-            {translator('header.organization.menus.manageAllUsers.workspaces', 'Workspaces')}
+            {translator('header.organization.menus.manageAllUsers.workspaces', 'Workspaces')} of {selectedUser?.name}
           </Modal.Title>
           <div className="close-button" onClick={hideModal}>
             <svg
@@ -108,7 +108,6 @@ const OrganizationsModal = ({
                         })}
                         disabled={unarchivingUser === organization_user.id || archivingUser === organization_user.id}
                         onClick={() => {
-                          console.log(organization_user);
                           organization_user.status === 'archived'
                             ? unarchiveOrgUser(organization_user.id, organization_user.organization_id)
                             : archiveOrgUser(organization_user.id, organization_user.organization_id);

@@ -1,4 +1,4 @@
-import { Controller, Param, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Param, Post, UseGuards, Body, NotAcceptableException } from '@nestjs/common';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -38,7 +38,10 @@ export class OrganizationUsersController {
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Post(':userId/archive-all')
-  async archiveAll(@Param('userId') userId: string) {
+  async archiveAll(@User() user: UserEntity, @Param('userId') userId: string) {
+    if (user.id === userId) {
+      throw new NotAcceptableException('Self archive not allowed');
+    }
     await this.organizationUsersService.archiveFromAll(userId);
     return;
   }

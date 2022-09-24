@@ -44,8 +44,17 @@ export class User extends BaseEntity {
   @Column()
   email: string;
 
-  @Column({ type: 'enum', enumName: 'user_type', name: 'user_type', enum: ['instance', 'workspace'] })
+  @Column({
+    type: 'enum',
+    enumName: 'user_type',
+    name: 'user_type',
+    enum: ['instance', 'workspace'],
+    default: 'workspace',
+  })
   userType: string;
+
+  @Column({ type: 'enum', enumName: 'status', name: 'status', enum: ['active', 'archived'], default: 'active' })
+  status: string;
 
   @Column({ name: 'avatar_id', nullable: true, default: null })
   avatarId?: string;
