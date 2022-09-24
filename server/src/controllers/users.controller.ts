@@ -9,6 +9,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -66,6 +67,23 @@ export class UsersController {
       first_name: user.firstName,
       last_name: user.lastName,
     };
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Patch('/user-type')
+  async updateUserTypr(@Body() body) {
+    const { userType, userId } = body;
+
+    if (!userType || !userId) {
+      throw new BadRequestException();
+    }
+    if (userType === 'workspace') {
+      const instanceUsers = await this.usersService.findSuperAdmins();
+      if (instanceUsers.length === 1 && instanceUsers[0].id === userId) {
+        throw new Error('Atleast one super admin is required');
+      }
+    }
+    return await this.usersService.updateUser(userId, { userType });
   }
 
   @UseGuards(JwtAuthGuard, UserCountGuard)

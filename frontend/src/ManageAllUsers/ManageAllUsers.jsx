@@ -7,6 +7,7 @@ import { withTranslation } from 'react-i18next';
 import UsersTable from '../../ee/components/UsersPage/UsersTable';
 import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
 import OrganizationsModal from './OrganizationsModal';
+import UserEditModal from './UserEditModal';
 
 class ManageAllUsersComponent extends React.Component {
   constructor(props) {
@@ -28,6 +29,8 @@ class ManageAllUsersComponent extends React.Component {
       options: {},
       showOrganizationsModal: false,
       selectedUser: null,
+      isUpdatingUser: false,
+      updatingUser: null,
     };
   }
 
@@ -113,16 +116,40 @@ class ManageAllUsersComponent extends React.Component {
       });
   };
 
+  updateUser = (options) => {
+    const { userType } = options;
+    this.setState({ isUpdatingUser: true });
+    userService
+      .updateUserType(this.state.updatingUser.id, userType)
+      .then(() => {
+        toast.success('User has been updated', {
+          position: 'top-center',
+        });
+        this.fetchUsers(this.state.currentPage, this.state.options);
+        this.setState({ isUpdatingUser: false, updatingUser: null });
+        this.hideEditModal();
+      })
+      .catch(({ error }) => {
+        toast.error(error, { position: 'top-center' });
+        this.setState({ isUpdatingUser: false });
+      });
+  };
+
   pageChanged = (page) => this.fetchUsers(page, this.state.options);
 
   filterList = (options) => this.fetchUsers(1, options);
 
   openOrganizationModal = (selectedUser) => this.setState({ showOrganizationsModal: true, selectedUser });
 
-  hideModal = () => this.setState({ showOrganizationsModal: false });
+  openEditModal = (updatingUser) => this.setState({ showEditModal: true, updatingUser });
+
+  hideModal = () => this.setState({ showOrganizationsModal: false, selectedUser: null });
+
+  hideEditModal = () => this.setState({ showEditModal: false, updatingUser: null });
 
   render() {
-    const { isLoading, users, archivingUser, unarchivingUser, meta } = this.state;
+    const { isLoading, users, archivingUser, unarchivingUser, meta, showEditModal, updatingUser, isUpdatingUser } =
+      this.state;
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -140,6 +167,16 @@ class ManageAllUsersComponent extends React.Component {
           unarchivingUser={this.unarchivingUser}
           archiveAll={this.archiveAll}
           archivingFromAllOrgs={this.state.archivingFromAllOrgs}
+        />
+
+        <UserEditModal
+          showModal={showEditModal}
+          hideModal={this.hideEditModal}
+          updatingUser={updatingUser}
+          translator={this.props.t}
+          darkMode={this.props.darkMode}
+          isUpdatingUser={isUpdatingUser}
+          updateUser={this.updateUser}
         />
 
         <div className="page-wrapper">
@@ -186,6 +223,7 @@ class ManageAllUsersComponent extends React.Component {
                 translator={this.props.t}
                 isLoadingAllUsers={true}
                 openOrganizationModal={this.openOrganizationModal}
+                openEditModal={this.openEditModal}
               />
             )}
           </div>

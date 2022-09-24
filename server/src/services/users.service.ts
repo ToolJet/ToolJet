@@ -89,6 +89,10 @@ export class UsersService {
     return await this.usersQuery(options).getCount();
   }
 
+  async findSuperAdmins(): Promise<User[]> {
+    return await this.usersRepository.find({ userType: 'instance' });
+  }
+
   async findAll(organizationId: string): Promise<User[]> {
     return this.usersRepository.find({
       where: { defaultOrganizationId: organizationId },

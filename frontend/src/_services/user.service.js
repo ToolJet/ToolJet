@@ -11,6 +11,7 @@ export const userService = {
   changePassword,
   getAvatar,
   updateAvatar,
+  updateUserType,
   getLicenseTerms,
 };
 
@@ -66,6 +67,12 @@ function updateCurrentUser(firstName, lastName) {
   const body = { first_name: firstName, last_name: lastName };
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/users/update`, requestOptions).then(handleResponse);
+}
+
+function updateUserType(userId, userType) {
+  const body = { userType, userId };
+  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/users/user-type`, requestOptions).then(handleResponse);
 }
 
 function changePassword(currentPassword, newPassword) {
