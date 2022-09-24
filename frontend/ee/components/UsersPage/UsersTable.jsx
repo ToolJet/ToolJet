@@ -164,7 +164,7 @@ const UsersTable = ({
             )}
           </table>
         </div>
-        {meta.total_count > 10 && (
+        {meta?.total_count > 10 && (
           <Pagination
             currentPage={meta.current_page}
             count={meta.total_count}
