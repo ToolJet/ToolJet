@@ -4,6 +4,7 @@ export type SourceOptions = {
   password: string;
   host: string;
   database: string;
+  format?: string;
   protocol: string;
   usePost?: string;
   trimQuery?: string;

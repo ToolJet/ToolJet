@@ -19,6 +19,7 @@
       "password": { "type": "string", "encrypted": true },
       "port": { "type": "string" },
       "database": { "type": "string" },
+      "format": { "type": "string" },
       "protocol": { "type": "string" },
       "usePost": { "type": "string" },
       "isUseGzip": { "type": "string" },
@@ -60,6 +61,27 @@
       "type": "text",
       "description": "database name"  
       },
+    "format": {
+      "label": "Format",
+      "key": "format",
+      "description": "format name",
+      "type": "dropdown",
+      "list": [
+        {
+          "name": "JSON",
+          "value": "json"
+        },
+        {
+          "name": "CSV",
+          "value": "csv"
+        },
+        {
+          "name": "TSV",
+          "value": "tsv"
+        }
+      ],
+      "description": "Enter format"
+    },
     "protocol": {
       "label": "Protocol",
       "key": "protocol",
