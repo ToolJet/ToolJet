@@ -6386,3 +6386,20 @@ input.hide-input-arrows{
   }
   
 }
+.theme-dark{
+  .CalendarMonth,.DayPickerNavigation_button,.CalendarDay,.CalendarMonthGrid,.DayPicker_focusRegion,.DayPicker{
+    background-color: #232e3c;
+  }
+  .DayPicker_weekHeader_ul,
+  .CalendarMonth_caption,
+  .CalendarDay{
+    color: white;
+  }
+  .CalendarDay__selected_span,.CalendarDay__selected_start,.CalendarDay__selected_end{
+    background-color: #4D72FA;
+    color: white;
+  }
+  .CalendarDay{
+    border-color: transparent;//hiding the border around days in the dark theme
+  }
+}
