@@ -819,11 +819,6 @@ export const widgets = [
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
-        handle: 'loading',
-        displayName: 'Loading',
-        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-      },
-      {
         handle: 'visibility',
         displayName: 'Visibility',
         params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
