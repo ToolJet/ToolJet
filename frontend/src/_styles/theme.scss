@@ -6401,5 +6401,8 @@ input.hide-input-arrows{
   }
   .CalendarDay{
     border-color: transparent;//hiding the border around days in the dark theme
+    &:hover{
+      background-color: #636466;
+    }
   }
 }
