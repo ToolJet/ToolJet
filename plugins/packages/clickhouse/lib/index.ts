@@ -68,7 +68,7 @@ export default class Click implements QueryService {
       isUseGzip: isUseGzip || false,
       trimQuery: trimQuery || false,
       usePost: usePost || false,
-      format: `${format || 'json'}`, // "json" || "csv" || "tsv"
+      format: format || 'json', // "json" || "csv" || "tsv"
       raw: raw || false,
       config: {
         ...(session_id?.length > 0 && { session_id: session_id }),
