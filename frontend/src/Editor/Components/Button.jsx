@@ -19,7 +19,7 @@ export const Button = function Button({
 
   const [disable, setDisable] = useState(disabledState);
   useEffect(() => {
-    setDisable(disabledState);
+    disable !== disabledState && setDisable(disabledState);
   }, [disabledState]);
 
   const [visibility, setVisibility] = useState(styles.visibility);
@@ -29,7 +29,7 @@ export const Button = function Button({
 
   const [loading, setLoading] = useState(properties.loadingState);
   useEffect(() => {
-    setLoading(properties.loadingState);
+    loading !== properties.loadingState && setLoading(properties.loadingState);
   }, [properties.loadingState]);
 
   const computedStyles = {
