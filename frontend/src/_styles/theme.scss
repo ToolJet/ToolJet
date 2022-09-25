@@ -2106,7 +2106,6 @@ tr:focus {
   .td {
     .resizer {
       display: inline-block;
-      width: 5px;
       height: 100%;
       position: absolute;
       right: 0;
@@ -6360,8 +6359,8 @@ input.hide-input-arrows{
   display: flex !important;
 
   tr {
-    width: 100% !important;
-
+    // width: 100% !important;
+flex-grow: 1;
     th:last-child {
       flex: 1 1 auto;
     }
@@ -6370,17 +6369,12 @@ input.hide-input-arrows{
 
 tbody {
   width: 100% !important;
-
+flex-grow: 1;
   tr {
     width: 100% !important;
 
     td:last-child {
       flex: 1 1 auto;
     }
-  }
-}
-.table-responsive {
-  table{
-    width: 99.7% !important;
   }
 }
