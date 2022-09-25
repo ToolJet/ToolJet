@@ -20,9 +20,13 @@ export const TextInput = function TextInput({
   const [visibility, setVisibility] = useState(styles.visibility);
   const { isValid, validationError } = validate(value);
 
-  useEffect(() => setDisable(styles.disabledState), [styles.disabledState]);
+  useEffect(() => {
+    disable !== styles.disabledState && setDisable(styles.disabledState);
+  }, [styles.disabledState]);
 
-  useEffect(() => setVisibility(styles.visibility), [styles.visibility]);
+  useEffect(() => {
+    visibility !== styles.visibility && setVisibility(styles.visibility);
+  }, [styles.visibility]);
 
   useEffect(() => {
     setExposedVariable('isValid', isValid);
@@ -35,20 +39,12 @@ export const TextInput = function TextInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
-  registerAction(
-    'setFocus',
-    async function () {
-      textInputRef.current.focus();
-    },
-    [textInputRef.current]
-  );
-  registerAction(
-    'setBlur',
-    async function () {
-      textInputRef.current.blur();
-    },
-    [textInputRef.current]
-  );
+  registerAction('setFocus', async function () {
+    textInputRef.current.focus();
+  });
+  registerAction('setBlur', async function () {
+    textInputRef.current.blur();
+  });
   registerAction('setText', async function (text) {
     setValue(text);
     setExposedVariable('value', text).then(fireEvent('onChange'));
