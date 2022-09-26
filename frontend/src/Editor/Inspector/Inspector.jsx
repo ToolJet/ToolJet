@@ -326,7 +326,7 @@ export const Inspector = ({
 
     items.push({
       title: `${t('widget.common.general', 'General')}`,
-      isOpen: false,
+      isOpen: true,
       children: (
         <>
           {renderElement(

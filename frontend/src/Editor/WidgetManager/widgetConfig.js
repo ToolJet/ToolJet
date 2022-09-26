@@ -1655,7 +1655,13 @@ export const widgets = [
           schema: { type: 'number' },
         },
       },
-
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       textColor: {
         type: 'color',
         displayName: 'Text Color',
@@ -1692,6 +1698,11 @@ export const widgets = [
         displayName: 'Set Text',
         params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
       },
+      {
+        handle: 'visibility',
+        displayName: 'Set Visibility',
+        params: [{ handle: 'visibility', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      },
     ],
     definition: {
       others: {
@@ -1699,17 +1710,15 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        text: { value: 'Text goes here !' },
-        visible: { value: '{{true}}' },
+        text: { value: 'Hello, there!' },
         loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
-        textSize: { value: 14 },
+        backgroundColor: { value: '#ffffff00' },
         textColor: { value: '#000' },
+        textSize: { value: 14 },
         textAlign: { value: 'left' },
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
         fontWeight: { value: 'normal' },
         decoration: { value: 'none' },
         transformation: { value: 'none' },
@@ -1719,6 +1728,8 @@ export const widgets = [
         letterSpacing: { value: 0 },
         wordSpacing: { value: 0 },
         fontVariant: { value: 'normal' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
       },
     },
   },
