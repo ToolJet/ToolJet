@@ -190,6 +190,15 @@ export class AppImportExportService {
       version.definition = this.replaceDataQueryIdWithinDefinitions(version.definition, dataQueryMapping);
       await manager.save(version);
     }
+
+    await this.setEditingVersionAsLatestVersion(manager, appVersionMapping, appVersions);
+  }
+
+  async setEditingVersionAsLatestVersion(manager: EntityManager, appVersionMapping: any, appVersions: Array<any>) {
+    const lastVersionFromImport = appVersions[appVersions.length - 1];
+    const lastVersionIdToUpdate = appVersionMapping[lastVersionFromImport.id];
+
+    await manager.update(AppVersion, { id: lastVersionIdToUpdate }, { updatedAt: new Date() });
   }
 
   async createAdminGroupPermissions(manager: EntityManager, app: App) {
