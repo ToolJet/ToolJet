@@ -19,7 +19,6 @@
       "password": { "type": "string", "encrypted": true },
       "port": { "type": "string" },
       "database": { "type": "string" },
-      "protocol": { "type": "string" },
       "usePost": { "type": "string" },
       "isUseGzip": { "type": "string" },
       "debug": { "type": "string" },

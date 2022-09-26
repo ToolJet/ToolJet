@@ -39,6 +39,17 @@
         "height": "150px",
         "placeholder":"Enter array of objects"
       },
+      "tablename": {
+        "label": "Table name",
+        "key": "tablename",
+        "type": "codehinter",
+        "description": "Enter tablename",
+        "placeholder": "tablename",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "lineNumbers": false
+      },
       "fields": {
         "label": "Fields",
         "key": "fields",
@@ -50,17 +61,6 @@
         "className": "codehinter-plugins",
         "lineNumbers": false
       },
-      "tablename": {
-        "label": "Tablename",
-        "key": "tablename",
-        "type": "codehinter",
-        "description": "Enter tablename",
-        "placeholder": "tablename",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "lineNumbers": false
-      }
     }
   }
 }
