@@ -41,22 +41,8 @@ export default class Click implements QueryService {
     };
   }
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const {
-      port,
-      host,
-      protocol,
-      database,
-      username,
-      password,
-      format,
-      usePost,
-      trimQuery,
-      isUseGzip,
-      session_id,
-      session_timeout,
-      debug,
-      raw,
-    } = sourceOptions;
+    const { port, host, protocol, database, username, password, usePost, trimQuery, isUseGzip, debug, raw } =
+      sourceOptions;
     const clickhouse = new ClickHouse({
       url: `${protocol}://${host}`,
       port: port || 8123,
@@ -68,11 +54,9 @@ export default class Click implements QueryService {
       isUseGzip: isUseGzip || false,
       trimQuery: trimQuery || false,
       usePost: usePost || false,
-      format: format || 'json', // "json" || "csv" || "tsv"
+      format: 'json', // "json" || "csv" || "tsv"
       raw: raw || false,
       config: {
-        ...(session_id?.length > 0 && { session_id: session_id }),
-        session_timeout: session_timeout || 60,
         output_format_json_quote_64bit_integers: 0,
         enable_http_compression: 0,
         ...(database?.length > 0 && { database: database }),

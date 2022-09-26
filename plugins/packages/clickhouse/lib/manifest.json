@@ -19,12 +19,9 @@
       "password": { "type": "string", "encrypted": true },
       "port": { "type": "string" },
       "database": { "type": "string" },
-      "format": { "type": "string" },
       "protocol": { "type": "string" },
       "usePost": { "type": "string" },
       "isUseGzip": { "type": "string" },
-      "session_id": { "type": "string" },
-      "session_timeout": { "type": "string" },
       "debug": { "type": "string" },
       "raw": { "type": "string" },
       "protocol": { "type": "string" }
@@ -61,27 +58,6 @@
       "type": "text",
       "description": "database name"  
       },
-    "format": {
-      "label": "Format",
-      "key": "format",
-      "description": "format name",
-      "type": "dropdown",
-      "list": [
-        {
-          "name": "JSON",
-          "value": "json"
-        },
-        {
-          "name": "CSV",
-          "value": "csv"
-        },
-        {
-          "name": "TSV",
-          "value": "tsv"
-        }
-      ],
-      "description": "Enter format"
-    },
     "protocol": {
       "label": "Protocol",
       "key": "protocol",
@@ -115,18 +91,6 @@
       "key": "isUseGzip",
       "type": "text",
       "description": "Enter true/false"
-    },
-    "session_id": {
-      "label": "Session ID",
-      "key": "session_id",
-      "type": "text",
-      "description": "Enter session id"
-    },
-    "session_timeout": {
-      "label": "Session Timeout",
-      "key": "session_timeout",
-      "type": "text",
-      "description": "Enter session timeout"
     },
     "debug": {
       "label": "Debug",
