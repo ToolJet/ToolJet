@@ -2613,6 +2613,10 @@ hr {
   .modal-body {
     padding: 0;
   }
+
+  .modalWidget-config-handle {
+    position: relative !important;
+  }
 }
 
 .draggable-box {
@@ -3071,7 +3075,7 @@ input:focus-visible {
 
   .modal-content,
   .modal-header {
-    background-color: #1f2936 !important;
+    background-color: #1f2936;
 
     .text-muted {
       color: #fff !important;
