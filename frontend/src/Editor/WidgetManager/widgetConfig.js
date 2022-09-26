@@ -677,6 +677,31 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading State',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      useDefaultButton: {
+        type: 'toggle',
+        displayName: 'Use default trigger button',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      triggerButtonLabel: {
+        type: 'code',
+        displayName: 'Trigger button label',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
       hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
       hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
       hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
@@ -686,21 +711,69 @@ export const widgets = [
         displayName: 'Modal size',
         options: [
           { name: 'small', value: 'sm' },
-          { name: 'medium', value: 'md' },
-          { name: 'large', value: 'lg' },
+          { name: 'medium', value: 'lg' },
+          { name: 'large', value: 'xl' },
         ],
         validation: {
           schema: { type: 'string' },
         },
       },
     },
-    events: {},
+    events: {
+      onOpen: { displayName: 'On open' },
+      onClose: { displayName: 'On close' },
+    },
     styles: {
+      headerBackgroundColor: {
+        type: 'color',
+        displayName: 'Header background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      headerTextColor: {
+        type: 'color',
+        displayName: 'Header title color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      bodyBackgroundColor: {
+        type: 'color',
+        displayName: 'Body background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       disabledState: {
         type: 'toggle',
         displayName: 'Disable',
         validation: {
           schema: { type: 'boolean' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: true,
+        },
+      },
+      triggerButtonBackgroundColor: {
+        type: 'color',
+        displayName: 'Trigger button background color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
+      triggerButtonTextColor: {
+        type: 'color',
+        displayName: 'Trigger button text color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
         },
       },
     },
@@ -724,14 +797,23 @@ export const widgets = [
       },
       properties: {
         title: { value: 'This title can be changed' },
-        size: { value: 'md' },
+        loadingState: { value: `{{false}}` },
+        useDefaultButton: { value: `{{true}}` },
+        triggerButtonLabel: { value: `Launch Modal` },
+        size: { value: 'lg' },
         hideTitleBar: { value: '{{false}}' },
         hideCloseButton: { value: '{{false}}' },
         hideOnEsc: { value: '{{true}}' },
       },
       events: [],
       styles: {
+        headerBackgroundColor: { value: '#ffffffff' },
+        headerTextColor: { value: '#000000' },
+        bodyBackgroundColor: { value: '#ffffffff' },
         disabledState: { value: '{{false}}' },
+        visibility: { value: '{{true}}' },
+        triggerButtonBackgroundColor: { value: '#4D72FA' },
+        triggerButtonTextColor: { value: '#ffffffff' },
       },
     },
   },

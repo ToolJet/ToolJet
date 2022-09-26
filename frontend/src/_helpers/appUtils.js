@@ -508,6 +508,8 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCardSelected',
       'onCardUpdated',
       'onTabSwitch',
+      'onOpen',
+      'onClose',
       'onRowClicked',
     ].includes(eventName)
   ) {
