@@ -557,7 +557,7 @@ class DataSourceManagerComponent extends React.Component {
                 style={{ marginRight: '1rem', cursor: 'pointer' }}
                 onClick={() => this.setState({ selectedDataSource: false })}
               >
-                <img className="m-0" src="assets/images/icons/back.svg" width="40" height="40" />
+                <img className="m-0" src="assets/images/icons/back.svg" width="30" height="30" />
               </div>
             )}
             <Modal.Title>
