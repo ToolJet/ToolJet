@@ -15,11 +15,6 @@ export class ModalWidgetSize1663581777527 implements MigrationInterface {
           const component = components[componentId];
 
           if (component.component.component === 'Modal') {
-            component.component.properties.size.options = [
-              ...component.component.properties.size.options.splice(1, 1, { name: 'medium', value: 'lg' }),
-              ...component.component.properties.size.options.splice(2, 1, { name: 'large', value: 'xl' }),
-            ];
-
             component.component.definition.properties.size = { value: 'lg' };
             components[componentId] = {
               ...component,
