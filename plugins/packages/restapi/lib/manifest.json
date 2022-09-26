@@ -35,7 +35,7 @@
       "password": {
         "encrypted": true
       },
-      "bearer_token":{
+      "bearer_token": {
         "encrypted": true
       },
       "scopes": {
@@ -105,36 +105,19 @@
       "value": "header"
     },
     "headers": {
-      "value": [
-        [
-          "",
-          ""
-        ]
-      ]
+      "value": [["", ""]]
     },
     "custom_query_params": {
-      "value": [
-        [
-          "",
-          ""
-        ]
-      ]
+      "value": [["", ""]]
     },
     "custom_auth_params": {
-      "value": [
-        [
-          "",
-          ""
-        ]
-      ]
+      "value": [["", ""]]
     },
     "access_token_custom_headers": {
-      "value": [
-        [
-          "",
-          ""
-        ]
-      ]
+      "value": [["", ""]]
+    },
+    "multiple_auth_enabled": {
+      "value": false
     }
   },
   "properties": {
@@ -157,7 +140,5 @@
       "description": "key-value pair headers for rest api"
     }
   },
-  "required": [
-    "url"
-  ]
+  "required": ["url"]
 }

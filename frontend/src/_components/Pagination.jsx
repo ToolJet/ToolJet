@@ -50,11 +50,11 @@ export const Pagination = function Pagination({
     gotoPage(currentPage - 1);
   }
 
-  function startingCount() {
+  function startingAppCount() {
     return (currentPage - 1) * itemsPerPage + 1;
   }
 
-  function endingCount() {
+  function endingAppCount() {
     const num = currentPage * itemsPerPage;
 
     return num > count ? count : num;
@@ -63,8 +63,9 @@ export const Pagination = function Pagination({
   return (
     <div className={`card-footer d-flex align-items-center px-1 ${darkMode ? ' bg-transparent' : ''}`}>
       <p className={`m-0 ${darkMode ? 'text-light' : 'text-muted'}`}>
-        {t('homePage.pagination.showing', 'Showing')} <span>{startingCount()}</span> {t('homePage.pagination.to', 'to')}{' '}
-        <span>{endingCount()}</span> {t('homePage.pagination.of', 'of')} <span>{count}</span>
+        {t('homePage.pagination.showing', 'Showing')} <span>{startingAppCount()}</span>{' '}
+        {t('homePage.pagination.to', 'to')} <span>{endingAppCount()}</span> {t('homePage.pagination.of', 'of')}{' '}
+        <span>{count}</span>
       </p>
       <ul className="pagination m-0 ms-auto">
         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
