@@ -15,19 +15,20 @@ export const Button = function Button({
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState } = styles;
 
   const [label, setLabel] = useState(properties.text);
+  const [disable, setDisable] = useState(disabledState);
+  const [visibility, setVisibility] = useState(styles.visibility);
+  const [loading, setLoading] = useState(properties.loadingState);
+
   useEffect(() => setLabel(properties.text), [properties.text]);
 
-  const [disable, setDisable] = useState(disabledState);
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
   }, [disabledState]);
 
-  const [visibility, setVisibility] = useState(styles.visibility);
   useEffect(() => {
     visibility !== styles.visibility && setVisibility(styles.visibility);
   }, [styles.visibility]);
 
-  const [loading, setLoading] = useState(properties.loadingState);
   useEffect(() => {
     loading !== properties.loadingState && setLoading(properties.loadingState);
   }, [properties.loadingState]);
