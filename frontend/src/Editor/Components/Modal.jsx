@@ -85,6 +85,23 @@ export const Modal = function Modal({
     },
   };
 
+  useEffect(() => {
+    if (containerProps.mode === 'view') {
+      const handleClickOutside = (event) => {
+        const modalRef = parentRef.current.parentElement.parentElement.parentElement;
+
+        if (modalRef && modalRef === event.target) {
+          hideModal();
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [containerProps.mode, parentRef]);
+
   return (
     <div className="container" data-disabled={disabledState}>
       {useDefaultButton && (
@@ -103,7 +120,6 @@ export const Modal = function Modal({
 
       <Modal.Component
         show={showModal}
-        onHide={hideModal}
         contentClassName="modal-component"
         container={document.getElementsByClassName('canvas-area')[0]}
         size={size}
@@ -112,7 +128,7 @@ export const Modal = function Modal({
         animation={false}
         onEscapeKeyDown={() => hideOnEsc && hideModal()}
         id="modal-container"
-        backdrop={containerProps.mode === 'edit' ? 'static' : true}
+        backdrop={'static'}
         scrollable={true}
         modalProps={{
           customStyles,
@@ -122,7 +138,6 @@ export const Modal = function Modal({
           hideTitleBar,
           hideCloseButton,
           hideModal,
-          darkMode,
           component,
           showConfigHandler: containerProps.mode === 'edit',
           removeComponent: containerProps.removeComponent,
@@ -160,7 +175,6 @@ const Component = ({ children, ...restProps }) => {
     hideTitleBar,
     hideCloseButton,
     hideModal,
-    darkMode,
     component,
     showConfigHandler,
     removeComponent,
