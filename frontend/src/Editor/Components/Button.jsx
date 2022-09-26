@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 var tinycolor = require('tinycolor2');
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const Button = function Button({
   height,
