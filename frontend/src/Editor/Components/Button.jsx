@@ -47,21 +47,37 @@ export const Button = function Button({
     fireEvent('onClick');
   });
 
-  registerAction('setText', async function (text) {
-    setLabel(text);
-  });
+  registerAction(
+    'setText',
+    async function (text) {
+      setLabel(text);
+    },
+    [setLabel]
+  );
 
-  registerAction('disable', async function (value) {
-    setDisable(value);
-  });
+  registerAction(
+    'disable',
+    async function (value) {
+      setDisable(value);
+    },
+    [setDisable]
+  );
 
-  registerAction('visibility', async function (value) {
-    setVisibility(value);
-  });
+  registerAction(
+    'visibility',
+    async function (value) {
+      setVisibility(value);
+    },
+    [setVisibility]
+  );
 
-  registerAction('loading', async function (value) {
-    setLoading(value);
-  });
+  registerAction(
+    'loading',
+    async function (value) {
+      setLoading(value);
+    },
+    [setLoading]
+  );
 
   return (
     <div className="widget-button">
