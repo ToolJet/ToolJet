@@ -9,6 +9,7 @@ export const TextInput = function TextInput({
   fireEvent,
   registerAction,
   component,
+  darkMode,
 }) {
   const [value, setValue] = useState(properties.value);
   const { isValid, validationError } = validate(value);
@@ -50,13 +51,17 @@ export const TextInput = function TextInput({
           fireEvent('onChange');
         }}
         type="text"
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
+        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+          darkMode && 'dark-theme-placeholder'
+        }`}
         placeholder={properties.placeholder}
         style={{ height, display: styles.visibility ? '' : 'none', borderRadius: `${styles.borderRadius}px` }}
         value={value}
-        data-cy={`draggable-widget-${component.name}`}
+        data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       />
-      <div className="invalid-feedback">{validationError}</div>
+      <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
+        {validationError}
+      </div>
     </div>
   );
 };

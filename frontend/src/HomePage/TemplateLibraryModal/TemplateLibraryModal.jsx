@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
 import { useHistory } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const identifyUniqueCategories = (templates) =>
   ['all', ...new Set(_.map(templates, 'category'))].map((categoryId) => ({
@@ -22,6 +23,7 @@ export default function TemplateLibraryModal(props) {
     (app) => selectedCategory.id === 'all' || app.category === selectedCategory.id
   );
   const [selectedApp, selectApp] = useState(undefined);
+  const { t } = useTranslation();
 
   useEffect(() => {
     selectApp(filteredApps[0]);
@@ -76,7 +78,7 @@ export default function TemplateLibraryModal(props) {
       centered
     >
       <Modal.Header>
-        <Modal.Title>Select template</Modal.Title>
+        <Modal.Title>{t('homePage.templateLibraryModal.select', 'Select template')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container fluid>
@@ -106,7 +108,7 @@ export default function TemplateLibraryModal(props) {
                   >
                     <div className="d-flex flex-row align-items-center" style={{ height: '100%' }}>
                       <Button variant="outline-primary" onClick={props.onCloseButtonClick}>
-                        Cancel
+                        {t('globals.cancel', 'Cancel')}
                       </Button>
                       <a
                         href="#"
@@ -115,7 +117,7 @@ export default function TemplateLibraryModal(props) {
                           deployApp();
                         }}
                       >
-                        Create application from template
+                        {t('homePage.templateLibraryModal.createAppfromTemplate', 'Create application from template')}
                       </a>
                     </div>
                   </Col>
