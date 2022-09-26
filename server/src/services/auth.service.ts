@@ -344,17 +344,19 @@ export class AuthService {
       throw new BadRequestException('Invalid token');
     }
 
-    const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
-    let organizationUser: OrganizationUser;
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const allowPersonalWorkspace =
+        (await this.usersRepository.count()) === 0 ||
+        (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
 
-    if (user?.organizationUsers) {
-      organizationUser = user.organizationUsers.find((ou) => ou.organizationId === user.defaultOrganizationId);
+      const user: User = await manager.findOne(User, { where: { invitationToken: token } });
 
-      if (!organizationUser) {
+      if (!user?.organizationUsers) {
         throw new BadRequestException('Invalid invitation link');
       }
 
-      await this.usersRepository.save(
+      await manager.save(
+        User,
         Object.assign(user, {
           firstName,
           lastName,
@@ -364,52 +366,73 @@ export class AuthService {
         })
       );
 
-      await this.organizationUsersRepository.save(
-        Object.assign(organizationUser, {
+      if (allowPersonalWorkspace) {
+        const organizationUser: OrganizationUser = user.organizationUsers.find(
+          (ou) => ou.organizationId === user.defaultOrganizationId
+        );
+
+        if (!organizationUser) {
+          throw new BadRequestException('Invalid invitation link');
+        }
+
+        await manager.update(OrganizationUser, organizationUser.id, {
           invitationToken: null,
           status: 'active',
-        })
-      );
-
-      if (organization) {
-        await this.organizationsRepository.update(user.defaultOrganizationId, {
-          name: organization,
         });
+
+        if (organization) {
+          await manager.update(Organization, user.defaultOrganizationId, {
+            name: organization,
+          });
+        }
+
+        await this.auditLoggerService.perform(
+          {
+            userId: user.id,
+            organizationId: organizationUser.organizationId,
+            resourceId: user.id,
+            resourceName: user.email,
+            resourceType: ResourceTypes.USER,
+            actionType: ActionTypes.USER_INVITE_REDEEM,
+          },
+          manager
+        );
+      } else if (!organizationToken) {
+        throw new BadRequestException('Invalid invitation link');
       }
-    } else if (!organizationToken) {
-      throw new BadRequestException('Invalid invitation link');
-    }
 
-    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && organizationToken) {
-      organizationUser = await this.organizationUsersRepository.findOne({
-        where: { invitationToken: organizationToken },
-      });
+      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && organizationToken) {
+        const organizationUser: OrganizationUser = await manager.findOne(OrganizationUser, {
+          where: { invitationToken: organizationToken },
+        });
 
-      if (organizationUser) {
-        await this.organizationUsersRepository.save(
-          Object.assign(organizationUser, {
+        if (organizationUser) {
+          await manager.update(OrganizationUser, organizationUser.id, {
             invitationToken: null,
             status: 'active',
-          })
+          });
+        } else {
+          throw new BadRequestException('Invalid workspace invitation link');
+        }
+
+        this.usersService
+          .updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId })
+          .catch((error) => {
+            console.error('Error while setting default organization', error);
+          });
+
+        await this.auditLoggerService.perform(
+          {
+            userId: user.id,
+            organizationId: organizationUser.organizationId,
+            resourceId: user.id,
+            resourceName: user.email,
+            resourceType: ResourceTypes.USER,
+            actionType: ActionTypes.USER_INVITE_REDEEM,
+          },
+          manager
         );
-      } else {
-        throw new BadRequestException('Invalid workspace invitation link');
       }
-
-      this.usersService
-        .updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId })
-        .catch((error) => {
-          console.error('Error while setting default organization', error);
-        });
-    }
-
-    await this.auditLoggerService.perform({
-      userId: user.id,
-      organizationId: organizationUser.organizationId,
-      resourceId: user.id,
-      resourceName: user.email,
-      resourceType: ResourceTypes.USER,
-      actionType: ActionTypes.USER_INVITE_REDEEM,
     });
   }
 
