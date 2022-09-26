@@ -18,16 +18,14 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     fontVariant,
     disabledState,
   } = styles;
-  console.log('rendering');
   const { loadingState } = properties;
   const [text, setText] = useState(() => computeText());
-
   const [visibility, setVisibility] = useState(styles.visibility);
+  const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
+
   useEffect(() => {
     visibility !== styles.visibility && setVisibility(styles.visibility);
   }, [styles.visibility]);
-
-  const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => setText(() => computeText()), [properties.text]);
