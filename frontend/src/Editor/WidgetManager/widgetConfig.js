@@ -392,6 +392,7 @@ export const widgets = [
     },
     events: {
       onClick: { displayName: 'On click' },
+      onHover: { displayName: 'On hover' },
     },
     styles: {
       backgroundColor: {
@@ -454,6 +455,21 @@ export const widgets = [
         displayName: 'Set Text',
         params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
       },
+      {
+        handle: 'disable',
+        displayName: 'Disable',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      },
+      {
+        handle: 'visibility',
+        displayName: 'Visibility',
+        params: [{ handle: 'visible', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      },
+      {
+        handle: 'loading',
+        displayName: 'Loading',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      },
     ],
     definition: {
       others: {
@@ -462,7 +478,6 @@ export const widgets = [
       },
       properties: {
         text: { value: `Button` },
-        visible: { value: '{{true}}' },
         loadingState: { value: `{{false}}` },
       },
       events: [],
