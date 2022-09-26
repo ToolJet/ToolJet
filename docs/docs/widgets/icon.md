@@ -5,11 +5,6 @@ title: Icon
 
 An Icon widget can be used to add icons(sourced from icon library). It supports events like on hover and on click.
 
-<!--- 
-Add the image of the widget in the div below. 
-Create a new folder inside static/img/ and place all images related to this widget 
--->
-
 <div style={{textAlign: 'center'}}>
 
 ![ToolJet - Widget - Icon](/img/widgets/icon/icon.png)
