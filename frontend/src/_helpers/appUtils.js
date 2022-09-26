@@ -486,6 +486,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onPageChanged',
       'onSearch',
       'onChange',
+      'onHover',
       'onEnterPressed',
       'onSelectionChange',
       'onSelect',
@@ -508,6 +509,8 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCardSelected',
       'onCardUpdated',
       'onTabSwitch',
+      'onOpen',
+      'onClose',
       'onRowClicked',
     ].includes(eventName)
   ) {

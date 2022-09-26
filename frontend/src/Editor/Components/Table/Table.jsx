@@ -147,14 +147,14 @@ export function Table({
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    });
+    }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
   }
 
   function handleChangesDiscarded() {
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    });
+    }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
   }
 
   const changeSet = tableDetails?.changeSet ?? {};

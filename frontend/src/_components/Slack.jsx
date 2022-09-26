@@ -12,7 +12,10 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
     const provider = 'slack';
     setAuthStatus('waiting_for_url');
 
-    const scope = options.access_type === 'chat:write' ? 'chat:write,users:read' : 'chat:write,users:read';
+    const scope =
+      options.access_type === 'chat:write'
+        ? 'chat:write,users:read,chat:write:bot,chat:write:user'
+        : 'chat:write,users:read';
 
     datasourceService.fetchOauth2BaseUrl(provider).then((data) => {
       const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=select_account`;
