@@ -294,10 +294,7 @@ export const addTextWidgetToVerifyValue = (customfunction) => {
   openEditorSidebar("text1");
   verifyAndModifyParameter("Text", codeMirrorInputLabel(customfunction));
   cy.forceClickOnCanvas();
-  cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
-    "have.text",
-    commonText.autoSave
-  );
+  cy.waitForAutoSave();
 };
 
 export const verifyTooltip = (widgetSelector, message) => {
