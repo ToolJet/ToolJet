@@ -179,15 +179,14 @@ class HomePageComponent extends React.Component {
         const requestBody = JSON.parse(fileContent);
         appService
           .importApp(requestBody)
-          .then(() => {
+          .then((data) => {
             toast.success('App imported successfully.', {
               position: 'top-center',
             });
             this.setState({
               isImportingApp: false,
             });
-            this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
-            this.fetchFolders();
+            this.props.history.push(`/apps/${data.id}`);
           })
           .catch(({ error }) => {
             toast.error(`Could not import the app: ${error}`, {
