@@ -776,7 +776,7 @@ export const EventManager = ({
   if (events.length === 0) {
     return (
       <>
-        <div className="text-right mb-3">
+        <div className="text-left mb-3">
           <button
             className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
             onClick={addHandler}
@@ -785,7 +785,7 @@ export const EventManager = ({
             {t('editor.inspector.eventManager.addEventHandler', '+ Add event handler')}
           </button>
         </div>
-        <div className="text-center">
+        <div className="text-left">
           <small className="color-disabled" data-cy="no-event-handler-message">
             {t('editor.inspector.eventManager.emptyMessage', "This {{componentName}} doesn't have any event handlers", {
               componentName: componentName.toLowerCase(),
