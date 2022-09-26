@@ -589,7 +589,7 @@ class DataSourceManagerComponent extends React.Component {
               className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
               onClick={() => this.hideModal()}
             >
-              <img src="assets/images/icons/close.svg" width="20" height="20" />
+              <img src="assets/images/icons/close.svg" width="12" height="12" />
             </span>
           </Modal.Header>
 
