@@ -346,6 +346,8 @@ export const widgets = [
         showBulkUpdateActions: { value: '{{true}}' },
         showBulkSelector: { value: '{{false}}' },
         highlightSelectedRow: { value: '{{false}}' },
+        columnSizes: { value: '{{({})}}' },
+        actions: { value: [] },
       },
       events: [],
       styles: {
