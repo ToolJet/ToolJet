@@ -11,9 +11,9 @@ Both the ToolJet server and client requires some environment variables to start 
 
 #### ToolJet host ( required )
 
-| variable     | description                                                     |
-| ------------ | --------------------------------------------------------------- |
-| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com )  |
+| variable     | description                                                      |
+| ------------ | ---------------------------------------------------------------- |
+| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com ) |
 
 #### Lockbox configuration ( required )
 
@@ -53,19 +53,18 @@ ToolJet by default tries to create database based on `PG_DB` variable set and ad
 
 ToolJet server uses Redis as a message broker. This is currently being used only for realtime multiplayer edit feature.
 
-| variable   | description            |
-| --------   | ---------------------- |
-| redis_host | redis host             |
-| redis_port | redis port             |
-| redis_user | username               |
-| redis_pass | password               |
+| variable   | description |
+| ---------- | ----------- |
+| redis_host | redis host  |
+| redis_port | redis port  |
+| redis_user | username    |
+| redis_pass | password    |
 
 OR
 
 | variable  | description             |
-| --------  | ----------------------  |
+| --------- | ----------------------- |
 | redis_url | redis url string format |
-
 
 #### Check for updates ( optional )
 
@@ -75,25 +74,25 @@ Self-hosted version of ToolJet pings our server to fetch the latest product upda
 
 Use this environment variable to enable/disable the feature that allows you to add comments on the canvas.
 
-| variable | value            |
-| -------- | ---------------------- |
-| COMMENT_FEATURE_ENABLE  | `true` or `false` |
+| variable               | value             |
+| ---------------------- | ----------------- |
+| COMMENT_FEATURE_ENABLE | `true` or `false` |
 
 #### Multiplayer feature enable ( optional )
 
 Use this environment variable to enable/disable the feature that allows users to collaboratively work on the canvas.
 
-| variable | value            |
-| -------- | ---------------------- |
-| ENABLE_MULTIPLAYER_EDITING  | `true` or `false` |
+| variable                   | value             |
+| -------------------------- | ----------------- |
+| ENABLE_MULTIPLAYER_EDITING | `true` or `false` |
 
 #### Server Host ( optional )
 
 You can specify a different server for backend if it is hosted on another server.
 
-| variable | value            |
-| -------- | ---------------------- |
-| SERVER_HOST  | Configure a hostname for the server as a proxy pass. If no value is set, it defaults to `server`. |
+| variable    | value                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------- |
+| SERVER_HOST | Configure a hostname for the server as a proxy pass. If no value is set, it defaults to `server`. |
 
 #### Disable Multi-Workspace ( optional )
 
@@ -169,24 +168,24 @@ Specify application monitoring vendor. Currently supported values - `sentry`.
 
 #### SENTRY DNS ( optional )
 
-| variable   | description                               |
-| ---------- | ----------------------------------------- |
-| SENTRY_DNS |  DSN tells a Sentry SDK where to send events so the events are associated with the correct project  |
+| variable   | description                                                                                       |
+| ---------- | ------------------------------------------------------------------------------------------------- |
+| SENTRY_DNS | DSN tells a Sentry SDK where to send events so the events are associated with the correct project |
 
 #### SENTRY DEBUG ( optional )
 
 Prints logs for sentry.
 
-| variable   | description                               |
-| ---------- | ----------------------------------------- |
+| variable     | description                                 |
+| ------------ | ------------------------------------------- |
 | SENTRY_DEBUG | `true` or `false`. Default value is `false` |
 
 #### Server URL ( optional)
 
 This is used to set up for CSP headers and put trace info to be used with APM vendors.
 
-| variable           | description                                                 |
-| ------------------ | ----------------------------------------------------------- |
+| variable           | description                                                  |
+| ------------------ | ------------------------------------------------------------ |
 | TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
 
 #### RELEASE VERSION ( optional)
@@ -198,33 +197,34 @@ Once set any APM provider that supports segregation with releases will track it.
 Tooljet needs to be configured for custom CA certificate to be able to trust and establish connection over https. This requires you to configure an additional env var `NODE_EXTRA_CA_CERTS` to have absolute path to your CA certificates. This file named `cert.pem` needs to be in PEM format and can have more than one certificates.
 
 | variable            | description                                                       |
-| ------------------  | ----------------------------------------------------------------- |
+| ------------------- | ----------------------------------------------------------------- |
 | NODE_EXTRA_CA_CERTS | absolute path to certifcate PEM file ( eg: /ToolJet/ca/cert.pem ) |
-
 
 #### Disable telemetry ( optional )
 
 Pings our server to update the total user count every 24 hours. You can disable this by setting the value of `DISABLE_TOOLJET_TELEMETRY` environment variable to `true`. This feature is enabled by default.
 
 #### Password Retry Limit (Optional)
+
 The maximum retry limit of login password for a user is by default set to 5, account will be locked after 5 unsuccessful login attempts. Use the variables mentioned below to control this behavior:
 
-| variable                              | description                                                   |
-| ------------------------------------- | -----------------------------------------------------------   |
-| DISABLE_PASSWORD_RETRY_LIMIT          | (true/false) To disable the password retry check, if value is `true` then no limits for password retry |
-| PASSWORD_RETRY_LIMIT                  | To change the default password retry limit (5) |
+| variable                     | description                                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| DISABLE_PASSWORD_RETRY_LIMIT | (true/false) To disable the password retry check, if value is `true` then no limits for password retry |
+| PASSWORD_RETRY_LIMIT         | To change the default password retry limit (5)                                                         |
 
 #### SSO Configurations (Optional)
+
 Configurations for instance level SSO. Valid only if `DISABLE_MULTI_WORKSPACE` is not `true`.
 
-| variable                              | description                                                   |
-| ------------------------------------- | -----------------------------------------------------------   |
-| SSO_GOOGLE_OAUTH2_CLIENT_ID           | Google OAuth client id |
-| SSO_GIT_OAUTH2_CLIENT_ID              | GitHub OAuth client id |
-| SSO_GIT_OAUTH2_CLIENT_SECRET          | GitHub OAuth client secret |
-| SSO_GIT_OAUTH2_HOST                   | GitHub OAuth host name if GitHub is self hosted |
-| SSO_ACCEPTED_DOMAINS                  | comma separated email domains that supports SSO authentication |
-| SSO_DISABLE_SIGNUPS                   | Disable user sign up if authenticated user does not exist |
+| variable                     | description                                                    |
+| ---------------------------- | -------------------------------------------------------------- |
+| SSO_GOOGLE_OAUTH2_CLIENT_ID  | Google OAuth client id                                         |
+| SSO_GIT_OAUTH2_CLIENT_ID     | GitHub OAuth client id                                         |
+| SSO_GIT_OAUTH2_CLIENT_SECRET | GitHub OAuth client secret                                     |
+| SSO_GIT_OAUTH2_HOST          | GitHub OAuth host name if GitHub is self hosted                |
+| SSO_ACCEPTED_DOMAINS         | comma separated email domains that supports SSO authentication |
+| SSO_DISABLE_SIGNUPS          | Disable user sign up if authenticated user does not exist      |
 
 ## ToolJet client
 
@@ -232,29 +232,26 @@ Configurations for instance level SSO. Valid only if `DISABLE_MULTI_WORKSPACE` i
 
 This is required when client is built separately.
 
-| variable           | description                                                 |
-| ------------------ | ----------------------------------------------------------- |
+| variable           | description                                                  |
+| ------------------ | ------------------------------------------------------------ |
 | TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
-
 
 #### Server Port ( optional)
 
 This could be used to for local development, it will set the server url like so: `http://localhost:<TOOLJET_SERVER_PORT>`
 
 | variable            | description                             |
-|---------------------|-----------------------------------------|
+| ------------------- | --------------------------------------- |
 | TOOLJET_SERVER_PORT | the port of ToolJet server ( eg: 3000 ) |
-
 
 #### Asset path ( optionally required )
 
 This is required when the assets for the client are to be loaded from elsewhere (eg: CDN).
 This can be an absolute path, or relative to main HTML file.
 
-| variable           | description                                                   |
-| ------------------ | -----------------------------------------------------------   |
-| ASSET_PATH         | the asset path for the website ( eg: https://app.tooljet.com/) |
-
+| variable   | description                                                    |
+| ---------- | -------------------------------------------------------------- |
+| ASSET_PATH | the asset path for the website ( eg: https://app.tooljet.com/) |
 
 #### Serve client as a server end-point ( optional )
 
