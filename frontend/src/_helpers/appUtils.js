@@ -250,7 +250,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           _ref.props.history.go();
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-            window.open(urlJoin(window.public_config?.TOOLJET_HOST, `applications/${slug}`));
+            window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
           }
         }
         return Promise.resolve();
