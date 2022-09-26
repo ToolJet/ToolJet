@@ -1,7 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
 import Spinner from '@/_ui/Spinner';
-
+import { useTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
 import moment from 'moment';
 import CommentActions from './CommentActions';
@@ -16,6 +16,7 @@ moment.updateLocale('en', {
 
 const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditCommentId, fetchComments }) => {
   const bottomRef = React.useRef();
+  const { t } = useTranslation();
 
   const scrollToBottom = () => {
     bottomRef?.current?.scrollIntoView({
@@ -33,7 +34,10 @@ const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditComment
   }, []);
 
   const getContent = () => {
-    if (isEmpty(thread)) return <div className="text-center">There are no comments to display</div>;
+    if (isEmpty(thread))
+      return (
+        <div className="text-center">{t('leftSidebar.Comments.commentBody', 'There are no comments to display')}</div>
+      );
 
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     return (

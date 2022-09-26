@@ -13,7 +13,7 @@ export const commonSelectors = {
   autoSave: "[data-cy=autosave-indicator]",
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
-  homePageLogo: "[data-cy=home-page-logo]:eq(1)",
+  homePageLogo: "[data-cy=home-page-logo]",
   emailField: "[data-cy=email-text-field]",
   passwordField: "[data-cy=password-text-field]",
   signInButton: "[data-cy=login-button]",
@@ -46,6 +46,8 @@ export const commonSelectors = {
   appCreatorName: "[data-cy=app-creator]",
   appCreatedTime: "[data-cy=app-creation-time]",
   homePageSearchBar: "[data-cy=home-page-search-bar]",
+  editorPageLogo: '[data-cy="editor-page-logo"]',
+  viewerPageLogo: '[data-cy="viewer-page-logo"]',
 
   folderListcard: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-list-card"]`;
@@ -113,6 +115,18 @@ export const commonWidgetSelector = {
   colourPickerInput: (index) => {
     return `[id*="rc-editable-input-"]:eq(${index})`;
   },
+  stylePicker: (paramName) => {
+    return `[data-cy="${cyParamName(paramName)}-picker"]`;
+  },
+  stylePickerValueIcon: (paramName) => {
+    return `[data-cy="${cyParamName(paramName)}-picker-icon"]`;
+  },
+  stylePickerValue: (paramName) => {
+    return `[data-cy="${cyParamName(paramName)}-value"]`;
+  },
+  stylePickerFxInput: (paramName) => {
+    return `[data-cy="${cyParamName(paramName)}-input-field"]`;
+  },
 
   buttonCloseEditorSideBar: "[data-rb-event-key='close-inpector-light']",
   buttonStylesEditorSideBar: "[data-rb-event-key='styles']",
@@ -123,8 +137,15 @@ export const commonWidgetSelector = {
 
   noEventHandlerMessage: "[data-cy='no-event-handler-message']",
   addEventHandlerLink: "[data-cy='add-event-handler']",
+  addMoreEventHandlerLink: '[data-cy="add-more-event-handler"]',
   eventHandlerCard: "[data-cy='event-handler-card']",
   alertMessageInputField: "[data-cy='alert-message-input-field']",
+  actionSelection: '[data-cy="action-selection"]',
+  eventComponentSelection:
+    '[data-cy="action-options-component-selection-field"]',
+  eventComponentActionSelection:
+    '[data-cy="action-options-action-selection-field"]',
+  componentTextInput: '[data-cy="action-options-text-input-field"]',
   changeLayoutButton: "[data-cy= 'change-layout-button']",
 
   sidebarinspector: "[data-cy='left-sidebar-inspector-button']",
@@ -135,4 +156,9 @@ export const commonWidgetSelector = {
   widgetDocumentationLink: "[data-cy='widget-documentation-link']",
 
   boxShadowDefaultParam: ["x", "y", "blur", "spread"],
+  colourPickerParent: "[data-cy='color-picker-parent']",
+  inputBoxShadow: "[data-cy= 'input-box-shadow']",
+  boxShadowColorPicker: "[data-cy='box-shadow-color-picker']",
+  textInputWidget: '[data-cy="draggable-widget-textinput1"]',
+  previewButton: `[data-cy="preview-link-button"]`,
 };

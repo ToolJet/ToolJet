@@ -42,7 +42,7 @@ Optional parameters:
 
 - Body as HTML
 
-<!-- <img class="screenshot-full" src="/img/datasource-reference/MailGun/icon.svg" alt="ToolJet - Query Mailgun" height="420"/> -->
+<img class="screenshot-full" src="/img/datasource-reference/MailGun/mailgun_query_body.png" alt="ToolJet - Query Mailgun" height="420"/>
 
 :::info
 **Send mail to** - accepts a single email id. 

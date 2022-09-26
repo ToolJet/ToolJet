@@ -7,10 +7,15 @@ title: Baserow
 
 ## Connection
 
-ToolJet can connect to your Baserow account to read and write data. Baserow API token is required to create an Baserow data source on ToolJet. You can follow the steps to create API token from [this link](https://baserow.io/api-docs).
+ToolJet can connect to your Baserow account to read and write data. 
+Select the hosted version of Baserow or the self-host option.
+
+For [**self-hosted**](https://baserow.io/docs/index#installation) option, base URL is required to connect.
+
+Baserow API token is required to create an Baserow data source on ToolJet. You can follow the steps to create API token from [this link](https://baserow.io/api-docs).
 
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-intro.gif" alt="Baseqor intro" />
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-intro.png" alt="Baserow intro" />
 
 
 :::tip
