@@ -4781,4 +4781,109 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
   },
+  {
+    name: 'Link',
+    displayName: 'Link',
+    description: 'Add link to the text',
+    defaultSize: {
+      width: 6,
+      height: 30,
+    },
+    component: 'Link',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      linkTarget: {
+        type: 'code',
+        displayName: 'Link Target',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      linkText: {
+        type: 'code',
+        displayName: 'Link Text',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      targetType: {
+        type: 'select',
+        displayName: 'Target Type',
+        options: [
+          { name: 'New Tab', value: 'new' },
+          { name: 'Same Tab', value: 'same' },
+        ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+    },
+    events: {
+      onClick: { displayName: 'On click' },
+      onHover: { displayName: 'On hover' },
+    },
+    styles: {
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      textSize: {
+        type: 'number',
+        displayName: 'Text Size',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      underline: {
+        type: 'select',
+        displayName: 'Underline',
+        options: [
+          { name: 'Never', value: 'no-underline' },
+          { name: 'On Hover', value: 'on-hover' },
+          { name: 'Always', value: 'underline' },
+        ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+    },
+    exposedVariables: {},
+    actions: [
+      {
+        handle: 'click',
+        displayName: 'Click',
+      },
+    ],
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        linkTarget: { value: 'https://dev.to/' },
+        linkText: { value: 'Click here' },
+        targetType: { value: 'new' },
+      },
+      events: [],
+      styles: {
+        textColor: { value: '#375FCF' },
+        textSize: { value: 14 },
+        underline: { value: 'on-hover' },
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
 ];
