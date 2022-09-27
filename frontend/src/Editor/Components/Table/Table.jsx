@@ -487,7 +487,7 @@ export function Table({
                         fireEvent('onRowClicked');
                       });
                     }}
-                    onMouseEnter={(e) => {
+                    onMouseOver={(e) => {
                       const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
                       mergeToTableDetails(hoveredRowDetails);
                       setExposedVariables(hoveredRowDetails).then(() => {
