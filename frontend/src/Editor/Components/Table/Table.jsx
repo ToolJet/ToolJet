@@ -70,7 +70,8 @@ export function Table({
     parsedDisabledState,
     actionButtonRadius,
     actions,
-    disablePaginationButtons,
+    enableNextButton,
+    enablePrevButton,
     totalRecords,
     rowsPerPage,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
@@ -560,22 +561,20 @@ export function Table({
         <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
           <div className="table-footer row gx-0">
             <div className="col">
-              {((clientSidePagination && !disablePaginationButtons) ||
-                (serverSidePagination && !disablePaginationButtons)) && (
-                <Pagination
-                  lastActivePageIndex={pageIndex}
-                  serverSide={serverSidePagination}
-                  autoGotoPage={gotoPage}
-                  autoCanNextPage={canNextPage}
-                  autoPageCount={pageCount}
-                  autoPageOptions={pageOptions}
-                  onPageIndexChanged={onPageIndexChanged}
-                  pageIndex={paginationInternalPageIndex}
-                  setPageIndex={setPaginationInternalPageIndex}
-                />
-              )}
+              <Pagination
+                lastActivePageIndex={pageIndex}
+                serverSide={serverSidePagination}
+                autoGotoPage={gotoPage}
+                autoCanNextPage={canNextPage}
+                autoPageCount={pageCount}
+                autoPageOptions={pageOptions}
+                onPageIndexChanged={onPageIndexChanged}
+                pageIndex={paginationInternalPageIndex}
+                setPageIndex={setPaginationInternalPageIndex}
+                enableNextButton={enableNextButton}
+                enablePrevButton={enablePrevButton}
+              />
             </div>
-
             <div className="col d-flex justify-content-end">
               {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
                 <>

@@ -148,9 +148,16 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
-      disablePaginationButtons: {
+      enableNextButton: {
         type: 'toggle',
-        displayName: 'Disable server pagination arrows',
+        displayName: 'Enable next button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      enablePrevButton: {
+        type: 'toggle',
+        displayName: 'Enable prev button',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -345,7 +352,8 @@ export const widgets = [
         },
         rowsPerPage: { value: '{{10}}' },
         serverSidePagination: { value: '{{false}}' },
-        disablePaginationButtons: { value: '{{false}}' },
+        enableNextButton: { value: '{{false}}' },
+        enablePrevButton: { value: '{{false}}' },
         totalRecords: { value: '' },
         clientSidePagination: { value: '{{true}}' },
         displaySearchBox: { value: '{{true}}' },

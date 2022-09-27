@@ -827,7 +827,8 @@ class TableComponent extends React.Component {
 
     const options = [
       'serverSidePagination',
-      ...(serverSidePagination ? ['disablePaginationButtons'] : []),
+      ...(serverSidePagination ? ['enablePrevButton'] : []),
+      ...(serverSidePagination ? ['enableNextButton'] : []),
       ...(serverSidePagination ? ['totalRecords'] : []),
       ...(clientSidePagination && !serverSidePagination ? ['rowsPerPage'] : []),
       'serverSideSearch',
