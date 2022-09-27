@@ -2613,6 +2613,10 @@ hr {
   .modal-body {
     padding: 0;
   }
+
+  .modalWidget-config-handle {
+    position: relative !important;
+  }
 }
 
 .draggable-box {
@@ -3071,7 +3075,7 @@ input:focus-visible {
 
   .modal-content,
   .modal-header {
-    background-color: #1f2936 !important;
+    background-color: #1f2936;
 
     .text-muted {
       color: #fff !important;
@@ -6389,5 +6393,34 @@ input.hide-input-arrows{
   min-height: 100vh;
   .page-body {
     height: 100%;
+  }
+}
+
+
+.link-widget{
+  display: flex;
+  align-items: center;
+  overflow: auto;
+  &.hover{
+    a{
+      &:hover{
+        text-decoration: underline;
+      }
+    }
+  }
+  &.no-underline{
+    a{
+      text-decoration: none !important;
+    }
+  }
+  &.underline{
+    a{
+      text-decoration: underline;
+    }
+  }
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
   }
 }

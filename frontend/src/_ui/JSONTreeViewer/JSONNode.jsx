@@ -327,7 +327,7 @@ export const JSONNode = ({ data, ...restProps }) => {
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
           })}
           onMouseEnter={() => updateHoveredNode(currentNode, currentNodePath)}
-          data-cy={`inspector-node-${currentNode.toLowerCase()}`}
+          data-cy={`inspector-node-${String(currentNode).toLowerCase()}`}
         >
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
           {$key} {$NODEType}

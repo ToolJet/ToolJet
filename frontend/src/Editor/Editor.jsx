@@ -27,8 +27,7 @@ import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onEvent,
-  onQueryConfirm,
-  onQueryCancel,
+  onQueryConfirmOrCancel,
   runQuery,
   setStateAsync,
   computeComponentState,
@@ -140,7 +139,7 @@ class EditorComponent extends React.Component {
       showQuerySearchField: false,
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
-      showQueryConfirmation: false,
+      queryConfirmationList: [],
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
       isSaving: false,
@@ -1154,7 +1153,6 @@ class EditorComponent extends React.Component {
       selectedQuery,
       editingQuery,
       app,
-      showQueryConfirmation,
       queryPanelHeight,
       showLeftSidebar,
       currentState,
@@ -1174,6 +1172,7 @@ class EditorComponent extends React.Component {
       hoveredComponent,
       isDragSelection,
       isDraggingOrResizing,
+      queryConfirmationList,
     } = this.state;
 
     const appVersionPreviewLink = editingVersion ? `/applications/${app.id}/versions/${editingVersion.id}` : '';
@@ -1183,12 +1182,13 @@ class EditorComponent extends React.Component {
         <ReactTooltip type="dark" effect="solid" eventOff="click" delayShow={250} />
         {/* This is for viewer to show query confirmations */}
         <Confirm
-          show={showQueryConfirmation}
-          message={`Do you want to run this query - ${this.state.queryConfirmationData?.queryName}?`}
-          onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
-          onCancel={() => onQueryCancel(this)}
-          queryConfirmationData={this.state.queryConfirmationData}
+          show={queryConfirmationList.length > 0}
+          message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
+          onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true)}
+          onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0])}
+          queryConfirmationData={queryConfirmationList[0]}
           darkMode={this.props.darkMode}
+          key={queryConfirmationList[0]?.queryName}
         />
         <Confirm
           show={showDataQueryDeletionConfirmation}
@@ -1567,7 +1567,7 @@ class EditorComponent extends React.Component {
                               setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
                               appDefinition={appDefinition}
                               editorState={this}
-                              showQueryConfirmation={showQueryConfirmation}
+                              showQueryConfirmation={queryConfirmationList.length > 0}
                             />
                           </div>
                         </div>
