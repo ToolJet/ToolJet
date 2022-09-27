@@ -700,6 +700,9 @@ class TableComponent extends React.Component {
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
       ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
       : false;
+    const clientSidePagination = component.component.definition.properties.clientSidePagination?.value
+      ? resolveReferences(component.component.definition.properties.clientSidePagination?.value, currentState)
+      : false;
 
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
@@ -835,6 +838,7 @@ class TableComponent extends React.Component {
 
     const options = [
       'serverSidePagination',
+      ...(clientSidePagination && !serverSidePagination ? ['rowsPerPage'] : []),
       'serverSideSearch',
       'showDownloadButton',
       'showFilterButton',
@@ -842,7 +846,7 @@ class TableComponent extends React.Component {
       'showBulkSelector',
       'highlightSelectedRow',
       'disabledSort',
-      'resultsPerPage',
+      'rowsPerPage',
     ];
 
     let renderOptions = [];
