@@ -299,6 +299,7 @@ class ManageOrgUsersComponent extends React.Component {
                               showNewUserForm: false,
                               newUser: {},
                               errors: {},
+                              fields: {},
                             })
                           }
                           data-cy="cancel-button"
