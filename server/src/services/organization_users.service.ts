@@ -31,7 +31,7 @@ export class OrganizationUsersService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.save(
         manager.create(OrganizationUser, {
-          user,
+          userId: user.id,
           organization,
           invitationToken: isInvite ? uuid.v4() : null,
           status: isInvite ? 'invited' : 'active',

@@ -268,11 +268,9 @@ export class OrganizationsService {
       return;
     }
 
-    if (!isSuperAdmin(user)) {
-      query.andWhere('organization_users.userId = :userId', {
-        userId: user.id,
-      });
-    }
+    query.andWhere('organization_users.userId = :userId', {
+      userId: user.id,
+    });
 
     return await query.orderBy('name', 'ASC').getMany();
   }
