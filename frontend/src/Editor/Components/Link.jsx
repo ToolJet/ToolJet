@@ -11,9 +11,13 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction }) 
     height,
   };
 
-  registerAction('click', async function () {
-    clickRef.current.click();
-  });
+  registerAction(
+    'click',
+    async function () {
+      clickRef.current.click();
+    },
+    [clickRef]
+  );
 
   return (
     <div className={cx('link-widget', { 'd-none': !visibility }, `${underline}`)} style={computedStyles}>
