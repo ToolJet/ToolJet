@@ -553,8 +553,8 @@ class DataSourceManagerComponent extends React.Component {
           <Modal.Header className="justify-content-start">
             {selectedDataSource && (
               <div
-                className={`back-btn ${this.props.darkMode ? 'dark' : ''}`}
-                style={{ marginRight: '1rem', cursor: 'pointer' }}
+                className={`back-btn me-3 ${this.props.darkMode ? 'dark' : ''}`}
+                role="button"
                 onClick={() => this.setState({ selectedDataSource: false })}
               >
                 <img className="m-0" src="assets/images/icons/back.svg" width="30" height="30" />
