@@ -231,7 +231,10 @@ export class OauthService {
     if (!(userResponse.userSSOId && userResponse.email)) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    if (!this.#isValidDomain(userResponse.email, domain)) {
+
+    let userDetails: User = await this.usersService.findByEmail(userResponse.email);
+
+    if (!isSuperAdmin(userDetails) && !this.#isValidDomain(userResponse.email, domain)) {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
     }
 
@@ -240,18 +243,16 @@ export class OauthService {
       userResponse.firstName = userResponse.email?.split('@')?.[0];
     }
 
-    let userDetails: User;
+    const allowPersonalWorkspace =
+      isSuperAdmin(userDetails) ||
+      (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+
     let organizationDetails: DeepPartial<Organization>;
     const isInstanceSSOLogin = !!(!configId && ssoType);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       if (!isSingleOrganization && isInstanceSSOLogin && !organizationId) {
         // Login from main login page - Multi-Workspace enabled
-        userDetails = await this.usersService.findByEmail(userResponse.email);
-
-        const allowPersonalWorkspace =
-          isSuperAdmin(userDetails) ||
-          (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
 
         if (!userDetails && enableSignUp && allowPersonalWorkspace) {
           // Create new user
@@ -287,10 +288,16 @@ export class OauthService {
 
         if (!organizationDetails) {
           // Finding organization to be loaded
-          const organizationList: Organization[] = await this.organizationService.findOrganizationWithLoginSupport(
-            userDetails,
-            'sso'
-          );
+          let organizationList: Organization[];
+          if (!isSuperAdmin(userDetails)) {
+            organizationList = await this.organizationService.findOrganizationWithLoginSupport(userDetails, 'sso');
+          } else {
+            const superAdminOrganization = // Default organization or pick any
+              (await manager.findOne(Organization, { id: userDetails.defaultOrganizationId })) ||
+              (await this.organizationService.getSingleOrganization());
+
+            organizationList = [superAdminOrganization];
+          }
 
           const defaultOrgDetails: Organization = organizationList?.find(
             (og) => og.id === userDetails.defaultOrganizationId
@@ -309,6 +316,7 @@ export class OauthService {
           }
         }
       } else {
+        // Direct login to an organization/single workspace enabled
         userDetails = await (!enableSignUp
           ? this.#findAndActivateUser(userResponse.email, organization.id, manager)
           : this.#findOrCreateUser(userResponse, organization, manager));

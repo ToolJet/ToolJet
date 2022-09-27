@@ -262,27 +262,36 @@ class HomePageComponent extends React.Component {
   }
 
   canCreateApp = () => {
-    return this.canUserPerform(this.state.currentUser, 'create');
+    return this.state.currentUser?.super_admin || this.canUserPerform(this.state.currentUser, 'create');
   };
 
   canUpdateApp = (app) => {
-    return this.canUserPerform(this.state.currentUser, 'update', app);
+    return this.state.currentUser?.super_admin || this.canUserPerform(this.state.currentUser, 'update', app);
   };
 
   canDeleteApp = (app) => {
-    return this.canUserPerform(this.state.currentUser, 'delete', app);
+    return this.state.currentUser?.super_admin || this.canUserPerform(this.state.currentUser, 'delete', app);
   };
 
   canCreateFolder = () => {
-    return this.canAnyGroupPerformAction('folder_create', this.state.currentUser.group_permissions);
+    return (
+      this.state.currentUser?.super_admin ||
+      this.canAnyGroupPerformAction('folder_create', this.state.currentUser.group_permissions)
+    );
   };
 
   canDeleteFolder = () => {
-    return this.canAnyGroupPerformAction('folder_delete', this.state.currentUser.group_permissions);
+    return (
+      this.state.currentUser?.super_admin ||
+      this.canAnyGroupPerformAction('folder_delete', this.state.currentUser.group_permissions)
+    );
   };
 
   canUpdateFolder = () => {
-    return this.canAnyGroupPerformAction('folder_update', this.state.currentUser.group_permissions);
+    return (
+      this.state.currentUser?.super_admin ||
+      this.canAnyGroupPerformAction('folder_update', this.state.currentUser.group_permissions)
+    );
   };
 
   cancelDeleteAppDialog = () => {

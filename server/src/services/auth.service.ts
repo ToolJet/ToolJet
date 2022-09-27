@@ -114,10 +114,18 @@ export class AuthService {
           }
         } else {
           // Multi organization
-          const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
-            user,
-            'form'
-          );
+
+          let organizationList: Organization[];
+          if (!isSuperAdmin(user)) {
+            organizationList = await this.organizationsService.findOrganizationWithLoginSupport(user, 'form');
+          } else {
+            // bypass login support check
+            const superAdminOrganization = // Default organization or pick any
+              (await this.organizationsRepository.findOne({ id: user.defaultOrganizationId })) ||
+              (await this.organizationsService.getSingleOrganization());
+
+            organizationList = [superAdminOrganization];
+          }
 
           const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
           if (defaultOrgDetails) {
@@ -204,7 +212,7 @@ export class AuthService {
     }
     const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, 'active');
 
-    if (!newUser) {
+    if (!newUser && !isSuperAdmin(newUser)) {
       throw new UnauthorizedException('Invalid credentials');
     }
     newUser.organizationId = newOrganizationId;
@@ -213,7 +221,10 @@ export class AuthService {
 
     const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
 
-    if ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO)) {
+    if (
+      !isSuperAdmin(newUser) && // bypassing login mode checks for super admin
+      ((user.isPasswordLogin && !formConfigs?.enabled) || (user.isSSOLogin && !organization.inheritSSO))
+    ) {
       // no configurations in organization side or Form login disabled for the organization
       throw new UnauthorizedException('Please log in to continue');
     }
@@ -248,6 +259,10 @@ export class AuthService {
 
   async signup(email: string) {
     const existingUser = await this.usersService.findByEmail(email);
+
+    if (existingUser.status === 'archived') {
+      throw new NotAcceptableException('Email already exists');
+    }
     if (existingUser?.organizationUsers?.some((ou) => ou.status === 'active')) {
       throw new NotAcceptableException('Email already exists');
     }
@@ -349,7 +364,7 @@ export class AuthService {
         (await this.usersRepository.count()) === 0 ||
         (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
 
-      const user: User = await manager.findOne(User, { where: { invitationToken: token } });
+      const user: User = await manager.findOne(User, { where: { invitationToken: token, status: 'active' } });
 
       if (!user?.organizationUsers) {
         throw new BadRequestException('Invalid invitation link');
@@ -447,7 +462,7 @@ export class AuthService {
       relations: ['user'],
     });
 
-    if (!organizationUser?.user) {
+    if (!organizationUser?.user || organizationUser?.user?.status === 'archived') {
       throw new BadRequestException('Invalid invitation link');
     }
     const user: User = organizationUser.user;

@@ -90,7 +90,9 @@ class LoginPageComponent extends React.Component {
             },
           },
           form: {
-            enable_sign_up: window.public_config?.DISABLE_SIGNUPS !== 'true',
+            enable_sign_up:
+              window.public_config?.ALLOW_PERSONAL_WORKSPACE === 'true' &&
+              window.public_config?.DISABLE_SIGNUPS !== 'true',
             enabled: true,
           },
         },
