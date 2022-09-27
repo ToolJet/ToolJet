@@ -651,16 +651,7 @@ class TableComponent extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
-    if (item === 'name') {
-      const columnSizes = this.props.component.component.definition.properties.columnSizes;
-      if (columnSizes) {
-        const newColumnSizes = JSON.parse(JSON.stringify(columnSizes));
-        if (newColumnSizes[column.name]) {
-          newColumnSizes[value] = newColumnSizes[column.name];
-          this.props.paramUpdated({ name: 'columnSizes' }, null, newColumnSizes, 'properties');
-        }
-      }
-    }
+
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
