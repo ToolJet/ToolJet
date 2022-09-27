@@ -6,8 +6,7 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     textSize,
     textColor,
     textAlign,
-    visibility,
-    disabledState,
+    backgroundColor,
     fontWeight,
     decoration,
     transformation,
@@ -17,22 +16,25 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
     letterSpacing,
     wordSpacing,
     fontVariant,
+    disabledState,
   } = styles;
-  const [loadingState, setLoadingState] = useState(false);
+  const { loadingState } = properties;
   const [text, setText] = useState(() => computeText());
-
+  const [visibility, setVisibility] = useState(styles.visibility);
   const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
+
+  useEffect(() => {
+    visibility !== styles.visibility && setVisibility(styles.visibility);
+  }, [styles.visibility]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => setText(() => computeText()), [properties.text]);
-  useEffect(() => {
-    const loadingStateProperty = properties.loadingState;
-    setLoadingState(loadingStateProperty);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.loadingState]);
 
   registerAction('setText', async function (text) {
     setText(text);
+  });
+  registerAction('visibility', async function (value) {
+    setVisibility(value);
   });
 
   function computeText() {
@@ -40,6 +42,7 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
   }
 
   const computedStyles = {
+    backgroundColor,
     color,
     height,
     display: visibility ? 'flex' : 'none',

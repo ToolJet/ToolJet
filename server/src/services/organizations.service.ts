@@ -558,12 +558,9 @@ export class OrganizationsService {
         await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
       }
 
-      currentOrganization = (
-        await this.organizationUsersRepository.findOne({
-          where: { userId: currentUser.id, organizationId: currentUser.organizationId },
-          relations: ['organization'],
-        })
-      )?.organization;
+      currentOrganization = await this.organizationsRepository.findOneOrFail({
+        where: { id: currentUser.organizationId },
+      });
 
       organizationUser = await this.organizationUserService.create(user, currentOrganization, true, manager);
 

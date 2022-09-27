@@ -71,6 +71,7 @@ const sidebars = {
         'data-sources/baserow',
         'data-sources/bigquery',
         'data-sources/firestore',
+        'data-sources/clickhouse',
         'data-sources/cosmosdb',
         'data-sources/couchdb',
         'data-sources/custom-js',
@@ -283,6 +284,7 @@ const sidebars = {
             'contributing-guide/tutorials/creating-a-plugin',
           ],
         },
+        'contributing-guide/l10n',
         {
           type: 'category',
           label: 'Troubleshooting',
