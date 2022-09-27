@@ -35,6 +35,11 @@ export default function customFilter(rows, columnIds, filterValue) {
     if (filterValue.operation === 'lte') {
       return rows.filter((row) => row.values[columnIds[0]] <= filterValue.value);
     }
+    if (filterValue.operation === 'doesNotContains') {
+      return rows.filter(
+        (row) => !row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
+      );
+    }
 
     let value = filterValue.value;
     if (typeof value === 'string') {

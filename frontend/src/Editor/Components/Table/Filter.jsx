@@ -95,6 +95,7 @@ export function Filter(props) {
               <SelectSearch
                 options={[
                   { name: 'contains', value: 'contains' },
+                  { name: 'does not contains', value: 'doesNotContains' },
                   { name: 'matches', value: 'matches' },
                   { name: 'does not match', value: 'nl' },
                   { name: 'equals', value: 'equals' },
