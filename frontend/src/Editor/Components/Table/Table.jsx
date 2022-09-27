@@ -441,12 +441,13 @@ export function Table({
             {headerGroups.map((headerGroup, index) => (
               <tr key={index} {...headerGroup.getHeaderGroupProps()} tabIndex="0" className="tr">
                 {headerGroup.headers.map((column, index) => (
-                  <th
-                    key={index}
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                    className={column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'}
-                  >
-                    {column.render('Header')}
+                  <th className="th" key={index} {...column.getHeaderProps()}>
+                    <div
+                      className={column.isSorted ? (column.isSortedDesc ? 'sort-desc' : 'sort-asc') : ''}
+                      {...column.getSortByToggleProps()}
+                    >
+                      {column.render('Header')}
+                    </div>
                     <div
                       onClick={(e) => {
                         e.preventDefault();
