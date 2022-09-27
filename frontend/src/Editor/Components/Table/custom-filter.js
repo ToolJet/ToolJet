@@ -40,7 +40,20 @@ export default function customFilter(rows, columnIds, filterValue) {
         (row) => !row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
       );
     }
-
+    if (filterValue.operation === 'isEmpty') {
+      return rows.filter((row) => {
+        if (!row.values[columnIds[0]]) {
+          return row;
+        }
+      });
+    }
+    if (filterValue.operation === 'isNotEmpty') {
+      return rows.filter((row) => {
+        if (row.values[columnIds[0]]) {
+          return row;
+        }
+      });
+    }
     let value = filterValue.value;
     if (typeof value === 'string') {
       value = value.toLowerCase();
