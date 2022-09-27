@@ -22,11 +22,12 @@ ToolJet requires the following to connect to your ClickHouse Database:
 - **Host**
 - **Port**
 - **Database Name**
-- **Format**
 - **Protocal**
 - **Use Post**
 - **Trim Query**
 - **Use Gzip**
+- **Debug**
+- **Raw**
 
 <img className="screenshot-full" src="/img/datasource-reference/clickhouse/connection.png" alt="ClickHouse connection" />
 
@@ -48,8 +49,137 @@ For more details on clickhouse visit [Clickhouse docs](https://clickhouse.com/do
 
 Use this to operation to enter **[ClickHouse SQL Statements](https://clickhouse.com/docs/en/sql-reference/statements/)**. These statements represent various kinds of action you can perform using SQL queries.
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/sql.png" alt="ClickHouse SQL Statement operation" />
+#### Example SQL queries
 
+- **SELECT**:
+
+	```sql
+	SELECT * from test array;
+	```
+
+	<div style={{textAlign: 'center'}}>
+
+	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/select.png" alt="ClickHouse SQL Statement operation" />
+
+	</div>
+
+- **CREATE**: 
+
+	```sql
+	CREATE TABLE test array3 (
+		date Date,
+		str String,
+		arr Array(String),
+		arr2 Array (Date)
+		arr3 Array(UInt32) ,
+		id1 UUID
+	)ENGINE=MergeTree () ORDER BY(str)
+	```
+
+	:::info
+	It is required to mention the ORDER BY primary key. Check the doc [here](https://clickhouse.com/docs/en/sql-reference/statements/insert-into/).
+	:::
+
+	<div style={{textAlign: 'center'}}>
+
+	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/create.png" alt="ClickHouse SQL Statement operation" />
+
+	</div>
+
+- **ALTER TABLE**(add column)
+
+	```sql
+	ALTER TABLE test array1 ADD COLUMN Added2 UInt32;
+	```
+
+	<div style={{textAlign: 'center'}}>
+
+	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/alter.png" alt="ClickHouse SQL Statement operation" />
+
+	</div>
+
+- **SELECT WITH WHERE CLAUSE**
+	```sql
+	SELECT * FROM test array1 WHERE str='Somethingl...'  1 ALTER TABLE test_array1 UPDATE arr = (12] WHERE str='Somethingl...'
+	```
+
+	<div style={{textAlign: 'center'}}>
+
+	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/selectwithwhere.png" alt="ClickHouse SQL Statement operation" />
+
+	</div>
+
+- **UPDATE**
+	```sql
+	ALTER TABLE test_array1 UPDATE arr = (12] WHERE str='Somethingl...'
+	```
+
+	<div style={{textAlign: 'center'}}>
+
+	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/update.png" alt="ClickHouse SQL Statement operation" />
+
+	</div>
+
+- **DELETE**
+	```sql
+	ALTER TABLE test_array1 DELETE WHERE str= 'Somethingl...'
+	```
+
+	<div style={{textAlign: 'center'}}>
+
+	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/delete.png" alt="ClickHouse SQL Statement operation" />
+
+	</div>
+
+- **NORMAL INSERT**
+
+	1) Step 1 - Creating Table
+
+	```sql
+	CREATE TABLE test array4 (
+	name String,
+	date Date
+   )ENGINE=MergeTree () ORDER BY (name)
+	```
+
+	<div style={{textAlign: 'center'}}>
+
+	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/step1.png" alt="ClickHouse SQL Statement operation" />
+
+	</div>
+
+	2) Step 2 - Insert
+
+	```sql
+	INSERT INTO test_array4 (*) VALUES ('juvane', '1996-01-13')
+	```
+
+	<div style={{textAlign: 'center'}}>
+
+	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/step1.png" alt="ClickHouse SQL Statement operation" />
+
+	</div>
+
+	:::info
+	**Giving Primary Key**
+	```
+	CREATE TABLE db.table_name
+	(
+		name1 type1, name2 type2, ...,
+		PRIMARY KEY(expr1[, expr2,...])]
+	)
+	ENGINE = engine;
+
+	OR 
+	
+	CREATE TABLE db.table_name
+	(
+		name1 type1, name2 type2, ...
+	)
+	ENGINE = engine
+	PRIMARY KEY(expr1[, expr2,...]);
+	```
+	:::
 
 ### Insert array of objects
 
