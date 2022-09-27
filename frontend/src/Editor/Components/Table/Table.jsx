@@ -70,9 +70,9 @@ export function Table({
     parsedDisabledState,
     actionButtonRadius,
     actions,
-    resultsPerPage,
     disablePaginationButtons,
     totalRecords,
+    rowsPerPage,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const { t } = useTranslation();
@@ -151,14 +151,14 @@ export function Table({
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    });
+    }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
   }
 
   function handleChangesDiscarded() {
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    });
+    }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
   }
 
   const changeSet = tableDetails?.changeSet ?? {};
@@ -325,7 +325,7 @@ export function Table({
       setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
     },
-    [serverSidePagination, clientSidePagination]
+    [serverSidePagination, clientSidePagination, setPaginationInternalPageIndex]
   );
 
   useEffect(() => {
@@ -338,9 +338,9 @@ export function Table({
       setPageSize(rows?.length || 10);
     }
     if (!serverSidePagination && clientSidePagination) {
-      setPageSize(resultsPerPage || 10);
+      setPageSize(rowsPerPage || 10);
     }
-  }, [clientSidePagination, serverSidePagination, rows, resultsPerPage]);
+  }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
 
   useEffect(() => {
     const pageData = page.map((row) => row.original);
@@ -443,12 +443,13 @@ export function Table({
             {headerGroups.map((headerGroup, index) => (
               <tr key={index} {...headerGroup.getHeaderGroupProps()} tabIndex="0" className="tr">
                 {headerGroup.headers.map((column, index) => (
-                  <th
-                    key={index}
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                    className={column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'}
-                  >
-                    {column.render('Header')}
+                  <th className="th" key={index} {...column.getHeaderProps()}>
+                    <div
+                      className={column.isSorted ? (column.isSortedDesc ? 'sort-desc' : 'sort-asc') : ''}
+                      {...column.getSortByToggleProps()}
+                    >
+                      {column.render('Header')}
+                    </div>
                     <div
                       onClick={(e) => {
                         e.preventDefault();

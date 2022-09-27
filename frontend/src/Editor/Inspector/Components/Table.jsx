@@ -206,6 +206,7 @@ class TableComponent extends React.Component {
             <div className="field mb-2">
               <label className="form-label">{this.props.t('widget.Table.overflow', 'Overflow')}</label>
               <SelectSearch
+                className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                 options={[
                   { name: 'Wrap', value: 'wrap' },
                   { name: 'Scroll', value: 'scroll' },
@@ -688,6 +689,9 @@ class TableComponent extends React.Component {
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
       ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
       : false;
+    const clientSidePagination = component.component.definition.properties.clientSidePagination?.value
+      ? resolveReferences(component.component.definition.properties.clientSidePagination?.value, currentState)
+      : false;
 
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
@@ -825,13 +829,13 @@ class TableComponent extends React.Component {
       'serverSidePagination',
       ...(serverSidePagination ? ['disablePaginationButtons'] : []),
       ...(serverSidePagination ? ['totalRecords'] : []),
+      ...(clientSidePagination && !serverSidePagination ? ['rowsPerPage'] : []),
       'serverSideSearch',
       'showDownloadButton',
       'showFilterButton',
       'showBulkUpdateActions',
       'showBulkSelector',
       'highlightSelectedRow',
-      'resultsPerPage',
     ];
 
     let renderOptions = [];

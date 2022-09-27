@@ -19,7 +19,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const showBulkSelector = properties.showBulkSelector ?? false;
 
   const highlightSelectedRow = properties.highlightSelectedRow ?? false;
-  const resultsPerPage = properties.resultsPerPage ?? '10';
+  const rowsPerPage = properties.rowsPerPage ?? 10;
   let clientSidePagination = properties.clientSidePagination ?? !serverSidePagination;
   if (typeof clientSidePagination !== 'boolean') clientSidePagination = true;
 
@@ -66,8 +66,8 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     actionButtonRadius,
     loadingState,
     actions,
-    resultsPerPage,
     disablePaginationButtons,
     totalRecords,
+    rowsPerPage,
   };
 }
