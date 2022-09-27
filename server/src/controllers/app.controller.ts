@@ -40,7 +40,7 @@ export class AppController {
   @UseGuards(SignupDisableGuard)
   @Post('signup')
   async signup(@Body() appAuthDto: AppAuthenticationDto) {
-    return this.authService.signup(appAuthDto.email);
+    return this.authService.signup(appAuthDto.email, appAuthDto.name, appAuthDto.password);
   }
 
   @Post('/forgot-password')

@@ -213,7 +213,7 @@ export class AuthService {
     });
   }
 
-  async signup(email: string) {
+  async signup(email: string, name: string, password: string) {
     const existingUser = await this.usersService.findByEmail(email);
     if (existingUser?.organizationUsers?.some((ou) => ou.status === 'active')) {
       throw new NotAcceptableException('Email already exists');
@@ -244,11 +244,26 @@ export class AuthService {
       }
     }
 
+    const names = { firstName: '', lastName: '' };
+    if (name) {
+      const [firstName, ...rest] = name.split(' ');
+      names['firstName'] = firstName;
+      if (rest.length != 0) {
+        const lastName = rest.join(' ');
+        names['lastName'] = lastName;
+      }
+    }
+
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Create default organization
       organization = await this.organizationsService.create('Untitled workspace', null, manager);
       const user = await this.usersService.create(
-        { email },
+        {
+          email,
+          password,
+          ...(names.firstName && { firstName: names.firstName }),
+          ...(names.lastName && { lastName: names.lastName }),
+        },
         organization.id,
         ['all_users', 'admin'],
         existingUser,

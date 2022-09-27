@@ -3,6 +3,11 @@ import { lowercaseString } from 'src/helpers/utils.helper';
 import { Transform } from 'class-transformer';
 
 export class AppAuthenticationDto {
+  @IsString()
+  @IsOptional()
+  @IsNotEmpty()
+  name: string;
+
   @IsEmail()
   @IsOptional()
   @IsNotEmpty()

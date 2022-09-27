@@ -65,9 +65,7 @@ export class UsersService {
     defaultOrganizationId?: string,
     manager?: EntityManager
   ): Promise<User> {
-    const password = uuid.v4();
-
-    const { email, firstName, lastName } = userParams;
+    const { email, firstName, lastName, password } = userParams;
     let user: User;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
