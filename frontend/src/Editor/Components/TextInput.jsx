@@ -45,20 +45,28 @@ export const TextInput = function TextInput({
   registerAction('setBlur', async function () {
     textInputRef.current.blur();
   });
-  registerAction('setText', async function (text) {
-    setValue(text);
-    setExposedVariable('value', text).then(fireEvent('onChange'));
-  });
-  registerAction('clear', async function () {
-    setValue('');
-    setExposedVariable('value', '').then(fireEvent('onChange'));
-  });
   registerAction('disable', async function (value) {
     setDisable(value);
   });
   registerAction('visibility', async function (value) {
     setVisibility(value);
   });
+  registerAction(
+    'setText',
+    async function (text) {
+      setValue(text);
+      setExposedVariable('value', text).then(fireEvent('onChange'));
+    },
+    [setValue]
+  );
+  registerAction(
+    'clear',
+    async function () {
+      setValue('');
+      setExposedVariable('value', '').then(fireEvent('onChange'));
+    },
+    [setValue]
+  );
 
   return (
     <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`}>
@@ -92,9 +100,11 @@ export const TextInput = function TextInput({
         placeholder={properties.placeholder}
         style={{ height, borderRadius: `${styles.borderRadius}px`, color: textColor }}
         value={value}
-        data-cy={`draggable-widget-${component.name}`}
+        data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       />
-      <div className="invalid-feedback">{validationError}</div>
+      <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
+        {validationError}
+      </div>
     </div>
   );
 };

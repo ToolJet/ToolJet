@@ -3,7 +3,9 @@
   "title": "S3 datasource",
   "description": "A schema defining S3 datasource",
   "type": "cloud-storage",
-  "defaults": {},
+  "defaults": {
+    "maxKeys": 1000
+  },
   "properties": {
     "operation": {
       "label": "Operation",
@@ -138,6 +140,36 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter prefix",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "maxKeys": {
+        "label": "Max keys",
+        "key": "maxKeys",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter max keys",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6"
+      },
+      "offset": {
+        "label": "Offset",
+        "key": "offset",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter offset",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6"
+      }, 
+      "NextContinuationToken": {
+        "label": "Next Continuation Token",
+        "key": "continuationToken",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter Next Continuation Token",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins"
