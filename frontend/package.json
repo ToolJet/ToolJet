@@ -29,6 +29,8 @@
     "i18next-http-backend": "^1.4.1",
     "immer": "^9.0.6",
     "immutability-helper": "^3.1.1",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.5.25",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.34",
