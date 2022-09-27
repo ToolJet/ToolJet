@@ -125,13 +125,9 @@ export const Map = function Map({
     setAutoComplete(autocompleteInstance);
   }
 
-  registerAction(
-    'setLocation',
-    async function (lat, lng) {
-      if (lat && lng) setMapCenter(resolveReferences({ lat, lng }, currentState));
-    },
-    [setMapCenter]
-  );
+  registerAction('setLocation', async function (lat, lng) {
+    if (lat && lng) setMapCenter(resolveReferences({ lat, lng }, currentState));
+  });
 
   return (
     <div

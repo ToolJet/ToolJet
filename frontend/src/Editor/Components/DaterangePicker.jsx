@@ -12,7 +12,6 @@ export const DaterangePicker = function DaterangePicker({
   setExposedVariable,
   width,
   darkMode,
-  fireEvent,
 }) {
   const { borderRadius, visibility, disabledState } = styles;
   const { defaultStartDate, defaultEndDate } = properties;
@@ -55,7 +54,6 @@ export const DaterangePicker = function DaterangePicker({
 
     setStartDate(start);
     setEndDate(end);
-    fireEvent('onSelect');
   }
 
   function focusChanged(focus) {

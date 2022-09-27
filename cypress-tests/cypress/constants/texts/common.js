@@ -64,7 +64,7 @@ export const commonWidgetText = {
   parameterShowOnMobile: "Show on mobile",
   parameterVisibility: "Visibility",
   parameterDisable: "Disable",
-  parameterBorderRadius: "Border Radius",
+  parameterBorderRadius: "Border radius",
   borderRadiusInput: ["{{", "20}}"],
   parameterOptionLabels: "Option labels",
   parameterBoxShadow: "Box Shadow",
@@ -81,45 +81,17 @@ export const commonWidgetText = {
   addEventHandlerLink: "+ Add event handler",
   inspectorComponentLabel: "components",
   componentValueLabel: "Value",
-  labelDefaultValue: "Default Value",
+  labelDefaultValue: "Default value",
   parameterLabel: "Label",
-  labelPlaceHolder: "Placeholder",
-  labelRegex: "Regex",
-  labelMinLength: "Min length",
-  labelMaxLength: "Max length",
-  labelcustomValidadtion: "Custom validation",
-  regularExpression: "^[A-Z]*$",
-
-  regexValidationError: "The input should match pattern",
-  minLengthValidationError: (value) => { 
-    return `Minimum ${value} characters is needed`
-  },
-  maxLengthValidationError: (value) => { 
-    return `Maximum ${value} characters is allowed`
-  },
 
   datepickerDocumentationLink: "Datepicker documentation",
   text1: "text1",
-  textinput1: "textinput1",
   toggleswitch1: "toggleswitch1",
   toggleSwitch: "Toggle Switch",
-  button1: "button1",
-  image1: "image1",
 };
 
 export const createBackspaceText = (text) => {
   let backspace = "{end}";
-  [...text].forEach((c) => {
-    backspace += "{backspace}{del}";
-  });
+  [...text].forEach((c) => (backspace += "{backspace}"));
   return backspace;
 };
-
-export const widgetValue = (widgetName) => {
-  return ["{{",`components.${widgetName}.value}}`];
-}
-
-export const customValidation = (name, message) => 
-{
-  return ["{{",`components.${name}.value ? true : '${message}'}}`];
-}

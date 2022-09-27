@@ -19,23 +19,7 @@ export class DataSourcesService {
     const { app_id: appId, app_version_id: appVersionId }: any = query;
     const whereClause = { appId, ...(appVersionId && { appVersionId }) };
 
-    const result = await this.dataSourcesRepository.find({ where: whereClause });
-
-    //remove tokenData from restapi datasources
-    const dataSources = result?.map((ds) => {
-      if (ds.kind === 'restapi') {
-        const options = {};
-        Object.keys(ds.options).filter((key) => {
-          if (key !== 'tokenData') {
-            return (options[key] = ds.options[key]);
-          }
-        });
-        ds.options = options;
-      }
-      return ds;
-    });
-
-    return dataSources;
+    return await this.dataSourcesRepository.find({ where: whereClause });
   }
 
   async findOne(dataSourceId: string): Promise<DataSource> {
@@ -67,14 +51,6 @@ export class DataSourcesService {
 
   async update(dataSourceId: string, name: string, options: Array<object>): Promise<DataSource> {
     const dataSource = await this.findOne(dataSourceId);
-
-    // if datasource is restapi then reset the token data
-    if (dataSource.kind === 'restapi')
-      options.push({
-        key: 'tokenData',
-        value: undefined,
-        encrypted: false,
-      });
 
     const updateableParams = {
       id: dataSourceId,
@@ -214,46 +190,16 @@ export class DataSourcesService {
     return parsedOptions;
   }
 
-  private changeCurrentToken = (
-    tokenData: any,
-    userId: string,
-    accessTokenDetails: any,
-    isMultiAuthEnabled: boolean
-  ) => {
-    if (isMultiAuthEnabled) {
-      return tokenData?.value.map((token: any) => {
-        if (token.userId === userId) {
-          return { ...token, ...accessTokenDetails };
-        }
-        return token;
-      });
-    } else {
-      return accessTokenDetails;
-    }
-  };
-
-  async updateOAuthAccessToken(
-    accessTokenDetails: object,
-    dataSourceOptions: object,
-    dataSourceId: string,
-    userId: string
-  ) {
+  async updateOAuthAccessToken(accessTokenDetails: object, dataSourceOptions: object, dataSourceId: string) {
     const existingCredentialId =
       dataSourceOptions['access_token'] && dataSourceOptions['access_token']['credential_id'];
     if (existingCredentialId) {
       await this.credentialsService.update(existingCredentialId, accessTokenDetails['access_token']);
     } else if (dataSourceId) {
-      const isMultiAuthEnabled = dataSourceOptions['multiple_auth_enabled']?.value;
-      const updatedTokenData = this.changeCurrentToken(
-        dataSourceOptions['tokenData'],
-        userId,
-        accessTokenDetails,
-        isMultiAuthEnabled
-      );
       const tokenOptions = [
         {
           key: 'tokenData',
-          value: updatedTokenData,
+          value: accessTokenDetails,
           encrypted: false,
         },
       ];

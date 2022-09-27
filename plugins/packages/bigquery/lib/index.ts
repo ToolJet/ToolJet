@@ -2,7 +2,6 @@ import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@to
 import { SourceOptions, QueryOptions } from './types';
 import { BigQuery } from '@google-cloud/bigquery';
 const JSON5 = require('json5');
-const _ = require('lodash');
 
 export default class Bigquery implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -14,14 +13,13 @@ export default class Bigquery implements QueryService {
       switch (operation) {
         case 'list_datasets': {
           const [datasets] = await client.getDatasets();
-
-          result = this.sanitizeResponse(datasets, ['metadata.datasetReference']);
+          result = datasets;
           break;
         }
 
         case 'list_tables': {
           const [tables] = await client.dataset(queryOptions.datasetId).getTables();
-          result = this.sanitizeResponse(tables, ['metadata.tableReference']);
+          result = tables;
           break;
         }
 
@@ -29,13 +27,12 @@ export default class Bigquery implements QueryService {
           const [table] = await client
             .dataset(queryOptions.datasetId)
             .createTable(queryOptions.tableId, this.parseJSON(queryOptions.options));
-          result = { tableId: table.id };
+          result = table;
           break;
         }
 
         case 'delete_table': {
-          await client.dataset(queryOptions.datasetId).table(queryOptions.tableId).delete();
-          result = `Table ${queryOptions.tableId} deleted.`;
+          result = await client.dataset(queryOptions.datasetId).table(queryOptions.tableId).delete();
           break;
         }
 
@@ -43,7 +40,7 @@ export default class Bigquery implements QueryService {
           const query = `CREATE VIEW ${queryOptions.datasetId}.${queryOptions.view_name} AS
           SELECT ${queryOptions.viewcolumns}
           FROM ${queryOptions.datasetId}.${queryOptions.tableId}
-          ${queryOptions.condition ? `WHERE ${queryOptions.condition}` : 'WHERE TRUE'}`;
+          WHERE ${queryOptions.condition};`;
 
           const [job] = await client.createQueryJob({
             ...this.parseJSON(queryOptions.queryOptions),
@@ -82,7 +79,7 @@ export default class Bigquery implements QueryService {
             .dataset(queryOptions.datasetId)
             .table(queryOptions.tableId)
             .insert(this.parseJSON(queryOptions.rows));
-          result = { ...rows[0], records: (this.parseJSON(queryOptions.rows) as []).length };
+          result = rows;
           break;
         }
 
@@ -168,21 +165,5 @@ export default class Bigquery implements QueryService {
     private_key?: string;
   } {
     return this.parseJSON(configs);
-  }
-
-  private sanitizeResponse(response: object | [], pickFields: string[]): object | [] {
-    if (!response) return response;
-
-    if (Array.isArray(response)) {
-      return response.map((item) => this.sanitizeResponse(item, pickFields));
-    }
-
-    const pickedKeyValue = pickFields.map((field) => _.result(response, field));
-
-    if (pickedKeyValue.length === 1) {
-      return pickedKeyValue[0];
-    }
-
-    return pickedKeyValue;
   }
 }

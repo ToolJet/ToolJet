@@ -1,15 +1,7 @@
 const urrl = require('url');
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
-import {
-  QueryError,
-  QueryResult,
-  QueryService,
-  cleanSensitiveData,
-  User,
-  App,
-  getCurrentToken,
-} from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, cleanSensitiveData } from '@tooljet-plugins/common';
 const JSON5 = require('json5');
 import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
 
@@ -93,13 +85,7 @@ export default class RestapiQueryService implements QueryService {
     return true;
   }
 
-  async run(
-    sourceOptions: any,
-    queryOptions: any,
-    dataSourceId: string,
-    dataSourceUpdatedAt: string,
-    context?: { user?: User; app?: App }
-  ): Promise<RestAPIResult> {
+  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
     const authType = sourceOptions['auth_type'];
@@ -108,20 +94,12 @@ export default class RestapiQueryService implements QueryService {
     const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
     const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
     const isUrlEncoded = this.checkIfContentTypeIsURLenc(queryOptions['headers']);
-    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
 
     /* Chceck if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
       const tokenData = sourceOptions['tokenData'];
-      const isAppPublic = context?.app.isPublic;
-      const userData = context?.user;
-      const currentToken = getCurrentToken(isMultiAuthEnabled, tokenData, userData?.id, isAppPublic);
 
-      if (!currentToken && !userData?.id && isAppPublic) {
-        throw new QueryError('Missing access token', {}, {});
-      }
-
-      if (!currentToken) {
+      if (!tokenData) {
         const tooljetHost = process.env.TOOLJET_HOST;
         const authUrl = new URL(
           `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
@@ -133,7 +111,7 @@ export default class RestapiQueryService implements QueryService {
           data: { auth_url: authUrl },
         };
       } else {
-        const accessToken = currentToken['access_token'];
+        const accessToken = tokenData['access_token'];
         if (sourceOptions['add_token_to'] === 'header') {
           const headerPrefix = sourceOptions['header_prefix'];
           headers['Authorization'] = `${headerPrefix}${accessToken}`;
@@ -236,10 +214,8 @@ export default class RestapiQueryService implements QueryService {
     return contentType === 'application/x-www-form-urlencoded';
   }
 
-  async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {
-    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
-    const currentToken = getCurrentToken(isMultiAuthEnabled, sourceOptions['tokenData'], userId, isAppPublic);
-    const refreshToken = currentToken['refresh_token'];
+  async refreshToken(sourceOptions, error) {
+    const refreshToken = sourceOptions['tokenData']['refresh_token'];
     if (!refreshToken) {
       throw new QueryError('Refresh token not found', error.response, {});
     }

@@ -8,7 +8,8 @@ import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onComponentClick,
-  onQueryConfirmOrCancel,
+  onQueryConfirm,
+  onQueryCancel,
   onEvent,
   runQuery,
   computeComponentState,
@@ -45,7 +46,6 @@ class ViewerComponent extends React.Component {
           environment_variables: {},
         },
       },
-      queryConfirmationList: [],
       isAppLoaded: false,
     };
   }
@@ -219,6 +219,7 @@ class ViewerComponent extends React.Component {
   render() {
     const {
       appDefinition,
+      showQueryConfirmation,
       isLoading,
       isAppLoaded,
       currentLayout,
@@ -226,7 +227,6 @@ class ViewerComponent extends React.Component {
       defaultComponentStateComputed,
       canvasWidth,
       dataQueries,
-      queryConfirmationList,
     } = this.state;
     if (this.state.app?.is_maintenance_on) {
       return (
@@ -242,12 +242,11 @@ class ViewerComponent extends React.Component {
       return (
         <div className="viewer wrapper">
           <Confirm
-            show={queryConfirmationList.length > 0}
+            show={showQueryConfirmation}
             message={'Do you want to run this query?'}
-            onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
-            onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0], false, 'view')}
-            queryConfirmationData={queryConfirmationList[0]}
-            key={queryConfirmationList[0]?.queryName}
+            onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData, 'view')}
+            onCancel={() => onQueryCancel(this)}
+            queryConfirmationData={this.state.queryConfirmationData}
           />
           <DndProvider backend={HTML5Backend}>
             {!appDefinition.globalSettings?.hideHeader && isAppLoaded && (

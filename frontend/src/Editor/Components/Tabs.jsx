@@ -96,16 +96,12 @@ export const Tabs = function Tabs({
     return id === currentTab ? 'visible' : 'hidden';
   }
 
-  registerAction(
-    'setTab',
-    async function (id) {
-      if (id) {
-        setCurrentTab(id);
-        setExposedVariable('currentTab', id).then(() => fireEvent('onTabSwitch'));
-      }
-    },
-    [setCurrentTab]
-  );
+  registerAction('setTab', async function (id) {
+    if (id) {
+      setCurrentTab(id);
+      setExposedVariable('currentTab', id).then(() => fireEvent('onTabSwitch'));
+    }
+  });
 
   const renderTabContent = (id, tab) => (
     <div

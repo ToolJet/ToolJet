@@ -20,7 +20,6 @@ const Authentication = ({
   bearer_token,
   password,
   auth_url,
-  multiple_auth_enabled,
   optionchanged,
 }) => {
   if (auth_type === 'oauth2') {
@@ -154,15 +153,6 @@ const Authentication = ({
               width={'100%'}
               useMenuPortal={false}
             />
-            <label className="form-check form-switch my-4 ">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={multiple_auth_enabled}
-                onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
-              />
-              <span className="form-check-label">Authentication Required for All Users</span>
-            </label>
           </div>
         )}
       </div>

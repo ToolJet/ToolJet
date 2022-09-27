@@ -33,14 +33,10 @@ export const Checkbox = function Checkbox({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValueFromProperties]);
 
-  registerAction(
-    'setChecked',
-    async function (status) {
-      setExposedVariable('value', status).then(() => (status ? fireEvent('onCheck') : fireEvent('onUnCheck')));
-      setChecked(status);
-    },
-    [setChecked]
-  );
+  registerAction('setChecked', async function (status) {
+    setExposedVariable('value', status).then(() => (status ? fireEvent('onCheck') : fireEvent('onUnCheck')));
+    setChecked(status);
+  });
 
   return (
     <div data-disabled={disabledState} className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>

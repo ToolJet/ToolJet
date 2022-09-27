@@ -5,9 +5,9 @@
   "type": "api",
   "defaults": {},
   "properties": {
-    "operation": {
-      "label": "Operation",
-      "key": "operation",
+    "mode": {
+      "label": "",
+      "key": "mode",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for mode",
       "list": [
@@ -25,22 +25,14 @@
       "channel": {
         "label": "Channel",
         "key": "channel",
-        "description": "Enter channel",
         "type": "codehinter",
-        "lineNumbers": false,
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter channel id or user id"
+        "description": "Enter channel"
       },
       "message": {
         "label": "Message",
         "key": "message",
         "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter message",
-        "className": "codehinter-plugins",
-        "height": "150px",
-        "placeholder": "Enter message"
+        "description": "Enter message"
       }
     }
   }

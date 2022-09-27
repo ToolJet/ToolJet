@@ -8,22 +8,14 @@ export const TextArea = function TextArea({ height, properties, styles, setExpos
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
-  registerAction(
-    'setText',
-    async function (text) {
-      setValue(text);
-      setExposedVariable('value', text);
-    },
-    [setValue]
-  );
-  registerAction(
-    'clear',
-    async function () {
-      setValue('');
-      setExposedVariable('value', '');
-    },
-    [setValue]
-  );
+  registerAction('setText', async function (text) {
+    setValue(text);
+    setExposedVariable('value', text);
+  });
+  registerAction('clear', async function () {
+    setValue('');
+    setExposedVariable('value', '');
+  });
   return (
     <textarea
       disabled={styles.disabledState}

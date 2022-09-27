@@ -18,8 +18,7 @@ ToolJet can connect to your Slack workspace to send messages.
  
 - In the next dialog, you'll be asked to choose the **permission scope**. Choose the permission scope and then click on **Connect to Slack** button.
 
-- A new tab will open up asking for authorization confirmation. Once done, you can close the tab.
-
+- A new tab will open up asking for aurization confirmation. Once done, you can close the tab.
 
 <div style={{textAlign: 'center'}}>
 
@@ -28,11 +27,6 @@ ToolJet can connect to your Slack workspace to send messages.
 </div>
 
 - Click on the '**Save data source** button to save the data source.
-
-
-:::note
-The App (which credentials are provided) needs to be installed in the workspace to use the Slack data source, and it needs to be added to the channel where you want to post the message.
-:::
 
 ## Supported operations
 
@@ -50,12 +44,7 @@ This operation will return the data of all the members in your slack workspace.
 
 ### Send message
 
-This operation will send/post the message to a specified channel or posting to direct messages (also known as DMs or IMs) in your slack workspace.
-
-| Property | Description |
-| :--- | :--- |
-| Channel | The channel ID or user ID to post the message to. |
-| Message | The message to post. |
+This operation will send the message to specified channel in your slack workspace.
 
 <div style={{textAlign: 'center'}}>
 

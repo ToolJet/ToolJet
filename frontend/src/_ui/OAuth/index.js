@@ -19,7 +19,6 @@ const OAuth = ({
   auth_url,
   header_prefix,
   add_token_to,
-  multiple_auth_enabled,
   optionchanged,
 }) => {
   return (
@@ -49,7 +48,6 @@ const OAuth = ({
         client_id={client_id}
         client_secret={client_secret}
         client_auth={client_auth}
-        multiple_auth_enabled={multiple_auth_enabled}
         scopes={scopes}
         username={username}
         password={password}

@@ -76,7 +76,6 @@ class QueryManagerComponent extends React.Component {
         isSourceSelected: paneHeightChanged || queryPaneDragged ? this.state.isSourceSelected : props.isSourceSelected,
         selectedDataSource:
           paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource,
-        queryPreviewData: this.state.selectedQuery?.id !== props.selectedQuery?.id ? undefined : props.queryPreviewData,
         theme: {
           scheme: 'bright',
           author: 'chris kempson (http://chriskempson.com)',
@@ -414,6 +413,7 @@ class QueryManagerComponent extends React.Component {
       queryPreviewData,
       dataSourceMeta,
     } = this.state;
+
     let ElementToRender = '';
 
     if (selectedDataSource) {

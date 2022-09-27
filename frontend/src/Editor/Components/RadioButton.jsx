@@ -38,13 +38,9 @@ export const RadioButton = function RadioButton({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  registerAction(
-    'selectOption',
-    async function (option) {
-      onSelect(option);
-    },
-    [onSelect]
-  );
+  registerAction('selectOption', async function (option) {
+    onSelect(option);
+  });
 
   return (
     <div data-disabled={disabledState} className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>

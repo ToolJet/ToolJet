@@ -87,7 +87,7 @@ export const Multiselect = function Multiselect({
         newSelected.map((item) => item.value)
       ).then(() => fireEvent('onSelect'));
     },
-    [selected, setSelected]
+    [selected]
   );
   registerAction(
     'deselectOption',
@@ -103,16 +103,12 @@ export const Multiselect = function Multiselect({
         newSelected.map((item) => item.value)
       ).then(() => fireEvent('onSelect'));
     },
-    [selected, setSelected]
+    [selected]
   );
-  registerAction(
-    'clearSelections',
-    async function () {
-      setSelected([]);
-      setExposedVariable('values', []).then(() => fireEvent('onSelect'));
-    },
-    [setSelected]
-  );
+  registerAction('clearSelections', async function () {
+    setSelected([]);
+    setExposedVariable('values', []).then(() => fireEvent('onSelect'));
+  });
 
   return (
     <div
