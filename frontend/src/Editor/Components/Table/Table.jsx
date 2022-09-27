@@ -270,6 +270,8 @@ export function Table({
     exportData,
     selectedFlatRows,
     globalFilteredRows,
+    getToggleHideAllColumnsProps,
+    allColumns,
   } = useTable(
     {
       autoResetPage: false,
@@ -429,6 +431,15 @@ export function Table({
                 </span>
               )}
             </div>
+
+            {allColumns.map((column) => (
+              <div className="cb action" key={column.id}>
+                <label>
+                  <input type="checkbox" {...column.getToggleHiddenProps()} />
+                  {` ${column.Header}`}
+                </label>
+              </div>
+            ))}
           </div>
         </div>
       )}
