@@ -315,6 +315,17 @@ export const widgets = [
           },
         ],
       },
+      {
+        handle: 'selectRow',
+        displayName: 'Select row',
+        params: [
+          {
+            handle: 'selectRow',
+            displayName: 'Select row',
+            defaultValue: '',
+          },
+        ],
+      },
     ],
     definition: {
       others: {

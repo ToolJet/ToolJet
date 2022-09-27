@@ -326,6 +326,27 @@ export function Table({
     [serverSidePagination, clientSidePagination]
   );
 
+  registerAction(
+    'selectRow',
+    async function (id) {
+      const item = currentState.components[component.name]['currentData'].filter((item) => item.id == id);
+      let rowId = '';
+      let original = '';
+      page.map((item, index) => {
+        if (item.original.id == id) {
+          rowId = item.id;
+          original = item.original;
+        }
+      });
+      const selectedRowDetails = { selectedRow: item[0], selectedRowId: rowId };
+      mergeToTableDetails(selectedRowDetails);
+      setExposedVariables(selectedRowDetails).then(() => {
+        fireEvent('onRowClicked');
+      });
+    },
+    []
+  );
+
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
     onComponentOptionChanged(component, 'selectedRows', selectedRowsOriginalData);
