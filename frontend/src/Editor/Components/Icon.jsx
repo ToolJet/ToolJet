@@ -17,9 +17,13 @@ export const Icon = ({ properties, styles, fireEvent, width, height, registerAct
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility]);
 
-  registerAction('setVisibility', async function (visibility) {
-    setIconVisibility(visibility);
-  });
+  registerAction(
+    'setVisibility',
+    async function (visibility) {
+      setIconVisibility(visibility);
+    },
+    [setIconVisibility]
+  );
 
   registerAction('click', async function () {
     fireEvent('onClick');
