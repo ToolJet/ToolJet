@@ -386,36 +386,38 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   <div className="tab-content">
                     {/* Apps Tab */}
                     <div className={`tab-pane ${currentTab === 'apps' ? 'active show' : ''}`}>
-                      <div className="row">
-                        <div className="col-5" data-cy="select-search">
-                          <SelectSearch
-                            className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
-                            options={appSelectOptions}
-                            closeOnSelect={false}
-                            multiple
-                            search={true}
-                            value={selectedAppIds}
-                            filterOptions={fuzzySearch}
-                            onChange={(value) => this.setSelectedApps(value)}
-                            printOptions="on-focus"
-                            placeholder={this.props.t(
-                              'header.organization.menus.manageGroups.permissionResources.addAppsToGroup',
-                              'Select apps to add to the group'
-                            )}
-                          />
-                        </div>
-                        <div className="col-auto">
-                          <div
-                            className={`btn btn-primary w-100 ${isAddingApps ? 'btn-loading' : ''} ${
-                              selectedAppIds.length === 0 ? 'disabled' : ''
-                            }`}
-                            onClick={() => this.addSelectedAppsToGroup(groupPermission.id, selectedAppIds)}
-                            data-cy="add-button"
-                          >
-                            {this.props.t('globals.add', 'Add')}
+                      {groupPermission?.group !== 'admin' && (
+                        <div className="row">
+                          <div className="col-5" data-cy="select-search">
+                            <SelectSearch
+                              className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                              options={appSelectOptions}
+                              closeOnSelect={false}
+                              multiple
+                              search={true}
+                              value={selectedAppIds}
+                              filterOptions={fuzzySearch}
+                              onChange={(value) => this.setSelectedApps(value)}
+                              printOptions="on-focus"
+                              placeholder={this.props.t(
+                                'header.organization.menus.manageGroups.permissionResources.addAppsToGroup',
+                                'Select apps to add to the group'
+                              )}
+                            />
+                          </div>
+                          <div className="col-auto">
+                            <div
+                              className={`btn btn-primary w-100 ${isAddingApps ? 'btn-loading' : ''} ${
+                                selectedAppIds.length === 0 ? 'disabled' : ''
+                              }`}
+                              onClick={() => this.addSelectedAppsToGroup(groupPermission.id, selectedAppIds)}
+                              data-cy="add-button"
+                            >
+                              {this.props.t('globals.add', 'Add')}
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      )}
                       <br />
                       <div>
                         <div className="table-responsive">
