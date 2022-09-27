@@ -71,6 +71,7 @@ export const Image = function Image({ component, height, properties, styles, fir
   return (
     <div
       data-disabled={disabledState}
+      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       style={{
         display: widgetVisibility ? 'flex' : 'none',
         justifyContent: 'center',
