@@ -128,6 +128,7 @@ const sidebars = {
         'widgets/iframe',
         'widgets/image',
         'widgets/kanban',
+        'widgets/link',
         'widgets/listview',
         'widgets/map',
         'widgets/modal',

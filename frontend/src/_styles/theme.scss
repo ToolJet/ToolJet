@@ -6359,3 +6359,32 @@ input.hide-input-arrows{
     height: 100%;
   }
 }
+
+
+.link-widget{
+  display: flex;
+  align-items: center;
+  overflow: auto;
+  &.hover{
+    a{
+      &:hover{
+        text-decoration: underline;
+      }
+    }
+  }
+  &.no-underline{
+    a{
+      text-decoration: none !important;
+    }
+  }
+  &.underline{
+    a{
+      text-decoration: underline;
+    }
+  }
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+}
