@@ -77,6 +77,7 @@ class QueryManagerComponent extends React.Component {
         isSourceSelected: paneHeightChanged || queryPaneDragged ? this.state.isSourceSelected : props.isSourceSelected,
         selectedDataSource:
           paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource,
+        selectedQuery: props.mode === 'create' && selectedQuery,
         theme: {
           scheme: 'bright',
           author: 'chris kempson (http://chriskempson.com)',
