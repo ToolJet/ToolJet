@@ -1,11 +1,11 @@
 export default function customFilter(rows, columnIds, filterValue) {
   try {
     if (filterValue.operation === 'equals') {
-      return rows.filter((row) => row.values[columnIds[0]] === filterValue.value);
+      return rows.filter((row) => row.values[columnIds[0]].toString() === filterValue.value);
     }
 
     if (filterValue.operation === 'ne') {
-      return rows.filter((row) => row.values[columnIds[0]] !== filterValue.value);
+      return rows.filter((row) => row.values[columnIds[0]].toString() !== filterValue.value);
     }
 
     if (filterValue.operation === 'matches') {
