@@ -293,9 +293,13 @@ export const FilePicker = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
 
-  registerAction('clearFiles', async function () {
-    setSelectedFiles([]);
-  });
+  registerAction(
+    'clearFiles',
+    async function () {
+      setSelectedFiles([]);
+    },
+    [setSelectedFiles]
+  );
 
   return (
     <section>

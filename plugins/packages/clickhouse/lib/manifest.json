@@ -1,0 +1,108 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "ClickHouse datasource",
+  "description": "A schema defining Clickhouse datasource",
+  "type": "database",
+  "source": {
+    "name": "ClickHouse",
+    "kind": "clickhouse",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+
+    "options": {
+      "username": { "type": "string" },
+      "host": { "type": "string" },
+      "password": { "type": "string", "encrypted": true },
+      "port": { "type": "string" },
+      "database": { "type": "string" },
+      "usePost": { "type": "string" },
+      "isUseGzip": { "type": "string" },
+      "debug": { "type": "string" },
+      "raw": { "type": "string" },
+      "protocol": { "type": "string" }
+    }
+  },
+  "properties": {
+    "username": {
+      "label": "Username",
+      "key": "username",
+      "type": "text",
+      "description": "Enter username"
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "Enter password"
+    },
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "localhost"
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "8123"
+    },
+    "database": {
+      "label": "Database Name",
+      "key": "database",
+      "type": "text",
+      "description": "database name"  
+      },
+    "protocol": {
+      "label": "Protocol",
+      "key": "protocol",
+      "type": "dropdown",
+      "list": [
+        {
+          "name": "HTTP",
+          "value": "http"
+        },
+        {
+          "name": "HTTPS",
+          "value": "https"
+        }
+      ],
+      "description": "Enter protocol"
+    },
+    "usePost": {
+      "label": "Use Post",
+      "key": "usePost",
+      "type": "text",
+      "description": "Enter true/false"
+    },
+    "trimQuery": {
+      "label": "Trim Query",
+      "key": "trimQuery",
+      "type": "text",
+      "description": "Enter true/false"
+    },
+    "isUseGzip": {
+      "label": "Use Gzip",
+      "key": "isUseGzip",
+      "type": "text",
+      "description": "Enter true/false"
+    },
+    "debug": {
+      "label": "Debug",
+      "key": "debug",
+      "type": "text",
+      "description": "Enter true/false"
+    },
+    "raw": {
+      "label": "Raw",
+      "key": "raw",
+      "type": "text",
+      "description": "Enter true/false"
+    }
+  },
+  "required": ["port", "host", "protocol"]
+}
