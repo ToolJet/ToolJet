@@ -298,6 +298,8 @@ class ManageOrgUsersComponent extends React.Component {
                             this.setState({
                               showNewUserForm: false,
                               newUser: {},
+                              errors: {},
+                              fields: {},
                             })
                           }
                           data-cy="cancel-button"
