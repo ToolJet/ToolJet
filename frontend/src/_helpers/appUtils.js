@@ -371,32 +371,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
-  if (eventName === 'onRowClicked' && options?.component?.component === 'Table') {
-    const { component, data, rowId } = options;
-    _self.setState(
-      {
-        currentState: {
-          ..._self.state.currentState,
-          components: {
-            ..._self.state.currentState.components,
-            [component.name]: {
-              ..._self.state.currentState.components[component.name],
-              selectedRow: data,
-              selectedRowId: rowId,
-            },
-          },
-        },
-      },
-      () => {
-        executeActionsForEventId(_ref, 'onRowClicked', component, mode, customVariables);
-      }
-    );
-  }
-
-  if (eventName === 'onRowClicked' && options?.component?.component === 'Listview') {
-    executeActionsForEventId(_ref, 'onRowClicked', options.component, mode, customVariables);
-  }
-
   if (eventName === 'onCalendarEventSelect') {
     const { component, calendarEvent } = options;
     _self.setState(
@@ -512,6 +486,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onPageChanged',
       'onSearch',
       'onChange',
+      'onHover',
       'onEnterPressed',
       'onSelectionChange',
       'onSelect',
@@ -534,6 +509,9 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCardSelected',
       'onCardUpdated',
       'onTabSwitch',
+      'onOpen',
+      'onClose',
+      'onRowClicked',
     ].includes(eventName)
   ) {
     const { component } = options;
