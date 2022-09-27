@@ -159,9 +159,8 @@ export class AppsController {
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    await this.appImportExportService.import(user, body);
-
-    return;
+    const app = await this.appImportExportService.import(user, body);
+    return decamelizeKeys(app);
   }
 
   @UseGuards(JwtAuthGuard)
