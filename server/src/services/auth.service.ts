@@ -431,4 +431,14 @@ export class AuthService {
       })
     );
   }
+
+  async verifyInviteToken(token: string) {
+    const user: User = await this.usersRepository.findOne({ where: { invitationToken: token } });
+    if (!user) {
+      throw new BadRequestException('Invalid token');
+    }
+
+    const payload = { email: user.email, name: `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}` };
+    return payload;
+  }
 }

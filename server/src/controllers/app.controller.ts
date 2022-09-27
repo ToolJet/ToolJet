@@ -1,4 +1,4 @@
-import { Controller, Get, Request, Post, UseGuards, Body, Param, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Request, Post, UseGuards, Body, Param, BadRequestException, Query } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppAuthenticationDto, AppForgotPasswordDto, AppPasswordResetDto } from '@dto/app-authentication.dto';
@@ -41,6 +41,11 @@ export class AppController {
   @Post('signup')
   async signup(@Body() appAuthDto: AppAuthenticationDto) {
     return this.authService.signup(appAuthDto.email, appAuthDto.name, appAuthDto.password);
+  }
+
+  @Get('verify-invite-token')
+  async verifyInviteToken(@Query('token') token) {
+    return await this.authService.verifyInviteToken(token);
   }
 
   @Post('/forgot-password')
