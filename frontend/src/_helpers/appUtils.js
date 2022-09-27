@@ -129,17 +129,15 @@ export function onComponentClick(_ref, id, component, mode = 'edit') {
   executeActionsForEventId(_ref, 'onClick', component, mode);
 }
 
-export function onQueryConfirm(_ref, queryConfirmationData, mode = 'edit') {
-  _ref.setState({
-    showQueryConfirmation: false,
-  });
-  runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
-}
+export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = false, mode = 'edit') {
+  const filtertedQueryConfirmation = _ref.state?.queryConfirmationList.filter(
+    (query) => query.queryId !== queryConfirmationData.queryId
+  );
 
-export function onQueryCancel(_ref) {
   _ref.setState({
-    showQueryConfirmation: false,
+    queryConfirmationList: filtertedQueryConfirmation,
   });
+  isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
 
 export async function copyToClipboard(text) {
@@ -208,7 +206,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
 
       case 'run-query': {
         const { queryId, queryName } = event;
-        return runQuery(_ref, queryId, queryName, true, mode);
+        return runQuery(_ref, queryId, queryName, undefined, mode);
       }
       case 'logout': {
         return logoutAction(_ref);
@@ -629,13 +627,18 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
   if (dataQuery.options.requestConfirmation) {
+    const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
+    const queryConfirmation = {
+      queryId,
+      queryName,
+    };
+    if (!queryConfirmationList.some((query) => queryId === query.queryId)) {
+      queryConfirmationList.push(queryConfirmation);
+    }
+
     if (confirmed === undefined) {
       _ref.setState({
-        showQueryConfirmation: true,
-        queryConfirmationData: {
-          queryId,
-          queryName,
-        },
+        queryConfirmationList,
       });
       return;
     }
@@ -709,7 +712,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               () => {
                 resolve(data);
                 onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
-                console.log('onDataQueryFailure', data);
                 if (mode !== 'view') {
                   const errorMessage = data.message || data.data.message;
                   toast.error(errorMessage);
