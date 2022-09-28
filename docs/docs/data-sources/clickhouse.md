@@ -5,7 +5,7 @@ title: ClickHouse
 
 # ClickHouse
 
-ToolJet can connect to the ClickHouse databases to read and write data. ClickHouse® is a column-oriented database management system (DBMS) for online analytical processing of queries (OLAP).
+ToolJet can connect to the ClickHouse to read and write data.
 
 :::info
 ToolJet uses this [NodeJS](https://github.com/TimonKK/clickhouse) client for ClickHouse.
@@ -22,7 +22,7 @@ ToolJet requires the following to connect to your ClickHouse Database:
 - **Host**
 - **Port**
 - **Database Name**
-- **Protocal**
+- **Protocol**
 - **Use Post**
 - **Trim Query**
 - **Use Gzip**
@@ -76,10 +76,6 @@ Use this to operation to enter **[ClickHouse SQL Statements](https://clickhouse.
 	)ENGINE=MergeTree () ORDER BY(str)
 	```
 
-	:::info
-	It is required to mention the ORDER BY primary key. Check the doc [here](https://clickhouse.com/docs/en/sql-reference/statements/insert-into/).
-	:::
-
 	<div style={{textAlign: 'center'}}>
 
 	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/create.png" alt="ClickHouse SQL Statement operation" />
@@ -100,7 +96,7 @@ Use this to operation to enter **[ClickHouse SQL Statements](https://clickhouse.
 
 - **SELECT WITH WHERE CLAUSE**
 	```sql
-	SELECT * FROM test array1 WHERE str='Somethingl...'  1 ALTER TABLE test_array1 UPDATE arr = (12] WHERE str='Somethingl...'
+	SELECT * FROM test array1 WHERE str='Somethingl...'
 	```
 
 	<div style={{textAlign: 'center'}}>
@@ -212,4 +208,4 @@ Use this operation for inserting array of objects.
 		];
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/array.png" alt="ClickHouse Insert array of objects operation" />
+<img className="screenshot-full" src="/img/datasource-reference/clickhouse/insertarray.png" alt="ClickHouse Insert array of objects operation" />
