@@ -47,7 +47,7 @@ class QueryManagerComponent extends React.Component {
 
     this.previewPanelRef = React.createRef();
     this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences'));
-    if (JSON.parse(localStorage.getItem('queryManagerButtonConfig') === null)) {
+    if (localStorage.getItem('queryManagerButtonConfig') === null) {
       this.buttonConfig = this.queryManagerPreferences?.buttonConfig ?? {};
     } else {
       this.buttonConfig = JSON.parse(localStorage.getItem('queryManagerButtonConfig'));
