@@ -296,7 +296,7 @@ export const widgets = [
       pageIndex: 1,
       searchText: '',
       selectedRows: [],
-      filters: null,
+      filters: [],
     },
     actions: [
       {
