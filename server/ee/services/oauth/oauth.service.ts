@@ -121,6 +121,7 @@ export class OauthService {
       last_name: user.lastName,
       organizationId: organization.id,
       organization: organization.name,
+      superAdmin: isSuperAdmin(user),
       admin: await this.usersService.hasGroup(user, 'admin'),
       group_permissions: await this.usersService.groupPermissions(user),
       app_group_permissions: await this.usersService.appGroupPermissions(user),
