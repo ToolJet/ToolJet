@@ -5,7 +5,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   if (typeof serverSidePagination !== 'boolean') serverSidePagination = false;
 
   const serverSideSearch = properties.serverSideSearch ?? false;
-
+  const disabledSort = properties?.disabledSort ?? false;
   const displaySearchBox = properties.displaySearchBox ?? true;
 
   const showDownloadButton = properties.showDownloadButton ?? true;
@@ -64,5 +64,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     actionButtonRadius,
     loadingState,
     actions,
+    disabledSort,
   };
 }

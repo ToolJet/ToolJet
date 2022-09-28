@@ -70,6 +70,7 @@ export function Table({
     parsedDisabledState,
     actionButtonRadius,
     actions,
+    disabledSort,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const { t } = useTranslation();
@@ -282,6 +283,7 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
+      disableSortBy: disabledSort,
     },
     useFilters,
     useGlobalFilter,

@@ -141,6 +141,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      disabledSort: {
+        type: 'toggle',
+        displayName: 'Disable sorting',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       clientSidePagination: {
         type: 'toggle',
         displayName: 'Client-side pagination',
