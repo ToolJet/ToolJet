@@ -25,6 +25,7 @@ import { reducer, reducerActions, initialState } from './reducer';
 import customFilter from './custom-filter';
 import generateColumnsData from './columns';
 import generateActionsData from './columns/actions';
+import autogenerateColumns from './columns/autogenerateColumns';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
 
@@ -49,6 +50,7 @@ export function Table({
   properties,
   variablesExposedForPreview,
   exposeToCodeHinter,
+  setProperty,
 }) {
   const {
     color,
@@ -242,6 +244,10 @@ export function Table({
       JSON.stringify(properties.data),
     ]
   );
+
+  useEffect(() => {
+    autogenerateColumns(tableData, component.definition.properties.columns.value, setProperty);
+  }, [JSON.stringify(tableData)]);
 
   const computedStyles = {
     // width: `${width}px`,
