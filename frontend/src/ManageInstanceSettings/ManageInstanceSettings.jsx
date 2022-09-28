@@ -4,6 +4,7 @@ import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
 import ReactTooltip from 'react-tooltip';
 import { withTranslation } from 'react-i18next';
+import Skeleton from 'react-loading-skeleton';
 
 class ManageInstanceSettingsComponent extends React.Component {
   constructor(props) {
@@ -12,6 +13,7 @@ class ManageInstanceSettingsComponent extends React.Component {
     this.state = {
       currentUser: authenticationService.currentUserValue,
       isSaving: false,
+      isLoading: false,
       errors: {},
       settings: [],
       options: {},
@@ -23,9 +25,17 @@ class ManageInstanceSettingsComponent extends React.Component {
   }
 
   fetchSettings = () => {
-    instanceSettingsService.fetchSettings().then((data) => {
-      this.setInitialValues(data);
-    });
+    this.setState({ isLoading: true });
+    instanceSettingsService
+      .fetchSettings()
+      .then((data) => {
+        this.setInitialValues(data);
+        this.setState({ isLoading: false });
+      })
+      .catch(({ error }) => {
+        toast.error(error, { position: 'top-center' });
+        this.setState({ isLoading: false });
+      });
   };
 
   setInitialValues = (data) => {
@@ -51,6 +61,7 @@ class ManageInstanceSettingsComponent extends React.Component {
   };
 
   saveSettings = () => {
+    this.setState({ isSaving: true });
     instanceSettingsService
       .update(this.state.options)
       .then(() => {
@@ -112,7 +123,7 @@ class ManageInstanceSettingsComponent extends React.Component {
                 </div>
               </div>
               <div className="card-body">
-                {Object.entries(options) != 0 && (
+                {Object.entries(options) != 0 ? (
                   <form noValidate>
                     <div className="form-group mb-3">
                       <label className="form-check form-switch">
@@ -173,6 +184,21 @@ class ManageInstanceSettingsComponent extends React.Component {
                       </button>
                     </div>
                   </form>
+                ) : (
+                  <>
+                    <div>
+                      <Skeleton className="mb-2" />
+                      <Skeleton />
+                    </div>
+                    <div className="row mt-4">
+                      <div className=" col-1">
+                        <Skeleton />
+                      </div>
+                      <div className="col-1">
+                        <Skeleton />
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
