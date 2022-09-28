@@ -25,10 +25,9 @@ export class AppController {
     return await this.authService.switchOrganization(organizationId, user);
   }
 
-  @Post('set-password-from-token')
+  @Post('setup-account-from-token')
   async create(@Body() userCreateDto: CreateUserDto) {
-    await this.authService.setupAccountFromInvitationToken(userCreateDto);
-    return {};
+    return await this.authService.setupAccountFromInvitationToken(userCreateDto);
   }
 
   @Post('accept-invite')

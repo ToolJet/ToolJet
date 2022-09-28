@@ -301,15 +301,7 @@ export class AuthService {
   }
 
   async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
-    const {
-      organization,
-      password,
-      token,
-      role,
-      first_name: firstName,
-      last_name: lastName,
-      organizationToken,
-    } = userCreateDto;
+    const { company_name: companyName, company_size: companySize, token, role, organizationToken } = userCreateDto;
 
     if (!token) {
       throw new BadRequestException('Invalid token');
@@ -322,16 +314,15 @@ export class AuthService {
         (ou) => ou.organizationId === user.defaultOrganizationId
       );
 
-      if (!organizationUser) {
+      if ((user?.organizationUsers, !organizationUser)) {
         throw new BadRequestException('Invalid invitation link');
       }
 
       await this.usersRepository.save(
         Object.assign(user, {
-          firstName,
-          lastName,
-          password,
           role,
+          companySize,
+          companyName,
           invitationToken: null,
         })
       );
@@ -343,9 +334,9 @@ export class AuthService {
         })
       );
 
-      if (organization) {
+      if (companyName) {
         await this.organizationsRepository.update(user.defaultOrganizationId, {
-          name: organization,
+          name: companyName,
         });
       }
     } else if (!organizationToken) {
@@ -374,6 +365,28 @@ export class AuthService {
           console.error('Error while setting default organization', error);
         });
     }
+
+    const organization = await this.organizationsService.get(user.defaultOrganizationId);
+
+    const payload: JWTPayload = {
+      username: user.id,
+      sub: user.email,
+      organizationId: user.organizationId,
+      isPasswordLogin: true,
+    };
+
+    return decamelizeKeys({
+      id: user.id,
+      auth_token: this.jwtService.sign(payload),
+      email: user.email,
+      first_name: user.firstName,
+      last_name: user.lastName,
+      organizationId: user.defaultOrganizationId,
+      organization: organization,
+      admin: await this.usersService.hasGroup(user, 'admin'),
+      group_permissions: await this.usersService.groupPermissions(user),
+      app_group_permissions: await this.usersService.appGroupPermissions(user),
+    });
   }
 
   async acceptOrganizationInvite(acceptInviteDto: AcceptInviteDto) {
