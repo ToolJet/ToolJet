@@ -8,9 +8,10 @@ export function Filter(props) {
   const { mergeToFilterDetails, filterDetails, setAllFilters } = props;
   const { filters } = filterDetails;
 
-  function filterColumnChanged(index, value) {
+  function filterColumnChanged(index, value, name) {
     const newFilters = filters;
     newFilters[index].id = value;
+    newFilters[index].value.where = name;
     mergeToFilterDetails({
       filters: newFilters,
     });
@@ -84,8 +85,8 @@ export function Filter(props) {
                 options={props.columns}
                 value={filter.id}
                 search={true}
-                onChange={(value) => {
-                  filterColumnChanged(index, value);
+                onChange={(value, item) => {
+                  filterColumnChanged(index, value, item.name);
                 }}
                 filterOptions={fuzzySearch}
                 placeholder={t('globals.select', 'Select') + '...'}
