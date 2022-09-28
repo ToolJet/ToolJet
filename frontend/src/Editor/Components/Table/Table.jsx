@@ -80,7 +80,10 @@ export function Table({
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
 
   useEffect(() => {
-    setExposedVariable('filters', tableDetails.filterDetails.filters);
+    setExposedVariable(
+      'filters',
+      tableDetails.filterDetails.filters.map((filter) => filter.value)
+    );
   }, [JSON.stringify(tableDetails.filterDetails.filters)]);
 
   useEffect(
