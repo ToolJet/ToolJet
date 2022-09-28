@@ -4,6 +4,7 @@ import FocusTrap from 'focus-trap-react';
 import cx from 'classnames';
 import useMountTransition from '@/_hooks/useMountTransition';
 import { useEventListener } from '@/_hooks/use-event-listener';
+import '@/_styles/drawer.scss';
 
 function createPortalRoot() {
   const drawerRoot = document.createElement('div');

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Drawer from '@/_ui/Drawer';
 import CreateTableForm from '../Forms/CreateTableForm';
+import CreateColumnsForm from '../Forms/CreateColumnsForm';
 import Search from './Search';
 
 const PageHeader = () => {
@@ -16,6 +17,7 @@ const PageHeader = () => {
             </button>
             <Drawer isOpen={isOpen} onClose={() => setIsOpen(false)} position="right">
               <CreateTableForm />
+              <CreateColumnsForm />
             </Drawer>
             <Search />
           </div>
