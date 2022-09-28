@@ -346,6 +346,8 @@ export const widgets = [
         showBulkUpdateActions: { value: '{{true}}' },
         showBulkSelector: { value: '{{false}}' },
         highlightSelectedRow: { value: '{{false}}' },
+        columnSizes: { value: '{{({})}}' },
+        actions: { value: [] },
       },
       events: [],
       styles: {
@@ -390,6 +392,7 @@ export const widgets = [
     },
     events: {
       onClick: { displayName: 'On click' },
+      onHover: { displayName: 'On hover' },
     },
     styles: {
       backgroundColor: {
@@ -452,6 +455,21 @@ export const widgets = [
         displayName: 'Set Text',
         params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
       },
+      {
+        handle: 'disable',
+        displayName: 'Disable',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      },
+      {
+        handle: 'visibility',
+        displayName: 'Visibility',
+        params: [{ handle: 'visible', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      },
+      {
+        handle: 'loading',
+        displayName: 'Loading',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      },
     ],
     definition: {
       others: {
@@ -460,7 +478,6 @@ export const widgets = [
       },
       properties: {
         text: { value: `Button` },
-        visible: { value: '{{true}}' },
         loadingState: { value: `{{false}}` },
       },
       events: [],
@@ -675,6 +692,31 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading State',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      useDefaultButton: {
+        type: 'toggle',
+        displayName: 'Use default trigger button',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      triggerButtonLabel: {
+        type: 'code',
+        displayName: 'Trigger button label',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
       hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
       hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
       hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
@@ -684,21 +726,69 @@ export const widgets = [
         displayName: 'Modal size',
         options: [
           { name: 'small', value: 'sm' },
-          { name: 'medium', value: 'md' },
-          { name: 'large', value: 'lg' },
+          { name: 'medium', value: 'lg' },
+          { name: 'large', value: 'xl' },
         ],
         validation: {
           schema: { type: 'string' },
         },
       },
     },
-    events: {},
+    events: {
+      onOpen: { displayName: 'On open' },
+      onClose: { displayName: 'On close' },
+    },
     styles: {
+      headerBackgroundColor: {
+        type: 'color',
+        displayName: 'Header background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      headerTextColor: {
+        type: 'color',
+        displayName: 'Header title color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      bodyBackgroundColor: {
+        type: 'color',
+        displayName: 'Body background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       disabledState: {
         type: 'toggle',
         displayName: 'Disable',
         validation: {
           schema: { type: 'boolean' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: true,
+        },
+      },
+      triggerButtonBackgroundColor: {
+        type: 'color',
+        displayName: 'Trigger button background color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
+      triggerButtonTextColor: {
+        type: 'color',
+        displayName: 'Trigger button text color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
         },
       },
     },
@@ -722,14 +812,23 @@ export const widgets = [
       },
       properties: {
         title: { value: 'This title can be changed' },
-        size: { value: 'md' },
+        loadingState: { value: `{{false}}` },
+        useDefaultButton: { value: `{{true}}` },
+        triggerButtonLabel: { value: `Launch Modal` },
+        size: { value: 'lg' },
         hideTitleBar: { value: '{{false}}' },
         hideCloseButton: { value: '{{false}}' },
         hideOnEsc: { value: '{{true}}' },
       },
       events: [],
       styles: {
+        headerBackgroundColor: { value: '#ffffffff' },
+        headerTextColor: { value: '#000000' },
+        bodyBackgroundColor: { value: '#ffffffff' },
         disabledState: { value: '{{false}}' },
+        visibility: { value: '{{true}}' },
+        triggerButtonBackgroundColor: { value: '#4D72FA' },
+        triggerButtonTextColor: { value: '#ffffffff' },
       },
     },
   },
@@ -1505,7 +1604,9 @@ export const widgets = [
         },
       },
     },
-    events: {},
+    events: {
+      onSelect: { displayName: 'On select' },
+    },
     styles: {
       borderRadius: {
         type: 'code',
@@ -1651,7 +1752,13 @@ export const widgets = [
           schema: { type: 'number' },
         },
       },
-
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       textColor: {
         type: 'color',
         displayName: 'Text Color',
@@ -1688,6 +1795,11 @@ export const widgets = [
         displayName: 'Set Text',
         params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
       },
+      {
+        handle: 'visibility',
+        displayName: 'Set Visibility',
+        params: [{ handle: 'visibility', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      },
     ],
     definition: {
       others: {
@@ -1695,17 +1807,15 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        text: { value: 'Text goes here !' },
-        visible: { value: '{{true}}' },
+        text: { value: 'Hello, there!' },
         loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
-        textSize: { value: 14 },
+        backgroundColor: { value: '#ffffff00' },
         textColor: { value: '#000' },
+        textSize: { value: 14 },
         textAlign: { value: 'left' },
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
         fontWeight: { value: 'normal' },
         decoration: { value: 'none' },
         transformation: { value: 'none' },
@@ -1715,6 +1825,8 @@ export const widgets = [
         letterSpacing: { value: 0 },
         wordSpacing: { value: 0 },
         fontVariant: { value: 'normal' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
       },
     },
   },
@@ -4666,6 +4778,180 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         checkboxColor: { value: '#4D72FA' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'Link',
+    displayName: 'Link',
+    description: 'Add link to the text',
+    defaultSize: {
+      width: 6,
+      height: 30,
+    },
+    component: 'Link',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      linkTarget: {
+        type: 'code',
+        displayName: 'Link Target',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      linkText: {
+        type: 'code',
+        displayName: 'Link Text',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      targetType: {
+        type: 'select',
+        displayName: 'Target Type',
+        options: [
+          { name: 'New Tab', value: 'new' },
+          { name: 'Same Tab', value: 'same' },
+        ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+    },
+    events: {
+      onClick: { displayName: 'On click' },
+      onHover: { displayName: 'On hover' },
+    },
+    styles: {
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      textSize: {
+        type: 'number',
+        displayName: 'Text Size',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      underline: {
+        type: 'select',
+        displayName: 'Underline',
+        options: [
+          { name: 'Never', value: 'no-underline' },
+          { name: 'On Hover', value: 'on-hover' },
+          { name: 'Always', value: 'underline' },
+        ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+    },
+    exposedVariables: {},
+    actions: [
+      {
+        handle: 'click',
+        displayName: 'Click',
+      },
+    ],
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        linkTarget: { value: 'https://dev.to/' },
+        linkText: { value: 'Click here' },
+        targetType: { value: 'new' },
+      },
+      events: [],
+      styles: {
+        textColor: { value: '#375FCF' },
+        textSize: { value: 14 },
+        underline: { value: 'on-hover' },
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'Icon',
+    displayName: 'Icon',
+    description: 'Icon',
+    defaultSize: {
+      width: 5,
+      height: 48,
+    },
+    component: 'Icon',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      icon: {
+        type: 'iconPicker',
+        displayName: 'Icon',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+    },
+    events: {
+      onClick: { displayName: 'On click' },
+      onHover: { displayName: 'On hover' },
+    },
+    styles: {
+      iconColor: {
+        type: 'color',
+        displayName: 'Icon Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+    },
+    exposedVariables: {},
+    actions: [
+      {
+        handle: 'click',
+        displayName: 'Click',
+      },
+      {
+        displayName: 'Set Visibility',
+        handle: 'setVisibility',
+        params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
+      },
+    ],
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        icon: { value: 'IconHome2' },
+      },
+      events: [],
+      styles: {
+        iconColor: { value: '#000' },
+        visibility: { value: '{{true}}' },
       },
     },
   },
