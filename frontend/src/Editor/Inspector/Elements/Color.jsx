@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
 import { ToolTip } from './Components/ToolTip';
 
-export const Color = ({ param, definition, onChange, paramType, componentMeta }) => {
+export const Color = ({ param, definition, onChange, paramType, componentMeta, cyLabel }) => {
   const [showPicker, setShowPicker] = useState(false);
 
   const coverStyles = {
@@ -40,7 +40,11 @@ export const Color = ({ param, definition, onChange, paramType, componentMeta })
         </div>
       )}
 
-      <div className="row mx-0 form-control color-picker-input" onClick={() => setShowPicker(true)}>
+      <div
+        className="row mx-0 form-control color-picker-input"
+        onClick={() => setShowPicker(true)}
+        data-cy={`${String(cyLabel)}-picker`}
+      >
         <div
           className="col-auto"
           style={{

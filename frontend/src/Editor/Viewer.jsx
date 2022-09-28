@@ -8,8 +8,7 @@ import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onComponentClick,
-  onQueryConfirm,
-  onQueryCancel,
+  onQueryConfirmOrCancel,
   onEvent,
   runQuery,
   computeComponentState,
@@ -19,8 +18,10 @@ import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import LogoIcon from './Icons/logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { resolveReferences } from '@/_helpers/utils';
+import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-class Viewer extends React.Component {
+
+class ViewerComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -44,6 +45,7 @@ class Viewer extends React.Component {
           environment_variables: {},
         },
       },
+      queryConfirmationList: [],
       isAppLoaded: false,
     };
   }
@@ -190,6 +192,16 @@ class Viewer extends React.Component {
     document.title = name ?? 'Untitled App';
   }
 
+  computeCanvasBackgroundColor = () => {
+    const resolvedBackgroundColor =
+      resolveReferences(this.state.appDefinition?.globalSettings?.backgroundFxQuery, this.state.currentState) ??
+      '#edeff5';
+    if (['#2f3c4c', '#edeff5'].includes(resolvedBackgroundColor)) {
+      return this.props.darkMode ? '#2f3c4c' : '#edeff5';
+    }
+    return resolvedBackgroundColor;
+  };
+
   changeDarkMode = (newMode) => {
     this.setState({
       currentState: {
@@ -207,7 +219,6 @@ class Viewer extends React.Component {
   render() {
     const {
       appDefinition,
-      showQueryConfirmation,
       isLoading,
       isAppLoaded,
       currentLayout,
@@ -215,13 +226,14 @@ class Viewer extends React.Component {
       defaultComponentStateComputed,
       canvasWidth,
       dataQueries,
+      queryConfirmationList,
     } = this.state;
     if (this.state.app?.is_maintenance_on) {
       return (
         <div className="maintenance_container">
           <div className="card">
             <div className="card-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <h3>Sorry!. This app is under maintenance</h3>
+              <h3>{this.props.t('viewer', 'Sorry!. This app is under maintenance')}</h3>
             </div>
           </div>
         </div>
@@ -230,11 +242,12 @@ class Viewer extends React.Component {
       return (
         <div className="viewer wrapper">
           <Confirm
-            show={showQueryConfirmation}
+            show={queryConfirmationList.length > 0}
             message={'Do you want to run this query?'}
-            onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData, 'view')}
-            onCancel={() => onQueryCancel(this)}
-            queryConfirmationData={this.state.queryConfirmationData}
+            onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
+            onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0], false, 'view')}
+            queryConfirmationData={queryConfirmationList[0]}
+            key={queryConfirmationList[0]?.queryName}
           />
           <DndProvider backend={HTML5Backend}>
             {!appDefinition.globalSettings?.hideHeader && isAppLoaded && (
@@ -242,7 +255,7 @@ class Viewer extends React.Component {
                 <header className="navbar navbar-expand-md navbar-light d-print-none">
                   <div className="container-xl header-container">
                     <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                      <Link to="/">
+                      <Link to="/" data-cy="viewer-page-logo">
                         <LogoIcon />
                       </Link>
                     </h1>
@@ -264,14 +277,7 @@ class Viewer extends React.Component {
                       minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                       maxWidth: +appDefinition.globalSettings?.canvasMaxWidth || 1292,
                       maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
-                      backgroundColor: resolveReferences(
-                        appDefinition.globalSettings?.backgroundFxQuery,
-                        this.state.currentState
-                      )
-                        ? resolveReferences(appDefinition.globalSettings?.backgroundFxQuery, this.state.currentState)
-                        : appDefinition.globalSettings?.canvasBackgroundColor
-                        ? appDefinition.globalSettings?.canvasBackgroundColor
-                        : '#edeff5',
+                      backgroundColor: this.computeCanvasBackgroundColor(),
                     }}
                   >
                     {defaultComponentStateComputed && (
@@ -324,4 +330,4 @@ class Viewer extends React.Component {
   }
 }
 
-export { Viewer };
+export const Viewer = withTranslation()(ViewerComponent);

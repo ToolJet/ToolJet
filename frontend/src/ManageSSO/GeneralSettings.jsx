@@ -2,6 +2,7 @@ import { authenticationService, organizationService } from '@/_services';
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
+import { useTranslation } from 'react-i18next';
 
 export function GeneralSettings({ settings, updateData }) {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
@@ -9,6 +10,7 @@ export function GeneralSettings({ settings, updateData }) {
   const [inheritSSO, setInheritSSO] = useState(settings?.inherit_s_s_o || false);
   const [domain, setDomain] = useState(settings?.domain || '');
   const [isSaving, setSaving] = useState(false);
+  const { t } = useTranslation();
 
   const reset = () => {
     setEnableSignUp(settings?.enable_sign_up || false);
@@ -92,7 +94,7 @@ export function GeneralSettings({ settings, updateData }) {
     <div className="card">
       <div className="card-header">
         <div className="card-title" data-cy="card-title">
-          General Settings
+          {t('header.organization.menus.manageSSO.generalSettings.title', 'General Settings')}
         </div>
       </div>
       <div className="card-body">
@@ -107,12 +109,15 @@ export function GeneralSettings({ settings, updateData }) {
                 data-cy="form-check-input"
               />
               <span className="form-check-label" data-cy="form-check-label">
-                Enable signup
+                {t('header.organization.menus.manageSSO.generalSettings.enableSignup', 'Enable signup')}
               </span>
             </label>
             <div className="help-text">
               <div data-cy="general-settings-help-text">
-                New account will be created for user&apos;s first time SSO sign in
+                {t(
+                  'header.organization.menus.manageSSO.generalSettings.newAccountWillBeCreated',
+                  `New account will be created for user's first time SSO sign in`
+                )}
               </div>
             </div>
           </div>
@@ -128,7 +133,7 @@ export function GeneralSettings({ settings, updateData }) {
                     data-cy="form-check-input"
                   />
                   <span className="form-check-label" data-cy="form-check-label">
-                    Allow default SSO
+                    {t('header.organization.menus.manageSSO.generalSettings.allowDefaultSso', `Allow default SSO`)}
                   </span>
                 </label>
                 <div className="d-flex tick-cross-info mb-2">
@@ -137,21 +142,23 @@ export function GeneralSettings({ settings, updateData }) {
                 </div>
                 <div className="help-text mt-1">
                   <div data-cy="login-help-text">
-                    Allow users to authenticate via default SSO. Default SSO configurations can be overridden by
-                    workspace level SSO.
+                    {t(
+                      'header.organization.menus.manageSSO.generalSettings.ssoAuth',
+                      `Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO.`
+                    )}
                   </div>
                 </div>
               </div>
             )}
           <div className="form-group mb-3">
             <label className="form-label" data-cy="allowed-domains-label">
-              Allowed domains
+              {t('header.organization.menus.manageSSO.generalSettings.allowedDomains', `Allowed domains`)}
             </label>
             <div>
               <input
                 type="text"
                 className="form-control"
-                placeholder="Enter Domains"
+                placeholder={t('header.organization.menus.manageSSO.generalSettings.enterDomains', `Enter Domains`)}
                 name="domain"
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
@@ -160,15 +167,17 @@ export function GeneralSettings({ settings, updateData }) {
             </div>
             <div className="help-text mt-1">
               <div data-cy="login-help-text">
-                Support multiple domains. Enter domain names separated by comma. example:
-                tooljet.com,tooljet.io,yourorganization.com
+                {t(
+                  'header.organization.menus.manageSSO.generalSettings.supportMultiDomains',
+                  `Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
+                )}
               </div>
             </div>
           </div>
           {!isSingleOrganization && (
             <div className="form-group mb-3">
               <label className="form-label" data-cy="login-url-label">
-                Login URL
+                {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
               </label>
 
               <div className="flexer-sso-input form-control">
@@ -184,13 +193,18 @@ export function GeneralSettings({ settings, updateData }) {
                 />
               </div>
               <div className="help-text mt-1">
-                <div data-cy="login-help-text">Use this URL to login directly to this workspace</div>
+                <div data-cy="login-help-text">
+                  {t(
+                    'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
+                    `Use this URL to login directly to this workspace`
+                  )}
+                </div>
               </div>
             </div>
           )}
           <div className="form-footer">
             <button type="button" className="btn btn-light mr-2" onClick={reset} data-cy="cancel-button">
-              Cancel
+              {t('globals.cancel', 'Cancel')}
             </button>
             <button
               type="button"
@@ -199,7 +213,7 @@ export function GeneralSettings({ settings, updateData }) {
               onClick={saveSettings}
               data-cy="save-button"
             >
-              Save
+              {t('globals.save', 'Save')}
             </button>
           </div>
         </form>

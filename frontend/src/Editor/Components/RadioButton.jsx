@@ -9,9 +9,11 @@ export const RadioButton = function RadioButton({
   fireEvent,
   setExposedVariable,
   registerAction,
+  darkMode,
 }) {
   const { label, value, values, display_values } = properties;
-  const { visibility, disabledState, textColor, activeColor } = styles;
+  const { visibility, disabledState, activeColor } = styles;
+  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checkedValue, set] = React.useState(value);
 
   let selectOptions = [];
@@ -36,9 +38,13 @@ export const RadioButton = function RadioButton({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  registerAction('selectOption', async function (option) {
-    onSelect(option);
-  });
+  registerAction(
+    'selectOption',
+    async function (option) {
+      onSelect(option);
+    },
+    [onSelect]
+  );
 
   return (
     <div data-disabled={disabledState} className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>

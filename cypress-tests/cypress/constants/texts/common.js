@@ -64,12 +64,14 @@ export const commonWidgetText = {
   parameterShowOnMobile: "Show on mobile",
   parameterVisibility: "Visibility",
   parameterDisable: "Disable",
-  parameterBorderRadius: "Border radius",
+  parameterBorderRadius: "Border Radius",
   borderRadiusInput: ["{{", "20}}"],
   parameterOptionLabels: "Option labels",
   parameterBoxShadow: "Box Shadow",
   boxShadowDefaultValue: "0px 0px 0px 0px #00000040",
   parameterOptionvalues: "Option values",
+  boxShadowColor: "Box Shadow Color",
+  boxShadowFxValue: "-5px 6px 5px 8px #ee121240",
 
   codeMirrorLabelTrue: "{{true}}",
   codeMirrorLabelFalse: "{{false}}",
@@ -79,14 +81,45 @@ export const commonWidgetText = {
   addEventHandlerLink: "+ Add event handler",
   inspectorComponentLabel: "components",
   componentValueLabel: "Value",
-  labelDefaultValue: "Default value",
+  labelDefaultValue: "Default Value",
   parameterLabel: "Label",
+  labelPlaceHolder: "Placeholder",
+  labelRegex: "Regex",
+  labelMinLength: "Min length",
+  labelMaxLength: "Max length",
+  labelcustomValidadtion: "Custom validation",
+  regularExpression: "^[A-Z]*$",
+
+  regexValidationError: "The input should match pattern",
+  minLengthValidationError: (value) => { 
+    return `Minimum ${value} characters is needed`
+  },
+  maxLengthValidationError: (value) => { 
+    return `Maximum ${value} characters is allowed`
+  },
 
   datepickerDocumentationLink: "Datepicker documentation",
+  text1: "text1",
+  textinput1: "textinput1",
+  toggleswitch1: "toggleswitch1",
+  toggleSwitch: "Toggle Switch",
+  button1: "button1",
+  image1: "image1",
 };
 
 export const createBackspaceText = (text) => {
   let backspace = "{end}";
-  [...text].forEach((c) => (backspace += "{backspace}"));
+  [...text].forEach((c) => {
+    backspace += "{backspace}{del}";
+  });
   return backspace;
 };
+
+export const widgetValue = (widgetName) => {
+  return ["{{",`components.${widgetName}.value}}`];
+}
+
+export const customValidation = (name, message) => 
+{
+  return ["{{",`components.${name}.value ? true : '${message}'}}`];
+}

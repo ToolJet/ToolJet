@@ -22,7 +22,7 @@ RUN npm --prefix plugins prune --production
 COPY ./frontend/package.json ./frontend/package-lock.json  ./frontend/
 RUN npm --prefix frontend install
 COPY ./frontend ./frontend
-RUN npm --prefix frontend run build --production
+RUN SERVE_CLIENT=false npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
 FROM openresty/openresty:1.19.9.1rc1-buster-fat
@@ -39,4 +39,6 @@ COPY --from=builder /app/frontend/build /var/www
 
 COPY ./frontend/config/nginx.conf.template /etc/openresty/nginx.conf.template
 COPY ./frontend/config/entrypoint.sh /entrypoint.sh
+
+RUN chgrp -R 0 /var/www && chmod -R g=u /var/www
 ENTRYPOINT ["./entrypoint.sh"]

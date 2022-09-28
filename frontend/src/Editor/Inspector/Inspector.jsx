@@ -6,14 +6,17 @@ import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
-import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
+import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
 import { ConfirmDialog } from '@/_components';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
+import { Modal } from './Components/Modal';
 import { CustomComponent } from './Components/CustomComponent';
+import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
+import { useTranslation } from 'react-i18next';
 
 export const Inspector = ({
   selectedComponentId,
@@ -41,6 +44,7 @@ export const Inspector = ({
   const componentNameRef = useRef(null);
   const [newComponentName, setNewComponentName] = useState(component.component.name);
   const [inputRef, setInputFocus] = useFocus();
+  const { t } = useTranslation();
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
   useHotkeys('escape', () => switchSidebarTab(2));
@@ -78,12 +82,12 @@ export const Inspector = ({
   function handleComponentNameChange(newName) {
     if (component.component.name === newName) return;
     if (newName.length === 0) {
-      toast.error('Widget name cannot be empty');
+      toast.error(t('widget.common.widgetNameEmptyError', 'Widget name cannot be empty'));
       return setInputFocus();
     }
 
     if (!validateComponentName(newName)) {
-      toast.error('Component name already exists');
+      toast.error(t('widget.common.componentNameExistsError', 'Component name already exists'));
       return setInputFocus();
     }
 
@@ -92,7 +96,12 @@ export const Inspector = ({
       newComponent.component.name = newName;
       componentDefinitionChanged(newComponent);
     } else {
-      toast.error('Invalid widget name. Should be unique and only include letters, numbers and underscore.');
+      toast.error(
+        t(
+          'widget.common.invalidWidgetName',
+          'Invalid widget name. Should be unique and only include letters, numbers and underscore.'
+        )
+      );
       setInputFocus();
     }
   }
@@ -279,9 +288,41 @@ export const Inspector = ({
           />
         );
 
+      case 'Modal':
+        return (
+          <Modal
+            layoutPropertyChanged={layoutPropertyChanged}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            darkMode={darkMode}
+            eventsChanged={eventsChanged}
+            apps={apps}
+            allComponents={allComponents}
+          />
+        );
+
       case 'CustomComponent':
         return (
           <CustomComponent
+            layoutPropertyChanged={layoutPropertyChanged}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            darkMode={darkMode}
+            eventsChanged={eventsChanged}
+            apps={apps}
+            allComponents={allComponents}
+          />
+        );
+
+      case 'Icon':
+        return (
+          <Icon
             layoutPropertyChanged={layoutPropertyChanged}
             component={component}
             paramUpdated={paramUpdated}
@@ -318,8 +359,8 @@ export const Inspector = ({
     const items = [];
 
     items.push({
-      title: 'General',
-      isOpen: false,
+      title: `${t('widget.common.general', 'General')}`,
+      isOpen: true,
       children: (
         <>
           {renderElement(
@@ -346,6 +387,7 @@ export const Inspector = ({
       handleEditorEscapeKeyPress();
     }
   };
+
   return (
     <div className="inspector">
       <ConfirmDialog
@@ -359,7 +401,7 @@ export const Inspector = ({
       />
       <div ref={tabsRef}>
         <Tabs activeKey={key} onSelect={(k) => handleTabSelect(k)} className={`tabs-inspector ${darkMode && 'dark'}`}>
-          <Tab style={{ marginBottom: 100 }} eventKey="properties" title="Properties">
+          <Tab style={{ marginBottom: 100 }} eventKey="properties" title={t('widget.common.properties', 'Properties')}>
             <div className="header py-1 row">
               <div>
                 <div className="input-icon">
@@ -388,21 +430,17 @@ export const Inspector = ({
             </div>
             {getAccordion(componentMeta.component)}
           </Tab>
-          <Tab eventKey="styles" title="Styles">
+          <Tab eventKey="styles" title={t('widget.common.styles', 'Styles')}>
             <div style={{ marginBottom: '6rem' }}>
               <div className="p-3">
-                {Object.keys(componentMeta.styles).map((style) =>
-                  renderElement(
-                    component,
-                    componentMeta,
-                    paramUpdated,
-                    dataQueries,
-                    style,
-                    'styles',
-                    currentState,
-                    allComponents
-                  )
-                )}
+                <Inspector.RenderStyleOptions
+                  componentMeta={componentMeta}
+                  component={component}
+                  paramUpdated={paramUpdated}
+                  dataQueries={dataQueries}
+                  currentState={currentState}
+                  allComponents={allComponents}
+                />
               </div>
               {buildGeneralStyle()}
             </div>
@@ -440,9 +478,83 @@ export const Inspector = ({
           rel="noreferrer"
           data-cy="widget-documentation-link"
         >
-          <small>{componentMeta.name} documentation</small>
+          <small>
+            {t('widget.common.documentation', '{{componentMeta}} documentation', { componentMeta: componentMeta.name })}
+          </small>
         </a>
       </div>
     </div>
   );
 };
+
+const widgetsWithStyleConditions = {
+  Modal: {
+    conditions: [
+      {
+        definition: 'properties', //expecting properties or styles
+        property: 'useDefaultButton', //expecting a property name
+        conditionStyles: ['triggerButtonBackgroundColor', 'triggerButtonTextColor'], //expecting an array of style definitions names
+      },
+    ],
+  },
+};
+
+const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
+  return Object.keys(componentMeta.styles).map((style) => {
+    const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
+    const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
+
+    if (conditionWidget && conditionWidget.conditions.find((condition) => condition.conditionStyles.includes(style))) {
+      const propertyConditon = condition?.property;
+      const widgetPropertyDefinition = condition?.definition;
+
+      return handleRenderingConditionalStyles(
+        component,
+        componentMeta,
+        dataQueries,
+        paramUpdated,
+        currentState,
+        allComponents,
+        style,
+        propertyConditon,
+        component.component?.definition[widgetPropertyDefinition]
+      );
+    }
+
+    return renderElement(
+      component,
+      componentMeta,
+      paramUpdated,
+      dataQueries,
+      style,
+      'styles',
+      currentState,
+      allComponents
+    );
+  });
+};
+
+const resolveConditionalStyle = (definition, condition, currentState) => {
+  const conditionExistsInDefinition = definition[condition] ?? false;
+  if (conditionExistsInDefinition) {
+    return resolveReferences(definition[condition]?.value ?? false, currentState);
+  }
+};
+
+const handleRenderingConditionalStyles = (
+  component,
+  componentMeta,
+  dataQueries,
+  paramUpdated,
+  currentState,
+  allComponents,
+  style,
+  renderingPropertyCondition,
+  definition
+) => {
+  return resolveConditionalStyle(definition, renderingPropertyCondition, currentState)
+    ? renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, allComponents)
+    : null;
+};
+
+Inspector.RenderStyleOptions = RenderStyleOptions;
