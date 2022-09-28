@@ -3,6 +3,7 @@ import React from 'react';
 const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, setExposedVariables }) => {
   const leftActions = () => actions.filter((action) => action.position === 'left');
   const rightActions = () => actions.filter((action) => [undefined, 'right'].includes(action.position));
+
   const leftActionsCellData =
     leftActions().length > 0
       ? [
@@ -21,6 +22,7 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                     color: action.textColor,
                     borderRadius: action.actionButtonRadius,
                   }}
+                  disabled={action.buttonDisabled || action.buttonDisabled == 'true' ? true : false}
                   onClick={(e) => {
                     e.stopPropagation();
                     setExposedVariables({
@@ -61,6 +63,7 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                     color: action.textColor,
                     borderRadius: action.actionButtonRadius,
                   }}
+                  disabled={action.buttonDisabled == 'true' ? true : false}
                   onClick={(e) => {
                     e.stopPropagation();
                     setExposedVariables({
