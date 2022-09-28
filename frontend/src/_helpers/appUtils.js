@@ -511,6 +511,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onOpen',
       'onClose',
       'onRowClicked',
+      'onFilterChanged',
     ].includes(eventName)
   ) {
     const { component } = options;
