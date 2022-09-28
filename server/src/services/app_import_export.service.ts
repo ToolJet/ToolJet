@@ -15,7 +15,7 @@ import { isEmpty } from 'lodash';
 export class AppImportExportService {
   constructor(private dataSourcesService: DataSourcesService, private readonly entityManager: EntityManager) {}
 
-  async export(user: User, id: string, searchParams?: any): Promise<App> {
+  async export(user: User, id: string, searchParams: any = {}): Promise<App> {
     // https://github.com/typeorm/typeorm/issues/3857
     // Making use of query builder
     const queryForappToExport = this.entityManager
@@ -48,7 +48,8 @@ export class AppImportExportService {
       .orderBy('app_versions.created_at', 'ASC');
 
     // filter by search params
-    const { versionId } = searchParams;
+    const { versionId = undefined } = searchParams;
+
     if (versionId) {
       queryDataQueries = queryDataQueries.andWhere('app_version_id = :versionId', { versionId });
       queryDataSources = queryDataSources.andWhere('app_version_id = :versionId', { versionId });

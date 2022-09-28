@@ -433,7 +433,7 @@ export async function createDataSource(nestApp, { name, application, kind, optio
   );
 }
 
-export async function createDataQuery(nestApp, { application, kind, dataSource, options, appVersion }: any) {
+export async function createDataQuery(nestApp, { application, name, kind, dataSource, options, appVersion }: any) {
   let dataQueryRepository: Repository<DataQuery>;
   dataQueryRepository = nestApp.get('DataQueryRepository');
 
@@ -441,6 +441,7 @@ export async function createDataQuery(nestApp, { application, kind, dataSource, 
     dataQueryRepository.create({
       options,
       app: application,
+      name,
       kind,
       dataSource,
       appVersion,
