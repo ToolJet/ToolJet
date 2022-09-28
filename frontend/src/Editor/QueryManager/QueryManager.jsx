@@ -18,7 +18,6 @@ import { allSvgs } from '@tooljet/plugins/client';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
-import { Confirm } from '../Viewer/Confirm';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -139,31 +138,31 @@ class QueryManagerComponent extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.loadingDataSources) return;
-    const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
-    if (!nextProps.isQueryPaneDragging && !this.state.paneHeightChanged && !themeModeChanged) {
-      if (this.props.mode === 'create' && this.state.isFieldsChanged) {
-        this.setState({ showSaveConfirmation: true, nextProps });
-        return;
-      } else if (this.props.mode === 'edit') {
-        if (this.state.selectedQuery) {
-          const isQueryChanged = !_.isEqual(
-            this.removeRestKey(this.state.options),
-            this.removeRestKey(this.state.selectedQuery.options)
-          );
-          if (this.state.isFieldsChanged && isQueryChanged) {
-            this.setState({ showSaveConfirmation: true, nextProps });
-            return;
-          } else if (
-            !isQueryChanged &&
-            this.state.selectedQuery.kind === 'restapi' &&
-            this.state.restArrayValuesChanged
-          ) {
-            this.setState({ showSaveConfirmation: true, nextProps });
-            return;
-          }
-        }
-      }
-    }
+    // const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
+    // if (!nextProps.isQueryPaneDragging && !this.state.paneHeightChanged && !themeModeChanged) {
+    //   if (this.props.mode === 'create' && this.state.isFieldsChanged) {
+    //     this.setState({ showSaveConfirmation: true, nextProps });
+    //     return;
+    //   } else if (this.props.mode === 'edit') {
+    //     if (this.state.selectedQuery) {
+    //       const isQueryChanged = !_.isEqual(
+    //         this.removeRestKey(this.state.options),
+    //         this.removeRestKey(this.state.selectedQuery.options)
+    //       );
+    //       if (this.state.isFieldsChanged && isQueryChanged) {
+    //         this.setState({ showSaveConfirmation: true, nextProps });
+    //         return;
+    //       } else if (
+    //         !isQueryChanged &&
+    //         this.state.selectedQuery.kind === 'restapi' &&
+    //         this.state.restArrayValuesChanged
+    //       ) {
+    //         this.setState({ showSaveConfirmation: true, nextProps });
+    //         return;
+    //       }
+    //     }
+    //   }
+    // }
     if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
       if (this.state.isUpdating) {
         this.setState({
@@ -432,7 +431,7 @@ class QueryManagerComponent extends React.Component {
         key={selectedQuery ? selectedQuery.id : ''}
       >
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
-        <Confirm
+        {/* <Confirm
           show={this.state.showSaveConfirmation}
           message={'Query is unsaved, save or leave without saving. Do you want to save?'}
           onConfirm={() => this.createOrUpdateDataQuery()}
@@ -442,7 +441,7 @@ class QueryManagerComponent extends React.Component {
             this.props.setStateOfUnsavedQueries(false);
           }}
           queryConfirmationData={this.state.queryConfirmationData}
-        />
+        /> */}
         <div className="row header">
           <div className="col">
             {(addingQuery || editingQuery) && selectedDataSource && (
