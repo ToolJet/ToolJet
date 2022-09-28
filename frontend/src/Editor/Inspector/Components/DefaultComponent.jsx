@@ -86,7 +86,7 @@ export const baseComponentProperties = (
   if (events.length > 0) {
     items.push({
       title: `${i18next.t('widget.common.events', 'Events')}`,
-      isOpen: false,
+      isOpen: true,
       children: (
         <EventManager
           component={component}
@@ -123,7 +123,7 @@ export const baseComponentProperties = (
 
   items.push({
     title: `${i18next.t('widget.common.general', 'General')}`,
-    isOpen: false,
+    isOpen: true,
     children: (
       <>
         {renderElement(
@@ -142,7 +142,7 @@ export const baseComponentProperties = (
 
   items.push({
     title: `${i18next.t('widget.common.layout', 'Layout')}`,
-    isOpen: false,
+    isOpen: true,
     children: (
       <>
         {renderElement(

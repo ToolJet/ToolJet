@@ -481,7 +481,7 @@ export const SubContainer = ({
       })}
 
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
-        <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box">
+        <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box" data-cy="----Test----">
           <center className="text-muted">
             Drag components from the right sidebar and drop here. Check out our{' '}
             <a href="https://docs.tooljet.io/docs/tutorial/adding-widget" target="_blank" rel="noreferrer">
