@@ -343,6 +343,12 @@ button {
         border-width: 0px 0px 1px 0px;
       }
     }
+
+    .left-sidebar-inspector {
+      .card-body {
+        padding: 1rem 0rem 1rem 1rem;
+      }
+    }
   }
 
   .editor-sidebar {
@@ -2606,6 +2612,10 @@ hr {
   .modal-body {
     padding: 0;
   }
+
+  .modalWidget-config-handle {
+    position: relative !important;
+  }
 }
 
 .draggable-box {
@@ -3063,7 +3073,7 @@ input:focus-visible {
 
   .modal-content,
   .modal-header {
-    background-color: #1f2936 !important;
+    background-color: #1f2936;
 
     .text-muted {
       color: #fff !important;
@@ -3398,6 +3408,12 @@ input:focus-visible {
     .btn {
       background-color: #273342;
       color: #656d77;
+    }
+  }
+
+  .page-item {
+    a.page-link {
+      color: white;
     }
   }
 }
@@ -6105,6 +6121,43 @@ input.hide-input-arrows{
     }
   }
 }
+
+.icon-widget-popover{
+  &.theme-dark{
+    .popover-header{
+      background-color: #232e3c;
+      border-bottom: 1px solid #324156;;
+    }
+  }
+  .popover-header{
+    padding-bottom: 0;
+    background-color: #fff;
+    .input-icon{
+      margin-bottom: 0.5rem !important;
+    }
+  }
+  .popover-body{
+    padding: 0 0.5rem;
+    .row{
+      > div{
+        overflow-x: hidden !important;
+      }
+    }
+    .icon-list-wrapper{
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      margin: 0.5rem 1rem 0.5rem 0.5rem;
+    }
+    .icon-element{
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: $border-radius;
+      &:hover{
+        border: 1px solid $primary;
+      }
+    }
+  }
+}
 .dark-theme-placeholder::placeholder{
   color: #C8C6C6;
 }
@@ -6330,5 +6383,49 @@ input.hide-input-arrows{
     background-color: #2b394a;
     border-color: #232e3c;
     color: white;
+  }
+}
+
+.org-users-page {
+  min-height: 100vh;
+  .page-body {
+    height: 100%;
+  }
+}
+
+
+.link-widget{
+  display: flex;
+  align-items: center;
+  overflow: auto;
+  &.hover{
+    a{
+      &:hover{
+        text-decoration: underline;
+      }
+    }
+  }
+  &.no-underline{
+    a{
+      text-decoration: none !important;
+    }
+  }
+  &.underline{
+    a{
+      text-decoration: underline;
+    }
+  }
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+}
+
+.rest-methods-url{
+  .cm-s-default {
+    .cm-string-2{
+      color: #000;
+    }
   }
 }

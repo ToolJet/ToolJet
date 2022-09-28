@@ -4,6 +4,7 @@ import { Thread } from '../entities/thread.entity';
 import { Comment } from '../entities/comment.entity';
 import { CreateThreadDto, UpdateThreadDto } from '../dto/thread.dto';
 import { ThreadRepository } from '../repositories/thread.repository';
+import { createQueryBuilder } from 'typeorm';
 
 @Injectable()
 export class ThreadService {
@@ -17,13 +18,19 @@ export class ThreadService {
   }
 
   public async getThreads(appId: string, organizationId: string, appVersionsId: string): Promise<Thread[]> {
-    return await this.threadRepository.find({
-      where: {
+    return await createQueryBuilder(Thread, 'thread')
+      .innerJoin('thread.user', 'user')
+      .addSelect(['user.id', 'user.firstName', 'user.lastName'])
+      .andWhere('thread.appId = :appId', {
         appId,
+      })
+      .andWhere('thread.organizationId = :organizationId', {
         organizationId,
+      })
+      .andWhere('thread.appVersionsId = :appVersionsId', {
         appVersionsId,
-      },
-    });
+      })
+      .getMany();
   }
 
   public async getOrganizationThreads(orgId: string): Promise<Thread[]> {
