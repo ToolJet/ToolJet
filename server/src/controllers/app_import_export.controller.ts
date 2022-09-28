@@ -37,7 +37,6 @@ export class AppsImportExportController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    console.log({ query });
     const app = await this.appImportExportService.export(user, id, query);
     return {
       ...app,

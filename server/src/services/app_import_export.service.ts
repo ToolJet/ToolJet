@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { EntityManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -14,11 +13,7 @@ import { isEmpty } from 'lodash';
 
 @Injectable()
 export class AppImportExportService {
-  constructor(
-    @InjectRepository(App)
-    private dataSourcesService: DataSourcesService,
-    private readonly entityManager: EntityManager
-  ) {}
+  constructor(private dataSourcesService: DataSourcesService, private readonly entityManager: EntityManager) {}
 
   async export(user: User, id: string, searchParams?: any): Promise<App> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -64,7 +59,6 @@ export class AppImportExportService {
     appToExport['dataSources'] = await queryDataSources.getMany();
     appToExport['appVersions'] = await queryAppVersions.getMany();
 
-    console.log({ appToExport });
     return appToExport;
   }
 
