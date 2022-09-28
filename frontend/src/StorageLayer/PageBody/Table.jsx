@@ -1,8 +1,18 @@
 /* eslint-disable react/jsx-key */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTable } from 'react-table';
+import postgrest from '@/_helpers/postgrest';
 
 const App = () => {
+  useEffect(() => {
+    postgrest
+      .from('tables')
+      .select()
+      .then((response) => {
+        console.log('response', response);
+      });
+  }, []);
+
   const data = React.useMemo(
     () => [
       {
