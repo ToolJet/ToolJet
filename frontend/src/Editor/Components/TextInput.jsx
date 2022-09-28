@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 export const TextInput = function TextInput({
   height,
@@ -11,19 +11,46 @@ export const TextInput = function TextInput({
   component,
   darkMode,
 }) {
+  const textInputRef = useRef();
+
+  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
+
+  const [disable, setDisable] = useState(styles.disabledState);
   const [value, setValue] = useState(properties.value);
+  const [visibility, setVisibility] = useState(styles.visibility);
   const { isValid, validationError } = validate(value);
+
+  useEffect(() => {
+    disable !== styles.disabledState && setDisable(styles.disabledState);
+  }, [styles.disabledState]);
+
+  useEffect(() => {
+    visibility !== styles.visibility && setVisibility(styles.visibility);
+  }, [styles.visibility]);
 
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
+
   useEffect(() => {
     setValue(properties.value);
     setExposedVariable('value', properties.value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
+  registerAction('setFocus', async function () {
+    textInputRef.current.focus();
+  });
+  registerAction('setBlur', async function () {
+    textInputRef.current.blur();
+  });
+  registerAction('disable', async function (value) {
+    setDisable(value);
+  });
+  registerAction('visibility', async function (value) {
+    setVisibility(value);
+  });
   registerAction(
     'setText',
     async function (text) {
@@ -42,9 +69,9 @@ export const TextInput = function TextInput({
   );
 
   return (
-    <div className="text-input">
+    <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`}>
       <input
-        disabled={styles.disabledState}
+        ref={textInputRef}
         onKeyUp={(e) => {
           if (e.key == 'Enter') {
             setValue(e.target.value);
@@ -58,12 +85,20 @@ export const TextInput = function TextInput({
           setExposedVariable('value', e.target.value);
           fireEvent('onChange');
         }}
+        onBlur={(e) => {
+          e.stopPropagation();
+          fireEvent('onBlur');
+        }}
+        onFocus={(e) => {
+          e.stopPropagation();
+          fireEvent('onFocus');
+        }}
         type="text"
         className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
           darkMode && 'dark-theme-placeholder'
         }`}
         placeholder={properties.placeholder}
-        style={{ height, display: styles.visibility ? '' : 'none', borderRadius: `${styles.borderRadius}px` }}
+        style={{ height, borderRadius: `${styles.borderRadius}px`, color: textColor }}
         value={value}
         data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       />

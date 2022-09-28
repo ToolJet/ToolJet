@@ -872,15 +872,22 @@ export const widgets = [
     events: {
       onChange: { displayName: 'On change' },
       onEnterPressed: { displayName: 'On Enter Pressed' },
+      onFocus: { displayName: 'On focus' },
+      onBlur: { displayName: 'On blur' },
     },
     styles: {
-      visibility: { type: 'toggle', displayName: 'Visibility', validation: { schema: { type: 'boolean' } } },
-      disabledState: { type: 'toggle', displayName: 'Disable', validation: { schema: { type: 'boolean' } } },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: { schema: { type: 'string' } },
+      },
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
       },
+      visibility: { type: 'toggle', displayName: 'Visibility', validation: { schema: { type: 'boolean' } } },
+      disabledState: { type: 'toggle', displayName: 'Disable', validation: { schema: { type: 'boolean' } } },
     },
     exposedVariables: {
       value: '',
@@ -894,6 +901,24 @@ export const widgets = [
       {
         handle: 'clear',
         displayName: 'Clear',
+      },
+      {
+        handle: 'setFocus',
+        displayName: 'Set focus',
+      },
+      {
+        handle: 'setBlur',
+        displayName: 'Set blur',
+      },
+      {
+        handle: 'disable',
+        displayName: 'Disable',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'visibility',
+        displayName: 'Visibility',
+        params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
     ],
     definition: {
@@ -909,13 +934,14 @@ export const widgets = [
       },
       properties: {
         value: { value: '' },
-        placeholder: { value: 'Placeholder text' },
+        placeholder: { value: 'Enter your input' },
       },
       events: [],
       styles: {
+        textColor: { value: '#000' },
+        borderRadius: { value: '{{0}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '{{0}}' },
       },
     },
   },
