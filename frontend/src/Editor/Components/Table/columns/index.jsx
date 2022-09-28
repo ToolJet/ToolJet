@@ -190,7 +190,7 @@ export default function generateColumnsData({
                           handleCellValueChange(
                             cell.row.index,
                             column.key || column.name,
-                            e.target.value,
+                            Number(e.target.value),
                             cell.row.original
                           );
                         }
@@ -201,7 +201,7 @@ export default function generateColumnsData({
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
-                          e.target.value,
+                          Number(e.target.value),
                           cell.row.original
                         );
                       }
