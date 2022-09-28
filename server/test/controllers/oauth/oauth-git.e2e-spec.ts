@@ -27,6 +27,7 @@ describe('oauth controller', () => {
     'organization',
     'group_permissions',
     'app_group_permissions',
+    'super_admin',
   ].sort();
 
   const groupPermissionsKeys = [
