@@ -27,6 +27,7 @@ import { DataSourcesService } from '@services/data_sources.service';
 import { CredentialsService } from '@services/credentials.service';
 import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
+import { AppsImportExportController } from '@controllers/app_import_export.controller';
 
 @Module({
   imports: [
@@ -60,6 +61,6 @@ import { Credential } from 'src/entities/credential.entity';
     EncryptionService,
     FilesService,
   ],
-  controllers: [AppsController, AppUsersController],
+  controllers: [AppsController, AppUsersController, AppsImportExportController],
 })
 export class AppsModule {}
