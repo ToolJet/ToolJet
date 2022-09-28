@@ -193,7 +193,7 @@ export class JSONTreeViewer extends React.Component {
 
     buildMap(data);
 
-    return computeAbsolutePath(path);
+    return `{{${computeAbsolutePath(path)}}}`;
   };
 
   render() {

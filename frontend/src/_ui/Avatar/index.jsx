@@ -1,13 +1,34 @@
 import React from 'react';
+import { userService } from '@/_services';
+import cx from 'classnames';
 
-const Avatar = ({ text, image, title = '', borderColor = '' }) => {
+const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderShape }) => {
+  const [avatar, setAvatar] = React.useState();
+
+  React.useEffect(() => {
+    async function fetchAvatar() {
+      const blob = await userService.getAvatar(avatarId);
+      setAvatar(URL.createObjectURL(blob));
+    }
+    if (avatarId) fetchAvatar();
+
+    () => avatar && URL.revokeObjectURL(avatar);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [avatarId]);
+
   return (
     <span
       data-tip={title}
-      style={{ border: `1.5px solid ${borderColor}`, ...(image ? { backgroundImage: `url(${image})` } : {}) }}
-      className="avatar avatar-sm avatar-rounded animation-fade"
+      style={{
+        border: borderColor ? `1.5px solid ${borderColor}` : 'none',
+        ...(image || avatar ? { backgroundImage: `url(${avatar ?? image})` } : {}),
+      }}
+      // className={`avatar avatar-sm ${borderShape === 'rounded' ? 'avatar-rounded' : ''} animation-fade`}
+      className={cx('avatar avatar-sm animation-fade', {
+        'avatar-rounded': borderShape === 'rounded',
+      })}
     >
-      {!image && text}
+      {!image && !avatarId && text}
     </span>
   );
 };

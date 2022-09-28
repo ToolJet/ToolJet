@@ -129,17 +129,15 @@ export function onComponentClick(_ref, id, component, mode = 'edit') {
   executeActionsForEventId(_ref, 'onClick', component, mode);
 }
 
-export function onQueryConfirm(_ref, queryConfirmationData, mode = 'edit') {
-  _ref.setState({
-    showQueryConfirmation: false,
-  });
-  runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
-}
+export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = false, mode = 'edit') {
+  const filtertedQueryConfirmation = _ref.state?.queryConfirmationList.filter(
+    (query) => query.queryId !== queryConfirmationData.queryId
+  );
 
-export function onQueryCancel(_ref) {
   _ref.setState({
-    showQueryConfirmation: false,
+    queryConfirmationList: filtertedQueryConfirmation,
   });
+  isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
 
 export async function copyToClipboard(text) {
@@ -208,7 +206,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
 
       case 'run-query': {
         const { queryId, queryName } = event;
-        return runQuery(_ref, queryId, queryName, true, mode);
+        return runQuery(_ref, queryId, queryName, undefined, mode);
       }
       case 'logout': {
         return logoutAction(_ref);
@@ -250,7 +248,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
           _ref.props.history.go();
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-            window.open(urlJoin(window.public_config?.TOOLJET_HOST, `applications/${slug}`));
+            window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
           }
         }
         return Promise.resolve();
@@ -371,32 +369,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
-  if (eventName === 'onRowClicked' && options?.component?.component === 'Table') {
-    const { component, data, rowId } = options;
-    _self.setState(
-      {
-        currentState: {
-          ..._self.state.currentState,
-          components: {
-            ..._self.state.currentState.components,
-            [component.name]: {
-              ..._self.state.currentState.components[component.name],
-              selectedRow: data,
-              selectedRowId: rowId,
-            },
-          },
-        },
-      },
-      () => {
-        executeActionsForEventId(_ref, 'onRowClicked', component, mode, customVariables);
-      }
-    );
-  }
-
-  if (eventName === 'onRowClicked' && options?.component?.component === 'Listview') {
-    executeActionsForEventId(_ref, 'onRowClicked', options.component, mode, customVariables);
-  }
-
   if (eventName === 'onCalendarEventSelect') {
     const { component, calendarEvent } = options;
     _self.setState(
@@ -512,11 +484,13 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onPageChanged',
       'onSearch',
       'onChange',
+      'onHover',
       'onEnterPressed',
       'onSelectionChange',
       'onSelect',
       'onClick',
       'onUpdate',
+      'onHover',
       'onFileSelected',
       'onFileLoaded',
       'onFileDeselected',
@@ -535,6 +509,11 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCardSelected',
       'onCardUpdated',
       'onTabSwitch',
+      'onFocus',
+      'onBlur',
+      'onOpen',
+      'onClose',
+      'onRowClicked',
     ].includes(eventName)
   ) {
     const { component } = options;
@@ -652,13 +631,18 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
   if (dataQuery.options.requestConfirmation) {
+    const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
+    const queryConfirmation = {
+      queryId,
+      queryName,
+    };
+    if (!queryConfirmationList.some((query) => queryId === query.queryId)) {
+      queryConfirmationList.push(queryConfirmation);
+    }
+
     if (confirmed === undefined) {
       _ref.setState({
-        showQueryConfirmation: true,
-        queryConfirmationData: {
-          queryId,
-          queryName,
-        },
+        queryConfirmationList,
       });
       return;
     }
@@ -693,7 +677,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
         .then((data) => {
           if (data.status === 'needs_oauth') {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
-            fetchOAuthToken(url, dataQuery.data_source_id);
+            fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
           }
 
           if (data.status === 'failed') {
@@ -732,7 +716,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               () => {
                 resolve(data);
                 onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
-                console.log('onDataQueryFailure', data);
                 if (mode !== 'view') {
                   const errorMessage = data.message || data.data.message;
                   toast.error(errorMessage);
