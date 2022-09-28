@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotAcceptableException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { OrganizationsService } from '@services/organizations.service';
@@ -233,6 +233,10 @@ export class OauthService {
     }
 
     let userDetails: User = await this.usersService.findByEmail(userResponse.email);
+
+    if (userDetails?.status === 'archived') {
+      throw new NotAcceptableException('User has been removed from the system, please contact the administrator');
+    }
 
     if (!isSuperAdmin(userDetails) && !this.#isValidDomain(userResponse.email, domain)) {
       throw new UnauthorizedException(`You cannot sign in using the mail id - Domain verification failed`);
