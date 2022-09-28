@@ -10,6 +10,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { DataSourcesService } from './data_sources.service';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { isEmpty } from 'lodash';
 
 @Injectable()
 export class AppImportExportService {
@@ -190,6 +191,17 @@ export class AppImportExportService {
       version.definition = this.replaceDataQueryIdWithinDefinitions(version.definition, dataQueryMapping);
       await manager.save(version);
     }
+
+    await this.setEditingVersionAsLatestVersion(manager, appVersionMapping, appVersions);
+  }
+
+  async setEditingVersionAsLatestVersion(manager: EntityManager, appVersionMapping: any, appVersions: Array<any>) {
+    if (isEmpty(appVersions)) return;
+
+    const lastVersionFromImport = appVersions[appVersions.length - 1];
+    const lastVersionIdToUpdate = appVersionMapping[lastVersionFromImport.id];
+
+    await manager.update(AppVersion, { id: lastVersionIdToUpdate }, { updatedAt: new Date() });
   }
 
   async createAdminGroupPermissions(manager: EntityManager, app: App) {

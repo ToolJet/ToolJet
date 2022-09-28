@@ -30,12 +30,20 @@ export const Text = function Text({ height, properties, styles, darkMode, regist
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => setText(() => computeText()), [properties.text]);
 
-  registerAction('setText', async function (text) {
-    setText(text);
-  });
-  registerAction('visibility', async function (value) {
-    setVisibility(value);
-  });
+  registerAction(
+    'setText',
+    async function (text) {
+      setText(text);
+    },
+    [setText]
+  );
+  registerAction(
+    'visibility',
+    async function (value) {
+      setVisibility(value);
+    },
+    [setVisibility]
+  );
 
   function computeText() {
     return properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
