@@ -79,7 +79,7 @@ export const Datepicker = function Datepicker({
   return (
     <div
       data-disabled={disabledState}
-      className="datepicker-widget"
+      className={`datepicker-widget ${darkMode && 'theme-dark'}`}
       data-cy={`draggable-widget-${component.name.toLowerCase()}`}
       style={{
         height,
@@ -90,7 +90,6 @@ export const Datepicker = function Datepicker({
         className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
           darkMode ? 'bg-dark color-white' : 'bg-light'
         }`}
-        wrapperClassName={`date-picker ${darkMode && 'dark-theme-date-picker'}`}
         selected={date}
         value={date !== null ? computeDateString(date) : 'select date'}
         onChange={(date) => onDateChange(date)}
