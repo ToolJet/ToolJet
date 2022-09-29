@@ -380,7 +380,7 @@ export function Table({
   const prevRowID = usePrevious(rowDetails?.hoveredRowId);
 
   useEffect(() => {
-    if (prevRowID !== rowDetails?.hoveredRowId) rowHover();
+    if (rowDetails?.hoveredRowId !== '' && prevRowID !== rowDetails?.hoveredRowId) rowHover();
   }, [rowDetails]);
 
   useEffect(() => {
@@ -511,6 +511,9 @@ export function Table({
                     onMouseOver={(e) => {
                       const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
                       setRowDetails(hoveredRowDetails);
+                    }}
+                    onMouseLeave={(e) => {
+                      setRowDetails({ hoveredRowId: '', hoveredRow: '' });
                     }}
                   >
                     {row.cells.map((cell, index) => {
