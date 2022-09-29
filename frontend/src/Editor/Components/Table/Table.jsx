@@ -314,7 +314,7 @@ export function Table({
     }
   );
 
-  const sortedState = useMemo(() => {
+  const sortOptions = useMemo(() => {
     if (state?.sortBy?.length === 0) {
       return;
     }
@@ -330,12 +330,12 @@ export function Table({
   }, [JSON.stringify(state)]);
 
   useEffect(() => {
-    if (!sortedState) {
+    if (!sortOptions) {
       setExposedVariable('sortedBy', null);
       return;
     }
-    setExposedVariable('sortedBy', sortedState.sortedBy).then(() => fireEvent('onSort'));
-  }, [sortedState]);
+    setExposedVariable('sortedBy', sortOptions.sortedBy).then(() => fireEvent('onSort'));
+  }, [sortOptions]);
 
   registerAction(
     'setPage',
