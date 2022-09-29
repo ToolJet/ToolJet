@@ -38,7 +38,7 @@ export const Button = function Button({
     width: '100%',
     borderRadius: `${borderRadius}px`,
     height,
-    display: visibility ? 'flex' : 'none',
+    display: visibility ? '' : 'none',
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
   };
@@ -79,12 +79,18 @@ export const Button = function Button({
     [setLoading]
   );
 
+  const hasCustomBackground = backgroundColor.charAt() === '#';
+  if (hasCustomBackground) {
+    computedStyles['--tblr-btn-color-darker'] = tinycolor(backgroundColor).darken(8).toString();
+  }
+
   return (
     <div className="widget-button">
       <button
         disabled={disable}
         className={cx('jet-button btn btn-primary p-1 overflow-hidden', {
           'btn-loading': loading,
+          'btn-custom': hasCustomBackground,
         })}
         style={computedStyles}
         onClick={(event) => {
