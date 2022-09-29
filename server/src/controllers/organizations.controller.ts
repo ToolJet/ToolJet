@@ -11,6 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
+import { AppConfigService } from '@services/app_config.service';
 import { decamelizeKeys } from 'humps';
 import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -27,7 +28,8 @@ export class OrganizationsController {
   constructor(
     private organizationsService: OrganizationsService,
     private authService: AuthService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private appConfigService: AppConfigService
   ) {}
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
@@ -95,6 +97,9 @@ export class OrganizationsController {
     if (!organizationId && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       // Request from single organization login page - find one from organization and setting
       organizationId = (await this.organizationsService.getSingleOrganization())?.id;
+    } else {
+      const result = await this.appConfigService.constructSSOConfigs();
+      return decamelizeKeys({ ssoConfigs: result });
     }
     if (!organizationId) {
       throw new NotFoundException();

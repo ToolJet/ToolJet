@@ -38,4 +38,27 @@ export class AppConfigService {
 
     return whitelistedConfigVars;
   }
+
+  async constructSSOConfigs() {
+    const configs = await this.public_config();
+    return {
+      google: {
+        enabled: !!configs?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
+        configs: {
+          client_id: configs?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
+        },
+      },
+      git: {
+        enabled: !!configs?.SSO_GIT_OAUTH2_CLIENT_ID,
+        configs: {
+          client_id: configs?.SSO_GIT_OAUTH2_CLIENT_ID,
+          host_name: configs?.SSO_GIT_OAUTH2_HOST,
+        },
+      },
+      form: {
+        enable_sign_up: configs?.DISABLE_SIGNUPS !== 'true',
+        enabled: true,
+      },
+    };
+  }
 }

@@ -36,58 +36,33 @@ class LoginPageComponent extends React.Component {
       // redirect to home if already logged in
       return this.props.history.push('/');
     }
-    if (this.organizationId || this.single_organization) {
+    if (this.organizationId || this.single_organization)
       authenticationService.saveLoginOrganizationId(this.organizationId);
-      authenticationService.getOrganizationConfigs(this.organizationId).then(
-        (configs) => {
-          this.setState({ isGettingConfigs: false, configs });
-        },
-        (response) => {
-          if (response.data.statusCode !== 404) {
-            return this.props.history.push({
-              pathname: '/',
-              state: { errorMessage: 'Error while login, please try again' },
-            });
-          }
-          // If there is no organization found for single organization setup
-          // show form to sign up
-          this.setState({
-            isGettingConfigs: false,
-            configs: {
-              form: {
-                enable_sign_up: true,
-                enabled: true,
-              },
-            },
+
+    authenticationService.getOrganizationConfigs(this.organizationId).then(
+      (configs) => {
+        this.setState({ isGettingConfigs: false, configs });
+      },
+      (response) => {
+        if (response.data.statusCode !== 404) {
+          return this.props.history.push({
+            pathname: '/',
+            state: { errorMessage: 'Error while login, please try again' },
           });
         }
-      );
-    } else {
-      // Not single organization login page and not an organization login page => Multi organization common login page
-      // Only password and instance SSO login is allowed
-      this.setState({
-        isGettingConfigs: false,
-        configs: {
-          google: {
-            enabled: !!window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
-            configs: {
-              client_id: window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
+        // If there is no organization found for single organization setup
+        // show form to sign up
+        this.setState({
+          isGettingConfigs: false,
+          configs: {
+            form: {
+              enable_sign_up: true,
+              enabled: true,
             },
           },
-          git: {
-            enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-            configs: {
-              client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-              host_name: window.public_config?.SSO_GIT_OAUTH2_HOST,
-            },
-          },
-          form: {
-            enable_sign_up: window.public_config?.DISABLE_SIGNUPS !== 'true',
-            enabled: true,
-          },
-        },
-      });
-    }
+        });
+      }
+    );
 
     this.props.location?.state?.errorMessage &&
       toast.error(this.props.location.state.errorMessage, {
