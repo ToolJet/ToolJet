@@ -604,7 +604,7 @@ describe('group permissions controller', () => {
       expect(response.statusCode).toBe(403);
     });
 
-    it.only('should allow admin to list users in group permission', async () => {
+    it('should allow admin to list users in group permission', async () => {
       const {
         organization: { adminUser, organization },
       } = await setupOrganizations(nestApp);
