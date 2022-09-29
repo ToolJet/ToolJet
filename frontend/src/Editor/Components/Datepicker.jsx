@@ -80,7 +80,7 @@ export const Datepicker = function Datepicker({
     <div
       data-disabled={disabledState}
       className={`datepicker-widget ${darkMode && 'theme-dark'}`}
-      data-cy={`draggable-widget-${component.name.toLowerCase()}`}
+      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       style={{
         height,
         display: visibility ? '' : 'none',
@@ -102,7 +102,7 @@ export const Datepicker = function Datepicker({
         showYearDropdown
         dropdownMode="select"
         excludeDates={excludedDates}
-        customInput={<input style={{ borderRadius: `${borderRadius}px` }} />}
+        customInput={<input style={{ borderRadius: `${borderRadius}px`, height }} />}
       />
 
       <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
