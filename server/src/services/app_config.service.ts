@@ -59,6 +59,7 @@ export class AppConfigService {
         enable_sign_up: configs?.DISABLE_SIGNUPS !== 'true',
         enabled: true,
       },
+      enableSignUp: configs?.DISABLE_MULTI_WORKSPACE !== 'true' && configs?.SSO_DISABLE_SIGNUPS !== 'true',
     };
   }
 }
