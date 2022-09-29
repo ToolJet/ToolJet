@@ -24,14 +24,22 @@ export const TextInput = function TextInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
-  registerAction('setText', async function (text) {
-    setValue(text);
-    setExposedVariable('value', text).then(fireEvent('onChange'));
-  });
-  registerAction('clear', async function () {
-    setValue('');
-    setExposedVariable('value', '').then(fireEvent('onChange'));
-  });
+  registerAction(
+    'setText',
+    async function (text) {
+      setValue(text);
+      setExposedVariable('value', text).then(fireEvent('onChange'));
+    },
+    [setValue]
+  );
+  registerAction(
+    'clear',
+    async function () {
+      setValue('');
+      setExposedVariable('value', '').then(fireEvent('onChange'));
+    },
+    [setValue]
+  );
 
   return (
     <div className="text-input">

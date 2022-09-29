@@ -147,14 +147,14 @@ export function Table({
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    });
+    }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
   }
 
   function handleChangesDiscarded() {
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    });
+    }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
   }
 
   const changeSet = tableDetails?.changeSet ?? {};
@@ -321,7 +321,7 @@ export function Table({
       setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
     },
-    [serverSidePagination, clientSidePagination]
+    [serverSidePagination, clientSidePagination, setPaginationInternalPageIndex]
   );
 
   useEffect(() => {

@@ -51,7 +51,7 @@ export const DropDown = function DropDown({
     async function (value) {
       selectOption(value);
     },
-    [JSON.stringify(values)]
+    [JSON.stringify(values), selectOption]
   );
 
   const validationData = validate(value);
