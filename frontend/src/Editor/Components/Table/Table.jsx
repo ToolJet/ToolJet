@@ -334,7 +334,7 @@ export function Table({
       setExposedVariable('sortedBy', null);
       return;
     }
-    setExposedVariable('sortedBy', sortedState.sortedBy);
+    setExposedVariable('sortedBy', sortedState.sortedBy).then(() => fireEvent('onSort'));
   }, [sortedState]);
 
   registerAction(
