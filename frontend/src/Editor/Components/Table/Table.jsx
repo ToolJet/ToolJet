@@ -314,6 +314,29 @@ export function Table({
     }
   );
 
+  const sortedState = useMemo(() => {
+    if (state?.sortBy?.length === 0) {
+      return;
+    }
+
+    const columnName = columns.find((column) => column.id === state?.sortBy?.[0]?.id).accessor;
+
+    return {
+      sortedBy: {
+        column: columnName,
+        direction: state?.sortBy?.[0]?.desc ? 'descending' : 'ascending',
+      },
+    };
+  }, [JSON.stringify(state)]);
+
+  useEffect(() => {
+    if (!sortedState) {
+      setExposedVariable('sortedBy', null);
+      return;
+    }
+    setExposedVariable('sortedBy', sortedState.sortedBy);
+  }, [sortedState]);
+
   registerAction(
     'setPage',
     async function (targetPageIndex) {
