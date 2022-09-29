@@ -32,7 +32,7 @@ export function viewableAppsQuery(user: User, searchKey?: string, select?: Array
               readOnDashboard: false,
             })
             .orWhere(
-              '(viewable_apps.is_public = :value AND viewable_apps.organization_id = :organizationId) OR viewable_apps.user_id = :userId',
+              'viewable_apps.organization_id = :organizationId AND (viewable_apps.is_public = :value OR viewable_apps.user_id = :userId)',
               {
                 value: true,
                 organizationId: user.organizationId,
