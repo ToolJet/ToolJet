@@ -36,6 +36,7 @@ import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
 import * as path from 'path';
 import * as fs from 'fs';
+import { TooljetDbController } from '@controllers/tooljet_db.controller';
 
 const imports = [
   ConfigModule.forRoot({
@@ -137,7 +138,7 @@ if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
 
 @Module({
   imports,
-  controllers: [AppController],
+  controllers: [AppController, TooljetDbController],
   providers: [EmailService, SeedsService],
 })
 export class AppModule implements OnModuleInit {
