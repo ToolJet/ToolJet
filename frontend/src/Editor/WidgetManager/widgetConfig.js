@@ -225,6 +225,7 @@ export const widgets = [
       onBulkUpdate: { displayName: 'Bulk update' },
       onPageChanged: { displayName: 'Page changed' },
       onSearch: { displayName: 'Search' },
+      onCancelChanges: { displayName: 'Cancel changes' },
     },
     styles: {
       textColor: {
