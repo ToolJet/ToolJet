@@ -44,7 +44,7 @@ export const RadioButton = function RadioButton({
     async function (option) {
       onSelect(option);
     },
-    [onSelect]
+    [setValue]
   );
 
   return (
