@@ -250,7 +250,8 @@ export class OauthService {
 
     const allowPersonalWorkspace =
       isSuperAdmin(userDetails) ||
-      (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+      (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true' ||
+      (await this.usersService.getCount()) === 0;
 
     let organizationDetails: DeepPartial<Organization>;
     const isInstanceSSOLogin = !!(!configId && ssoType);

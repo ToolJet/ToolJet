@@ -636,7 +636,15 @@ export class UsersService {
         .getMany()
     ).map((record) => record.id);
 
-    return [...new Set([...userIdsWithEditPermissions, ...userIdsOfAppOwners])];
+    const userIdsOfSuperAdmins = (
+      await createQueryBuilder(User, 'users')
+        .select('users.id')
+        .where('users.userType = :userType', { userType: 'instance' })
+        .andWhere('users.status = :status', { status: 'active' })
+        .getMany()
+    ).map((record) => record.id);
+
+    return [...new Set([...userIdsWithEditPermissions, ...userIdsOfAppOwners, ...userIdsOfSuperAdmins])];
   }
 
   async fetchTotalEditorCount(manager: EntityManager): Promise<number> {
