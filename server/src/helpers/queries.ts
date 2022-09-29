@@ -31,19 +31,16 @@ export function viewableAppsQuery(user: User, searchKey?: string, select?: Array
             .andWhere('app_group_permissions.read_on_dashboard = :readOnDashboard', {
               readOnDashboard: false,
             })
-            .orWhere(
-              'viewable_apps.organization_id = :organizationId AND (viewable_apps.is_public = :value OR viewable_apps.user_id = :userId)',
-              {
-                value: true,
-                organizationId: user.organizationId,
-                userId: user.id,
-              }
-            );
+            .orWhere('viewable_apps.is_public = :value OR viewable_apps.user_id = :userId', {
+              value: true,
+              organizationId: user.organizationId,
+              userId: user.id,
+            });
         })
       );
-  } else {
-    viewableAppsQb.where('viewable_apps.organization_id = :organizationId', { organizationId: user.organizationId });
   }
+  viewableAppsQb.andWhere('viewable_apps.organization_id = :organizationId', { organizationId: user.organizationId });
+
   if (searchKey) {
     viewableAppsQb.andWhere('LOWER(viewable_apps.name) like :searchKey', {
       searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
