@@ -303,7 +303,7 @@ export class GroupPermissionsService {
 
   async findUsers(user: User, groupPermissionId: string): Promise<User[]> {
     return createQueryBuilder(User, 'users')
-      .select(['user.id', 'user.firstName', 'user.lastName'])
+      .select(['users.id', 'users.firstName', 'users.lastName', 'users.email'])
       .innerJoin('users.groupPermissions', 'group_permissions')
       .innerJoin('users.userGroupPermissions', 'user_group_permissions')
       .where('group_permissions.id = :groupPermissionId', {
