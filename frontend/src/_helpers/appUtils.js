@@ -513,6 +513,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onOpen',
       'onClose',
       'onRowClicked',
+      'onCellValueChanged',
     ].includes(eventName)
   ) {
     const { component } = options;
