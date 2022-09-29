@@ -364,10 +364,24 @@ export function Table({
   }, [state.columnResizing.isResizingColumn]);
 
   const [paginationInternalPageIndex, setPaginationInternalPageIndex] = useState(pageIndex ?? 1);
-
+  const [rowDetails, setRowDetails] = useState();
   useEffect(() => {
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
   }, [pageCount]);
+
+  function usePrevious(value) {
+    const ref = useRef();
+    useEffect(() => {
+      ref.current = value;
+    });
+    return ref.current;
+  }
+
+  const prevRowID = usePrevious(rowDetails?.hoveredRowId);
+
+  useEffect(() => {
+    if (prevRowID !== rowDetails?.hoveredRowId) rowHover();
+  }, [rowDetails]);
 
   useEffect(() => {
     setExposedVariable(
@@ -375,6 +389,13 @@ export function Table({
       globalFilteredRows.map((row) => row.original)
     );
   }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
+
+  const rowHover = () => {
+    mergeToTableDetails(rowDetails);
+    setExposedVariables(rowDetails).then(() => {
+      fireEvent('onRowHovered');
+    });
+  };
 
   return (
     <div
@@ -489,10 +510,7 @@ export function Table({
                     }}
                     onMouseOver={(e) => {
                       const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
-                      mergeToTableDetails(hoveredRowDetails);
-                      setExposedVariables(hoveredRowDetails).then(() => {
-                        fireEvent('onRowHovered');
-                      });
+                      setRowDetails(hoveredRowDetails);
                     }}
                   >
                     {row.cells.map((cell, index) => {
