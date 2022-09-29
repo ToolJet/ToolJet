@@ -27,37 +27,18 @@ class ConfirmationPageComponent extends React.Component {
     }
     authenticationService.deleteLoginOrganizationId();
 
-    if (this.organizationId) {
+    if (this.organizationId)
       // Workspace invite
       authenticationService.saveLoginOrganizationId(this.organizationId);
-      authenticationService.getOrganizationConfigs(this.organizationId).then(
-        (configs) => {
-          this.setState({ isGettingConfigs: false, configs });
-        },
-        () => {
-          this.setState({ isGettingConfigs: false });
-        }
-      );
-    } else {
-      // Sign up
-      this.setState({
-        isGettingConfigs: false,
-        configs: {
-          google: {
-            enabled: !!window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
-            configs: {
-              client_id: window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
-            },
-          },
-          git: {
-            enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-            configs: {
-              client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
-            },
-          },
-        },
-      });
-    }
+
+    authenticationService.getOrganizationConfigs(this.organizationId).then(
+      (configs) => {
+        this.setState({ isGettingConfigs: false, configs });
+      },
+      () => {
+        this.setState({ isGettingConfigs: false });
+      }
+    );
   }
 
   handleChange = (event) => {
