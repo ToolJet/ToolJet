@@ -28,6 +28,8 @@ import generateActionsData from './columns/actions';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
 import * as XLSX from 'xlsx/xlsx.mjs';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Popover from 'react-bootstrap/Popover';
 
 export function Table({
   id,
@@ -395,6 +397,27 @@ export function Table({
     );
   }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
 
+  function downlaodPopover() {
+    return (
+      <Popover
+        id="popover-basic"
+        data-cy="popover-card"
+        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow`}
+        placement="bottom"
+      >
+        <Popover.Content>
+          <div className="d-flex flex-column">
+            <span className="cursor-pointer" onClick={() => exportData('csv', true)}>
+              Download as CSV
+            </span>
+            <span className="pt-2 cursor-pointer" onClick={() => exportData('xlsx', true)}>
+              Download as Excel
+            </span>
+          </div>
+        </Popover.Content>
+      </Popover>
+    );
+  }
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -441,22 +464,11 @@ export function Table({
                 </span>
               )}
               {showDownloadButton && (
-                <>
-                  <span
-                    data-tip="Download as CSV"
-                    className="btn btn-light btn-sm p-1"
-                    onClick={() => exportData('csv', true)}
-                  >
+                <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
+                  <span data-tip="Download" className="btn btn-light btn-sm p-1">
                     <img src="assets/images/icons/download.svg" width="15" height="15" />
                   </span>
-                  <span
-                    data-tip="Download as Excel"
-                    className="btn btn-light btn-sm p-1"
-                    onClick={() => exportData('xlsx', true)}
-                  >
-                    <img src="" width="15" height="15" alt="excel" />
-                  </span>
-                </>
+                </OverlayTrigger>
               )}
             </div>
           </div>
