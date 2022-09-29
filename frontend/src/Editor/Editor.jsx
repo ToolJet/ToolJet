@@ -108,7 +108,6 @@ class EditorComponent extends React.Component {
       currentUser: authenticationService.currentUserValue,
       app: {},
       allComponentTypes: componentTypes,
-      queryPanelHeight: 70,
       isLoading: true,
       users: null,
       appId,
@@ -885,12 +884,6 @@ class EditorComponent extends React.Component {
     this.setWindowTitle(newName);
   };
 
-  toggleQueryEditor = () => {
-    this.setState(() => ({
-      queryPanelHeight: this.state.queryPanelHeight === 100 ? 30 : 100,
-    }));
-  };
-
   toggleComments = () => {
     this.setState({ showComments: !this.state.showComments });
   };
@@ -1163,7 +1156,6 @@ class EditorComponent extends React.Component {
       selectedQuery,
       editingQuery,
       app,
-      queryPanelHeight,
       showLeftSidebar,
       currentState,
       isLoading,
@@ -1420,116 +1412,53 @@ class EditorComponent extends React.Component {
                     )}
                   </div>
                 </div>
-                <div
-                  className="query-pane"
-                  style={{
-                    height: 40,
-                    background: '#fff',
-                    padding: '8px 16px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <h5 className="mb-0">QUERIES</h5>
-                  <span onClick={this.toggleQueryEditor} className="cursor-pointer m-1" data-tip="Show query editor">
-                    <svg
-                      style={{ transform: 'rotate(180deg)' }}
-                      width="18"
-                      height="10"
-                      viewBox="0 0 18 10"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M1 1L9 9L17 1"
-                        stroke="#61656F"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </span>
-                </div>
-                <QueryPanel queryPanelHeight={queryPanelHeight}>
-                  <div className="row main-row">
-                    <div className="data-pane">
-                      <div className="queries-container">
-                        <div className="queries-header row" style={{ marginLeft: '1.5px' }}>
-                          {showQuerySearchField && (
-                            <div className="col-12 p-1">
-                              <div className="queries-search px-1">
-                                <SearchBoxComponent
-                                  onChange={this.filterQueries}
-                                  callback={this.toggleQuerySearch}
-                                  placeholder={this.props.t('editor.searchQueries', 'Search queries')}
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {!showQuerySearchField && (
-                            <>
-                              <div className="col">
-                                <h5
-                                  style={{ fontSize: '14px', marginLeft: ' 6px' }}
-                                  className="py-1 px-3 mt-2 text-muted"
-                                >
-                                  {this.props.t('editor.queries', 'Queries')}
-                                </h5>
-                              </div>
-
-                              <div className="col-auto mx-1">
-                                <span
-                                  className={`query-btn mx-1 ${this.props.darkMode ? 'dark' : ''}`}
-                                  data-class="py-1 px-0"
-                                  onClick={this.toggleQuerySearch}
-                                >
-                                  <img
-                                    className="py-1 mt-2"
-                                    src="assets/images/icons/lens.svg"
-                                    width="24"
-                                    height="24"
+                <QueryPanel>
+                  {({ toggleQueryEditor, queryPanelHeight }) => (
+                    <div className="row main-row">
+                      <div className="data-pane">
+                        <div className="queries-container">
+                          <div className="queries-header row" style={{ marginLeft: '1.5px' }}>
+                            {showQuerySearchField && (
+                              <div className="col-12 p-1">
+                                <div className="queries-search px-1">
+                                  <SearchBoxComponent
+                                    onChange={this.filterQueries}
+                                    callback={this.toggleQuerySearch}
+                                    placeholder={this.props.t('editor.searchQueries', 'Search queries')}
                                   />
-                                </span>
-
-                                <span
-                                  className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
-                                  data-tip="Add new query"
-                                  data-class="py-1 px-2"
-                                  onClick={() =>
-                                    this.setState({
-                                      options: {},
-                                      selectedDataSource: null,
-                                      selectedQuery: {},
-                                      editingQuery: false,
-                                      addingQuery: true,
-                                      isSourceSelected: false,
-                                    })
-                                  }
-                                >
-                                  <img className="mt-2" src="assets/images/icons/plus.svg" width="24" height="24" />
-                                </span>
+                                </div>
                               </div>
-                            </>
-                          )}
-                        </div>
+                            )}
 
-                        {loadingDataQueries ? (
-                          <div className="p-5">
-                            <center>
-                              <div className="spinner-border" role="status"></div>
-                            </center>
-                          </div>
-                        ) : (
-                          <div className="query-list p-1 mt-1">
-                            <div>{this.state.filterDataQueries.map((query) => this.renderDataQuery(query))}</div>
-                            {this.state.filterDataQueries.length === 0 && (
-                              <div className="mt-5">
-                                <center>
-                                  <span className="mute-text">{dataQueriesDefaultText}</span> <br />
-                                  <button
-                                    className={`button-family-secondary mt-3 ${this.props.darkMode && 'dark'}`}
+                            {!showQuerySearchField && (
+                              <>
+                                <div className="col">
+                                  <h5
+                                    style={{ fontSize: '14px', marginLeft: ' 6px' }}
+                                    className="py-1 px-3 mt-2 text-muted"
+                                  >
+                                    {this.props.t('editor.queries', 'Queries')}
+                                  </h5>
+                                </div>
+
+                                <div className="col-auto mx-1">
+                                  <span
+                                    className={`query-btn mx-1 ${this.props.darkMode ? 'dark' : ''}`}
+                                    data-class="py-1 px-0"
+                                    onClick={this.toggleQuerySearch}
+                                  >
+                                    <img
+                                      className="py-1 mt-2"
+                                      src="assets/images/icons/lens.svg"
+                                      width="24"
+                                      height="24"
+                                    />
+                                  </span>
+
+                                  <span
+                                    className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
+                                    data-tip="Add new query"
+                                    data-class="py-1 px-2"
                                     onClick={() =>
                                       this.setState({
                                         options: {},
@@ -1537,52 +1466,86 @@ class EditorComponent extends React.Component {
                                         selectedQuery: {},
                                         editingQuery: false,
                                         addingQuery: true,
+                                        isSourceSelected: false,
                                       })
                                     }
                                   >
-                                    {this.props.t('editor.createQuery', 'Create query')}
-                                  </button>
-                                </center>
-                              </div>
+                                    <img className="mt-2" src="assets/images/icons/plus.svg" width="24" height="24" />
+                                  </span>
+                                </div>
+                              </>
                             )}
                           </div>
-                        )}
+
+                          {loadingDataQueries ? (
+                            <div className="p-5">
+                              <center>
+                                <div className="spinner-border" role="status"></div>
+                              </center>
+                            </div>
+                          ) : (
+                            <div className="query-list p-1 mt-1">
+                              <div>{this.state.filterDataQueries.map((query) => this.renderDataQuery(query))}</div>
+                              {this.state.filterDataQueries.length === 0 && (
+                                <div className="mt-5">
+                                  <center>
+                                    <span className="mute-text">{dataQueriesDefaultText}</span> <br />
+                                    <button
+                                      className={`button-family-secondary mt-3 ${this.props.darkMode && 'dark'}`}
+                                      onClick={() =>
+                                        this.setState({
+                                          options: {},
+                                          selectedDataSource: null,
+                                          selectedQuery: {},
+                                          editingQuery: false,
+                                          addingQuery: true,
+                                        })
+                                      }
+                                    >
+                                      {this.props.t('editor.createQuery', 'Create query')}
+                                    </button>
+                                  </center>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="query-definition-pane-wrapper">
-                      <div className="query-definition-pane">
-                        <div>
-                          <QueryManager
-                            toggleQueryEditor={this.toggleQueryEditor}
-                            dataSources={dataSources}
-                            dataQueries={dataQueries}
-                            mode={editingQuery ? 'edit' : 'create'}
-                            selectedQuery={selectedQuery}
-                            selectedDataSource={this.state.selectedDataSource}
-                            dataQueriesChanged={this.dataQueriesChanged}
-                            appId={appId}
-                            editingVersionId={editingVersion?.id}
-                            addingQuery={addingQuery}
-                            editingQuery={editingQuery}
-                            queryPanelHeight={queryPanelHeight}
-                            currentState={currentState}
-                            darkMode={this.props.darkMode}
-                            apps={apps}
-                            allComponents={appDefinition.components}
-                            isSourceSelected={this.state.isSourceSelected}
-                            isQueryPaneDragging={this.state.isQueryPaneDragging}
-                            runQuery={this.runQuery}
-                            dataSourceModalHandler={this.dataSourceModalHandler}
-                            setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
-                            appDefinition={appDefinition}
-                            editorState={this}
-                            showQueryConfirmation={queryConfirmationList.length > 0}
-                            loadingDataSources={loadingDataSources}
-                          />
+                      <div className="query-definition-pane-wrapper">
+                        <div className="query-definition-pane">
+                          <div>
+                            <QueryManager
+                              toggleQueryEditor={toggleQueryEditor}
+                              dataSources={dataSources}
+                              dataQueries={dataQueries}
+                              mode={editingQuery ? 'edit' : 'create'}
+                              selectedQuery={selectedQuery}
+                              selectedDataSource={this.state.selectedDataSource}
+                              dataQueriesChanged={this.dataQueriesChanged}
+                              appId={appId}
+                              editingVersionId={editingVersion?.id}
+                              addingQuery={addingQuery}
+                              editingQuery={editingQuery}
+                              queryPanelHeight={queryPanelHeight}
+                              currentState={currentState}
+                              darkMode={this.props.darkMode}
+                              apps={apps}
+                              allComponents={appDefinition.components}
+                              isSourceSelected={this.state.isSourceSelected}
+                              isQueryPaneDragging={this.state.isQueryPaneDragging}
+                              runQuery={this.runQuery}
+                              dataSourceModalHandler={this.dataSourceModalHandler}
+                              setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
+                              appDefinition={appDefinition}
+                              editorState={this}
+                              showQueryConfirmation={queryConfirmationList.length > 0}
+                              loadingDataSources={loadingDataSources}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </QueryPanel>
               </div>
               <div className="editor-sidebar">
