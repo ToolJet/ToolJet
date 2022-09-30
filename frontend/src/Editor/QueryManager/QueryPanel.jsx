@@ -92,7 +92,6 @@ const QueryPanel = ({ children }) => {
       >
         {children({
           toggleQueryEditor,
-          queryPanelHeight: height,
         })}
       </div>
     </>

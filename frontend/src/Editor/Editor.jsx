@@ -137,7 +137,6 @@ class EditorComponent extends React.Component {
       dataQueriesDefaultText: "You haven't created queries yet.",
       showQuerySearchField: false,
       isDeletingDataQuery: false,
-      showHiddenOptionsForDataQueryId: null,
       queryConfirmationList: [],
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
@@ -786,10 +785,6 @@ class EditorComponent extends React.Component {
       });
   };
 
-  setShowHiddenOptionsForDataQuery = (dataQueryId) => {
-    this.setState({ showHiddenOptionsForDataQueryId: dataQueryId });
-  };
-
   renderDataQuery = (dataQuery) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataQuery.kind);
 
@@ -812,8 +807,6 @@ class EditorComponent extends React.Component {
         key={dataQuery.id}
         onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
         role="button"
-        onMouseEnter={() => this.setShowHiddenOptionsForDataQuery(dataQuery.id)}
-        onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col-auto" style={{ width: '28px' }}>
           {sourceMeta.kind === 'runjs' ? (
@@ -839,10 +832,9 @@ class EditorComponent extends React.Component {
             </div>
           ) : (
             <button
-              className="btn badge bg-azure-lt"
+              className="btn badge bg-azure-lt delete-query"
               onClick={this.deleteDataQuery}
               style={{
-                display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
                 marginTop: '3px',
               }}
             >
@@ -1413,7 +1405,7 @@ class EditorComponent extends React.Component {
                   </div>
                 </div>
                 <QueryPanel>
-                  {({ toggleQueryEditor, queryPanelHeight }) => (
+                  {({ toggleQueryEditor }) => (
                     <div className="row main-row">
                       <div className="data-pane">
                         <div className="queries-container">
@@ -1526,13 +1518,11 @@ class EditorComponent extends React.Component {
                               editingVersionId={editingVersion?.id}
                               addingQuery={addingQuery}
                               editingQuery={editingQuery}
-                              queryPanelHeight={queryPanelHeight}
                               currentState={currentState}
                               darkMode={this.props.darkMode}
                               apps={apps}
                               allComponents={appDefinition.components}
                               isSourceSelected={this.state.isSourceSelected}
-                              isQueryPaneDragging={this.state.isQueryPaneDragging}
                               runQuery={this.runQuery}
                               dataSourceModalHandler={this.dataSourceModalHandler}
                               setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}

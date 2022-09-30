@@ -40,7 +40,6 @@ class QueryManagerComponent extends React.Component {
       theme: {},
       isSourceSelected: false,
       isFieldsChanged: false,
-      paneHeightChanged: false,
       showSaveConfirmation: false,
       restArrayValuesChanged: false,
       nextProps: null,
@@ -66,9 +65,7 @@ class QueryManagerComponent extends React.Component {
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
     let dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
-    const paneHeightChanged = this.state.queryPanelHeight !== props.queryPanelHeight;
     const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
-    const queryPaneDragged = this.state.isQueryPaneDragging !== props.isQueryPaneDragging;
     this.setState(
       {
         appId: props.appId,
@@ -79,15 +76,11 @@ class QueryManagerComponent extends React.Component {
         currentTab: 1,
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
-        queryPanelHeight: props.queryPanelHeight,
-        isQueryPaneDragging: props.isQueryPaneDragging,
         currentState: props.currentState,
         selectedSource: source,
         dataSourceMeta,
-        paneHeightChanged,
-        isSourceSelected: paneHeightChanged || queryPaneDragged ? this.state.isSourceSelected : props.isSourceSelected,
-        selectedDataSource:
-          paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource,
+        isSourceSelected: props.isSourceSelected,
+        selectedDataSource: props.selectedDataSource,
         queryPreviewData: this.state.selectedQuery?.id !== props.selectedQuery?.id ? undefined : props.queryPreviewData,
         selectedQuery: props.mode === 'create' && selectedQuery,
         theme: {
@@ -134,10 +127,7 @@ class QueryManagerComponent extends React.Component {
           }
 
           this.setState({
-            options:
-              paneHeightChanged || this.state.selectedQuery?.id === selectedQuery?.id
-                ? this.state.options
-                : selectedQuery.options,
+            options: this.state.selectedQuery?.id === selectedQuery?.id ? this.state.options : selectedQuery.options,
             selectedDataSource: source,
             selectedQuery,
             queryName: selectedQuery.name,
@@ -148,9 +138,10 @@ class QueryManagerComponent extends React.Component {
   };
 
   componentWillReceiveProps(nextProps) {
+    console.log('query___componentWillReceiveProps- ', nextProps);
     if (nextProps.loadingDataSources) return;
     const themeModeChanged = this.props.darkMode !== nextProps.darkMode;
-    if (!nextProps.isQueryPaneDragging && !this.state.paneHeightChanged && !themeModeChanged) {
+    if (!themeModeChanged) {
       if (this.props.mode === 'create' && this.state.isFieldsChanged) {
         this.setState({ showSaveConfirmation: true, nextProps });
         return;
@@ -605,7 +596,7 @@ class QueryManagerComponent extends React.Component {
                         <label className="form-label col-md-3">
                           {this.props.t('editor.queryManager.selectDatasource', 'Select Datasource')}
                         </label>
-                      )}{' '}
+                      )}
                       {this?.state?.selectedDataSource?.kind && (
                         <div className="header-query-datasource-card-container">
                           <div
