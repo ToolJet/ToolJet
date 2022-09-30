@@ -6424,3 +6424,23 @@ input.hide-input-arrows{
     background: transparent;
   }
 }
+
+.home-modal-component.modal-version-lists{
+  ul,li{
+    list-style: none;
+  };
+  .modal-header {
+    border-bottom: 1px solid rgb(188, 184, 184);
+    .btn-close {
+      top: auto;
+    }
+  }
+}
+.modal-version-lists{
+  .version-wrapper{
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0.25rem;
+    border: 1px solid rgb(134, 126, 126);
+  }
+}

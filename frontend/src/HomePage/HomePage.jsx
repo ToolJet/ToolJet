@@ -12,6 +12,8 @@ import SelectSearch from 'react-select-search';
 import Fuse from 'fuse.js';
 import configs from './Configs/AppIcon.json';
 import { withTranslation } from 'react-i18next';
+import { isArray } from 'lodash';
+import moment from 'moment';
 const { iconList, defaultIcon } = configs;
 
 class HomePageComponent extends React.Component {
@@ -45,6 +47,8 @@ class HomePageComponent extends React.Component {
       appOperations: {},
       showTemplateLibraryModal: false,
     };
+    this.versions = null;
+    this.app = {};
   }
 
   componentDidMount() {
@@ -139,13 +143,20 @@ class HomePageComponent extends React.Component {
         console.log(_error);
       });
   };
-
-  exportApp = (app) => {
+  exportApp = async (app) => {
+    this.app = app;
+    this.versions = await appService.getVersions(app.id);
+    this.versions = await this.versions.versions;
+    console.log(this.versions);
     this.setState({ isExportingApp: true });
+  };
+  exportVersionOfApp = (appId, versionId) => {
+    console.log(appId, versionId);
     appService
-      .exportApp(app.id)
+      .exportAppByVersion(appId, versionId)
       .then((data) => {
-        const appName = app.name.replace(/\s+/g, '-').toLowerCase();
+        console.log(data, 'data');
+        const appName = this.app.name.replace(/\s+/g, '-').toLowerCase();
         const fileName = `${appName}-export-${new Date().getTime()}`;
         // simulate link click download
         const json = JSON.stringify(data, null, 2);
@@ -495,6 +506,7 @@ class HomePageComponent extends React.Component {
       showAddToFolderModal,
       showChangeIconModal,
       appOperations,
+      isExportingApp,
     } = this.state;
     const appCountText = currentFolder.count ? ` (${currentFolder.count})` : '';
     const folderName = currentFolder.id
@@ -610,6 +622,42 @@ class HomePageComponent extends React.Component {
               </button>
             </div>
           </div>
+        </Modal>
+
+        <Modal
+          show={isExportingApp}
+          closeModal={() => this.setState({ isExportingApp: false })}
+          title={'Select a version to export'}
+          customClassName="modal-version-lists"
+        >
+          <ul>
+            <li className="current-version">
+              Current Version
+              <span
+                className="version-wrapper"
+                onClick={() => this.exportVersionOfApp(this.versions[0].appId, this.versions[0].id)}
+              >
+                <span>{isArray(this.versions) && this.versions[0].name}</span>
+                <span>{isArray(this.versions) && moment(this.versions[0].createdAt).format('Do MMM YYYY')}</span>
+              </span>
+            </li>
+            <ul>
+              <li>Other Versions</li>
+              {isArray(this.versions) &&
+                this.versions.map((version, index = 1) => {
+                  return (
+                    <li
+                      key={version.name}
+                      className="version-wrapper"
+                      onClick={() => this.exportVersionOfApp(version.appId, version.id)}
+                    >
+                      <span>{version.name}</span>
+                      <span>{moment(this.versions[0].createdAt).format('Do MMM YYYY')}</span>
+                    </li>
+                  );
+                })}
+            </ul>
+          </ul>
         </Modal>
 
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
