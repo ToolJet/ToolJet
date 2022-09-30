@@ -73,7 +73,7 @@ export class OauthService {
       return user;
     } else {
       if (organizationUser.status !== 'active') {
-        await this.organizationUsersService.activate(organizationUser.id, manager);
+        await this.organizationUsersService.activate(organizationUser, manager);
       }
       return existingUser;
     }
@@ -90,7 +90,7 @@ export class OauthService {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
     if (organizationUser.status !== 'active') {
-      await this.organizationUsersService.activate(organizationUser.id, manager);
+      await this.organizationUsersService.activate(organizationUser, manager);
     }
     return user;
   }
@@ -246,9 +246,15 @@ export class OauthService {
         } else if (!userDetails) {
           throw new UnauthorizedException('User does not exist in the workspace');
         } else if (userDetails.invitationToken) {
-          // User account setup not done, activating default organization
-          await this.usersService.updateUser(userDetails.id, { invitationToken: null }, manager);
-          await this.organizationUsersService.activate(userDetails.defaultOrganizationId, manager);
+          // User account setup not done, activating default organization ONLY IF PERSONAL WORKSPACE IS ALLOWED
+
+          const defaultOrganizationUser = userDetails?.organizationUsers?.find(
+            (ou) => ou.organizationId === userDetails.defaultOrganizationId
+          );
+          if (!defaultOrganizationUser) {
+            throw new UnauthorizedException('User does not exist in the workspace');
+          }
+          await this.organizationUsersService.activate(defaultOrganizationUser, manager);
         }
 
         if (!organizationDetails) {
