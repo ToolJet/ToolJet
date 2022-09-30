@@ -13,7 +13,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import { cleanObject } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 
@@ -34,9 +34,6 @@ export class AppsService {
 
     @InjectRepository(DataQuery)
     private dataQueriesRepository: Repository<DataQuery>,
-
-    @InjectRepository(FolderApp)
-    private folderAppsRepository: Repository<FolderApp>,
 
     @InjectRepository(GroupPermission)
     private groupPermissionsRepository: Repository<GroupPermission>,
@@ -181,26 +178,15 @@ export class AppsService {
   }
 
   async delete(appId: string) {
-    await this.appsRepository.update(appId, { currentVersionId: null });
-
-    const repositoriesToFetchEntitiesToBeDeleted: Repository<any>[] = [
-      this.appUsersRepository,
-      this.folderAppsRepository,
-      this.dataQueriesRepository,
-      this.dataSourcesRepository,
-      this.appVersionsRepository,
-    ];
-
-    for (const repository of repositoriesToFetchEntitiesToBeDeleted) {
-      const entities = await repository.find({
-        where: { appId },
-      });
-      for (const entity of entities) {
-        await repository.delete(entity.id);
-      }
-    }
-
-    return await this.appsRepository.delete(appId);
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.delete(AppUser, { appId });
+      await manager.delete(FolderApp, { appId });
+      await manager.delete(DataQuery, { appId });
+      await manager.delete(DataSource, { appId });
+      await manager.delete(AppVersion, { appId });
+      await manager.delete(App, { id: appId });
+    });
+    return;
   }
 
   async fetchUsers(user: any, appId: string): Promise<AppUser[]> {
