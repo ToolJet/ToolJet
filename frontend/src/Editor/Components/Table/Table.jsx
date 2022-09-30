@@ -364,6 +364,7 @@ export function Table({
   }, [state.columnResizing.isResizingColumn]);
 
   const [paginationInternalPageIndex, setPaginationInternalPageIndex] = useState(pageIndex ?? 1);
+  const [hideColumnActive, setHidecolumnActive] = useState(false);
 
   useEffect(() => {
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
@@ -430,16 +431,24 @@ export function Table({
                   <img src="assets/images/icons/download.svg" width="15" height="15" />
                 </span>
               )}
+              <p
+                className="btn btn-light btn-sm p-1 mb-0 mx-1"
+                onClick={() => setHidecolumnActive(!hideColumnActive)}
+              ></p>
             </div>
-
-            {allColumns.map((column) => (
-              <div className="cb action" key={column.id}>
-                <label>
-                  <input type="checkbox" {...column.getToggleHiddenProps()} />
-                  {` ${column.Header}`}
-                </label>
-              </div>
-            ))}
+          </div>
+          <div>
+            {hideColumnActive &&
+              allColumns.map((column) => (
+                <div className="" key={column.id}>
+                  <div className="cb action ">
+                    <label className="dropdown-item">
+                      <input type="checkbox" {...column.getToggleHiddenProps()} />
+                      {` ${column.Header}`}
+                    </label>
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
       )}
