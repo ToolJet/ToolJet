@@ -121,6 +121,7 @@ describe('organizations controller', () => {
         expect(response.body.admin).toBeTruthy();
       });
     });
+
     describe('update organization', () => {
       it('should change organization params if changes are done by admin', async () => {
         const { user, organization } = await createUser(app, {
@@ -151,6 +152,20 @@ describe('organizations controller', () => {
           .set('Authorization', authHeaderForUser(developerUserData.user));
 
         expect(response.statusCode).toBe(403);
+      });
+
+      it('should change organization name if changes are done by admin', async () => {
+        const { user, organization } = await createUser(app, {
+          email: 'admin@tooljet.io',
+        });
+        const response = await request(app.getHttpServer())
+          .patch('/api/organizations/name')
+          .send({ name: 'new name' })
+          .set('Authorization', authHeaderForUser(user));
+
+        expect(response.statusCode).toBe(200);
+        await organization.reload();
+        expect(organization.name).toBe('new name');
       });
     });
     describe('update organization configs', () => {

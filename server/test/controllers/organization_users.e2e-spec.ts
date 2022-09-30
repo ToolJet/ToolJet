@@ -257,6 +257,28 @@ describe('organization users controller', () => {
     });
   });
 
+  describe('POST /api/organization_users/:userId/archive-all', () => {
+    it('only superadmins can able to archive all users', async () => {
+      const adminUserData = await createUser(app, { email: 'admin@tooljet.io', userType: 'instance' });
+      const developerUserData = await createUser(app, { email: 'developer@tooljet.io', userType: 'workspace' });
+      const viewerUserData = await createUser(app, { email: 'viewer@tooljet.io', userType: 'workspace' });
+
+      const adminRequestResponse = await request(app.getHttpServer())
+        .post(`/api/organization_users/${viewerUserData.user.id}/archive-all`)
+        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .send();
+
+      expect(adminRequestResponse.statusCode).toBe(201);
+
+      const developerRequestResponse = await request(app.getHttpServer())
+        .post(`/api/organization_users/${viewerUserData.user.id}/archive-all`)
+        .set('Authorization', authHeaderForUser(developerUserData.user))
+        .send();
+
+      expect(developerRequestResponse.statusCode).toBe(403);
+    });
+  });
+
   afterAll(async () => {
     await app.close();
   });
