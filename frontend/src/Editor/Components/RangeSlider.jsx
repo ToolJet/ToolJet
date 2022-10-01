@@ -47,6 +47,7 @@ export const RangeSlider = function RangeSlider({
   const onSliderChange = (value) => {
     setExposedVariable('value', value);
     setSliderValue(value);
+    fireEvent('onChange');
   };
 
   const onRangeChange = (value) => {
