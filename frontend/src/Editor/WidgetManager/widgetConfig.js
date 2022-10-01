@@ -1017,7 +1017,7 @@ export const widgets = [
         validation: {
           schema: { type: 'string' },
         },
-      }
+      },
     },
     exposedVariables: {
       value: 0,

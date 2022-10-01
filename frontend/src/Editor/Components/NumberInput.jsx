@@ -39,7 +39,12 @@ export const NumberInput = function NumberInput({ height, properties, styles, se
       type="number"
       className="form-control"
       placeholder={properties.placeholder}
-      style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px`, borderColor: borderColor || 'transparent' }}
+      style={{
+        height,
+        display: visibility ? '' : 'none',
+        borderRadius: `${borderRadius}px`,
+        borderColor: borderColor || 'transparent',
+      }}
       value={value}
     />
   );
