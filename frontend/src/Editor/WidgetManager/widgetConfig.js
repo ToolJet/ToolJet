@@ -2037,6 +2037,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     exposedVariables: {},
     definition: {
@@ -2053,6 +2060,7 @@ export const widgets = [
         borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderColor: { value: '' },
       },
     },
   },
