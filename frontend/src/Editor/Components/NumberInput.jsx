@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
 export const NumberInput = function NumberInput({ height, properties, styles, setExposedVariable }) {
-  const { visibility, borderRadius } = styles;
+  const { visibility, borderRadius, borderColor } = styles;
 
   const [value, setValue] = React.useState(parseInt(properties.value));
 
@@ -39,7 +39,7 @@ export const NumberInput = function NumberInput({ height, properties, styles, se
       type="number"
       className="form-control"
       placeholder={properties.placeholder}
-      style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
+      style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px`, borderColor: borderColor || 'transparent' }}
       value={value}
     />
   );
