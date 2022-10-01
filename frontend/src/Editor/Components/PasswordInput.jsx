@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const PasswordInput = ({ height, validate, properties, styles, setExposedVariable, darkMode }) => {
+export const PasswordInput = ({ height, validate, properties, styles, setExposedVariable, darkMode, fireEvent }) => {
   const { visibility, disabledState, borderRadius } = styles;
   const placeholder = properties.placeholder;
 
@@ -19,6 +19,7 @@ export const PasswordInput = ({ height, validate, properties, styles, setExposed
         onChange={(e) => {
           setPasswordValue(e.target.value);
           setExposedVariable('value', e.target.value);
+          fireEvent('onChange')
         }}
         type={'password'}
         className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
