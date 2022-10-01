@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const PasswordInput = ({ height, validate, properties, styles, setExposedVariable, darkMode }) => {
-  const { visibility, disabledState, borderRadius } = styles;
+  const { visibility, disabledState, borderRadius, backgroundColor } = styles;
   const placeholder = properties.placeholder;
 
   const [passwordValue, setPasswordValue] = React.useState('');
@@ -21,12 +21,16 @@ export const PasswordInput = ({ height, validate, properties, styles, setExposed
           setExposedVariable('value', e.target.value);
         }}
         type={'password'}
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
-          darkMode && 'dark-theme-placeholder'
-        }`}
+        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${darkMode && 'dark-theme-placeholder'
+          }`}
         placeholder={placeholder}
         value={passwordValue}
-        style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
+        style={{
+          height,
+          display: visibility ? '' : 'none',
+          borderRadius: `${borderRadius}px`,
+          backgroundColor,
+        }}
       />
 
       <div className="invalid-feedback">{validationError}</div>
