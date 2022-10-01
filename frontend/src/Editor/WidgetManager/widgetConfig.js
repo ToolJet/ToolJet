@@ -3980,7 +3980,9 @@ export const widgets = [
         },
       },
     },
-    events: {},
+    events: {
+      onChange: { displayName: 'On change' },
+    },
     styles: {
       lineColor: {
         type: 'color',
