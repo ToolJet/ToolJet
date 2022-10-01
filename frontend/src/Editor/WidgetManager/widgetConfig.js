@@ -881,6 +881,11 @@ export const widgets = [
         displayName: 'Text Color',
         validation: { schema: { type: 'string' } },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border Color',
+        validation: { schema: { type: 'string' } },
+      },
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',
