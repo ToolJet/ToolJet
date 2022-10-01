@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export const TextInput = function TextInput({
   height,
@@ -98,7 +98,7 @@ export const TextInput = function TextInput({
           darkMode && 'dark-theme-placeholder'
         }`}
         placeholder={properties.placeholder}
-        style={{ height, borderRadius: `${styles.borderRadius}px`, color: textColor }}
+        style={{ height, borderRadius: `${styles.borderRadius}px`, color: textColor, backgroundColor: `${styles.backgroundColor}`}}
         value={value}
         data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       />
