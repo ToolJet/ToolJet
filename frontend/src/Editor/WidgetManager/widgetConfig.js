@@ -988,7 +988,9 @@ export const widgets = [
         },
       },
     },
-    events: {},
+    events: {
+      onChange: {displayName: 'On change'}
+    },
     styles: {
       visibility: {
         type: 'toggle',
