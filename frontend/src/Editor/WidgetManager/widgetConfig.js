@@ -4703,7 +4703,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
-    events: {},
+    events: {
+      onChange: { displayName: 'On change' },
+    },
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
     },

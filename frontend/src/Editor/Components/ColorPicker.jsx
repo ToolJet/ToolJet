@@ -9,6 +9,7 @@ export const ColorPicker = function ({
   darkMode,
   height,
   registerAction,
+  fireEvent,
 }) {
   const { visibility } = styles;
   const defaultColor = properties.defaultColor;
@@ -48,15 +49,17 @@ export const ColorPicker = function ({
     'setColor',
     async function (color) {
       if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(color)) {
-        setExposedVariable('selectedColorHex', `${color}`);
-        setExposedVariable('selectedColorRGB', hexToRgb(color));
-        setExposedVariable('selectedColorRGBA', hexToRgba(color));
+        setExposedVariable('selectedColorHex', `${color}`).then(fireEvent('onChange'));
+        setExposedVariable('selectedColorRGB', hexToRgb(color)).then(fireEvent('onChange'));
+        setExposedVariable('selectedColorRGBA', hexToRgba(color)).then(fireEvent('onChange'));
         setColor(color);
+        fireEvent('onChange');
       } else {
         setExposedVariable('selectedColorHex', 'undefined');
         setExposedVariable('selectedColorRGB', 'undefined');
         setExposedVariable('selectedColorRGBA', 'undefined');
         setColor('Invalid Color');
+        fireEvent('onChange');
       }
     },
     [setColor]
@@ -81,9 +84,10 @@ export const ColorPicker = function ({
     const { r, g, b, a } = color.rgb;
     const { hex: hexColor } = color;
     setColor(hexColor);
-    setExposedVariable('selectedColorHex', `${hexColor}`);
-    setExposedVariable('selectedColorRGB', `rgb(${r},${g},${b})`);
-    setExposedVariable('selectedColorRGBA', `rgb(${r},${g},${b},${a})`);
+    fireEvent('onChange');
+    setExposedVariable('selectedColorHex', `${hexColor}`).then(fireEvent('onChange'));
+    setExposedVariable('selectedColorRGB', `rgb(${r},${g},${b})`).then(fireEvent('onChange'));
+    setExposedVariable('selectedColorRGBA', `rgb(${r},${g},${b},${a})`).then(fireEvent('onChange'));
   };
   //background color style for the div dispaying box filled by selected color
   const backgroundColorDivStyle = {
