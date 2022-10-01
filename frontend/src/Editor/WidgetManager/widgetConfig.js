@@ -1011,6 +1011,11 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: { schema: { type: 'string' } },
+      },
     },
     exposedVariables: {
       value: 0,

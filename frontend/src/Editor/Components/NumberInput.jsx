@@ -3,6 +3,8 @@ import React, { useEffect } from 'react';
 export const NumberInput = function NumberInput({ height, properties, styles, setExposedVariable }) {
   const { visibility, borderRadius } = styles;
 
+  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
+
   const [value, setValue] = React.useState(parseInt(properties.value));
 
   const handleChange = (e) => {
@@ -39,7 +41,7 @@ export const NumberInput = function NumberInput({ height, properties, styles, se
       type="number"
       className="form-control"
       placeholder={properties.placeholder}
-      style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
+      style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px`, color: textColor }}
       value={value}
     />
   );
