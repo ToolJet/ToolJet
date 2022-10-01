@@ -12,7 +12,7 @@ export const Container = function Container({
   styles,
   darkMode,
 }) {
-  const { visibility, disabledState, borderRadius } = styles;
+  const { visibility, disabledState, borderRadius,borderColor } = styles;
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const computedStyles = {
@@ -20,6 +20,7 @@ export const Container = function Container({
     height,
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
+    borderColor,
   };
 
   const parentRef = useRef(null);
