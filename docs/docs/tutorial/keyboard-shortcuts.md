@@ -14,6 +14,8 @@ You can copy the component  on the visual app editor using the following shortcu
 **On Mac:** `cmd + c`
 
 **On Linux/Windows:** `ctrl + c`
+
+![Alt Text](https://media.giphy.com/media/qUWbe5sGsVmP7datul/giphy.gif)
 ## Paste
 
 You can paste the selected component  using the following shortcut keys:
