@@ -45,28 +45,28 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 ## All features
 
-- *Visual app builder:* 35+ built-in responsive widgets such as Tables, Charts, Lists, Forms, Progressbars, and more.
-- *20+ data sources:* connect to databases, cloud storages and APIs.
-- *Desktop & mobile:* layout widths can be customised to support different screens.
-- *Self-host:* (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
-- *Collaborate:* add comments anywhere on the canvas and tag your team members.
-- *Extend with plugins:* use our [commandline tool](https://www.npmjs.com/package/@tooljet/cli) to easily bootstrap new connectors.
-- *Version control:* every application have different versions with proper release cycle.
-- *Run JS code:* ability custom JavaScript snippets
-- *Granular access control* on organization-level and app-level.
-- *Low-code:* write JS code almost anywhere in the builder. For example, the color property of text can be set to `status === 'success' ? 'green' : 'red'`
-- *No-code query editors:* for all supported data sources.
-- *Join and transform data:* transform query results using just JavaScript code.
-- *Secure:* All the credentials are securely encrypted using `aes-256-gcm`.
-- *Doesn't store data:* ToolJet acts only as a proxy and doesn't store any data.
-- *SSO:* Supports multiple SSO providers
+- **Visual app builder:** 35+ built-in responsive widgets such as Tables, Charts, Lists, Forms, Progressbars, and more.
+- **20+ data sources:** connect to databases, cloud storages and APIs.
+- **Desktop & mobile:** layout widths can be customised to support different screens.
+- **Self-host:** (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
+- **Collaborate:** add comments anywhere on the canvas and tag your team members.
+- **Extend with plugins:** use our [commandline tool](https://www.npmjs.com/package/@tooljet/cli) to easily bootstrap new connectors.
+- **Version control:** every application have different versions with proper release cycle.
+- **Run JS code:** ability custom JavaScript snippets
+- **Granular access control** on organization-level and app-level.
+- **Low-code:** write JS code almost anywhere in the builder. For example, the color property of text can be set to `status === 'success' ? 'green' : 'red'`
+- **No-code query editors:** for all supported data sources.
+- **Join and transform data:** transform query results using just JavaScript code.
+- **Secure:** All the credentials are securely encrypted using `aes-256-gcm`.
+- **Doesn't store data:** ToolJet acts only as a proxy and doesn't store any data.
+- **SSO:** Supports multiple SSO providers
 
 <hr>
 
 ## Quickstart
 The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/setup/architecture).
 
-You can deploy ToolJet on Heroku for free using the one-click-deployment button below.
+You can deploy ToolJet on Heroku for free using the one-click-deployment button only untill **28th November 2022**.
 <p align="center">
   <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main">
      <img src="https://www.herokucdn.com/deploy/button.svg" />
@@ -115,6 +115,7 @@ You can use ToolJet cloud for a fully managed solution. If you want to self-host
 | Heroku  | [Link](https://docs.tooljet.com/docs/setup/heroku)  |
 | Docker  | [Link](https://docs.tooljet.com/docs/setup/docker)   |
 | Google Cloud Run  | [Link](https://docs.tooljet.com/docs/setup/google-cloud-run)   |
+
 
 ## Community support
 For general help using ToolJet, please refer to the official [documentation](https://docs.tooljet.com/docs/intro/). For additional help, you can use one of these channels to ask a question:
