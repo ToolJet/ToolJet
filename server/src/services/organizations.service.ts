@@ -131,8 +131,9 @@ export class OrganizationsService {
       firstName: searchInput,
       lastName: searchInput,
     };
-    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'or')
+    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'or', true)
       .orderBy('user.firstName', 'ASC')
+      .take(10)
       .getMany();
 
     return organizationUsers?.map((orgUser) => {
@@ -147,7 +148,12 @@ export class OrganizationsService {
     });
   }
 
-  organizationUsersQuery(organizationId: string, options: UserFilterOptions, condition?: 'and' | 'or') {
+  organizationUsersQuery(
+    organizationId: string,
+    options: UserFilterOptions,
+    condition?: 'and' | 'or',
+    getSuperAdmin?: boolean
+  ) {
     const getOrConditions = () => {
       return new Brackets((qb) => {
         if (options?.email)
@@ -180,11 +186,28 @@ export class OrganizationsService {
           });
       });
     };
-    const query = createQueryBuilder(OrganizationUser, 'organization_user')
-      .innerJoinAndSelect('organization_user.user', 'user')
-      .where('organization_user.organization_id = :organizationId', {
+    const query = createQueryBuilder(OrganizationUser, 'organization_user').innerJoinAndSelect(
+      'organization_user.user',
+      'user'
+    );
+
+    if (getSuperAdmin) {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.orWhere('organization_user.organization_id = :organizationId', {
+            organizationId,
+          });
+          qb.orWhere('user.userType = :userType', {
+            userType: 'instance',
+          });
+        })
+      );
+    } else {
+      query.andWhere('organization_user.organization_id = :organizationId', {
         organizationId,
       });
+    }
+
     query.andWhere(condition === 'and' ? getAndConditions() : getOrConditions());
     return query;
   }

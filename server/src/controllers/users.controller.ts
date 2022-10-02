@@ -80,7 +80,7 @@ export class UsersController {
     if (userType === 'workspace') {
       const instanceUsers = await this.usersService.findSuperAdmins();
       if (instanceUsers.length === 1 && instanceUsers[0].id === userId) {
-        throw new Error('Atleast one super admin is required');
+        throw new Error('At least one super admin is required');
       }
     }
     return await this.usersService.updateUser(userId, { userType });
@@ -119,7 +119,7 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('fetchAllUsers', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can('viewAllUsers', UserEntity))
   @Get()
   async index(@Request() req) {
     const users = await this.usersService.findAll(req.user.organizationId);

@@ -157,23 +157,19 @@ class AuditLogs extends React.Component {
     return `${user.first_name} ${user.last_name}`;
   };
 
-  userEmailForId = (userId) => {
-    return this.state.usersMap[userId]['email'];
-  };
-
   humanizeLog = (auditLog) => {
     if (auditLog.user_id === auditLog.resource_id && auditLog.resource_type === 'USER') {
       return (
         <span>
           <time>{moment.utc(auditLog.created_at).fromNow(true)} ago: </time>
-          <code>{this.userEmailForId(auditLog.user_id)}</code> performed <mark>{auditLog.action_type}</mark>
+          <code>{auditLog.user?.email}</code> performed <mark>{auditLog.action_type}</mark>
         </span>
       );
     } else {
       return (
         <span>
           <time>{moment.utc(auditLog.created_at).fromNow(true)} ago: </time>
-          <code>{this.userEmailForId(auditLog.user_id)}</code> performed <mark>{auditLog.action_type}</mark> on{' '}
+          <code>{auditLog.user?.email}</code> performed <mark>{auditLog.action_type}</mark> on{' '}
           {auditLog.resource_type.toLowerCase().replaceAll('_', ' ')} - <samp>{auditLog.resource_name}</samp>
         </span>
       );

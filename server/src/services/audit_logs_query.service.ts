@@ -1,45 +1,55 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { User } from 'src/entities/user.entity';
-import { Between, In, Repository } from 'typeorm';
+import { createQueryBuilder } from 'typeorm';
 
 @Injectable()
 export class AuditLogsQueryService {
-  constructor(
-    @InjectRepository(AuditLog)
-    private auditLogRepository: Repository<AuditLog>
-  ) {}
-
-  public async findPerPage(user: User, page: number, perPage: number, searchParams: any): Promise<AuditLog[]> {
-    const { timeFrom, timeTo, users, actions, resources } = searchParams;
-
-    const whereClause = {
-      ...(timeFrom && timeTo && { createdAt: Between(timeFrom, timeTo) }),
-      ...(users && { userId: In(users.split(',')) }),
-      ...(resources && { resourceType: In(resources.split(',')) }),
-      ...(actions && { actionType: In(actions.split(',')) }),
-    };
-
-    return this.auditLogRepository.find({
-      where: { organizationId: user.organizationId, ...whereClause },
-      take: perPage,
-      skip: perPage * (page - 1),
-      order: { createdAt: 'DESC' },
-    });
+  public async findPerPage(user: User, page = 1, perPage = 10, searchParams: any): Promise<AuditLog[]> {
+    return await this.#getQuery(user.organizationId, searchParams)
+      .take(perPage)
+      .skip(perPage * (page - 1))
+      .getMany();
   }
 
   public async count(user: User, searchParams: any): Promise<number> {
-    const { timeFrom, timeTo, users, actions, resources } = searchParams;
+    return await this.#getQuery(user.organizationId, searchParams).getCount();
+  }
 
-    const whereClause = {
-      ...(timeFrom && timeTo && { createdAt: Between(timeFrom, timeTo) }),
-      ...(users && { userId: In(users.split(',')) }),
-      ...(resources && { resourceType: In(resources.split(',')) }),
-      ...(actions && { actionType: In(actions.split(',')) }),
-    };
-    return this.auditLogRepository.count({
-      where: { organizationId: user.organizationId, ...whereClause },
-    });
+  #getQuery(organizationId: string, searchParams: any) {
+    const { timeFrom, timeTo, users, apps, actions, resources } = searchParams;
+
+    const query = createQueryBuilder(AuditLog, 'audit_log')
+      .leftJoin('audit_log.user', 'user')
+      .addSelect(['user.id', 'user.email', 'user.firstName', 'user.lastName']);
+
+    if (timeFrom) {
+      query.andWhere('audit_log.createdAt >= :timeFrom', { timeFrom });
+    }
+
+    if (timeTo) {
+      query.andWhere('audit_log.createdAt <= :timeTo', { timeTo });
+    }
+
+    if (users) {
+      query.andWhere('audit_log.userId IN(:...users)', { users: users.split(',') });
+    }
+
+    if (apps) {
+      query.andWhere('audit_log.resourceName IN(:...apps)', { apps: apps.split(',') });
+    }
+
+    if (resources) {
+      query.andWhere('audit_log.resourceType IN(:...resources)', { resources: resources.split(',') });
+    }
+
+    if (actions) {
+      query.andWhere('audit_log.actionType IN(:...actions)', { actions: actions.split(',') });
+    }
+
+    query
+      .andWhere('audit_log.organizationId = :organizationId', { organizationId })
+      .orderBy('audit_log.createdAt', 'DESC');
+    return query;
   }
 }
