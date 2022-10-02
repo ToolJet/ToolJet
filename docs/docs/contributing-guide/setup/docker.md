@@ -8,12 +8,12 @@ title: Docker
 Docker compose is the easiest way to setup ToolJet server and client locally.
 
 :::info
-If you rather want to try out ToolJet locally with docker, you can follow the steps [here](https://docs.tooljet.com/docs/setup/docker-local).
+If you really want to try out ToolJet locally with docker, you can follow the steps [here](https://docs.tooljet.com/docs/setup/docker-local).
 :::
 
 ## Prerequisites
 
-Make sure you have the latest version of `docker` and `docker-compose` installed.
+Ensure you are using the most recent version of `docker` and `docker-compose` installed.
 
 [Official docker installation guide](https://docs.docker.com/desktop/)
 
