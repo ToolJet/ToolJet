@@ -357,13 +357,15 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
             <div className="container-xl">
               <div className="card">
                 <nav className="nav nav-tabs">
-                  <a
-                    onClick={() => this.setState({ currentTab: 'apps' })}
-                    className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
-                    data-cy="apps-link"
-                  >
-                    {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
-                  </a>
+                  {groupPermission?.group !== 'admin' && (
+                    <a
+                      onClick={() => this.setState({ currentTab: 'apps' })}
+                      className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
+                      data-cy="apps-link"
+                    >
+                      {this.props.t('header.organization.menus.manageGroups.permissionResources.apps', 'Apps')}
+                    </a>
+                  )}
                   <a
                     onClick={() => this.setState({ currentTab: 'users' })}
                     className={cx('nav-item nav-link', { active: currentTab === 'users' })}
