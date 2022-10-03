@@ -70,9 +70,7 @@ class TableComponent extends React.Component {
 
   onActionButtonPropertyChanged = (index, property, value) => {
     const actions = this.props.component.component.definition.properties.actions;
-    const newVal = resolveReferences(value, this.props.currentState);
     actions.value[index][property] = value;
-    console.log('check1', actions.value[index][property], newVal, actions);
     this.props.paramUpdated({ name: 'actions' }, 'value', actions.value, 'properties');
   };
 
@@ -552,20 +550,6 @@ class TableComponent extends React.Component {
               placeholder="Select position"
             />
           </div>
-          <div className="field mb-2">
-            <label className="form-label">{this.props.t('widget.Table.buttonDisabled', 'Disabled')}</label>
-            <CodeHinter
-              currentState={this.props.currentState}
-              initialValue={action.buttonDisabled ?? false}
-              theme={this.props.darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={'false'}
-              onChange={(value) => this.onActionButtonPropertyChanged(index, 'buttonDisabled', value)}
-              usePortalEditor={false}
-            />
-          </div>
-
           <Color
             param={{ name: 'actionButtonBackgroundColor' }}
             paramType="properties"
