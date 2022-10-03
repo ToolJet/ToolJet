@@ -90,48 +90,35 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
             <div className="py-2">
               <div className="current-version py-2">
                 <span className="text-muted">Current Version</span>
-                <span
-                  className="version-wrapper mt-2"
-                  role="button"
-                  onClick={({ target }) => setVersionId(target.value)}
-                >
-                  <input
-                    type="radio"
-                    value={versions[0].id}
-                    id={`${versions[0].name}`}
-                    name="version"
-                    checked={versionId === versions[0].id}
-                  />
-                  <label htmlFor={`${versions[0].name}`} className="d-flex flex-column px-4 w-100">
-                    <span>{versions[0].name}</span>
-                    <span className="text-secondary">
-                      {`Created at ${moment(versions[0].createdAt).format('Do MMM YYYY')}`}
-                    </span>
-                  </label>
-                </span>
+                <InputRadioField
+                  versionId={versions[0].id}
+                  versionName={versions[0].name}
+                  versionCreatedAt={versions[0].createdAt}
+                  checked={versionId === versions[0].id}
+                  setVersionId={setVersionId}
+                />
               </div>
-              {versions.length >= 2 && (
+              {versions.length >= 2 ? (
                 <div className="other-versions py-2">
-                  <span className=" text-muted">Other Versions</span>
+                  <span className="text-muted">Other Versions</span>
                   {versions.map((version, index) => {
                     if (index !== 0) {
                       return (
-                        <span
+                        <InputRadioField
+                          versionId={version.id}
+                          versionName={version.name}
+                          versionCreatedAt={version.createdAt}
                           key={version.name}
-                          className="version-wrapper my-2"
-                          onClick={({ target }) => setVersionId(target.value)}
-                        >
-                          <input type="radio" value={version.id} id={`${version.name}`} name="version" />
-                          <label htmlFor={`${version.name}`} className="d-flex flex-column px-4 w-100">
-                            <span>{version.name}</span>
-                            <span className="text-secondary">{`Created at ${moment(version.createdAt).format(
-                              'Do MMM YYYY'
-                            )}`}</span>
-                          </label>
-                        </span>
+                          checked={versionId === version.id}
+                          setVersionId={setVersionId}
+                        />
                       );
                     }
                   })}
+                </div>
+              ) : (
+                <div className="other-versions py-2">
+                  <span className="text-muted">No other versions found</span>
                 </div>
               )}
             </div>
@@ -146,13 +133,45 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
           </BootstrapModal.Footer>
         </>
       ) : (
-        <BootstrapModal.Body>
-          <div className="d-flex justify-content-center align-items-center flex-column" style={{ minHeight: '30vh' }}>
-            <div>Loading versions ...</div>
-            <div className="spinner-border" role="status"></div>
-          </div>
-        </BootstrapModal.Body>
+        <Loader />
       )}
     </BootstrapModal>
+  );
+}
+
+function InputRadioField({
+  versionId,
+  versionName,
+  versionCreatedAt,
+  checked = undefined,
+  key = undefined,
+  setVersionId,
+}) {
+  return (
+    <span key={key} className="version-wrapper my-2">
+      <input
+        type="radio"
+        value={versionId}
+        id={`${versionName}`}
+        name="version"
+        checked={checked}
+        onClick={({ target }) => setVersionId(target.value)}
+      />
+      <label htmlFor={`${versionName}`} className="d-flex flex-column px-4 w-100">
+        <span>{versionName}</span>
+        <span className="text-secondary">{`Created at ${moment(versionCreatedAt).format('Do MMM YYYY')}`}</span>
+      </label>
+    </span>
+  );
+}
+
+function Loader() {
+  return (
+    <BootstrapModal.Body>
+      <div className="d-flex justify-content-center align-items-center flex-column" style={{ minHeight: '30vh' }}>
+        <div className="pb-2">Loading versions ...</div>
+        <div className="spinner-border" role="status"></div>
+      </div>
+    </BootstrapModal.Body>
   );
 }
