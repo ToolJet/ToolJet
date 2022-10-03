@@ -6404,10 +6404,6 @@ input.hide-input-arrows{
         background-color: transparent;
       }
     }
-  }
-}
-.datepicker-widget.theme-dark{
-  .react-datepicker__tab-loop {
     .react-datepicker__month{
       background-color: #232e3c;
       .react-datepicker__day{
@@ -6419,11 +6415,7 @@ input.hide-input-arrows{
       .react-datepicker__day--outside-month{
         opacity: 0.5;
       }
-    } 
-  }
-}
-.datepicker-widget.theme-dark{
-  .react-datepicker__tab-loop{
+    }
     .react-datepicker{
       background-color: #232e3c;
     }
@@ -6458,6 +6450,9 @@ input.hide-input-arrows{
   }
   .DayPicker__withBorder{
     border-radius: 0;
+  }
+  .DateRangePicker_picker {
+    background-color: transparent;
   }
 }
 
