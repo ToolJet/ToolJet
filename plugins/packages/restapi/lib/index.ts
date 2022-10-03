@@ -281,7 +281,7 @@ export default class RestapiQueryService implements QueryService {
       }
     } catch (error) {
       console.log(error.response.body);
-      throw new QueryError('could not connect to Oauth server', error.response, {});
+      throw new QueryError('could not connect to Oauth server', error.response.body, {});
     }
     return accessTokenDetails;
   }
