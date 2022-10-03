@@ -1,17 +1,19 @@
 /* eslint-disable react/jsx-key */
-import React, { useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTable } from 'react-table';
-import postgrest from '@/_helpers/postgrest';
+import Overlay from 'react-bootstrap/Overlay';
+import Popover from 'react-bootstrap/Popover';
+// import postgrest from '@/_helpers/postgrest';
 
 const App = () => {
-  useEffect(() => {
-    postgrest
-      .from('tables')
-      .select()
-      .then((response) => {
-        console.log('response', response);
-      });
-  }, []);
+  // useEffect(() => {
+  //   postgrest
+  //     .from('tables')
+  //     .select()
+  //     .then((response) => {
+  //       console.log('response', response);
+  //     });
+  // }, []);
 
   const data = React.useMemo(
     () => [
@@ -54,6 +56,16 @@ const App = () => {
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({ columns, data });
 
+  const [show, setShow] = useState(false);
+  const [target, setTarget] = useState(null);
+  const ref = useRef(null);
+
+  const handleClick = (event) => {
+    event.persist();
+    setShow(!show);
+    setTarget(event.target);
+  };
+
   return (
     <div className="table-responsive">
       <table {...getTableProps()} className="table card-table table-vcenter text-nowrap datatable">
@@ -61,10 +73,33 @@ const App = () => {
           {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps()} className="w-1">
+                <th ref={ref} {...column.getHeaderProps()} className="w-1" onClick={handleClick}>
                   {column.render('Header')}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="icon icon-sm text-dark icon-thick float-right"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    stroke="currentColor"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <polyline points="6 15 12 9 18 15"></polyline>
+                  </svg>
                 </th>
               ))}
+              <Overlay show={show} target={target} placement="bottom" container={ref} containerPadding={20}>
+                <Popover id="popover-contained">
+                  <Popover.Title as="h3">Popover bottom</Popover.Title>
+                  <Popover.Content>
+                    <strong>Holy guacamole!</strong> Check this info.
+                  </Popover.Content>
+                </Popover>
+              </Overlay>
             </tr>
           ))}
         </thead>

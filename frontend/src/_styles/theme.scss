@@ -27,6 +27,10 @@ button {
   padding: 0;
 }
 
+.float-right {
+  float: right;
+}
+
 .font-500 {
   font-weight: 500;
 }
@@ -6358,4 +6362,10 @@ input.hide-input-arrows{
 
 .dragged-column {
   z-index: 1001;
+}
+
+#storage-filter-popover {
+  max-width: 800px;
+  width: 800px;
+  background-color: $white;
 }
