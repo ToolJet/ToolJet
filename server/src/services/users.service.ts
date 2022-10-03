@@ -237,19 +237,20 @@ export class UsersService {
     if (result == 0) throw new BadRequestException('Atleast one active admin is required.');
   }
 
-  async hasGroup(user: User, group: string, organizationId?: string): Promise<boolean> {
-    const orgId = organizationId || user.organizationId;
+  async hasGroup(user: User, group: string, organizationId?: string, manager?: EntityManager): Promise<boolean> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const result = await manager
+        .createQueryBuilder(GroupPermission, 'group_permissions')
+        .innerJoin('group_permissions.userGroupPermission', 'user_group_permissions')
+        .where('group_permissions.organization_id = :organizationId', {
+          organizationId: organizationId || user.organizationId,
+        })
+        .andWhere('group_permissions.group = :group ', { group })
+        .andWhere('user_group_permissions.user_id = :userId', { userId: user.id })
+        .getCount();
 
-    const result = await createQueryBuilder(GroupPermission, 'group_permissions')
-      .innerJoin('group_permissions.userGroupPermission', 'user_group_permissions')
-      .where('group_permissions.organization_id = :organizationId', {
-        organizationId: orgId,
-      })
-      .andWhere('group_permissions.group = :group ', { group })
-      .andWhere('user_group_permissions.user_id = :userId', { userId: user.id })
-      .getCount();
-
-    return result > 0;
+      return result > 0;
+    }, manager);
   }
 
   async userCan(user: User, action: string, entityName: string, resourceId?: string): Promise<boolean> {
@@ -400,12 +401,13 @@ export class UsersService {
     return permissions.some((p) => p[action]);
   }
 
-  async groupPermissions(user: User): Promise<GroupPermission[]> {
-    const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId);
-    const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
-    const groupPermissionRepository = getRepository(GroupPermission);
+  async groupPermissions(user: User, manager?: EntityManager): Promise<GroupPermission[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
+      const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
 
-    return await groupPermissionRepository.findByIds(groupIds);
+      return await manager.findByIds(GroupPermission, groupIds);
+    }, manager);
   }
 
   async groupPermissionsForOrganization(organizationId: string) {
@@ -414,40 +416,47 @@ export class UsersService {
     return await groupPermissionRepository.find({ organizationId });
   }
 
-  async appGroupPermissions(user: User, appId?: string): Promise<AppGroupPermission[]> {
-    const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId);
+  async appGroupPermissions(user: User, appId?: string, manager?: EntityManager): Promise<AppGroupPermission[]> {
+    const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
 
     if (!groupIds || groupIds.length === 0) {
       return [];
     }
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const query = manager
+        .createQueryBuilder(AppGroupPermission, 'app_group_permissions')
+        .innerJoin(
+          'app_group_permissions.groupPermission',
+          'group_permissions',
+          'group_permissions.organization_id = :organizationId',
+          {
+            organizationId: user.organizationId,
+          }
+        )
+        .where('app_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
 
-    const query = createQueryBuilder(AppGroupPermission, 'app_group_permissions')
-      .innerJoin(
-        'app_group_permissions.groupPermission',
-        'group_permissions',
-        'group_permissions.organization_id = :organizationId',
-        {
-          organizationId: user.organizationId,
-        }
-      )
-      .where('app_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
-
-    if (appId) {
-      query.andWhere('app_group_permissions.appId = :appId', { appId });
-    }
-    return await query.getMany();
+      if (appId) {
+        query.andWhere('app_group_permissions.appId = :appId', { appId });
+      }
+      return await query.getMany();
+    }, manager);
   }
 
-  async userGroupPermissions(user: User, organizationId?: string): Promise<UserGroupPermission[]> {
-    const orgId = organizationId || user.organizationId;
-
-    return await createQueryBuilder(UserGroupPermission, 'user_group_permissions')
-      .innerJoin('user_group_permissions.groupPermission', 'group_permissions')
-      .where('group_permissions.organization_id = :organizationId', {
-        organizationId: orgId,
-      })
-      .andWhere('user_group_permissions.user_id = :userId', { userId: user.id })
-      .getMany();
+  async userGroupPermissions(
+    user: User,
+    organizationId?: string,
+    manager?: EntityManager
+  ): Promise<UserGroupPermission[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager
+        .createQueryBuilder(UserGroupPermission, 'user_group_permissions')
+        .innerJoin('user_group_permissions.groupPermission', 'group_permissions')
+        .where('group_permissions.organization_id = :organizationId', {
+          organizationId: organizationId || user.organizationId,
+        })
+        .andWhere('user_group_permissions.user_id = :userId', { userId: user.id })
+        .getMany();
+    }, manager);
   }
 }
