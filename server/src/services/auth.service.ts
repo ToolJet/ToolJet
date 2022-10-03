@@ -18,7 +18,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
@@ -27,13 +27,6 @@ import { InstanceSettingsService } from './instance_settings.service';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
-interface JWTPayload {
-  username: string;
-  sub: string;
-  organizationId: string;
-  isSSOLogin?: boolean;
-  isPasswordLogin: boolean;
-}
 @Injectable()
 export class AuthService {
   constructor(
@@ -179,27 +172,7 @@ export class AuthService {
         manager
       );
 
-      const payload: JWTPayload = {
-        username: user.id,
-        sub: user.email,
-        organizationId: user.organizationId,
-        isPasswordLogin: true,
-      };
-
-      return decamelizeKeys({
-        id: user.id,
-        auth_token: this.jwtService.sign(payload),
-        email: user.email,
-        first_name: user.firstName,
-        last_name: user.lastName,
-        avatar_id: user.avatarId,
-        organizationId: user.organizationId,
-        organization: organization.name,
-        superAdmin: isSuperAdmin(user),
-        admin: await this.usersService.hasGroup(user, 'admin'),
-        group_permissions: await this.usersService.groupPermissions(user),
-        app_group_permissions: await this.usersService.appGroupPermissions(user),
-      });
+      return await this.generateLoginResultPayload(user, organization, false, true, manager);
     });
   }
 
@@ -234,27 +207,7 @@ export class AuthService {
       console.error('Error while updating default organization id', error);
     });
 
-    const payload = {
-      username: user.id,
-      sub: user.email,
-      organizationId: newUser.organizationId,
-      isPasswordLogin: user.isPasswordLogin,
-      isSSOLogin: user.isSSOLogin,
-    };
-
-    return decamelizeKeys({
-      id: newUser.id,
-      auth_token: this.jwtService.sign(payload),
-      email: newUser.email,
-      first_name: newUser.firstName,
-      last_name: newUser.lastName,
-      organizationId: newUser.organizationId,
-      organization: organization.name,
-      superAdmin: isSuperAdmin(user),
-      admin: await this.usersService.hasGroup(newUser, 'admin'),
-      group_permissions: await this.usersService.groupPermissions(newUser),
-      app_group_permissions: await this.usersService.appGroupPermissions(newUser),
-    });
+    return await this.generateLoginResultPayload(user, organization, user.isSSOLogin, user.isPasswordLogin);
   }
 
   async signup(email: string) {
@@ -515,4 +468,43 @@ export class AuthService {
       actionType: ActionTypes.USER_INVITE_REDEEM,
     });
   }
+
+  async generateLoginResultPayload(
+    user: User,
+    organization: DeepPartial<Organization>,
+    isInstanceSSO: boolean,
+    isPasswordLogin: boolean,
+    manager?: EntityManager
+  ): Promise<any> {
+    const JWTPayload: JWTPayload = {
+      username: user.id,
+      sub: user.email,
+      organizationId: organization.id,
+      isSSOLogin: isInstanceSSO,
+      isPasswordLogin,
+    };
+    user.organizationId = organization.id;
+
+    return decamelizeKeys({
+      id: user.id,
+      authToken: this.jwtService.sign(JWTPayload),
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      organizationId: organization.id,
+      organization: organization.name,
+      superAdmin: isSuperAdmin(user),
+      admin: await this.usersService.hasGroup(user, 'admin', null, manager),
+      groupPermissions: await this.usersService.groupPermissions(user, manager),
+      appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+    });
+  }
+}
+
+interface JWTPayload {
+  username: string;
+  sub: string;
+  organizationId: string;
+  isSSOLogin: boolean;
+  isPasswordLogin: boolean;
 }
