@@ -13,7 +13,7 @@ import Fuse from 'fuse.js';
 import configs from './Configs/AppIcon.json';
 import { withTranslation } from 'react-i18next';
 import { isArray } from 'lodash';
-import moment from 'moment';
+import ExportAppModal from './ExportAppModal';
 const { iconList, defaultIcon } = configs;
 
 class HomePageComponent extends React.Component {
@@ -150,10 +150,10 @@ class HomePageComponent extends React.Component {
     console.log(this.versions);
     this.setState({ isExportingApp: true });
   };
-  exportVersionOfApp = (appId, versionId) => {
+  exportVersionOfApp = (appId, versionId = undefined) => {
     console.log(appId, versionId);
     appService
-      .exportAppByVersion(appId, versionId)
+      .exportApp(appId, versionId)
       .then((data) => {
         console.log(data, 'data');
         const appName = this.app.name.replace(/\s+/g, '-').toLowerCase();
@@ -624,41 +624,15 @@ class HomePageComponent extends React.Component {
           </div>
         </Modal>
 
-        <Modal
+        <ExportAppModal
           show={isExportingApp}
           closeModal={() => this.setState({ isExportingApp: false })}
-          title={'Select a version to export'}
           customClassName="modal-version-lists"
-        >
-          <ul>
-            <li className="current-version">
-              Current Version
-              <span
-                className="version-wrapper"
-                onClick={() => this.exportVersionOfApp(this.versions[0].appId, this.versions[0].id)}
-              >
-                <span>{isArray(this.versions) && this.versions[0].name}</span>
-                <span>{isArray(this.versions) && moment(this.versions[0].createdAt).format('Do MMM YYYY')}</span>
-              </span>
-            </li>
-            <ul>
-              <li>Other Versions</li>
-              {isArray(this.versions) &&
-                this.versions.map((version, index = 1) => {
-                  return (
-                    <li
-                      key={version.name}
-                      className="version-wrapper"
-                      onClick={() => this.exportVersionOfApp(version.appId, version.id)}
-                    >
-                      <span>{version.name}</span>
-                      <span>{moment(this.versions[0].createdAt).format('Do MMM YYYY')}</span>
-                    </li>
-                  );
-                })}
-            </ul>
-          </ul>
-        </Modal>
+          versions={this.versions}
+          exportVersionOfApp={this.exportVersionOfApp}
+          title={'Select a version to export'}
+          appId={this.app && this.app.id}
+        />
 
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
         {!isLoading && meta.total_count === 0 && !currentFolder.id && !appSearchKey && (

@@ -6439,7 +6439,7 @@ input.hide-input-arrows{
 .modal-version-lists{
   .version-wrapper{
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     padding: 0.5rem 0.25rem;
     border: 1px solid rgb(134, 126, 126);
   }
