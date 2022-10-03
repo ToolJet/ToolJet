@@ -1,11 +1,10 @@
 import React from 'react';
-import { authenticationService } from '@/_services';
+import { authenticationService, organizationService } from '@/_services';
 import ReactJson from 'react-json-view';
 import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
 import Select, { fuzzySearch } from 'react-select-search';
 import { auditLogsService } from '../_services/auditLogsService';
-import { userService } from '../_services/user.service';
 import { appService } from '../_services/app.service';
 import { Pagination, Header } from '@/_components';
 import moment from 'moment';
@@ -32,11 +31,9 @@ class AuditLogs extends React.Component {
       currentUser: authenticationService.currentUserValue,
       isLoadingAuditLogs: true,
       isLoadingApps: true,
-      isLoadingUsers: true,
       isSearching: false,
-      users: [],
+
       apps: [],
-      usersMap: {},
       timeTo,
       timeFrom,
       totalPages: 0,
@@ -63,11 +60,33 @@ class AuditLogs extends React.Component {
       ...this.removeEmptyKeysFromObject(this.state.selectedSearchOptions),
     });
     this.fetchAllApps();
-    this.fetchAllUsers();
   }
 
+  searchUser = async (query) => {
+    if (!query) {
+      return;
+    }
+
+    return new Promise((resolve, reject) => {
+      organizationService
+        .getUsersByValue(query)
+        .then(({ users }) => {
+          console.log(users);
+          resolve(
+            users.map((user) => {
+              return {
+                name: `${this.userFullName(user)} (${user.email})`,
+                value: user.user_id,
+              };
+            })
+          );
+        })
+        .catch(reject);
+    });
+  };
+
   isLoading = () => {
-    return this.state.isLoadingApps || this.state.isLoadingAuditLogs || this.state.isLoadingUsers;
+    return this.state.isLoadingApps || this.state.isLoadingAuditLogs;
   };
 
   fetchAuditLogs = (params) => {
@@ -110,18 +129,6 @@ class AuditLogs extends React.Component {
     });
   };
 
-  fetchAllUsers = () => {
-    userService.getAll().then((data) => {
-      const usersMap = data.users.reduce((obj, user) => ({ ...obj, [user.id]: user }), {});
-
-      this.setState({
-        users: data.users,
-        usersMap,
-        isLoadingUsers: false,
-      });
-    });
-  };
-
   canEnableAppSearchOptions = () => {
     return false;
   };
@@ -133,15 +140,6 @@ class AuditLogs extends React.Component {
         ...this.state.selectedSearchOptions,
         ...searchOptions,
       },
-    });
-  };
-
-  fetchUsersOptions = () => {
-    return this.state.users.map((user) => {
-      return {
-        name: `${this.userFullName(user)} (${user.email})`,
-        value: user.id,
-      };
     });
   };
 
@@ -257,7 +255,6 @@ class AuditLogs extends React.Component {
   render() {
     const {
       isLoadingApps,
-      isLoadingUsers,
       isLoadingAuditLogs,
       isSearching,
       auditLogs,
@@ -285,16 +282,17 @@ class AuditLogs extends React.Component {
                   <div className="row">
                     <div className="col-3">
                       <Select
-                        options={this.fetchUsersOptions()}
+                        getOptions={this.searchUser}
+                        options={[]}
                         closeOnSelect={false}
                         search={true}
-                        disabled={isLoadingUsers}
                         multiple
                         value={selectedSearchOptions.users}
                         filterOptions={fuzzySearch}
                         onChange={(value) => this.setSelectedSearchOptions({ users: value })}
                         printOptions="on-focus"
                         placeholder="Select Users"
+                        debounce={300}
                       />
                     </div>
                     <div className="col-3">
