@@ -626,7 +626,11 @@ class HomePageComponent extends React.Component {
 
         <ExportAppModal
           show={isExportingApp}
-          closeModal={() => this.setState({ isExportingApp: false })}
+          closeModal={() => {
+            this.app = {};
+            this.versions = null;
+            this.setState({ isExportingApp: false });
+          }}
           customClassName="modal-version-lists"
           versions={this.versions}
           exportVersionOfApp={this.exportVersionOfApp}

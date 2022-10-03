@@ -6426,21 +6426,25 @@ input.hide-input-arrows{
 }
 
 .home-modal-component.modal-version-lists{
-  ul,li{
-    list-style: none;
-  };
   .modal-header {
-    border-bottom: 1px solid rgb(188, 184, 184);
     .btn-close {
       top: auto;
     }
   }
 }
 .modal-version-lists{
+  max-height: 80vh;
+  .modal-body{
+    height: 80%;
+    overflow: auto;
+  }
+  .modal-footer,.modal-header{
+    height: 10%;
+  }
   .version-wrapper{
     display: flex;
     justify-content: flex-start;
-    padding: 0.5rem 0.25rem;
-    border: 1px solid rgb(134, 126, 126);
+    padding: 0.75rem 0.25rem;
+    border: 1px solid $border-grey-light;
   }
 }
