@@ -49,6 +49,7 @@ export function Table({
   properties,
   variablesExposedForPreview,
   exposeToCodeHinter,
+  exposedVariables,
 }) {
   const {
     color,
@@ -103,6 +104,7 @@ export function Table({
   function handleCellValueChange(index, key, value, rowData) {
     const changeSet = tableDetails.changeSet;
     const dataUpdates = tableDetails.dataUpdates || [];
+    const clonedTableData = _.cloneDeep(tableData);
 
     let obj = changeSet ? changeSet[index] || {} : {};
     obj = _.set(obj, key, value);
@@ -120,9 +122,16 @@ export function Table({
       ...dataUpdates,
       [index]: { ...obj },
     };
+
+    Object.keys(newChangeset).forEach((key) => {
+      clonedTableData[key] = {
+        ..._.merge(clonedTableData[key], newChangeset[key]),
+      };
+    });
+
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
-    return setExposedVariables(changesToBeSavedAndExposed);
+    return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
   }
 
   function getExportFileBlob({ columns, data }) {
@@ -373,6 +382,12 @@ export function Table({
       globalFilteredRows.map((row) => row.original)
     );
   }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
+
+  useEffect(() => {
+    if (_.isEmpty(changeSet)) {
+      setExposedVariable('updatedData', tableData);
+    }
+  }, [JSON.stringify(changeSet)]);
 
   return (
     <div
