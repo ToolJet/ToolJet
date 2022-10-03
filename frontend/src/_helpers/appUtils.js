@@ -483,7 +483,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onMarkerClick',
       'onPageChanged',
       'onSearch',
-      'onChange'
+      'onChange',
       'onEnterPressed',
       'onSelectionChange',
       'onSelect',
