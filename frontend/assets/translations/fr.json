@@ -341,14 +341,14 @@
         "appCard":{
             "changeIcon":"Icône de modification",
             "addToFolder":"Ajouter au dossier",
-            "move":"Bouger",
+            "move":"Déplacer",
             "to":"À",
             "selectFolder":"Sélectionner un dossier",
             "deleteApp":"Supprimer l'application",
             "exportApp":"Exporter l'application",
             "cloneApp":"Cloner l'application",
             "launch":"Lancer",
-            "maintenance":"Entretien",
+            "maintenance":"Maintenance",
             "noDeployedVersion":"L'application n'a pas de version déployée",
             "openInAppViewer":"Ouvrir dans la visionneuse d'application",
             "removeFromFolder":"Supprimer du dossier"
