@@ -102,11 +102,6 @@ class AuditLogs extends React.Component {
     };
 
     this.fetchAuditLogs(urlParams);
-
-    // this.props.history.push({
-    //   pathname: '/audit_logs',
-    //   search: new URLSearchParams(urlParams).toString(),
-    // });
   };
 
   fetchAllApps = () => {
