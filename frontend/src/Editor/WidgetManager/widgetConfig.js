@@ -482,7 +482,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
+        backgroundColor: { value: **'#375FCF'** },
         textColor: { value: '' },
         loaderColor: { value: '' },
         visibility: { value: '{{true}}' },
