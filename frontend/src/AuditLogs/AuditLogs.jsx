@@ -13,20 +13,6 @@ class AuditLogs extends React.Component {
   constructor(props) {
     super(props);
 
-    const searchParams = new URLSearchParams(props.location.search);
-    const initArraySearchParams = (param, searchParams) => {
-      return searchParams.get(param) ? searchParams.get(param).split(',') : [];
-    };
-    const initDateTimeSearchParams = (param, searchParams) => {
-      return searchParams.get(param) ? new Date(searchParams.get(param)) : null;
-    };
-    const resources = initArraySearchParams('resources', searchParams);
-    const actions = initArraySearchParams('actions', searchParams);
-    const apps = initArraySearchParams('apps', searchParams);
-    const users = initArraySearchParams('users', searchParams);
-    const timeFrom = initDateTimeSearchParams('timeFrom', searchParams);
-    const timeTo = initDateTimeSearchParams('timeTo', searchParams);
-
     this.state = {
       currentUser: authenticationService.currentUserValue,
       isLoadingAuditLogs: true,
@@ -34,19 +20,19 @@ class AuditLogs extends React.Component {
       isSearching: false,
 
       apps: [],
-      timeTo,
-      timeFrom,
+      timeTo: null,
+      timeFrom: null,
       totalPages: 0,
       totalCount: 0,
-      currentPage: searchParams.get('page') || 0,
-      perPage: searchParams.get('perPage') || 50,
+      currentPage: 0,
+      perPage: 50,
       selectedSearchOptions: {
-        resources,
-        actions,
-        users,
-        apps,
-        timeFrom: timeFrom && timeFrom.toISOString(),
-        timeTo: timeTo && timeTo.toISOString(),
+        resources: [],
+        actions: [],
+        users: [],
+        apps: [],
+        timeFrom: null,
+        timeTo: null,
       },
       auditLogs: [],
       showGroupDeletionConfirmation: false,
@@ -117,10 +103,10 @@ class AuditLogs extends React.Component {
 
     this.fetchAuditLogs(urlParams);
 
-    this.props.history.push({
-      pathname: '/audit_logs',
-      search: new URLSearchParams(urlParams).toString(),
-    });
+    // this.props.history.push({
+    //   pathname: '/audit_logs',
+    //   search: new URLSearchParams(urlParams).toString(),
+    // });
   };
 
   fetchAllApps = () => {
