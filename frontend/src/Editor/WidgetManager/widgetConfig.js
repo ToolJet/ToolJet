@@ -1144,7 +1144,6 @@ export const widgets = [
       },
       enableTime: { type: 'toggle', displayName: 'Enable time selection?' },
       enableDate: { type: 'toggle', displayName: 'Enable date selection?' },
-
       disabledDates: {
         type: 'code',
         displayName: 'Disabled dates',
