@@ -46,9 +46,8 @@ class HomePageComponent extends React.Component {
       },
       appOperations: {},
       showTemplateLibraryModal: false,
+      app: {},
     };
-    this.versions = null;
-    this.app = {};
   }
 
   componentDidMount() {
@@ -143,41 +142,9 @@ class HomePageComponent extends React.Component {
         console.log(_error);
       });
   };
-  exportApp = async (app) => {
-    this.app = app;
-    this.versions = await appService.getVersions(app.id);
-    this.versions = await this.versions.versions;
-    console.log(this.versions);
-    this.setState({ isExportingApp: true });
-  };
-  exportVersionOfApp = (appId, versionId = undefined) => {
-    console.log(appId, versionId);
-    appService
-      .exportApp(appId, versionId)
-      .then((data) => {
-        console.log(data, 'data');
-        const appName = this.app.name.replace(/\s+/g, '-').toLowerCase();
-        const fileName = `${appName}-export-${new Date().getTime()}`;
-        // simulate link click download
-        const json = JSON.stringify(data, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const href = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = href;
-        link.download = fileName + '.json';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        this.setState({ isExportingApp: false });
-      })
-      .catch((error) => {
-        toast.error('Could not export the app.', {
-          position: 'top-center',
-        });
 
-        this.setState({ isExportingApp: false });
-        console.log(error);
-      });
+  exportApp = async (app) => {
+    this.setState({ isExportingApp: true, app: app });
   };
 
   handleImportApp = (event) => {
@@ -507,6 +474,7 @@ class HomePageComponent extends React.Component {
       showChangeIconModal,
       appOperations,
       isExportingApp,
+      app,
     } = this.state;
     const appCountText = currentFolder.count ? ` (${currentFolder.count})` : '';
     const folderName = currentFolder.id
@@ -623,20 +591,17 @@ class HomePageComponent extends React.Component {
             </div>
           </div>
         </Modal>
-
-        <ExportAppModal
-          show={isExportingApp}
-          closeModal={() => {
-            this.app = {};
-            this.versions = null;
-            this.setState({ isExportingApp: false });
-          }}
-          customClassName="modal-version-lists"
-          versions={this.versions}
-          exportVersionOfApp={this.exportVersionOfApp}
-          title={'Select a version to export'}
-          appId={this.app && this.app.id}
-        />
+        {isExportingApp && app.hasOwnProperty('id') && (
+          <ExportAppModal
+            show={isExportingApp}
+            closeModal={() => {
+              this.setState({ isExportingApp: false, app: {} });
+            }}
+            customClassName="modal-version-lists"
+            title={'Select a version to export'}
+            app={app}
+          />
+        )}
 
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
         {!isLoading && meta.total_count === 0 && !currentFolder.id && !appSearchKey && (
