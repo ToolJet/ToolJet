@@ -41,7 +41,6 @@ class TableComponent extends React.Component {
       actionPopOverRootClose: true,
       showPopOver: false,
       columnPopOverRootClose: true,
-      disabledBtn: false,
     };
   }
 
