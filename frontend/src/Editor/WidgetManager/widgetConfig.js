@@ -884,7 +884,7 @@ export const widgets = [
       backgroundColor: {
         type: 'color',
         displayName: 'Background Color',
-        validation: { schema: { type: 'string' } },
+        validation: { schema: { type: 'string' }, defaultValue: '#fff' },
       },
       borderRadius: {
         type: 'code',
