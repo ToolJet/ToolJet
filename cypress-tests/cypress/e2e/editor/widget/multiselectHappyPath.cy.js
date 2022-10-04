@@ -50,7 +50,11 @@ describe("Multiselect widget", () => {
     openEditorSidebar(multiselectText.defaultWidgetName);
     editAndVerifyWidgetName(data.widgetName);
 
-    openAccordion(commonWidgetText.accordionProperties);
+    openAccordion(commonWidgetText.accordionProperties, [
+      "Events",
+      "Properties",
+      "General",
+    ]);
     verifyAndModifyParameter(commonWidgetText.parameterLabel, data.label);
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     cy.get(multiselectSelector.multiselectLabel(data.widgetName)).should(
@@ -219,7 +223,7 @@ describe("Multiselect widget", () => {
 
     openEditorSidebar(multiselectText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, "1");
+    openAccordion(commonWidgetText.accordionGenaral, [], "1");
 
     verifyAndModifyStylePickerFx(
       commonWidgetText.parameterBoxShadow,
@@ -284,7 +288,7 @@ describe("Multiselect widget", () => {
 
     openEditorSidebar(data.widgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, "1");
+    openAccordion(commonWidgetText.accordionGenaral, [], "1");
 
     cy.get(
       commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
