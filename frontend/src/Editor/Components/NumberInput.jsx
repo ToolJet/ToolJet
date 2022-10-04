@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-export const NumberInput = function NumberInput({ height, properties, styles, setExposedVariable }) {
+export const NumberInput = function NumberInput({ height, properties, styles, setExposedVariable, darkMode }) {
   const { visibility, borderRadius } = styles;
 
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
