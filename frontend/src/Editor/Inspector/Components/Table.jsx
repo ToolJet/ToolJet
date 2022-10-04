@@ -315,6 +315,38 @@ class TableComponent extends React.Component {
             </div>
           )}
 
+          {column.columnType === 'number' && column.isEditable && (
+            <div>
+              <div className="hr-text">{this.props.t('widget.Table.validation', 'Validation')}</div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.minValue', 'Min value')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.minLength}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'minValue', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'minValue')}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.maxValue', 'Max value')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.maxLength}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'maxValue', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'maxValue')}
+                />
+              </div>
+            </div>
+          )}
+
           {column.columnType === 'toggle' && (
             <div>
               <div className="field mb-2">
