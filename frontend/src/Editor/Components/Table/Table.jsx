@@ -431,25 +431,33 @@ export function Table({
                   <img src="assets/images/icons/download.svg" width="15" height="15" />
                 </span>
               )}
-              <p
+              <span
                 className="btn btn-light btn-sm p-1 mb-0 mx-1"
                 onClick={() => setHidecolumnActive(!hideColumnActive)}
-              ></p>
+              >
+                <img src="/assets/images/icons/widgets/eye-off.svg" width="15" height="15" />
+              </span>
             </div>
           </div>
-          <div>
-            {hideColumnActive &&
-              allColumns.map((column) => (
-                <div className="" key={column.id}>
-                  <div className="cb action ">
-                    <label className="dropdown-item">
-                      <input type="checkbox" {...column.getToggleHiddenProps()} />
-                      {` ${column.Header}`}
-                    </label>
+          {hideColumnActive && (
+            <div className="dropdown-table-column-hide">
+              <a data-toggle="check-all" className="dropdown-option">
+                Uncheck All
+              </a>
+              {allColumns.map((column) => (
+                <>
+                  <div key={column.id}>
+                    <div>
+                      <label className="dropdown-item">
+                        <input type="checkbox" {...column.getToggleHiddenProps()} />
+                        <span className="hide-column-name"> {` ${column.Header}`}</span>
+                      </label>
+                    </div>
                   </div>
-                </div>
+                </>
               ))}
-          </div>
+            </div>
+          )}
         </div>
       )}
 
