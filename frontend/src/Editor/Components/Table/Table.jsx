@@ -441,9 +441,10 @@ export function Table({
           </div>
           {hideColumnActive && (
             <div className="dropdown-table-column-hide">
-              <a data-toggle="check-all" className="dropdown-option">
-                Uncheck All
-              </a>
+              <div className="dropdown-item">
+                <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+                <span className="hide-column-name"> Toggle All</span>
+              </div>
               {allColumns.map((column) => (
                 <>
                   <div key={column.id}>
