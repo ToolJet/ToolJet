@@ -4,7 +4,7 @@ export const buttonText = {
   buttonTextLabel: "Button Text",
   loadingState: "Loading State",
   buttonDocumentationLink: "Button documentation",
-  backgroundColor: "Background color",
+  backgroundColor: "Background Color",
   textColor: "Text color",
   loaderColor: "Loader color",
   defaultBackgroundColor: "#375FCF",
