@@ -11,7 +11,7 @@ export const Button = function Button({
   component,
   currentState,
 }) {
-  const { backgroundColor, textColor, borderRadius, loaderColor, disabledState } = styles;
+  const { backgroundColor, textColor, borderRadius,borderColor ,loaderColor ,disabledState } = styles;
 
   const [label, setLabel] = useState(properties.text);
   const [disable, setDisable] = useState(disabledState);
@@ -33,6 +33,7 @@ export const Button = function Button({
   }, [properties.loadingState]);
 
   const computedStyles = {
+    borderColor,
     backgroundColor,
     color: textColor,
     width: '100%',
