@@ -2,22 +2,22 @@
   "globals": {
     "readDocumentation": "Lire la documentation",
     "cancel": "Annuler",
-    "save": "sauvegarder",
+    "save": "Sauvegarder",
     "back": "Retour",
     "edit": "Éditer",
-    "search": "Chercher",
+    "search": "Recherche",
     "update": "Mise à jour",
     "delete": "Effacer",
     "add": "Ajouter",
     "view": "Voir",
     "create": "Créer",
     "enabled": "Activé",
-    "disabled": "Handicapée",
+    "disabled": "Désactivé",
     "yes": "Oui",
     "submit": "Soumettre",
     "select": "Sélectionner",
     "environmentVar": "Variables d'environnement",
-    "saving": "Économie...",
+    "saving": "Enregistrement...",
     "saveDatasource": "Enregistrer la source de données",
     "authorize": "Autoriser",
     "connect": "Relier",
@@ -26,16 +26,16 @@
     "send": "Envoyer",
     "noConnection": "n'a pas pu se connecter",
     "connectionVerifeid": "connexion vérifiée",
-    "left": "La gauche",
+    "left": "Gauche",
     "center": "Centre",
     "right": "Droite",
     "justified": "Justifiée",
-    "host": "Hôtesse",
+    "host": "Hôte",
     "operation": "Opération",
     "header": "ENTÊTE",
     "path": "CHEMIN",
     "query": "REQUÊTE",
-    "requestBody": "Demander un corps"
+    "requestBody": "Le corps de la requête"
   },
   "errorBoundary": "Quelque chose s'est mal passé.",
   "viewer": "Pardon!. Cette application est sous maintenance",
@@ -45,11 +45,11 @@
     "readReleaseNotes": "Lire les notes de version et mise à jour",
     "skipVersion": "Passez cette version"
   },
-  "stripe": "Veuillez patienter que nous chargeons la spécification OpenAPI pour la bande.",
+  "stripe": "Veuillez patienter pendant que nous chargeons la spécification OpenAPI pour Stripe.",
   "openApi": {
     "noValidOpenApi": "Les spécifications OpenAPI valides ne sont pas disponibles!.",
     "selectHost": "Sélectionnez un hôte",
-    "selectOperation": "Sélectionnez une opération"
+    "selectOperation": "Sélectionner une opération"
   },
   "slack": {
     "authorize": "Autoriser",
@@ -64,7 +64,7 @@
     "readDataFromSheets": "Vos applications ToolJet ne peuvent lire que les données de Google Sheets",
     "readWrite": "Lire et écrire",
     "readModifySheets": "Vos applications ToolJet peuvent lire les données à partir des feuilles, modifier les feuilles et plus encore.",
-    "toGoogleSheets": "aux feuilles Google"
+    "toGoogleSheets": "Vers Google Sheets"
   },
   "profile": {
     "profileSettings": "Paramètres de profil"
@@ -74,12 +74,12 @@
     "emailAddress": "Adresse e-mail",
     "enterEmail": "Entrez le courrier électronique",
     "resetPassword": "réinitialiser le mot de passe",
-    "dontHaveAccount": "Vous n'avez pas encore de compte?",
+    "dontHaveAccount": "Vous n'avez pas encore de compte ?",
     "signIn": "S'identifier",
     "signUp": "S'inscrire",
     "createToolJetAccount": "Créer un compte ToolJet",
     "enterBusinessEmail": "Entrez votre e-mail professionnel",
-    "alreadyHaveAnAccount": "Vous avez déjà un compte?",
+    "alreadyHaveAnAccount": "Vous avez déjà un compte ?",
     "password": "Mot de passe",
     "showPassword": "montrer le mot de passe",
     "loginTo": "Se connecter à",
@@ -93,7 +93,7 @@
     "preview": "Aperçu",
     "share": "Partager",
     "shareModal": {
-      "makeApplicationPublic": "Rendre la demande publique?",
+      "makeApplicationPublic": "Rendre la demande publique ?",
       "shareableLink": "Obtenez un lien partageable pour cette application",
       "copy": "copie",
       "embeddableLink": "Obtenez un lien intégré pour cette application",
@@ -105,10 +105,10 @@
       "createVersion": "Créer une version",
       "versionName": "Nom de version",
       "createVersionFrom": "Créer une version à partir de",
-      "save": "sauvegarder",
+      "save": "Sauvegarder",
       "create": "Créer une version",
       "editVersion": "Modifier la version",
-      "deleteVersion": "Voulez-vous vraiment supprimer cette version?",
+      "deleteVersion": "Voulez-vous vraiment supprimer cette version ?",
       "enterVersionName": "Entrez le nom de la version",
       "versionAlreadyReleased": "Version déjà publiée. Veuillez créer une nouvelle version ou passer à une version différente pour continuer à apporter des modifications."
     },
@@ -136,22 +136,22 @@
         },
         "suggestDataSource": "Suggérer une source de données",
         "suggestAnIntegration": "Suggérer une intégration",
-        "whatLookingFor": "Dites-nous ce que vous cherchiez?",
-        "noResultFound": "Vous ne voyez pas ce que vous cherchiez?",
+        "whatLookingFor": "Dites-nous ce que vous cherchiez ?",
+        "noResultFound": "Vous ne voyez pas ce que vous cherchiez ?",
         "suggest": "Suggérer",
         "addNewDataSource": "Ajouter une nouvelle source de données",
         "whiteListIP": "Veuillez bloquer White notre adresse IP si la source de données n'est pas accessible au public",
         "copied": "Copié",
-        "copy": "Copie",
+        "copy": "Copier",
         "saving": "Économie",
         "noResultsFor": "Aucun résultat pour",
-        "noteTaken": "Merci, nous en avons pris une note!",
+        "noteTaken": "Merci, nous en avons pris une note !",
         "goToAllDatasources": "Aller à toutes les sources de données",
         "send": "Envoyer"
       },
-      "runQueryOnPageLoad": "Exécutez cette requête sur le chargement de la page?",
-      "confirmBeforeQueryRun": "Demande de confirmation avant d'exécuter la requête?",
-      "notificationOnSuccess": "Afficher la notification sur le succès?",
+      "runQueryOnPageLoad": "Exécuter cette requête au chargement de la page ?",
+      "confirmBeforeQueryRun": "Demander une confirmation avant d'exécuter une requête ?",
+      "notificationOnSuccess": "Afficher une notification en cas de succès ?",
       "successMessage": "Message de réussite",
       "queryRanSuccessfully": "Les requêtes ont été exécutées avec succès",
       "notificationDuration": "Durée de la notification (s)",
@@ -188,12 +188,12 @@
   },
   "header": {
     "darkModeToggle": {
-      "activateLightMode": "Activer le mode Light",
+      "activateLightMode": "Activer le mode light",
       "activateDarkMode": "Activer le mode sombre"
     },
     "languageSelection": {
       "changeLanguage": "Changer de langue",
-      "searchLanguage": "Langue de recherche"
+      "searchLanguage": "Rechercher une langue"
     },
     "notificationCenter": {
       "notifications": "Notifications",
@@ -201,18 +201,18 @@
       "read": "lis",
       "un": "ONU",
       "youDontHaveany": "Tu n'as pas",
-      "youAreCaughtUp": "Vous êtes tous rattrapés!",
+      "youAreCaughtUp": "Vous avez tout rattrapé !",
       "view": "Voir"
     },
     "organization": {
-      "loadOrganizations": "Charges de chargement",
+      "loadOrganizations": "Charger un organisme",
       "createWorkspace": "Créer un espace de travail",
       "workspaceName": "Nom de l'espace de travail",
-      "editWorkspace": "EDIT",
+      "editWorkspace": "Éditer l'espace de travail",
       "menus": {
         "addWorkspace": "Ajouter un espace de travail",
         "menusList": {
-          "manageUsers": "gérer les utilisateurs",
+          "manageUsers": "Gérer les utilisateurs",
           "manageGroups": "Gérer les groupes",
           "manageSso": "Gérer SSO",
           "manageEnv": "Gérer les variables d'environnement"
@@ -223,8 +223,8 @@
           "name": "NOM",
           "email": "E-MAIL",
           "status": "STATUT",
-          "archive": "Archive",
-          "unarchive": "Non archisif",
+          "archive": "Archiver",
+          "unarchive": "Désarchiver",
           "addNewUser": "Ajouter un nouvel utilisateur",
           "emailAddress": "Adresse e-mail",
           "createUser": "Créer un utilisateur",
@@ -245,7 +245,7 @@
           "permissionResources": {
             "userGroup": "Groupe d'utilisateurs",
             "apps": "applications",
-            "users": "Utilisatrice",
+            "users": "Utilisateurs",
             "permissions": "Autorisation",
             "addAppsToGroup": "Sélectionnez des applications à ajouter au groupe",
             "name": "Nom",
@@ -259,7 +259,7 @@
         "manageSSO": {
           "manageSso": "Gérer SSO",
           "generalSettings": {
-            "title": "réglages généraux",
+            "title": "Paramètres généraux",
             "enableSignup": "Activer l'inscription",
             "newAccountWillBeCreated": "Un nouveau compte sera créé pour la première connexion SSO de l'utilisateur",
             "allowedDomains": "Domaines autorisés",
@@ -273,7 +273,7 @@
           "google": {
             "title": "Google",
             "enabled": "Activé",
-            "disabled": "Handicapée",
+            "disabled": "Désactivé",
             "clientId": "Identité du client",
             "enterClientId": "Entrez l'ID client",
             "redirectUrl": "Rediriger l'URL"
@@ -293,7 +293,7 @@
           "passwordLogin": "Connexion du mot de passe",
           "environmentVar": {
             "noEnvConfig": "Vous n'avez configuré aucune variable d'environnement, appuyez sur le bouton «Ajouter une nouvelle variable» pour en créer un",
-            "envWillBeDeleted": "La variable sera supprimée, voulez-vous continuer?",
+            "envWillBeDeleted": "La variable sera supprimée, voulez-vous continuer ?",
             "addNewVariable": "Ajouter une nouvelle variable",
             "variableForm": {
               "addNewVariable": "Ajouter une nouvelle variable",
@@ -353,7 +353,7 @@
       "removeFromFolder": "Supprimer du dossier"
     },
     "blankPage": {
-      "welcomeToToolJet": "Bienvenue à ToolJet!",
+      "welcomeToToolJet": "Bienvenue sur ToolJet !",
       "getStartedCreateNewApp": "Vous pouvez démarrer en créant une nouvelle application ou en créant une application à l'aide d'un modèle dans la bibliothèque ToolJet.",
       "importApplication": "Importer une demande"
     },
@@ -367,7 +367,7 @@
       "editFolder": "Modifier le dossier",
       "deleteFolder": "Supprimer le dossier",
       "folderName": "Nom de dossier",
-      "wishToDeleteFolder": "Êtes-vous sûr de vouloir supprimer le dossier? Les applications dans le dossier ne seront pas supprimées."
+      "wishToDeleteFolder": "Êtes-vous sûr de vouloir supprimer le dossier ? Les applications dans le dossier ne seront pas supprimées."
     },
     "header": {
       "createNewApplication": "Créer une nouvelle application",
@@ -381,8 +381,8 @@
     },
     "noApplicationFound": "Aucune application trouvée",
     "thisFolderIsEmpty": "Ce dossier est vide",
-    "deleteAppAndData": "L'application et les données associées seront supprimées en permanence, voulez-vous continuer?",
-    "removeAppFromFolder": "L'application sera supprimée de ce dossier, voulez-vous continuer?",
+    "deleteAppAndData": "L'application et les données associées seront supprimées en permanence, voulez-vous continuer ?",
+    "removeAppFromFolder": "L'application sera supprimée de ce dossier, voulez-vous continuer ?",
     "change": "Changer",
     "templateCard": {
       "use": "Utilisation",
@@ -410,7 +410,7 @@
     "termsAndConditions": "Termes et conditions",
     "finishAccountSetup": "Configuration du compte de finition",
     "acceptInvite": "accepter une invitation",
-    "accountExists": "Vous avez déjà un compte?",
+    "accountExists": "Vous avez déjà un compte ?",
     "and": "et"
   },
   "onBoarding": {
@@ -420,7 +420,7 @@
     "email": "E-mail",
     "receiveUpdatesFromToolJet": "Vous recevrez des mises à jour de l'équipe ToolJet (1-2 e-mails chaque mois, nous ne spammons pas)",
     "finishSetup": "Configuration de la fin",
-    "skip": "Sauter"
+    "skip": "Passer"
   },
   "redirectSso": {
     "upgradingTov1.13.0": "Mise à niveau vers V1.13.0 et supérieur.",
@@ -471,7 +471,7 @@
     "commonProperties": {
       "visibility": "Visibilité",
       "disable": "Désactiver",
-      "borderRadius": "Rayon de frontière",
+      "borderRadius": "Rayon de la bordure",
       "boxShadow": "Boîte ombre",
       "tooltip": "Infraction",
       "showOnDesktop": "Afficher sur le bureau",
@@ -479,7 +479,7 @@
       "showLoadingState": "Afficher l'état de chargement",
       "backgroundColor": "Couleur de l'arrière plan",
       "textColor": "Couleur de texte",
-      "loaderColor": "Couleur de chargeur",
+      "loaderColor": "Couleur du chargement",
       "defaultValue": "Valeur par défaut",
       "placeholder": "Espace réservé",
       "label": "Étiquette",
@@ -529,8 +529,8 @@
       "minimumValue": "Valeur minimum",
       "maximumValue": "Valeur maximum",
       "format": "Format",
-      "enableTimeSelection": "Activer la sélection du temps?",
-      "enableDateSelection": "Activer la sélection de la date?",
+      "enableTimeSelection": "Activer la sélection du temps ?",
+      "enableDateSelection": "Activer la sélection de la date ?",
       "disabledDates": "Dates désactivées",
       "setChecked": "Définir vérifié",
       "status": "statut",
