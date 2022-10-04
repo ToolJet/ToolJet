@@ -3,7 +3,6 @@ import { authHeader, handleResponse } from '@/_helpers';
 import queryString from 'query-string';
 
 export const userService = {
-  getAll,
   getInstanceUsers,
   createUser,
   deleteUser,
@@ -14,11 +13,6 @@ export const userService = {
   updateUserType,
   getLicenseTerms,
 };
-
-function getAll() {
-  const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/users`, requestOptions).then(handleResponse);
-}
 
 function getInstanceUsers(page, options) {
   const requestOptions = { method: 'GET', headers: authHeader() };
