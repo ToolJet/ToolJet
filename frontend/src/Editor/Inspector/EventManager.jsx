@@ -27,6 +27,8 @@ export const EventManager = ({
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
 
+  console.log('components diff--- ', components);
+
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };
   });

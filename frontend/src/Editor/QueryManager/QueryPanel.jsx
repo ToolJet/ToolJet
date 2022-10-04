@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
 
 const QueryPanel = ({ children }) => {
@@ -46,13 +46,13 @@ const QueryPanel = ({ children }) => {
   useEventListener('mousemove', onMouseMove);
   useEventListener('mouseup', onMouseUp);
 
-  const toggleQueryEditor = () => {
+  const toggleQueryEditor = useCallback(() => {
     localStorage.setItem(
       'queryManagerPreferences',
       JSON.stringify({ ...queryManagerPreferences, isExpanded: !isExpanded })
     );
     setExpanded(!isExpanded);
-  };
+  }, [isExpanded]);
 
   return (
     <>
