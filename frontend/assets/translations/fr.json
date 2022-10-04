@@ -434,7 +434,7 @@
     "youHaveEnabled": "Vous avez activé",
     "setupSsoWorkspace": "Veuillez vous connecter avec le mot de passe et vous pouvez configurer SSO en utilisant Workspace",
     "manageSsoMenu": "Gérer le menu SSO.",
-    "youHaveDisabled": "Vous avez handicapé",
+    "youHaveDisabled": "Vous avez désactivé",
     "configureRedirectUrl": "Veuillez configurer l'URL de redirection du côté fournisseur SSO.",
     "google": "Google",
     "redirectUrl": "URL de redirection:",
@@ -442,18 +442,18 @@
   },
   "oAuth2": {
     "pleaseWait": "S'il vous plaît, attendez...",
-    "authSuccess": "Auth réussi, vous pouvez fermer cet onglet maintenant.",
-    "authFailed": "L'auteur a échoué"
+    "authSuccess": "L'authentification à réussi, vous pouvez maintenant fermer cet onglet.",
+    "authFailed": "L'authentification a échoué"
   },
   "widgetManager": {
     "commonlyUsed": "fréquemment utilisé",
     "layouts": "disposition",
-    "forms": "formes",
+    "forms": "formulaires",
     "intregrations": "intégrations",
-    "others": "les autres",
+    "others": "autres",
     "noResults": "Aucun résultat trouvé",
     "tryAdjustingFilterMessage": "Essayez d'ajuster votre recherche ou votre filtre pour trouver ce que vous recherchez.",
-    "clearQuery": "requête claire"
+    "clearQuery": "effacer la requête"
   },
   "widget": {
     "common": {
@@ -472,10 +472,10 @@
       "visibility": "Visibilité",
       "disable": "Désactiver",
       "borderRadius": "Rayon de la bordure",
-      "boxShadow": "Boîte ombre",
+      "boxShadow": "Boîte d'ombre",
       "tooltip": "Infraction",
       "showOnDesktop": "Afficher sur le bureau",
-      "showOnMobile": "Show sur mobile",
+      "showOnMobile": "Afficher sur mobile",
       "showLoadingState": "Afficher l'état de chargement",
       "backgroundColor": "Couleur de l'arrière plan",
       "textColor": "Couleur de texte",
@@ -517,15 +517,15 @@
       "padding": "Rembourrage",
       "hideTitleBar": "Masquer la barre de titre",
       "hideCloseButton": "Masquer le bouton Fermer",
-      "hideOnEscape": "Se cacher",
+      "hideOnEscape": "Masquer sur Echap",
       "modalSize": "Taille modale",
-      "open": "Ouverte",
-      "close": "proche",
+      "open": "Ouvert",
+      "close": "Fermer",
       "regex": "Expirat",
       "minLength": "Longueur minimale",
       "maxLength": "longueur maximale",
       "customValidation": "Validation personnalisée",
-      "clear": "Dégager",
+      "clear": "Effacer",
       "minimumValue": "Valeur minimum",
       "maximumValue": "Valeur maximum",
       "format": "Format",
@@ -636,7 +636,7 @@
       "handleColor": "Manipuler la couleur",
       "trackColor": "Couleurs de piste",
       "timelineData": "Données de chronologie",
-      "hideDate": "Cacher",
+      "hideDate": "Cacher la date",
       "svgData": "Données SVG",
       "rawHtml": "HTML brut",
       "values": "valeurs",
@@ -675,7 +675,7 @@
       "validation": "Validation",
       "regex": "Expirat",
       "minLength": "Longueur minimale",
-      "maxLength": "longueur maximale",
+      "maxLength": "Longueur maximale",
       "customRule": "Règle personnalisée",
       "values": "Valeurs",
       "labels": "Étiquettes",
@@ -878,8 +878,8 @@
   },
   "leftSidebar": {
     "Inspector": {
-      "text": "Inspectrice",
-      "tip": "Inspectrice"
+      "text": "Inspecteur",
+      "tip": "Inspecteur"
     },
     "Sources": {
       "text": "Sources",
@@ -896,7 +896,7 @@
     },
     "Comments": {
       "text": "commentaires",
-      "tip": "faire des commentaires",
+      "tip": "afficher les commentaires",
       "commentBody": "Il n'y a pas de commentaires à afficher",
       "typeComment": "Tapez votre commentaire ici"
     },
