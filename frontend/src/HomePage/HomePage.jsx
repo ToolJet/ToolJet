@@ -600,6 +600,7 @@ class HomePageComponent extends React.Component {
             customClassName="modal-version-lists"
             title={'Select a version to export'}
             app={app}
+            darkMode={this.props.darkMode}
           />
         )}
 
