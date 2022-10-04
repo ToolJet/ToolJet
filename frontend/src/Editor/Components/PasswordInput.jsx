@@ -21,18 +21,18 @@ export const PasswordInput = ({ height, validate, properties, styles, setExposed
           setExposedVariable('value', e.target.value);
         }}
         type={'password'}
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${darkMode && 'dark-theme-placeholder'
-          }`}
+        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+          darkMode && 'dark-theme-placeholder'
+        }`}
         placeholder={placeholder}
         value={passwordValue}
         style={{
           height,
           display: visibility ? '' : 'none',
           borderRadius: `${borderRadius}px`,
-          backgroundColor,
+          backgroundColor: backgroundColor || 'transparent'
         }}
       />
-
       <div className="invalid-feedback">{validationError}</div>
     </div>
   );
