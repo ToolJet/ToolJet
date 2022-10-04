@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 
-export const NumberInput = function NumberInput({ height, properties, styles, setExposedVariable, darkMode }) {
+export const NumberInput = function NumberInput({ height, properties, styles, setExposedVariable, component, darkMode }) {
+
   const { visibility, borderRadius } = styles;
 
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
@@ -43,6 +44,7 @@ export const NumberInput = function NumberInput({ height, properties, styles, se
       placeholder={properties.placeholder}
       style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px`, color: textColor }}
       value={value}
+      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
     />
   );
 };
