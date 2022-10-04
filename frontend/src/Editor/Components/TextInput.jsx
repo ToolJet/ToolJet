@@ -11,9 +11,17 @@ export const TextInput = function TextInput({
   component,
   darkMode,
 }) {
+
+  let {
+    textColor,
+    borderRadius,
+    visibility,
+    disabledState,
+  } = styles;
+  
   const textInputRef = useRef();
 
-  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
+  const textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
 
   const [disable, setDisable] = useState(styles.disabledState);
   const [value, setValue] = useState(properties.value);
@@ -38,6 +46,15 @@ export const TextInput = function TextInput({
     setExposedVariable('value', properties.value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
+
+  const computedStyles = {
+    backgroundColor,
+    color: textColor,
+    width: '100%',
+    borderRadius: `${borderRadius}px`,
+    height,
+    display: visibility ? 'flex' : 'none',
+  };
 
   registerAction('setFocus', async function () {
     textInputRef.current.focus();
