@@ -1,5 +1,4 @@
 import {
-  Request,
   Get,
   Body,
   Controller,
@@ -17,11 +16,7 @@ import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { PasswordRevalidateGuard } from 'src/modules/auth/password-revalidate.guard';
 import { UsersService } from 'src/services/users.service';
 import { User } from 'src/decorators/user.decorator';
-import { User as UserEntity } from 'src/entities/user.entity';
 import { UpdateUserDto } from '@dto/user.dto';
-import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
-import { PoliciesGuard } from 'src/modules/casl/policies.guard';
-import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { decamelizeKeys } from 'humps';
 import { UserCountGuard } from '@ee/licensing/guards/user.guard';
 import { getManager } from 'typeorm';
@@ -116,13 +111,5 @@ export class UsersController {
     return await this.usersService.update(user.id, {
       password: newPassword,
     });
-  }
-
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('viewAllUsers', UserEntity))
-  @Get()
-  async index(@Request() req) {
-    const users = await this.usersService.findAll(req.user.organizationId);
-    return decamelizeKeys({ users });
   }
 }
