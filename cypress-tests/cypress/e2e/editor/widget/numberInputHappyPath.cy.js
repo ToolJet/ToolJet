@@ -40,6 +40,7 @@ describe('Number Input', ()=>{
 
     openEditorSidebar(numberInputText.defaultWidgetName);
     editAndVerifyWidgetName(data.widgetName)
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).verifyVisibleElement("have.value", "99");
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties);
