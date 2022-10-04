@@ -6368,4 +6368,7 @@ input.hide-input-arrows{
   max-width: 800px;
   width: 800px;
   background-color: $white;
+  box-sizing: border-box;
+  box-shadow: 0px 2px 4px rgba(40, 57, 72, 0.06), 0px 4px 6px rgba(40, 57, 72, 0.1);
+  border-radius: 4px;
 }
