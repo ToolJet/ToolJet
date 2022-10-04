@@ -48,6 +48,9 @@ describe('Password Input', ()=>{
 
     openEditorSidebar(passwordInputText.defaultWidgetName);
     editAndVerifyWidgetName(data.widgetName);
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
+    .invoke('attr', 'placeholder').
+    should('contain', "password");
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties);
@@ -111,7 +114,7 @@ describe('Password Input', ()=>{
     cy.deleteApp(data.appName);
 
   });
-  it("should verify the styles of the text input widget", ()=>{
+  it("should verify the styles of the password input widget", ()=>{
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.colourHex = fake.randomRgbaHex;
