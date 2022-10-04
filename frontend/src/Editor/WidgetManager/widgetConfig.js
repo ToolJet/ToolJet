@@ -403,6 +403,13 @@ export const widgets = [
           defaultValue: false,
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       textColor: {
         type: 'color',
         displayName: 'Text color',
@@ -483,6 +490,7 @@ export const widgets = [
       events: [],
       styles: {
         backgroundColor: { value: '' },
+        borderColor: { value: ''},
         textColor: { value: '' },
         loaderColor: { value: '' },
         visibility: { value: '{{true}}' },
@@ -1785,6 +1793,13 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       textColor: {
         type: 'color',
         displayName: 'Text Color',
@@ -1839,6 +1854,7 @@ export const widgets = [
       events: [],
       styles: {
         backgroundColor: { value: '' },
+        borderColor: { value: ''},
         textColor: { value: '#000000' },
         textSize: { value: 14 },
         textAlign: { value: 'left' },
@@ -1930,6 +1946,13 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       padding: {
         type: 'code',
         displayName: 'Padding',
@@ -1987,6 +2010,7 @@ export const widgets = [
         disabledState: { value: '{{false}}' },
         imageFit: { value: 'contain' },
         backgroundColor: { value: '' },
+        borderColor: { value: '' },
       },
     },
   },
@@ -2023,6 +2047,13 @@ export const widgets = [
           },
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
@@ -2051,6 +2082,7 @@ export const widgets = [
       styles: {
         backgroundColor: { value: '' },
         borderRadius: { value: '0' },
+        borderColor: { value: '' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -2131,6 +2163,13 @@ export const widgets = [
             type: 'union',
             schemas: [{ type: 'number' }, { type: 'string' }],
           },
+        },
+      },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
         },
       },
       visibility: {
@@ -2289,6 +2328,13 @@ export const widgets = [
         displayName: 'Border radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
         },
       },
       visibility: {
@@ -2875,6 +2921,13 @@ export const widgets = [
             type: 'union',
             schemas: [{ type: 'string' }, { type: 'number' }],
           },
+        },
+      },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
         },
       },
     },
@@ -3496,6 +3549,13 @@ export const widgets = [
       backgroundColor: {
         type: 'color',
         displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
         validation: {
           schema: { type: 'string' },
         },
@@ -4379,6 +4439,13 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       backgroundColor: {
         type: 'color',
         displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
         validation: {
           schema: { type: 'string' },
         },
