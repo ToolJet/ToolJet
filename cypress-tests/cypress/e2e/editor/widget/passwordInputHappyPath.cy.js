@@ -53,7 +53,13 @@ describe('Password Input', ()=>{
     should('contain', "password");
 
     openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionProperties);
+    openAccordion(commonWidgetText.accordionProperties, [
+      "General",
+      "Validation",
+      "Properties",
+      "Layout"
+    ]);
+
     verifyAndModifyParameter('Placeholder', data.customText);
     cy.forceClickOnCanvas();
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName))

@@ -83,7 +83,7 @@ export const addAndVerifyTooltip = (widgetSelector, message) => {
 };
 
 export const editAndVerifyWidgetName = (name) => {
-  closeAccordions(["Events", "General", "Properties"]);
+  closeAccordions(["General", "Properties", "Layout"]);
   cy.clearAndType(commonWidgetSelector.WidgetNameInputField, name);
   cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
 
