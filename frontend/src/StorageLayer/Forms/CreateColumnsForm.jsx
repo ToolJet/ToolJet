@@ -3,12 +3,21 @@ import React from 'react';
 import SortableList, { SortableItem } from 'react-easy-sort';
 import arrayMove from 'array-move';
 import Toggle from '@/_ui/Toggle';
+import Select from 'react-select';
 
 const CreateColumnsForm = () => {
   const [items, setItems] = React.useState([1, 2]);
   const onSortEnd = (oldIndex, newIndex) => {
     setItems((array) => arrayMove(array, oldIndex, newIndex));
   };
+  const types = [
+    { value: 'varchar', label: 'varchar' },
+    { value: 'int', label: 'int' },
+    { value: 'float', label: 'float' },
+    { value: 'boolean', label: 'boolean' },
+  ];
+
+  const handleTypeChange = () => { };
   return (
     <div className="card">
       <div className="card-header">
@@ -31,12 +40,7 @@ const CreateColumnsForm = () => {
                   <input type="text" className="form-control" placeholder={item} />
                 </div>
                 <div className="col-auto m-0 p-0">
-                  <select className="form-select">
-                    <option value="varchar">varchar</option>
-                    <option value="int">int</option>
-                    <option value="float">float</option>
-                    <option value="boolean">boolean</option>
-                  </select>
+                  <Select options={types} onChange={handleTypeChange} />
                 </div>
                 <div className="col-auto">
                   <Toggle />

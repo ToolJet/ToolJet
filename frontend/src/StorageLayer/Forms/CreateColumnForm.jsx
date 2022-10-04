@@ -1,6 +1,16 @@
 import React from 'react';
+import Select from 'react-select';
 
 const CreateColumnForm = () => {
+  const types = [
+    { value: 'varchar', label: 'varchar' },
+    { value: 'int', label: 'int' },
+    { value: 'float', label: 'float' },
+    { value: 'boolean', label: 'boolean' },
+  ];
+
+  const handleTypeChange = () => { };
+
   return (
     <div className="card">
       <div className="card-header">
@@ -13,12 +23,7 @@ const CreateColumnForm = () => {
         </div>
         <div className="mb-3">
           <div className="form-label">Column type</div>
-          <select className="form-select">
-            <option value="varchar">varchar</option>
-            <option value="int">int</option>
-            <option value="float">float</option>
-            <option value="boolean">boolean</option>
-          </select>
+          <Select options={types} onChange={handleTypeChange} />
         </div>
         <div className="mb-3">
           <div className="form-label">Default value</div>
