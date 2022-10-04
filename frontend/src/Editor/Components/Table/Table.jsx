@@ -321,7 +321,7 @@ export function Table({
       setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
     },
-    [serverSidePagination, clientSidePagination]
+    [serverSidePagination, clientSidePagination, setPaginationInternalPageIndex]
   );
 
   useEffect(() => {

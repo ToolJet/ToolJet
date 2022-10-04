@@ -2,13 +2,25 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
 
 const QueryPanel = ({ queryPanelHeight, children }) => {
+  const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
+  const [isExpanded, setExpanded] = useState(queryManagerPreferences?.isExpanded ?? true);
+  const isComponentMounted = useRef(false);
   const queryPaneRef = useRef(null);
   const [isDragging, setDragging] = useState(false);
-  const [height, setHeight] = useState(queryPanelHeight);
+  const [height, setHeight] = useState(queryManagerPreferences?.queryPanelHeight ?? queryPanelHeight);
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
 
   useEffect(() => {
-    setHeight(queryPanelHeight);
+    // using useRef for isExpanded to avoid, useEffect running in the initial rendering
+    if (isComponentMounted.current) {
+      localStorage.setItem(
+        'queryManagerPreferences',
+        JSON.stringify({ ...queryManagerPreferences, isExpanded: !isExpanded })
+      );
+      setExpanded(!isExpanded);
+    } else {
+      isComponentMounted.current = true;
+    }
   }, [queryPanelHeight]);
 
   const onMouseUp = () => {
@@ -35,7 +47,11 @@ const QueryPanel = ({ queryPanelHeight, children }) => {
 
         if (height > 95) height = 100;
         if (height < 4.5) height = 4.5;
-
+        localStorage.setItem(
+          'queryManagerPreferences',
+          JSON.stringify({ ...queryManagerPreferences, queryPanelHeight: height, isExpanded: true })
+        );
+        setExpanded(true);
         setHeight(height);
       }
     }
@@ -50,7 +66,7 @@ const QueryPanel = ({ queryPanelHeight, children }) => {
       onMouseDown={onMouseDown}
       className="query-pane"
       style={{
-        height: `calc(100% - ${height}%)`,
+        height: `calc(100% - ${isExpanded ? height : 100}%)`,
         cursor: isDragging || isTopOfQueryPanel ? 'row-resize' : 'default',
       }}
     >
