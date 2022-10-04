@@ -3500,6 +3500,13 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
