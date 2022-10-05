@@ -1847,7 +1847,7 @@ export const widgets = [
       events: [],
       styles: {
         backgroundColor: { value: '' },
-        textColor: { value: '' },
+        textColor: { value: '#000000' },
         textSize: { value: 14 },
         textAlign: { value: 'left' },
         fontWeight: { value: 'normal' },

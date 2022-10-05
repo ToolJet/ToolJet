@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-export const NumberInput = function NumberInput({ height, properties, styles, setExposedVariable }) {
+export const NumberInput = function NumberInput({ height, properties, styles, setExposedVariable, component }) {
   const { visibility, borderRadius, borderColor } = styles;
 
   const [value, setValue] = React.useState(parseInt(properties.value));
@@ -46,6 +46,7 @@ export const NumberInput = function NumberInput({ height, properties, styles, se
         borderColor,
       }}
       value={value}
+      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
     />
   );
 };
