@@ -39,10 +39,6 @@ export class OrganizationsService {
     private organizationsRepository: Repository<Organization>,
     @InjectRepository(SSOConfigs)
     private ssoConfigRepository: Repository<SSOConfigs>,
-    @InjectRepository(OrganizationUser)
-    private organizationUsersRepository: Repository<OrganizationUser>,
-    @InjectRepository(GroupPermission)
-    private groupPermissionsRepository: Repository<GroupPermission>,
     private usersService: UsersService,
     private organizationUserService: OrganizationUsersService,
     private groupPermissionService: GroupPermissionsService,

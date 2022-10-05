@@ -3,6 +3,7 @@ import { appService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
+import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import { ShowLoading } from '@/_components';
 import AppLogo from '../_components/AppLogo';
 import { withTranslation } from 'react-i18next';
@@ -44,6 +45,9 @@ class ConfirmationPageComponent extends React.Component {
       this.setState({
         isGettingConfigs: false,
         configs: {
+          enable_sign_up:
+            window.public_config?.DISABLE_MULTI_WORKSPACE !== 'true' &&
+            window.public_config?.SSO_DISABLE_SIGNUPS !== 'true',
           google: {
             enabled: !!window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID,
             configs: {
@@ -54,6 +58,12 @@ class ConfirmationPageComponent extends React.Component {
             enabled: !!window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
             configs: {
               client_id: window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID,
+            },
+          },
+          openid: {
+            enabled: !!window.public_config?.SSO_OPENID_CLIENT_ID,
+            configs: {
+              client_id: window.public_config?.SSO_OPENID_CLIENT_ID,
             },
           },
         },
@@ -169,11 +179,18 @@ class ConfirmationPageComponent extends React.Component {
                         configs={this.state.configs?.git?.configs}
                       />
                     )}
-                    <div className="mt-2 separator">
-                      <h2>
-                        <span>{this.props.t('confirmationPage.or', 'OR')}</span>
-                      </h2>
-                    </div>
+                    {this.state.configs?.openid?.enabled && (
+                      <OidcSSOLoginButton text="Sign up with" configs={this.state.configs?.openid?.configs} />
+                    )}
+                    {(this.state.configs?.git?.enabled ||
+                      this.state.configs?.google?.enabled ||
+                      this.state.configs?.openid?.enabled) && (
+                      <div className="mt-2 separator">
+                        <h2>
+                          <span>{this.props.t('confirmationPage.or', 'OR')}</span>
+                        </h2>
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="mb-3">
