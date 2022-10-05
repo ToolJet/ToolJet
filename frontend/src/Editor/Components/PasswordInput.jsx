@@ -30,7 +30,7 @@ export const PasswordInput = ({ height, validate, properties, styles, setExposed
           height,
           display: visibility ? '' : 'none',
           borderRadius: `${borderRadius}px`,
-          backgroundColor: backgroundColor || 'transparent',
+          backgroundColor: backgroundColor || '#fff',
         }}
       />
       <div className="invalid-feedback">{validationError}</div>
