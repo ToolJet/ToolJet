@@ -189,129 +189,129 @@
     },
     "header":{
         "darkModeToggle":{
-           "activateLightMode" :"Activate light mode",
-           "activateDarkMode":"Activate dark mode"
+           "activateLightMode" :"Aktifkan mode terang",
+           "activateDarkMode":"Aktifkan mode gelap"
         },
         "languageSelection":{
-           "changeLanguage":"Change language",
-           "searchLanguage":"Search language"
+           "changeLanguage":"Ganti bahasa",
+           "searchLanguage":"Cari bahasa"
         },
         "notificationCenter":{
-            "notifications":"Notifications",
-            "markAllAs":"Mark all as",
-            "read":"read",
-            "un":"un",
-            "youDontHaveany":"You don't have any",
-            "youAreCaughtUp":"You're all caught up!",
-            "view":"View"
+            "notifications":"Notifikasi",
+            "markAllAs":"Tandai semua sebagai",
+            "read":"dibaca",
+            "un":"belum",
+            "youDontHaveany":"Anda tidak punya",
+            "youAreCaughtUp":"Sudah dilihat!",
+            "view":"Lihat"
         },
         "organization":{
-            "loadOrganizations":"Load Organizations",
-            "createWorkspace":"Create workspace",
-            "workspaceName":"workspace name",
-            "editWorkspace":"Edit workspace",
+            "loadOrganizations":"Muat Organisasi",
+            "createWorkspace":"Buat ruang kerja",
+            "workspaceName":"nama ruang kerja",
+            "editWorkspace":"Sunting ruang kerja",
             "menus": {
-                "addWorkspace":"Add workspace",
+                "addWorkspace":"Tambahkan ruang kerja",
                 "menusList":{
-                    "manageUsers":"Manage Users",
-                    "manageGroups":"Manage Groups",
-                    "manageSso":"Manage SSO",
-                    "manageEnv":"Manage Environment Variables"
+                    "manageUsers":"Kelola Pengguna",
+                    "manageGroups":"Kelola Grup",
+                    "manageSso":"Kelola SSO",
+                    "manageEnv":"Kelola Environment Variables"
                 },
                 "manageUsers":{
-                    "usersAndPermission":"Users & Permissions",
-                    "inviteNewUser":"Invite new user",
-                    "name":"NAME",
+                    "usersAndPermission":"Pengguna & Izin",
+                    "inviteNewUser":"Undang pengguna baru",
+                    "name":"NAMA",
                     "email":"EMAIL",
                     "status":"STATUS",
-                    "archive":"Archive",
-                    "unarchive":"Unarchive",
-                    "addNewUser":"Add new user",
-                    "emailAddress":"Email address",
-                    "createUser":"Create User",
-                    "enterFirstName":"Enter First Name",
-                    "enterLastName":"Enter Last Name",
-                    "enterEmail":"Enter Email"
+                    "archive":"Arsip",
+                    "unarchive":"Batalkan pengarsipan",
+                    "addNewUser":"Tambahkan pengguna baru",
+                    "emailAddress":"Alamat email",
+                    "createUser":"Buat pengguna",
+                    "enterFirstName":"Masukkan Nama Depan",
+                    "enterLastName":"Masukkan Nama Belakang",
+                    "enterEmail":"Masukan email"
                 },
                 "manageGroups":{
                     "permissions":{
-                        "userGroups":"User Groups",
-                        "createNewGroup":"Create new group",
-                        "udpateGroup":"Update group",
-                        "addNewGroup":"Add new group",
-                        "enterName":"Enter Name",
-                        "createGroup":"Create Group",
-                        "name":"Name"
+                        "userGroups":"Grup Pengguna",
+                        "createNewGroup":"Buat grup baru",
+                        "udpateGroup":"Perbarui grup",
+                        "addNewGroup":"Tambahkan grup baru",
+                        "enterName":"Masukkan nama",
+                        "createGroup":"Membuat grup",
+                        "name":"Nama"
                     },
                     "permissionResources":{
-                        "userGroup":"User group",
-                        "apps":"Apps",
-                        "users":"User",
-                        "permissions":"Permissions",
-                        "addAppsToGroup":"Select apps to add to the group",
-                        "name":"name",
-                        "addUsersToGroup":"Select users to add to the group",
+                        "userGroup":"Grup pengguna",
+                        "apps":"Aplikasi",
+                        "users":"Pengguna",
+                        "permissions":"Izin",
+                        "addAppsToGroup":"Pilih aplikasi untuk ditambahkan ke grup",
+                        "name":"nama",
+                        "addUsersToGroup":"Pilih pengguna untuk ditambahkan ke grup",
                         "email":"email",
-                        "resource":"resource",
-                        "createUpdateDelete":"Create/Update/Delete",
+                        "resource":"sumber",
+                        "createUpdateDelete":"Buat/Perbarui/Hapus",
                         "folder":"Folder"
                     }
                 },
                 "manageSSO":{
-                    "manageSso":"Manage SSO",
+                    "manageSso":"Kelola SSO",
                     "generalSettings":{
-                        "title":"General Settings",
-                        "enableSignup":"Enable Signup",
-                        "newAccountWillBeCreated":"New account will be created for user's first time SSO sign in",
-                        "allowedDomains":"Allowed domains",
-                        "enterDomains":"Enter Domains",
-                        "supportMultiDomains":"Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
+                        "title":"Pengaturan Umum",
+                        "enableSignup":"Aktifkan Pendaftaran",
+                        "newAccountWillBeCreated":"Akun baru akan dibuat untuk pengguna pertama kali masuk SSO",
+                        "allowedDomains":"Domain yang diizinkan",
+                        "enterDomains":"Masukkan Domain",
+                        "supportMultiDomains":"Mendukung banyak domain. Masukkan nama domain yang dipisahkan dengan koma. contoh: tooljet.com,tooljet.io,organisasianda.com",
                         "loginUrl":"Login URL",
-                        "workspaceLogin":"Use this URL to login directly to this workspace",
-                        "allowDefaultSso":"Allow default SSO",
-                        "ssoAuth":"Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO."
+                        "workspaceLogin":"Gunakan URL ini untuk masuk langsung ke ruang kerja ini",
+                        "allowDefaultSso":"Izinkan SSO default",
+                        "ssoAuth":"Izinkan pengguna untuk mengautentikasi melalui SSO default. Konfigurasi SSO default dapat diganti oleh SSO tingkat ruang kerja."
                     },
                     "google":{
                         "title":"Google",
-                        "enabled":"Enabled",
-                        "disabled":"Disabled",
-                        "clientId":"Client Id",
-                        "enterClientId":"Enter Client Id",
-                        "redirectUrl":"Redirect URL"
+                        "enabled":"Diaktifkan",
+                        "disabled":"Nonaktifkan",
+                        "clientId":"ID Klien",
+                        "enterClientId":"Masukkan ID Klien",
+                        "redirectUrl":"URL pengalihan"
                     },
                     "github":{
                         "title":"Github",
-                        "hostName":"Host Name",
-                        "enterHostName":"Enter Host Name",
-                        "requiredGithub":"Required if GitHub is self hosted",
-                        "clientId":"Client Id",
-                        "enterClientId":"Enter Client Id",
-                        "clientSecret":"Client Secret",
-                        "enterClientSecret":"Enter Client Secret",
-                        "encrypted":"Encrypted",
-                        "redirectUrl":"Redirect URL"
+                        "hostName":"Nama Host",
+                        "enterHostName":"Masukan Nama Host",
+                        "requiredGithub":"Dibutuhkan Jika menggunakan GitHub self-hosted",
+                        "clientId":"ID Klien",
+                        "enterClientId":"Masukkan ID Klien",
+                        "clientSecret":"Rahasia Klien",
+                        "enterClientSecret":"Masukkan Rahasia Klien",
+                        "encrypted":"Terenkripsi",
+                        "redirectUrl":"URL pengalihan"
                     },
-                    "passwordLogin":"Password Login",
+                    "passwordLogin":"Masuk Kata Sandi",
                     "environmentVar" : {
-                        "noEnvConfig":"You haven't configured any environment variables, press the 'Add new variable' button to create one",
-                        "envWillBeDeleted":"Variable will be deleted, do you want to continue?",
-                        "addNewVariable":"Add new variable",
+                        "noEnvConfig":"Anda belum mengonfigurasi environment variabel apa pun, tekan tombol 'Tambahkan variabel baru' untuk membuatnya",
+                        "envWillBeDeleted":"Variabel akan dihapus, apakah Anda ingin melanjutkan?",
+                        "addNewVariable":"Tambahkan variabel baru",
                         "variableForm":{
-                            "addNewVariable":"Add new variable",
-                            "updatevariable":"Update variable",
-                            "name":"Name",
-                            "value":"Value",
-                            "enterVariableName":"Enter Variable Name",
-                            "enterValue":"Enter Value",
-                            "type":"Type",
-                            "enableEncryption":"Enable encryption",
-                            "addVariable":"Add variable"
+                            "addNewVariable":"Tambahkan variabel baru",
+                            "updatevariable":"Perbarui variabel",
+                            "name":"Nama",
+                            "value":"Nilai",
+                            "enterVariableName":"Masukkan Nama Variabel",
+                            "enterValue":"Masukkan Nilai",
+                            "type":"Tipe",
+                            "enableEncryption":"Aktifkan enkripsi",
+                            "addVariable":"Tambahkan variabel"
                         },
                         "variableTable":{
-                            "name":"name",
-                            "value":"value",
-                            "type":"type",
-                            "secret":"secret"
+                            "name":"nama",
+                            "value":"nilai",
+                            "type":"tipe",
+                            "secret":"rahasia"
                         }
                     }
                 }
