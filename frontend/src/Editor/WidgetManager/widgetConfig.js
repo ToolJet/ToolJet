@@ -944,6 +944,7 @@ export const widgets = [
       events: [],
       styles: {
         textColor: { value: '#000' },
+        borderColor: { value: '#dadcde' },
         borderRadius: { value: '{{0}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
