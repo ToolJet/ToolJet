@@ -12,16 +12,12 @@ export const TextInput = function TextInput({
   darkMode,
 }) {
 
-  let {
-    textColor,
-    borderRadius,
-    visibility,
-    disabledState,
-  } = styles;
+
+  const { textColor, borderRadius,  disabledState } = styles;
   
   const textInputRef = useRef();
 
-  const textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
+  const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
 
   const [disable, setDisable] = useState(styles.disabledState);
   const [value, setValue] = useState(properties.value);
@@ -49,7 +45,7 @@ export const TextInput = function TextInput({
 
   const computedStyles = {
     backgroundColor,
-    color: textColor,
+    color,
     width: '100%',
     borderRadius: `${borderRadius}px`,
     height,
