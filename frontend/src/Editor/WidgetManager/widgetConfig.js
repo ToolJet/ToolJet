@@ -3500,6 +3500,13 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      borderBottomColor: {
+        type: 'color',
+        displayName: 'Border Bottom Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
@@ -3547,6 +3554,9 @@ export const widgets = [
       events: [],
       styles: {
         backgroundColor: { value: '' },
+        borderBottomColor: {
+          value: '#000'
+        },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{0}}' },
