@@ -111,6 +111,38 @@ describe('apps controller', () => {
       expect(application.name).toBe('Untitled app');
       expect(application.id).toBe(application.slug);
     });
+
+    it('should be able to create app if user is a super admin', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+
+      const superAdminUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        groups: ['all_users', 'developer'],
+        userType: 'instance',
+      });
+
+      const response = await request(app.getHttpServer())
+        .post(`/api/apps`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+
+      expect(response.statusCode).toBe(201);
+      expect(response.body.name).toBe('Untitled app');
+
+      // should create audit log
+      const auditLog = await AuditLog.findOne({
+        userId: superAdminUserData.user.id,
+      });
+
+      expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
+      expect(auditLog.resourceId).toEqual(response.body.id);
+      expect(auditLog.resourceType).toEqual('APP');
+      expect(auditLog.resourceName).toEqual(response.body.name);
+      expect(auditLog.actionType).toEqual('APP_CREATE');
+      expect(auditLog.createdAt).toBeDefined();
+    });
   });
 
   describe('GET /api/apps', () => {
@@ -125,6 +157,11 @@ describe('apps controller', () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
           groups: ['all_users', 'admin'],
+        });
+        const superAdminUserData = await createUser(app, {
+          email: 'superadmin@tooljet.io',
+          groups: ['all_users', 'developer'],
+          userType: 'instance',
         });
         const organization = adminUserData.organization;
         const allUserGroup = await getManager().findOneOrFail(GroupPermission, {
@@ -277,6 +314,12 @@ describe('apps controller', () => {
           folder_count: 0,
           current_page: 1,
         });
+
+        response = await request(app.getHttpServer())
+          .get(`/api/apps?searchKey=public`)
+          .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.user.id));
+
+        expect(response.statusCode).toBe(200);
       });
     });
 
@@ -296,7 +339,11 @@ describe('apps controller', () => {
           groups: ['all_users', 'developer'],
           organization,
         });
-
+        const superAdminUserData = await createUser(app, {
+          email: 'superadmin@tooljet.io',
+          groups: ['all_users', 'developer'],
+          userType: 'instance',
+        });
         const anotherOrgAdminUserData = await createUser(app, {
           email: 'another@tooljet.io',
           groups: ['all_users', 'admin'],
@@ -394,6 +441,13 @@ describe('apps controller', () => {
           folder_count: 1,
           current_page: 1,
         });
+
+        response = await request(app.getHttpServer())
+          .get(`/api/apps?searchKey=public app in`)
+          .query({ folder: folder.id, page: 1 })
+          .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.user.id));
+
+        expect(response.statusCode).toBe(200);
       });
     });
   });
@@ -457,6 +511,46 @@ describe('apps controller', () => {
       expect(response.statusCode).toBe(403);
     });
 
+    it('should be able to clone the app if user is a super admin', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+
+      const superAdminUserData = await createUser(app, {
+        email: 'dev@tooljet.io',
+        groups: ['all_users', 'developer'],
+        userType: 'instance',
+      });
+
+      const application = await createApplication(app, {
+        name: 'App to clone',
+        user: adminUserData.user,
+      });
+
+      const response = await request(app.getHttpServer())
+        .post(`/api/apps/${application.id}/clone`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+
+      expect(response.statusCode).toBe(201);
+
+      const appId = response.body.id;
+      const clonedApplication = await App.findOneOrFail({ where: { id: appId } });
+      expect(clonedApplication.name).toBe('App to clone');
+
+      // should create audit log
+      const auditLog = await AuditLog.findOne({
+        userId: superAdminUserData.user.id,
+      });
+
+      expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
+      expect(auditLog.resourceId).toEqual(clonedApplication.id);
+      expect(auditLog.resourceType).toEqual('APP');
+      expect(auditLog.resourceName).toEqual(clonedApplication.name);
+      expect(auditLog.actionType).toEqual('APP_CLONE');
+      expect(auditLog.createdAt).toBeDefined();
+    });
+
     it('should not be able to clone the app if app is of another organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -502,6 +596,47 @@ describe('apps controller', () => {
       // should create audit log
       const auditLog = await AuditLog.findOne({
         userId: adminUserData.user.id,
+      });
+
+      expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
+      expect(auditLog.resourceId).toEqual(application.id);
+      expect(auditLog.resourceType).toEqual('APP');
+      expect(auditLog.resourceName).toEqual('old name');
+      expect(auditLog.actionType).toEqual('APP_UPDATE');
+      expect(auditLog.metadata).toEqual({
+        updateParams: { app: { name: 'new name' } },
+      });
+      expect(auditLog.createdAt).toBeDefined();
+    });
+
+    it('should be able to update name of the app if the user is a super admin', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const application = await createApplication(app, {
+        user: adminUserData.user,
+        name: 'old name',
+      });
+
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        groups: ['all_users', 'admin'],
+        userType: 'instance',
+      });
+
+      const response = await request(app.getHttpServer())
+        .put(`/api/apps/${application.id}`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
+        .send({ app: { name: 'new name' } });
+
+      expect(response.statusCode).toBe(200);
+      await application.reload();
+      expect(application.name).toBe('new name');
+
+      // should create audit log
+      const auditLog = await AuditLog.findOne({
+        userId: superAdminUserData.user.id,
       });
 
       expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
@@ -636,6 +771,37 @@ describe('apps controller', () => {
       await expect(App.findOneOrFail({ where: { id: application.id } })).rejects.toThrow(expect.any(Error));
     });
 
+    it('should be possible for super admin to delete an app', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+      });
+      const superAdminUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        groups: ['all_users', 'developer'],
+        userType: 'instance',
+      });
+
+      await createApplicationVersion(app, application);
+      await createDataQuery(app, { application, kind: 'test_kind' });
+      await createDataSource(app, {
+        application,
+        kind: 'test_kind',
+        name: 'test_name',
+      });
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/apps/${application.id}`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+
+      expect(response.statusCode).toBe(200);
+      await expect(App.findOneOrFail({ where: { id: application.id } })).rejects.toThrow(expect.any(Error));
+    });
+
     it('should not be possible for non admin to delete an app', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -722,6 +888,30 @@ describe('apps controller', () => {
         expect(response.body.users.length).toBe(1);
       }
     });
+
+    xit('should be able to fetch app users the user is a super admin', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const superAdminUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        groups: ['all_users', 'developer'],
+        userType: 'instance',
+      });
+
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/apps/${application.id}/users`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.users.length).toBe(1);
+    });
   });
 
   describe('GET /api/apps/:id/versions', () => {
@@ -763,6 +953,31 @@ describe('apps controller', () => {
           expect(response.statusCode).toBe(200);
           expect(response.body.versions.length).toBe(1);
         }
+      });
+
+      it('should be able to fetch app versions if the user is a super admin', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const superAdminUserData = await createUser(app, {
+          email: 'dev@tooljet.io',
+          groups: ['all_users', 'developer'],
+          userType: 'instance',
+        });
+
+        const application = await createApplication(app, {
+          name: 'name',
+          user: adminUserData.user,
+        });
+        await createApplicationVersion(app, application);
+
+        const response = await request(app.getHttpServer())
+          .get(`/api/apps/${application.id}/versions`)
+          .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+
+        expect(response.statusCode).toBe(200);
+        expect(response.body.versions.length).toBe(1);
       });
     });
 
@@ -827,6 +1042,32 @@ describe('apps controller', () => {
 
             expect(response.statusCode).toBe(201);
           }
+        });
+
+        it('should be able to create a new app version if the user is a super admin', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            groups: ['all_users', 'admin'],
+          });
+          const superAdminUserData = await createUser(app, {
+            email: 'dev@tooljet.io',
+            groups: ['all_users', 'developer'],
+            userType: 'instance',
+          });
+          const application = await createApplication(app, {
+            user: adminUserData.user,
+          });
+          const version = await createApplicationVersion(app, application);
+
+          const response = await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
+            .send({
+              versionName: `v_3`,
+              versionFromId: version.id,
+            });
+
+          expect(response.statusCode).toBe(201);
         });
 
         it('should be able to create a new app version from existing version', async () => {
@@ -1128,6 +1369,29 @@ describe('apps controller', () => {
         expect(response.statusCode).toBe(403);
       });
 
+      it('should able to delete app versions if user is a super admin', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const superAdminUserData = await createUser(app, {
+          email: 'another@tooljet.io',
+          groups: ['all_users', 'admin'],
+          userType: 'instance',
+        });
+        const application = await createApplication(app, {
+          name: 'name',
+          user: adminUserData.user,
+        });
+        const version = await createApplicationVersion(app, application);
+
+        const response = await request(app.getHttpServer())
+          .delete(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+
+        expect(response.statusCode).toBe(200);
+      });
+
       it('should be able to delete an app version if group is admin or has app update permission group in same organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -1252,6 +1516,28 @@ describe('apps controller', () => {
         }
       });
 
+      it('should be able to get app version if the user is super admin', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const superAdminUserData = await createUser(app, {
+          email: 'dev@tooljet.io',
+          groups: ['all_users', 'developer'],
+          userType: 'instance',
+        });
+        const application = await createApplication(app, {
+          user: adminUserData.user,
+        });
+        const version = await createApplicationVersion(app, application);
+
+        const response = await request(app.getHttpServer())
+          .get(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+
+        expect(response.statusCode).toBe(200);
+      });
+
       it('should not be able to get app versions if user of another organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -1312,6 +1598,32 @@ describe('apps controller', () => {
           expect(response.statusCode).toBe(200);
           await version.reload();
         }
+      });
+
+      it('should be able to update app version if the user is a super admin', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const superAdminUserData = await createUser(app, {
+          email: 'dev@tooljet.io',
+          groups: ['all_users', 'developer'],
+          userType: 'instance',
+        });
+        const application = await createApplication(app, {
+          user: adminUserData.user,
+        });
+        const version = await createApplicationVersion(app, application);
+
+        const response = await request(app.getHttpServer())
+          .put(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
+          .send({
+            definition: { components: {} },
+          });
+
+        expect(response.statusCode).toBe(200);
+        await version.reload();
       });
 
       it('should not be able to update app version if no app create permission within same organization', async () => {
@@ -1461,6 +1773,44 @@ describe('apps controller', () => {
       expect(auditLog.createdAt).toBeDefined();
     });
 
+    it('should be able to fetch app using slug if the user is a super admin', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const superAdminUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        groups: ['all_users', 'developer'],
+        userType: 'instance',
+      });
+
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+        slug: 'foo',
+      });
+      await createApplicationVersion(app, application);
+
+      const response = await request(app.getHttpServer())
+        .get('/api/apps/slugs/foo')
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+
+      expect(response.statusCode).toBe(200);
+
+      // should create audit log
+      expect(await AuditLog.count()).toEqual(1);
+      const auditLog = await AuditLog.findOne({
+        userId: superAdminUserData.user.id,
+      });
+
+      expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
+      expect(auditLog.resourceId).toEqual(application.id);
+      expect(auditLog.resourceType).toEqual('APP');
+      expect(auditLog.resourceName).toEqual(application.name);
+      expect(auditLog.actionType).toEqual('APP_VIEW');
+      expect(auditLog.createdAt).toBeDefined();
+    });
+
     it('should not be able to fetch app using slug if member of another organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -1578,6 +1928,46 @@ describe('apps controller', () => {
       expect(auditLog.createdAt).toBeDefined();
     });
 
+    it('should be able to export app if user is a super admin', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const superAdminUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        groups: ['all_users', 'developer'],
+        userType: 'instance',
+      });
+
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+        slug: 'foo',
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/apps/${application.id}/export`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.id).toBe(application.id);
+      expect(response.body.name).toBe(application.name);
+      expect(response.body.isPublic).toBe(application.isPublic);
+      expect(response.body.organizationId).toBe(application.organizationId);
+
+      // should create audit log
+      const auditLog = await AuditLog.findOne({
+        userId: superAdminUserData.user.id,
+      });
+
+      expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
+      expect(auditLog.resourceId).toEqual(application.id);
+      expect(auditLog.resourceType).toEqual('APP');
+      expect(auditLog.resourceName).toEqual(application.name);
+      expect(auditLog.actionType).toEqual('APP_EXPORT');
+      expect(auditLog.createdAt).toBeDefined();
+    });
+
     it('should not be able to export app if member of another organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -1675,6 +2065,50 @@ describe('apps controller', () => {
       expect(auditLog.actionType).toEqual('APP_IMPORT');
       expect(auditLog.createdAt).toBeDefined();
     });
+
+    it('should be able to import app only if user is a super admin', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+
+      const superAdminUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        groups: ['all_users', 'developer'],
+        userType: 'instance',
+      });
+
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+      });
+      await createApplicationVersion(app, application);
+
+      const response = await request(app.getHttpServer())
+        .post('/api/apps/import')
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
+        .send({ name: 'Imported App' });
+
+      expect(response.statusCode).toBe(201);
+
+      const importedApp = await getManager().find(App, {
+        name: 'Imported App',
+      });
+
+      expect(importedApp).toHaveLength(1);
+
+      // should create audit log
+      const auditLog = await AuditLog.findOne({
+        userId: superAdminUserData.user.id,
+      });
+
+      expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
+      expect(auditLog.resourceId).toEqual(importedApp[0].id);
+      expect(auditLog.resourceType).toEqual('APP');
+      expect(auditLog.resourceName).toEqual(importedApp[0].name);
+      expect(auditLog.actionType).toEqual('APP_IMPORT');
+      expect(auditLog.createdAt).toBeDefined();
+    });
   });
 
   describe('PUT /api/apps/:id/icons', () => {
@@ -1721,7 +2155,32 @@ describe('apps controller', () => {
       expect(application.icon).toBe(null);
     });
 
-    it('should not allow custom groups without app create permission to change the name of apps', async () => {
+    it('should able to update icon of the app if user is super admin', async () => {
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        groups: ['all_users', 'admin'],
+        userType: 'instance',
+      });
+      const anotherOrgAdminUserData = await createUser(app, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const application = await createApplication(app, {
+        name: 'name',
+        user: anotherOrgAdminUserData.user,
+      });
+
+      const response = await request(app.getHttpServer())
+        .put(`/api/apps/${application.id}/icons`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, anotherOrgAdminUserData.organization.id))
+        .send({ icon: 'new-icon-name' });
+
+      expect(response.statusCode).toBe(200);
+      await application.reload();
+      expect(application.icon).toBe('new-icon-name');
+    });
+
+    it('should not allow custom groups without app create permission to change the icons of apps', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],

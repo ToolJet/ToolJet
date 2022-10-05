@@ -115,7 +115,41 @@ describe('app_users controller', () => {
         groups: ['all_users', 'admin'],
       });
 
+    expect(response.statusCode).toBe(403);
+
     await application.reload();
+  });
+
+  it('should be able to create a new app user if user is a super admin', async () => {
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      groups: ['all_users', 'admin'],
+    });
+
+    const superAdminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
+    });
+    const developerUserData = await createUser(app, {
+      email: 'dev@tooljet.io',
+      groups: ['all_users', 'developer'],
+      organization: adminUserData.organization,
+    });
+    const application = await createApplication(app, {
+      user: adminUserData.user,
+    });
+
+    const response = await request(app.getHttpServer())
+      .post(`/api/app_users`)
+      .set('Authorization', authHeaderForUser(superAdminUserData.user))
+      .send({
+        app_id: application.id,
+        org_user_id: developerUserData.orgUser.id,
+        groups: ['all_users', 'admin'],
+      });
+
+    expect(response.statusCode).toBe(201);
   });
 
   afterAll(async () => {

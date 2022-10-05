@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createNestAppInstance, setupOrganization } from '../test.helper';
+import { authHeaderForUser, clearDB, createNestAppInstance, createUser, setupOrganization } from '../test.helper';
 import * as request from 'supertest';
 import { getManager } from 'typeorm';
 import { Folder } from '../../src/entities/folder.entity';
@@ -31,6 +31,32 @@ describe('folder apps controller', () => {
       const response = await request(nestApp.getHttpServer())
         .post(`/api/folder_apps`)
         .set('Authorization', authHeaderForUser(adminUser))
+        .send({ folder_id: folder.id, app_id: app.id });
+
+      expect(response.statusCode).toBe(201);
+      const { id, app_id, folder_id } = response.body;
+      expect(id).toBeDefined();
+      expect(app_id).toBe(app.id);
+      expect(folder_id).toBe(folder.id);
+    });
+
+    it('super admin should be able to add apps to folders in any organization', async () => {
+      const { adminUser, app } = await setupOrganization(nestApp);
+      const manager = getManager();
+      // create a new folder
+      const folder = await manager.save(
+        manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
+      );
+      //super admin
+      const superAdminUserData = await createUser(nestApp, {
+        email: 'superadmin@tooljet.io',
+        groups: ['all_users', 'admin'],
+        userType: 'instance',
+      });
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/folder_apps`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUser.organizationId))
         .send({ folder_id: folder.id, app_id: app.id });
 
       expect(response.statusCode).toBe(201);
@@ -75,6 +101,31 @@ describe('folder apps controller', () => {
       const response = await request(nestApp.getHttpServer())
         .put(`/api/folder_apps/${folderApp.folderId}`)
         .set('Authorization', authHeaderForUser(adminUser))
+        .send({ app_id: folderApp.appId });
+
+      expect(response.statusCode).toBe(200);
+    });
+
+    it('super admin should be able to remove an app from a folder', async () => {
+      const { adminUser, app } = await setupOrganization(nestApp);
+      const manager = getManager();
+      // create a new folder
+      const folder = await manager.save(
+        manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
+      );
+      // add app to folder
+      const folderApp = await manager.save(manager.create(FolderApp, { folderId: folder.id, appId: app.id }));
+
+      //super admin
+      const superAdminUserData = await createUser(nestApp, {
+        email: 'superadmin@tooljet.io',
+        groups: ['all_users', 'admin'],
+        userType: 'instance',
+      });
+
+      const response = await request(nestApp.getHttpServer())
+        .put(`/api/folder_apps/${folderApp.folderId}`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUser.organizationId))
         .send({ app_id: folderApp.appId });
 
       expect(response.statusCode).toBe(200);

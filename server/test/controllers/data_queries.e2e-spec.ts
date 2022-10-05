@@ -27,7 +27,7 @@ describe('data queries controller', () => {
     app = await createNestAppInstance();
   });
 
-  it('should be able to update queries of an app only if group is admin or group has app update permission', async () => {
+  it('should be able to update queries of an app only if group is admin or group has app update permission or the user is a super admin', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
@@ -45,6 +45,11 @@ describe('data queries controller', () => {
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
 
     const application = await createApplication(app, {
@@ -88,11 +93,11 @@ describe('data queries controller', () => {
       },
     });
 
-    for (const userData of [adminUserData, developerUserData]) {
+    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const newOptions = { method: userData.user.email };
       const response = await request(app.getHttpServer())
         .patch(`/api/data_queries/${dataQuery.id}`)
-        .set('Authorization', authHeaderForUser(userData.user))
+        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
         .send({
           options: newOptions,
         });
@@ -118,10 +123,15 @@ describe('data queries controller', () => {
     }
   });
 
-  it('should be able to delete queries of an app only if admin/developer of same organization', async () => {
+  it('should be able to delete queries of an app only if admin/developer of same organization or super admin', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -154,7 +164,7 @@ describe('data queries controller', () => {
       delete: false,
     });
 
-    for (const userData of [adminUserData, developerUserData]) {
+    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const dataQuery = await createDataQuery(app, {
         application,
         kind: 'restapi',
@@ -170,7 +180,7 @@ describe('data queries controller', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data_queries/${dataQuery.id}`)
-        .set('Authorization', authHeaderForUser(userData.user))
+        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
         .send({
           options: newOptions,
         });
@@ -206,10 +216,15 @@ describe('data queries controller', () => {
     }
   });
 
-  it('should be able to get queries only if the user has app read permission and belongs to the same organization', async () => {
+  it('should be able to get queries only if the user has app read permission and belongs to the same organization or user is a super admin', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -257,10 +272,10 @@ describe('data queries controller', () => {
       options: { method: 'get' },
     });
 
-    for (const userData of [adminUserData, developerUserData]) {
+    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .get(`/api/data_queries?app_id=${application.id}`)
-        .set('Authorization', authHeaderForUser(userData.user));
+        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id));
 
       expect(response.statusCode).toBe(200);
       expect(response.body.data_queries.length).toBe(1);
@@ -312,10 +327,15 @@ describe('data queries controller', () => {
     expect(response.body.data_queries.length).toBe(0);
   });
 
-  it('should be able to create queries for an app only if the user has admin group or update permission', async () => {
+  it('should be able to create queries for an app only if the user has relevant permissions(admin or update permission) or instance user type', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -357,10 +377,10 @@ describe('data queries controller', () => {
       app_version_id: applicationVersion.id,
     };
 
-    for (const userData of [adminUserData, developerUserData]) {
+    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries`)
-        .set('Authorization', authHeaderForUser(userData.user))
+        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
         .send(requestBody);
 
       expect(response.statusCode).toBe(201);
@@ -504,10 +524,15 @@ describe('data queries controller', () => {
     expect(createdQueries).toMatchObject(response.body.data_queries);
   });
 
-  it('should be able to run queries of an app if the user belongs to the same organization', async () => {
+  it('should be able to run queries of an app if the user belongs to the same organization or has instance user type', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -561,10 +586,10 @@ describe('data queries controller', () => {
       delete: false,
     });
 
-    for (const userData of [adminUserData, developerUserData, viewerUserData]) {
+    for (const userData of [adminUserData, developerUserData, viewerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries/${dataQuery.id}/run`)
-        .set('Authorization', authHeaderForUser(userData.user));
+        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id));
 
       expect(response.statusCode).toBe(201);
       expect(response.body.data.length).toBe(30);
@@ -574,7 +599,10 @@ describe('data queries controller', () => {
         userId: userData.user.id,
       });
 
-      expect(auditLog.organizationId).toEqual(userData.user.organizationId);
+      const organizationId =
+        userData.user.userType === 'instance' ? adminUserData.user.organizationId : userData.user.organizationId;
+
+      expect(auditLog.organizationId).toEqual(organizationId);
       expect(auditLog.resourceId).toEqual(dataQuery.id);
       expect(auditLog.resourceType).toEqual('DATA_QUERY');
       expect(auditLog.resourceName).toEqual(dataQuery.name);
