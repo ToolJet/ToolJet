@@ -81,8 +81,12 @@ export const TextInput = function TextInput({
   );
 
   return (
+<<<<<<< HEAD
     <div data-disabled={disable}
       className={`text-input ${visibility || 'invisible'}`}>
+=======
+    <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`} data-cy="text-disable-div">
+>>>>>>> e52eb6ddeb962c49d7e0ac5df0fe2968c602f40f
       <input
         ref={textInputRef}
         onKeyUp={(e) => {
