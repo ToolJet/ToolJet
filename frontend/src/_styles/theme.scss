@@ -1183,6 +1183,20 @@ button {
   }
 }
 
+.user-edit-modal.dark-mode {
+  .modal-header {
+    border-color: #232e3c !important;
+  }
+
+  .modal-body,
+  .modal-footer,
+  .modal-header,
+  .modal-content {
+    color: white;
+    background-color: #2b394a;
+  }
+}
+
 .fx-container {
   position: relative;
 }
@@ -3323,6 +3337,8 @@ input:focus-visible {
   .org-users-page {
 
     .user-email,
+    .user-type,
+    .workspaces,
     .user-status {
       filter: brightness(0) invert(1);
     }

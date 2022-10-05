@@ -104,7 +104,7 @@ const UsersTable = ({
                       </td>
                       {isLoadingAllUsers && (
                         <td className="text-muted">
-                          <span className="text-muted">{user.user_type}</span>
+                          <span className="text-muted user-type">{user.user_type}</span>
                         </td>
                       )}
                       {user.status && (
@@ -138,7 +138,7 @@ const UsersTable = ({
                       )}
                       {isLoadingAllUsers && (
                         <td className="text-muted">
-                          <a className="px-2 text-muted" onClick={() => openOrganizationModal(user)}>
+                          <a className="px-2 text-muted workspaces" onClick={() => openOrganizationModal(user)}>
                             View ({user.total_organizations})
                           </a>
                         </td>

@@ -26,13 +26,13 @@ const UserEditModal = ({ showModal, darkMode, hideModal, translator, updatingUse
         centered={true}
         keyboard={true}
         onEscapeKeyDown={hideModal}
-        className={`${darkMode && 'dark'} organizations-modal`}
+        className={`${darkMode && 'dark-mode'} user-edit-modal`}
       >
         <Modal.Header>
-          <Modal.Title className="text-center ">
+          <Modal.Title className="text-center">
             {translator('header.organization.menus.manageAllUsers.updateUser', 'Update User')}
           </Modal.Title>
-          <div className="close-button" onClick={hideModal}>
+          <div className="close-button cursor-pointer" onClick={hideModal}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon icon-tabler icon-tabler-x"
@@ -40,7 +40,7 @@ const UserEditModal = ({ showModal, darkMode, hideModal, translator, updatingUse
               height="44"
               viewBox="0 0 24 24"
               strokeWidth="1.5"
-              stroke="#2c3e50"
+              stroke={darkMode ? '#fff' : '#2c3e50'}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
