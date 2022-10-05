@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 export const RadioButton = function RadioButton({
@@ -14,7 +14,8 @@ export const RadioButton = function RadioButton({
   const { label, value, values, display_values } = properties;
   const { visibility, disabledState, activeColor } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
-  const [checkedValue, set] = React.useState(value);
+  const [checkedValue, setValue] = useState(() => value);
+  useEffect(() => setValue(value), [value]);
 
   let selectOptions = [];
 
@@ -29,7 +30,7 @@ export const RadioButton = function RadioButton({
   }
 
   function onSelect(selection) {
-    set(selection);
+    setValue(selection);
     setExposedVariable('value', selection).then(() => fireEvent('onSelectionChange'));
   }
 
@@ -43,7 +44,7 @@ export const RadioButton = function RadioButton({
     async function (option) {
       onSelect(option);
     },
-    [set]
+    [setValue]
   );
 
   return (
