@@ -296,7 +296,9 @@ export class OauthService {
             // no SSO login enabled organization available for user - creating new one
             organizationDetails = await this.organizationService.create('Untitled workspace', userDetails, manager);
           } else {
-            throw new UnauthorizedException('User not included in any workspace');
+            throw new UnauthorizedException(
+              'User not included in any workspace or workspace does not supports SSO login'
+            );
           }
         }
       } else {
