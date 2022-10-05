@@ -2060,7 +2060,7 @@ export const widgets = [
         borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderColor: { value: '' },
+        borderColor: { value: '#fff' },
       },
     },
   },
