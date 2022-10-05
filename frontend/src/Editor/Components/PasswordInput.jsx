@@ -19,7 +19,7 @@ export const PasswordInput = ({ height, validate, properties, styles, setExposed
         onChange={(e) => {
           setPasswordValue(e.target.value);
           setExposedVariable('value', e.target.value);
-          fireEvent('onChange')
+          fireEvent('onChange');
         }}
         type={'password'}
         className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${

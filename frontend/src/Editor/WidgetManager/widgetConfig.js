@@ -1063,7 +1063,7 @@ export const widgets = [
       customRule: { type: 'code', displayName: 'Custom validation' },
     },
     events: {
-      onChange: {displayName: 'On change'}
+      onChange: { displayName: 'On change' }
     },
     styles: {
       visibility: {
