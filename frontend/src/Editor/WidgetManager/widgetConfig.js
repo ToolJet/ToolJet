@@ -879,18 +879,37 @@ export const widgets = [
       textColor: {
         type: 'color',
         displayName: 'Text Color',
-        validation: { schema: { type: 'string' } },
+        validation: { 
+          schema: { type: 'string' }, 
+        },
       },
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        validation: { 
+          schema: { 
+            type: 'union', 
+            schemas: [{ type: 'string' }, { type: 'number' }] 
+          } 
+        },
       },
-      visibility: { type: 'toggle', displayName: 'Visibility', validation: { schema: { type: 'boolean' } } },
+      visibility: { 
+        type: 'toggle', 
+        displayName: 'Visibility', 
+        validation: { 
+          schema: { 
+            type: 'boolean' 
+          } 
+        } 
+      },
       disabledState: { type: 'toggle', displayName: 'Disable', validation: { schema: { type: 'boolean' } } },
     },
     exposedVariables: {
       value: '',
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
+      borderRadius: { value: '{{0}}' },
+      textColor: { value: '#232e3c' },
     },
     actions: [
       {

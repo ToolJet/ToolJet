@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export const TextInput = function TextInput({
   height,
@@ -12,9 +12,8 @@ export const TextInput = function TextInput({
   darkMode,
 }) {
 
+  const { textColor, borderRadius, disabledState } = styles;
 
-  const { textColor, borderRadius,  disabledState } = styles;
-  
   const textInputRef = useRef();
 
   const color = textColor === '#000' ? (darkMode ? '#fff' : '#000') : textColor;
@@ -49,7 +48,7 @@ export const TextInput = function TextInput({
     width: '100%',
     borderRadius: `${borderRadius}px`,
     height,
-    display: visibility ? 'flex' : 'none',
+    display: visibility ? '' : 'none',
   };
 
   registerAction('setFocus', async function () {
@@ -82,7 +81,8 @@ export const TextInput = function TextInput({
   );
 
   return (
-    <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`}>
+    <div data-disabled={disable}
+      className={`text-input ${visibility || 'invisible'}`}>
       <input
         ref={textInputRef}
         onKeyUp={(e) => {
@@ -107,9 +107,8 @@ export const TextInput = function TextInput({
           fireEvent('onFocus');
         }}
         type="text"
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
-          darkMode && 'dark-theme-placeholder'
-        }`}
+        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${darkMode && 'dark-theme-placeholder'
+          }`}
         placeholder={properties.placeholder}
         style={{ height, borderRadius: `${styles.borderRadius}px`, color: textColor }}
         value={value}
