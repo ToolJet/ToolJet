@@ -173,7 +173,6 @@ export function Table({
   if (currentState) {
     tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
     if (!Array.isArray(tableData)) tableData = [];
-    console.log('resolved param', tableData);
   }
 
   tableData = tableData || [];
@@ -246,8 +245,13 @@ export function Table({
   );
 
   useEffect(() => {
-    autogenerateColumns(tableData, component.definition.properties.columns.value, setProperty);
+    if (tableData.length != 0)
+      autogenerateColumns(tableData, component.definition.properties.columns.value, setProperty);
   }, [JSON.stringify(tableData)]);
+
+  useEffect(() => {
+    setExposedVariable('columns', component.definition.properties.columns.value);
+  }, [component.definition.properties.columns.value]);
 
   const computedStyles = {
     // width: `${width}px`,

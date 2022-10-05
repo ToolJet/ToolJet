@@ -16,7 +16,7 @@ export default function autogenerateColumns(tableData, existingColumns, setPrope
     keys.includes(column.name)
   );
 
-  setProperty('columns', newColumns);
+  setTimeout(() => setProperty('columns', newColumns), 10);
 }
 
 const dataTypeToColumnTypeMapping = {
