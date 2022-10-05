@@ -1,6 +1,13 @@
 import React, { useEffect } from 'react';
 
-export const NumberInput = function NumberInput({ height, properties, styles, setExposedVariable, component, darkMode }) {
+export const NumberInput = function NumberInput({
+  height,
+  properties,
+  styles,
+  setExposedVariable,
+  component,
+  darkMode
+}) {
 
   const { visibility, borderRadius } = styles;
 
