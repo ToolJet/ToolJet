@@ -20,7 +20,7 @@ export const Container = function Container({
     height,
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
-    borderColor,
+border: `1px solid ${borderColor}`,
   };
 
   const parentRef = useRef(null);
