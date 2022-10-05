@@ -17,10 +17,10 @@ export const Container = function Container({
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const computedStyles = {
     backgroundColor,
+    borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
+    border: `1px solid ${borderColor}`,
     height,
     display: visibility ? 'flex' : 'none',
-    borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
-border: `1px solid ${borderColor}`,
   };
 
   const parentRef = useRef(null);
