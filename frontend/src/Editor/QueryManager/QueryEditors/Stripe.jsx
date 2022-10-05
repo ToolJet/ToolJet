@@ -179,7 +179,7 @@ class StripeComponent extends React.Component {
         {loadingSpec && (
           <div className="p-3">
             <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
-            {this.props.t('stripe', 'Please wait whle we load the OpenAPI specification for Stripe.')}
+            {this.props.t('stripe', 'Please wait while we load the OpenAPI specification for Stripe.')}
           </div>
         )}
 
