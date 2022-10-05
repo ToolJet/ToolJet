@@ -22,8 +22,8 @@ export const TextInput = function TextInput({
     height,
     borderRadius: `${styles.borderRadius}px`,
     color: darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor,
-    borderColor: styles.borderColor ?? "transparent"
-  }
+    borderColor: styles.borderColor,
+  };
 
   useEffect(() => {
     disable !== styles.disabledState && setDisable(styles.disabledState);
