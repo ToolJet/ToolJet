@@ -11,6 +11,7 @@ import {
   useBlockLayout,
   useResizeColumns,
   useRowSelect,
+  useColumnOrder,
 } from 'react-table';
 import cx from 'classnames';
 import { resolveReferences, validateWidget } from '@/_helpers/utils';
@@ -27,7 +28,7 @@ import generateColumnsData from './columns';
 import generateActionsData from './columns/actions';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
-
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 export function Table({
   id,
   width,
@@ -72,6 +73,17 @@ export function Table({
     actions,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
+  const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
+    ...draggableStyle,
+    userSelect: 'none',
+    background: isDragging ? 'rgba(77, 114, 250, 0.2)' : '',
+    padding: '10px',
+    borderRadius: '4px',
+    width: '265px',
+    ...(isDragging && { marginTop: '-100px' }),
+    ...(!isDragging && { transform: 'translate(0,0)', width: 'auto' }),
+    ...(isDropAnimating && { transitionDuration: '0.001s' }),
+  });
   const { t } = useTranslation();
 
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
@@ -266,6 +278,8 @@ export function Table({
     setAllFilters,
     preGlobalFilteredRows,
     setGlobalFilter,
+    allColumns,
+    setColumnOrder,
     state: { pageIndex, globalFilter },
     exportData,
     selectedFlatRows,
@@ -283,6 +297,7 @@ export function Table({
       manualPagination: false,
       getExportFileBlob,
     },
+    useColumnOrder,
     useFilters,
     useGlobalFilter,
     useSortBy,
@@ -313,6 +328,7 @@ export function Table({
         ]);
     }
   );
+  const currentColOrder = React.useRef();
 
   registerAction(
     'setPage',
@@ -437,22 +453,73 @@ export function Table({
         <table {...getTableProps()} className={`table table-vcenter table-nowrap ${tableType}`} style={computedStyles}>
           <thead>
             {headerGroups.map((headerGroup, index) => (
-              <tr key={index} {...headerGroup.getHeaderGroupProps()} tabIndex="0" className="tr">
-                {headerGroup.headers.map((column, index) => (
-                  <th
-                    key={index}
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                    className={column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'}
-                  >
-                    {column.render('Header')}
-                    <div
-                      draggable="true"
-                      {...column.getResizerProps()}
-                      className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
-                    />
-                  </th>
-                ))}
-              </tr>
+              <DragDropContext
+                key={index}
+                onDragStart={() => {
+                  currentColOrder.current = allColumns?.map((o) => o.id);
+                }}
+                onDragUpdate={(dragUpdateObj) => {
+                  const colOrder = [...currentColOrder.current];
+                  const sIndex = dragUpdateObj.source.index;
+                  const dIndex = dragUpdateObj.destination && dragUpdateObj.destination.index;
+
+                  if (typeof sIndex === 'number' && typeof dIndex === 'number') {
+                    colOrder.splice(sIndex, 1);
+                    colOrder.splice(dIndex, 0, dragUpdateObj.draggableId);
+                    setColumnOrder(colOrder);
+                  }
+                }}
+              >
+                <Droppable droppableId="droppable" direction="horizontal">
+                  {(droppableProvided, snapshot) => (
+                    <tr
+                      ref={droppableProvided.innerRef}
+                      key={index}
+                      {...headerGroup.getHeaderGroupProps()}
+                      tabIndex="0"
+                      className="tr"
+                    >
+                      {headerGroup.headers.map((column, index) => (
+                        <Draggable
+                          key={column.id}
+                          draggableId={column.id}
+                          index={index}
+                          isDragDisabled={!column.accessor}
+                        >
+                          {(provided, snapshot) => {
+                            return (
+                              <th
+                                key={index}
+                                {...column.getHeaderProps(column.getSortByToggleProps())}
+                                className={
+                                  column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'
+                                }
+                              >
+                                <div
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  // {...extraProps}
+                                  ref={provided.innerRef}
+                                  style={{
+                                    ...getItemStyle(snapshot, provided.draggableProps.style),
+                                  }}
+                                >
+                                  {column.render('Header')}
+                                </div>
+                                <div
+                                  draggable="true"
+                                  {...column.getResizerProps()}
+                                  className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
+                                />
+                              </th>
+                            );
+                          }}
+                        </Draggable>
+                      ))}
+                    </tr>
+                  )}
+                </Droppable>
+              </DragDropContext>
             ))}
           </thead>
 

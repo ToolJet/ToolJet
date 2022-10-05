@@ -1897,13 +1897,15 @@ button {
     width: 0;
   }
 
-  .sort-desc:after {
+  .sort-desc:after,.sort-asc:after {
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-top: 5px solid #767676;
     border-bottom: 5px solid transparent;
     left: 6px;
     top: 8px;
+    margin: 8px 0px !important;
+
   }
 
   .sort-asc:after {
@@ -1913,6 +1915,7 @@ button {
     border-bottom: 5px solid #767676;
     left: 6px;
     bottom: 8px;
+    margin: 8px 0px !important;
   }
 }
 
@@ -3441,6 +3444,9 @@ input:focus-visible {
 
 .gui-select-wrappper .select-search__input {
   height: 30px;
+}
+.table thead th {
+  display: flex !important;
 }
 
 .theme-dark .input-group-text,
