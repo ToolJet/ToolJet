@@ -26,13 +26,13 @@ const OrganizationsModal = ({
         centered={true}
         keyboard={true}
         onEscapeKeyDown={hideModal}
-        className={`${darkMode && 'dark'} organizations-modal`}
+        className={`${darkMode && 'dark-mode'} organizations-modal`}
       >
         <Modal.Header>
           <Modal.Title className="text-center ">
             {translator('header.organization.menus.manageAllUsers.workspaces', 'Workspaces')} of {selectedUser?.name}
           </Modal.Title>
-          <div className="close-button" onClick={hideModal}>
+          <div className="close-button cursor-pointer" onClick={hideModal}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon icon-tabler icon-tabler-x"
@@ -40,7 +40,7 @@ const OrganizationsModal = ({
               height="44"
               viewBox="0 0 24 24"
               strokeWidth="1.5"
-              stroke="#2c3e50"
+              stroke={darkMode ? '#fff' : '#2c3e50'}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -55,7 +55,7 @@ const OrganizationsModal = ({
         <Modal.Body>
           <div className="">
             <table data-testid="usersTable" className="table table-vcenter h-100">
-              <thead>
+              <thead className="user-table-header">
                 <tr>
                   <th data-cy="name-title">NO</th>
                   <th data-cy="name-title">
@@ -91,7 +91,7 @@ const OrganizationsModal = ({
                         })}
                         data-cy="status-badge"
                       ></span>
-                      <small className="user-status" data-cy="user-status">
+                      <small className={darkMode ? 'dark-mode-status' : ''} data-cy="user-status">
                         {organization_user.status}
                       </small>
                     </td>

@@ -11,8 +11,8 @@ export default function GoogleSSOLoginButton(props) {
         uxMode="redirect"
         redirectUri={`${window.public_config?.TOOLJET_HOST}/sso/google${props.configId ? `/${props.configId}` : ''}`}
         render={(renderProps) => (
-          <div>
-            <button {...renderProps} className="btn border-0 rounded-2">
+          <div className="sso-btn-wrapper">
+            <button {...renderProps} className="btn border-0 rounded-2 sso-btn">
               <img
                 onClick={renderProps.onClick}
                 disabled={renderProps.disabled}

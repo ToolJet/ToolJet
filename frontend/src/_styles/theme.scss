@@ -1183,6 +1183,7 @@ button {
   }
 }
 
+.organizations-modal.dark-mode,
 .user-edit-modal.dark-mode {
   .modal-header {
     border-color: #232e3c !important;
@@ -1194,6 +1195,11 @@ button {
   .modal-content {
     color: white;
     background-color: #2b394a;
+  }
+
+  .user-table-header th {
+    color: white;
+    background-color: #1c252f; 
   }
 }
 
@@ -1266,6 +1272,19 @@ button {
 
   .user-avatar-nav-item {
     border-radius: 4px;
+  }
+
+  .sso-btn-wrapper {
+    background-color: transparent;
+  }
+
+  .sso-btn {
+    background-color: transparent;
+    color: #fff;
+  }
+
+  .sso-btn:hover {
+    background-color: #1f2936;
   }
 
   .homepage-body {
@@ -6401,5 +6420,9 @@ input.hide-input-arrows{
 
   .close-button {
     cursor: pointer;
+  }
+
+  .dark-mode-status {
+    filter: brightness(0) invert(1);
   }
 }
