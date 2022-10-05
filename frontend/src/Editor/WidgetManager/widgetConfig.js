@@ -2023,6 +2023,13 @@ export const widgets = [
           },
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
@@ -2035,13 +2042,6 @@ export const widgets = [
         displayName: 'Disable',
         validation: {
           schema: { type: 'boolean' },
-        },
-      },
-      borderColor: {
-        type: 'color',
-        displayName: 'Border color',
-        validation: {
-          schema: { type: 'string' },
         },
       },
     },
