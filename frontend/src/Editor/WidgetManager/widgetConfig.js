@@ -2058,9 +2058,9 @@ export const widgets = [
       styles: {
         backgroundColor: { value: '' },
         borderRadius: { value: '0' },
+        borderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderColor: { value: '#fff' },
       },
     },
   },
