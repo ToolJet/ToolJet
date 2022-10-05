@@ -1,9 +1,9 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
 import { App } from 'src/entities/app.entity';
-import { Connection, createQueryBuilder, EntityManager, getRepository, In, Repository } from 'typeorm';
+import { createQueryBuilder, EntityManager, getRepository, In, Repository } from 'typeorm';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -17,7 +17,6 @@ const bcrypt = require('bcrypt');
 export class UsersService {
   constructor(
     private readonly filesService: FilesService,
-    private connection: Connection,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(App)
@@ -365,36 +364,23 @@ export class UsersService {
   }
 
   async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
-    const queryRunner = this.connection.createQueryRunner();
-
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      const user = await queryRunner.manager.findOne(User, userId);
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const user = await manager.findOne(User, userId);
       const currentAvatarId = user.avatarId;
       const createFileDto = new CreateFileDto();
       createFileDto.filename = filename;
       createFileDto.data = imageBuffer;
-      const avatar = await this.filesService.create(createFileDto, queryRunner);
+      const avatar = await this.filesService.create(createFileDto, manager);
 
-      await queryRunner.manager.update(User, userId, {
+      await manager.update(User, userId, {
         avatarId: avatar.id,
       });
 
       if (currentAvatarId) {
-        await this.filesService.remove(currentAvatarId, queryRunner);
+        await this.filesService.remove(currentAvatarId, manager);
       }
-
-      await queryRunner.commitTransaction();
-
       return avatar;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException(error);
-    } finally {
-      await queryRunner.release();
-    }
+    });
   }
 
   canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[] | GroupPermission[]): boolean {
