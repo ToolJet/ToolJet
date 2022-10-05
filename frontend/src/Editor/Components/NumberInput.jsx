@@ -43,7 +43,7 @@ export const NumberInput = function NumberInput({ height, properties, styles, se
         height,
         display: visibility ? '' : 'none',
         borderRadius: `${borderRadius}px`,
-        borderColor: borderColor || 'transparent',
+        borderColor,
       }}
       value={value}
     />
