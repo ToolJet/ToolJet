@@ -27,7 +27,8 @@ import generateColumnsData from './columns';
 import generateActionsData from './columns/actions';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
-
+// eslint-disable-next-line import/no-unresolved
+import { IconEyeOff } from '@tabler/icons';
 export function Table({
   id,
   width,
@@ -435,7 +436,7 @@ export function Table({
                 className="btn btn-light btn-sm p-1 mb-0 mx-1"
                 onClick={() => setHidecolumnActive(!hideColumnActive)}
               >
-                <img src="/assets/images/icons/widgets/eye-off.svg" width="15" height="15" />
+                <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
               </span>
             </div>
           </div>
@@ -446,16 +447,14 @@ export function Table({
                 <span className="hide-column-name"> Toggle All</span>
               </div>
               {allColumns.map((column) => (
-                <>
-                  <div key={column.id}>
-                    <div>
-                      <label className="dropdown-item">
-                        <input type="checkbox" {...column.getToggleHiddenProps()} />
-                        <span className="hide-column-name"> {` ${column.Header}`}</span>
-                      </label>
-                    </div>
+                <div key={column.id}>
+                  <div>
+                    <label className="dropdown-item">
+                      <input type="checkbox" {...column.getToggleHiddenProps()} />
+                      <span className="hide-column-name"> {` ${column.Header}`}</span>
+                    </label>
                   </div>
-                </>
+                </div>
               ))}
             </div>
           )}
