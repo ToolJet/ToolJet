@@ -1,5 +1,4 @@
 import React from 'react';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
@@ -99,7 +98,6 @@ export function Filter(props) {
                 onChange={(value) => {
                   filterColumnChanged(index, value);
                 }}
-                filterOptions={fuzzySearch}
                 placeholder={t('globals.select', 'Select') + '...'}
                 styles={selectStyles('100%')}
               />
@@ -122,7 +120,6 @@ export function Filter(props) {
                 onChange={(value) => {
                   filterOperationChanged(index, value);
                 }}
-                filterOptions={fuzzySearch}
                 placeholder={t('globals.select', 'Select') + '...'}
                 styles={selectStyles('100%')}
               />
