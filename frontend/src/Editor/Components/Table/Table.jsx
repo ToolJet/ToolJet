@@ -322,6 +322,29 @@ export function Table({
     }
   );
 
+  const sortOptions = useMemo(() => {
+    if (state?.sortBy?.length === 0) {
+      return;
+    }
+
+    const columnName = columns.find((column) => column.id === state?.sortBy?.[0]?.id).accessor;
+
+    return {
+      sortedBy: {
+        column: columnName,
+        direction: state?.sortBy?.[0]?.desc ? 'descending' : 'ascending',
+      },
+    };
+  }, [JSON.stringify(state)]);
+
+  useEffect(() => {
+    if (!sortOptions) {
+      setExposedVariable('sortedBy', null);
+      return;
+    }
+    setExposedVariable('sortedBy', sortOptions.sortedBy).then(() => fireEvent('onSort'));
+  }, [sortOptions]);
+
   registerAction(
     'setPage',
     async function (targetPageIndex) {

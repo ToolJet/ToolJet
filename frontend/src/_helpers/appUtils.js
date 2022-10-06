@@ -512,6 +512,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onOpen',
       'onClose',
       'onRowClicked',
+      'onSort',
       'onCellValueChanged',
       'onFilterChanged',
     ].includes(eventName)

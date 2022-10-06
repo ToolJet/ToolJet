@@ -225,6 +225,7 @@ export const widgets = [
       onBulkUpdate: { displayName: 'Bulk update' },
       onPageChanged: { displayName: 'Page changed' },
       onSearch: { displayName: 'Search' },
+      onSort: { displayName: 'On sorting columns' },
       onCellValueChanged: { displayName: 'Cell value changed' },
       onFilterChanged: { displayName: 'Filter changed' },
     },
