@@ -226,6 +226,7 @@ export const widgets = [
       onPageChanged: { displayName: 'Page changed' },
       onSearch: { displayName: 'Search' },
       onCellValueChanged: { displayName: 'Cell value changed' },
+      onFilterChanged: { displayName: 'Filter changed' },
     },
     styles: {
       textColor: {
@@ -296,6 +297,7 @@ export const widgets = [
       pageIndex: 1,
       searchText: '',
       selectedRows: [],
+      filters: [],
     },
     actions: [
       {
@@ -1840,7 +1842,7 @@ export const widgets = [
       events: [],
       styles: {
         backgroundColor: { value: '' },
-        textColor: { value: '' },
+        textColor: { value: '#000000' },
         textSize: { value: 14 },
         textAlign: { value: 'left' },
         fontWeight: { value: 'normal' },

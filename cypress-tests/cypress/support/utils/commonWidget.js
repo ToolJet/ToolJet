@@ -6,7 +6,12 @@ import {
   codeMirrorInputLabel,
 } from "Texts/common";
 
-export const openAccordion = (accordionName, index = "0") => {
+export const openAccordion = (
+  accordionName,
+  acordionToBeClosed,
+  index = "0"
+) => {
+  closeAccordions(acordionToBeClosed);
   cy.get(commonWidgetSelector.accordion(accordionName, index))
     .scrollIntoView()
     .should("be.visible")
@@ -78,6 +83,7 @@ export const addAndVerifyTooltip = (widgetSelector, message) => {
 };
 
 export const editAndVerifyWidgetName = (name) => {
+  closeAccordions(["Events", "General", "Properties"]);
   cy.clearAndType(commonWidgetSelector.WidgetNameInputField, name);
   cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
 
@@ -264,7 +270,7 @@ export const verifyLayout = (widgetName) => {
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("exist");
 };
 
-export const verifyPropertiesGeneralAccordion = (widgetName, tooltipText) =>{
+export const verifyPropertiesGeneralAccordion = (widgetName, tooltipText) => {
   openEditorSidebar(widgetName);
   openAccordion(commonWidgetText.accordionGenaral);
   addAndVerifyTooltip(
@@ -273,21 +279,36 @@ export const verifyPropertiesGeneralAccordion = (widgetName, tooltipText) =>{
   );
 };
 
-export const verifyStylesGeneralAccordion = (widgetName,boxShadowParameter,hexColor,boxShadowColor)=>{
+export const verifyStylesGeneralAccordion = (
+  widgetName,
+  boxShadowParameter,
+  hexColor,
+  boxShadowColor
+) => {
   openEditorSidebar(widgetName);
   cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-  openAccordion(commonWidgetText.accordionGenaral, "1");
-  verifyAndModifyStylePickerFx(commonWidgetText.parameterBoxShadow, commonWidgetText.boxShadowDefaultValue,
-   `${boxShadowParameter[0]}px ${boxShadowParameter[1]}px ${boxShadowParameter[2]}px ${boxShadowParameter[3]}px ${hexColor}`,);
-  cy.get(commonWidgetSelector.parameterFxButton(commonWidgetText.parameterBoxShadow)).click();
+  openAccordion(commonWidgetText.accordionGenaral, [], "1");
+  verifyAndModifyStylePickerFx(
+    commonWidgetText.parameterBoxShadow,
+    commonWidgetText.boxShadowDefaultValue,
+    `${boxShadowParameter[0]}px ${boxShadowParameter[1]}px ${boxShadowParameter[2]}px ${boxShadowParameter[3]}px ${hexColor}`
+  );
+  cy.get(
+    commonWidgetSelector.parameterFxButton(commonWidgetText.parameterBoxShadow)
+  ).click();
 
-  cy.get(commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)).click();
+  cy.get(
+    commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
+  ).click();
 
-  fillBoxShadowParams(commonWidgetSelector.boxShadowDefaultParam,boxShadowParameter);
+  fillBoxShadowParams(
+    commonWidgetSelector.boxShadowDefaultParam,
+    boxShadowParameter
+  );
   selectColourFromColourPicker(commonWidgetText.boxShadowColor, boxShadowColor);
 
   verifyBoxShadowCss(widgetName, boxShadowColor, boxShadowParameter);
-}
+};
 export const addTextWidgetToVerifyValue = (customfunction) => {
   cy.forceClickOnCanvas();
   cy.dragAndDropWidget("Text", 600, 80);
@@ -317,9 +338,9 @@ export const verifyWidgetText = (widgetName, text) => {
   );
 };
 
-export const randomNumber = (x,y) => {
-  return faker.datatype.number({ min: x, max: y})
-}
+export const randomNumber = (x, y) => {
+  return faker.datatype.number({ min: x, max: y });
+};
 
 export const pushIntoArrayOfObject = (arrayOne, arrayTwo) => {
   let arrayOfObj = "[";
@@ -327,4 +348,23 @@ export const pushIntoArrayOfObject = (arrayOne, arrayTwo) => {
     arrayOfObj += `{name: "${element}", mark: "${arrayTwo[index]}" },`;
   });
   return arrayOfObj + "]";
+};
+
+export const closeAccordions = (accordionNames = [], index = "0") => {
+  if (accordionNames) {
+    accordionNames.forEach((accordionName) => {
+      cy.get(commonWidgetSelector.accordion(accordionName, index))
+        .click()
+        .scrollIntoView()
+        .should("be.visible")
+        .and("have.text", accordionName)
+        .then(($accordion) => {
+          if (!$accordion.hasClass("collapsed")) {
+            cy.get(
+              commonWidgetSelector.accordion(accordionName, index)
+            ).click();
+          }
+        });
+    });
+  }
 };
