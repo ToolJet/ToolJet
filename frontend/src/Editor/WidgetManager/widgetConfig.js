@@ -134,6 +134,13 @@ export const widgets = [
         //   },
         // },
       },
+      disableActionButtons: {
+        type: 'toggle',
+        displayName: 'Disable action buttons',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       serverSidePagination: {
         type: 'toggle',
         displayName: 'Server-side pagination',
@@ -326,6 +333,7 @@ export const widgets = [
           value:
             "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
         },
+        disableActionButtons: { value: '{{false}}' },
         serverSidePagination: { value: '{{false}}' },
         clientSidePagination: { value: '{{true}}' },
         displaySearchBox: { value: '{{true}}' },

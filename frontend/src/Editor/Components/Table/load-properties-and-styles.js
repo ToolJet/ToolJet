@@ -1,5 +1,6 @@
 export default function loadPropertiesAndStyles(properties, styles, darkMode, component) {
   const color = styles.textColor !== '#000' ? styles.textColor : darkMode && '#fff';
+  let disableActionButtons = properties.disableActionButtons ?? false;
 
   let serverSidePagination = properties.serverSidePagination ?? false;
   if (typeof serverSidePagination !== 'boolean') serverSidePagination = false;
@@ -46,6 +47,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
 
   return {
     color,
+    disableActionButtons,
     serverSidePagination,
     clientSidePagination,
     serverSideSearch,

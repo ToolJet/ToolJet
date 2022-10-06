@@ -52,6 +52,7 @@ export function Table({
 }) {
   const {
     color,
+    disableActionButtons,
     serverSidePagination,
     clientSidePagination,
     serverSideSearch,
@@ -212,8 +213,9 @@ export function Table({
         actionButtonRadius,
         fireEvent,
         setExposedVariables,
+        disableActionButtons,
       }),
-    [JSON.stringify(actions)]
+    [JSON.stringify(actions), disableActionButtons]
   );
 
   const textWrapActions = (id) => {
@@ -237,6 +239,7 @@ export function Table({
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
+      disableActionButtons,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
     ] // Hack: need to fix
   );

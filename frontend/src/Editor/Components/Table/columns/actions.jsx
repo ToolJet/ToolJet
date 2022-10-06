@@ -1,6 +1,13 @@
 import React from 'react';
 
-const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, setExposedVariables }) => {
+const generateActionsData = ({
+  actions,
+  columnSizes,
+  defaultColumn,
+  fireEvent,
+  setExposedVariables,
+  disableActionButtons,
+}) => {
   const leftActions = () => actions.filter((action) => action.position === 'left');
   const rightActions = () => actions.filter((action) => [undefined, 'right'].includes(action.position));
   const leftActionsCellData =
@@ -16,6 +23,7 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
+                  disabled={disableActionButtons}
                   style={{
                     background: action.backgroundColor,
                     color: action.textColor,
@@ -55,6 +63,7 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
               return rightActions().map((action) => (
                 <button
                   key={action.name}
+                  disabled={disableActionButtons}
                   className="btn btn-sm m-1 btn-light"
                   style={{
                     background: action.backgroundColor,
