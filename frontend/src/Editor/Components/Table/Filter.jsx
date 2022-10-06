@@ -1,11 +1,12 @@
 import React from 'react';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from '@/_ui/Select';
+import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 
 export function Filter(props) {
   const { t } = useTranslation();
 
-  const { mergeToFilterDetails, filterDetails, setAllFilters } = props;
+  const { mergeToFilterDetails, filterDetails, setAllFilters, darkMode } = props;
   const { filters } = filterDetails;
 
   function filterColumnChanged(index, value) {
@@ -61,6 +62,16 @@ export function Filter(props) {
     setAllFilters([]);
   }
 
+  const selectStyles = (width) => {
+    return {
+      ...defaultStyles(darkMode, width),
+      menuPortal: (provided) => ({ ...provided, zIndex: 999 }),
+      menuList: (base) => ({
+        ...base,
+      }),
+    };
+  };
+
   return (
     <div className="table-filters card">
       <div className="card-header row">
@@ -80,19 +91,19 @@ export function Filter(props) {
               <small>{index > 0 ? 'and' : 'where'}</small>
             </div>
             <div className="col">
-              <SelectSearch
+              <Select
                 options={props.columns}
                 value={filter.id}
                 search={true}
                 onChange={(value) => {
                   filterColumnChanged(index, value);
                 }}
-                filterOptions={fuzzySearch}
                 placeholder={t('globals.select', 'Select') + '...'}
+                styles={selectStyles('100%')}
               />
             </div>
             <div className="col" style={{ maxWidth: '180px' }}>
-              <SelectSearch
+              <Select
                 options={[
                   { name: 'contains', value: 'contains' },
                   { name: 'matches', value: 'matches' },
@@ -109,8 +120,8 @@ export function Filter(props) {
                 onChange={(value) => {
                   filterOperationChanged(index, value);
                 }}
-                filterOptions={fuzzySearch}
-                placeholder="Select.."
+                placeholder={t('globals.select', 'Select') + '...'}
+                styles={selectStyles('100%')}
               />
             </div>
             <div className="col">
@@ -125,7 +136,7 @@ export function Filter(props) {
             <div className="col-auto">
               <button
                 onClick={() => removeFilter(index)}
-                className={`btn ${props.darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
+                className={`btn ${darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
               >
                 x
               </button>
