@@ -1,16 +1,19 @@
 import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useTranslation } from 'react-i18next';
+import { useMounted } from '@/_hooks/use-mount';
 
 export function Filter(props) {
+  const mounted = useMounted();
   const { t } = useTranslation();
 
-  const { mergeToFilterDetails, filterDetails, setAllFilters } = props;
+  const { mergeToFilterDetails, filterDetails, setAllFilters, fireEvent } = props;
   const { filters } = filterDetails;
 
-  function filterColumnChanged(index, value) {
+  function filterColumnChanged(index, value, name) {
     const newFilters = filters;
     newFilters[index].id = value;
+    newFilters[index].value.where = name;
     mergeToFilterDetails({
       filters: newFilters,
     });
@@ -61,6 +64,13 @@ export function Filter(props) {
     setAllFilters([]);
   }
 
+  React.useEffect(() => {
+    if (mounted) {
+      fireEvent('onFilterChanged');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.length]);
+
   return (
     <div className="table-filters card">
       <div className="card-header row">
@@ -84,8 +94,8 @@ export function Filter(props) {
                 options={props.columns}
                 value={filter.id}
                 search={true}
-                onChange={(value) => {
-                  filterColumnChanged(index, value);
+                onChange={(value, item) => {
+                  filterColumnChanged(index, value, item.name);
                 }}
                 filterOptions={fuzzySearch}
                 placeholder={t('globals.select', 'Select') + '...'}
