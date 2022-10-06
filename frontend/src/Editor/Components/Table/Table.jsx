@@ -79,6 +79,13 @@ export function Table({
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
 
+  useEffect(() => {
+    setExposedVariable(
+      'filters',
+      tableDetails.filterDetails.filters.map((filter) => filter.value)
+    );
+  }, [JSON.stringify(tableDetails.filterDetails.filters)]);
+
   useEffect(
     () => mergeToTableDetails({ columnProperties: component?.definition?.properties?.columns?.value }),
     [component?.definition?.properties]
@@ -601,6 +608,7 @@ export function Table({
           filterDetails={tableDetails.filterDetails}
           darkMode={darkMode}
           setAllFilters={setAllFilters}
+          fireEvent={fireEvent}
         />
       )}
     </div>

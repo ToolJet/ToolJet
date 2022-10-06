@@ -225,6 +225,7 @@ export const widgets = [
       onBulkUpdate: { displayName: 'Bulk update' },
       onPageChanged: { displayName: 'Page changed' },
       onSearch: { displayName: 'Search' },
+      onFilterChanged: { displayName: 'Filter changed' },
     },
     styles: {
       textColor: {
@@ -295,6 +296,7 @@ export const widgets = [
       pageIndex: 1,
       searchText: '',
       selectedRows: [],
+      filters: [],
     },
     actions: [
       {
