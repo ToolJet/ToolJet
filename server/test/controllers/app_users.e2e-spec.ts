@@ -17,30 +17,38 @@ describe('app_users controller', () => {
     await request(app.getHttpServer()).post('/api/app_users').expect(401);
   });
 
-  xit('should be able to create a new app user if admin of same organization', async () => {
+  xit('should be able to create a new app user if admin of same organization or the user is a super admin', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const developerUserData = await createUser(app, {
-      email: 'dev@tooljet.io',
-      groups: ['all_users', 'developer'],
-      organization: adminUserData.organization,
-    });
-    const application = await createApplication(app, {
-      user: adminUserData.user,
+
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
 
-    const response = await request(app.getHttpServer())
-      .post(`/api/app_users`)
-      .set('Authorization', authHeaderForUser(adminUserData.user))
-      .send({
-        app_id: application.id,
-        org_user_id: developerUserData.orgUser.id,
-        groups: ['all_users', 'admin'],
+    for (const [index, userData] of [adminUserData, superAdminUserData].entries()) {
+      const developerUserData = await createUser(app, {
+        email: `dev${index}@tooljet.io`,
+        groups: ['all_users', 'developer'],
+        organization: adminUserData.organization,
       });
+      const application = await createApplication(app, {
+        user: adminUserData.user,
+      });
+      const response = await request(app.getHttpServer())
+        .post(`/api/app_users`)
+        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
+        .send({
+          app_id: application.id,
+          org_user_id: developerUserData.orgUser.id,
+          groups: ['all_users', 'admin'],
+        });
 
-    expect(response.statusCode).toBe(201);
+      expect(response.statusCode).toBe(201);
+    }
   });
 
   it('should not be able to create new app user if admin of another organization', async () => {
@@ -118,38 +126,6 @@ describe('app_users controller', () => {
     expect(response.statusCode).toBe(403);
 
     await application.reload();
-  });
-
-  it('should be able to create a new app user if user is a super admin', async () => {
-    const adminUserData = await createUser(app, {
-      email: 'admin@tooljet.io',
-      groups: ['all_users', 'admin'],
-    });
-
-    const superAdminUserData = await createUser(app, {
-      email: 'superadmin@tooljet.io',
-      groups: ['all_users', 'admin'],
-      userType: 'instance',
-    });
-    const developerUserData = await createUser(app, {
-      email: 'dev@tooljet.io',
-      groups: ['all_users', 'developer'],
-      organization: adminUserData.organization,
-    });
-    const application = await createApplication(app, {
-      user: adminUserData.user,
-    });
-
-    const response = await request(app.getHttpServer())
-      .post(`/api/app_users`)
-      .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
-      .send({
-        app_id: application.id,
-        org_user_id: developerUserData.orgUser.id,
-        groups: ['all_users', 'admin'],
-      });
-
-    expect(response.statusCode).toBe(201);
   });
 
   afterAll(async () => {
