@@ -4,7 +4,7 @@ import SortableList, { SortableItem, SortableKnob } from 'react-easy-sort';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import Select from 'react-select';
-import PostgrestFilterBuilder from '../../_helpers/postgrest-filter-builder';
+import PostgrestQueryBuilder from '../../_helpers/postgrestQueryBuilder';
 
 const Form = ({ filters, setFilters, index, column = '', operator = '', value = '' }) => {
   const columns = [
@@ -98,7 +98,7 @@ const Filter = ({ query }) => {
   const handleBuildQuery = () => {
     const keys = Object.keys(filters);
     if (keys.length === 0) return;
-    const postgrestFilterBuilder = new PostgrestFilterBuilder();
+    const postgrestQueryBuilder = new PostgrestQueryBuilder();
 
     keys.map((key) => {
       const { column, operator, value } = filters[key];
@@ -108,12 +108,12 @@ const Filter = ({ query }) => {
         }
       } else {
         // TODO: add more cases;
-        postgrestFilterBuilder[operator](column, value);
+        postgrestQueryBuilder[operator](column, value);
       }
     });
 
-    if (postgrestFilterBuilder.url.toString() !== '') {
-      query = query.or(postgrestFilterBuilder.url.toString());
+    if (postgrestQueryBuilder.url.toString() !== '') {
+      query = query.or(postgrestQueryBuilder.url.toString());
     }
   };
 

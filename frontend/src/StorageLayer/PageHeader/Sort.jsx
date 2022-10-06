@@ -3,19 +3,17 @@ import React, { useState } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import Select from 'react-select';
-import PostgrestFilterBuilder from '../../_helpers/postgrest-filter-builder';
 
-const Form = ({ filters, setFilters, index, column = '', operator = '', value = '' }) => {
+const Form = ({ filters, setFilters, index, column = '', order = '' }) => {
   const columns = [
     { value: 'name', label: 'Name' },
     { value: 'class', label: 'Class' },
     { value: 'age', label: 'Age' },
   ];
 
-  const operators = [
-    { value: 'not', label: 'Not' },
-    { value: 'eq', label: 'Eq' },
-    { value: 'neq', label: 'Neq' },
+  const orders = [
+    { value: 'asc', label: 'Ascending' },
+    { value: 'desc', label: 'Descending' },
   ];
 
   const handleColumnChange = (selectedOption) => {
@@ -28,13 +26,6 @@ const Form = ({ filters, setFilters, index, column = '', operator = '', value = 
   const handleFilterChange = (selectedOption) => {
     setFilters((prevFilters) => {
       prevFilters[index].operator = selectedOption.value;
-      return prevFilters;
-    });
-  };
-
-  const handleInputChange = (event) => {
-    setFilters((prevFilters) => {
-      prevFilters[index].value = event.target.value;
       return prevFilters;
     });
   };
@@ -52,7 +43,7 @@ const Form = ({ filters, setFilters, index, column = '', operator = '', value = 
         <Select value={column} options={columns} onChange={handleColumnChange} />
       </div>
       <div className="col-4 py-3">
-        <Select value={operator} options={operators} onChange={handleFilterChange} />
+        <Select value={order} options={orders} onChange={handleFilterChange} />
       </div>
       <div className="col-1 py-3 cursor-pointer">
         <svg
@@ -85,23 +76,11 @@ const Sort = ({ query }) => {
   const handleBuildQuery = () => {
     const keys = Object.keys(filters);
     if (keys.length === 0) return;
-    const postgrestFilterBuilder = new PostgrestFilterBuilder();
 
     keys.map((key) => {
-      const { column, operator, value } = filters[key];
-      if (keys.length === 1) {
-        if (column && operator && value) {
-          query = query[operator](column, value);
-        }
-      } else {
-        // TODO: add more cases;
-        postgrestFilterBuilder[operator](column, value);
-      }
+      const { column, order } = filters[key];
+      query = query.order(column, { ascending: order === 'asc', descending: order === 'desc' });
     });
-
-    if (postgrestFilterBuilder.url.toString() !== '') {
-      query = query.or(postgrestFilterBuilder.url.toString());
-    }
   };
 
   const popover = (
