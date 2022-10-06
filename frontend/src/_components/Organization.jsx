@@ -328,9 +328,13 @@ export const Organization = function Organization({ darkMode }) {
         >
           <div>{organization}</div>
         </a>
-        {(!isSingleOrganization || admin) && (
+        {!isSingleOrganization || admin ? (
           <div className="dropdown-menu end-0" data-cy="workspace-dropdown">
             {isListOrganizations ? getListOrganizations() : getOrganizationMenu()}
+          </div>
+        ) : (
+          <div className="dropdown-menu end-0" data-cy="workspace-dropdown">
+            {getOrganizationMenu()}
           </div>
         )}
       </div>
