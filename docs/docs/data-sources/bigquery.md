@@ -100,12 +100,8 @@ Return list of tables within a dataset
 
 - **Dataset:** Enter the dataset name.
 
-#### Optional parameters: 
 
-- **Options:** This can be used to filter the list.
-
-
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/list_tables.png"  alt="BQ list tables"/>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/listtables.png"  alt="BQ list tables"/>
 
 
 ### Query

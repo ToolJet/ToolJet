@@ -27,6 +27,7 @@ import {
   verifyBoxShadowCss,
   verifyTooltip,
   verifyWidgetText,
+  closeAccordions,
 } from "Support/utils/commonWidget";
 
 describe("Date Picker widget", () => {
@@ -47,7 +48,12 @@ describe("Date Picker widget", () => {
     openEditorSidebar(datePickerText.datepicker1);
     editAndVerifyWidgetName(data.widgetName);
 
-    openAccordion(commonWidgetText.accordionProperties);
+    openAccordion(commonWidgetText.accordionProperties, [
+      "Events",
+      "Validation",
+      "Properties",
+      "General",
+    ]);
     verifyAndModifyParameter(datePickerText.labelDefaultValue, data.date);
     verifyComponentValueFromInspector(data.widgetName, data.date);
 
@@ -203,7 +209,12 @@ describe("Date Picker widget", () => {
     openEditorSidebar(datePickerText.datepicker1);
     editAndVerifyWidgetName(data.widgetName);
 
-    openAccordion(commonWidgetText.accordionProperties);
+    openAccordion(commonWidgetText.accordionProperties, [
+      "Events",
+      "Validation",
+      "Properties",
+      "General",
+    ]);
     verifyAndModifyParameter(datePickerText.labelDefaultValue, data.date);
     verifyAndModifyParameter(datePickerText.labelformat, "DD/MM/YY");
 
@@ -246,7 +257,7 @@ describe("Date Picker widget", () => {
       commonWidgetText.borderRadiusInput
     );
 
-    openAccordion(commonWidgetText.accordionGenaral, "1");
+    openAccordion(commonWidgetText.accordionGenaral, [], "1");
 
     cy.get(
       commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)

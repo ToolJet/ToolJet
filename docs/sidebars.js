@@ -125,9 +125,11 @@ const sidebars = {
         'widgets/dropdown',
         'widgets/file-picker',
         'widgets/html',
+        'widgets/icon',
         'widgets/iframe',
         'widgets/image',
         'widgets/kanban',
+        'widgets/link',
         'widgets/listview',
         'widgets/map',
         'widgets/modal',
@@ -135,6 +137,7 @@ const sidebars = {
         'widgets/number-input',
         'widgets/password-input',
         'widgets/pdf',
+        'widgets/pagination',
         'widgets/qr-scanner',
         'widgets/radio-button',
         'widgets/range-slider',
@@ -154,7 +157,7 @@ const sidebars = {
         'widgets/timer',
         'widgets/toggle-switch',
         'widgets/tree-select',
-        'widgets/vertical-divider'
+        'widgets/vertical-divider',
       ],
     },
     {
