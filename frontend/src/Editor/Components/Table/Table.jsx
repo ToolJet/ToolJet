@@ -245,7 +245,7 @@ export function Table({
   );
 
   useEffect(() => {
-    if (tableData.length != 0)
+    if (tableData.length != 0 && component.definition.properties.autogenerateColumns.value)
       autogenerateColumns(tableData, component.definition.properties.columns.value, setProperty);
   }, [JSON.stringify(tableData)]);
 
