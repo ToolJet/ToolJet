@@ -331,14 +331,13 @@ export function Table({
     async function (id) {
       const item = currentState.components[component.name]['currentData'].filter((item) => item.id == id);
       const row = page.find((item, index) => item.original.id == id);
-      const rowId = row.id;
-      const original = row.original;
-
-      const selectedRowDetails = { selectedRow: item[0], selectedRowId: rowId };
-      mergeToTableDetails(selectedRowDetails);
-      setExposedVariables(selectedRowDetails).then(() => {
-        fireEvent('onRowClicked');
-      });
+      if (row != undefined) {
+        const selectedRowDetails = { selectedRow: item[0], selectedRowId: row.id };
+        mergeToTableDetails(selectedRowDetails);
+        setExposedVariables(selectedRowDetails).then(() => {
+          fireEvent('onRowClicked');
+        });
+      }
     },
     []
   );
