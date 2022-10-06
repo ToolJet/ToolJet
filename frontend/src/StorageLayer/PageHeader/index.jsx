@@ -5,7 +5,7 @@ import CreateRowForm from '../Forms/CreateRowForm';
 import CreateColumnForm from '../Forms/CreateColumnForm';
 import CreateColumnsForm from '../Forms/CreateColumnsForm';
 import Search from './Search';
-import Filter from '../Popovers/Filter';
+import Filter from './Filter';
 
 const PageHeader = () => {
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
