@@ -57,7 +57,8 @@
     "@tooljet-plugins/stripe": "file:packages/stripe",
     "@tooljet-plugins/twilio": "file:packages/twilio",
     "@tooljet-plugins/typesense": "file:packages/typesense",
-    "@tooljet-plugins/woocommerce": "file:packages/woocommerce"
+    "@tooljet-plugins/woocommerce": "file:packages/woocommerce",
+    "@tooljet-plugins/zendesk": "file:packages/zendesk"
   },
   "peerDependencies": {
     "typescript": "^4.5.4"
