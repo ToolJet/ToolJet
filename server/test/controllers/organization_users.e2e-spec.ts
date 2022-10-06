@@ -19,7 +19,7 @@ describe('organization users controller', () => {
     userRepository = app.get('UserRepository');
   });
 
-  it('should allow only admin to be able to invite new users', async () => {
+  it('should allow only admin/super admin to be able to invite new users', async () => {
     // setup a pre existing user of different organization
     await createUser(app, {
       email: 'someUser@tooljet.io',
@@ -40,34 +40,42 @@ describe('organization users controller', () => {
       organization,
     });
 
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['developer', 'all_users'],
+      userType: 'instance',
+    });
+
     const viewerUserData = await createUser(app, {
       email: 'viewer@tooljet.io',
       groups: ['viewer', 'all_users'],
       organization,
     });
 
-    const response = await request(app.getHttpServer())
-      .post(`/api/organization_users/`)
-      .set('Authorization', authHeaderForUser(adminUserData.user))
-      .send({ email: 'test@tooljet.io' })
-      .expect(201);
+    for (const [index, userData] of [adminUserData, superAdminUserData].entries()) {
+      const response = await request(app.getHttpServer())
+        .post(`/api/organization_users/`)
+        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
+        .send({ email: `test${index}@tooljet.io` })
+        .expect(201);
 
-    // should create audit log
-    const auditLog = await AuditLog.findOne({
-      order: { createdAt: 'DESC' },
-    });
+      // should create audit log
+      const auditLog = await AuditLog.findOne({
+        order: { createdAt: 'DESC' },
+      });
 
-    const user = await userRepository.findOneOrFail({
-      where: { email: 'test@tooljet.io' },
-    });
+      const user = await userRepository.findOneOrFail({
+        where: { email: `test${index}@tooljet.io` },
+      });
 
-    expect(Object.keys(response.body).length).toBe(0); // Security issue fix - not returning user details
-    expect(auditLog.organizationId).toEqual(adminUserData.organization.id);
-    expect(auditLog.resourceId).toEqual(user.id);
-    expect(auditLog.resourceType).toEqual('USER');
-    expect(auditLog.resourceName).toEqual(user.email);
-    expect(auditLog.actionType).toEqual('USER_INVITE');
-    expect(auditLog.createdAt).toBeDefined();
+      expect(Object.keys(response.body).length).toBe(0); // Security issue fix - not returning user details
+      expect(auditLog.organizationId).toEqual(adminUserData.organization.id);
+      expect(auditLog.resourceId).toEqual(user.id);
+      expect(auditLog.resourceType).toEqual('USER');
+      expect(auditLog.resourceName).toEqual(user.email);
+      expect(auditLog.actionType).toEqual('USER_INVITE');
+      expect(auditLog.createdAt).toBeDefined();
+    }
 
     await request(app.getHttpServer())
       .post(`/api/organization_users/`)
@@ -121,7 +129,7 @@ describe('organization users controller', () => {
       expect(response.body.message).toEqual('Atleast one active admin is required.');
     });
 
-    it('should allow only admin users to archive org users', async () => {
+    it('should allow only admin/super admin users to archive org users', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['admin', 'all_users'],
@@ -137,6 +145,11 @@ describe('organization users controller', () => {
         groups: ['viewer', 'all_users'],
         organization,
         status: 'invited',
+      });
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        groups: ['developer', 'all_users'],
+        userType: 'instance',
       });
 
       await request(app.getHttpServer())
@@ -154,6 +167,21 @@ describe('organization users controller', () => {
 
       await viewerUserData.orgUser.reload();
       expect(viewerUserData.orgUser.status).toBe('archived');
+
+      //unarchive the user
+      await request(app.getHttpServer())
+        .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
+        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .expect(201);
+
+      //archive the user again by super admin
+      await request(app.getHttpServer())
+        .post(`/api/organization_users/${viewerUserData.orgUser.id}/archive/`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
+        .expect(201);
+
+      await viewerUserData.orgUser.reload();
+      expect(viewerUserData.orgUser.status).toBe('archived');
     });
   });
 
@@ -162,11 +190,16 @@ describe('organization users controller', () => {
       await request(app.getHttpServer()).post('/api/organization_users/random-id/unarchive/').expect(401);
     });
 
-    it('should allow only admin users to unarchive org users', async () => {
+    it('should allow only admin/super admin users to unarchive org users', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         status: 'active',
         groups: ['admin', 'all_users'],
+      });
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        groups: ['developer', 'all_users'],
+        userType: 'instance',
       });
       const organization = adminUserData.organization;
       const developerUserData = await createUser(app, {
@@ -201,6 +234,27 @@ describe('organization users controller', () => {
       await request(app.getHttpServer())
         .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
+        .expect(201);
+
+      await viewerUserData.orgUser.reload();
+      await viewerUserData.user.reload();
+      expect(viewerUserData.orgUser.status).toBe('invited');
+      expect(viewerUserData.user.invitationToken).not.toBe('');
+      expect(viewerUserData.user.password).not.toBe('old-password');
+
+      //archive the user again
+      await request(app.getHttpServer())
+        .post(`/api/organization_users/${viewerUserData.orgUser.id}/archive/`)
+        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .expect(201);
+
+      await viewerUserData.orgUser.reload();
+      expect(viewerUserData.orgUser.status).toBe('archived');
+
+      //unarchiving by super admin
+      await request(app.getHttpServer())
+        .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
         .expect(201);
 
       await viewerUserData.orgUser.reload();

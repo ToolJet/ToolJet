@@ -61,7 +61,7 @@ describe('thread controller', () => {
       email: 'admin@tooljet.io',
     });
     const superAdminUserData = await createUser(app, {
-      email: 'admin@tooljet.io',
+      email: 'superadmin@tooljet.io',
       userType: 'instance',
     });
     const application = await createApplication(app, {

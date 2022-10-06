@@ -5,10 +5,10 @@ import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '.
 import { getManager, Like } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
-const createSettings = async (app: INestApplication, adminUserData: any, body: any) => {
+const createSettings = async (app: INestApplication, userData: any, body: any) => {
   return await request(app.getHttpServer())
     .post(`/api/instance-settings`)
-    .set('Authorization', authHeaderForUser(adminUserData.user))
+    .set('Authorization', authHeaderForUser(userData.user))
     .send(body);
 };
 
@@ -28,10 +28,15 @@ describe('instance settings controller', () => {
       await request(app.getHttpServer()).get('/api/instance-settings').expect(401);
     });
 
-    it('should list instance settings', async () => {
+    it('should only able to list instance settings if the user is a super admin', async () => {
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        userType: 'instance',
+        groups: ['admin', 'all_users'],
+      });
+
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        userType: 'instance',
         groups: ['admin', 'all_users'],
       });
 
@@ -50,14 +55,20 @@ describe('instance settings controller', () => {
 
       await Promise.all(
         bodyArray.map(async (body) => {
-          const result = await createSettings(app, adminUserData, body);
+          const result = await createSettings(app, superAdminUserData, body);
           settingsArray.push(result.body.setting);
         })
       );
 
-      const listResponse = await request(app.getHttpServer())
+      let listResponse = await request(app.getHttpServer())
         .get(`/api/instance-settings`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
+        .send()
+        .expect(403);
+
+      listResponse = await request(app.getHttpServer())
+        .get(`/api/instance-settings`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user))
         .send()
         .expect(200);
 
@@ -66,12 +77,26 @@ describe('instance settings controller', () => {
   });
 
   describe('POST /api/instance-settings', () => {
-    it('should be able to create a new settings', async () => {
+    it('should only be able to create a new settings if the user is a super admin', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        userType: 'instance',
         groups: ['all_users', 'admin'],
       });
+
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        userType: 'instance',
+        groups: ['admin', 'all_users'],
+      });
+
+      await request(app.getHttpServer())
+        .post(`/api/instance-settings`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user))
+        .send({
+          key: 'SOME_SETTINGS_3',
+          value: 'false',
+        })
+        .expect(201);
 
       await request(app.getHttpServer())
         .post(`/api/instance-settings`)
@@ -80,44 +105,60 @@ describe('instance settings controller', () => {
           key: 'SOME_SETTINGS_3',
           value: 'false',
         })
-        .expect(201);
+        .expect(403);
     });
   });
 
   describe('PATCH /api/instance-settings', () => {
-    it('should be able to update existing settings', async () => {
+    it('should only be able to update existing settings if the user is a super admin', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        userType: 'instance',
         groups: ['all_users', 'admin'],
       });
 
-      const response = await createSettings(app, adminUserData, {
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        userType: 'instance',
+        groups: ['admin', 'all_users'],
+      });
+
+      const response = await createSettings(app, superAdminUserData, {
         key: 'SOME_SETTINGS_4',
         value: 'false',
       });
 
       await request(app.getHttpServer())
         .patch(`/api/instance-settings`)
-        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .set('Authorization', authHeaderForUser(superAdminUserData.user))
         .send({ allow_personal_workspace: { value: 'true', id: response.body.setting.id } })
         .expect(200);
 
       const updatedSetting = await getManager().findOne(InstanceSettings, response.body.setting.id);
 
       expect(updatedSetting.value).toEqual('true');
+
+      await request(app.getHttpServer())
+        .patch(`/api/instance-settings`)
+        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .send({ allow_personal_workspace: { value: 'true', id: response.body.setting.id } })
+        .expect(403);
     });
   });
 
   describe('DELETE /api/instance-settings/:id', () => {
-    it('should be able to delete an existing setting', async () => {
+    it('should only be able to delete an existing setting if the user is a super admin', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        userType: 'instance',
         groups: ['all_users', 'admin'],
       });
 
-      const response = await createSettings(app, adminUserData, {
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        userType: 'instance',
+        groups: ['admin', 'all_users'],
+      });
+
+      const response = await createSettings(app, superAdminUserData, {
         key: 'SOME_SETTINGS_5',
         value: 'false',
       });
@@ -127,6 +168,12 @@ describe('instance settings controller', () => {
       await request(app.getHttpServer())
         .delete(`/api/instance-settings/${response.body.setting.id}`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
+        .send()
+        .expect(403);
+
+      await request(app.getHttpServer())
+        .delete(`/api/instance-settings/${response.body.setting.id}`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user))
         .send()
         .expect(200);
 

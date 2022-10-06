@@ -127,7 +127,7 @@ describe('app_users controller', () => {
     });
 
     const superAdminUserData = await createUser(app, {
-      email: 'admin@tooljet.io',
+      email: 'superadmin@tooljet.io',
       groups: ['all_users', 'admin'],
       userType: 'instance',
     });
@@ -142,7 +142,7 @@ describe('app_users controller', () => {
 
     const response = await request(app.getHttpServer())
       .post(`/api/app_users`)
-      .set('Authorization', authHeaderForUser(superAdminUserData.user))
+      .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
       .send({
         app_id: application.id,
         org_user_id: developerUserData.orgUser.id,

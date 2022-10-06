@@ -43,6 +43,12 @@ describe('organization environment variables controller', () => {
         organization,
       });
 
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        groups: ['developer', 'all_users'],
+        userType: 'instance',
+      });
+
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
         groups: ['viewer', 'all_users'],
@@ -82,6 +88,12 @@ describe('organization environment variables controller', () => {
         .send()
         .expect(200);
 
+      await request(app.getHttpServer())
+        .get(`/api/organization-variables/`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
+        .send()
+        .expect(200);
+
       const listResponse = await request(app.getHttpServer())
         .get(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
@@ -100,10 +112,15 @@ describe('organization environment variables controller', () => {
   });
 
   describe('POST /api/organization-variables/', () => {
-    it('should be able to create a new variable if group is admin or has create permission in the same organization', async () => {
+    it('should be able to create a new variable if the user is an admin/super admin or has create permission in the same organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
+      });
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        groups: ['developer', 'all_users'],
+        userType: 'instance',
       });
       const developerUserData = await createUser(app, {
         email: 'dev@tooljet.io',
@@ -133,6 +150,12 @@ describe('organization environment variables controller', () => {
 
       await request(app.getHttpServer())
         .post(`/api/organization-variables/`)
+        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
+        .send({ variable_name: 'test', variable_type: 'client', value: 'test value', encrypted: false })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post(`/api/organization-variables/`)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .send({ variable_name: 'name', variable_type: 'client', value: 'demo user', encrypted: false })
         .expect(201);
@@ -146,7 +169,7 @@ describe('organization environment variables controller', () => {
   });
 
   describe('PATCH /api/organization-variables/:id', () => {
-    it('should be able to update an existing variable if group is admin or has update permission in the same organization', async () => {
+    it('should be able to update an existing variable if user is an admin/super admin or has update permission in the same organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
@@ -156,7 +179,11 @@ describe('organization environment variables controller', () => {
         groups: ['all_users', 'developer'],
         organization: adminUserData.organization,
       });
-
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        groups: ['developer', 'all_users'],
+        userType: 'instance',
+      });
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
         groups: ['viewer', 'all_users'],
@@ -178,10 +205,10 @@ describe('organization environment variables controller', () => {
         encrypted: true,
       });
 
-      for (const userData of [adminUserData, developerUserData]) {
+      for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
         await request(app.getHttpServer())
           .patch(`/api/organization-variables/${response.body.variable.id}`)
-          .set('Authorization', authHeaderForUser(userData.user))
+          .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
           .send({ variable_name: 'secret_email' })
           .expect(200);
 
@@ -199,7 +226,7 @@ describe('organization environment variables controller', () => {
   });
 
   describe('DELETE /api/organization-variables/:id', () => {
-    it('should be able to delete an existing variable if group is admin or has delete permission in the same organization', async () => {
+    it('should be able to delete an existing variable if the user is an admin/super admin or has delete permission in the same organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
@@ -209,7 +236,11 @@ describe('organization environment variables controller', () => {
         groups: ['all_users', 'developer'],
         organization: adminUserData.organization,
       });
-
+      const superAdminUserData = await createUser(app, {
+        email: 'superadmin@tooljet.io',
+        groups: ['developer', 'all_users'],
+        userType: 'instance',
+      });
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
         groups: ['viewer', 'all_users'],
@@ -224,7 +255,7 @@ describe('organization environment variables controller', () => {
         orgEnvironmentVariableDelete: true,
       });
 
-      for (const userData of [adminUserData, developerUserData]) {
+      for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
         const response = await createVariable(app, adminUserData, {
           variable_name: 'email',
           value: 'test@tooljet.io',
@@ -236,7 +267,7 @@ describe('organization environment variables controller', () => {
 
         await request(app.getHttpServer())
           .delete(`/api/organization-variables/${response.body.variable.id}`)
-          .set('Authorization', authHeaderForUser(userData.user))
+          .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
           .send()
           .expect(200);
 
