@@ -1528,6 +1528,7 @@ class EditorComponent extends React.Component {
                                   className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
                                   data-tip="Add new query"
                                   data-class="py-1 px-2"
+                                  data-cy="button-add-new-queries"
                                   onClick={() =>
                                     this.setState({
                                       options: {},
