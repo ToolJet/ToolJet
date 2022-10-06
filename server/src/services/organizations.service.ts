@@ -128,7 +128,8 @@ export class OrganizationsService {
       lastName: searchInput,
     };
     const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'or', true)
-      .orderBy('user.firstName', 'ASC')
+      .distinctOn(['user.email'])
+      .orderBy('user.email', 'ASC')
       .take(10)
       .getMany();
 
@@ -192,8 +193,7 @@ export class OrganizationsService {
         new Brackets((qb) => {
           qb.orWhere('organization_user.organization_id = :organizationId', {
             organizationId,
-          });
-          qb.orWhere('user.userType = :userType', {
+          }).orWhere('user.userType = :userType', {
             userType: 'instance',
           });
         })
