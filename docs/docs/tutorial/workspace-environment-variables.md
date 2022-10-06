@@ -1,9 +1,9 @@
 ---
 id: workspace-environment-variables
-title: Workspace Environment Variables
+title: Workspace Variables
 ---
 
-Workspace environment variables are the variables with some value(usually tokens/secret keys/API keys) that can be used in different apps across the same Workspace.
+Workspace Variables are the variables with some value(usually tokens/secret keys/API keys) that can be used in different apps across the same Workspace.
 
 ## How can we add these variables to an Workspace?
 
@@ -39,7 +39,7 @@ This feature enables us to add a client variable with and without `encryption`. 
 
 ### Using variable in an app
 
-Let's use the variable that we created [here](Workspace-environment-variables#adding-the-environment-variable). If you have used ToolJet before, then you know that for getting the values from any variable we use JS notation i.e. `{{}}` but for using the Workspace variables we have different opening and closing notation `%% %%`. The environment variables will not work inside js code `{{}}`.
+Let's use the variable that we created [here](Workspace-variables#adding-the-environment-variable). If you have used ToolJet before, then you know that for getting the values from any variable we use JS notation i.e. `{{}}` but for using the Workspace variables we have different opening and closing notation `%% %%`. The environment variables will not work inside js code `{{}}`.
 
 So, the syntax for using the variable that we created before will be `%%client.pi%%`
 
