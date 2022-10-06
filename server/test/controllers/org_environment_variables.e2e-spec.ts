@@ -45,7 +45,7 @@ describe('organization environment variables controller', () => {
 
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
-        groups: ['developer', 'all_users'],
+        groups: ['admin', 'all_users'],
         userType: 'instance',
       });
 
@@ -119,7 +119,7 @@ describe('organization environment variables controller', () => {
       });
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
-        groups: ['developer', 'all_users'],
+        groups: ['admin', 'all_users'],
         userType: 'instance',
       });
       const developerUserData = await createUser(app, {
@@ -181,7 +181,7 @@ describe('organization environment variables controller', () => {
       });
       const superAdminUserData = await createUser(app, {
         email: 'superadmin@tooljet.io',
-        groups: ['developer', 'all_users'],
+        groups: ['admin', 'all_users'],
         userType: 'instance',
       });
       const viewerUserData = await createUser(app, {
