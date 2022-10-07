@@ -6429,3 +6429,10 @@ input.hide-input-arrows{
     }
   }
 }
+
+// download pop-up in the table widget
+.cursor-pointer{
+  &:hover{
+    font-weight: bolder;
+  }
+}
