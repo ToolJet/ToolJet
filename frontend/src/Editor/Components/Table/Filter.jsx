@@ -1,7 +1,6 @@
 import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useTranslation } from 'react-i18next';
-
 import _ from 'lodash';
 
 export function Filter(props) {
@@ -57,7 +56,7 @@ export function Filter(props) {
       filters: newFilters,
     });
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
-    fireEvent('onFilterChanged');
+    setTimeout(() => fireEvent('onFilterChanged'), 0);
   }
 
   function clearFilters() {
@@ -65,16 +64,21 @@ export function Filter(props) {
       filters: [],
     });
     setAllFilters([]);
+    set([]);
+
+    setTimeout(() => fireEvent('onFilterChanged'), 0);
   }
 
   React.useEffect(() => {
-    const tableFilters = JSON.parse(JSON.stringify(filters));
-    const currentDiff = diffingFilterDetails(activeFilters, tableFilters)[0];
-    const currentFilterUpdates = tableFilters.filter((filter) => filter.id === currentDiff.diff.id)[0];
+    if (filters.length > 0) {
+      const tableFilters = JSON.parse(JSON.stringify(filters));
+      const currentDiff = diffingFilterDetails(activeFilters, tableFilters)[0];
+      const currentFilterUpdates = tableFilters.filter((filter) => filter.id === currentDiff.diff.id)[0];
 
-    const shouldFire = shouldFireEvent(currentDiff, currentFilterUpdates);
-    if (shouldFire) fireEvent('onFilterChanged');
-    set(tableFilters);
+      const shouldFire = shouldFireEvent(currentDiff, currentFilterUpdates);
+      if (shouldFire) fireEvent('onFilterChanged');
+      set(tableFilters);
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(filters)]);
@@ -141,7 +145,7 @@ export function Filter(props) {
                   value={filter.value.value}
                   placeholder="value"
                   className="form-control"
-                  onChange={(e) => filterValueChanged(index, e.target.value)}
+                  onChange={(e) => _.debounce(filterValueChanged(index, e.target.value), 500)}
                 />
               )}
             </div>
