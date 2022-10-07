@@ -43,7 +43,6 @@ export const SubContainer = ({
   onOptionChange,
   exposedVariables,
   addDefaultChildren = false,
-  setDraggingOrResizing = () => {},
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -474,10 +473,8 @@ export const SubContainer = ({
               onComponentHover,
               hoveredComponent,
               sideBarDebugger,
-              setDraggingOrResizing,
               addDefaultChildren,
             }}
-            setDraggingOrResizing={setDraggingOrResizing}
           />
         );
       })}
