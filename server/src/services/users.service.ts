@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
@@ -10,6 +10,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
 import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -119,20 +120,25 @@ export class UsersService {
     manager?: EntityManager
   ): Promise<{ user: User; newUserCreated: boolean }> {
     let user: User;
-    let newUserCreated = false;
 
     user = await this.findByEmail(userParams.email);
 
-    if (user?.organizationUsers?.some((ou) => ou.organizationId === organizationId)) {
+    const organizationUser: OrganizationUser = user?.organizationUsers?.find(
+      (ou) => ou.organizationId === organizationId
+    );
+
+    if (organizationUser?.status !== 'active') {
+      throw new UnauthorizedException('User does not exist in the workspace');
+    }
+    if (organizationUser) {
       // User exist in current organization
-      return { user, newUserCreated };
+      return { user, newUserCreated: false };
     }
 
     const groups = ['all_users'];
     user = await this.create(userParams, organizationId, groups, user, null, null, manager);
-    newUserCreated = true;
 
-    return { user, newUserCreated };
+    return { user, newUserCreated: true };
   }
 
   async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
