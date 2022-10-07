@@ -55,6 +55,7 @@ export function Table({
     serverSidePagination,
     clientSidePagination,
     serverSideSearch,
+    serverSideSort,
     displaySearchBox,
     showDownloadButton,
     showFilterButton,
@@ -78,6 +79,13 @@ export function Table({
 
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
+
+  useEffect(() => {
+    setExposedVariable(
+      'filters',
+      tableDetails.filterDetails.filters.map((filter) => filter.value)
+    );
+  }, [JSON.stringify(tableDetails.filterDetails.filters)]);
 
   useEffect(
     () => mergeToTableDetails({ columnProperties: component?.definition?.properties?.columns?.value }),
@@ -122,6 +130,7 @@ export function Table({
     };
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
+    fireEvent('onCellValueChanged');
     return setExposedVariables(changesToBeSavedAndExposed);
   }
 
@@ -275,6 +284,7 @@ export function Table({
       autoResetPage: false,
       autoResetGlobalFilter: false,
       autoResetFilters: false,
+      manualGlobalFilter: serverSideSearch,
       columns,
       data,
       defaultColumn,
@@ -282,6 +292,7 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
+      manualSortBy: serverSideSort,
     },
     useFilters,
     useGlobalFilter,
@@ -313,6 +324,29 @@ export function Table({
         ]);
     }
   );
+
+  const sortOptions = useMemo(() => {
+    if (state?.sortBy?.length === 0) {
+      return;
+    }
+
+    const columnName = columns.find((column) => column.id === state?.sortBy?.[0]?.id).accessor;
+
+    return {
+      sortedBy: {
+        column: columnName,
+        direction: state?.sortBy?.[0]?.desc ? 'desc' : 'asc',
+      },
+    };
+  }, [JSON.stringify(state)]);
+
+  useEffect(() => {
+    if (!sortOptions) {
+      setExposedVariable('sortedBy', null);
+      return;
+    }
+    setExposedVariable('sortedBy', sortOptions.sortedBy).then(() => fireEvent('onSort'));
+  }, [sortOptions]);
 
   registerAction(
     'setPage',
@@ -406,7 +440,6 @@ export function Table({
                 setGlobalFilter={setGlobalFilter}
                 onComponentOptionChanged={onComponentOptionChanged}
                 component={component}
-                serverSideSearch={serverSideSearch}
                 onEvent={onEvent}
               />
             )}
@@ -601,6 +634,7 @@ export function Table({
           filterDetails={tableDetails.filterDetails}
           darkMode={darkMode}
           setAllFilters={setAllFilters}
+          fireEvent={fireEvent}
         />
       )}
     </div>

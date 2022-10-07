@@ -155,6 +155,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      serverSideSort: {
+        type: 'toggle',
+        displayName: 'Server-side sort',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       actionButtonBackgroundColor: {
         type: 'color',
         displayName: 'Background color',
@@ -225,6 +232,9 @@ export const widgets = [
       onBulkUpdate: { displayName: 'Bulk update' },
       onPageChanged: { displayName: 'Page changed' },
       onSearch: { displayName: 'Search' },
+      onSort: { displayName: 'On sorting columns' },
+      onCellValueChanged: { displayName: 'Cell value changed' },
+      onFilterChanged: { displayName: 'Filter changed' },
     },
     styles: {
       textColor: {
@@ -295,6 +305,7 @@ export const widgets = [
       pageIndex: 1,
       searchText: '',
       selectedRows: [],
+      filters: [],
     },
     actions: [
       {
@@ -324,6 +335,7 @@ export const widgets = [
         },
         serverSidePagination: { value: '{{false}}' },
         clientSidePagination: { value: '{{true}}' },
+        serverSideSort: { value: '{{false}}' },
         displaySearchBox: { value: '{{true}}' },
         showDownloadButton: { value: '{{true}}' },
         showFilterButton: { value: '{{true}}' },
