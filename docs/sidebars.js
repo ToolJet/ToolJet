@@ -103,6 +103,7 @@ const sidebars = {
         'data-sources/twilio',
         'data-sources/typesense',
         'data-sources/woocommerce',
+        'data-sources/zendesk',
       ],
     },
     {

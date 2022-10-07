@@ -135,7 +135,7 @@ export class DataSourcesService {
       const authCode = findOption(options, 'code')['value'];
 
       const queryService = new allPlugins[provider]();
-      const accessDetails = await queryService.accessDetailsFrom(authCode);
+      const accessDetails = await queryService.accessDetailsFrom(authCode, options);
 
       for (const row of accessDetails) {
         const option = {};

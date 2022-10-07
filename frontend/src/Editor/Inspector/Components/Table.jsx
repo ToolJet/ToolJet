@@ -826,6 +826,7 @@ class TableComponent extends React.Component {
       'showBulkUpdateActions',
       'showBulkSelector',
       'highlightSelectedRow',
+      'serverSideSort',
     ];
 
     let renderOptions = [];
