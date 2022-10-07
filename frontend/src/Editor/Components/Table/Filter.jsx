@@ -1,35 +1,16 @@
 import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useTranslation } from 'react-i18next';
-import { useMounted } from '@/_hooks/use-mount';
+
 import _ from 'lodash';
 
 export function Filter(props) {
-  const mounted = useMounted();
   const { t } = useTranslation();
 
   const { mergeToFilterDetails, filterDetails, setAllFilters, fireEvent } = props;
   const { filters } = filterDetails;
 
   const [activeFilters, set] = React.useState(filters);
-
-  function didFilterUpdate() {
-    const tableFilters = JSON.parse(JSON.stringify(filters));
-
-    const currentDiff = diffingFilterDetails(activeFilters, tableFilters)[0];
-    const currentFilterUpdates = tableFilters.filter((filter) => filter.id === currentDiff.diff.id)[0];
-
-    if (currentDiff) {
-      const shouldFire = shouldFireEvent(currentDiff?.type, currentFilterUpdates);
-
-      if (shouldFire) {
-        console.log('should fire');
-        fireEvent('onFilterChanged');
-      }
-    }
-
-    set(tableFilters);
-  }
 
   function filterColumnChanged(index, value, name) {
     const newFilters = filters;
@@ -87,10 +68,13 @@ export function Filter(props) {
   }
 
   React.useEffect(() => {
-    // if (mounted) {
-    //   fireEvent('onFilterChanged');
-    // }
-    didFilterUpdate();
+    const tableFilters = JSON.parse(JSON.stringify(filters));
+    const currentDiff = diffingFilterDetails(activeFilters, tableFilters)[0];
+    const currentFilterUpdates = tableFilters.filter((filter) => filter.id === currentDiff.diff.id)[0];
+
+    const shouldFire = shouldFireEvent(currentDiff, currentFilterUpdates);
+    if (shouldFire) fireEvent('onFilterChanged');
+    set(tableFilters);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(filters)]);
@@ -239,8 +223,10 @@ const diffingFilterDetails = (prev, next) => {
   return diff;
 };
 
-function shouldFireEvent(diffType, filter) {
-  switch (diffType) {
+function shouldFireEvent(diff, filter) {
+  if (!diff || !filter) return false;
+
+  switch (diff.type) {
     case 'value':
       return filter.value?.operation && filter.value?.value ? true : false;
 
