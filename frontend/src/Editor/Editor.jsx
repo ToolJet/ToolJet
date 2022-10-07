@@ -917,8 +917,18 @@ class EditorComponent extends React.Component {
     if (value) {
       const fuse = new Fuse(this.state.allDataQueries, { keys: ['name'] });
       const results = fuse.search(value);
+      let filterDataQueries = [];
+      results.every((result) => {
+        if (result.item.name === value) {
+          filterDataQueries = [];
+          filterDataQueries.push(result.item);
+          return false;
+        }
+        filterDataQueries.push(result.item);
+        return true;
+      });
       this.setState({
-        filterDataQueries: results.map((result) => result.item),
+        filterDataQueries,
         dataQueriesDefaultText: 'No Queries found.',
       });
     } else {
@@ -1540,38 +1550,37 @@ class EditorComponent extends React.Component {
                       </div>
                     </div>
                     <div className="query-definition-pane-wrapper">
-                      {!loadingDataSources && (
-                        <div className="query-definition-pane">
-                          <div>
-                            <QueryManager
-                              toggleQueryEditor={this.toggleQueryEditor}
-                              dataSources={dataSources}
-                              dataQueries={dataQueries}
-                              mode={editingQuery ? 'edit' : 'create'}
-                              selectedQuery={selectedQuery}
-                              selectedDataSource={this.state.selectedDataSource}
-                              dataQueriesChanged={this.dataQueriesChanged}
-                              appId={appId}
-                              editingVersionId={editingVersion?.id}
-                              addingQuery={addingQuery}
-                              editingQuery={editingQuery}
-                              queryPanelHeight={queryPanelHeight}
-                              currentState={currentState}
-                              darkMode={this.props.darkMode}
-                              apps={apps}
-                              allComponents={appDefinition.components}
-                              isSourceSelected={this.state.isSourceSelected}
-                              isQueryPaneDragging={this.state.isQueryPaneDragging}
-                              runQuery={this.runQuery}
-                              dataSourceModalHandler={this.dataSourceModalHandler}
-                              setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
-                              appDefinition={appDefinition}
-                              editorState={this}
-                              showQueryConfirmation={queryConfirmationList.length > 0}
-                            />
-                          </div>
+                      <div className="query-definition-pane">
+                        <div>
+                          <QueryManager
+                            toggleQueryEditor={this.toggleQueryEditor}
+                            dataSources={dataSources}
+                            dataQueries={dataQueries}
+                            mode={editingQuery ? 'edit' : 'create'}
+                            selectedQuery={selectedQuery}
+                            selectedDataSource={this.state.selectedDataSource}
+                            dataQueriesChanged={this.dataQueriesChanged}
+                            appId={appId}
+                            editingVersionId={editingVersion?.id}
+                            addingQuery={addingQuery}
+                            editingQuery={editingQuery}
+                            queryPanelHeight={queryPanelHeight}
+                            currentState={currentState}
+                            darkMode={this.props.darkMode}
+                            apps={apps}
+                            allComponents={appDefinition.components}
+                            isSourceSelected={this.state.isSourceSelected}
+                            isQueryPaneDragging={this.state.isQueryPaneDragging}
+                            runQuery={this.runQuery}
+                            dataSourceModalHandler={this.dataSourceModalHandler}
+                            setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
+                            appDefinition={appDefinition}
+                            editorState={this}
+                            showQueryConfirmation={queryConfirmationList.length > 0}
+                            loadingDataSources={loadingDataSources}
+                          />
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </QueryPanel>

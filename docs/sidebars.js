@@ -103,6 +103,7 @@ const sidebars = {
         'data-sources/twilio',
         'data-sources/typesense',
         'data-sources/woocommerce',
+        'data-sources/zendesk',
       ],
     },
     {
@@ -137,6 +138,7 @@ const sidebars = {
         'widgets/number-input',
         'widgets/password-input',
         'widgets/pdf',
+        'widgets/pagination',
         'widgets/qr-scanner',
         'widgets/radio-button',
         'widgets/range-slider',
@@ -156,7 +158,7 @@ const sidebars = {
         'widgets/timer',
         'widgets/toggle-switch',
         'widgets/tree-select',
-        'widgets/vertical-divider'
+        'widgets/vertical-divider',
       ],
     },
     {
