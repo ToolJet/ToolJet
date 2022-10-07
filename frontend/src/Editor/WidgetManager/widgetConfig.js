@@ -162,6 +162,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      serverSideFilter: {
+        type: 'toggle',
+        displayName: 'Server-side filter',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       actionButtonBackgroundColor: {
         type: 'color',
         displayName: 'Background color',
