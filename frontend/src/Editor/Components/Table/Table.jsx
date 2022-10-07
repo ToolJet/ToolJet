@@ -29,6 +29,8 @@ import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
 // eslint-disable-next-line import/no-unresolved
 import { IconEyeOff } from '@tabler/icons';
+import usePopover from '@/_hooks/use-popover';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 export function Table({
   id,
   width,
@@ -76,6 +78,7 @@ export function Table({
   const { t } = useTranslation();
 
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
+  const [open, trigger, content] = usePopover(false);
 
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
@@ -365,7 +368,6 @@ export function Table({
   }, [state.columnResizing.isResizingColumn]);
 
   const [paginationInternalPageIndex, setPaginationInternalPageIndex] = useState(pageIndex ?? 1);
-  const [hideColumnActive, setHidecolumnActive] = useState(false);
 
   useEffect(() => {
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
@@ -432,32 +434,39 @@ export function Table({
                   <img src="assets/images/icons/download.svg" width="15" height="15" />
                 </span>
               )}
-              <span
-                className="btn btn-light btn-sm p-1 mb-0 mx-1"
-                onClick={() => setHidecolumnActive(!hideColumnActive)}
+              <OverlayTrigger
+                trigger={['hover', 'focus']}
+                placement="top"
+                delay={{ show: 800, hide: 100 }}
+                overlay={<Tooltip>{'Hide columns'}</Tooltip>}
               >
-                <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
-              </span>
+                <span
+                  {...trigger}
+                  className={`btn btn-light btn-sm p-1 mb-0 mx-1  ${open && 'active'}`}
+                  tip="Hide columns"
+                  {...trigger}
+                >
+                  <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
+                </span>
+              </OverlayTrigger>
             </div>
           </div>
-          {hideColumnActive && (
-            <div className="dropdown-table-column-hide">
-              <div className="dropdown-item">
-                <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
-                <span className="hide-column-name"> Toggle All</span>
-              </div>
-              {allColumns.map((column) => (
-                <div key={column.id}>
-                  <div>
-                    <label className="dropdown-item">
-                      <input type="checkbox" {...column.getToggleHiddenProps()} />
-                      <span className="hide-column-name"> {` ${column.Header}`}</span>
-                    </label>
-                  </div>
-                </div>
-              ))}
+          <div className={`dropdown-table-column-hide  ${open ? 'show' : 'hide'}`} {...content}>
+            <div className="dropdown-item">
+              <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+              <span className="hide-column-name"> Toggle All</span>
             </div>
-          )}
+            {allColumns.map((column) => (
+              <div key={column.id}>
+                <div>
+                  <label className="dropdown-item">
+                    <input type="checkbox" {...column.getToggleHiddenProps()} />
+                    <span className="hide-column-name"> {` ${column.Header}`}</span>
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
