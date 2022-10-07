@@ -2,6 +2,7 @@ import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useTranslation } from 'react-i18next';
 import { useMounted } from '@/_hooks/use-mount';
+import _ from 'lodash';
 
 export function Filter(props) {
   const mounted = useMounted();
@@ -9,6 +10,26 @@ export function Filter(props) {
 
   const { mergeToFilterDetails, filterDetails, setAllFilters, fireEvent } = props;
   const { filters } = filterDetails;
+
+  const [activeFilters, set] = React.useState(filters);
+
+  function didFilterUpdate() {
+    const tableFilters = JSON.parse(JSON.stringify(filters));
+
+    const currentDiff = diffingFilterDetails(activeFilters, tableFilters)[0];
+    const currentFilterUpdates = tableFilters.filter((filter) => filter.id === currentDiff.diff.id)[0];
+
+    if (currentDiff) {
+      const shouldFire = shouldFireEvent(currentDiff?.type, currentFilterUpdates);
+
+      if (shouldFire) {
+        console.log('should fire');
+        fireEvent('onFilterChanged');
+      }
+    }
+
+    set(tableFilters);
+  }
 
   function filterColumnChanged(index, value, name) {
     const newFilters = filters;
@@ -55,6 +76,7 @@ export function Filter(props) {
       filters: newFilters,
     });
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
+    fireEvent('onFilterChanged');
   }
 
   function clearFilters() {
@@ -65,11 +87,13 @@ export function Filter(props) {
   }
 
   React.useEffect(() => {
-    if (mounted) {
-      fireEvent('onFilterChanged');
-    }
+    // if (mounted) {
+    //   fireEvent('onFilterChanged');
+    // }
+    didFilterUpdate();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.length]);
+  }, [JSON.stringify(filters)]);
 
   return (
     <div className="table-filters card">
@@ -165,4 +189,68 @@ export function Filter(props) {
       </div>
     </div>
   );
+}
+
+const diffingFilterDetails = (prev, next) => {
+  function diffingValues(prev, next) {
+    const diff = {};
+
+    for (let key in next) {
+      if (next[key] !== prev[key]) {
+        diff[key] = next[key];
+      }
+    }
+
+    return diff;
+  }
+  let diffingType = undefined;
+
+  const diff = [];
+
+  for (let i = 0; i < next.length; i++) {
+    const nextItem = next[i];
+    const prevItem = prev[i];
+
+    if (nextItem && (!prevItem || nextItem.id !== prevItem.id)) {
+      diffingType = 'column';
+
+      diff.push({
+        type: diffingType,
+        diff: {
+          id: nextItem.id,
+          value: nextItem.value.where,
+        },
+      });
+    } else if (prevItem.id === nextItem.id) {
+      const diffingObject = diffingValues(prevItem.value, nextItem.value);
+      if (diffingObject) {
+        diffingType = Object.keys(diffingObject)[0];
+        diff.push({
+          type: diffingType,
+          diff: {
+            id: nextItem.id,
+            value: diffingObject[diffingType],
+          },
+        });
+      }
+    }
+  }
+
+  return diff;
+};
+
+function shouldFireEvent(diffType, filter) {
+  switch (diffType) {
+    case 'value':
+      return filter.value?.operation && filter.value?.value ? true : false;
+
+    case 'column':
+      return filter.value?.operation && filter.value?.value ? true : false;
+
+    case 'operation':
+      return filter.value?.where && filter.value?.value ? true : false;
+
+    default:
+      return false;
+  }
 }
