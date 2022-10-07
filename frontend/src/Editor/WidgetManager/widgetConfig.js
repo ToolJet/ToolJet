@@ -905,11 +905,7 @@ export const widgets = [
       disabledState: { type: 'toggle', displayName: 'Disable', validation: { schema: { type: 'boolean' } } },
     },
     exposedVariables: {
-      value: '',
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
-      borderRadius: { value: '{{0}}' },
-      textColor: { value: '#232e3c' },
+      value: ''
     },
     actions: [
       {
