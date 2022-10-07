@@ -155,6 +155,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      serverSideSort: {
+        type: 'toggle',
+        displayName: 'Server-side sort',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       actionButtonBackgroundColor: {
         type: 'color',
         displayName: 'Background color',
@@ -328,6 +335,7 @@ export const widgets = [
         },
         serverSidePagination: { value: '{{false}}' },
         clientSidePagination: { value: '{{true}}' },
+        serverSideSort: { value: '{{false}}' },
         displaySearchBox: { value: '{{true}}' },
         showDownloadButton: { value: '{{true}}' },
         showFilterButton: { value: '{{true}}' },

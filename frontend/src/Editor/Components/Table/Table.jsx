@@ -55,6 +55,7 @@ export function Table({
     serverSidePagination,
     clientSidePagination,
     serverSideSearch,
+    serverSideSort,
     displaySearchBox,
     showDownloadButton,
     showFilterButton,
@@ -291,6 +292,7 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
+      manualSortBy: serverSideSort,
     },
     useFilters,
     useGlobalFilter,
@@ -333,7 +335,7 @@ export function Table({
     return {
       sortedBy: {
         column: columnName,
-        direction: state?.sortBy?.[0]?.desc ? 'descending' : 'ascending',
+        direction: state?.sortBy?.[0]?.desc ? 'desc' : 'asc',
       },
     };
   }, [JSON.stringify(state)]);
