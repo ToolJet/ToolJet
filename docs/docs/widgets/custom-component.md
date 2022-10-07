@@ -46,7 +46,7 @@ import React from "https://cdn.skypack.dev/react";
 import ReactDOM from "https://cdn.skypack.dev/react-dom";
 import { Button, Container, Link } from "https://cdn.skypack.dev/@material-ui/core";
 
-const MyCustomComponent = ({data, updateData, runQuery}) => (
+const MyCustomComponent = ({data, updateData, runQuery, variables, components}) => (
     <Container>
         <h1>{data.title}</h1>
         <Button
