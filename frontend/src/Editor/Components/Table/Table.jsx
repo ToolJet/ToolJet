@@ -246,12 +246,13 @@ export function Table({
 
   useEffect(() => {
     if (tableData.length != 0 && component.definition.properties.autogenerateColumns.value)
-      autogenerateColumns(tableData, component.definition.properties.columns.value, setProperty);
+      autogenerateColumns(
+        tableData,
+        component.definition.properties.columns.value,
+        component.definition.properties?.columnDeletionHistory?.value ?? [],
+        setProperty
+      );
   }, [JSON.stringify(tableData)]);
-
-  useEffect(() => {
-    setExposedVariable('columns', component.definition.properties.columns.value);
-  }, [component.definition.properties.columns.value]);
 
   const computedStyles = {
     // width: `${width}px`,

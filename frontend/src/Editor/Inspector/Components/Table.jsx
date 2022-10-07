@@ -661,8 +661,13 @@ class TableComponent extends React.Component {
   removeColumn = (index) => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.splice(index, 1);
+    const removedColumns = newValue.splice(index, 1);
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
+
+    const existingcolumnDeletionHistory =
+      this.props.component.component.definition.properties.columnDeletionHistory?.value ?? [];
+    const newcolumnDeletionHistory = [...existingcolumnDeletionHistory, ...removedColumns.map((column) => column.name)];
+    this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties');
   };
 
   getPopoverFieldSource = (column, field) =>
