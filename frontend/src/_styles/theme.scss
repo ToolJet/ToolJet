@@ -1515,6 +1515,13 @@ button {
   color: #fff;
 }
 
+.audit-log {
+  .select-search__option.is-selected {
+    background: $primary;
+    color: $white;
+  }
+}
+
 /**
  * Group
  */
@@ -3000,6 +3007,22 @@ input:focus-visible {
     background: 0 0;
   }
 
+  .audit-log {
+    .select-search__option:not(.is-selected),
+    .select-search__select {
+      background: #2c3547;
+      color: $white;
+    }
+
+    .select-search__option.is-selected:hover,
+    .select-search__option:not(.is-selected):hover,
+    .select-search__option.is-selected {
+      background: #1F2936;
+      color: $white;
+      border-radius: 0px;
+    }
+  }
+
   .navbar .navbar-nav .active>.nav-link,
   .theme-dark .navbar .navbar-nav .nav-link.active,
   .theme-dark .navbar .navbar-nav .nav-link.show,
@@ -3245,7 +3268,7 @@ input:focus-visible {
     .text-muted {
       color: #fff !important;
     }
-  }
+  }  
 
   .data-pane {
     border: solid rgba(255, 255, 255, 0.09) !important;

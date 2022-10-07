@@ -249,7 +249,7 @@ class AuditLogs extends React.Component {
     } = this.state;
 
     return (
-      <div className="wrapper">
+      <div className="wrapper audit-log">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
 
         <div className="page-wrapper">
