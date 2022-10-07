@@ -283,6 +283,7 @@ export function Table({
       autoResetPage: false,
       autoResetGlobalFilter: false,
       autoResetFilters: false,
+      manualGlobalFilter: serverSideSearch,
       columns,
       data,
       defaultColumn,
@@ -437,7 +438,6 @@ export function Table({
                 setGlobalFilter={setGlobalFilter}
                 onComponentOptionChanged={onComponentOptionChanged}
                 component={component}
-                serverSideSearch={serverSideSearch}
                 onEvent={onEvent}
               />
             )}
