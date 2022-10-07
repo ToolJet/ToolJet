@@ -266,20 +266,25 @@ export class UsersService {
     manager?: EntityManager
   ): Promise<{ user: User; newUserCreated: boolean }> {
     let user: User;
-    let newUserCreated = false;
 
     user = await this.findByEmail(userParams.email);
 
-    if (user?.organizationUsers?.some((ou) => ou.organizationId === organizationId)) {
+    const organizationUser: OrganizationUser = user?.organizationUsers?.find(
+      (ou) => ou.organizationId === organizationId
+    );
+
+    if (organizationUser.status !== 'active') {
+      throw new UnauthorizedException('User does not exist in the workspace');
+    }
+    if (organizationUser) {
       // User exist in current organization
-      return { user, newUserCreated };
+      return { user, newUserCreated: false };
     }
 
     const groups = ['all_users'];
     user = await this.create(userParams, organizationId, groups, user, null, null, manager);
-    newUserCreated = true;
 
-    return { user, newUserCreated };
+    return { user, newUserCreated: true };
   }
 
   async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
