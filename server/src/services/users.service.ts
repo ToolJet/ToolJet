@@ -127,7 +127,7 @@ export class UsersService {
       (ou) => ou.organizationId === organizationId
     );
 
-    if (organizationUser?.status !== 'active') {
+    if (organizationUser?.status === 'archived' || organizationUser?.status === 'invited') {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
     if (organizationUser) {
