@@ -50,6 +50,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     groupPermissionService.getGroup(groupPermissionId).then((data) => {
       this.setState({
         groupPermission: data,
+        currentTab: data?.group === 'admin' ? 'users' : 'apps',
         isLoadingGroup: false,
       });
     });
@@ -163,11 +164,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   findAppGroupPermission = (app, groupPermissionId) => {
-    const appGroupPermission = app.app_group_permissions.find(
-      (permission) => permission.group_permission_id === groupPermissionId
-    );
-
-    return appGroupPermission;
+    return app.app_group_permissions.find((permission) => permission.group_permission_id === groupPermissionId);
   };
 
   setSelectedUsers = (value) => {
