@@ -455,6 +455,14 @@ export const widgets = [
           defaultValue: false,
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
     },
     exposedVariables: {},
     actions: [
@@ -499,6 +507,7 @@ export const widgets = [
         loaderColor: { value: '' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
+        borderColor: { value: '' },
         disabledState: { value: '{{false}}' },
       },
     },
