@@ -80,8 +80,8 @@ export function Table({
     padding: '10px',
     borderRadius: '4px',
     width: '265px',
-    ...(isDragging && { marginTop: '-100px' }),
-    ...(!isDragging && { transform: 'translate(0,0)', width: 'auto' }),
+    ...(isDragging && { marginTop: '-170px' }),
+    ...(!isDragging && { transform: 'translate(0,0)', width: '100%' }),
     ...(isDropAnimating && { transitionDuration: '0.001s' }),
   });
   const { t } = useTranslation();
@@ -500,9 +500,7 @@ export function Table({
                                   {...provided.dragHandleProps}
                                   // {...extraProps}
                                   ref={provided.innerRef}
-                                  style={{
-                                    ...getItemStyle(snapshot, provided.draggableProps.style),
-                                  }}
+                                  style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
                                 >
                                   {column.render('Header')}
                                 </div>
