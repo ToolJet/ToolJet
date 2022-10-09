@@ -507,7 +507,7 @@ export const widgets = [
         loaderColor: { value: '' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
-        borderColor: { value: '' },
+        borderColor: { value: '#375FCF' },
         disabledState: { value: '{{false}}' },
       },
     },
