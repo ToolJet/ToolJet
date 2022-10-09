@@ -3553,7 +3553,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
+        backgroundColor: { value: '#fff' },
         borderBottomColor: {
           value: '#000',
         },
