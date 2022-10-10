@@ -77,7 +77,7 @@ export class UsersService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        name: `${user.firstName} ${user.lastName}`,
+        name: `${user.firstName || ''}${user.lastName ? ` ${user.lastName}` : ''}`,
         id: user.id,
         avatarId: user.avatarId,
         organizationUsers: user.organizationUsers,
@@ -639,7 +639,8 @@ export class UsersService {
     ).map((record) => record.id);
 
     const userIdsOfAppOwners = (
-      await createQueryBuilder(User, 'users')
+      await manager
+        .createQueryBuilder(User, 'users')
         .innerJoin('users.apps', 'apps')
         .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
           statusList,
@@ -650,7 +651,8 @@ export class UsersService {
     ).map((record) => record.id);
 
     const userIdsOfSuperAdmins = (
-      await createQueryBuilder(User, 'users')
+      await manager
+        .createQueryBuilder(User, 'users')
         .select('users.id')
         .where('users.userType = :userType', { userType: 'instance' })
         .andWhere('users.status = :status', { status: 'active' })
