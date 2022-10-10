@@ -363,7 +363,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '' },
+        textColor: { value: '#000' },
         actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
