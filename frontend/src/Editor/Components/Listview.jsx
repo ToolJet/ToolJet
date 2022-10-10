@@ -16,7 +16,7 @@ export const Listview = function Listview({
   darkMode,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
-  const fallbackStyles = { visibility: true, disabledState: false, borderBottomColor: '#fff' };
+  const fallbackStyles = { visibility: true, disabledState: false, borderBottomColor: '#656d7729' };
 
   const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
   const { visibility, disabledState, borderRadius, borderBottomColor } = { ...fallbackStyles, ...styles };
