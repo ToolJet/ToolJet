@@ -49,6 +49,7 @@ export function Table({
   properties,
   variablesExposedForPreview,
   exposeToCodeHinter,
+  events,
 }) {
   const {
     color,
@@ -76,7 +77,7 @@ export function Table({
   const { t } = useTranslation();
 
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
-
+  const [hoverAdded, setHoverAdded] = useState(false);
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
 
@@ -84,6 +85,12 @@ export function Table({
     () => mergeToTableDetails({ columnProperties: component?.definition?.properties?.columns?.value }),
     [component?.definition?.properties]
   );
+
+  useEffect(() => {
+    component.definition.events.find((event) => {
+      if (event.eventId == 'onRowHovered') setHoverAdded(true);
+    });
+  }, [JSON.stringify(component.definition.events)]);
 
   function showFilters() {
     mergeToFilterDetails({ filtersVisible: true });
@@ -501,12 +508,14 @@ export function Table({
                       });
                     }}
                     onMouseOver={(e) => {
-                      const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
-                      setRowDetails(hoveredRowDetails);
-                      hoverRef.current = rowDetails?.hoveredRowId;
+                      if (hoverAdded) {
+                        const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
+                        setRowDetails(hoveredRowDetails);
+                        hoverRef.current = rowDetails?.hoveredRowId;
+                      }
                     }}
                     onMouseLeave={(e) => {
-                      setRowDetails({ hoveredRowId: '', hoveredRow: '' });
+                      hoverAdded && setRowDetails({ hoveredRowId: '', hoveredRow: '' });
                     }}
                   >
                     {row.cells.map((cell, index) => {
