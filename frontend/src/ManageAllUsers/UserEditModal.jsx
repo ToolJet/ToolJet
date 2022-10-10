@@ -31,7 +31,7 @@ const UserEditModal = ({ showModal, darkMode, hideModal, translator, updatingUse
         <Modal.Header>
           <Modal.Title className="text-center">
             {translator('header.organization.menus.manageAllUsers.updateUser', 'Update User')}:{' '}
-            {`${updatingUser.name} (${updatingUser.email})`}
+            {`${updatingUser?.name} (${updatingUser?.email})`}
           </Modal.Title>
           <div className="close-button cursor-pointer" onClick={hideModal}>
             <svg
