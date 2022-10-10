@@ -62,7 +62,7 @@ class SignupPageComponent extends React.Component {
       return;
     }
 
-    authenticationService.signup(email).then(
+    authenticationService.signup(email, name, password).then(
       () => {
         // eslint-disable-next-line no-unused-vars
         const { from } = this.props.location.state || {
