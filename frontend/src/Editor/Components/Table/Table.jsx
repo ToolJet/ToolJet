@@ -87,7 +87,7 @@ export function Table({
   );
 
   useEffect(() => {
-    component.definition.events.find((event) => {
+    component?.definition?.events?.find((event) => {
       if (event.eventId == 'onRowHovered') setHoverAdded(true);
     });
   }, [JSON.stringify(component.definition.events)]);
