@@ -1,9 +1,9 @@
 ---
 id: workspace-environment-variables
-title: Workspace Environment Variables
+title: Workspace Variables
 ---
 
-Workspace environment variables are the variables with some value(usually tokens/secret keys/API keys) that can be used in different apps across the same Workspace.
+Workspace Variables are the variables with some value(usually tokens/secret keys/API keys) that can be used in different apps across the same Workspace.
 
 ## How can we add these variables to an Workspace?
 
