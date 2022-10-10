@@ -83,7 +83,6 @@ export function Table({
     userSelect: 'none',
     background: isDragging ? 'rgba(77, 114, 250, 0.2)' : '',
     borderRadius: '4px',
-    width: '265px',
     ...(isDragging && {
       marginTop: '-130px',
       marginLeft: '-120px',
