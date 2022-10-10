@@ -22,7 +22,7 @@ export const Listview = function Listview({
   const { visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
-  const borderColor = styles.borderColor;
+  const borderColor = styles.borderColor ?? 'transparent';
 
   const computedStyles = {
     backgroundColor,
