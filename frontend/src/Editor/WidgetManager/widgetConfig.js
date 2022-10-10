@@ -228,6 +228,7 @@ export const widgets = [
       height: 300,
     },
     events: {
+      onRowHovered: { displayName: 'Row hovered' },
       onRowClicked: { displayName: 'Row clicked' },
       onBulkUpdate: { displayName: 'Bulk update' },
       onPageChanged: { displayName: 'Page changed' },
