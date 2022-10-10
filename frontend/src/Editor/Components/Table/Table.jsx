@@ -80,6 +80,13 @@ export function Table({
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
 
+  useEffect(() => {
+    setExposedVariable(
+      'filters',
+      tableDetails.filterDetails.filters.map((filter) => filter.value)
+    );
+  }, [JSON.stringify(tableDetails.filterDetails.filters)]);
+
   useEffect(
     () => mergeToTableDetails({ columnProperties: component?.definition?.properties?.columns?.value }),
     [component?.definition?.properties]
@@ -123,6 +130,7 @@ export function Table({
     };
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
+    fireEvent('onCellValueChanged');
     return setExposedVariables(changesToBeSavedAndExposed);
   }
 
@@ -315,6 +323,29 @@ export function Table({
         ]);
     }
   );
+
+  const sortOptions = useMemo(() => {
+    if (state?.sortBy?.length === 0) {
+      return;
+    }
+
+    const columnName = columns.find((column) => column.id === state?.sortBy?.[0]?.id).accessor;
+
+    return {
+      sortedBy: {
+        column: columnName,
+        direction: state?.sortBy?.[0]?.desc ? 'descending' : 'ascending',
+      },
+    };
+  }, [JSON.stringify(state)]);
+
+  useEffect(() => {
+    if (!sortOptions) {
+      setExposedVariable('sortedBy', null);
+      return;
+    }
+    setExposedVariable('sortedBy', sortOptions.sortedBy).then(() => fireEvent('onSort'));
+  }, [sortOptions]);
 
   registerAction(
     'setPage',
@@ -608,6 +639,7 @@ export function Table({
           filterDetails={tableDetails.filterDetails}
           darkMode={darkMode}
           setAllFilters={setAllFilters}
+          fireEvent={fireEvent}
         />
       )}
     </div>
