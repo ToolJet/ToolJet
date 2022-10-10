@@ -87,9 +87,12 @@ export function Table({
   );
 
   useEffect(() => {
-    component?.definition?.events?.map((event) => {
-      if (event.eventId == 'onRowHovered') setHoverAdded(true);
+    const hoverEvent = component?.definition?.events?.find((event) => {
+      return event?.eventId == 'onRowHovered';
     });
+    if (hoverEvent?.eventId) {
+      setHoverAdded(true);
+    }
   }, [JSON.stringify(component.definition.events)]);
 
   function showFilters() {
