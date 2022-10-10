@@ -23,7 +23,9 @@ import {
   verifyBoxShadowCss,
   verifyLayout,
   verifyTooltip,
-  editAndVerifyWidgetName
+  editAndVerifyWidgetName,
+  verifyPropertiesGeneralAccordion,
+  verifyStylesGeneralAccordion
 
 } from "Support/utils/commonWidget";
 
@@ -75,12 +77,7 @@ describe("Editor- Test Button widget", () => {
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
 
-    openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionGenaral);
-    addAndVerifyTooltip(
-      commonWidgetSelector.draggableWidget(data.widgetName),
-      data.tooltipText
-    );
+    verifyPropertiesGeneralAccordion(data.widgetName, data.tooltipText);
 
     verifyLayout(data.widgetName);
 
@@ -216,33 +213,8 @@ describe("Editor- Test Button widget", () => {
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
     data.colourHex = fake.randomRgbaHex;
-    openAccordion(commonWidgetText.accordionGenaral, "1");
-    verifyAndModifyStylePickerFx(
-      commonWidgetText.parameterBoxShadow,
-      commonWidgetText.boxShadowDefaultValue,
-     `${(data.boxShadowParam)[0]}px ${(data.boxShadowParam)[1]}px ${(data.boxShadowParam)[2]}px ${(data.boxShadowParam)[3]}px ${data.colourHex}`,
-    );
-    cy.get(
-      commonWidgetSelector.parameterFxButton(
-        commonWidgetText.parameterBoxShadow
-      )
-    ).click();
+    verifyStylesGeneralAccordion(buttonText.defaultWidgetName, data.boxShadowParam, data.colourHex, data.boxShadowColor);
 
-    cy.get(
-      commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
-    ).click();
-
-    fillBoxShadowParams(
-      commonWidgetSelector.boxShadowDefaultParam,
-      data.boxShadowParam
-    );
-    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.boxShadowColor);
-
-    verifyBoxShadowCss(
-      buttonText.defaultWidgetName,
-      data.boxShadowColor,
-      data.boxShadowParam
-    );
     cy.get(commonSelectors.editorPageLogo).click();
     cy.deleteApp(data.appName);
   });
@@ -268,11 +240,7 @@ describe("Editor- Test Button widget", () => {
      openAccordion(commonWidgetText.accordionEvents);
     addDefaultEventHandler(data.alertMessage);
 
-    openAccordion(commonWidgetText.accordionGenaral);
-    addAndVerifyTooltip(
-      commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName),
-      data.tooltipText
-    );
+    verifyPropertiesGeneralAccordion(buttonText.defaultWidgetName, data.tooltipText);
 
     openEditorSidebar(buttonText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -301,17 +269,7 @@ describe("Editor- Test Button widget", () => {
       .clear()
       .type(buttonText.borderRadiusInput);
 
-    openAccordion(commonWidgetText.accordionGenaral, "1");
-
-    cy.get(
-      commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
-    ).click();
-
-    fillBoxShadowParams(
-      commonWidgetSelector.boxShadowDefaultParam,
-      data.boxShadowParam
-    );
-    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.boxShadowColor);
+    verifyStylesGeneralAccordion(buttonText.defaultWidgetName, data.boxShadowParam, data.colourHex, data.boxShadowColor);
 
     verifyControlComponentAction(buttonText.defaultWidgetName, data.customMessage);
 
