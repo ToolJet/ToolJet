@@ -17,6 +17,7 @@ export const authenticationService = {
   logout,
   clearUser,
   signup,
+  verifyToken,
   updateCurrentUserDetails,
   currentUser: currentUserSubject.asObservable(),
   get currentUserValue() {
@@ -78,11 +79,11 @@ function updateCurrentUserDetails(details) {
   updateUser(updatedUserDetails);
 }
 
-function signup(email) {
+function signup(email, name, password) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, name, password }),
   };
 
   return fetch(`${config.apiUrl}/signup`, requestOptions)
@@ -90,6 +91,12 @@ function signup(email) {
     .then((user) => {
       return user;
     });
+}
+function verifyToken() {
+  const requestOptions = {
+    method: 'GET',
+  };
+  return fetch(`${config.apiUrl}/verify-invite-token`, requestOptions);
 }
 
 function forgotPassword(email) {
