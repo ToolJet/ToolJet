@@ -28,7 +28,6 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
         {steps?.map((item) => (
           <a
             key={item.id}
-            href="#"
             className={`step-item ${item.id == activeStep && 'active'} ${!stepsSelectable && 'step-item-disabled'}  ${
               color && `step-${color}`
             }`}
