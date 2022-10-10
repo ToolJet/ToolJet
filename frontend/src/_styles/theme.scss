@@ -6491,3 +6491,14 @@ input.hide-input-arrows{
     }
   }
 }
+
+// download pop-up in the table widget
+.table-widget-download-popup{
+  .cursor-pointer{
+    width: 130px;
+    &:hover{
+      font-weight: bolder;
+    }
+  }
+
+}
