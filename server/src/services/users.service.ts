@@ -317,6 +317,7 @@ export class UsersService {
     }
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(User, userId, updatableParams);
+      await this.validateLicense(manager);
     }, manager);
   }
 
