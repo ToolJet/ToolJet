@@ -84,7 +84,14 @@ export function Table({
     background: isDragging ? 'rgba(77, 114, 250, 0.2)' : '',
     borderRadius: '4px',
     width: '265px',
-    ...(isDragging && { marginTop: '-170px', marginLeft: '-120px' }),
+    ...(isDragging && {
+      marginTop: '-130px',
+      marginLeft: '-120px',
+      display: 'flex',
+      alignItems: 'center',
+      paddingLeft: '10px',
+      height: '30px',
+    }),
     ...(!isDragging && { transform: 'translate(0,0)', width: '100%' }),
     ...(isDropAnimating && { transitionDuration: '0.001s' }),
   });
