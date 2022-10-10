@@ -58,6 +58,8 @@ export function Filter(props) {
       filters: newFilters,
     });
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
+
+    set(newFilters);
     setTimeout(() => fireEvent('onFilterChanged'), 0);
   }
 
@@ -75,12 +77,20 @@ export function Filter(props) {
     if (filters.length > 0) {
       const tableFilters = JSON.parse(JSON.stringify(filters));
       const shouldFire = findFilterDiff(activeFilters, tableFilters);
-      if (shouldFire) fireEvent('onFilterChanged');
+      if (shouldFire) debounceFn();
       set(tableFilters);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(filters)]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debounceFn = React.useCallback(
+    _.debounce(() => {
+      fireEvent('onFilterChanged');
+    }, 700),
+    []
+  );
 
   return (
     <div className="table-filters card">
