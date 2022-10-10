@@ -96,24 +96,19 @@ export class UsersService {
     return await this.usersRepository.find({ userType: 'instance' });
   }
 
-  async findAll(organizationId: string): Promise<User[]> {
-    return createQueryBuilder(User, 'users')
-      .innerJoin('users.organizationUsers', 'organization_users')
-      .select(['users.id', 'users.email', 'users.firstName', 'users.lastName'])
-      .where('organization_users.organizationId = :organizationId', { organizationId })
-      .getMany();
-  }
-
-  async getCount(isOnlyActive?: boolean): Promise<number> {
-    const statusList = ['invited', 'active'];
-    !isOnlyActive && statusList.push('archived');
-    return await createQueryBuilder(User, 'users')
-      .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
-        statusList,
-      })
-      .select('users.id')
-      .distinct()
-      .getCount();
+  async getCount(isOnlyActive?: boolean, manager?: EntityManager): Promise<number> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const statusList = ['invited', 'active'];
+      !isOnlyActive && statusList.push('archived');
+      return await manager
+        .createQueryBuilder(User, 'users')
+        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+          statusList,
+        })
+        .select('users.id')
+        .distinct()
+        .getCount();
+    }, manager);
   }
 
   async findOne(id: string): Promise<User> {
@@ -701,7 +696,7 @@ export class UsersService {
     let editor = -1,
       viewer = -1;
 
-    if (licensing.users !== 'UNLIMITED' && (await this.getCount(true)) > licensing.users) {
+    if (licensing.users !== 'UNLIMITED' && (await this.getCount(true, manager)) > licensing.users) {
       throw new HttpException('License violation - Maximum user limit reached', 451);
     }
 

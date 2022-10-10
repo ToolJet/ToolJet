@@ -19,8 +19,9 @@ import { User } from 'src/decorators/user.decorator';
 import { UpdateUserDto } from '@dto/user.dto';
 import { decamelizeKeys } from 'humps';
 import { UserCountGuard } from '@ee/licensing/guards/user.guard';
-import { getManager } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 
 @Controller('users')
 export class UsersController {
@@ -88,14 +89,15 @@ export class UsersController {
   }
 
   // Not used by UI, uses for testing
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get('license-terms/terms')
   async getTerms() {
-    const manager = getManager();
-    const { editor, viewer } = await this.usersService.fetchTotalViewerEditorCount(manager);
-    const totalActive = await this.usersService.getCount(true);
-    const total = await this.usersService.getCount();
-    return { editor, viewer, totalActive, total };
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const { editor, viewer } = await this.usersService.fetchTotalViewerEditorCount(manager);
+      const totalActive = await this.usersService.getCount(true, manager);
+      const total = await this.usersService.getCount(false, manager);
+      return { editor, viewer, totalActive, total };
+    });
   }
 
   @Post('avatar')
