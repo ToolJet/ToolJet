@@ -369,18 +369,10 @@ export function Table({
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
   }, [pageCount]);
 
-  function usePrevious(value) {
-    const ref = useRef();
-    useEffect(() => {
-      ref.current = value;
-    });
-    return ref.current;
-  }
-
-  const prevRowID = usePrevious(rowDetails?.hoveredRowId);
+  const hoverRef = useRef();
 
   useEffect(() => {
-    if (rowDetails?.hoveredRowId !== '' && prevRowID !== rowDetails?.hoveredRowId) rowHover();
+    if (rowDetails?.hoveredRowId !== '' && hoverRef.current !== rowDetails?.hoveredRowId) rowHover();
   }, [rowDetails]);
 
   useEffect(() => {
@@ -511,6 +503,7 @@ export function Table({
                     onMouseOver={(e) => {
                       const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
                       setRowDetails(hoveredRowDetails);
+                      hoverRef.current = rowDetails?.hoveredRowId;
                     }}
                     onMouseLeave={(e) => {
                       setRowDetails({ hoveredRowId: '', hoveredRow: '' });
