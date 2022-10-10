@@ -1,6 +1,5 @@
 {
-  "name": "@tooljet-plugins/oracledb",
-  "private": true,
+  "name": "@tooljet-plugins/amazonses",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,11 +18,8 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "knex": "^0.95.14",
-    "oracledb": "https://github.com/oracle/node-oracledb/releases/download/v5.3.0/oracledb-src-5.3.0.tgz",
-    "react": "^17.0.2"
-  },
-  "devDependencies": {
-    "@types/oracledb": "^5.2.2"
+    "@aws-sdk/client-sesv2": "^3.186.0",
+    "react": "^17.0.2",
+    "rimraf": "^3.0.2"
   }
 }
