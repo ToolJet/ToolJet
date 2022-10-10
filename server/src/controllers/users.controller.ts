@@ -79,7 +79,8 @@ export class UsersController {
         throw new Error('At least one super admin is required');
       }
     }
-    return await this.usersService.updateUser(userId, { userType });
+    await this.usersService.updateUser(userId, { userType });
+    return;
   }
 
   @UseGuards(JwtAuthGuard, UserCountGuard)
