@@ -82,7 +82,6 @@ export function Table({
     ...draggableStyle,
     userSelect: 'none',
     background: isDragging ? 'rgba(77, 114, 250, 0.2)' : '',
-    padding: '10px',
     borderRadius: '4px',
     width: '265px',
     ...(isDragging && { marginTop: '-170px', marginLeft: '-120px' }),
