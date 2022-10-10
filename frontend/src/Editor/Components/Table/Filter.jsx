@@ -2,6 +2,8 @@ import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
+// eslint-disable-next-line import/no-unresolved
+import { diff as deepDiff } from 'deep-object-diff';
 
 export function Filter(props) {
   const { t } = useTranslation();
@@ -72,10 +74,7 @@ export function Filter(props) {
   React.useEffect(() => {
     if (filters.length > 0) {
       const tableFilters = JSON.parse(JSON.stringify(filters));
-      const currentDiff = diffingFilterDetails(activeFilters, tableFilters)[0];
-      const currentFilterUpdates = tableFilters.filter((filter) => filter.id === currentDiff.diff.id)[0];
-
-      const shouldFire = shouldFireEvent(currentDiff, currentFilterUpdates);
+      const shouldFire = findFilterDiff(activeFilters, tableFilters);
       if (shouldFire) fireEvent('onFilterChanged');
       set(tableFilters);
     }
@@ -179,52 +178,29 @@ export function Filter(props) {
   );
 }
 
-const diffingFilterDetails = (prev, next) => {
-  function diffingValues(prev, next) {
-    const diff = {};
+const findFilterDiff = (oldFilters, newFilters) => {
+  const filterDiff = deepDiff(oldFilters, newFilters);
 
-    for (let key in next) {
-      if (next[key] !== prev[key]) {
-        diff[key] = next[key];
-      }
+  const getType = (obj) => {
+    if (!obj?.where && !obj?.operation) {
+      return 'value';
     }
 
-    return diff;
-  }
-  let diffingType = undefined;
-
-  const diff = [];
-
-  for (let i = 0; i < next.length; i++) {
-    const nextItem = next[i];
-    const prevItem = prev[i];
-
-    if (nextItem && (!prevItem || nextItem.id !== prevItem.id)) {
-      diffingType = 'column';
-
-      diff.push({
-        type: diffingType,
-        diff: {
-          id: nextItem.id,
-          value: nextItem.value.where,
-        },
-      });
-    } else if (prevItem.id === nextItem.id) {
-      const diffingObject = diffingValues(prevItem.value, nextItem.value);
-      if (diffingObject) {
-        diffingType = Object.keys(diffingObject)[0];
-        diff.push({
-          type: diffingType,
-          diff: {
-            id: nextItem.id,
-            value: diffingObject[diffingType],
-          },
-        });
-      }
+    if (obj?.where) {
+      return 'where';
     }
-  }
 
-  return diff;
+    if (obj?.operation) {
+      return 'operation';
+    }
+  };
+
+  const diff = Object.entries(filterDiff).reduce((acc, [key, value]) => {
+    const type = getType(value.value);
+    return (acc = { ...acc, keyIndex: key, type: type, diff: value.value[type] });
+  }, {});
+
+  return shouldFireEvent(diff, newFilters);
 };
 
 function shouldFireEvent(diff, filter) {
@@ -232,13 +208,13 @@ function shouldFireEvent(diff, filter) {
 
   switch (diff.type) {
     case 'value':
-      return filter.value?.operation && filter.value?.value ? true : false;
+      return filter[diff.keyIndex].value.where && filter[diff.keyIndex].value.operation ? true : false;
 
-    case 'column':
-      return filter.value?.operation && filter.value?.value ? true : false;
+    case 'where':
+      return filter[diff.keyIndex].value.value && filter[diff.keyIndex].value.operation ? true : false;
 
     case 'operation':
-      return filter.value?.where && filter.value?.value ? true : false;
+      return filter[diff.keyIndex].value.value && filter[diff.keyIndex].value.where ? true : false;
 
     default:
       return false;
