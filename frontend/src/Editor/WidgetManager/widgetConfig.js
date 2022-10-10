@@ -642,7 +642,7 @@ export const widgets = [
       },
       properties: {
         title: { value: 'This title can be changed' },
-        markerColor: { value: '' },
+        markerColor: { value: '#CDE1F8' },
         showAxes: { value: '{{true}}' },
         showGridLines: { value: '{{true}}' },
         plotFromJson: { value: '{{false}}' },
