@@ -1,9 +1,7 @@
-
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
-  "title": "Mariadb datasource",
-  "description": "A schema defining Mariadb datasource",
+  "title": "MariaDB datasource",
+  "description": "A schema defining MariaDB datasource",
   "type": "database",
   "defaults": {
     "mode": "sql"

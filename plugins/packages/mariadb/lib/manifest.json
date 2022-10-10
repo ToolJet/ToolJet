@@ -1,11 +1,10 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
-  "title": "Mariadb datasource",
-  "description": "A schema defining Mariadb datasource",
+  "title": "MariaDB datasource",
+  "description": "A schema defining MariaDB datasource",
   "type": "database",
   "source": {
-    "name": "Mariadb",
+    "name": "MariaDB",
     "kind": "mariadb",
     "exposedVariables": {
       "isLoading": false,
@@ -15,33 +14,37 @@
     "options": {
       "host": {
         "type": "string"
-      } ,
+      },
       "user": {
         "type": "string"
       },
       "password": {
         "type": "string"
-      } ,
+      },
       "connectionLimit": {
         "type": "string"
-      } ,
-      "port":{
-        "type": "string"
-      } ,
-      "database":{
+      },
+      "port": {
         "type": "string"
       },
-      "ca":{
+      "database": {
+        "type": "string"
+      },
+      "ca": {
         "encrypted": true
-      } ,
-      "cert":{
+      },
+      "cert": {
         "encrypted": true
-      } ,
-      "key":{
+      },
+      "key": {
         "encrypted": true
-      } 
-    }  },
-  "defaults": { 
+      }
+    }
+  },
+  "defaults": {
+    "connectionLimit": {
+      "value": 5
+    }
   },
   "properties": {
     "ssl_certificate": {
@@ -63,7 +66,7 @@
           "name": "None"
         }
       ],
-      "commonFields":{
+      "commonFields": {
         "host": {
           "label": "Host",
           "key": "host",
@@ -81,7 +84,7 @@
           "key": "password",
           "type": "password",
           "description": "Enter password"
-        },  
+        },
         "connectionLimit": {
           "label": "Connection Limit",
           "key": "connectionLimit",
@@ -106,38 +109,39 @@
           "type": "toggle",
           "description": "Toggle for ssl_enabled"
         }
-      }},
-      "ca_certificate":{
-        "ca": {
-          "label": "CA Cert",
-          "key": "ca",
-          "type": "textarea",
-          "encrypted": true,
-          "description": "Enter ca certificate"
-        }
+      }
+    },
+    "ca_certificate": {
+      "ca": {
+        "label": "CA Cert",
+        "key": "ca",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter ca certificate"
+      }
+    },
+    "self_signed": {
+      "ca": {
+        "label": "Server Cert",
+        "key": "ca",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client key"
       },
-      "self_signed":{
-        "ca": {
-          "label": "Server Cert",
-          "key": "ca",
-          "type": "textarea",
-          "encrypted": true,
-          "description": "Enter client key"
-        },
-        "cert": {
-          "label": "Client Cert",
-          "key": "cert",
-          "type": "textarea",
-          "encrypted": true,
-          "description": "Enter client certificate"
-        },
-        "key": {
-          "label": "Client Key",
-          "key": "key",
-          "type": "text",
-          "encrypted": true,
-          "description": "Enter key"
-        }
+      "cert": {
+        "label": "Client Cert",
+        "key": "cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client certificate"
+      },
+      "key": {
+        "label": "Client Key",
+        "key": "key",
+        "type": "text",
+        "encrypted": true,
+        "description": "Enter key"
+      }
     }
   },
   "required": [
