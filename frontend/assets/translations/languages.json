@@ -1,6 +1,7 @@
 {
   "languageList": [
   { "lang": "English", "code": "en", "nativeLang": "English" },
-  { "lang": "French", "code": "fr", "nativeLang": "Français" }
+  { "lang": "French", "code": "fr", "nativeLang": "Français" },
+  { "lang": "Italian", "code": "it", "nativeLang": "Italiano" }
   ]
 }

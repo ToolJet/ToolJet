@@ -151,6 +151,70 @@ export default function generateColumnsData({
             }
             return <span style={cellStyles}>{cellValue}</span>;
           }
+          case 'number': {
+            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
+
+            const cellStyles = {
+              color: textColor ?? '',
+            };
+
+            if (column.isEditable) {
+              const validationData = validateWidget({
+                validationObject: {
+                  minValue: {
+                    value: column.minValue,
+                  },
+                  maxValue: {
+                    value: column.maxValue,
+                  },
+                },
+                widgetValue: cellValue,
+                currentState,
+                customResolveObjects: { cellValue },
+              });
+
+              const { isValid, validationError } = validationData;
+              console.log('validationData', column.minValue, column.maxValue, validationData);
+              const cellStyles = {
+                color: textColor ?? '',
+              };
+
+              return (
+                <div>
+                  <input
+                    type="number"
+                    style={{ ...cellStyles, maxWidth: width, minWidth: width - 10 }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        if (e.target.defaultValue !== e.target.value) {
+                          handleCellValueChange(
+                            cell.row.index,
+                            column.key || column.name,
+                            Number(e.target.value),
+                            cell.row.original
+                          );
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.defaultValue !== e.target.value) {
+                        handleCellValueChange(
+                          cell.row.index,
+                          column.key || column.name,
+                          Number(e.target.value),
+                          cell.row.original
+                        );
+                      }
+                    }}
+                    className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
+                    defaultValue={cellValue}
+                  />
+                  <div className="invalid-feedback">{validationError}</div>
+                </div>
+              );
+            }
+            return <span style={cellStyles}>{cellValue}</span>;
+          }
           case 'text': {
             return (
               <textarea
