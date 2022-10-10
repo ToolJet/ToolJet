@@ -162,6 +162,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      serverSideSort: {
+        type: 'toggle',
+        displayName: 'Server-side sort',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       actionButtonBackgroundColor: {
         type: 'color',
         displayName: 'Background color',
@@ -337,6 +344,7 @@ export const widgets = [
         rowsPerPage: { value: '{{10}}' },
         serverSidePagination: { value: '{{false}}' },
         clientSidePagination: { value: '{{true}}' },
+        serverSideSort: { value: '{{false}}' },
         displaySearchBox: { value: '{{true}}' },
         showDownloadButton: { value: '{{true}}' },
         showFilterButton: { value: '{{true}}' },
@@ -364,7 +372,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '' },
+        textColor: { value: '#000' },
         actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
@@ -643,7 +651,7 @@ export const widgets = [
       },
       properties: {
         title: { value: 'This title can be changed' },
-        markerColor: { value: '' },
+        markerColor: { value: '#CDE1F8' },
         showAxes: { value: '{{true}}' },
         showGridLines: { value: '{{true}}' },
         plotFromJson: { value: '{{false}}' },

@@ -105,10 +105,13 @@ export function Filter(props) {
               <SelectSearch
                 options={[
                   { name: 'contains', value: 'contains' },
+                  { name: 'does not contains', value: 'doesNotContains' },
                   { name: 'matches', value: 'matches' },
                   { name: 'does not match', value: 'nl' },
                   { name: 'equals', value: 'equals' },
                   { name: 'does not equal', value: 'ne' },
+                  { name: 'is empty', value: 'isEmpty' },
+                  { name: 'is not empty', value: 'isNotEmpty' },
                   { name: 'greater than', value: 'gt' },
                   { name: 'less than', value: 'lt' },
                   { name: 'greater than or equals', value: 'gte' },
@@ -124,13 +127,15 @@ export function Filter(props) {
               />
             </div>
             <div className="col">
-              <input
-                type="text"
-                value={filter.value.value}
-                placeholder="value"
-                className="form-control"
-                onChange={(e) => filterValueChanged(index, e.target.value)}
-              />
+              {['isEmpty', 'isNotEmpty'].includes(filter.value.operation) || (
+                <input
+                  type="text"
+                  value={filter.value.value}
+                  placeholder="value"
+                  className="form-control"
+                  onChange={(e) => filterValueChanged(index, e.target.value)}
+                />
+              )}
             </div>
             <div className="col-auto">
               <button
