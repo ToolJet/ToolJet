@@ -271,6 +271,16 @@ describe('Authentication', () => {
           .send({ email: 'admin@tooljet.io', password: 'password' })
           .expect(201);
       });
+      it('throw unauthorized error if user status is archived', async () => {
+        const adminUser = await userRepository.findOneOrFail({
+          email: 'admin@tooljet.io',
+        });
+        await userRepository.update({ id: adminUser.id }, { status: 'archived' });
+        await request(app.getHttpServer())
+          .post('/api/authenticate')
+          .send({ email: 'admin@tooljet.io', password: 'password' })
+          .expect(401);
+      });
       it('throw unauthorized error if user does not exist in given organization if valid credentials', async () => {
         await request(app.getHttpServer())
           .post('/api/authenticate/82249621-efc1-4cd2-9986-5c22182fa8a7')
@@ -506,12 +516,14 @@ describe('Authentication', () => {
           app_group_permissions,
           organization_id,
           organization,
+          super_admin,
         } = response.body;
 
         expect(email).toEqual(current_user.email);
         expect(first_name).toEqual(current_user.firstName);
         expect(last_name).toEqual(current_user.lastName);
         expect(admin).toBeTruthy();
+        expect(super_admin).toBeFalsy();
         expect(organization_id).toBe(invited_organization.id);
         expect(organization).toBe(invited_organization.name);
         expect(group_permissions).toHaveLength(2);

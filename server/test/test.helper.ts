@@ -90,9 +90,11 @@ export function authHeaderForUser(user: User, organizationId?: string, isPasswor
 export async function clearDB() {
   const entities = getConnection().entityMetadatas;
   for (const entity of entities) {
+    const repository = getConnection().getRepository(entity.name);
     if (entity.tableName !== 'instance_settings') {
-      const repository = getConnection().getRepository(entity.name);
       await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
+    } else {
+      await repository.query(`UPDATE ${entity.tableName} SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE';`);
     }
   }
 }
@@ -207,6 +209,7 @@ export async function createUser(
         email: email || 'dev@tooljet.io',
         password: 'password',
         userType,
+        status: 'active',
         invitationToken,
         defaultOrganizationId: organization.id,
         createdAt: new Date(),
