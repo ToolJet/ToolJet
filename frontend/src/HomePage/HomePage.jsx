@@ -124,22 +124,24 @@ class HomePageComponent extends React.Component {
 
   cloneApp = (app) => {
     this.setState({ isCloningApp: true });
-    appService
-      .cloneApp(app.id)
-      .then((data) => {
-        toast.success('App cloned successfully.', {
-          position: 'top-center',
+    appService.getLicenseTerms().then(() => {
+      appService
+        .cloneApp(app.id)
+        .then((data) => {
+          toast.success('App cloned successfully.', {
+            position: 'top-center',
+          });
+          this.setState({ isCloningApp: false });
+          this.props.history.push(`/apps/${data.id}`);
+        })
+        .catch(({ _error }) => {
+          toast.error('Could not clone the app.', {
+            position: 'top-center',
+          });
+          this.setState({ isCloningApp: false });
+          console.log(_error);
         });
-        this.setState({ isCloningApp: false });
-        this.props.history.push(`/apps/${data.id}`);
-      })
-      .catch(({ _error }) => {
-        toast.error('Could not clone the app.', {
-          position: 'top-center',
-        });
-        this.setState({ isCloningApp: false });
-        console.log(_error);
-      });
+    });
   };
 
   exportApp = (app) => {
