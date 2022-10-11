@@ -13,8 +13,8 @@ spec:
   - type: Resource
     resource:
       name: cpu
-      targetAverageValue: {{ .Values.apps.tooljet.hpa.threshhold.cpu }}
+      targetAverageValue: {{ .Values.apps.tooljet.hpa.threshold.cpu }}
   - type: Resource
     resource:
       name: memory
-      targetAverageValue: {{ .Values.apps.tooljet.hpa.threshhold.ram }}
+      targetAverageValue: {{ .Values.apps.tooljet.hpa.threshold.ram }}
