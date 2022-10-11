@@ -142,7 +142,7 @@ export const baseComponentProperties = (
 
   items.push({
     title: `${i18next.t('widget.common.layout', 'Layout')}`,
-    isOpen: true,
+    isOpen: false,
     children: (
       <>
         {renderElement(
