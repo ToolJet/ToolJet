@@ -58,7 +58,7 @@ Before adding the new data source we will need to have a private key for our GCS
 - File Name: `{{components.file1.file[0]['name']}}`
 - Content Type: `{{components.file1.file[0]['type']}}`
 - Upload data: `{{components.file1.file[0]['base64Data']}}`
-- Enconding: `base64`
+- Encoding: `base64`
 3. Click on **Save** to create the query
 
 ## Running the query

@@ -5,7 +5,7 @@ import { SubContainer } from '../SubContainer';
 export const CalendarEventPopover = function ({
   show,
   offset,
-  calenderWidgetId,
+  calendarWidgetId,
   containerProps,
   removeComponent,
   popoverClosed,
@@ -19,7 +19,7 @@ export const CalendarEventPopover = function ({
   let calendarBounds;
   let canvasBounds;
 
-  const calendarElement = document.getElementById(calenderWidgetId);
+  const calendarElement = document.getElementById(calendarWidgetId);
 
   const handleClickOutside = (event) => {
     if (parentRef.current && !parentRef.current.contains(event.target)) {
@@ -85,20 +85,20 @@ export const CalendarEventPopover = function ({
         x-placement="left"
         className="popover bs-popover-left shadow-lg"
         ref={parentRef}
-        id={`${calenderWidgetId}-popover`}
+        id={`${calendarWidgetId}-popover`}
       >
         {parentRef.current && showPopover && (
           <div className="popover-body" style={{ padding: 'unset', width: '100%', height: '100%', zIndex: 11 }}>
             <>
               <SubContainer
                 containerCanvasWidth={300}
-                parent={`${calenderWidgetId}-popover`}
+                parent={`${calendarWidgetId}-popover`}
                 {...containerProps}
                 parentRef={parentRef}
                 removeComponent={removeComponent}
               />
               <SubCustomDragLayer
-                parent={calenderWidgetId}
+                parent={calendarWidgetId}
                 parentRef={parentRef}
                 currentLayout={containerProps.currentLayout}
               />
