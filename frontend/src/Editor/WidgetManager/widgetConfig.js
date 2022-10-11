@@ -2051,6 +2051,13 @@ export const widgets = [
           },
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
@@ -2079,6 +2086,7 @@ export const widgets = [
       styles: {
         backgroundColor: { value: '' },
         borderRadius: { value: '0' },
+        borderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
