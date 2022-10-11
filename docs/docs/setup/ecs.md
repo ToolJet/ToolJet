@@ -15,7 +15,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
     ToolJet uses a postgres database as the persistent storage for storing data related to users and apps.
 
 2.  Create a target group and an application load balancer to route traffic onto ToolJet containers.
-    You can [reference](https://docs.aws.amazon.com/AmazonECS/latest/userguide/create-application-load-balancer.html) AWS docs to set it up. Please not theat ToolJet server exposes `/api/health`, which you can configure for health checks.
+    You can [reference](https://docs.aws.amazon.com/AmazonECS/latest/userguide/create-application-load-balancer.html) AWS docs to set it up. Please note that ToolJet server exposes `/api/health`, which you can configure for health checks.
 
     :::note
     This setup follows the old AWS UI for ECS as some options are missing on the new one.
