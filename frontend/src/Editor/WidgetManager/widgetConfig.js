@@ -155,6 +155,20 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      serverSideSort: {
+        type: 'toggle',
+        displayName: 'Server-side sort',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      serverSideFilter: {
+        type: 'toggle',
+        displayName: 'Server-side filter',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       actionButtonBackgroundColor: {
         type: 'color',
         displayName: 'Background color',
@@ -225,6 +239,9 @@ export const widgets = [
       onBulkUpdate: { displayName: 'Bulk update' },
       onPageChanged: { displayName: 'Page changed' },
       onSearch: { displayName: 'Search' },
+      onSort: { displayName: 'On sorting columns' },
+      onCellValueChanged: { displayName: 'Cell value changed' },
+      onFilterChanged: { displayName: 'Filter changed' },
     },
     styles: {
       textColor: {
@@ -295,6 +312,7 @@ export const widgets = [
       pageIndex: 1,
       searchText: '',
       selectedRows: [],
+      filters: [],
     },
     actions: [
       {
@@ -324,6 +342,7 @@ export const widgets = [
         },
         serverSidePagination: { value: '{{false}}' },
         clientSidePagination: { value: '{{true}}' },
+        serverSideSort: { value: '{{false}}' },
         displaySearchBox: { value: '{{true}}' },
         showDownloadButton: { value: '{{true}}' },
         showFilterButton: { value: '{{true}}' },
@@ -351,7 +370,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '' },
+        textColor: { value: '#000' },
         actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
@@ -443,6 +462,14 @@ export const widgets = [
           defaultValue: false,
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
     },
     exposedVariables: {},
     actions: [
@@ -487,6 +514,7 @@ export const widgets = [
         loaderColor: { value: '' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
+        borderColor: { value: '#375FCF' },
         disabledState: { value: '{{false}}' },
       },
     },
@@ -630,7 +658,7 @@ export const widgets = [
       },
       properties: {
         title: { value: 'This title can be changed' },
-        markerColor: { value: '' },
+        markerColor: { value: '#CDE1F8' },
         showAxes: { value: '{{true}}' },
         showGridLines: { value: '{{true}}' },
         plotFromJson: { value: '{{false}}' },
@@ -3500,6 +3528,13 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
@@ -3547,6 +3582,7 @@ export const widgets = [
       events: [],
       styles: {
         backgroundColor: { value: '' },
+        borderColor: { value: '#dadcde' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{0}}' },

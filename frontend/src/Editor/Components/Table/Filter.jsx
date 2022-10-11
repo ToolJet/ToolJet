@@ -1,16 +1,22 @@
 import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useTranslation } from 'react-i18next';
+import _ from 'lodash';
+// eslint-disable-next-line import/no-unresolved
+import { diff as deepDiff } from 'deep-object-diff';
 
 export function Filter(props) {
   const { t } = useTranslation();
 
-  const { mergeToFilterDetails, filterDetails, setAllFilters } = props;
+  const { mergeToFilterDetails, filterDetails, setAllFilters, fireEvent } = props;
   const { filters } = filterDetails;
 
-  function filterColumnChanged(index, value) {
+  const [activeFilters, set] = React.useState(filters);
+
+  function filterColumnChanged(index, value, name) {
     const newFilters = filters;
     newFilters[index].id = value;
+    newFilters[index].value.where = name;
     mergeToFilterDetails({
       filters: newFilters,
     });
@@ -52,6 +58,9 @@ export function Filter(props) {
       filters: newFilters,
     });
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
+
+    set(newFilters);
+    setTimeout(() => fireEvent('onFilterChanged'), 0);
   }
 
   function clearFilters() {
@@ -59,7 +68,29 @@ export function Filter(props) {
       filters: [],
     });
     setAllFilters([]);
+    set([]);
+
+    setTimeout(() => fireEvent('onFilterChanged'), 0);
   }
+
+  React.useEffect(() => {
+    if (filters.length > 0) {
+      const tableFilters = JSON.parse(JSON.stringify(filters));
+      const shouldFire = findFilterDiff(activeFilters, tableFilters);
+      if (shouldFire) debounceFn();
+      set(tableFilters);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(filters)]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debounceFn = React.useCallback(
+    _.debounce(() => {
+      fireEvent('onFilterChanged');
+    }, 700),
+    []
+  );
 
   return (
     <div className="table-filters card">
@@ -84,8 +115,8 @@ export function Filter(props) {
                 options={props.columns}
                 value={filter.id}
                 search={true}
-                onChange={(value) => {
-                  filterColumnChanged(index, value);
+                onChange={(value, item) => {
+                  filterColumnChanged(index, value, item.name);
                 }}
                 filterOptions={fuzzySearch}
                 placeholder={t('globals.select', 'Select') + '...'}
@@ -95,10 +126,13 @@ export function Filter(props) {
               <SelectSearch
                 options={[
                   { name: 'contains', value: 'contains' },
+                  { name: 'does not contains', value: 'doesNotContains' },
                   { name: 'matches', value: 'matches' },
                   { name: 'does not match', value: 'nl' },
                   { name: 'equals', value: 'equals' },
                   { name: 'does not equal', value: 'ne' },
+                  { name: 'is empty', value: 'isEmpty' },
+                  { name: 'is not empty', value: 'isNotEmpty' },
                   { name: 'greater than', value: 'gt' },
                   { name: 'less than', value: 'lt' },
                   { name: 'greater than or equals', value: 'gte' },
@@ -114,13 +148,15 @@ export function Filter(props) {
               />
             </div>
             <div className="col">
-              <input
-                type="text"
-                value={filter.value.value}
-                placeholder="value"
-                className="form-control"
-                onChange={(e) => filterValueChanged(index, e.target.value)}
-              />
+              {['isEmpty', 'isNotEmpty'].includes(filter.value.operation) || (
+                <input
+                  type="text"
+                  value={filter.value.value}
+                  placeholder="value"
+                  className="form-control"
+                  onChange={(e) => _.debounce(filterValueChanged(index, e.target.value), 500)}
+                />
+              )}
             </div>
             <div className="col-auto">
               <button
@@ -150,4 +186,47 @@ export function Filter(props) {
       </div>
     </div>
   );
+}
+
+const findFilterDiff = (oldFilters, newFilters) => {
+  const filterDiff = deepDiff(oldFilters, newFilters);
+
+  const getType = (obj) => {
+    if (!obj?.where && !obj?.operation) {
+      return 'value';
+    }
+
+    if (obj?.where) {
+      return 'where';
+    }
+
+    if (obj?.operation) {
+      return 'operation';
+    }
+  };
+
+  const diff = Object.entries(filterDiff).reduce((acc, [key, value]) => {
+    const type = getType(value.value);
+    return (acc = { ...acc, keyIndex: key, type: type, diff: value.value[type] });
+  }, {});
+
+  return shouldFireEvent(diff, newFilters);
+};
+
+function shouldFireEvent(diff, filter) {
+  if (!diff || !filter) return false;
+
+  switch (diff.type) {
+    case 'value':
+      return filter[diff.keyIndex].value.where && filter[diff.keyIndex].value.operation ? true : false;
+
+    case 'where':
+      return filter[diff.keyIndex].value.value && filter[diff.keyIndex].value.operation ? true : false;
+
+    case 'operation':
+      return filter[diff.keyIndex].value.value && filter[diff.keyIndex].value.where ? true : false;
+
+    default:
+      return false;
+  }
 }

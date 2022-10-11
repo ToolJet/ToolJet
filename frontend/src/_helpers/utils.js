@@ -248,6 +248,8 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const regex = validationObject?.regex?.value;
   const minLength = validationObject?.minLength?.value;
   const maxLength = validationObject?.maxLength?.value;
+  const minValue = validationObject?.minValue?.value;
+  const maxValue = validationObject?.maxValue?.value;
   const customRule = validationObject?.customRule?.value;
 
   const validationRegex = resolveWidgetFieldValue(regex, currentState, '', customResolveObjects);
@@ -274,6 +276,26 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
       return {
         isValid: false,
         validationError: `Maximum ${resolvedMaxLength} characters is allowed`,
+      };
+    }
+  }
+
+  const resolvedMinValue = resolveWidgetFieldValue(minValue, currentState, undefined, customResolveObjects);
+  if (resolvedMinValue !== undefined) {
+    if (widgetValue < parseInt(resolvedMinValue)) {
+      return {
+        isValid: false,
+        validationError: `Minimum value is ${resolvedMinValue}`,
+      };
+    }
+  }
+
+  const resolvedMaxValue = resolveWidgetFieldValue(maxValue, currentState, undefined, customResolveObjects);
+  if (resolvedMaxValue !== undefined) {
+    if (widgetValue > parseInt(resolvedMaxValue)) {
+      return {
+        isValid: false,
+        validationError: `Maximum value is ${resolvedMaxValue}`,
       };
     }
   }
