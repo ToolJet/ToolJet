@@ -18,7 +18,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
     You can [reference](https://docs.aws.amazon.com/AmazonECS/latest/userguide/create-application-load-balancer.html) AWS docs to set it up. Please note that ToolJet server exposes `/api/health`, which you can configure for health checks.
 
     :::note
-    This setup follows the old AWS UI for ECS as some options are missing on the new one.
+    This setup follows the old AWS UI for ECS as some options are missing on the latest experience.
     :::
 
 3.  Create task definition for deploying ToolJet app as a service on your preconfigured cluster.
@@ -76,3 +76,19 @@ The setup above is just a template. Feel free to update the task definition and 
 :::
 
 5. Verify if ToolJet is running by checking by checking the status of the tasks in the created service.
+
+### Creating default admin workspace and account
+
+  You can create a new revision of your existing task definition to have a one time task to seed with default admin.
+
+  1.  Create a new revision from your existing task definition.
+      You can change task definition name to `tooljet-seed-task`
+  2.  Click on your existing container name to edit container.
+  3.  Change container command from `npm,run,start:prod` to `npm,run,db:seed:prod`
+  4.  Go back to your cluster dashboard and click on Run new task.
+      <img className="screenshot-full" src="/img/setup/ecs/run-new-task.png" alt="run new task" />
+  5.  Configure your run task with the `tooljet-seed-task` for your cluster. It should look like:
+      <img className="screenshot-full" src="/img/setup/ecs/run-task-config.png" alt="run task config" />
+  6.  Click on run task to have this task seed the database with user having following credentials:
+      - email: `dev@tooljet.io`
+      - password: `password`
