@@ -24,30 +24,64 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
 3.  Create task definition for deploying ToolJet app as a service on your preconfigured cluster.
 
     1.  Select Fargate as launch type compatibility.
-        <img className="screenshot-full" src="/img/setup/ecs/launch-type-compatibility.png" alt="select launch type compatibility" />
+
+        <div style={{textAlign: 'center'}}>
+
+        <img className="screenshot-full" src="/img/setup/ecs/launch-type-compatibility.png" alt="task definition config" />
+
+        </div>
 
     2.  Configure IAM roles and set operating system family as Linux
-        <img className="screenshot-full" src="/img/setup/ecs/task-definition-config.png" alt="task definition config" />
 
+        <div style={{textAlign: 'center'}}>
+
+        <img className="screenshot-full" src="/img/setup/ecs/task-definition-config.png" alt="" />
+
+        </div>
+        
     3.  Select task size to have 3GB of memory and 1vCpu
+
+        <div style={{textAlign: 'center'}}>
+
         <img className="screenshot-full" src="/img/setup/ecs/task-size.png" alt="task size config" />
 
+        </div>
+
     4.  Click on add container to update container definitions
+
+        <div style={{textAlign: 'center'}}>
+
         <img className="screenshot-full" src="/img/setup/ecs/add-container-button.png" alt="add container button" />
+
+        </div>
 
         Within the add conatiner form that is shown:
 
         - Specify your container name ex: `tooljet-ce`
         - Set the image you intend to deploy. ex: `tooljet/tooljet-ce:v1.26.0`
         - Update port mappings at container port `3000` for tcp protocol.
+        
+          <div style={{textAlign: 'center'}}>
+
           <img className="screenshot-full" src="/img/setup/ecs/container-setup.png" alt="container setup" />
 
+          </div>
+
         - Update container command field to be `npm,run,start:prod`.
+
+          <div style={{textAlign: 'center'}}>
+
           <img className="screenshot-full" src="/img/setup/ecs/container-command.png" alt="container command" />
+
+          </div>
 
         - Specify environmental values for the container. You'd want to make use of secrets to store sensitive information or credentials, kindly refer the AWS [docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html) to set it up.
 
-           <img className="screenshot-full" src="/img/setup/ecs/container-env-setup.png" alt="container env setup" />
+          <div style={{textAlign: 'center'}}>
+
+          <img className="screenshot-full" src="/img/setup/ecs/container-env-setup.png" alt="container env setup" />
+
+          </div>
 
           :::note
           For the minimal setup, ToolJet requires:
@@ -64,10 +98,20 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
     - Select the cluster and set the service name
     - You can set the number of tasks to start with as two
     - Rest of the values can be kept as default
+      <div style={{textAlign: 'center'}}>
+
       <img className="screenshot-full" src="/img/setup/ecs/service-config.png" alt="service config" />
+
+      </div>
+      
     - Click on next step to configure networking options
     - Select your designated VPC, Subnets and Security groups. Kindly ensure that the security group allows for inbound traffic to http port 3000 for the task.
+      <div style={{textAlign: 'center'}}>
+
       <img className="screenshot-full" src="/img/setup/ecs/service-security-group-config.png" alt="service security group config" />
+
+      </div>
+
     - Since migrations are run as a part of container boot, please specify health check grace period for 900 seconds.
     - Select the application loadbalancer option and set the target group name to the one we had created earlier. This will auto populate the health check endpoints.
 
@@ -86,9 +130,17 @@ The setup above is just a template. Feel free to update the task definition and 
   2.  Click on your existing container name to edit container.
   3.  Change container command from `npm,run,start:prod` to `npm,run,db:seed:prod`
   4.  Go back to your cluster dashboard and click on Run new task.
+      <div style={{textAlign: 'center'}}>
+
       <img className="screenshot-full" src="/img/setup/ecs/run-new-task.png" alt="run new task" />
+
+      </div>
   5.  Configure your run task with the `tooljet-seed-task` for your cluster. It should look like:
+      <div style={{textAlign: 'center'}}>
+
       <img className="screenshot-full" src="/img/setup/ecs/run-task-config.png" alt="run task config" />
+
+      </div>
   6.  Click on run task to have this task seed the database with user having following credentials:
       - email: `dev@tooljet.io`
       - password: `password`
