@@ -98,8 +98,7 @@ export const Button = function Button({
           event.stopPropagation();
           fireEvent('onClick');
         }}
-        onMouseOver={(event) => {
-          event.stopPropagation();
+        onMouseOver={() => {
           fireEvent('onHover');
         }}
         data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
