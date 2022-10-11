@@ -208,7 +208,7 @@
                 },
                 "enableMultiple": {
                   "type": "code",
-                  "displayName": "Pick mulitple files"
+                  "displayName": "Pick multiple files"
                 },
                 "maxFileCount": {
                   "type": "code",
@@ -1502,7 +1502,7 @@
               },
               "enableMultiple": {
                 "type": "code",
-                "displayName": "Pick mulitple files"
+                "displayName": "Pick multiple files"
               },
               "maxFileCount": {
                 "type": "code",
