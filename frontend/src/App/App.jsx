@@ -28,6 +28,7 @@ import { RedirectSso } from '@/RedirectSso/RedirectSso';
 
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
+import { AppLoader } from '@/AppLoader';
 
 class App extends React.Component {
   constructor(props) {
@@ -191,7 +192,7 @@ class App extends React.Component {
             <PrivateRoute
               exact
               path="/apps/:id"
-              component={config.ENABLE_MULTIPLAYER_EDITING ? RealtimeEditor : Editor}
+              component={AppLoader}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
