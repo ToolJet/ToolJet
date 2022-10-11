@@ -763,7 +763,7 @@ describe('group permissions controller', () => {
   });
 
   describe('DELETE /group_permissions/:id', () => {
-    it('should not allow unauthenicated admin', async () => {
+    it('should not allow unauthenticated admin', async () => {
       const {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);

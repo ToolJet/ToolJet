@@ -33,7 +33,7 @@ export const Container = function Container({
       style={computedStyles}
       onClick={(e) => {
         if (e.target.className === 'real-canvas') containerProps.onComponentClick(id, component);
-      }} //Hack, should find a better solution - to prevent losing z index when comtainer element is clicked
+      }} //Hack, should find a better solution - to prevent losing z index when container element is clicked
     >
       <SubContainer
         parentComponent={component}
