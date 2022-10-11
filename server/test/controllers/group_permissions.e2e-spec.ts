@@ -628,8 +628,10 @@ describe('group permissions controller', () => {
       const user = users[0];
 
       expect(users).toHaveLength(1);
-      expect(user.default_organization_id).toBe(organization.id);
+      expect(Object.keys(user).sort()).toEqual(['id', 'email', 'first_name', 'last_name'].sort());
       expect(user.email).toBe('admin@tooljet.io');
+      expect(user.first_name).toBe('test');
+      expect(user.last_name).toBe('test');
     });
   });
 
