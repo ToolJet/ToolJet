@@ -149,8 +149,6 @@ export class AuthService {
         }
       }
 
-      await this.usersService.validateLicense(manager);
-
       await this.usersService.updateUser(
         user.id,
         {

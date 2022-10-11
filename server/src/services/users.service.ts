@@ -77,7 +77,7 @@ export class UsersService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        name: `${user.firstName} ${user.lastName}`,
+        name: `${user.firstName || ''}${user.lastName ? ` ${user.lastName}` : ''}`,
         id: user.id,
         avatarId: user.avatarId,
         organizationUsers: user.organizationUsers,
@@ -96,24 +96,19 @@ export class UsersService {
     return await this.usersRepository.find({ userType: 'instance' });
   }
 
-  async findAll(organizationId: string): Promise<User[]> {
-    return createQueryBuilder(User, 'users')
-      .innerJoin('users.organizationUsers', 'organization_users')
-      .select(['users.id', 'users.email', 'users.firstName', 'users.lastName'])
-      .where('organization_users.organizationId = :organizationId', { organizationId })
-      .getMany();
-  }
-
-  async getCount(isOnlyActive?: boolean): Promise<number> {
-    const statusList = ['invited', 'active'];
-    !isOnlyActive && statusList.push('archived');
-    return await createQueryBuilder(User, 'users')
-      .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
-        statusList,
-      })
-      .select('users.id')
-      .distinct()
-      .getCount();
+  async getCount(isOnlyActive?: boolean, manager?: EntityManager): Promise<number> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const statusList = ['invited', 'active'];
+      !isOnlyActive && statusList.push('archived');
+      return await manager
+        .createQueryBuilder(User, 'users')
+        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+          statusList,
+        })
+        .select('users.id')
+        .distinct()
+        .getCount();
+    }, manager);
   }
 
   async findOne(id: string): Promise<User> {
@@ -266,20 +261,25 @@ export class UsersService {
     manager?: EntityManager
   ): Promise<{ user: User; newUserCreated: boolean }> {
     let user: User;
-    let newUserCreated = false;
 
     user = await this.findByEmail(userParams.email);
 
-    if (user?.organizationUsers?.some((ou) => ou.organizationId === organizationId)) {
+    const organizationUser: OrganizationUser = user?.organizationUsers?.find(
+      (ou) => ou.organizationId === organizationId
+    );
+
+    if (organizationUser?.status === 'archived' || organizationUser?.status === 'invited') {
+      throw new UnauthorizedException('User does not exist in the workspace');
+    }
+    if (organizationUser) {
       // User exist in current organization
-      return { user, newUserCreated };
+      return { user, newUserCreated: false };
     }
 
     const groups = ['all_users'];
     user = await this.create(userParams, organizationId, groups, user, null, null, manager);
-    newUserCreated = true;
 
-    return { user, newUserCreated };
+    return { user, newUserCreated: true };
   }
 
   async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
@@ -312,6 +312,9 @@ export class UsersService {
     }
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(User, userId, updatableParams);
+      if (updatableParams.userType) {
+        await this.validateLicense(manager);
+      }
     }, manager);
   }
 
@@ -636,7 +639,8 @@ export class UsersService {
     ).map((record) => record.id);
 
     const userIdsOfAppOwners = (
-      await createQueryBuilder(User, 'users')
+      await manager
+        .createQueryBuilder(User, 'users')
         .innerJoin('users.apps', 'apps')
         .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
           statusList,
@@ -647,7 +651,8 @@ export class UsersService {
     ).map((record) => record.id);
 
     const userIdsOfSuperAdmins = (
-      await createQueryBuilder(User, 'users')
+      await manager
+        .createQueryBuilder(User, 'users')
         .select('users.id')
         .where('users.userType = :userType', { userType: 'instance' })
         .andWhere('users.status = :status', { status: 'active' })
@@ -695,7 +700,7 @@ export class UsersService {
     let editor = -1,
       viewer = -1;
 
-    if (licensing.users !== 'UNLIMITED' && (await this.getCount(true)) > licensing.users) {
+    if (licensing.users !== 'UNLIMITED' && (await this.getCount(true, manager)) > licensing.users) {
       throw new HttpException('License violation - Maximum user limit reached', 451);
     }
 
