@@ -699,7 +699,10 @@ class TableComponent extends React.Component {
 
     const existingcolumnDeletionHistory =
       this.props.component.component.definition.properties.columnDeletionHistory?.value ?? [];
-    const newcolumnDeletionHistory = [...existingcolumnDeletionHistory, ...removedColumns.map((column) => column.name)];
+    const newcolumnDeletionHistory = [
+      ...existingcolumnDeletionHistory,
+      ...removedColumns.map((column) => column.key || column.name),
+    ];
     this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties');
   };
 
