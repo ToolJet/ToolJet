@@ -290,7 +290,6 @@ export function Table({
 
   useEffect(() => {
     if (tableData.length != 0 && component.definition.properties.autogenerateColumns.value && mode === 'edit') {
-      console.log('acd: Autogenerate called');
       autogenerateColumns(
         tableData,
         component.definition.properties.columns.value,
