@@ -253,7 +253,7 @@ describe('Authentication', () => {
         .expect(401);
     });
     it('Super admin should be able to login if archived in the workspace', async () => {
-      const { orgUser } = await createUser(app, { email: 'user@tooljet.io' });
+      await createUser(app, { email: 'user@tooljet.io', organization: current_organization });
 
       const adminUser = await userRepository.findOneOrFail({
         email: 'admin@tooljet.io',
@@ -265,11 +265,18 @@ describe('Authentication', () => {
         .send({ email: 'admin@tooljet.io', password: 'password' })
         .expect(201);
 
-      await request(app.getHttpServer())
+      const orgCount = await orgUserRepository.count({ userId: adminUser.id });
+
+      expect(orgCount).toBe(1); // Should not create new workspace
+
+      const response = await request(app.getHttpServer())
         .get('/api/organizations/users')
         .set('Authorization', authHeaderForUser(adminUser, current_organization_user.organizationId))
-        .send()
-        .expect(200);
+        .send();
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body?.users).toHaveLength(1);
+      expect(response.body?.users?.[0].email).toBe('user@tooljet.io');
     });
     it('Super admin should be able to login if archived in a workspace and login to other workspace to access APIs', async () => {
       const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
@@ -295,10 +302,11 @@ describe('Authentication', () => {
         .send();
 
       expect(response.statusCode).toBe(200);
+      expect(response.body?.users).toHaveLength(1);
       expect(response.body?.users?.[0]?.email).toBe('user@tooljet.io');
     });
     it('Super admin should be able to login if invited in the workspace', async () => {
-      const { orgUser } = await createUser(app, { email: 'user@tooljet.io' });
+      await createUser(app, { email: 'user@tooljet.io', organization: current_organization });
 
       const adminUser = await userRepository.findOneOrFail({
         email: 'admin@tooljet.io',
@@ -310,11 +318,18 @@ describe('Authentication', () => {
         .send({ email: 'admin@tooljet.io', password: 'password' })
         .expect(201);
 
-      await request(app.getHttpServer())
+      const orgCount = await orgUserRepository.count({ userId: adminUser.id });
+
+      expect(orgCount).toBe(1); // Should not create new workspace
+
+      const response = await request(app.getHttpServer())
         .get('/api/organizations/users')
         .set('Authorization', authHeaderForUser(adminUser, current_organization_user.organizationId))
-        .send()
-        .expect(200);
+        .send();
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body?.users).toHaveLength(1);
+      expect(response.body?.users?.[0].email).toBe('user@tooljet.io');
     });
     it('Super admin should be able to login if invited in a workspace and login to other workspace to access APIs', async () => {
       const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
@@ -340,6 +355,7 @@ describe('Authentication', () => {
         .send();
 
       expect(response.statusCode).toBe(200);
+      expect(response.body?.users).toHaveLength(1);
       expect(response.body?.users?.[0]?.email).toBe('user@tooljet.io');
     });
     it('throw 401 if invalid credentials, maximum retry limit reached error after 5 retries', async () => {
@@ -386,7 +402,6 @@ describe('Authentication', () => {
         .get('/api/switch/' + orgUser.organizationId)
         .set('Authorization', authHeaderForUser(current_user));
 
-      expect(response.statusCode).toBe(200);
       expect(Object.keys(response.body).sort()).toEqual(
         [
           'id',

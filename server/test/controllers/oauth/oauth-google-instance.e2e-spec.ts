@@ -616,6 +616,29 @@ describe('oauth controller', () => {
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
         });
+
+        it('Workspace Login - should return 401 when the user status is archived', async () => {
+          await createUser(app, {
+            firstName: 'SSO',
+            lastName: 'archivedUser',
+            email: 'archivedUser@tooljet.io',
+            groups: ['all_users'],
+            organization: current_organization,
+            status: 'active',
+            userStatus: 'archived',
+          });
+          const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+          googleVerifyMock.mockImplementation(() => ({
+            getPayload: () => ({
+              sub: 'someSSOId',
+              email: 'archivedUser@tooljet.io',
+              name: 'SSO User',
+              hd: 'tooljet.io',
+            }),
+          }));
+
+          await request(app.getHttpServer()).post('/api/oauth/sign-in/common/google').send({ token }).expect(401);
+        });
       });
     });
 

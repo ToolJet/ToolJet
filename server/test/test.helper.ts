@@ -157,6 +157,7 @@ export async function createUser(
     organizationName = 'Test Organization',
     ssoConfigs = [],
     enableSignUp = false,
+    userStatus = 'active',
   }: {
     firstName?: string;
     lastName?: string;
@@ -170,6 +171,7 @@ export async function createUser(
     organizationName?: string;
     ssoConfigs?: Array<any>;
     enableSignUp?: boolean;
+    userStatus?: string;
   },
   existingUser?: User
 ) {
@@ -209,7 +211,7 @@ export async function createUser(
         email: email || 'dev@tooljet.io',
         password: 'password',
         userType,
-        status: 'active',
+        status: userStatus,
         invitationToken,
         defaultOrganizationId: organization.id,
         createdAt: new Date(),
