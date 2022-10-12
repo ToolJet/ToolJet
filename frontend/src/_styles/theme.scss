@@ -6500,5 +6500,31 @@ input.hide-input-arrows{
       font-weight: bolder;
     }
   }
+}
 
+.apploader {
+  height: 100vh;
+
+  .app-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .editor-header {
+    height: 5%;
+  }
+
+  .editor-body {
+    height: 100%;
+  }
+
+  .skeleton {
+    padding: 5px;
+  }
+
+  .editor-left-panel {
+    width: 80px;
+  }
 }
