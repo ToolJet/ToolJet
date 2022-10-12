@@ -318,14 +318,12 @@ export class AuthService {
         throw new BadRequestException('Invalid invitation link');
       }
 
-      await this.usersRepository.save(
-        Object.assign(user, {
-          role,
-          companySize,
-          companyName,
-          invitationToken: null,
-        })
-      );
+      await this.usersRepository.update(user.id, {
+        role,
+        companySize,
+        companyName,
+        invitationToken: null,
+      });
 
       await this.organizationUsersRepository.save(
         Object.assign(organizationUser, {
