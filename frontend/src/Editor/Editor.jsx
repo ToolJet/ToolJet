@@ -62,6 +62,7 @@ import { EditorContextWrapper } from './Context/EditorContextWrapper';
 // eslint-disable-next-line import/no-unresolved
 import Selecto from 'react-selecto';
 import { withTranslation } from 'react-i18next';
+import { v4 as uuid } from 'uuid';
 
 setAutoFreeze(false);
 enablePatches();
@@ -551,7 +552,7 @@ class EditorComponent extends React.Component {
       },
       this.handleAddPatch
     );
-    this.setState({ isSaving: true, appDefinition: newDefinition }, () => {
+    this.setState({ isSaving: true, appDefinition: newDefinition, appDefinitionLocalVersion: uuid() }, () => {
       if (!opts.skipAutoSave) this.autoSave();
     });
     computeComponentState(this, newDefinition.components);
@@ -1666,6 +1667,7 @@ class EditorComponent extends React.Component {
                         apps={apps}
                         darkMode={this.props.darkMode}
                         handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
+                        appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">
