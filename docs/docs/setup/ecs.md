@@ -35,7 +35,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
     4.  Click on add container to update container definitions
         <img className="screenshot-full" src="/img/setup/ecs/add-container-button.png" alt="add container button" />
 
-        Within the add conatiner form that is shown:
+        Within the add container form that is shown:
 
         - Specify your container name ex: `tooljet-ce`
         - Set the image you intend to deploy. ex: `tooljet/tooljet-ce:v1.26.0`
