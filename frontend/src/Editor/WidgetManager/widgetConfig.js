@@ -1038,6 +1038,7 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{0}}' },
+        backgroundColor: { value: '' },
       },
     },
   },
