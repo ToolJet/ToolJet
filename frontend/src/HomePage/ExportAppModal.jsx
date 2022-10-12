@@ -148,7 +148,7 @@ function InputRadioField({
   setVersionId,
 }) {
   return (
-    <span key={key} className="version-wrapper my-2">
+    <span key={key} className="version-wrapper my-2 py-2">
       <input
         type="radio"
         value={versionId}
@@ -156,8 +156,9 @@ function InputRadioField({
         name="version"
         checked={checked}
         onClick={({ target }) => setVersionId(target.value)}
+        style={{ marginLeft: '1rem' }}
       />
-      <label htmlFor={`${versionName}`} className="d-flex flex-column px-4 w-100">
+      <label htmlFor={`${versionName}`} className="d-flex flex-column  w-100" style={{ paddingLeft: '0.75rem' }}>
         <span>{versionName}</span>
         <span className="text-secondary">{`Created at ${moment(versionCreatedAt).format('Do MMM YYYY')}`}</span>
       </label>
