@@ -7,9 +7,7 @@ import {
   verifyAndModifyParameter,
   openEditorSidebar,
   verifyAndModifyToggleFx,
-  addDefaultEventHandler,
   verifyComponentValueFromInspector,
-  selectColourFromColourPicker,
   verifyBoxShadowCss,
   verifyLayout,
   verifyTooltip,
@@ -17,9 +15,6 @@ import {
   addTextWidgetToVerifyValue,
   verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
-  verifyAndModifyStylePickerFx,
-  addAndVerifyTooltip,
-  fillBoxShadowParams,
   randomNumber
 } from "Support/utils/commonWidget";
 import { passwordInputText } from "Texts/passwordInput";
