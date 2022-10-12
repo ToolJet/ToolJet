@@ -76,5 +76,5 @@ Now hovering over the widget will display the string as the tooltip.
 | Visibility | Toggle on or off to control the visibility of the widget. | You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
 
 :::info
-Circular progress bar widget uses [react-circular-progress](https://github.com/kevinsqi/react-circular-progressbar) package. Check the repo for futher more details about properties and styles.
+Circular progress bar widget uses [react-circular-progress](https://github.com/kevinsqi/react-circular-progressbar) package. Check the repo for further more details about properties and styles.
 :::
