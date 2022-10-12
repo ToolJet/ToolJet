@@ -52,6 +52,7 @@ export default function autogenerateColumns(tableData, existingColumns, columnDe
 
 const dataTypeToColumnTypeMapping = {
   string: 'string',
+  number: 'number',
 };
 
 const convertDataTypeToColumnType = (dataType) => {
