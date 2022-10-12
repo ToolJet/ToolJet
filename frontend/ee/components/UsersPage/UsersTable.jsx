@@ -5,6 +5,17 @@ import Skeleton from 'react-loading-skeleton';
 import cx from 'classnames';
 import { Pagination } from '@/_components';
 
+const sortUsersByFirstName = (users) => {
+  return [...users].sort((a, b) => {
+    const nameA = a.first_name.toLowerCase();
+    const nameB = b.first_name.toLowerCase();
+
+    if (nameA > nameB) return 1;
+    if (nameA < nameB) return -1;
+    return 0;
+  });
+};
+
 const UsersTable = ({
   isLoading,
   users,
@@ -67,7 +78,7 @@ const UsersTable = ({
               <tbody>
                 {Array.isArray(users) &&
                   users.length > 0 &&
-                  users.map((user) => (
+                  sortUsersByFirstName(users).map((user) => (
                     <tr key={user.id}>
                       <td className="d-flex align-items-center">
                         <Avatar
