@@ -9,6 +9,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   const mounted = useMounted();
   const [versions, getVersions] = useState(undefined);
   const [versionId, setVersionId] = useState(undefined);
+  const currentVersion = app.editing_version;
 
   useEffect(() => {
     async function fetchAppVersions() {
@@ -28,7 +29,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
 
   useEffect(() => {
     if (mounted && versions.length >= 1) {
-      setVersionId(versions[0].id);
+      setVersionId(currentVersion.id);
     }
   }, [versions]);
 
@@ -90,10 +91,10 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               <div className="current-version py-2">
                 <span className="text-muted">Current Version</span>
                 <InputRadioField
-                  versionId={versions[0].id}
-                  versionName={versions[0].name}
-                  versionCreatedAt={versions[0].createdAt}
-                  checked={versionId === versions[0].id}
+                  versionId={currentVersion.id}
+                  versionName={currentVersion.name}
+                  versionCreatedAt={currentVersion.createdAt}
+                  checked={versionId === currentVersion.id}
                   setVersionId={setVersionId}
                 />
               </div>
@@ -101,7 +102,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                 <div className="other-versions py-2">
                   <span className="text-muted">Other Versions</span>
                   {versions.map((version, index) => {
-                    if (index !== 0) {
+                    if (version.id !== currentVersion.id) {
                       return (
                         <InputRadioField
                           versionId={version.id}
