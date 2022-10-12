@@ -3,13 +3,11 @@ import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import moment from 'moment';
 import { appService } from '../_services/app.service';
 import { toast } from 'react-hot-toast';
-import { useMounted } from '@/_hooks/use-mount';
 
 export default function ExportAppModal({ title, show, closeModal, customClassName, app, darkMode }) {
-  const mounted = useMounted();
-  const [versions, getVersions] = useState(undefined);
-  const [versionId, setVersionId] = useState(undefined);
   const currentVersion = app.editing_version;
+  const [versions, getVersions] = useState(undefined);
+  const [versionId, setVersionId] = useState(currentVersion.id);
 
   useEffect(() => {
     async function fetchAppVersions() {
@@ -26,12 +24,6 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     }
     fetchAppVersions();
   }, []);
-
-  useEffect(() => {
-    if (mounted && versions.length >= 1) {
-      setVersionId(currentVersion.id);
-    }
-  }, [versions]);
 
   const exportApp = (appId, versionId = undefined) => {
     appService
