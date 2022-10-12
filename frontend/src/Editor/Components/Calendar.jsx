@@ -170,7 +170,7 @@ export const Calendar = function ({
         components={components}
       />
       <CalendarEventPopover
-        calenderWidgetId={id}
+        calendarWidgetId={id}
         show={eventPopoverOptions.show}
         offset={eventPopoverOptions.offset}
         containerProps={containerProps}

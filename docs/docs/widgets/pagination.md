@@ -4,7 +4,7 @@ title: Pagination
 ---
 # Pagination
 
-Pagination enables the user to select a specific page from a range of pages. It is used to seperate the content into discrete pages.
+Pagination enables the user to select a specific page from a range of pages. It is used to separate the content into discrete pages.
 
 :::tip
 You can club pagination widget with the List View widget.
