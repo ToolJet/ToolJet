@@ -9,10 +9,14 @@ function OnboardingCta() {
         richness, experience and proven scale -
       </p>
       <div className="onboarding-testimonial-container">
-        <img className="onboarding-testimonial-img"></img>
+        <img
+          className="onboarding-testimonial-img"
+          alt="byjus vp of engineering ritesh dhoot"
+          src="../../assets/images/onboarding assets /images/vp.jpeg"
+        />
         <div>
           <p className="py-0 testimonial-name">Ritesh Dhoot</p>
-          <p className="testimonial-position">VP of Engineering, Byju’s</p>
+          <p className="testimonial-position">Ex VP of Engineering, Byju’s</p>
         </div>
       </div>
       <div className="onboarding-clients">

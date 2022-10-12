@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ButtonSolid } from '../_components/AppButton';
 
-export const SignupInfoScreen = function SignupInfoScreen({ email, signup }) {
-  const [show, setShow] = useState(false);
+export const SignupInfoScreen = function SignupInfoScreen({ email, signup, backtoSignup }) {
   const [resendBtn, setResetBtn] = useState(true);
 
   useEffect(() => {
@@ -44,54 +43,28 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, signup }) {
           </div>
         </div>
 
-        {!show && (
-          <>
-            <ButtonSolid
-              variant="secondary"
-              onClick={(e) => {
-                setResetBtn(true);
-                signup(e);
-              }}
-              id="resend"
-              className="singup-info-resend-btn singup-info-btn"
-              disabled={resendBtn}
-            >
-              Resend verification mail in 30s
-            </ButtonSolid>
-            <ButtonSolid
-              variant="tirtiary"
-              type
-              onClick={() => setShow(true)}
-              className="singup-info-edit-btn singup-info-btn"
-            >
-              Edit email address
-            </ButtonSolid>
-          </>
-        )}
-        {show && (
-          <>
-            <label className="tj-text-input-label">Email address</label>
-            <input
-              // onChange={this.handleChange}
-              name="email"
-              type="email"
-              className="tj-text-input"
-              placeholder="Enter your business email"
-            />
-            <ButtonSolid
-              variant="secondary"
-              onClick={(e) => {
-                signup(e);
-              }}
-              className="signup-info-verify-btn"
-            >
-              Verify new email
-            </ButtonSolid>
-            <ButtonSolid variant="ghost" className="singup-info-btn singup-info-cancel-btn">
-              Cancel
-            </ButtonSolid>
-          </>
-        )}
+        <>
+          <ButtonSolid
+            variant="secondary"
+            onClick={(e) => {
+              setResetBtn(true);
+              signup(e);
+            }}
+            id="resend"
+            className="singup-info-resend-btn singup-info-btn"
+            disabled={resendBtn}
+          >
+            Resend verification mail in 30s
+          </ButtonSolid>
+          <ButtonSolid
+            variant="tirtiary"
+            type
+            onClick={() => backtoSignup()}
+            className="singup-info-edit-btn singup-info-btn"
+          >
+            Edit email address
+          </ButtonSolid>
+        </>
       </div>
     </div>
   );

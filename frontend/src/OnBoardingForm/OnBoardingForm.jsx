@@ -1,27 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import EnterIcon from '../../assets/images/onboarding assets /01 Icons /Enter';
+import { authenticationService } from '@/_services';
+import { toast } from 'react-hot-toast';
+import { useHistory } from 'react-router-dom';
 
-function OnBoardingForm() {
+function OnBoardingForm({ userDetails = {}, token = '' }) {
   const [buttonState, setButtonState] = useState(true);
-
+  const history = useHistory();
   const [page, setPage] = useState(0);
+  const [completed, setCompleted] = useState(false);
 
   const [formData, setFormData] = useState({
-    organization: '',
     role: '',
     companySize: '',
-    employeeNo: '',
+    companyName: '',
   });
 
   useEffect(() => {
-    console.log('formdata', formData, buttonState, page);
-  }, [formData, buttonState, page]);
+    if (completed) {
+      authenticationService
+        .onboarding({
+          companyName: formData.companyName,
+          companySize: formData.companySize,
+          role: formData.role,
+          token: token,
+        })
+        .then((user) => {
+          authenticationService.updateUser(user);
+          authenticationService.deleteLoginOrganizationId();
+          history.push('/');
+        })
+        .catch((res) => {
+          toast.error(res.error || 'Something went wrong', {
+            id: 'toast-login-auth-error',
+            position: 'top-center',
+          });
+        });
+    }
+  }, [completed]);
+
+  const getuserName = () => {
+    let namearr = userDetails.name.split(' ');
+    if (namearr.length > 0) return `${namearr?.[0][0]}${namearr?.[1] != undefined ? namearr?.[1][0] : ''} `;
+    return '';
+  };
 
   const FORM_TITLES = [
-    'Where do you work John?',
+    `Where do you work ${userDetails?.name}?`,
     'What best describes your role',
     'What is the size of your company',
-    'Where do you work John?',
   ];
   const FormSubTitles = [
     'ToolJet will not share your information with anyone. This information will help us tailor tooljet to you.',
@@ -32,10 +59,8 @@ function OnBoardingForm() {
       return <Page0 formData={formData} setFormData={setFormData} setButtonState={setButtonState} />;
     } else if (page === 1) {
       return <Page1 formData={formData} setFormData={setFormData} setButtonState={setButtonState} />;
-    } else if (page === 2) {
-      return <Page2 formData={formData} setFormData={setFormData} setButtonState={setButtonState} />;
     } else {
-      return <Page3 formData={formData} setFormData={setFormData} setButtonState={setButtonState} />;
+      return <Page2 formData={formData} setFormData={setFormData} setButtonState={setButtonState} />;
     }
   };
 
@@ -57,7 +82,7 @@ function OnBoardingForm() {
           <div className="onboarding-divider"></div>
         </div>
         <div></div>
-        <div className="onboarding-account-name">JA</div>
+        <div className="onboarding-account-name">{getuserName()}</div>
       </div>
 
       <div className="onboarding-form">
@@ -85,7 +110,7 @@ function OnBoardingForm() {
             <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
           </div>
           {PageShift()}
-          <div>{continueButton({ buttonState, setButtonState, setPage, page, formData })}</div>
+          <div>{continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted })}</div>
         </div>
       </div>
     </div>
@@ -98,7 +123,7 @@ export function onBoardingBubbles({ formData, page }) {
   return (
     <div className="onboarding-bubbles-wrapper">
       <div
-        className={`onboarding-bubbles ${formData.organization !== '' && 'onboarding-bubbles-selected'} ${
+        className={`onboarding-bubbles ${formData.companyName !== '' && 'onboarding-bubbles-selected'} ${
           page === 0 && 'onboarding-bubbles-active'
         }`}
       ></div>
@@ -112,16 +137,11 @@ export function onBoardingBubbles({ formData, page }) {
           page === 2 && 'onboarding-bubbles-active'
         } `}
       ></div>
-      <div
-        className={`onboarding-bubbles ${formData.employeeNo !== '' && 'onboarding-bubbles-selected'} ${
-          page === 3 && 'onboarding-bubbles-active'
-        }`}
-      ></div>
     </div>
   );
 }
 
-export function continueButton({ buttonState, setPage, setButtonState, formData, page }) {
+export function continueButton({ buttonState, setPage, setButtonState, formData, page, setCompleted }) {
   return (
     <button
       className="onboarding-page-continue-button"
@@ -129,12 +149,16 @@ export function continueButton({ buttonState, setPage, setButtonState, formData,
       onClick={() => {
         setPage((currPage) => currPage + 1);
         setButtonState(true);
+        if (page == 2) {
+          setCompleted(true);
+        }
       }}
     >
       <p className="mb-0">Continue</p>
       <EnterIcon
         className="enter-icon-onboard"
         fill={buttonState && Object.values(formData)[page] == '' ? ' #D1D5DB' : '#fff'}
+        if
       />
     </button>
   );
@@ -143,11 +167,11 @@ export function continueButton({ buttonState, setPage, setButtonState, formData,
 export function onBoardingInput({ formData, setFormData, setButtonState }) {
   return (
     <input
-      value={formData.organization}
+      value={formData.companyName}
       placeholder="Enter your company name"
       className="onboard-input"
       onChange={(e) => {
-        setFormData({ ...formData, organization: e.target.value });
+        setFormData({ ...formData, companyName: e.target.value });
         if (e.target.value !== '') setButtonState(false);
         else setButtonState(true);
       }}
@@ -165,7 +189,6 @@ export function onBoardingRadioInput(props) {
         value={field}
         checked={formData[key] === field}
         onChange={(e) => {
-          console.log('target', e.target.value);
           setFormData({ ...formData, [key]: e.target.value });
           setButtonState(false);
         }}
@@ -182,12 +205,13 @@ export function Page0({ formData, setFormData, setButtonState }) {
 }
 export function Page1({ formData, setFormData, setButtonState }) {
   const ON_BOARDING_ROLES = [
-    'Engineering manager',
-    'Developer ',
-    'Product manager',
-    'Designer',
-    'Mobile Developer',
-    'Other',
+    'Engineering Manager',
+    'Software Engineer',
+    'Data Engineer',
+    'Product Manager',
+    'Data Scientist',
+    'Business Analyst',
+    'Others',
   ];
   const key = 'role';
   return (
@@ -199,20 +223,8 @@ export function Page1({ formData, setFormData, setButtonState }) {
   );
 }
 export function Page2({ formData, setFormData, setButtonState }) {
-  const ON_BOARDING_SIZE = ['1-5', '5-20', '20-50', '50-100', '100-200', '200+'];
+  const ON_BOARDING_SIZE = ['1-10', '11-50', '51-100', '101-500', '501-1000', '1000+'];
   const key = 'companySize';
-
-  return (
-    <div className="onboarding-pages-wrapper">
-      {ON_BOARDING_SIZE.map((field) => (
-        <div key={field}> {onBoardingRadioInput({ formData, setFormData, setButtonState, field, key })}</div>
-      ))}
-    </div>
-  );
-}
-export function Page3({ formData, setFormData, setButtonState }) {
-  const ON_BOARDING_SIZE = ['1-5', '5-20', '20-50', '50-100', '100-200', '200+'];
-  const key = 'employeeNo';
 
   return (
     <div className="onboarding-pages-wrapper">

@@ -6423,7 +6423,7 @@ input.hide-input-arrows {
     flex-direction: column;
     align-items: center;
     width: 352px;
-    margin-top: 98px;
+    margin: 98px auto 0px auto;
     align-items: flex-start;
   }
 
@@ -6605,6 +6605,8 @@ input.hide-input-arrows {
 .link-expired-card {
   width: 392px;
   height: 482.69px;
+  margin-top: 127px;
+  text-align: center;
 }
 
 .onboarding-testimonial-img {
@@ -6766,11 +6768,12 @@ input.hide-input-arrows {
   background: #F3F4F6;
   border-radius: 4px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
   padding: 8px;
   gap: 10px;
+  text-transform: uppercase;
 }
 
 .onboarding-divider {
@@ -7209,6 +7212,11 @@ input.hide-input-arrows {
 .forgot-password-info-btn {
   margin-top: 32px;
   width: 352px;
+  justify-content: center;
+}
+.link-expired-info-btn {
+  margin-top: 32px;
+  width: 392px;
   justify-content: center;
 }
 

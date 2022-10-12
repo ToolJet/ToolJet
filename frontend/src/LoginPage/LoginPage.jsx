@@ -104,7 +104,7 @@ class LoginPageComponent extends React.Component {
     authenticationService.deleteLoginOrganizationId();
     const params = queryString.parse(this.props.location.search);
     const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
-    const redirectPath = from.pathname === '/login' ? '/' : from;
+    const redirectPath = from.pathname === '/confirm' ? '/' : from;
     this.props.history.push(redirectPath);
     this.setState({ isLoading: false });
   };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { authenticationService } from '@/_services';
+import { authenticationService, appService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { validateEmail } from '../_helpers/utils';
@@ -28,6 +28,10 @@ class SignupPageComponent extends React.Component {
     };
   }
 
+  backtoSignup = () => {
+    this.setState({ signupSuccess: false });
+  };
+
   componentDidMount() {
     authenticationService.getOrganizationConfigs().then(
       (configs) => {
@@ -40,7 +44,7 @@ class SignupPageComponent extends React.Component {
   }
 
   handleChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value });
+    this.setState({ [event.target.name]: event.target.value, emailError: '' });
   };
   handleOnCheck = () => {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));
@@ -51,13 +55,7 @@ class SignupPageComponent extends React.Component {
     this.setState({ isLoading: true });
 
     const { email, name, password } = this.state;
-
     if (!validateEmail(email)) {
-      // toast.error('Invalid email', {
-      //   id: 'toast-login-auth-error',
-      //   position: 'top-center',
-      // });
-
       this.setState({ isLoading: false, emailError: 'Invalid email' });
       return;
     }
@@ -78,11 +76,12 @@ class SignupPageComponent extends React.Component {
       }
     );
   };
+
   render() {
     const { isLoading, signupSuccess } = this.state;
 
     return (
-      <div className="page common-auth-section-whole-wrapper ">
+      <div className="page common-auth-section-whole-wrapper">
         <div className="common-auth-section-left-wrapper">
           <OnboardingNavbar />
 
@@ -95,14 +94,12 @@ class SignupPageComponent extends React.Component {
                 {!signupSuccess && (
                   <div className="common-auth-container-wrapper ">
                     <h2 className="common-auth-section-header ">Join ToolJet</h2>
-                    {!signupSuccess && (
-                      <div className="singup-page-signin-redirect">
-                        Already have an account? &nbsp;
-                        <Link to={'/login'} tabIndex="-1">
-                          Sign in
-                        </Link>
-                      </div>
-                    )}
+                    <div className="singup-page-signin-redirect">
+                      Already have an account? &nbsp;
+                      <Link to={'/login'} tabIndex="-1">
+                        Sign in
+                      </Link>
+                    </div>
                     {this.state.configs?.enable_sign_up && (
                       <div>
                         {this.state.configs?.git?.enabled && (
@@ -200,7 +197,12 @@ class SignupPageComponent extends React.Component {
                 )}
                 {signupSuccess && (
                   <div>
-                    <SignupInfoScreen props={this.props} email={this.state.email} signup={this.signup} />
+                    <SignupInfoScreen
+                      props={this.props}
+                      email={this.state.email}
+                      signup={this.signup}
+                      backtoSignup={this.backtoSignup}
+                    />
                   </div>
                 )}
               </form>

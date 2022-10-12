@@ -19,6 +19,8 @@ export const authenticationService = {
   signup,
   verifyToken,
   updateCurrentUserDetails,
+  onboarding,
+  updateUser,
   currentUser: currentUserSubject.asObservable(),
   get currentUserValue() {
     return currentUserSubject.value;
@@ -92,11 +94,29 @@ function signup(email, name, password) {
       return user;
     });
 }
-function verifyToken() {
+function onboarding({ companyName, companySize, role, token }) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ companyName, companySize, role, token }),
+  };
+
+  return fetch(`${config.apiUrl}/setup-account-from-token`, requestOptions)
+    .then(handleResponse)
+    .then((response) => {
+      return response;
+    });
+}
+function verifyToken(token) {
   const requestOptions = {
     method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
   };
-  return fetch(`${config.apiUrl}/verify-invite-token`, requestOptions);
+  return fetch(`${config.apiUrl}/verify-invite-token?token=${token}`, requestOptions)
+    .then(handleResponse)
+    .then((response) => {
+      return response;
+    });
 }
 
 function forgotPassword(email) {

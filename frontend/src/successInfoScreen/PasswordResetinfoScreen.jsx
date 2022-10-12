@@ -17,7 +17,7 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props 
         <ButtonSolid
           variant="secondary"
           onClick={() => props.history.push('/login')}
-          className="reset-password-info-btn "
+          className="reset-password-info-btn"
         >
           Back to log in
         </ButtonSolid>
