@@ -53,6 +53,7 @@ export function Table({
   variablesExposedForPreview,
   exposeToCodeHinter,
   events,
+  exposedVariables,
 }) {
   const {
     color,
@@ -60,6 +61,7 @@ export function Table({
     clientSidePagination,
     serverSideSearch,
     serverSideSort,
+    serverSideFilter,
     displaySearchBox,
     showDownloadButton,
     showFilterButton,
@@ -125,6 +127,7 @@ export function Table({
   function handleCellValueChange(index, key, value, rowData) {
     const changeSet = tableDetails.changeSet;
     const dataUpdates = tableDetails.dataUpdates || [];
+    const clonedTableData = _.cloneDeep(tableData);
 
     let obj = changeSet ? changeSet[index] || {} : {};
     obj = _.set(obj, key, value);
@@ -142,10 +145,18 @@ export function Table({
       ...dataUpdates,
       [index]: { ...obj },
     };
+
+    Object.keys(newChangeset).forEach((key) => {
+      clonedTableData[key] = {
+        ..._.merge(clonedTableData[key], newChangeset[key]),
+      };
+    });
+
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
+
     fireEvent('onCellValueChanged');
-    return setExposedVariables(changesToBeSavedAndExposed);
+    return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
   }
 
   function getExportFileBlob({ columns, data, fileType, fileName }) {
@@ -319,6 +330,7 @@ export function Table({
       autoResetGlobalFilter: false,
       autoResetFilters: false,
       manualGlobalFilter: serverSideSearch,
+      manualFilters: serverSideFilter,
       columns,
       data,
       defaultColumn,
@@ -454,6 +466,11 @@ export function Table({
       fireEvent('onRowHovered');
     });
   };
+  useEffect(() => {
+    if (_.isEmpty(changeSet)) {
+      setExposedVariable('updatedData', tableData);
+    }
+  }, [JSON.stringify(changeSet)]);
 
   function downlaodPopover() {
     return (

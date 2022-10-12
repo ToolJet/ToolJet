@@ -169,6 +169,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      serverSideFilter: {
+        type: 'toggle',
+        displayName: 'Server-side filter',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       actionButtonBackgroundColor: {
         type: 'color',
         displayName: 'Background color',
@@ -464,6 +471,14 @@ export const widgets = [
           defaultValue: false,
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+          defaultValue: false,
+        },
+      },
     },
     exposedVariables: {},
     actions: [
@@ -508,6 +523,7 @@ export const widgets = [
         loaderColor: { value: '' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
+        borderColor: { value: '#375FCF' },
         disabledState: { value: '{{false}}' },
       },
     },
@@ -2044,6 +2060,13 @@ export const widgets = [
           },
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
@@ -2072,6 +2095,7 @@ export const widgets = [
       styles: {
         backgroundColor: { value: '' },
         borderRadius: { value: '0' },
+        borderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -3521,6 +3545,13 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
       visibility: {
         type: 'toggle',
         displayName: 'Visibility',
@@ -3568,6 +3599,7 @@ export const widgets = [
       events: [],
       styles: {
         backgroundColor: { value: '' },
+        borderColor: { value: '#dadcde' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{0}}' },
@@ -4378,7 +4410,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       multiSelection: {
         type: 'toggle',
-        displayName: 'Enable mutiple selection',
+        displayName: 'Enable multiple selection',
 
         validation: {
           schema: { type: 'boolean' },
@@ -4704,7 +4736,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'ColorPicker',
     displayName: 'Color Picker',
-    description: 'Color Picker Pallete',
+    description: 'Color Picker Palette',
     component: 'ColorPicker',
     properties: {
       defaultColor: { type: 'color', displayName: 'Default Color' },

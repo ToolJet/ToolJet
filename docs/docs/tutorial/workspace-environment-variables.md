@@ -27,7 +27,7 @@ Suppose there is an `API key` or a value that you want to use in the queries or 
 - **Server**: The server variables can be used with all the queries except the `RunJS`. The reason why we don't allow the server variables to be used with the widgets is that these variables are only resolved during the runtime so they're highly secured.
 
 :::info
-Variable Type cannot be changed once it has beed created.
+Variable Type cannot be changed once it has been created.
 :::
 
 

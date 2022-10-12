@@ -8,6 +8,8 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
 
   const serverSideSort = properties.serverSideSort ?? false;
 
+  const serverSideFilter = properties.serverSideFilter ?? false;
+
   const displaySearchBox = properties.displaySearchBox ?? true;
 
   const showDownloadButton = properties.showDownloadButton ?? true;
@@ -52,6 +54,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     clientSidePagination,
     serverSideSearch,
     serverSideSort,
+    serverSideFilter,
     displaySearchBox,
     showDownloadButton,
     showFilterButton,
