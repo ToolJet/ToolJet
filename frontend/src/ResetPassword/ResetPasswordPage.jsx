@@ -121,7 +121,9 @@ class ResetPasswordComponent extends React.Component {
                     </div>
                     <div>
                       <ButtonSolid
-                        disabled={!this.state.password || !this.state.password_confirmation}
+                        disabled={
+                          !this.state.password?.length > 0 || !this.state.password_confirmation?.length > 0 || isLoading
+                        }
                         onClick={this.handleClick}
                         className="reset-password-btn"
                       >

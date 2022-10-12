@@ -6702,6 +6702,9 @@ input.hide-input-arrows {
   top: 0;
   display: flex;
   align-items: center;
+  img{
+    cursor: pointer;
+  }
 }
 
 .singup-page-signin-redirect {
@@ -6721,7 +6724,7 @@ input.hide-input-arrows {
 .onboarding-form {
   width: 392px;
   height: 336px;
-  margin: 96px auto;
+  margin: 40px auto;
 }
 
 .forget-password-info-card {

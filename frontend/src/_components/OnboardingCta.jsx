@@ -16,7 +16,7 @@ function OnboardingCta() {
         />
         <div>
           <p className="py-0 testimonial-name">Ritesh Dhoot</p>
-          <p className="testimonial-position">Ex VP of Engineering, Byju’s</p>
+          <p className="testimonial-position">Former VP of Engineering, Byju’s</p>
         </div>
       </div>
       <div className="onboarding-clients">
