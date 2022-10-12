@@ -2,17 +2,22 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../../test.helper';
 import { OAuth2Client } from 'google-auth-library';
+import { Repository } from 'typeorm';
+import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
 describe('oauth controller', () => {
   let app: INestApplication;
+  let instanceSettingsRepository: Repository<InstanceSettings>;
   let mockConfig;
 
   beforeEach(async () => {
     await clearDB();
+    instanceSettingsRepository = app.get('InstanceSettingsRepository');
   });
 
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
+    await instanceSettingsRepository.update({ key: 'ALLOW_PERSONAL_WORKSPACE' }, { value: 'false' });
   });
 
   afterEach(() => {

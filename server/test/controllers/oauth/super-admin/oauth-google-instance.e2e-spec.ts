@@ -174,14 +174,12 @@ describe('oauth controller', () => {
     });
 
     describe('Multi-Workspace instance level SSO', () => {
-      beforeEach(() => {
-        beforeEach(async () => {
-          const { user } = await createUser(app, {
-            email: 'superadmin@tooljet.io',
-            userType: 'instance',
-          });
-          current_user = user;
+      beforeEach(async () => {
+        const { user } = await createUser(app, {
+          email: 'superadmin@tooljet.io',
+          userType: 'instance',
         });
+        current_user = user;
       });
       describe('sign in via Google OAuth', () => {
         it('Workspace Login - should return 201 when the super admin log in', async () => {

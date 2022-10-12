@@ -3,20 +3,25 @@ import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../../test.helper';
 import { mocked } from 'ts-jest/utils';
 import got from 'got';
+import { Repository } from 'typeorm';
+import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
 jest.mock('got');
 const mockedGot = mocked(got);
 
 describe('oauth controller', () => {
   let app: INestApplication;
+  let instanceSettingsRepository: Repository<InstanceSettings>;
   let mockConfig;
 
   beforeEach(async () => {
     await clearDB();
+    await instanceSettingsRepository.update({ key: 'ALLOW_PERSONAL_WORKSPACE' }, { value: 'false' });
   });
 
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
+    instanceSettingsRepository = app.get('InstanceSettingsRepository');
   });
 
   afterEach(() => {

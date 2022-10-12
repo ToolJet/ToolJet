@@ -275,8 +275,7 @@ describe('Authentication', () => {
         .send();
 
       expect(response.statusCode).toBe(200);
-      expect(response.body?.users).toHaveLength(1);
-      expect(response.body?.users?.[0].email).toBe('user@tooljet.io');
+      expect(response.body?.users).toHaveLength(2);
     });
     it('Super admin should be able to login if archived in a workspace and login to other workspace to access APIs', async () => {
       const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
@@ -328,8 +327,7 @@ describe('Authentication', () => {
         .send();
 
       expect(response.statusCode).toBe(200);
-      expect(response.body?.users).toHaveLength(1);
-      expect(response.body?.users?.[0].email).toBe('user@tooljet.io');
+      expect(response.body?.users).toHaveLength(2);
     });
     it('Super admin should be able to login if invited in a workspace and login to other workspace to access APIs', async () => {
       const { orgUser } = await createUser(app, { email: 'user@tooljet.io', status: 'invited' });
