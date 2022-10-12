@@ -371,7 +371,7 @@ export class AuthService {
     const payload: JWTPayload = {
       username: user.id,
       sub: user.email,
-      organizationId: user.organizationId,
+      organizationId: user.defaultOrganizationId,
       isPasswordLogin: true,
     };
 
