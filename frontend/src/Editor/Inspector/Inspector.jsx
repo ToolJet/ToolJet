@@ -167,7 +167,7 @@ export const Inspector = ({
 
       componentDefinitionChanged(newComponent);
 
-      //  Child componets should also have a mobile layout
+      //  Child components should also have a mobile layout
       const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
 
       childComponents.forEach((componentId) => {
