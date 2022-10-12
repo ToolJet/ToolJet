@@ -146,7 +146,7 @@ export default class RestapiQueryService implements QueryService {
     let responseObject = {};
     let responseHeaders = {};
 
-    /* Prefixing the base url of datasouce if datasource exists */
+    /* Prefixing the base url of datasource if datasource exists */
     const url = hasDataSource ? `${sourceOptions.url}${queryOptions.url || ''}` : queryOptions.url;
 
     const method = queryOptions['method'];
@@ -280,8 +280,12 @@ export default class RestapiQueryService implements QueryService {
         accessTokenDetails['refresh_token'] = refreshToken;
       }
     } catch (error) {
-      console.log(error.response.body);
-      throw new QueryError('could not connect to Oauth server', error.response, {});
+      console.log(error.response?.body);
+      throw new QueryError(
+        'could not connect to Oauth server',
+        JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
+        {}
+      );
     }
     return accessTokenDetails;
   }

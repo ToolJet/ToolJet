@@ -60,7 +60,7 @@ Query results can be transformed using transformations. Read our transformations
 - [Delete Many](#delete-many)
 - [Bulk Operations](#bulk-operations)
 #### List Collections
-Retruns list of collections
+Returns list of collections
 #### Fine One
 Return a document which satisfy the given filter and options. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/findOne)
 #### Fine Many
