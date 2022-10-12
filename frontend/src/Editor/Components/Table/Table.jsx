@@ -25,6 +25,7 @@ import { reducer, reducerActions, initialState } from './reducer';
 import customFilter from './custom-filter';
 import generateColumnsData from './columns';
 import generateActionsData from './columns/actions';
+import autogenerateColumns from './columns/autogenerateColumns';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
 import * as XLSX from 'xlsx/xlsx.mjs';
@@ -52,6 +53,8 @@ export function Table({
   properties,
   variablesExposedForPreview,
   exposeToCodeHinter,
+  setProperty,
+  mode,
   exposedVariables,
 }) {
   const {
@@ -214,7 +217,6 @@ export function Table({
   if (currentState) {
     tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
     if (!Array.isArray(tableData)) tableData = [];
-    console.log('resolved param', tableData);
   }
 
   tableData = tableData || [];
@@ -285,6 +287,17 @@ export function Table({
       JSON.stringify(properties.data),
     ]
   );
+
+  useEffect(() => {
+    if (tableData.length != 0 && component.definition.properties.autogenerateColumns.value && mode === 'edit') {
+      autogenerateColumns(
+        tableData,
+        component.definition.properties.columns.value,
+        component.definition.properties?.columnDeletionHistory?.value ?? [],
+        setProperty
+      );
+    }
+  }, [JSON.stringify(tableData)]);
 
   const computedStyles = {
     // width: `${width}px`,

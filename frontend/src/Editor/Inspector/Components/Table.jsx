@@ -684,16 +684,7 @@ class TableComponent extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
-    if (item === 'name') {
-      const columnSizes = this.props.component.component.definition.properties.columnSizes;
-      if (columnSizes) {
-        const newColumnSizes = JSON.parse(JSON.stringify(columnSizes));
-        if (newColumnSizes[column.name]) {
-          newColumnSizes[value] = newColumnSizes[column.name];
-          this.props.paramUpdated({ name: 'columnSizes' }, null, newColumnSizes, 'properties');
-        }
-      }
-    }
+
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
@@ -703,8 +694,16 @@ class TableComponent extends React.Component {
   removeColumn = (index) => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.splice(index, 1);
+    const removedColumns = newValue.splice(index, 1);
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
+
+    const existingcolumnDeletionHistory =
+      this.props.component.component.definition.properties.columnDeletionHistory?.value ?? [];
+    const newcolumnDeletionHistory = [
+      ...existingcolumnDeletionHistory,
+      ...removedColumns.map((column) => column.key || column.name),
+    ];
+    this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties');
   };
 
   getPopoverFieldSource = (column, field) =>
