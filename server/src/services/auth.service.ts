@@ -382,7 +382,7 @@ export class AuthService {
       first_name: user.firstName,
       last_name: user.lastName,
       organizationId: user.defaultOrganizationId,
-      organization: organization,
+      organization: organization.name,
       admin: await this.usersService.hasGroup(user, 'admin'),
       group_permissions: await this.usersService.groupPermissions(user),
       app_group_permissions: await this.usersService.appGroupPermissions(user),
