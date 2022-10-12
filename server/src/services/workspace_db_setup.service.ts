@@ -7,6 +7,7 @@ import { EntityManager } from 'typeorm';
 import * as crypto from 'crypto';
 import { DataSourcesService } from './data_sources.service';
 import { DataSource } from 'src/entities/data_source.entity';
+import { createTooljetDbConnection } from 'scripts/database-config-utils';
 
 @Injectable()
 export class WorkspaceDbSetupService {
@@ -15,7 +16,8 @@ export class WorkspaceDbSetupService {
   async perform(manager: EntityManager, organizationId: string): Promise<DataSource> {
     // validate if db already exists
     await this.validateOrgExists(manager, organizationId);
-    return await this.setupWorkspaceDb(manager, organizationId);
+
+    return await this.setupTooljetDb(manager, organizationId);
   }
 
   async validateOrgExists(manager: EntityManager, organizationId: string) {
@@ -32,19 +34,25 @@ export class WorkspaceDbSetupService {
     return !!isEmpty(organization);
   }
 
-  async setupWorkspaceDb(manager: EntityManager, organizationId: string): Promise<DataSource> {
+  async setupTooljetDb(manager: EntityManager, organizationId: string): Promise<DataSource> {
     const dbUser = `user_${organizationId}`;
-    const dbName = `workspace_${organizationId}_1`;
+    const schemaName = `workspace_${organizationId}`;
     const dbPassword = crypto.randomBytes(8).toString('hex');
-    await this.createDbUser(dbUser, dbPassword, manager);
-    await this.createWorkspaceDb(dbName, dbUser, manager);
-    return await this.addWorkspaceDbToDataSource(dbUser, dbPassword, dbName, organizationId, manager);
+
+    console.log({ dbUser });
+    console.log({ dbPassword });
+
+    // We need to establish and run query onto a different database.
+    // this needs to be done outside the migration transaction block.
+    const tooljetDbConnection = await createTooljetDbConnection();
+    await this.createWorkspaceDbUser(dbUser, dbPassword, tooljetDbConnection.manager);
+    await this.setupWorkspaceDb(schemaName, dbUser, tooljetDbConnection.manager);
+    return await this.addWorkspaceDbToDataSource(dbUser, dbPassword, organizationId, manager);
   }
 
   async addWorkspaceDbToDataSource(
     dbUser: string,
     dbPassword: string,
-    dbName: string,
     organizationId: string,
     manager: EntityManager
   ): Promise<DataSource> {
@@ -65,7 +73,7 @@ export class WorkspaceDbSetupService {
         },
         {
           key: 'database',
-          value: dbName,
+          value: this.configService.get<string>('TOOLJET_DB'),
         },
         {
           key: 'username',
@@ -102,11 +110,17 @@ export class WorkspaceDbSetupService {
     return workspaceDb;
   }
 
-  async createDbUser(username: string, password: string, manager: EntityManager): Promise<void> {
+  async createWorkspaceDbUser(username: string, password: string, manager: EntityManager): Promise<void> {
+    const databaseName = this.configService.get<string>('TOOLJET_DB');
+    // We need to restict access to public schema since all tables will be available for non super users
+    await manager.query(`REVOKE ALL ON DATABASE "${databaseName}" FROM PUBLIC;`);
     await manager.query(`CREATE ROLE "${username}" WITH LOGIN NOCREATEDB PASSWORD '${password}'`);
+    await manager.query(`GRANT CONNECT ON DATABASE "${databaseName}" TO "${username}";`);
   }
 
-  async createWorkspaceDb(dbName: string, dbUser: string, manager: EntityManager): Promise<void> {
-    await manager.query(`CREATE DATABASE "${dbName}" WITH OWNER "${dbUser}";`);
+  async setupWorkspaceDb(schemaName: string, dbUser: string, manager: EntityManager): Promise<void> {
+    await manager.query(`CREATE SCHEMA "${schemaName}" AUTHORIZATION "${dbUser}";`);
+    await manager.query(`GRANT USAGE ON SCHEMA "${schemaName}" TO "${dbUser}";`);
+    await manager.query(`ALTER USER "${dbUser}" set SEARCH_PATH = "${schemaName}";`);
   }
 }

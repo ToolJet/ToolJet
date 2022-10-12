@@ -1,4 +1,39 @@
 import * as Joi from 'joi';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as dotenv from 'dotenv';
+import { createConnection } from 'typeorm';
+
+export function filePathForEnvVars(env: string | undefined): string {
+  if (env === 'test') {
+    return path.resolve(process.cwd(), '../.env.test');
+  } else {
+    return path.resolve(process.cwd(), '../.env');
+  }
+}
+
+export function getEnvVars() {
+  let data: any = process.env;
+  const envVarsFilePath = filePathForEnvVars(process.env.NODE_ENV);
+
+  if (fs.existsSync(envVarsFilePath)) {
+    data = { ...data, ...dotenv.parse(fs.readFileSync(envVarsFilePath)) };
+  }
+  return data;
+}
+
+export async function createTooljetDbConnection() {
+  const data = getEnvVars();
+  return await createConnection({
+    name: 'tooljetDb',
+    type: 'postgres',
+    host: data.PG_HOST,
+    port: data.PG_PORT,
+    username: data.PG_USER,
+    password: data.PG_PASS,
+    database: data.TOOLJET_DB,
+  });
+}
 
 function buildDatabaseConfig(): any {
   return {
