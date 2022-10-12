@@ -21,6 +21,7 @@ describe('Authentication', () => {
 
   beforeEach(async () => {
     await clearDB();
+    await instanceSettingsRepository.update({ key: 'ALLOW_PERSONAL_WORKSPACE' }, { value: 'false' });
   });
 
   beforeAll(async () => {
@@ -30,8 +31,6 @@ describe('Authentication', () => {
     orgRepository = app.get('OrganizationRepository');
     ssoConfigsRepository = app.get('SSOConfigsRepository');
     instanceSettingsRepository = app.get('InstanceSettingsRepository');
-
-    await instanceSettingsRepository.update({ key: 'ALLOW_PERSONAL_WORKSPACE' }, { value: 'false' });
   });
 
   afterEach(() => {
@@ -162,7 +161,7 @@ describe('Authentication', () => {
         role: 'developer',
       });
 
-      expect(response.statusCode).toBe(403);
+      expect(response.statusCode).toBe(400);
     });
 
     it('should allow users setup account and accept invite', async () => {
