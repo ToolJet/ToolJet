@@ -54,7 +54,7 @@ Creates a drag & drop zone. Files can be dragged and dropped to the "drag & drop
 
 On clicking it invokes the default OS file prompt.
 
-### Pick mulitple files 
+### Pick multiple files 
 
 Allows drag and drop (or selection from the file dialog) of multiple files. `Pick multiple files` is disabled by default.
 
@@ -76,7 +76,7 @@ Minimum file size (in bytes).
 
 :::tip
 Files can be accepted or rejected based on the file types, maximum file count, maximum file size (in bytes) and minimum file size (in bytes).
-If `Pick mulitple files` is set to false and additional files are dropped, all files besides the first will be rejected. 
+If `Pick multiple files` is set to false and additional files are dropped, all files besides the first will be rejected. 
 Any file that does not have a size in the range of `Max size limit` and `Min size limit` will be rejected.
 :::
 

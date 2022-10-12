@@ -178,7 +178,7 @@ class EditorComponent extends React.Component {
 
   /**
    * When a new update is received over-the-websocket connection
-   * the useEffect in Container.jsx is trigged, but already appDef had been updated
+   * the useEffect in Container.jsx is triggered, but already appDef had been updated
    * to avoid ymap observe going into a infinite loop a check is added where if the
    * current appDef is equal to the newAppDef then we do not trigger a realtimeSave
    */
