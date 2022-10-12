@@ -45,7 +45,7 @@
         "readReleaseNotes":"Read release notes & update",
         "skipVersion":"Skip this version"
     },
-    "stripe":"Please wait whle we load the OpenAPI specification for Stripe.",
+    "stripe":"Please wait while we load the OpenAPI specification for Stripe.",
     "openApi":{
         "noValidOpenApi":"Valid OpenAPI Spec is not available!.",
         "selectHost":"Select a host",
@@ -645,7 +645,7 @@
             "values": "values", 
             "labels": "Labels", 
             "defaultSelected": "Default selected", 
-            "enableMutipleSelection": "Enable mutiple selection", 
+            "enableMultipleSelection": "Enable multiple selection",
             "selectedTextColour": "Selected text colour", 
             "selectedBackgroundColor": "Selected background color", 
             "fileUrl": "File URL", 
@@ -872,7 +872,7 @@
         },
         "ColorPicker":{
             "displayName": "Color Picker",
-            "description": "Color Picker Pallete"
+            "description": "Color Picker Palette"
         },
         "TreeSelect":{
             "displayName": "Tree Select",

@@ -28,6 +28,9 @@ import generateActionsData from './columns/actions';
 import autogenerateColumns from './columns/autogenerateColumns';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
+import * as XLSX from 'xlsx/xlsx.mjs';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Popover from 'react-bootstrap/Popover';
 
 export function Table({
   id,
@@ -52,6 +55,7 @@ export function Table({
   exposeToCodeHinter,
   setProperty,
   mode,
+  exposedVariables,
 }) {
   const {
     color,
@@ -59,6 +63,7 @@ export function Table({
     clientSidePagination,
     serverSideSearch,
     serverSideSort,
+    serverSideFilter,
     displaySearchBox,
     showDownloadButton,
     showFilterButton,
@@ -114,6 +119,7 @@ export function Table({
   function handleCellValueChange(index, key, value, rowData) {
     const changeSet = tableDetails.changeSet;
     const dataUpdates = tableDetails.dataUpdates || [];
+    const clonedTableData = _.cloneDeep(tableData);
 
     let obj = changeSet ? changeSet[index] || {} : {};
     obj = _.set(obj, key, value);
@@ -131,16 +137,44 @@ export function Table({
       ...dataUpdates,
       [index]: { ...obj },
     };
+
+    Object.keys(newChangeset).forEach((key) => {
+      clonedTableData[key] = {
+        ..._.merge(clonedTableData[key], newChangeset[key]),
+      };
+    });
+
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
+
     fireEvent('onCellValueChanged');
-    return setExposedVariables(changesToBeSavedAndExposed);
+    return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
   }
 
-  function getExportFileBlob({ columns, data }) {
-    const headerNames = columns.map((col) => col.exportValue);
-    const csvString = Papa.unparse({ fields: headerNames, data });
-    return new Blob([csvString], { type: 'text/csv' });
+  function getExportFileBlob({ columns, data, fileType, fileName }) {
+    if (fileType === 'csv') {
+      const headerNames = columns.map((col) => col.exportValue);
+      const csvString = Papa.unparse({ fields: headerNames, data });
+      return new Blob([csvString], { type: 'text/csv' });
+    } else if (fileType === 'xlsx') {
+      const header = columns.map((c) => c.exportValue);
+      const compatibleData = data.map((row) => {
+        const obj = {};
+        header.forEach((col, index) => {
+          obj[col] = row[index];
+        });
+        return obj;
+      });
+
+      let wb = XLSX.utils.book_new();
+      let ws1 = XLSX.utils.json_to_sheet(compatibleData, {
+        header,
+      });
+      XLSX.utils.book_append_sheet(wb, ws1, 'React Table Data');
+      XLSX.writeFile(wb, `${fileName}.xlsx`);
+      // Returning false as downloading of file is already taken care of
+      return false;
+    }
   }
 
   function onPageIndexChanged(page) {
@@ -299,6 +333,7 @@ export function Table({
       autoResetGlobalFilter: false,
       autoResetFilters: false,
       manualGlobalFilter: serverSideSearch,
+      manualFilters: serverSideFilter,
       columns,
       data,
       defaultColumn,
@@ -422,6 +457,33 @@ export function Table({
     );
   }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
 
+  useEffect(() => {
+    if (_.isEmpty(changeSet)) {
+      setExposedVariable('updatedData', tableData);
+    }
+  }, [JSON.stringify(changeSet)]);
+
+  function downlaodPopover() {
+    return (
+      <Popover
+        id="popover-basic"
+        data-cy="popover-card"
+        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow table-widget-download-popup`}
+        placement="bottom"
+      >
+        <Popover.Content>
+          <div className="d-flex flex-column">
+            <span className="cursor-pointer" onClick={() => exportData('csv', true)}>
+              Download as CSV
+            </span>
+            <span className="pt-2 cursor-pointer" onClick={() => exportData('xlsx', true)}>
+              Download as Excel
+            </span>
+          </div>
+        </Popover.Content>
+      </Popover>
+    );
+  }
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -467,13 +529,11 @@ export function Table({
                 </span>
               )}
               {showDownloadButton && (
-                <span
-                  data-tip="Download as CSV"
-                  className="btn btn-light btn-sm p-1"
-                  onClick={() => exportData('csv', true)}
-                >
-                  <img src="assets/images/icons/download.svg" width="15" height="15" />
-                </span>
+                <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
+                  <span data-tip="Download" className="btn btn-light btn-sm p-1">
+                    <img src="assets/images/icons/download.svg" width="15" height="15" />
+                  </span>
+                </OverlayTrigger>
               )}
             </div>
           </div>

@@ -29,7 +29,7 @@ This property lets you add and remove secondary value label.
 
 ### Secondary value
 
-This property lets you add and remove secondary value,the chnage in value can be represented here.
+This property lets you add and remove secondary value,the change in value can be represented here.
 
 ### Secondaory sign display
 
