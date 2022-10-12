@@ -35,18 +35,6 @@ export default function autogenerateColumns(tableData, existingColumns, columnDe
     finalKeys.includes(column.key || column.name)
   );
 
-  console.log({
-    firstRow,
-    keysOfTableData,
-    keysOfExistingColumns,
-    keysFromWhichNewColumnsShouldBeGenerated,
-    keysAndDataTypesToGenerateNewColumns,
-    keysOfExistingColumnsThatNeedToPersist,
-    finalKeys,
-    existingColumns,
-    generatedColumns,
-    finalColumns,
-  });
   setTimeout(() => setProperty('columns', finalColumns), 10);
 }
 
