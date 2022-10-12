@@ -25,7 +25,7 @@
         "components":"components",
         "send":"Send",
         "noConnection":"could not connect",
-        "connectionVerifeid":"connection verified",
+        "connectionVerified":"connection verified",
         "left":"Left",
         "center":"Center",
         "right":"Right",
@@ -237,7 +237,7 @@
                     "permissions":{
                         "userGroups":"User Groups",
                         "createNewGroup":"Create new group",
-                        "udpateGroup":"Update group",
+                        "updateGroup":"Update group",
                         "addNewGroup":"Add new group",
                         "enterName":"Enter Name",
                         "createGroup":"Create Group",
@@ -280,7 +280,7 @@
                         "redirectUrl":"Redirect URL"
                     },
                     "github":{
-                        "title":"Github",
+                        "title":"GitHub",
                         "hostName":"Host Name",
                         "enterHostName":"Enter Host Name",
                         "requiredGithub":"Required if GitHub is self hosted",
@@ -389,7 +389,7 @@
         "templateCard":{
             "use":"Use",
             "preview":"Preview",
-            "leadGeneretion":"Lead generetion"
+            "leadGeneration":"Lead generation"
         },
         "templateLibraryModal":{
             "select":"Select template",
@@ -452,7 +452,7 @@
         "commonlyUsed": "fréquemment utilisé",
         "layouts" : "mises en page",
         "forms" : "formes",
-        "intregrations" : "intégrations",
+        "integrations" : "intégrations",
         "others":"les autres",
         "noResults": "Aucun résultat trouvé",
         "tryAdjustingFilterMessage": "Essayez d'ajuster votre recherche ou votre filtre pour trouver ce que vous cherchez.",
@@ -491,7 +491,6 @@
             "data": "Data",
             "tableData": "Table data",
             "tableColumns": "Table columns",
-            "searverSideSearch": "Server-side search", 
             "loadingState": "Loading State", 
             "serverSidePagination": "Server-side pagination", 
             "clientSidePagination": "Client-side pagination", 
