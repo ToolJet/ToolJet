@@ -1,5 +1,6 @@
 import React from 'react';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from '@/_ui/Select';
+import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
@@ -8,7 +9,7 @@ import { diff as deepDiff } from 'deep-object-diff';
 export function Filter(props) {
   const { t } = useTranslation();
 
-  const { mergeToFilterDetails, filterDetails, setAllFilters, fireEvent } = props;
+  const { mergeToFilterDetails, filterDetails, setAllFilters, fireEvent, darkMode } = props;
   const { filters } = filterDetails;
 
   const [activeFilters, set] = React.useState(filters);
@@ -91,6 +92,15 @@ export function Filter(props) {
     }, 700),
     []
   );
+  const selectStyles = (width) => {
+    return {
+      ...defaultStyles(darkMode, width),
+      menuPortal: (provided) => ({ ...provided, zIndex: 999 }),
+      menuList: (base) => ({
+        ...base,
+      }),
+    };
+  };
 
   return (
     <div className="table-filters card">
@@ -111,19 +121,19 @@ export function Filter(props) {
               <small>{index > 0 ? 'and' : 'where'}</small>
             </div>
             <div className="col">
-              <SelectSearch
+              <Select
                 options={props.columns}
                 value={filter.id}
                 search={true}
                 onChange={(value, item) => {
                   filterColumnChanged(index, value, item.name);
                 }}
-                filterOptions={fuzzySearch}
                 placeholder={t('globals.select', 'Select') + '...'}
+                styles={selectStyles('100%')}
               />
             </div>
             <div className="col" style={{ maxWidth: '180px' }}>
-              <SelectSearch
+              <Select
                 options={[
                   { name: 'contains', value: 'contains' },
                   { name: 'does not contains', value: 'doesNotContains' },
@@ -143,8 +153,8 @@ export function Filter(props) {
                 onChange={(value) => {
                   filterOperationChanged(index, value);
                 }}
-                filterOptions={fuzzySearch}
-                placeholder="Select.."
+                placeholder={t('globals.select', 'Select') + '...'}
+                styles={selectStyles('100%')}
               />
             </div>
             <div className="col">
@@ -161,7 +171,7 @@ export function Filter(props) {
             <div className="col-auto">
               <button
                 onClick={() => removeFilter(index)}
-                className={`btn ${props.darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
+                className={`btn ${darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
               >
                 x
               </button>
