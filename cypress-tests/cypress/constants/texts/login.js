@@ -2,7 +2,7 @@ export const loginTexts={
     cardTitle:"Login to your account",
     emailLabel:"Email address",
     passwordLabel:"Password",
-    forgotPassword:"Forgot password",
+    forgotPassword:"Forgot Password",
     showPassword:"show password",
     signIn:"Sign in",
     signUpText:"Don't have account yet?",

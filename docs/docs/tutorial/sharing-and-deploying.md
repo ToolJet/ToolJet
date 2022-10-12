@@ -49,7 +49,7 @@ Once you have released a version of your app, you can share the app with others 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/sharing/embedd.png" alt="embedd" />
+<img className="screenshot-full" src="/img/tutorial/sharing/embed.png" alt="embed" />
 
 
 </div>

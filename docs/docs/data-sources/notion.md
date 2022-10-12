@@ -51,7 +51,7 @@ On database resource you can perform the following operations:
 
 #### 1. Retrieve a database
 
-This operations retreives a Database object using the ID specified.
+This operations retrieves a Database object using the ID specified.
 
 ##### Required parameters:
 
@@ -77,7 +77,7 @@ This operation gets a list of **Pages** contained in the database, filtered and 
 
 #### 3. Create a database
 
-This opertion creates a database as a subpage in the specified parent page, with the specified properties.
+This operation creates a database as a subpage in the specified parent page, with the specified properties.
 
 ##### Required parameters:
 
