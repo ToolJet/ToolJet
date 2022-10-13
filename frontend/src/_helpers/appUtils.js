@@ -516,6 +516,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onSort',
       'onCellValueChanged',
       'onFilterChanged',
+      'onRowHovered',
     ].includes(eventName)
   ) {
     const { component } = options;

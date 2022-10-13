@@ -55,6 +55,7 @@ export function Table({
   properties,
   variablesExposedForPreview,
   exposeToCodeHinter,
+  events,
   setProperty,
   mode,
   exposedVariables,
@@ -91,7 +92,7 @@ export function Table({
   const { t } = useTranslation();
 
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
-
+  const [hoverAdded, setHoverAdded] = useState(false);
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
 
@@ -106,6 +107,15 @@ export function Table({
     () => mergeToTableDetails({ columnProperties: component?.definition?.properties?.columns?.value }),
     [component?.definition?.properties]
   );
+
+  useEffect(() => {
+    const hoverEvent = component?.definition?.events?.find((event) => {
+      return event?.eventId == 'onRowHovered';
+    });
+    if (hoverEvent?.eventId) {
+      setHoverAdded(true);
+    }
+  }, [JSON.stringify(component.definition.events)]);
 
   function showFilters() {
     mergeToFilterDetails({ filtersVisible: true });
@@ -158,9 +168,10 @@ export function Table({
     return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
   }
 
-  function getExportFileBlob({ columns, data, fileType, fileName }) {
+  function getExportFileBlob({ columns, fileType, fileName }) {
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
+      const data = globalFilteredRows.map((row) => row.original);
       const csvString = Papa.unparse({ fields: headerNames, data });
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'xlsx') {
@@ -457,10 +468,16 @@ export function Table({
   }, [state.columnResizing.isResizingColumn]);
 
   const [paginationInternalPageIndex, setPaginationInternalPageIndex] = useState(pageIndex ?? 1);
-
+  const [rowDetails, setRowDetails] = useState();
   useEffect(() => {
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
   }, [pageCount]);
+
+  const hoverRef = useRef();
+
+  useEffect(() => {
+    if (rowDetails?.hoveredRowId !== '' && hoverRef.current !== rowDetails?.hoveredRowId) rowHover();
+  }, [rowDetails]);
 
   useEffect(() => {
     setExposedVariable(
@@ -469,6 +486,12 @@ export function Table({
     );
   }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
 
+  const rowHover = () => {
+    mergeToTableDetails(rowDetails);
+    setExposedVariables(rowDetails).then(() => {
+      fireEvent('onRowHovered');
+    });
+  };
   useEffect(() => {
     if (_.isEmpty(changeSet)) {
       setExposedVariable('updatedData', tableData);
@@ -637,6 +660,16 @@ export function Table({
                       setExposedVariables(selectedRowDetails).then(() => {
                         fireEvent('onRowClicked');
                       });
+                    }}
+                    onMouseOver={(e) => {
+                      if (hoverAdded) {
+                        const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
+                        setRowDetails(hoveredRowDetails);
+                        hoverRef.current = rowDetails?.hoveredRowId;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      hoverAdded && setRowDetails({ hoveredRowId: '', hoveredRow: '' });
                     }}
                   >
                     {row.cells.map((cell, index) => {
