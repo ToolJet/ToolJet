@@ -28,7 +28,7 @@ export class OrganizationsController {
     private organizationsService: OrganizationsService,
     private authService: AuthService,
     private readonly configService: ConfigService
-  ) {}
+  ) { }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('viewAllUsers', UserEntity))
@@ -80,7 +80,10 @@ export class OrganizationsController {
   @Post()
   async create(@Body('name') name, @User() user) {
     if (!name) {
-      throw new BadRequestException('name can not be empty');
+      throw new BadRequestException('name cannot be empty');
+    }
+    if (name.length > 25) {
+      throw new BadRequestException('name cannot be longer than 25 characters');
     }
     const result = await this.organizationsService.create(name, user);
 
