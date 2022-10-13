@@ -133,7 +133,7 @@ class SignupPageComponent extends React.Component {
                         name="name"
                         type="name"
                         className="tj-text-input "
-                        placeholder="Enter your business name"
+                        placeholder="Enter your name"
                       />
                       <div className="signup-password-wrap">
                         <label className="tj-text-input-label">Email address</label>

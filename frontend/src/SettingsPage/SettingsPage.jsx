@@ -284,6 +284,7 @@ function SettingsPage(props) {
                   className={'btn btn-primary' + (passwordChangeInProgress ? '  btn-loading' : '')}
                   onClick={changePassword}
                   data-cy="change-password-button"
+                  disabled={newPassword.length < 5 || confirmPassword.length < 5}
                 >
                   {t('header.profileSettingPage.changePassword', 'Change password')}
                 </button>
