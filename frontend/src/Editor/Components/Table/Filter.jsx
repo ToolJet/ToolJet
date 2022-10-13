@@ -239,10 +239,10 @@ function shouldFireEvent(diff, filter) {
 
   function forEmptyOperationAndNotEmptyOperation(operation) {
     if (operation !== 'isEmpty' || operation !== 'isNotEmpty') {
-      return filter[diff.keyIndex].value.where ? true : false;
+      return filter[diff.keyIndex]?.value?.where ? true : false;
     }
 
-    return filter[diff.keyIndex].value.value && filter[diff.keyIndex].value.where ? true : false;
+    return filter[diff.keyIndex]?.value?.value && filter[diff.keyIndex]?.value?.where ? true : false;
   }
 
   switch (diff.type) {
