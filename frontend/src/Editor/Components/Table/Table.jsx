@@ -165,9 +165,10 @@ export function Table({
     return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
   }
 
-  function getExportFileBlob({ columns, data, fileType, fileName }) {
+  function getExportFileBlob({ columns, fileType, fileName }) {
     if (fileType === 'csv') {
       const headerNames = columns.map((col) => col.exportValue);
+      const data = globalFilteredRows.map((row) => row.original);
       const csvString = Papa.unparse({ fields: headerNames, data });
       return new Blob([csvString], { type: 'text/csv' });
     } else if (fileType === 'xlsx') {
