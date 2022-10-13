@@ -5,8 +5,8 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   if (typeof serverSidePagination !== 'boolean') serverSidePagination = false;
 
   const serverSideSearch = properties.serverSideSearch ?? false;
-  const enableNextButton = properties.enableNextButton ?? false;
-  const enablePrevButton = properties.enablePrevButton ?? false;
+  const enableNextButton = properties.enableNextButton ?? true;
+  const enablePrevButton = properties.enablePrevButton ?? true;
 
   const totalRecords = properties.totalRecords ?? '';
   const disabledSort = properties?.disabledSort ?? false;
