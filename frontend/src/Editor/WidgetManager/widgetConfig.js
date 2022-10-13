@@ -3634,7 +3634,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
+        backgroundColor: { value: '#fff' },
         borderColor: { value: '#dadcde' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
