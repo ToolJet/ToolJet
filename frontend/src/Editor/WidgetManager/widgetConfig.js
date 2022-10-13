@@ -2129,7 +2129,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
+        backgroundColor: { value: '#fff' },
         borderRadius: { value: '0' },
         borderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
