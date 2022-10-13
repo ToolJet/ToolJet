@@ -238,6 +238,7 @@ export function Table({
     fireEvent,
     tableRef,
     t,
+    darkMode,
   });
 
   const [leftActionsCellData, rightActionsCellData] = useMemo(

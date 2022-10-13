@@ -23,6 +23,7 @@ export default function generateColumnsData({
   fireEvent,
   tableRef,
   t,
+  darkMode,
 }) {
   return columnProperties.map((column) => {
     const columnSize = columnSizes[column.id] || columnSizes[column.name];
@@ -272,6 +273,7 @@ export default function generateColumnsData({
                   filterOptions={fuzzySearch}
                   placeholder={t('globals.select', 'Select') + '...'}
                   disabled={!column.isEditable}
+                  className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>
@@ -291,6 +293,7 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   disabled={!column.isEditable}
+                  className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 />
               </div>
             );
