@@ -989,7 +989,7 @@ export const widgets = [
       },
     },
     events: {
-      onChange: {displayName: 'On change'}
+      onChange: { displayName: 'On change' },
     },
     styles: {
       visibility: {
