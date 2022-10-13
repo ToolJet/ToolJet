@@ -44,7 +44,22 @@ const AppLoaderComponent = (props) => {
         <div className="apploader">
           <div className="app-container">
             <div className="editor-header px-1">
-              <Skeleton height={'100%'} />
+              <div className="app-title-skeleton">
+                <SkeletonTheme color="#fff">
+                  <Skeleton height={'70%'} width={'100px'} className="skeleton" />
+                </SkeletonTheme>
+              </div>
+              <div className="right-buttons">
+                <SkeletonTheme color="#fff">
+                  <Skeleton height={'70%'} width={'80px'} className="skeleton" />
+                </SkeletonTheme>
+                <SkeletonTheme color="#fff">
+                  <Skeleton height={'70%'} width={'80px'} className="skeleton" />
+                </SkeletonTheme>
+                <SkeletonTheme color="#fff">
+                  <Skeleton height={'70%'} width={'80px'} className="skeleton" />
+                </SkeletonTheme>
+              </div>
             </div>
             <div className="row editor-body p-0 m-0">
               <div className="skeleton editor-left-panel">

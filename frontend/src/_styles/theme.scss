@@ -6514,6 +6514,25 @@ input.hide-input-arrows{
 
   .editor-header {
     height: 5%;
+    background-color: #EEEEEE;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .app-title-skeleton {
+      width: 100px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      margin-left: 10px;
+    }
+
+    .right-buttons {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      margin-right: 10px;
+    }
   }
 
   .editor-body {
@@ -6523,6 +6542,7 @@ input.hide-input-arrows{
   .skeleton {
     padding: 5px;
   }
+  
 
   .editor-left-panel {
     width: 80px;
