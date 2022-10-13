@@ -537,7 +537,7 @@ export function Table({
                     >
                       <div className="dropdown-item">
                         <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
-                        <span className="hide-column-name"> Toggle All</span>
+                        <span className="hide-column-name"> Select All</span>
                       </div>
                       {allColumns.map((column) => (
                         <div key={column.id}>
