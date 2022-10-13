@@ -243,11 +243,24 @@ export class DataQueriesService {
     return JSON.stringify(errorObj);
   }
 
-  private getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, newToken: any) => {
+  private getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, newToken: any, userId: string) => {
     if (isMultiAuthEnabled) {
       let tokensArray = [];
       if (tokenData && Array.isArray(tokenData)) {
-        tokensArray = [...tokenData, newToken];
+        let isExisted = false;
+        const newTokenData = tokenData.map((token) => {
+          if (token.user_id === userId) {
+            const updatedToken = { ...token, ...newToken };
+            isExisted = true;
+            return updatedToken;
+          }
+          return token;
+        });
+        if (isExisted) {
+          tokensArray = newTokenData;
+        } else {
+          tokensArray = [...tokenData, newToken];
+        }
       } else {
         tokensArray.push(newToken);
       }
@@ -262,7 +275,12 @@ export class DataQueriesService {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
     const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
-    const tokenData = this.getCurrentToken(isMultiAuthEnabled, dataSource.options['tokenData']?.value, newToken);
+    const tokenData = this.getCurrentToken(
+      isMultiAuthEnabled,
+      dataSource.options['tokenData']?.value,
+      newToken,
+      userId
+    );
 
     const tokenOptions = [
       {
