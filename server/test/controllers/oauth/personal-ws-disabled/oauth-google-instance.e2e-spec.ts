@@ -12,12 +12,12 @@ describe('oauth controller', () => {
 
   beforeEach(async () => {
     await clearDB();
-    instanceSettingsRepository = app.get('InstanceSettingsRepository');
+    await instanceSettingsRepository.update({ key: 'ALLOW_PERSONAL_WORKSPACE' }, { value: 'false' });
   });
 
   beforeAll(async () => {
     ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
-    await instanceSettingsRepository.update({ key: 'ALLOW_PERSONAL_WORKSPACE' }, { value: 'false' });
+    instanceSettingsRepository = app.get('InstanceSettingsRepository');
   });
 
   afterEach(() => {

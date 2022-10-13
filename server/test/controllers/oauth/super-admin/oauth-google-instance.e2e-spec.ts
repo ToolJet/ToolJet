@@ -209,7 +209,7 @@ describe('oauth controller', () => {
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
               sub: 'someSSOId',
-              email: 'ssoUser@tooljet.io',
+              email: 'superadmin@tooljet.io',
               name: 'SSO User',
               hd: 'tooljet.io',
             }),
