@@ -1142,8 +1142,22 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
-      enableTime: { type: 'toggle', displayName: 'Enable time selection?' },
-      enableDate: { type: 'toggle', displayName: 'Enable date selection?' },
+      enableTime: {
+        type: 'toggle',
+        displayName: 'Enable time selection?',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
+      enableDate: {
+        type: 'toggle',
+        displayName: 'Enable date selection?',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: true,
+        },
+      },
       disabledDates: {
         type: 'code',
         displayName: 'Disabled dates',
