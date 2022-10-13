@@ -170,6 +170,7 @@ class TableComponent extends React.Component {
               options={[
                 { name: 'Default', value: 'default' },
                 { name: 'String', value: 'string' },
+                { name: 'Number', value: 'number' },
                 { name: 'Text', value: 'text' },
                 { name: 'Badge', value: 'badge' },
                 { name: 'Multiple badges', value: 'badges' },
@@ -311,6 +312,38 @@ class TableComponent extends React.Component {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {column.columnType === 'number' && column.isEditable && (
+            <div>
+              <div className="hr-text">{this.props.t('widget.Table.validation', 'Validation')}</div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.minValue', 'Min value')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.minLength}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'minValue', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'minValue')}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('widget.Table.maxValue', 'Max value')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.maxLength}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'maxValue', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'maxValue')}
+                />
+              </div>
             </div>
           )}
 
@@ -651,16 +684,7 @@ class TableComponent extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
-    if (item === 'name') {
-      const columnSizes = this.props.component.component.definition.properties.columnSizes;
-      if (columnSizes) {
-        const newColumnSizes = JSON.parse(JSON.stringify(columnSizes));
-        if (newColumnSizes[column.name]) {
-          newColumnSizes[value] = newColumnSizes[column.name];
-          this.props.paramUpdated({ name: 'columnSizes' }, null, newColumnSizes, 'properties');
-        }
-      }
-    }
+
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
@@ -670,8 +694,16 @@ class TableComponent extends React.Component {
   removeColumn = (index) => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.splice(index, 1);
+    const removedColumns = newValue.splice(index, 1);
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
+
+    const existingcolumnDeletionHistory =
+      this.props.component.component.definition.properties.columnDeletionHistory?.value ?? [];
+    const newcolumnDeletionHistory = [
+      ...existingcolumnDeletionHistory,
+      ...removedColumns.map((column) => column.key || column.name),
+    ];
+    this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties');
   };
 
   getPopoverFieldSource = (column, field) =>
@@ -830,6 +862,9 @@ class TableComponent extends React.Component {
       'showBulkUpdateActions',
       'showBulkSelector',
       'highlightSelectedRow',
+      'disabledSort',
+      'serverSideSort',
+      'serverSideFilter',
     ];
 
     let renderOptions = [];

@@ -25,8 +25,14 @@ import { reducer, reducerActions, initialState } from './reducer';
 import customFilter from './custom-filter';
 import generateColumnsData from './columns';
 import generateActionsData from './columns/actions';
+import autogenerateColumns from './columns/autogenerateColumns';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
+// eslint-disable-next-line import/no-unresolved
+import { IconEyeOff } from '@tabler/icons';
+import * as XLSX from 'xlsx/xlsx.mjs';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Popover from 'react-bootstrap/Popover';
 
 export function Table({
   id,
@@ -49,12 +55,17 @@ export function Table({
   properties,
   variablesExposedForPreview,
   exposeToCodeHinter,
+  setProperty,
+  mode,
+  exposedVariables,
 }) {
   const {
     color,
     serverSidePagination,
     clientSidePagination,
     serverSideSearch,
+    serverSideSort,
+    serverSideFilter,
     displaySearchBox,
     showDownloadButton,
     showFilterButton,
@@ -70,6 +81,7 @@ export function Table({
     parsedDisabledState,
     actionButtonRadius,
     actions,
+    disabledSort,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const { t } = useTranslation();
@@ -78,6 +90,13 @@ export function Table({
 
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
+
+  useEffect(() => {
+    setExposedVariable(
+      'filters',
+      tableDetails.filterDetails.filters.map((filter) => filter.value)
+    );
+  }, [JSON.stringify(tableDetails.filterDetails.filters)]);
 
   useEffect(
     () => mergeToTableDetails({ columnProperties: component?.definition?.properties?.columns?.value }),
@@ -103,6 +122,7 @@ export function Table({
   function handleCellValueChange(index, key, value, rowData) {
     const changeSet = tableDetails.changeSet;
     const dataUpdates = tableDetails.dataUpdates || [];
+    const clonedTableData = _.cloneDeep(tableData);
 
     let obj = changeSet ? changeSet[index] || {} : {};
     obj = _.set(obj, key, value);
@@ -120,15 +140,44 @@ export function Table({
       ...dataUpdates,
       [index]: { ...obj },
     };
+
+    Object.keys(newChangeset).forEach((key) => {
+      clonedTableData[key] = {
+        ..._.merge(clonedTableData[key], newChangeset[key]),
+      };
+    });
+
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
-    return setExposedVariables(changesToBeSavedAndExposed);
+
+    fireEvent('onCellValueChanged');
+    return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
   }
 
-  function getExportFileBlob({ columns, data }) {
-    const headerNames = columns.map((col) => col.exportValue);
-    const csvString = Papa.unparse({ fields: headerNames, data });
-    return new Blob([csvString], { type: 'text/csv' });
+  function getExportFileBlob({ columns, data, fileType, fileName }) {
+    if (fileType === 'csv') {
+      const headerNames = columns.map((col) => col.exportValue);
+      const csvString = Papa.unparse({ fields: headerNames, data });
+      return new Blob([csvString], { type: 'text/csv' });
+    } else if (fileType === 'xlsx') {
+      const header = columns.map((c) => c.exportValue);
+      const compatibleData = data.map((row) => {
+        const obj = {};
+        header.forEach((col, index) => {
+          obj[col] = row[index];
+        });
+        return obj;
+      });
+
+      let wb = XLSX.utils.book_new();
+      let ws1 = XLSX.utils.json_to_sheet(compatibleData, {
+        header,
+      });
+      XLSX.utils.book_append_sheet(wb, ws1, 'React Table Data');
+      XLSX.writeFile(wb, `${fileName}.xlsx`);
+      // Returning false as downloading of file is already taken care of
+      return false;
+    }
   }
 
   function onPageIndexChanged(page) {
@@ -154,7 +203,10 @@ export function Table({
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
+    }).then(() => {
+      mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
+      fireEvent('onCancelChanges');
+    });
   }
 
   const changeSet = tableDetails?.changeSet ?? {};
@@ -171,7 +223,6 @@ export function Table({
   if (currentState) {
     tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
     if (!Array.isArray(tableData)) tableData = [];
-    console.log('resolved param', tableData);
   }
 
   tableData = tableData || [];
@@ -243,6 +294,17 @@ export function Table({
     ]
   );
 
+  useEffect(() => {
+    if (tableData.length != 0 && component.definition.properties.autogenerateColumns?.value && mode === 'edit') {
+      autogenerateColumns(
+        tableData,
+        component.definition.properties.columns.value,
+        component.definition.properties?.columnDeletionHistory?.value ?? [],
+        setProperty
+      );
+    }
+  }, [JSON.stringify(tableData)]);
+
   const computedStyles = {
     // width: `${width}px`,
   };
@@ -270,11 +332,15 @@ export function Table({
     exportData,
     selectedFlatRows,
     globalFilteredRows,
+    getToggleHideAllColumnsProps,
+    allColumns,
   } = useTable(
     {
       autoResetPage: false,
       autoResetGlobalFilter: false,
       autoResetFilters: false,
+      manualGlobalFilter: serverSideSearch,
+      manualFilters: serverSideFilter,
       columns,
       data,
       defaultColumn,
@@ -282,6 +348,8 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
+      disableSortBy: disabledSort,
+      manualSortBy: serverSideSort,
     },
     useFilters,
     useGlobalFilter,
@@ -313,6 +381,29 @@ export function Table({
         ]);
     }
   );
+
+  const sortOptions = useMemo(() => {
+    if (state?.sortBy?.length === 0) {
+      return;
+    }
+
+    const columnName = columns.find((column) => column.id === state?.sortBy?.[0]?.id).accessor;
+
+    return {
+      sortedBy: {
+        column: columnName,
+        direction: state?.sortBy?.[0]?.desc ? 'desc' : 'asc',
+      },
+    };
+  }, [JSON.stringify(state)]);
+
+  useEffect(() => {
+    if (!sortOptions) {
+      setExposedVariable('sortedBy', null);
+      return;
+    }
+    setExposedVariable('sortedBy', sortOptions.sortedBy).then(() => fireEvent('onSort'));
+  }, [sortOptions]);
 
   registerAction(
     'setPage',
@@ -347,7 +438,7 @@ export function Table({
       ['selectedRow', []],
       ['selectedRowId', null],
     ]);
-  }, [tableData.length, tableDetails.changeSet]);
+  }, [tableData.length, tableDetails.changeSet, page]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
@@ -374,6 +465,33 @@ export function Table({
     );
   }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
 
+  useEffect(() => {
+    if (_.isEmpty(changeSet)) {
+      setExposedVariable('updatedData', tableData);
+    }
+  }, [JSON.stringify(changeSet)]);
+
+  function downlaodPopover() {
+    return (
+      <Popover
+        id="popover-basic"
+        data-cy="popover-card"
+        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow table-widget-download-popup`}
+        placement="bottom"
+      >
+        <Popover.Content>
+          <div className="d-flex flex-column">
+            <span className="cursor-pointer" onClick={() => exportData('csv', true)}>
+              Download as CSV
+            </span>
+            <span className="pt-2 cursor-pointer" onClick={() => exportData('xlsx', true)}>
+              Download as Excel
+            </span>
+          </div>
+        </Popover.Content>
+      </Popover>
+    );
+  }
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -406,7 +524,6 @@ export function Table({
                 setGlobalFilter={setGlobalFilter}
                 onComponentOptionChanged={onComponentOptionChanged}
                 component={component}
-                serverSideSearch={serverSideSearch}
                 onEvent={onEvent}
               />
             )}
@@ -420,14 +537,45 @@ export function Table({
                 </span>
               )}
               {showDownloadButton && (
-                <span
-                  data-tip="Download as CSV"
-                  className="btn btn-light btn-sm p-1"
-                  onClick={() => exportData('csv', true)}
-                >
-                  <img src="assets/images/icons/download.svg" width="15" height="15" />
-                </span>
+                <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
+                  <span data-tip="Download" className="btn btn-light btn-sm p-1">
+                    <img src="assets/images/icons/download.svg" width="15" height="15" />
+                  </span>
+                </OverlayTrigger>
               )}
+              <OverlayTrigger
+                trigger="click"
+                rootClose={true}
+                overlay={
+                  <Popover>
+                    <div
+                      className={`dropdown-table-column-hide-common ${
+                        darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
+                      } `}
+                    >
+                      <div className="dropdown-item">
+                        <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+                        <span className="hide-column-name"> Select All</span>
+                      </div>
+                      {allColumns.map((column) => (
+                        <div key={column.id}>
+                          <div>
+                            <label className="dropdown-item">
+                              <input type="checkbox" {...column.getToggleHiddenProps()} />
+                              <span className="hide-column-name"> {` ${column.Header}`}</span>
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Popover>
+                }
+                placement={'bottom-end'}
+              >
+                <span className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
+                  <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
+                </span>
+              </OverlayTrigger>
             </div>
           </div>
         </div>
@@ -601,6 +749,7 @@ export function Table({
           filterDetails={tableDetails.filterDetails}
           darkMode={darkMode}
           setAllFilters={setAllFilters}
+          fireEvent={fireEvent}
         />
       )}
     </div>

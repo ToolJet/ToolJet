@@ -309,6 +309,10 @@ export const Box = function Box({
             dataQueries={dataQueries}
             variablesExposedForPreview={variablesExposedForPreview}
             exposeToCodeHinter={exposeToCodeHinter}
+            setProperty={(property, value) => {
+              paramUpdated(id, property, { value });
+            }}
+            mode={mode}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
