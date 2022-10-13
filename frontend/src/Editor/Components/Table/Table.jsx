@@ -84,6 +84,9 @@ export function Table({
     parsedDisabledState,
     actionButtonRadius,
     actions,
+    enableNextButton,
+    enablePrevButton,
+    totalRecords,
     rowsPerPage,
     disabledSort,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
@@ -807,21 +810,20 @@ export function Table({
         <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
           <div className="table-footer row gx-0">
             <div className="col">
-              {(clientSidePagination || serverSidePagination) && (
-                <Pagination
-                  lastActivePageIndex={pageIndex}
-                  serverSide={serverSidePagination}
-                  autoGotoPage={gotoPage}
-                  autoCanNextPage={canNextPage}
-                  autoPageCount={pageCount}
-                  autoPageOptions={pageOptions}
-                  onPageIndexChanged={onPageIndexChanged}
-                  pageIndex={paginationInternalPageIndex}
-                  setPageIndex={setPaginationInternalPageIndex}
-                />
-              )}
+              <Pagination
+                lastActivePageIndex={pageIndex}
+                serverSide={serverSidePagination}
+                autoGotoPage={gotoPage}
+                autoCanNextPage={canNextPage}
+                autoPageCount={pageCount}
+                autoPageOptions={pageOptions}
+                onPageIndexChanged={onPageIndexChanged}
+                pageIndex={paginationInternalPageIndex}
+                setPageIndex={setPaginationInternalPageIndex}
+                enableNextButton={enableNextButton}
+                enablePrevButton={enablePrevButton}
+              />
             </div>
-
             <div className="col d-flex justify-content-end">
               {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
                 <>
@@ -840,7 +842,10 @@ export function Table({
                   </button>
                 </>
               ) : (
-                <span>{`${globalFilteredRows.length} Records`}</span>
+                <span>
+                  {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
+                  {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
+                </span>
               )}
             </div>
           </div>

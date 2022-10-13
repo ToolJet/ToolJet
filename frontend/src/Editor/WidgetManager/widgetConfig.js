@@ -148,11 +148,32 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      enableNextButton: {
+        type: 'toggle',
+        displayName: 'Enable next page button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       disabledSort: {
         type: 'toggle',
         displayName: 'Disable sorting',
         validation: {
           schema: { type: 'boolean' },
+        },
+      },
+      enablePrevButton: {
+        type: 'toggle',
+        displayName: 'Enable previous page button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      totalRecords: {
+        type: 'code',
+        displayName: 'Total records server side',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       clientSidePagination: {
@@ -358,6 +379,9 @@ export const widgets = [
         },
         rowsPerPage: { value: '{{10}}' },
         serverSidePagination: { value: '{{false}}' },
+        enableNextButton: { value: '{{true}}' },
+        enablePrevButton: { value: '{{true}}' },
+        totalRecords: { value: '' },
         clientSidePagination: { value: '{{true}}' },
         serverSideSort: { value: '{{false}}' },
         displaySearchBox: { value: '{{true}}' },
