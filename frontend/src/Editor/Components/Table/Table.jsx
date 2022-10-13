@@ -429,7 +429,7 @@ export function Table({
       ['selectedRow', []],
       ['selectedRowId', null],
     ]);
-  }, [tableData.length, tableDetails.changeSet]);
+  }, [tableData.length, tableDetails.changeSet, page]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
