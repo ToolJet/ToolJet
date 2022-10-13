@@ -150,7 +150,7 @@ export const widgets = [
       },
       enableNextButton: {
         type: 'toggle',
-        displayName: 'Enable next button',
+        displayName: 'Enable next page button',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -164,7 +164,7 @@ export const widgets = [
       },
       enablePrevButton: {
         type: 'toggle',
-        displayName: 'Enable prev button',
+        displayName: 'Enable previous page button',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -379,8 +379,8 @@ export const widgets = [
         },
         rowsPerPage: { value: '{{10}}' },
         serverSidePagination: { value: '{{false}}' },
-        enableNextButton: { value: '{{false}}' },
-        enablePrevButton: { value: '{{false}}' },
+        enableNextButton: { value: '{{true}}' },
+        enablePrevButton: { value: '{{true}}' },
         totalRecords: { value: '' },
         clientSidePagination: { value: '{{true}}' },
         serverSideSort: { value: '{{false}}' },
