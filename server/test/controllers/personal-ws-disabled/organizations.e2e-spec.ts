@@ -1,16 +1,21 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../../test.helper';
+import { Repository } from 'typeorm';
+import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
 describe('organizations controller', () => {
   let app: INestApplication;
+  let instanceSettingsRepository: Repository<InstanceSettings>;
 
   beforeEach(async () => {
     await clearDB();
+    await instanceSettingsRepository.update({ key: 'ALLOW_PERSONAL_WORKSPACE' }, { value: 'false' });
   });
 
   beforeAll(async () => {
     app = await createNestAppInstance();
+    instanceSettingsRepository = app.get('InstanceSettingsRepository');
   });
 
   afterEach(() => {
