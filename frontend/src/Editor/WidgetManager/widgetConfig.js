@@ -555,7 +555,7 @@ export const widgets = [
       events: [],
       styles: {
         backgroundColor: { value: '' },
-        textColor: { value: '' },
+        textColor: { value: '#fff' },
         loaderColor: { value: '' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
