@@ -12,7 +12,7 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props 
         />
         <h1 className="common-auth-section-header">Passwrod has been reset</h1>
         <p className="info-screen-description">
-          Your password has been reset sucecessfully, log into ToolJet to to continue your session
+          Your password has been reset successfully, log into ToolJet to to continue your session
         </p>
         <ButtonSolid
           variant="secondary"
