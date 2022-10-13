@@ -2755,7 +2755,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '' },
+        textColor: { value: '#ffb400' },
         labelColor: { value: '' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
