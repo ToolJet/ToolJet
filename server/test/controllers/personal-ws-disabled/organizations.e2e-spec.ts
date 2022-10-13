@@ -33,7 +33,7 @@ describe('organizations controller', () => {
           .post('/api/organizations')
           .set('Authorization', authHeaderForUser(userData))
           .send({ name: 'My workspace' })
-          .expect(401);
+          .expect(403);
       });
       it('should create new organization for super admin', async () => {
         const superAdminUserData = await createUser(app, {
