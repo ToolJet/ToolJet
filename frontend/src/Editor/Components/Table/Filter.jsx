@@ -14,10 +14,11 @@ export function Filter(props) {
 
   const [activeFilters, set] = React.useState(filters);
 
-  function filterColumnChanged(index, value, name) {
+  function filterColumnChanged(index, value) {
+    const filter = props.columns.find((column) => column.value === value);
     const newFilters = filters;
-    newFilters[index].id = value;
-    newFilters[index].value.where = name;
+    newFilters[index].id = filter.value;
+    newFilters[index].value.where = filter.name;
     mergeToFilterDetails({
       filters: newFilters,
     });
@@ -30,6 +31,12 @@ export function Filter(props) {
       ...newFilters[index].value,
       operation: value,
     };
+
+    //* if operation is "is empty" or "is not empty" then clear the filter query value
+    if (value === 'isEmpty' || value === 'isNotEmpty') {
+      newFilters[index].value.value = '';
+    }
+
     mergeToFilterDetails({
       filters: newFilters,
     });
@@ -125,9 +132,7 @@ export function Filter(props) {
                 options={props.columns}
                 value={filter.id}
                 search={true}
-                onChange={(value, item) => {
-                  filterColumnChanged(index, value, item.name);
-                }}
+                onChange={(value) => filterColumnChanged(index, value)}
                 placeholder={t('globals.select', 'Select') + '...'}
                 styles={selectStyles('100%')}
               />
@@ -226,6 +231,14 @@ const findFilterDiff = (oldFilters, newFilters) => {
 function shouldFireEvent(diff, filter) {
   if (!diff || !filter) return false;
 
+  function forEmptyOperationAndNotEmptyOperation(operation) {
+    if (operation !== 'isEmpty' || operation !== 'isNotEmpty') {
+      return filter[diff.keyIndex].value.where ? true : false;
+    }
+
+    return filter[diff.keyIndex].value.value && filter[diff.keyIndex].value.where ? true : false;
+  }
+
   switch (diff.type) {
     case 'value':
       return filter[diff.keyIndex].value.where && filter[diff.keyIndex].value.operation ? true : false;
@@ -234,7 +247,7 @@ function shouldFireEvent(diff, filter) {
       return filter[diff.keyIndex].value.value && filter[diff.keyIndex].value.operation ? true : false;
 
     case 'operation':
-      return filter[diff.keyIndex].value.value && filter[diff.keyIndex].value.where ? true : false;
+      return forEmptyOperationAndNotEmptyOperation(filter[diff.keyIndex].value.operation);
 
     default:
       return false;
