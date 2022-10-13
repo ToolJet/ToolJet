@@ -1890,7 +1890,7 @@ button {
     white-space: normal;
   }
 
-  th:after {
+  th div:after {
     content: " ";
     position: relative;
     height: 0;
@@ -2105,7 +2105,6 @@ tr:focus {
   .td {
     .resizer {
       display: inline-block;
-      width: 5px;
       height: 100%;
       position: absolute;
       right: 0;
@@ -6390,6 +6389,29 @@ input.hide-input-arrows{
   min-height: 100vh;
   .page-body {
     height: 100%;
+  }
+}
+// Table set to full width
+.jet-data-table thead {
+  display: flex !important;
+
+  tr {
+  flex-grow: 1;
+    th:last-child {
+      flex: 1 1 auto;
+    }
+  }
+}
+
+tbody {
+  width: 100% !important;
+  flex-grow: 1;
+  tr {
+    width: 100% !important;
+
+    td:last-child {
+      flex: 1 1 auto;
+    }
   }
 }
 

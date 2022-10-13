@@ -134,6 +134,13 @@ export const widgets = [
         //   },
         // },
       },
+      rowsPerPage: {
+        type: 'code',
+        displayName: 'Number of rows per page',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
       serverSidePagination: {
         type: 'toggle',
         displayName: 'Server-side pagination',
@@ -242,6 +249,7 @@ export const widgets = [
       height: 300,
     },
     events: {
+      onRowHovered: { displayName: 'Row hovered' },
       onRowClicked: { displayName: 'Row clicked' },
       onBulkUpdate: { displayName: 'Bulk update' },
       onPageChanged: { displayName: 'Page changed' },
@@ -348,6 +356,7 @@ export const widgets = [
           value:
             "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
         },
+        rowsPerPage: { value: '{{10}}' },
         serverSidePagination: { value: '{{false}}' },
         clientSidePagination: { value: '{{true}}' },
         serverSideSort: { value: '{{false}}' },
