@@ -121,7 +121,13 @@ export function Filter(props) {
           </button>
         </div>
       </div>
-      <div className="card-body">
+      <div
+        style={{
+          overflowY: 'auto',
+          overflowX: 'hidden',
+        }}
+        className="card-body"
+      >
         {props.filters.map((filter, index) => (
           <div className="row mb-2" key={index}>
             <div className="col p-2" style={{ maxWidth: '70px' }}>
