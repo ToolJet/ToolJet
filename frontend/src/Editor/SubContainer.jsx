@@ -44,7 +44,6 @@ export const SubContainer = ({
   exposedVariables,
   addDefaultChildren = false,
   setDraggingOrResizing = () => {},
-  height = '100%',
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -67,6 +66,7 @@ export const SubContainer = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const allComponents = appDefinition ? appDefinition.components : {};
+  const isParentModal = allComponents[parent].component?.component === 'Modal';
 
   let childComponents = [];
 
@@ -79,6 +79,7 @@ export const SubContainer = ({
   const [boxes, setBoxes] = useState(allComponents);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [subContainerHeight, setSubContainerHeight] = useState('100%'); //used to determine the height of the sub container for modal
 
   useEffect(() => {
     setBoxes(allComponents);
@@ -293,6 +294,8 @@ export const SubContainer = ({
 
     let newBoxes = { ...boxes };
 
+    const subContainerHeight = canvasBounds.height - 30;
+
     if (selectedComponents) {
       for (const selectedComponent of selectedComponents) {
         newBoxes = produce(newBoxes, (draft) => {
@@ -302,6 +305,14 @@ export const SubContainer = ({
           draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
           draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
         });
+
+        const componentBottom =
+          newBoxes[selectedComponent.id].layouts[currentLayout].top +
+          newBoxes[selectedComponent.id].layouts[currentLayout].height;
+
+        if (isParentModal && subContainerHeight <= componentBottom) {
+          setSubContainerHeight(subContainerHeight + 100);
+        }
       }
     }
 
@@ -381,7 +392,7 @@ export const SubContainer = ({
 
   const styles = {
     width: '100%',
-    height: height ?? '100%',
+    height: subContainerHeight,
     position: 'absolute',
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
