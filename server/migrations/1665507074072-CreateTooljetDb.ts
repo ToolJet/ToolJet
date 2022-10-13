@@ -16,8 +16,9 @@ export class CreateTooljetDb1665507074072 implements MigrationInterface {
       const connection = await createTooljetDbConnection();
       const tooljetDbQueryRunner = connection.createQueryRunner();
       // Only the db owner will be able to access details on information_schema and public schema.
-      await tooljetDbQueryRunner.query('REVOKE ALL ON SCHEMA public FROM public;');
-      await tooljetDbQueryRunner.query('REVOKE ALL ON SCHEMA information_schema FROM public;');
+      await tooljetDbQueryRunner.query('REVOKE ALL ON SCHEMA public FROM PUBLIC;');
+      await tooljetDbQueryRunner.query('REVOKE ALL ON SCHEMA information_schema FROM PUBLIC;');
+      await tooljetDbQueryRunner.query('ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;');
     }
   }
 
