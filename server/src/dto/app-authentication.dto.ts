@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 import { lowercaseString } from 'src/helpers/utils.helper';
 import { Transform } from 'class-transformer';
 
@@ -17,6 +17,7 @@ export class AppAuthenticationDto {
   @IsString()
   @IsOptional()
   @IsNotEmpty()
+  @MinLength(5)
   password: string;
 
   @IsString()
@@ -36,9 +37,18 @@ export class AppPasswordResetDto {
   @IsString()
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
+  @MinLength(5)
   password: string;
 
   @IsString()
   @IsNotEmpty()
   token: string;
+}
+
+export class ChangePasswordDto {
+  @IsString()
+  @Transform(({ value }) => value?.trim())
+  @IsNotEmpty()
+  @MinLength(5)
+  newPassword: string;
 }
