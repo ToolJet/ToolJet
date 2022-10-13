@@ -50,7 +50,7 @@ export default class Rethinkdb implements QueryService {
           result = await this.insertDocument(name, tablename, body, connection, database);
           break;
         }
-        case 'retreive_docs': {
+        case 'retrieve_docs': {
           result = await this.getDocumentByID(name, tablename, key, connection, database);
           break;
         }
