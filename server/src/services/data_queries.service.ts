@@ -94,6 +94,19 @@ export class DataQueriesService {
     return app.organizationId;
   }
 
+  private getCurrentUserToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string, isAppPublic: boolean) => {
+    if (isMultiAuthEnabled) {
+      if (!tokenData || !Array.isArray(tokenData)) return null;
+      return !isAppPublic
+        ? tokenData.find((token: any) => token.user_id === userId)
+        : userId
+        ? tokenData.find((token: any) => token.user_id === userId)
+        : tokenData[0];
+    } else {
+      return tokenData;
+    }
+  };
+
   async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
     const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
     const app = dataQuery?.app;
@@ -118,28 +131,47 @@ export class DataQueriesService {
         error.constructor.name === 'OAuthUnauthorizedClientError' ||
         (statusCode == 401 && sourceOptions['tokenData'])
       ) {
-        console.log('Access token expired. Attempting refresh token flow.');
-
-        const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, app?.isPublic);
-        await this.dataSourcesService.updateOAuthAccessToken(
-          accessTokenDetails,
-          dataSource.options,
-          dataSource.id,
-          user?.id
+        const currentUserToken = this.getCurrentUserToken(
+          sourceOptions['multiple_auth_enabled'],
+          sourceOptions['tokenData'],
+          user?.id,
+          app?.isPublic
         );
-        await dataSource.reload();
+        if (currentUserToken && currentUserToken['refresh_token']) {
+          console.log('Access token expired. Attempting refresh token flow.');
 
-        ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
-          dataSource,
-          dataQuery,
-          queryOptions,
-          organizationId
-        ));
+          const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, app?.isPublic);
+          await this.dataSourcesService.updateOAuthAccessToken(
+            accessTokenDetails,
+            dataSource.options,
+            dataSource.id,
+            user?.id
+          );
+          await dataSource.reload();
 
-        result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
-          user: { id: user?.id },
-          app: { id: app?.id, isPublic: app?.isPublic },
-        });
+          ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
+            dataSource,
+            dataQuery,
+            queryOptions,
+            organizationId
+          ));
+
+          result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
+            user: { id: user?.id },
+            app: { id: app?.id, isPublic: app?.isPublic },
+          });
+        } else {
+          const customQueryParams = this.sanitizeCustomParams(sourceOptions['custom_query_params']);
+          const tooljetHost = process.env.TOOLJET_HOST;
+          const authUrl = new URL(
+            `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
+          );
+          Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
+          return {
+            status: 'needs_oauth',
+            data: { auth_url: authUrl },
+          };
+        }
       } else {
         throw error;
       }
