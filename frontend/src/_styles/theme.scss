@@ -1902,8 +1902,8 @@ button {
     border-right: 5px solid transparent;
     border-top: 5px solid #767676;
     border-bottom: 5px solid transparent;
-    left: 6px;
-    top: 8px;
+    left: 0px;
+    top: 7px;
   }
 
   .sort-asc:after {
@@ -1911,8 +1911,8 @@ button {
     border-right: 5px solid transparent;
     border-top: 0px solid transparent;
     border-bottom: 5px solid #767676;
-    left: 6px;
-    bottom: 8px;
+    left: 0px;
+    top: 7px;
   }
 }
 
@@ -3440,6 +3440,9 @@ input:focus-visible {
 
 .gui-select-wrappper .select-search__input {
   height: 30px;
+}
+.table thead th {
+  display: flex !important;
 }
 
 .theme-dark .input-group-text,
