@@ -33,6 +33,7 @@ export const SubContainer = ({
   darkMode,
   containerCanvasWidth,
   readOnly,
+  dataQueries,
   customResolvables,
   parentComponent,
   onComponentHover,
@@ -43,6 +44,7 @@ export const SubContainer = ({
   exposedVariables,
   addDefaultChildren = false,
   setDraggingOrResizing = () => {},
+  height = '100%',
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -379,7 +381,7 @@ export const SubContainer = ({
 
   const styles = {
     width: '100%',
-    height: '100%',
+    height: height ?? '100%',
     position: 'absolute',
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
@@ -422,6 +424,7 @@ export const SubContainer = ({
             onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
             onComponentOptionsChanged={onComponentOptionsChanged}
             key={key}
+            dataQueries={dataQueries}
             currentState={currentState}
             onResizeStop={onResizeStop}
             onDragStop={onDragStop}
@@ -481,7 +484,7 @@ export const SubContainer = ({
       })}
 
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
-        <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box">
+        <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box" data-cy="----Test----">
           <center className="text-muted">
             Drag components from the right sidebar and drop here. Check out our{' '}
             <a href="https://docs.tooljet.io/docs/tutorial/adding-widget" target="_blank" rel="noreferrer">

@@ -22,8 +22,12 @@ export const Listview = function Listview({
   const { visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
+  const borderColor = styles.borderColor ?? 'transparent';
+
   const computedStyles = {
     backgroundColor,
+    border: '1px solid',
+    borderColor,
     height,
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
@@ -64,6 +68,7 @@ export const Listview = function Listview({
       ref={parentRef}
       onClick={() => containerProps.onComponentClick(id, component)}
       style={computedStyles}
+      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
     >
       <div className="rows w-100">
         {(_.isArray(data) ? data : []).map((listItem, index) => (
@@ -71,6 +76,7 @@ export const Listview = function Listview({
             className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
             style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
             key={index}
+            data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
             onClick={(event) => {
               event.stopPropagation();
               onRowClicked(index);

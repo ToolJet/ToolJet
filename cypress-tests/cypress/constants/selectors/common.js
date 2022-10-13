@@ -127,6 +127,9 @@ export const commonWidgetSelector = {
   stylePickerFxInput: (paramName) => {
     return `[data-cy="${cyParamName(paramName)}-input-field"]`;
   },
+  validationFeedbackMessage: (widgetName) =>{
+    return `[data-cy="${widgetName.toLowerCase()}-invalid-feedback"]`
+  },
 
   buttonCloseEditorSideBar: "[data-rb-event-key='close-inpector-light']",
   buttonStylesEditorSideBar: "[data-rb-event-key='styles']",
@@ -140,6 +143,7 @@ export const commonWidgetSelector = {
   addMoreEventHandlerLink: '[data-cy="add-more-event-handler"]',
   eventHandlerCard: "[data-cy='event-handler-card']",
   alertMessageInputField: "[data-cy='alert-message-input-field']",
+  eventSelection:'[data-cy="event-selection"]',
   actionSelection: '[data-cy="action-selection"]',
   eventComponentSelection:
     '[data-cy="action-options-component-selection-field"]',
@@ -158,7 +162,7 @@ export const commonWidgetSelector = {
   boxShadowDefaultParam: ["x", "y", "blur", "spread"],
   colourPickerParent: "[data-cy='color-picker-parent']",
   inputBoxShadow: "[data-cy= 'input-box-shadow']",
-  boxShadowColorPicker: "[data-cy='box-shadow-color-picker']",
+  boxShadowColorPicker: "[data-cy='box-shadow-picker']",
   textInputWidget: '[data-cy="draggable-widget-textinput1"]',
   previewButton: `[data-cy="preview-link-button"]`,
 };

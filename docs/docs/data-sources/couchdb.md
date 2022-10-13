@@ -90,7 +90,7 @@ Example response from CouchDb:
 - **Record ID**
 
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/retrieving.png" alt="Couch retrive view" />
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/retrieving.png" alt="Couch retrieve view" />
 
 
 

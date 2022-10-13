@@ -26,7 +26,7 @@ export default class Delete extends Command {
     if (!(fs.existsSync(pluginsPath) && fs.existsSync(pluginPath) && fs.existsSync(pluginDocPath))) {
       this.log(
         '\x1b[41m%s\x1b[0m',
-        'Error : Plugin not found, make sure that you are runing this command in Tooljet directory'
+        'Error : Plugin not found, make sure that you are running this command in Tooljet directory'
       );
       process.exit(1);
     }

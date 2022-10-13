@@ -7,6 +7,20 @@ title: Keyboard Shortcuts
 
 You can perform operations like undo, redo, clone, or removing the widget directly using the keyboard shortcuts.
 
+## Copy
+
+You can copy the component  on the visual app editor using the following shortcut keys:
+
+**On Mac:** `cmd + c`
+
+**On Linux/Windows:** `ctrl + c`
+## Paste
+
+You can paste the selected component  using the following shortcut keys:
+
+**On Mac:** `cmd + v`
+
+**On Linux/Windows:** `ctrl + v`
 ## Undo
 
 You can undo any operation performed on the visual app editor using the following shortcut keys:
