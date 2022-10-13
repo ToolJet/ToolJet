@@ -542,7 +542,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
                       {/* Users Tab */}
                       <div className={`tab-pane ${currentTab === 'users' ? 'active show' : ''}`}>
-                        {groupPermission?.group === 'admin' && (
+                        {groupPermission?.group !== 'all_users' && (
                           <div className="row">
                             <div className="col-5">
                               <SelectSearch
