@@ -82,9 +82,9 @@ export function Table({
     ...draggableStyle,
     userSelect: 'none',
     background: isDragging ? 'rgba(77, 114, 250, 0.2)' : '',
+    top: 'auto',
     borderRadius: '4px',
     ...(isDragging && {
-      marginTop: '-130px',
       marginLeft: '-120px',
       display: 'flex',
       alignItems: 'center',
