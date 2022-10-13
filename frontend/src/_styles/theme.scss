@@ -1890,7 +1890,7 @@ button {
     white-space: normal;
   }
 
-  th:after {
+  th div:after {
     content: " ";
     position: relative;
     height: 0;
@@ -1902,8 +1902,8 @@ button {
     border-right: 5px solid transparent;
     border-top: 5px solid #767676;
     border-bottom: 5px solid transparent;
-    left: 6px;
-    top: 8px;
+    left: 0px;
+    top: 7px;
   }
 
   .sort-asc:after {
@@ -1911,8 +1911,8 @@ button {
     border-right: 5px solid transparent;
     border-top: 0px solid transparent;
     border-bottom: 5px solid #767676;
-    left: 6px;
-    bottom: 8px;
+    left: 0px;
+    top: 7px;
   }
 }
 
@@ -2105,7 +2105,6 @@ tr:focus {
   .td {
     .resizer {
       display: inline-block;
-      width: 5px;
       height: 100%;
       position: absolute;
       right: 0;
@@ -3441,6 +3440,9 @@ input:focus-visible {
 
 .gui-select-wrappper .select-search__input {
   height: 30px;
+}
+.table thead th {
+  display: flex !important;
 }
 
 .theme-dark .input-group-text,
@@ -6392,6 +6394,29 @@ input.hide-input-arrows{
     height: 100%;
   }
 }
+// Table set to full width
+.jet-data-table thead {
+  display: flex !important;
+
+  tr {
+  flex-grow: 1;
+    th:last-child {
+      flex: 1 1 auto;
+    }
+  }
+}
+
+tbody {
+  width: 100% !important;
+  flex-grow: 1;
+  tr {
+    width: 100% !important;
+
+    td:last-child {
+      flex: 1 1 auto;
+    }
+  }
+}
 
 .datepicker-widget.theme-dark{
   .react-datepicker__tab-loop{
@@ -6482,6 +6507,33 @@ input.hide-input-arrows{
     height: 0;
     background: transparent;
   }
+}
+.dropdown-table-column-hide-common{
+  position: absolute;
+  z-index: 10;
+  right: 0;
+  border-radius: 3px;
+  height: auto;
+  overflow-y: scroll;
+  padding: 8px 16px;
+  width: 20rem;top: 20px;
+  max-height: 200px;
+}
+
+.dropdown-table-column-hide{
+  background-color: #fff;
+  box-shadow: 0 0 0 2px #0000001a;
+}
+.dropdown-table-column-hide-dark-themed {
+  color: #fff !important;
+  background-color: #1f2936 !important;
+  box-shadow: 0 0 0 2px #9292921a;
+}
+.hide-column-table-text{
+    margin: 0 !important;
+}
+.hide-column-name{
+  padding-left: 10px !important;
 }
 
 .rest-methods-url{
