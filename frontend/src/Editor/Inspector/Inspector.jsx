@@ -29,6 +29,7 @@ export const Inspector = ({
   switchSidebarTab,
   removeComponent,
   handleEditorEscapeKeyPress,
+  appDefinitionLocalVersion,
 }) => {
   const component = {
     id: selectedComponentId,
@@ -389,7 +390,7 @@ export const Inspector = ({
   };
 
   return (
-    <div className="inspector">
+    <div className="inspector" key={appDefinitionLocalVersion}>
       <ConfirmDialog
         show={showWidgetDeleteConfirmation}
         message={'Widget will be deleted, do you want to continue?'}

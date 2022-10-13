@@ -25,8 +25,11 @@ import { reducer, reducerActions, initialState } from './reducer';
 import customFilter from './custom-filter';
 import generateColumnsData from './columns';
 import generateActionsData from './columns/actions';
+import autogenerateColumns from './columns/autogenerateColumns';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
 import { useTranslation } from 'react-i18next';
+// eslint-disable-next-line import/no-unresolved
+import { IconEyeOff } from '@tabler/icons';
 import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -53,6 +56,8 @@ export function Table({
   variablesExposedForPreview,
   exposeToCodeHinter,
   events,
+  setProperty,
+  mode,
   exposedVariables,
 }) {
   const {
@@ -78,6 +83,7 @@ export function Table({
     actionButtonRadius,
     actions,
     rowsPerPage,
+    disabledSort,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const { t } = useTranslation();
@@ -208,7 +214,10 @@ export function Table({
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
+    }).then(() => {
+      mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
+      fireEvent('onCancelChanges');
+    });
   }
 
   const changeSet = tableDetails?.changeSet ?? {};
@@ -225,7 +234,6 @@ export function Table({
   if (currentState) {
     tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
     if (!Array.isArray(tableData)) tableData = [];
-    console.log('resolved param', tableData);
   }
 
   tableData = tableData || [];
@@ -297,6 +305,17 @@ export function Table({
     ]
   );
 
+  useEffect(() => {
+    if (tableData.length != 0 && component.definition.properties.autogenerateColumns?.value && mode === 'edit') {
+      autogenerateColumns(
+        tableData,
+        component.definition.properties.columns.value,
+        component.definition.properties?.columnDeletionHistory?.value ?? [],
+        setProperty
+      );
+    }
+  }, [JSON.stringify(tableData)]);
+
   const computedStyles = {
     // width: `${width}px`,
   };
@@ -324,6 +343,8 @@ export function Table({
     exportData,
     selectedFlatRows,
     globalFilteredRows,
+    getToggleHideAllColumnsProps,
+    allColumns,
   } = useTable(
     {
       autoResetPage: false,
@@ -338,6 +359,7 @@ export function Table({
       pageCount: -1,
       manualPagination: false,
       getExportFileBlob,
+      disableSortBy: disabledSort,
       manualSortBy: serverSideSort,
     },
     useFilters,
@@ -427,7 +449,7 @@ export function Table({
       ['selectedRow', []],
       ['selectedRowId', null],
     ]);
-  }, [tableData.length, tableDetails.changeSet]);
+  }, [tableData.length, tableDetails.changeSet, page]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
@@ -544,6 +566,39 @@ export function Table({
                   </span>
                 </OverlayTrigger>
               )}
+              <OverlayTrigger
+                trigger="click"
+                rootClose={true}
+                overlay={
+                  <Popover>
+                    <div
+                      className={`dropdown-table-column-hide-common ${
+                        darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
+                      } `}
+                    >
+                      <div className="dropdown-item">
+                        <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+                        <span className="hide-column-name"> Select All</span>
+                      </div>
+                      {allColumns.map((column) => (
+                        <div key={column.id}>
+                          <div>
+                            <label className="dropdown-item">
+                              <input type="checkbox" {...column.getToggleHiddenProps()} />
+                              <span className="hide-column-name"> {` ${column.Header}`}</span>
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Popover>
+                }
+                placement={'bottom-end'}
+              >
+                <span className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
+                  <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
+                </span>
+              </OverlayTrigger>
             </div>
           </div>
         </div>

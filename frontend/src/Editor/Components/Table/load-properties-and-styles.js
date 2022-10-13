@@ -5,6 +5,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   if (typeof serverSidePagination !== 'boolean') serverSidePagination = false;
 
   const serverSideSearch = properties.serverSideSearch ?? false;
+  const disabledSort = properties?.disabledSort ?? false;
 
   const serverSideSort = properties.serverSideSort ?? false;
 
@@ -71,5 +72,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     loadingState,
     actions,
     rowsPerPage,
+    disabledSort,
   };
 }
