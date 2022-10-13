@@ -66,7 +66,7 @@ module.exports = {
           items: [
             {
               label: 'Tutorial',
-              to: 'https://docs.tooljet.com/docs/category/tutorial',
+              to: '/docs/category/tutorial',
             },
           ],
         },
