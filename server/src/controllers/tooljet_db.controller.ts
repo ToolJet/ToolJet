@@ -1,22 +1,37 @@
-import { All, Controller, Req, Res, Next } from '@nestjs/common';
+import { All, Controller, Req, Res, Next, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
+import { User } from 'src/decorators/user.decorator';
 import * as proxy from 'express-http-proxy';
+import * as jwt from 'jsonwebtoken';
 
 const httpProxy = proxy('http://localhost:3001', {
   proxyReqPathResolver: function (req) {
     const parts = req.url.split('?');
     const queryString = parts[1];
-    const updatedPath = parts[0].replace(/\/api\/tooljet_db\//, '');
+    const updatedPath = parts[0].replace(/\/api\/tooljet_db\/proxy\//, '');
     return updatedPath + (queryString ? '?' + queryString : '');
   },
 });
 
+function signJwtPayload(role) {
+  const payload = { role };
+  const secretKey = process.env.PGRST_JWT_SECRET;
+  const token = jwt.sign(payload, secretKey, {
+    algorithm: 'HS256',
+    expiresIn: '10m',
+  });
+
+  return token;
+}
+
 @Controller('tooljet_db')
 export class TooljetDbController {
-  @All('*')
-  proxy(@Req() req, @Res() res, @Next() next): void {
-    req.headers['Authorization'] =
-      'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoidXNlcl9iNDU5NDVkMi02ZmFlLTQ0NmQtOGQxNy05Mjg5ODkxZjEyMzEifQ.IDVu_CFgSmRpezNqwv7FSQ1fC-F_lusBdCq-S594K9U';
-    req.headers['Accept-Profile'] = 'workspace_b45945d2-6fae-446d-8d17-9289891f1231';
+  @UseGuards(JwtAuthGuard)
+  @All('/proxy/*')
+  proxy(@User() user, @Req() req, @Res() res, @Next() next): void {
+    const authToken = 'Bearer ' + signJwtPayload(`user_${user.organizationId}`);
+    req.headers['Authorization'] = authToken;
+    req.headers['Accept-Profile'] = `workspace_${user.organizationId}`;
     httpProxy(req, res, next);
   }
 }
