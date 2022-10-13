@@ -6483,6 +6483,33 @@ input.hide-input-arrows{
     background: transparent;
   }
 }
+.dropdown-table-column-hide-common{
+  position: absolute;
+  z-index: 10;
+  right: 0;
+  border-radius: 3px;
+  height: auto;
+  overflow-y: scroll;
+  padding: 8px 16px;
+  width: 20rem;top: 20px;
+  max-height: 200px;
+}
+
+.dropdown-table-column-hide{
+  background-color: #fff;
+  box-shadow: 0 0 0 2px #0000001a;
+}
+.dropdown-table-column-hide-dark-themed {
+  color: #fff !important;
+  background-color: #1f2936 !important;
+  box-shadow: 0 0 0 2px #9292921a;
+}
+.hide-column-table-text{
+    margin: 0 !important;
+}
+.hide-column-name{
+  padding-left: 10px !important;
+}
 
 .rest-methods-url{
   .cm-s-default {
