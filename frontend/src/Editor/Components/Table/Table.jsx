@@ -202,7 +202,10 @@ export function Table({
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
+    }).then(() => {
+      mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
+      fireEvent('onCancelChanges');
+    });
   }
 
   const changeSet = tableDetails?.changeSet ?? {};
