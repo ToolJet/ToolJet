@@ -1,14 +1,18 @@
 import React from 'react';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from '@/_ui/Select';
+import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
-import { useMounted } from '@/_hooks/use-mount';
+import _ from 'lodash';
+// eslint-disable-next-line import/no-unresolved
+import { diff as deepDiff } from 'deep-object-diff';
 
 export function Filter(props) {
-  const mounted = useMounted();
   const { t } = useTranslation();
 
-  const { mergeToFilterDetails, filterDetails, setAllFilters, fireEvent } = props;
+  const { mergeToFilterDetails, filterDetails, setAllFilters, fireEvent, darkMode } = props;
   const { filters } = filterDetails;
+
+  const [activeFilters, set] = React.useState(filters);
 
   function filterColumnChanged(index, value, name) {
     const newFilters = filters;
@@ -55,6 +59,9 @@ export function Filter(props) {
       filters: newFilters,
     });
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
+
+    set(newFilters);
+    setTimeout(() => fireEvent('onFilterChanged'), 0);
   }
 
   function clearFilters() {
@@ -62,14 +69,38 @@ export function Filter(props) {
       filters: [],
     });
     setAllFilters([]);
+    set([]);
+
+    setTimeout(() => fireEvent('onFilterChanged'), 0);
   }
 
   React.useEffect(() => {
-    if (mounted) {
-      fireEvent('onFilterChanged');
+    if (filters.length > 0) {
+      const tableFilters = JSON.parse(JSON.stringify(filters));
+      const shouldFire = findFilterDiff(activeFilters, tableFilters);
+      if (shouldFire) debounceFn();
+      set(tableFilters);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.length]);
+  }, [JSON.stringify(filters)]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debounceFn = React.useCallback(
+    _.debounce(() => {
+      fireEvent('onFilterChanged');
+    }, 700),
+    []
+  );
+  const selectStyles = (width) => {
+    return {
+      ...defaultStyles(darkMode, width),
+      menuPortal: (provided) => ({ ...provided, zIndex: 999 }),
+      menuList: (base) => ({
+        ...base,
+      }),
+    };
+  };
 
   return (
     <div className="table-filters card">
@@ -90,19 +121,19 @@ export function Filter(props) {
               <small>{index > 0 ? 'and' : 'where'}</small>
             </div>
             <div className="col">
-              <SelectSearch
+              <Select
                 options={props.columns}
                 value={filter.id}
                 search={true}
                 onChange={(value, item) => {
                   filterColumnChanged(index, value, item.name);
                 }}
-                filterOptions={fuzzySearch}
                 placeholder={t('globals.select', 'Select') + '...'}
+                styles={selectStyles('100%')}
               />
             </div>
             <div className="col" style={{ maxWidth: '180px' }}>
-              <SelectSearch
+              <Select
                 options={[
                   { name: 'contains', value: 'contains' },
                   { name: 'does not contains', value: 'doesNotContains' },
@@ -122,8 +153,8 @@ export function Filter(props) {
                 onChange={(value) => {
                   filterOperationChanged(index, value);
                 }}
-                filterOptions={fuzzySearch}
-                placeholder="Select.."
+                placeholder={t('globals.select', 'Select') + '...'}
+                styles={selectStyles('100%')}
               />
             </div>
             <div className="col">
@@ -133,14 +164,14 @@ export function Filter(props) {
                   value={filter.value.value}
                   placeholder="value"
                   className="form-control"
-                  onChange={(e) => filterValueChanged(index, e.target.value)}
+                  onChange={(e) => _.debounce(filterValueChanged(index, e.target.value), 500)}
                 />
               )}
             </div>
             <div className="col-auto">
               <button
                 onClick={() => removeFilter(index)}
-                className={`btn ${props.darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
+                className={`btn ${darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
               >
                 x
               </button>
@@ -165,4 +196,47 @@ export function Filter(props) {
       </div>
     </div>
   );
+}
+
+const findFilterDiff = (oldFilters, newFilters) => {
+  const filterDiff = deepDiff(oldFilters, newFilters);
+
+  const getType = (obj) => {
+    if (!obj?.where && !obj?.operation) {
+      return 'value';
+    }
+
+    if (obj?.where) {
+      return 'where';
+    }
+
+    if (obj?.operation) {
+      return 'operation';
+    }
+  };
+
+  const diff = Object.entries(filterDiff).reduce((acc, [key, value]) => {
+    const type = getType(value.value);
+    return (acc = { ...acc, keyIndex: key, type: type, diff: value.value[type] });
+  }, {});
+
+  return shouldFireEvent(diff, newFilters);
+};
+
+function shouldFireEvent(diff, filter) {
+  if (!diff || !filter) return false;
+
+  switch (diff.type) {
+    case 'value':
+      return filter[diff.keyIndex].value.where && filter[diff.keyIndex].value.operation ? true : false;
+
+    case 'where':
+      return filter[diff.keyIndex].value.value && filter[diff.keyIndex].value.operation ? true : false;
+
+    case 'operation':
+      return filter[diff.keyIndex].value.value && filter[diff.keyIndex].value.where ? true : false;
+
+    default:
+      return false;
+  }
 }

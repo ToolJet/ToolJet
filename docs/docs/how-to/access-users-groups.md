@@ -11,7 +11,7 @@ Let's take look at the exposed variables of the current user property:
 - **firstName** : The value can accessed using `{{globals.currentUser.firstName}}`
 - **lastName** : The value can accessed using `{{globals.currentUser.lastName}}`
 - **lastName** : The value can accessed using `{{globals.currentUser.lastName}}`
-- **groups** : By default, the admin will be in the two groups `all_users` and `admin`, and any user who is not admin will always be in the `all_users` group by default. Since the **groups** is an array you’ll have to provide the index ([0], [1], and so on) to return the group name. The value can be acccessed using `{{globals.currentUser.groups[1]}}`.
+- **groups** : By default, the admin will be in the two groups `all_users` and `admin`, and any user who is not admin will always be in the `all_users` group by default. Since the **groups** is an array you’ll have to provide the index ([0], [1], and so on) to return the group name. The value can be accessed using `{{globals.currentUser.groups[1]}}`.
 
 <div style={{textAlign: 'center'}}>
 
