@@ -133,7 +133,9 @@ class ManageGroupPermissionsComponent extends React.Component {
   executeGroupUpdation = () => {
     this.setState({ isUpdatingGroupName: true });
     groupPermissionService
-      .update(this.state.groupToBeUpdated?.id, { name: this.state.newGroupName })
+      .update(this.state.groupToBeUpdated?.id, {
+        name: this.state.newGroupName,
+      })
       .then(() => {
         toast.success('Group name updated successfully', {
           position: 'top-center',
@@ -173,6 +175,7 @@ class ManageGroupPermissionsComponent extends React.Component {
           confirmButtonLoading={isDeletingGroup}
           onConfirm={() => this.executeGroupDeletion()}
           onCancel={() => this.cancelDeleteGroupDialog()}
+          darkMode={this.props.darkMode}
         />
 
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -191,7 +194,12 @@ class ManageGroupPermissionsComponent extends React.Component {
                   {!showNewGroupForm && !showGroupNameUpdateForm && (
                     <div
                       className="btn btn-primary"
-                      onClick={() => this.setState({ showNewGroupForm: true, isSaveBtnDisabled: true })}
+                      onClick={() =>
+                        this.setState({
+                          showNewGroupForm: true,
+                          isSaveBtnDisabled: true,
+                        })
+                      }
                       data-cy="create-new-group-button"
                     >
                       {this.props.t(
