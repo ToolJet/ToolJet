@@ -556,7 +556,7 @@ export const widgets = [
       styles: {
         backgroundColor: { value: '#375FCF' },
         textColor: { value: '#fff' },
-        loaderColor: { value: '' },
+        loaderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
         borderColor: { value: '#375FCF' },
