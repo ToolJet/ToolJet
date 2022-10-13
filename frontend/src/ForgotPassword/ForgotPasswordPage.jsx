@@ -18,6 +18,7 @@ class ForgotPasswordComponent extends React.Component {
       isLoading: false,
       email: '',
       responseShow: false,
+      emailError: '',
     };
   }
 
@@ -29,9 +30,7 @@ class ForgotPasswordComponent extends React.Component {
     event.preventDefault();
 
     if (!validateEmail(this.state.email)) {
-      toast.error('Invalid email', {
-        id: 'toast-forgot-password-email-error',
-      });
+      this.setState({ emailError: 'Invalid Email' });
       return;
     }
 
@@ -74,7 +73,7 @@ class ForgotPasswordComponent extends React.Component {
                           Create an account
                         </Link>
                       </p>
-                      <div>
+                      <div className="forgot-input-wrap">
                         <p className="tj-text-input-label">Email address</p>
                         <input
                           onChange={this.handleChange}
@@ -82,7 +81,11 @@ class ForgotPasswordComponent extends React.Component {
                           type="email"
                           placeholder="Enter email address"
                           className="tj-text-input"
+                          style={{ marginBottom: '0px' }}
                         />
+                        {this.state.emailError && (
+                          <span className="tj-text-input-error-state">{this.state.emailError}</span>
+                        )}
                       </div>
                       <div>
                         <ButtonSolid

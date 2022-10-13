@@ -165,7 +165,7 @@ class SignupPageComponent extends React.Component {
                             <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
                           )}
                         </div>
-                        <span className="tj-input-helper-text">Password must be atleast 8 charactor</span>
+                        <span className="tj-input-helper-text">Password must be atleast 5 charactor</span>
                       </div>
                     </div>
 
@@ -173,7 +173,13 @@ class SignupPageComponent extends React.Component {
                       <ButtonSolid
                         className="singup-btn"
                         onClick={this.signup}
-                        disabled={isLoading || !this.state.email || !this.state.password || !this.state.name}
+                        disabled={
+                          isLoading ||
+                          !this.state.email ||
+                          !this.state.password ||
+                          !this.state.name ||
+                          this.state.password.length < 5
+                        }
                       >
                         Get started for free
                         <EnterIcon

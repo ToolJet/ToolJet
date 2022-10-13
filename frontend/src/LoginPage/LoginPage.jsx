@@ -22,6 +22,7 @@ class LoginPageComponent extends React.Component {
       showPassword: false,
       isGettingConfigs: true,
       configs: undefined,
+      emailError: false,
     };
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
     this.organizationId = props.match.params.organizationId;
@@ -72,7 +73,7 @@ class LoginPageComponent extends React.Component {
   }
 
   handleChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value });
+    this.setState({ [event.target.name]: event.target.value, emailError: '' });
   };
 
   handleOnCheck = () => {
@@ -86,7 +87,12 @@ class LoginPageComponent extends React.Component {
 
     const { email, password } = this.state;
 
-    if (!validateEmail(email) || !password || !password.trim()) {
+    if (!validateEmail(email)) {
+      this.setState({ emailError: 'Invalid Email' });
+      return;
+    }
+
+    if (!password || !password.trim()) {
       toast.error('Invalid email or password', {
         id: 'toast-login-auth-error',
         position: 'top-center',
@@ -166,7 +172,7 @@ class LoginPageComponent extends React.Component {
                           </div>
                         </div>
 
-                        <div>
+                        <div className="signin-email-wrap">
                           <label className="tj-text-input-label">Work email</label>
                           <input
                             onChange={this.handleChange}
@@ -174,7 +180,11 @@ class LoginPageComponent extends React.Component {
                             type="email"
                             className="tj-text-input"
                             placeholder="Enter your Work email"
+                            style={{ marginBottom: '0px' }}
                           />
+                          {this.state.emailError && (
+                            <span className="tj-text-input-error-state">{this.state.emailError}</span>
+                          )}
                         </div>
                         <div>
                           <label className="tj-text-input-label">

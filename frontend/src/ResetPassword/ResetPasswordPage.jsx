@@ -36,10 +36,6 @@ class ResetPasswordComponent extends React.Component {
     const { password, password_confirmation } = this.state;
     if (password !== password_confirmation) {
       toast.error("Password don't match");
-      this.setState({
-        password: '',
-        password_confirmation: '',
-      });
     } else {
       this.setState({
         isLoading: true,
@@ -91,7 +87,7 @@ class ResetPasswordComponent extends React.Component {
                             <EyeShow fill={this.state.password?.length ? '#384151' : '#D1D5DB'} />
                           )}
                         </div>
-                        <span className="tj-input-helper-text">Password must be atleast 8 charactors</span>
+                        <span className="tj-input-helper-text">Password must be atleast 5 charactors</span>
 
                         <span></span>
                       </div>
@@ -114,7 +110,7 @@ class ResetPasswordComponent extends React.Component {
                             <EyeShow fill={this.state.password_confirmation?.length ? '#384151' : '#D1D5DB'} />
                           )}
                         </div>
-                        <span className="tj-input-helper-text">Password must be atleast 8 charactors</span>
+                        <span className="tj-input-helper-text">Password must be atleast 5 charactors</span>
 
                         <span></span>
                       </div>
@@ -122,7 +118,7 @@ class ResetPasswordComponent extends React.Component {
                     <div>
                       <ButtonSolid
                         disabled={
-                          !this.state.password?.length > 0 || !this.state.password_confirmation?.length > 0 || isLoading
+                          this.state.password?.length < 5 || this.state.password_confirmation?.length < 5 || isLoading
                         }
                         onClick={this.handleClick}
                         className="reset-password-btn"

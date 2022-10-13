@@ -9,6 +9,7 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
   const history = useHistory();
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     role: '',
@@ -18,6 +19,7 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
 
   useEffect(() => {
     if (completed) {
+      setIsLoading(true);
       authenticationService
         .onboarding({
           companyName: formData.companyName,
@@ -28,6 +30,7 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
         .then((user) => {
           authenticationService.updateUser(user);
           authenticationService.deleteLoginOrganizationId();
+          setIsLoading(false);
           history.push('/');
         })
         .catch((res) => {
@@ -110,7 +113,7 @@ function OnBoardingForm({ userDetails = {}, token = '' }) {
             <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
           </div>
           {PageShift()}
-          <div>{continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted })}</div>
+          <div>{continueButton({ buttonState, setButtonState, setPage, page, formData, setCompleted, isLoading })}</div>
         </div>
       </div>
     </div>
@@ -141,11 +144,11 @@ export function onBoardingBubbles({ formData, page }) {
   );
 }
 
-export function continueButton({ buttonState, setPage, setButtonState, formData, page, setCompleted }) {
+export function continueButton({ buttonState, setPage, setButtonState, formData, page, setCompleted, isLoading }) {
   return (
     <button
       className="onboarding-page-continue-button"
-      disabled={buttonState && Object.values(formData)[page] == ''}
+      disabled={(buttonState && Object.values(formData)[page] == '') || isLoading}
       onClick={() => {
         setPage((currPage) => currPage + 1);
         setButtonState(true);

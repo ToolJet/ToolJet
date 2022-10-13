@@ -14,9 +14,7 @@ export const LinkExpiredInfoScreen = function LinkExpiredInfoScreen() {
           alt="email image"
         />
         <h1 className="common-auth-section-header">Invalid verification link</h1>
-        <p className="info-screen-description">
-          This verification link is invalid. Please resend the email to get a new verification link
-        </p>
+        <p className="info-screen-description">This verification link is invalid.</p>
         <ButtonSolid variant="secondary" className="link-expired-info-btn" onClick={() => history.push('/signup')}>
           Back to signup
         </ButtonSolid>
