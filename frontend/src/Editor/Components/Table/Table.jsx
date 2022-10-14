@@ -276,6 +276,7 @@ export function Table({
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
+      darkMode,
     ] // Hack: need to fix
   );
 
