@@ -83,7 +83,7 @@ Query results can be transformed using transformations. Read our transformations
 
 ### List Datasets
 
-Retruns list of datasets.
+Returns list of datasets.
 
 #### Optional parameters: 
 
