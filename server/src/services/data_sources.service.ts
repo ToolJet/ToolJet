@@ -222,7 +222,7 @@ export class DataSourcesService {
   ) => {
     if (isMultiAuthEnabled) {
       return tokenData?.value.map((token: any) => {
-        if (token.userId === userId) {
+        if (token.user_id === userId) {
           return { ...token, ...accessTokenDetails };
         }
         return token;
