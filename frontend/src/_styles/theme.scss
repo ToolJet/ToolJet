@@ -6553,3 +6553,8 @@ tbody {
   }
 
 }
+.custom-select{
+  .select-search-dark__value::after{
+    content: none;
+  }
+}

@@ -2,7 +2,7 @@ import React from 'react';
 import SelectSearch from 'react-select-search';
 import { useTranslation } from 'react-i18next';
 
-export const CustomSelect = ({ options, value, multiple, onChange }) => {
+export const CustomSelect = ({ options, value, multiple, onChange, darkMode }) => {
   const { t } = useTranslation();
 
   function renderValue(valueProps) {
@@ -26,6 +26,7 @@ export const CustomSelect = ({ options, value, multiple, onChange }) => {
         onChange={onChange}
         multiple={multiple}
         placeholder={t('globals.select', 'Select') + '...'}
+        className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
       />
     </div>
   );
