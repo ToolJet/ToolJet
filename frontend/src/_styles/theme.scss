@@ -1890,7 +1890,7 @@ button {
     white-space: normal;
   }
 
-  th div:after {
+  th:after {
     content: " ";
     position: relative;
     height: 0;
