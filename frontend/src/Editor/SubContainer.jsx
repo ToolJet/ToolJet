@@ -66,7 +66,7 @@ export const SubContainer = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const allComponents = appDefinition ? appDefinition.components : {};
-  const isParentModal = allComponents[parent].component?.component === 'Modal';
+  const isParentModal = allComponents[parent]?.component?.component === 'Modal' ?? false;
 
   let childComponents = [];
 
