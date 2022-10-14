@@ -45,7 +45,6 @@ export const Container = ({
   hoveredComponent,
   sideBarDebugger,
   dataQueries,
-  setDraggingOrResizing = () => {},
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -505,12 +504,8 @@ export const Container = ({
                 hoveredComponent,
                 sideBarDebugger,
                 dataQueries,
-
                 addDefaultChildren,
-
-                setDraggingOrResizing,
               }}
-              setDraggingOrResizing={setDraggingOrResizing}
             />
           );
         }
