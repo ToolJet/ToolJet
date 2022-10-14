@@ -29,6 +29,12 @@ You can undo any operation performed on the visual app editor using the followin
 
 **On Linux/Windows:** `ctrl + z`
 
+<div style={{textAlign: 'center'}}>
+
+![Undo keyboard](/img/tutorial/keyboard-shortcuts/undo.gif)
+
+</div>
+
 ## Redo
 
 If you have `undo` an operation and want to redo that again than you can use the following shortcut keys:
