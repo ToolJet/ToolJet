@@ -1768,7 +1768,9 @@ button {
   thead {
     z-index: 2;
   }
-
+  .table thead th {
+    display: flex !important;
+  }
   .table-row:hover,
   .table-row:focus {
     background: rgba(lightBlue, 0.25);
