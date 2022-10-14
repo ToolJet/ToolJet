@@ -2112,6 +2112,7 @@ tr:focus {
       transform: translateX(50%);
       z-index: 1;
       touch-action: none;
+      width: 2px;
 
       &.isResizing {
         background: rgb(179, 173, 173);
@@ -4028,6 +4029,7 @@ input[type="text"] {
 
     .resize-handle {
       cursor: move;
+      width: 5px;
     }
   }
 }
