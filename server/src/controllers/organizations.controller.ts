@@ -28,7 +28,7 @@ export class OrganizationsController {
     private organizationsService: OrganizationsService,
     private authService: AuthService,
     private readonly configService: ConfigService
-  ) { }
+  ) {}
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('viewAllUsers', UserEntity))
