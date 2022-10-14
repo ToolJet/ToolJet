@@ -111,6 +111,10 @@ export class DataQueriesService {
     );
 
     try {
+      // multi-auth will not work with public apps
+      if (app?.isPublic && sourceOptions['multiple_auth_enabled']) {
+        throw new QueryError('Authentication required for all users should be turned off', '', {});
+      }
       return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt, {
         user: { id: user?.id },
         app: { id: app?.id, isPublic: app?.isPublic },
