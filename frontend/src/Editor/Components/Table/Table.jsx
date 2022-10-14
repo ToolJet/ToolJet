@@ -372,6 +372,7 @@ export function Table({
     {
       autoResetPage: false,
       autoResetGlobalFilter: false,
+      autoResetHiddenColumns: false,
       autoResetFilters: false,
       manualGlobalFilter: serverSideSearch,
       manualFilters: serverSideFilter,
