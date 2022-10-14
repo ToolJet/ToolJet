@@ -554,9 +554,9 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
+        backgroundColor: { value: '#375FCF' },
         textColor: { value: '#fff' },
-        loaderColor: { value: '' },
+        loaderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
         borderColor: { value: '#375FCF' },
@@ -2129,7 +2129,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
+        backgroundColor: { value: '#fff' },
         borderRadius: { value: '0' },
         borderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
@@ -2755,7 +2755,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '' },
+        textColor: { value: '#ffb400' },
         labelColor: { value: '' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
@@ -3634,7 +3634,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
+        backgroundColor: { value: '#fff' },
         borderColor: { value: '#dadcde' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
