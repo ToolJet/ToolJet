@@ -670,12 +670,13 @@ export function Table({
                             return (
                               <th
                                 key={index}
-                                {...column.getHeaderProps(column.getSortByToggleProps())}
+                                {...column.getHeaderProps()}
                                 className={
                                   column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'
                                 }
                               >
                                 <div
+                                  {...column.getSortByToggleProps()}
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
                                   // {...extraProps}
