@@ -135,7 +135,7 @@ export class DataSourcesService {
       const authCode = findOption(options, 'code')['value'];
 
       const queryService = new allPlugins[provider]();
-      const accessDetails = await queryService.accessDetailsFrom(authCode);
+      const accessDetails = await queryService.accessDetailsFrom(authCode, options);
 
       for (const row of accessDetails) {
         const option = {};
@@ -222,7 +222,7 @@ export class DataSourcesService {
   ) => {
     if (isMultiAuthEnabled) {
       return tokenData?.value.map((token: any) => {
-        if (token.userId === userId) {
+        if (token.user_id === userId) {
           return { ...token, ...accessTokenDetails };
         }
         return token;

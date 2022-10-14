@@ -23,13 +23,13 @@
     @if $light-theme {
       background: $white;
       &:hover {
-        background: #4d72fa;
+        background: $primary;
         color: #FFFFFC;
       }
     } @else {
       background: transparent!important;
       &:hover {
-        background: #4d72fa!important;
+        background: $primary!important;
         color: #FFFFFC!important;
 
       }

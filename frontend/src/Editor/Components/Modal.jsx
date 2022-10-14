@@ -34,14 +34,22 @@ export const Modal = function Modal({
   const title = properties.title ?? '';
   const size = properties.size ?? 'lg';
 
-  registerAction('open', async function () {
-    setExposedVariable('show', true);
-    setShowModal(true);
-  });
-  registerAction('close', async function () {
-    setShowModal(false);
-    setExposedVariable('show', false);
-  });
+  registerAction(
+    'open',
+    async function () {
+      setExposedVariable('show', true);
+      setShowModal(true);
+    },
+    [setShowModal]
+  );
+  registerAction(
+    'close',
+    async function () {
+      setShowModal(false);
+      setExposedVariable('show', false);
+    },
+    [setShowModal]
+  );
 
   useEffect(() => {
     if (exposedVariables.show !== showModal) {
@@ -146,7 +154,7 @@ export const Modal = function Modal({
       >
         {!loadingState ? (
           <>
-            <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
+            <SubContainer parent={id} {...containerProps} parentRef={parentRef} height={'100vh'} />
             <SubCustomDragLayer
               snapToGrid={true}
               parentRef={parentRef}
