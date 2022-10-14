@@ -427,20 +427,20 @@ export function Table({
 
     const columnName = columns.find((column) => column.id === state?.sortBy?.[0]?.id).accessor;
 
-    return {
-      sortedBy: {
+    return [
+      {
         column: columnName,
         direction: state?.sortBy?.[0]?.desc ? 'desc' : 'asc',
       },
-    };
+    ];
   }, [JSON.stringify(state)]);
 
   useEffect(() => {
     if (!sortOptions) {
-      setExposedVariable('sortedBy', null);
+      setExposedVariable('sortApplied', []);
       return;
     }
-    setExposedVariable('sortedBy', sortOptions.sortedBy).then(() => fireEvent('onSort'));
+    setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
   }, [sortOptions]);
 
   registerAction(
